@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -29,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	projectcontroller "github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -161,8 +161,6 @@ func (b *BaseController) PopulateUserSession(u models.User) {
 
 // Init related objects/configurations for the API controllers
 func Init() error {
-	registerHealthCheckers()
-
 	// init chart controller
 	if err := initChartController(); err != nil {
 		return err

@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { Repository } from "../../../../../ng-swagger-gen/models/repository";
 import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../shared/units/utils";

@@ -20,22 +20,26 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/dao/group"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	harborErrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 const refreshDuration = 2 * time.Second
@@ -55,6 +59,7 @@ type Auth struct {
 	SkipSearch          bool
 	settingTimeStamp    time.Time
 	client              *http.Client
+	userMgr             user.Manager
 }
 
 type session struct {
@@ -108,7 +113,7 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 }
 
 func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
-	httpAuthProxySetting, err := config.HTTPAuthProxySetting()
+	httpAuthProxySetting, err := config.HTTPAuthProxySetting(orm.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +121,7 @@ func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	u, err := authproxy.UserFromReviewStatus(reviewStatus, httpAuthProxySetting.AdminGroups)
+	u, err := authproxy.UserFromReviewStatus(reviewStatus, httpAuthProxySetting.AdminGroups, httpAuthProxySetting.AdminUsernames)
 	if err != nil {
 		return nil, err
 	}
@@ -133,18 +138,22 @@ func (a *Auth) VerifyToken(token string) (*models.User, error) {
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
 func (a *Auth) OnBoardUser(u *models.User) error {
-	return dao.OnBoardUser(u)
+	return a.userMgr.Onboard(orm.Context(), u)
 }
 
 // PostAuthenticate generates the user model and on board the user.
 func (a *Auth) PostAuthenticate(u *models.User) error {
-	if res, _ := dao.GetUser(*u); res != nil {
-		return nil
-	}
-	if err := a.fillInModel(u); err != nil {
+	_, err := a.userMgr.GetByName(orm.Context(), u.Username)
+	if harborErrors.IsNotFoundErr(err) {
+		if err2 := a.fillInModel(u); err2 != nil {
+			return err2
+		}
+		return a.OnBoardUser(u)
+	} else if err != nil {
 		return err
 	}
-	return a.OnBoardUser(u)
+	// do nothing if user exists in DB
+	return nil
 }
 
 // SearchUser returns nil as authproxy does not have such capability.
@@ -166,14 +175,14 @@ func (a *Auth) SearchUser(username string) (*models.User, error) {
 }
 
 // SearchGroup search group exist in the authentication provider, for HTTP auth, if SkipSearch is true, it assume this group exist in authentication provider.
-func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
+func (a *Auth) SearchGroup(groupKey string) (*model.UserGroup, error) {
 	err := a.ensure()
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
-	var ug *models.UserGroup
+	var ug *model.UserGroup
 	if a.SkipSearch {
-		ug = &models.UserGroup{
+		ug = &model.UserGroup{
 			GroupName: groupKey,
 			GroupType: common.HTTPGroupType,
 		}
@@ -183,13 +192,13 @@ func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 }
 
 // OnBoardGroup create user group entity in Harbor DB, altGroupName is not used.
-func (a *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+func (a *Auth) OnBoardGroup(u *model.UserGroup, altGroupName string) error {
 	// if group name provided, on board the user group
 	if len(u.GroupName) == 0 {
-		return errors.New("Should provide a group name")
+		return errors.New("should provide a group name")
 	}
 	u.GroupType = common.HTTPGroupType
-	err := group.OnBoardUserGroup(u)
+	err := usergroup.Ctl.Ensure(orm.Context(), u)
 	if err != nil {
 		return err
 	}
@@ -216,7 +225,7 @@ func (a *Auth) ensure() error {
 		a.client = &http.Client{}
 	}
 	if time.Now().Sub(a.settingTimeStamp) >= refreshDuration {
-		setting, err := config.HTTPAuthProxySetting()
+		setting, err := config.HTTPAuthProxySetting(orm.Context())
 		if err != nil {
 			return err
 		}
@@ -233,7 +242,7 @@ func (a *Auth) ensure() error {
 	return nil
 }
 
-func getTLSConfig(setting *models.HTTPAuthProxy) (*tls.Config, error) {
+func getTLSConfig(setting *cfgModels.HTTPAuthProxy) (*tls.Config, error) {
 	c := setting.ServerCertificate
 	if setting.VerifyCert && len(c) > 0 {
 		certs := x509.NewCertPool()
@@ -247,5 +256,7 @@ func getTLSConfig(setting *models.HTTPAuthProxy) (*tls.Config, error) {
 }
 
 func init() {
-	auth.Register(common.HTTPAuth, &Auth{})
+	auth.Register(common.HTTPAuth, &Auth{
+		userMgr: user.New(),
+	})
 }

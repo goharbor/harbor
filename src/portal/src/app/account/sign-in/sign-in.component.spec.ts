@@ -1,18 +1,15 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { SignInComponent } from './sign-in.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
 import { SessionService } from '../../shared/services/session.service';
 import { CookieService } from 'ngx-cookie';
 import { SkinableConfig } from "../../services/skinable-config.service";
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { ClarityModule } from "@clr/angular";
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { of } from "rxjs";
 import { throwError as observableThrowError } from 'rxjs/internal/observable/throwError';
 import { HttpErrorResponse } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { SharedTestingModule } from "../../shared/shared.module";
+import { UserPermissionService } from "../../shared/services";
 
 describe('SignInComponent', () => {
     let component: SignInComponent;
@@ -20,21 +17,23 @@ describe('SignInComponent', () => {
     const mockedSessionService = {
         signIn() {
             return of(true);
+        },
+        getCurrentUser() {
+            return {};
+        }
+    };
+    const mockedUserPermissionService = {
+        clearPermissionCache() {
         }
     };
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                RouterTestingModule,
-                ClarityModule,
-                FormsModule,
-                ReactiveFormsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [SignInComponent],
             providers: [
-                TranslateService,
+                { provide: UserPermissionService, useValue: mockedUserPermissionService},
                 { provide: SessionService, useValue: mockedSessionService},
                 {
                     provide: AppConfigService, useValue: {
@@ -42,6 +41,11 @@ describe('SignInComponent', () => {
                             return of({
 
                             });
+                        },
+                        isIntegrationMode() {
+                        },
+                        getConfig() {
+                            return {};
                         }
                     }
                 },

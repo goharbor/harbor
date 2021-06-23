@@ -90,6 +90,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedRepositoryPathComponentType: model.RepositoryPathComponentTypeOnlyTwo,
 	}, nil
 }
 

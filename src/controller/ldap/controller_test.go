@@ -16,8 +16,10 @@ package ldap
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/ldap/model"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/config/models"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/ldap"
@@ -65,7 +67,7 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.WithNotary:                 false,
 }
 
-var ldapCfg = model.LdapConf{
+var ldapCfg = models.LdapConf{
 	URL:               "ldap://127.0.0.1",
 	SearchDn:          "cn=admin,dc=example,dc=com",
 	SearchPassword:    "admin",
@@ -75,7 +77,7 @@ var ldapCfg = model.LdapConf{
 	ConnectionTimeout: 30,
 }
 
-var ldapCfgNoPwd = model.LdapConf{
+var ldapCfgNoPwd = models.LdapConf{
 	URL:               "ldap://127.0.0.1",
 	SearchDn:          "cn=admin,dc=example,dc=com",
 	BaseDn:            "dc=example,dc=com",
@@ -84,7 +86,7 @@ var ldapCfgNoPwd = model.LdapConf{
 	ConnectionTimeout: 30,
 }
 
-var groupCfg = model.GroupConf{
+var groupCfg = models.GroupConf{
 	BaseDN:              "dc=example,dc=com",
 	NameAttribute:       "cn",
 	SearchScope:         2,

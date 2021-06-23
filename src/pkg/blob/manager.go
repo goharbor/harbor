@@ -41,6 +41,9 @@ type Manager interface {
 	// CalculateTotalSizeByProject returns total blob size by project, skip foreign blobs when `excludeForeignLayer` is true
 	CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error)
 
+	// SumBlobsSize returns sum size of all blobs skip foreign blobs when `excludeForeignLayer` is true
+	CalculateTotalSize(ctx context.Context, excludeForeignLayer bool) (int64, error)
+
 	// Create create blob
 	Create(ctx context.Context, digest string, contentType string, size int64) (int64, error)
 
@@ -49,6 +52,9 @@ type Manager interface {
 
 	// CleanupAssociationsForProject remove unneeded associations between blobs and project
 	CleanupAssociationsForProject(ctx context.Context, projectID int64, blobs []*Blob) error
+
+	// FindBlobsShouldUnassociatedWithProject filter the blobs which should not be associated with the project
+	FindBlobsShouldUnassociatedWithProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error)
 
 	// Get get blob by digest
 	Get(ctx context.Context, digest string) (*Blob, error)
@@ -111,6 +117,10 @@ func (m *manager) CleanupAssociationsForProject(ctx context.Context, projectID i
 	return m.dao.DeleteProjectBlob(ctx, projectID, blobIDs...)
 }
 
+func (m *manager) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error) {
+	return m.dao.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
+}
+
 func (m *manager) Get(ctx context.Context, digest string) (*Blob, error) {
 	return m.dao.GetBlobByDigest(ctx, digest)
 }
@@ -137,6 +147,10 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 
 func (m *manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error) {
 	return m.dao.GetBlobsNotRefedByProjectBlob(ctx, timeWindowHours)
+}
+
+func (m *manager) CalculateTotalSize(ctx context.Context, excludeForeignLayer bool) (int64, error) {
+	return m.dao.SumBlobsSize(ctx, excludeForeignLayer)
 }
 
 // NewManager returns blob manager

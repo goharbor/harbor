@@ -14,10 +14,7 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/core/middlewares"
-	"github.com/goharbor/harbor/src/lib"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -26,11 +23,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goharbor/harbor/src/core/middlewares"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,39 +58,10 @@ func TestMain(m *testing.M) {
 	}
 }
 
-// TestUserResettable
-func TestUserResettable(t *testing.T) {
-	assert := assert.New(t)
-	DBAuthConfig := map[string]interface{}{
-		common.AUTHMode:        common.DBAuth,
-		common.TokenExpiration: 30,
-	}
-
-	LDAPAuthConfig := map[string]interface{}{
-		common.AUTHMode:        common.LDAPAuth,
-		common.TokenExpiration: 30,
-	}
-	config.InitWithSettings(LDAPAuthConfig)
-	u1 := &models.User{
-		UserID:   3,
-		Username: "daniel",
-		Email:    "daniel@test.com",
-	}
-	u2 := &models.User{
-		UserID:   1,
-		Username: "jack",
-		Email:    "jack@test.com",
-	}
-	assert.False(isUserResetable(u1))
-	assert.True(isUserResetable(u2))
-	config.InitWithSettings(DBAuthConfig)
-	assert.True(isUserResetable(u1))
-}
-
 func TestRedirectForOIDC(t *testing.T) {
-	ctx := lib.WithAuthMode(context.Background(), common.DBAuth)
+	ctx := lib.WithAuthMode(orm.Context(), common.DBAuth)
 	assert.False(t, redirectForOIDC(ctx, "nonexist"))
-	ctx = lib.WithAuthMode(context.Background(), common.OIDCAuth)
+	ctx = lib.WithAuthMode(orm.Context(), common.OIDCAuth)
 	assert.True(t, redirectForOIDC(ctx, "nonexist"))
 	assert.False(t, redirectForOIDC(ctx, "admin"))
 

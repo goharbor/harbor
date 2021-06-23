@@ -15,13 +15,15 @@
 package retention
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -45,16 +47,16 @@ func (f *fakeRetentionManager) GetTotalOfTasks(executionID int64) (int64, error)
 	return 0, nil
 }
 
-func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
+func (f *fakeRetentionManager) CreatePolicy(ctx context.Context, p *policy.Metadata) (int64, error) {
 	return 0, nil
 }
-func (f *fakeRetentionManager) UpdatePolicy(p *policy.Metadata) error {
+func (f *fakeRetentionManager) UpdatePolicy(ctx context.Context, p *policy.Metadata) error {
 	return nil
 }
-func (f *fakeRetentionManager) DeletePolicy(ID int64) error {
+func (f *fakeRetentionManager) DeletePolicy(ctx context.Context, ID int64) error {
 	return nil
 }
-func (f *fakeRetentionManager) GetPolicy(ID int64) (*policy.Metadata, error) {
+func (f *fakeRetentionManager) GetPolicy(ctx context.Context, ID int64) (*policy.Metadata, error) {
 	return nil, nil
 }
 func (f *fakeRetentionManager) CreateExecution(execution *Execution) (int64, error) {
@@ -108,26 +110,26 @@ type launchTestSuite struct {
 	projectMgr       project.Manager
 	execMgr          *tasktesting.ExecutionManager
 	taskMgr          *tasktesting.Manager
-	repositoryMgr    *repository.FakeManager
+	repositoryMgr    *repository.Manager
 	retentionMgr     Manager
 	jobserviceClient job.Client
 }
 
 func (l *launchTestSuite) SetupTest() {
-	pro1 := &models.Project{
+	pro1 := &proModels.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}
-	pro2 := &models.Project{
+	pro2 := &proModels.Project{
 		ProjectID: 2,
 		Name:      "test",
 	}
 	projectMgr := &projecttesting.Manager{}
-	mock.OnAnything(projectMgr, "List").Return([]*models.Project{
+	mock.OnAnything(projectMgr, "List").Return([]*proModels.Project{
 		pro1, pro2,
 	}, nil)
 	l.projectMgr = projectMgr
-	l.repositoryMgr = &repository.FakeManager{}
+	l.repositoryMgr = &repository.Manager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.execMgr = &tasktesting.ExecutionManager{}
 	l.taskMgr = &tasktesting.Manager{}
@@ -146,7 +148,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+	l.repositoryMgr.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,
@@ -199,7 +201,7 @@ func (l *launchTestSuite) TestLaunch() {
 	require.NotNil(l.T(), err)
 
 	// system scope
-	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+	l.repositoryMgr.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,

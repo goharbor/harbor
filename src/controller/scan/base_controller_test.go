@@ -26,9 +26,11 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -40,6 +42,7 @@ import (
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
+	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
@@ -56,6 +59,8 @@ type ControllerTestSuite struct {
 
 	artifactCtl         *artifacttesting.Controller
 	originalArtifactCtl artifact.Controller
+
+	tagCtl *tagtesting.FakeController
 
 	registration *scanner.Registration
 	artifact     *artifact.Artifact
@@ -253,6 +258,9 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	suite.ar = &artifacttesting.Controller{}
 
+	suite.tagCtl = &tagtesting.FakeController{}
+	suite.tagCtl.On("List", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil)
+
 	suite.execMgr = &tasktesting.ExecutionManager{}
 
 	suite.taskMgr = &tasktesting.Manager{}
@@ -262,6 +270,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		ar:      suite.ar,
 		sc:      sc,
 		rc:      rc,
+		tagCtl:  suite.tagCtl,
 		uuid: func() (string, error) {
 			return "the-uuid-123", nil
 		},
@@ -277,7 +286,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 
 		cloneCtx: func(ctx context.Context) context.Context { return ctx },
-		makeCtx:  func() context.Context { return context.TODO() },
+		makeCtx:  func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
 
 		execMgr:         suite.execMgr,
 		taskMgr:         suite.taskMgr,
@@ -452,22 +461,6 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		bytes, err := suite.c.GetScanLog(context.TODO(), base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Nil(err)
 		suite.Empty(bytes)
-	}
-}
-
-func (suite *ControllerTestSuite) TestUpdateReport() {
-	{
-		// get report failed
-		suite.reportMgr.On("GetBy", context.TODO(), "digest", "ruuid", []string{"mime"}).Return(nil, fmt.Errorf("failed")).Once()
-		report := &sca.CheckInReport{Digest: "digest", RegistrationUUID: "ruuid", MimeType: "mime"}
-		suite.Error(suite.c.UpdateReport(context.TODO(), report))
-	}
-
-	{
-		// report not found
-		suite.reportMgr.On("GetBy", context.TODO(), "digest", "ruuid", []string{"mime"}).Return(nil, nil).Once()
-		report := &sca.CheckInReport{Digest: "digest", RegistrationUUID: "ruuid", MimeType: "mime"}
-		suite.Error(suite.c.UpdateReport(context.TODO(), report))
 	}
 }
 

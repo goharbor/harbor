@@ -15,8 +15,10 @@
 package notary
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"os"
 	"path"
@@ -24,7 +26,6 @@ import (
 
 	"github.com/docker/distribution/registry/auth/token"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/core/config"
 	tokenutil "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib/log"
 	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
@@ -53,7 +54,7 @@ func init() {
 }
 
 // GetInternalTargets wraps GetTargets to read config values for getting full-qualified repo from internal notary instance.
-func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]model2.Target, error) {
+func GetInternalTargets(ctx context.Context, notaryEndpoint string, username string, repo string) ([]model2.Target, error) {
 	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("Error while reading external endpoint: %v", err)
@@ -61,15 +62,15 @@ func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]
 	}
 	endpoint := strings.Split(ext, "//")[1]
 	fqRepo := path.Join(endpoint, repo)
-	return GetTargets(notaryEndpoint, username, fqRepo)
+	return GetTargets(ctx, notaryEndpoint, username, fqRepo)
 }
 
 // GetTargets is a help function called by API to fetch signature information of a given repository.
 // Per docker's convention the repository should contain the information of endpoint, i.e. it should look
 // like "192.168.0.1/library/ubuntu", instead of "library/ubuntu" (fqRepo for fully-qualified repo)
-func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model2.Target, error) {
+func GetTargets(ctx context.Context, notaryEndpoint string, username string, fqRepo string) ([]model2.Target, error) {
 	res := []model2.Target{}
-	t, err := tokenutil.MakeToken(username, tokenutil.Notary,
+	t, err := tokenutil.MakeToken(ctx, username, tokenutil.Notary,
 		[]*token.ResourceActions{
 			{
 				Type:    "repository",

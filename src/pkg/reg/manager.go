@@ -17,6 +17,7 @@ package reg
 import (
 	"context"
 	commonthttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
@@ -52,7 +53,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/githubcr"
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
@@ -226,7 +226,7 @@ func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
 		Credential:   &model.Credential{},
 		URL:          registry.URL,
 		Insecure:     registry.Insecure,
-		Status:       registry.Health,
+		Status:       registry.Status,
 		CreationTime: registry.CreationTime,
 		UpdateTime:   registry.UpdateTime,
 	}
@@ -260,7 +260,7 @@ func toDaoModel(registry *model.Registry) (*dao.Registry, error) {
 		Type:         string(registry.Type),
 		Insecure:     registry.Insecure,
 		Description:  registry.Description,
-		Health:       registry.Status,
+		Status:       registry.Status,
 		CreationTime: registry.CreationTime,
 		UpdateTime:   registry.UpdateTime,
 	}

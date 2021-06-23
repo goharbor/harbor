@@ -18,11 +18,16 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	userpkg "github.com/goharbor/harbor/src/pkg/user"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -65,7 +70,10 @@ func TestAuthenticate(t *testing.T) {
 		Username: "user1",
 		Password: "password1",
 	}
-	auth := Auth{client: client}
+	auth := Auth{
+		client:  client,
+		userMgr: userpkg.New(),
+	}
 	m1 := models.AuthModel{
 		Principal: "user1",
 		Password:  "password1",
@@ -87,7 +95,10 @@ func TestAuthenticate(t *testing.T) {
 
 func TestOnBoardUser(t *testing.T) {
 	assert := assert.New(t)
-	auth := Auth{}
+	ctx := orm.Context()
+	auth := Auth{
+		userMgr: userpkg.New(),
+	}
 	um1 := &models.User{
 		Username: " ",
 	}
@@ -96,11 +107,11 @@ func TestOnBoardUser(t *testing.T) {
 	um2 := &models.User{
 		Username: "test   ",
 	}
-	user2, _ := dao.GetUser(models.User{Username: "test"})
+	user2, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Nil(user2)
 	err2 := auth.OnBoardUser(um2)
 	assert.Nil(err2)
-	user, _ := dao.GetUser(models.User{Username: "test"})
+	user, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal("test", user.Realname)
 	assert.Equal("test", user.Username)
 	assert.Equal("", user.Email)
@@ -110,7 +121,9 @@ func TestOnBoardUser(t *testing.T) {
 
 func TestPostAuthenticate(t *testing.T) {
 	assert := assert.New(t)
-	auth := Auth{}
+	auth := Auth{
+		userMgr: userpkg.New(),
+	}
 	um := &models.User{
 		Username: "test",
 	}
@@ -119,15 +132,16 @@ func TestPostAuthenticate(t *testing.T) {
 	um2 := &models.User{
 		Username: "test",
 	}
+	ctx := orm.Context()
 	assert.Nil(err)
-	user, _ := dao.GetUser(models.User{Username: "test"})
+	user, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal("", user.Email)
 	um2.Email = "newEmail@new.com"
 	um2.Realname = "newName"
 	err2 := auth.PostAuthenticate(um2)
 	assert.Equal(user.UserID, um2.UserID)
 	assert.Nil(err2)
-	user2, _ := dao.GetUser(models.User{Username: "test"})
+	user2, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal("newEmail@new.com", user2.Email)
 	assert.Equal("newName", user2.Realname)
 	// need a new user model to simulate a login case...
@@ -136,7 +150,7 @@ func TestPostAuthenticate(t *testing.T) {
 	}
 	err3 := auth.PostAuthenticate(um3)
 	assert.Nil(err3)
-	user3, _ := dao.GetUser(models.User{Username: "test"})
+	user3, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal(user3.UserID, um3.UserID)
 	assert.Equal("", user3.Email)
 	assert.Equal("test", user3.Realname)

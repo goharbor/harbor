@@ -1,14 +1,16 @@
 package authproxy
 
 import (
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/authentication/v1beta1"
 	"k8s.io/client-go/rest"
-	"os"
-	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -27,16 +29,18 @@ func TestUserFromReviewStatus(t *testing.T) {
 		adminInAuth bool
 	}
 	cases := []struct {
-		input       v1beta1.TokenReviewStatus
-		adminGroups []string
-		expect      result
+		input          v1beta1.TokenReviewStatus
+		adminGroups    []string
+		adminUsernames []string
+		expect         result
 	}{
 		{
 			input: v1beta1.TokenReviewStatus{
 				Authenticated: false,
 				Error:         "connection error",
 			},
-			adminGroups: []string{"admin"},
+			adminGroups:    []string{"admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr: true,
 			},
@@ -49,7 +53,8 @@ func TestUserFromReviewStatus(t *testing.T) {
 					UID:      "u-1",
 				},
 			},
-			adminGroups: []string{"admin"},
+			adminGroups:    []string{"admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr:      false,
 				username:    "jack",
@@ -66,7 +71,8 @@ func TestUserFromReviewStatus(t *testing.T) {
 				},
 				Error: "",
 			},
-			adminGroups: []string{"group2", "admin"},
+			adminGroups:    []string{"group2", "admin"},
+			adminUsernames: []string{},
 			expect: result{
 				hasErr:      false,
 				username:    "daniel",
@@ -83,17 +89,18 @@ func TestUserFromReviewStatus(t *testing.T) {
 				},
 				Error: "",
 			},
-			adminGroups: []string{},
+			adminGroups:    []string{},
+			adminUsernames: []string{"daniel", "admin"},
 			expect: result{
 				hasErr:      false,
 				username:    "daniel",
 				groupLen:    2,
-				adminInAuth: false,
+				adminInAuth: true,
 			},
 		},
 	}
 	for _, c := range cases {
-		u, err := UserFromReviewStatus(c.input, c.adminGroups)
+		u, err := UserFromReviewStatus(c.input, c.adminGroups, c.adminUsernames)
 		if c.expect.hasErr == true {
 			assert.NotNil(t, err)
 		} else {
@@ -105,7 +112,7 @@ func TestUserFromReviewStatus(t *testing.T) {
 		if u != nil {
 			for _, gid := range u.GroupIDs {
 				t.Logf("Deleting group %d", gid)
-				if err := group.DeleteUserGroup(gid); err != nil {
+				if err := usergroup.Mgr.Delete(orm.Context(), gid); err != nil {
 					panic(err)
 				}
 			}

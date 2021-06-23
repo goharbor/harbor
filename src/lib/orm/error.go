@@ -56,10 +56,10 @@ func AsNotFoundError(err error, messageFormat string, args ...interface{}) *erro
 	return nil
 }
 
-// AsConflictError checks whether the err is duplicate key error. If it it, wrap it
+// AsConflictError checks whether the err is duplicate key error. If it is, wrap it
 // as a src/internal/error.Error with conflict error code, else return nil
 func AsConflictError(err error, messageFormat string, args ...interface{}) *errors.Error {
-	if isDuplicateKeyError(err) {
+	if IsDuplicateKeyError(err) {
 		e := errors.New(err).
 			WithCode(errors.ConflictCode).
 			WithMessage(messageFormat, args...)
@@ -80,7 +80,8 @@ func AsForeignKeyError(err error, messageFormat string, args ...interface{}) *er
 	return nil
 }
 
-func isDuplicateKeyError(err error) bool {
+// IsDuplicateKeyError check the duplicate key error
+func IsDuplicateKeyError(err error) bool {
 	var pqErr *pq.Error
 	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
 		return true

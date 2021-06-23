@@ -16,11 +16,12 @@ package api
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/utils/email"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -52,9 +53,10 @@ func (e *EmailAPI) Ping() {
 	var host, username, password, identity string
 	var port int
 	var ssl, insecure bool
+	ctx := orm.Context()
 	body := e.Ctx.Input.CopyBody(1 << 32)
 	if body == nil || len(body) == 0 {
-		cfg, err := config.Email()
+		cfg, err := config.Email(ctx)
 		if err != nil {
 			log.Errorf("failed to get email configurations: %v", err)
 			e.SendInternalServerError(err)
@@ -88,7 +90,7 @@ func (e *EmailAPI) Ping() {
 		}
 
 		if settings.Password == nil {
-			cfg, err := config.Email()
+			cfg, err := config.Email(ctx)
 			if err != nil {
 				log.Errorf("failed to get email configurations: %v", err)
 				e.SendInternalServerError(err)

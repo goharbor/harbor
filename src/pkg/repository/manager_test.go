@@ -16,11 +16,12 @@ package repository
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
+	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/testing/pkg/repository/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {
@@ -45,12 +46,12 @@ func (m *managerTestSuite) TestCount() {
 }
 
 func (m *managerTestSuite) TestList() {
-	repository := &models.RepoRecord{
+	repository := &model.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{repository}, nil)
 	rpers, err := m.mgr.List(context.Background(), nil)
 	m.Nil(err)
 	m.Equal(1, len(rpers))
@@ -58,7 +59,7 @@ func (m *managerTestSuite) TestList() {
 }
 
 func (m *managerTestSuite) TestGet() {
-	repository := &models.RepoRecord{
+	repository := &model.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
@@ -72,12 +73,12 @@ func (m *managerTestSuite) TestGet() {
 }
 
 func (m *managerTestSuite) TestGetByName() {
-	repository := &models.RepoRecord{
+	repository := &model.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.RepoRecord{repository}, nil)
 	repo, err := m.mgr.GetByName(context.Background(), "library/hello-world")
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
@@ -87,7 +88,7 @@ func (m *managerTestSuite) TestGetByName() {
 
 func (m *managerTestSuite) TestCreate() {
 	m.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	_, err := m.mgr.Create(context.Background(), &models.RepoRecord{})
+	_, err := m.mgr.Create(context.Background(), &model.RepoRecord{})
 	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
@@ -101,7 +102,7 @@ func (m *managerTestSuite) TestDelete() {
 
 func (m *managerTestSuite) TestUpdate() {
 	m.dao.On("Update", mock.Anything, mock.Anything).Return(nil)
-	err := m.mgr.Update(context.Background(), &models.RepoRecord{})
+	err := m.mgr.Update(context.Background(), &model.RepoRecord{})
 	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
@@ -114,12 +115,12 @@ func (m *managerTestSuite) TestAddPullCount() {
 }
 
 func (m *managerTestSuite) TestNonEmptyRepos() {
-	repository := &models.RepoRecord{
+	repository := &model.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("NonEmptyRepos", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	m.dao.On("NonEmptyRepos", mock.Anything).Return([]*model.RepoRecord{repository}, nil)
 	repo, err := m.mgr.NonEmptyRepos(nil)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())

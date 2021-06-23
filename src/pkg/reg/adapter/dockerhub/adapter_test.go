@@ -41,6 +41,7 @@ func TestInfo(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 1, len(info.SupportedResourceTypes))
 	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.RepositoryPathComponentTypeOnlyTwo, info.SupportedRepositoryPathComponentType)
 }
 
 func TestListCandidateNamespaces(t *testing.T) {

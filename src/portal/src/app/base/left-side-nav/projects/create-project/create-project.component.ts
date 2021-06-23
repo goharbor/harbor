@@ -24,18 +24,19 @@ import {
     SimpleChanges, AfterViewInit, ElementRef
 } from "@angular/core";
 import { NgForm, Validators } from "@angular/forms";
-import { fromEvent, Subscription } from "rxjs";
+import { forkJoin, fromEvent, Observable, Subscription } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { Project } from "../../../project/project";
 import { QuotaUnits, QuotaUnlimited } from "../../../../shared/entities/shared.const";
-import { Endpoint, ProjectService, QuotaHardInterface } from '../../../../shared/services';
+import { QuotaHardInterface } from '../../../../shared/services';
 import { clone, getByte, GetIntegerAndUnit, validateLimit } from "../../../../shared/units/utils";
-import { HttpParams } from '@angular/common/http';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
-import { EndpointService } from "../../../../shared/services/endpoint.service";
+import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
+import { RegistryService } from "../../../../../../ng-swagger-gen/services/registry.service";
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
 
-
+const PAGE_SIZE: number = 100;
 @Component({
   selector: "create-project",
   templateUrl: "create-project.component.html",
@@ -75,13 +76,13 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
   @ViewChild('projectName') projectNameInput: ElementRef;
   checkNameSubscribe: Subscription;
 
-  registries: Endpoint[] = [];
-  supportedRegistryTypeQueryString: string = "type={docker-hub harbor azure-acr aws-ecr google-gcr quay}";
+  registries: Registry[] = [];
+  supportedRegistryTypeQueryString: string = "type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry}";
 
   constructor(private projectService: ProjectService,
               private translateService: TranslateService,
               private messageHandlerService: MessageHandlerService,
-              private endpointService: EndpointService) {
+              private endpointService: RegistryService) {
   }
 
     ngOnInit(): void {
@@ -91,14 +92,41 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
     }
 
     getRegistries() {
-      this.endpointService.getEndpoints(null, new HttpParams().set('q', this.supportedRegistryTypeQueryString))
-        .subscribe(targets => {
-          if (targets && targets.length) {
-            this.registries = targets;
+      this.endpointService.listRegistriesResponse({
+        page: 1,
+        pageSize: PAGE_SIZE,
+        q: this.supportedRegistryTypeQueryString
+      }).subscribe(result => {
+        // Get total count
+        if (result.headers) {
+          const xHeader: string = result.headers.get("X-Total-Count");
+          const totalCount = parseInt(xHeader, 0);
+          let arr = result.body || [];
+          if (totalCount <= PAGE_SIZE) { // already gotten all Registries
+            this.registries = result.body || [];
+          } else { // get all the registries in specified times
+            const times: number = Math.ceil(totalCount / PAGE_SIZE);
+            const observableList: Observable<Registry[]>[] = [];
+            for (let i = 2; i <= times; i++) {
+              observableList.push( this.endpointService.listRegistries({
+                page: i,
+                pageSize: PAGE_SIZE,
+                q: this.supportedRegistryTypeQueryString
+              }));
+            }
+            forkJoin(observableList).subscribe(res => {
+              if (res && res.length) {
+                res.forEach(item => {
+                  arr = arr.concat(item);
+                });
+                this.registries = arr;
+              }
+            });
           }
-        }, error => {
-          this.messageHandlerService.handleError(error);
-        });
+        }
+      }, error => {
+        this.messageHandlerService.error(error);
+      });
     }
 
   ngAfterViewInit(): void {
@@ -114,11 +142,13 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
                     // Check exiting from backend
                     this.checkOnGoing = true;
                     this.isNameExisted = false;
-                    return this.projectService.checkProjectExists(name);
+                    return this.projectService.listProjects({
+                      q: encodeURIComponent(`name=${name}`)
+                    });
                 })).subscribe(response => {
                 // Project existing
-                if (!(response && response.status === 404)) {
-                    this.isNameExisted = true;
+                if (response && response.length) {
+                  this.isNameExisted = true;
                 }
                 this.checkOnGoing = false;
             }, error => {
@@ -188,7 +218,16 @@ export class CreateProjectComponent implements  OnInit, AfterViewInit, OnChanges
     this.isSubmitOnGoing = true;
     const storageByte = +this.storageLimit === QuotaUnlimited ? this.storageLimit : getByte(+this.storageLimit, this.storageLimitUnit);
     this.projectService
-      .createProject(this.project.name, this.project.metadata, +storageByte, this.project.registry_id)
+      .createProject({
+        project: {
+          project_name: this.project.name,
+          metadata: {
+            public: this.project.metadata.public ? 'true' : 'false'
+          },
+          storage_limit: +storageByte,
+          registry_id: +this.project.registry_id
+        }
+      })
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;

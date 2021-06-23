@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth/authproxy"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -25,7 +26,7 @@ type AuthProxyController struct {
 
 // Prepare checks the auth mode and fail early
 func (apc *AuthProxyController) Prepare() {
-	am, err := config.AuthMode()
+	am, err := config.AuthMode(orm.Context())
 	if err != nil {
 		apc.SendInternalServerError(err)
 		return

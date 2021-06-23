@@ -19,18 +19,18 @@ func init() {
 
 }
 
-func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, data string) (err error) {
+func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, sc *job.StatusChange) (err error) {
 	taskID := t.ID
 	status := t.Status
 	log.Debugf("received retention task status update event: task-%d, status-%s", taskID, status)
 	// handle checkin
-	if data != "" {
+	if sc.CheckIn != "" {
 		var retainObj struct {
 			Total    int                `json:"total"`
 			Retained int                `json:"retained"`
 			Deleted  []*selector.Result `json:"deleted"`
 		}
-		if err := json.Unmarshal([]byte(data), &retainObj); err != nil {
+		if err := json.Unmarshal([]byte(sc.CheckIn), &retainObj); err != nil {
 			log.Errorf("failed to resolve checkin of retention task %d: %v", taskID, err)
 
 			return err

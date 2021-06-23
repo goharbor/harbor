@@ -102,3 +102,11 @@ func TestMatchCatalogURLPattern(t *testing.T) {
 		assert.Equal(t, c.match, V2CatalogURLRe.MatchString(c.url), "failed for %s", c.url)
 	}
 }
+
+func TestRepositoryNamePattern(t *testing.T) {
+	assert := assert.New(t)
+	assert.False(RepositoryNameRe.MatchString("a/*"))
+	assert.False(RepositoryNameRe.MatchString("a/"))
+	assert.True(RepositoryNameRe.MatchString("a/b"))
+	assert.True(RepositoryNameRe.MatchString("a"))
+}

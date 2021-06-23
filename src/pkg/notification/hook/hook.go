@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"time"
 
 	cJob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
 	cModels "github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification/job"

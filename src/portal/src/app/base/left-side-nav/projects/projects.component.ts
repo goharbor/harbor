@@ -24,6 +24,7 @@ import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/op
 import { Project } from '../../project/project';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ProjectTypes } from "../../../shared/entities/shared.const";
+import { getSortingString } from "../../../shared/units/utils";
 
 @Component({
   selector: 'projects',
@@ -87,7 +88,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
                   passInFilteredType = this.listProject.filteredType - 1;
               }
             return this.proService.listProjects( this.listProject.searchKeyword,
-                passInFilteredType,  this.listProject.currentPage, this.listProject.pageSize)
+                passInFilteredType,  this.listProject.currentPage, this.listProject.pageSize, getSortingString(this.listProject.state))
                 .pipe(finalize(() => {
                   this.loading = false;
                 }));

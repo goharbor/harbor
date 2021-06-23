@@ -15,29 +15,25 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
-	"html/template"
-	"net"
 	"net/http"
 	"os"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
+	o "github.com/astaxie/beego/orm"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils"
-	email_util "github.com/goharbor/harbor/src/common/utils/email"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -64,18 +60,18 @@ func redirectForOIDC(ctx context.Context, username string) bool {
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return false
 	}
-	u, err := dao.GetUser(models.User{Username: username})
+	u, err := user.Ctl.GetByName(ctx, username)
 	if err != nil {
 		log.Warningf("Failed to get user by name: %s, error: %v", username, err)
 	}
 	if u == nil {
 		return true
 	}
-	ou, err := dao.GetOIDCUserByUserID(u.UserID)
+	us, err := user.Ctl.Get(ctx, u.UserID, &user.Option{WithOIDCInfo: true})
 	if err != nil {
 		log.Warningf("Failed to get OIDC user info for user, id: %d, error: %v", u.UserID, err)
 	}
-	if ou != nil {
+	if us != nil && us.OIDCUserMeta != nil {
 		return true
 	}
 	return false
@@ -123,11 +119,12 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
-	flag, err := config.SelfRegistration()
+	ctx := orm.NewContext(cc.Ctx.Request.Context(), o.NewOrm())
+	flag, err := config.SelfRegistration(ctx)
 	if err != nil {
 		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
 	}
-	securityCtx, ok := security.FromContext(cc.Ctx.Request.Context())
+	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
 		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
@@ -136,160 +133,21 @@ func (cc *CommonController) UserExists() {
 	target := cc.GetString("target")
 	value := cc.GetString("value")
 
-	user := models.User{}
+	var query *q.Query
 	switch target {
 	case "username":
-		user.Username = value
+		query = q.New(q.KeyWords{"Username": value})
 	case "email":
-		user.Email = value
+		query = q.New(q.KeyWords{"Email": value})
 	}
 
-	exist, err := dao.UserExists(user, target)
+	n, err := user.Ctl.Count(ctx, query)
 	if err != nil {
 		log.Errorf("Error occurred in UserExists: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	cc.Data["json"] = exist
+	cc.Data["json"] = n > 0
 	cc.ServeJSON()
-}
-
-// SendResetEmail verifies the Email address and contact SMTP server to send reset password Email.
-func (cc *CommonController) SendResetEmail() {
-
-	email := cc.GetString("email")
-
-	valid, err := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, email)
-	if err != nil {
-		log.Errorf("failed to match regexp: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
-	if !valid {
-		cc.CustomAbort(http.StatusBadRequest, "invalid email")
-	}
-
-	queryUser := models.User{Email: email}
-	u, err := dao.GetUser(queryUser)
-	if err != nil {
-		log.Errorf("Error occurred in GetUser: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if u == nil {
-		log.Debugf("email %s not found", email)
-		cc.CustomAbort(http.StatusNotFound, "email_does_not_exist")
-	}
-
-	if !isUserResetable(u) {
-		log.Errorf("Resetting password for user with ID: %d is not allowed", u.UserID)
-		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	}
-
-	uuid := utils.GenerateRandomString()
-	user := models.User{ResetUUID: uuid, Email: email}
-	if err = dao.UpdateUserResetUUID(user); err != nil {
-		log.Errorf("failed to update user reset UUID: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	messageTemplate, err := template.ParseFiles("views/reset-password-mail.tpl")
-	if err != nil {
-		log.Errorf("Parse email template file failed: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, err.Error())
-	}
-
-	message := new(bytes.Buffer)
-
-	harborURL, err := config.ExtEndpoint()
-	if err != nil {
-		log.Errorf("failed to get domain name: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	err = messageTemplate.Execute(message, messageDetail{
-		Hint: cc.Tr("reset_email_hint"),
-		URL:  harborURL,
-		UUID: uuid,
-	})
-
-	if err != nil {
-		log.Errorf("Message template error: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
-	}
-
-	settings, err := config.Email()
-	if err != nil {
-		log.Errorf("failed to get email configurations: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "internal_error")
-	}
-
-	addr := net.JoinHostPort(settings.Host, strconv.Itoa(settings.Port))
-	err = email_util.Send(addr,
-		settings.Identity,
-		settings.Username,
-		settings.Password,
-		60, settings.SSL,
-		settings.Insecure,
-		settings.From,
-		[]string{u.Email},
-		"Reset Harbor user password",
-		message.String())
-	if err != nil {
-		log.Errorf("Send email failed: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "send_email_failed")
-	}
-}
-
-// ResetPassword handles request from the reset page and reset password
-func (cc *CommonController) ResetPassword() {
-
-	resetUUID := cc.GetString("reset_uuid")
-	if resetUUID == "" {
-		cc.CustomAbort(http.StatusBadRequest, "Reset uuid is blank.")
-	}
-
-	queryUser := models.User{ResetUUID: resetUUID}
-	user, err := dao.GetUser(queryUser)
-
-	if err != nil {
-		log.Errorf("Error occurred in GetUser: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if user == nil {
-		log.Error("User does not exist")
-		cc.CustomAbort(http.StatusBadRequest, "User does not exist")
-	}
-
-	if !isUserResetable(user) {
-		log.Errorf("Resetting password for user with ID: %d is not allowed", user.UserID)
-		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
-	}
-
-	rawPassword := cc.GetString("password")
-
-	if rawPassword != "" {
-		err = dao.ResetUserPassword(*user, rawPassword)
-		if err != nil {
-			log.Errorf("Error occurred in ResetUserPassword: %v", err)
-			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
-	} else {
-		cc.CustomAbort(http.StatusBadRequest, "password_is_required")
-	}
-}
-
-func isUserResetable(u *models.User) bool {
-	if u == nil {
-		return false
-	}
-	mode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("Failed to get the auth mode, error: %v", err)
-		return false
-	}
-	if mode == common.DBAuth {
-		return true
-	}
-	return u.UserID == 1
 }
 
 func init() {

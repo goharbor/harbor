@@ -3,10 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 const (
@@ -17,7 +19,7 @@ const (
 // ChartLabelAPI handles the requests of marking/removing labels to/from charts.
 type ChartLabelAPI struct {
 	LabelResourceAPI
-	project       *models.Project
+	project       *proModels.Project
 	chartFullName string
 }
 
@@ -63,7 +65,7 @@ func (cla *ChartLabelAPI) MarkLabel() {
 		return
 	}
 
-	l := &models.Label{}
+	l := &model.Label{}
 	if err := cla.DecodeJSONReq(l); err != nil {
 		cla.SendBadRequestError(err)
 		return

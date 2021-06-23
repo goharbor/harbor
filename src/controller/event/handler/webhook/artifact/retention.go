@@ -3,14 +3,15 @@ package artifact
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/retention"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"strings"
+
+	"github.com/goharbor/harbor/src/controller/retention"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	evtModel "github.com/goharbor/harbor/src/controller/event/model"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -28,7 +29,7 @@ func (r *RetentionHandler) Name() string {
 
 // Handle ...
 func (r *RetentionHandler) Handle(ctx context.Context, value interface{}) error {
-	if !config.NotificationEnable() {
+	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
 	}

@@ -1,0 +1,32 @@
+.head {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+}
+.card{
+  width: 10rem;
+  margin-right: 0.5rem;
+  margin-top: 0;
+}
+.flex-end {
+  justify-content: flex-end;
+}
+.font-weight-700 {
+  font-weight: 700;
+}
+.storage-used {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.size-number {
+  font-size: 1.5rem;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.margin-right-5px {
+  margin-right: 5px;
+}

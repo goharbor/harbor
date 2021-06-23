@@ -1,44 +1,46 @@
-<div class="row flex-items-xs-between flex-items-xs-middle">
-    <div></div>
-    <div id="right_statistic_panel">
-        <div class="statistic-block">
-            <div class="statistic-column-block">
-                <div>
-                    <span class="statistic-column-title statistic-column-title-pro">{{'STATISTICS.PRO_ITEM' | translate }}</span>
-                </div>
-                <div>
-                    <span class="statistic-column-title statistic-column-title-repo">{{'STATISTICS.REPO_ITEM' | translate }}</span>
-                </div>
+<div class="clr-row flex-end">
+    <div class="card">
+        <div class="card-block">
+            <h4 class="head">{{'STATISTICS.PRO_ITEM' | translate }}</h4>
+            <div class="clr-row" *ngIf="isValidSession">
+                <div class="clr-col">{{"STATISTICS.INDEX_PRIVATE" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.private_project_count}}</div>
             </div>
-            <div class="statistic-column-block">
-                <div>
-                    <statistics [data]='originalCopy.private_project_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
-                </div>
-                <div>
-                    <statistics [data]='originalCopy.private_repo_count' [label]='"STATISTICS.INDEX_PRIVATE" | translate'></statistics>
-                </div>
+            <div class="clr-row">
+                <div class="clr-col">{{"STATISTICS.INDEX_PUB" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.public_project_count}}</div>
             </div>
-            <div class="statistic-column-block">
-                <div>
-                    <statistics [data]='originalCopy.public_project_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
-                </div>
-                <div>
-                    <statistics [data]='originalCopy.public_repo_count' [label]='"STATISTICS.INDEX_PUB" | translate'></statistics>
-                </div>
-            </div>
-            <div class="statistic-column-block">
-                <div>
-                    <statistics [data]='originalCopy.total_project_count' [label]='"STATISTICS.INDEX_TOTAL" | translate' *ngIf="isValidSession"></statistics>
-                </div>
-                <div>
-                    <statistics [data]='originalCopy.total_repo_count' [label]='"STATISTICS.INDEX_TOTAL" | translate' *ngIf="isValidSession"></statistics>
-                </div>
+            <div class="clr-row" *ngIf="isValidSession">
+                <div class="clr-col">{{"STATISTICS.INDEX_TOTAL" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.total_project_count}}</div>
             </div>
         </div>
-        <div class="statistic-item-divider" [hidden]="!isValidSession || !isValidStorage"></div>
-        <div class="statistic-block" [hidden]="!isValidSession || !isValidStorage">
-            <esxc-gauge [free]="freeStorage" [threasHold]="totalStorage" [size]="small" [title]='"STATISTICS.STORAGE"' [animate]="true">
-            </esxc-gauge>
+    </div>
+    <div class="card">
+        <div class="card-block">
+            <h4 class="head">{{'STATISTICS.REPO_ITEM' | translate }}</h4>
+            <div class="clr-row" *ngIf="isValidSession">
+                <div class="clr-col">{{"STATISTICS.INDEX_PRIVATE" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.private_repo_count}}</div>
+            </div>
+            <div class="clr-row">
+                <div class="clr-col">{{"STATISTICS.INDEX_PUB" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.public_repo_count}}</div>
+            </div>
+            <div class="clr-row" *ngIf="isValidSession">
+                <div class="clr-col">{{"STATISTICS.INDEX_TOTAL" | translate}}</div>
+                <div class="clr-col font-weight-700">{{originalCopy?.total_repo_count}}</div>
+            </div>
+        </div>
+    </div>
+    <div class="card" *ngIf="isValidSession">
+        <div class="card-block container">
+            <h4 class="head">{{'STATISTICS.STORAGE_USED' | translate }}</h4>
+            <div class="storage-used font-weight-700">
+                <div>
+                    <span class="size-number margin-right-5px">{{getSizeNumber()}}</span><span>{{getSizeUnit()}}</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

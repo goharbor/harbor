@@ -1,13 +1,6 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  ViewChild,
-  Output,
-  EventEmitter,
-} from "@angular/core";
-import { Webhook } from "../webhook";
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, } from "@angular/core";
 import { AddWebhookFormComponent } from "../add-webhook-form/add-webhook-form.component";
+import { WebhookPolicy } from "../../../../../../ng-swagger-gen/models/webhook-policy";
 
 @Component({
   selector: 'add-webhook',
@@ -21,12 +14,12 @@ export class AddWebhookComponent implements OnInit {
   staticBackdrop: boolean = true;
 
   @Input() projectId: number;
-   webhook: Webhook;
+   webhook: WebhookPolicy;
   @Input()
   metadata: any;
   @ViewChild(AddWebhookFormComponent)
   addWebhookFormComponent: AddWebhookFormComponent;
-  @Output() notify = new EventEmitter<Webhook>();
+  @Output() notify = new EventEmitter<WebhookPolicy>();
 
   constructor() { }
 

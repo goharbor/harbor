@@ -15,8 +15,20 @@
 package models
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/astaxie/beego/orm"
+	"time"
 )
 
-// ProjectMetadata ...
-type ProjectMetadata = models.ProjectMetadata
+func init() {
+	orm.RegisterModel(new(ProjectMetadata))
+}
+
+// ProjectMetadata holds the metadata of a project.
+type ProjectMetadata struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
+	Name         string    `orm:"column(name)" json:"name"`
+	Value        string    `orm:"column(value)" json:"value"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}

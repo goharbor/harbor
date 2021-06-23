@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.15.6
+#							golang:1.15.12
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -74,6 +74,8 @@ PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 
 # parameters
+# default is true
+BUILD_PG96=true
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
@@ -91,9 +93,14 @@ GEN_TLS=
 # for docker image tag
 VERSIONTAG=dev
 # for base docker image tag
-PUSHBASEIMAGE=
+BUILD_BASE=true
+PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
+BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
 BASEIMAGENAMESPACE=goharbor
+# #input true/false only
+PULL_BASE_FROM_DOCKERHUB=true
+
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -103,21 +110,21 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.7.1-patch-2819-2553-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.16.0
-TRIVYADAPTERVERSION=v0.18.0
-
-# version of chartmuseum
-CHARTMUSEUMVERSION=v0.12.0-redis
+TRIVYVERSION=v0.17.2
+TRIVYADAPTERVERSION=v0.19.0
 
 # version of chartmuseum for pulling the source code
-CHARTMUSEUM_SRC_TAG=v0.12.0
+CHARTMUSEUM_SRC_TAG=v0.13.1
+
+# version of chartmuseum
+CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.7.1
 
 # dependency binaries
 CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
-NORARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
+NOTARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
@@ -149,7 +156,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.15.6
+GOBUILDIMAGE=golang:1.15.12
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -248,7 +255,7 @@ ZIPCMD=$(shell which gzip)
 DOCKERIMGFILE=harbor
 HARBORPKG=harbor
 
-# pushimage
+# pull/push image
 PUSHSCRIPTPATH=$(MAKEPATH)
 PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=
@@ -294,16 +301,33 @@ ifeq ($(CHARTFLAG), true)
 	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(VERSIONTAG)
 endif
 
-SWAGGER_IMAGENAME=goharbor/swagger
-SWAGGER_VERSION=v0.21.0
-SWAGGER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
-SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC
-SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
 
-SWAGGER_IMAGENAME:
-	@if [ "$(shell ${DOCKERIMAGES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
-		${SWAGGER_IMAGE_BUILD_CMD} && echo "build swagger image successfully" || (echo "build swagger image failed" && exit 1) ; \
+RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
+
+# $1 the name of the docker image
+# $2 the tag of the docker image
+# $3 the command to build the docker image
+define prepare_docker_image
+	@if [ "$(shell ${DOCKERIMAGES} -q $(1):$(2) 2> /dev/null)" == "" ]; then \
+		$(3) && echo "build $(1):$(2) successfully" || (echo "build $(1):$(2) failed" && exit 1) ; \
 	fi
+endef
+
+# lint swagger doc
+SPECTRAL_IMAGENAME=goharbor/spectral
+SPECTRAL_VERSION=v5.9.1
+SPECTRAL_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/spectral/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SPECTRAL_VERSION=${SPECTRAL_VERSION} -t ${SPECTRAL_IMAGENAME}:$(SPECTRAL_VERSION) .
+SPECTRAL=$(RUNCONTAINER) $(SPECTRAL_IMAGENAME):$(SPECTRAL_VERSION)
+
+lint_apis:
+	$(call prepare_docker_image,${SPECTRAL_IMAGENAME},${SPECTRAL_VERSION},${SPECTRAL_IMAGE_BUILD_CMD})
+	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
+
+SWAGGER_IMAGENAME=goharbor/swagger
+SWAGGER_VERSION=v0.25.0
+SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
+SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
+SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
 
 # $1 the path of swagger spec
 # $2 the path of base directory for generating the files
@@ -315,21 +339,18 @@ define swagger_generate_server
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
 endef
 
-gen_apis: SWAGGER_IMAGENAME
+gen_apis: lint_apis
+	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
 
 MOCKERY_IMAGENAME=goharbor/mockery
 MOCKERY_VERSION=v2.1.0
-MOCKERY=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
+MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
-MOCKERY_IMAGE:
-	@if [ "$(shell ${DOCKERIMAGES} -q ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) 2> /dev/null)" == "" ]; then \
-		${MOCKERY_IMAGE_BUILD_CMD} && echo "build mockery image successfully" || (echo "build mockery image failed" && exit 1) ; \
-	fi
-
-gen_mocks: MOCKERY_IMAGE
+gen_mocks:
+	$(call prepare_docker_image,${MOCKERY_IMAGENAME},${MOCKERY_VERSION},${MOCKERY_IMAGE_BUILD_CMD})
 	${MOCKERY} go generate ./...
 
 mocks_check: gen_mocks
@@ -391,6 +412,19 @@ prepare: update_prepare_version
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
+# PUSHBASEIMAGE should not be true if BUILD_BASE is not true
+	@if [ "$(PULL_BASE_FROM_DOCKERHUB)" != "true" ] && [ "$(PULL_BASE_FROM_DOCKERHUB)" != "false" ] ; then \
+		echo set PULL_BASE_FROM_DOCKERHUB to true or false.; exit 1; \
+	fi
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
+		echo Do not push base images since no base images built. ; \
+		exit 1; \
+	fi
+# PULL_BASE_FROM_DOCKERHUB should be true if BUILD_BASE is not true
+	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PULL_BASE_FROM_DOCKERHUB)" = "false" ] ; then \
+		echo Should pull base images from registry in docker configuration since no base images built. ; \
+		exit 1; \
+	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
 	 -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
@@ -399,8 +433,11 @@ build:
 	 -e BUILDBIN=$(BUILDBIN) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
-	 -e CHARTURL=$(CHARTURL) -e NORARYURL=$(NORARYURL) -e REGISTRYURL=$(REGISTRYURL) \
-	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL)
+	 -e CHARTURL=$(CHARTURL) -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
+	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
+	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
+	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e BUILD_PG96=$(BUILD_PG96)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
@@ -411,17 +448,30 @@ build_base_docker:
 	else \
 		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
 	fi
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter; do \
+	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . && \
-		if [ -n "$(PUSHBASEIMAGE)" ] ; then \
+		if [ $$name == "db" ]; then \
+		    make _build_base_db ; \
+		else \
+			$(DOCKERBUILD) --build-arg BUILD_PG96=$(BUILD_PG96) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		fi ; \
+		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
 	done
 
+_build_base_db:
+	@if [ "$(BUILD_PG96)" = "true" ] ; then \
+		echo "build pg96 rpm package." ; \
+		cd $(MAKEFILEPATH_PHOTON)/db && $(MAKEFILEPATH_PHOTON)/db/rpm_builder.sh && cd - ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.pg96 -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+  	else \
+ 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+  	fi
+
 pull_base_docker:
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done
@@ -572,7 +622,7 @@ cleanbinary:
 
 cleanbaseimage:
 	@echo "cleaning base image for photon..."
-	@for name in chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+	@for name in $(BUILDBASETARGET); do \
 		$(DOCKERRMIMAGE) -f $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
 	done
 

@@ -136,6 +136,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
       if (result.headers) {
         const xHeader: string = result.headers.get("X-Total-Count");
         const totalCount = parseInt(xHeader, 0);
+        let arr = result.body || [];
         if (totalCount <= FIRST_PROJECTS_PAGE_SIZE) { // already gotten all projects
           if (this.newRobotComponent && this.newRobotComponent.listAllProjectsComponent) {
             this.newRobotComponent.listAllProjectsComponent.cachedAllProjects = result.body;
@@ -148,7 +149,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
         } else { // get all the projects in specified times
           const times: number = Math.ceil(totalCount / FIRST_PROJECTS_PAGE_SIZE);
           const observableList: Observable<Project[]>[] = [];
-          for (let i = 1; i <= times; i++) {
+          for (let i = 2; i <= times; i++) {
             observableList.push( this.projectService.listProjects({
               withDetail: false,
               page: i,
@@ -161,7 +162,6 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
             this.addBtnState = ClrLoadingState.ERROR;
           })).subscribe(res => {
             if (res && res.length) {
-              let arr = [];
               res.forEach(item => {
                 arr = arr.concat(item);
               });

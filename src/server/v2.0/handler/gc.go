@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"os"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/gc"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -63,6 +63,9 @@ func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCS
 }
 
 func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+	if parameters == nil {
+		parameters = make(map[string]interface{})
+	}
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
 	parameters["time_window"] = config.GetGCTimeWindow()

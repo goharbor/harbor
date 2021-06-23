@@ -11,35 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-  Component,
-  ElementRef,
-  Input, OnDestroy,
-  OnInit,
-  ViewChild,
-
-} from "@angular/core";
-import { forkJoin, Observable, Subject, of, Subscription } from "rxjs";
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, } from "@angular/core";
+import { forkJoin, Observable, of, Subject, Subscription } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { ClrLoadingState, ClrDatagridStateInterface, ClrDatagridComparatorInterface } from "@clr/angular";
+import { ClrDatagridComparatorInterface, ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 
 import { ActivatedRoute, Router } from "@angular/router";
-import {
-  Comparator, Label, LabelService, ScanningResultService,
-  UserPermissionService, USERSTATICPERMISSION,
-} from "../../../../../../../shared/services";
+import { Comparator, ScanningResultService, UserPermissionService, USERSTATICPERMISSION, } from "../../../../../../../shared/services";
 import {
   calculatePage,
   clone,
   CustomComparator,
-  DEFAULT_PAGE_SIZE,
-  formatSize,
-  VULNERABILITY_SCAN_STATUS,
   dbEncodeURIComponent,
-  doSorting,
+  DEFAULT_PAGE_SIZE,
   DEFAULT_SUPPORTED_MIME_TYPES,
-  getSortingString
+  doSorting,
+  formatSize,
+  getSortingString,
+  VULNERABILITY_SCAN_STATUS
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
@@ -47,18 +37,9 @@ import { ErrorHandler } from "../../../../../../../shared/units/error-handler";
 import { ArtifactService } from "../../../artifact.service";
 import { OperationService } from "../../../../../../../shared/components/operation/operation.service";
 import { ChannelService } from "../../../../../../../shared/services/channel.service";
-import {
-  ConfirmationButtons,
-  ConfirmationState,
-  ConfirmationTargets
-} from "../../../../../../../shared/entities/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../../shared/components/operation/operate";
-import {
-  ArtifactFront as Artifact,
-  mutipleFilter,
-  artifactPullCommands,
-  artifactDefault, ArtifactFront
-} from '../../../artifact';
+import { artifactDefault, ArtifactFront as Artifact, ArtifactFront, artifactPullCommands, mutipleFilter } from '../../../artifact';
 import { Project } from "../../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ADDITIONS } from "../../../artifact-additions/models";
@@ -68,6 +49,9 @@ import { errorHandler } from "../../../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../../global-confirmation-dialog/confirmation-state-message";
+import { UN_LOGGED_PARAM } from "../../../../../../../account/sign-in/sign-in.service";
+import { Label } from "../../../../../../../../../ng-swagger-gen/models/label";
+import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -76,6 +60,7 @@ export interface LabelState {
 }
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 const YES: string = 'yes';
+const PAGE_SIZE: number = 100;
 @Component({
   selector: 'artifact-list-tab',
   templateUrl: './artifact-list-tab.component.html',
@@ -408,8 +393,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
-            this.artifactList = doSorting<Artifact>(this.artifactList, state);
-
             this.getPullCommand(this.artifactList);
             this.getArtifactTagsAsync(this.artifactList);
             this.getIconsFromBackEnd();
@@ -438,21 +421,93 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       artifactPullCommands.forEach(artifactPullCommand => {
         if (artifactPullCommand.type === artifact.type) {
           artifact.pullCommand =
-          `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repoName}@${artifact.digest}`;
+          `${artifactPullCommand.pullCommand} ${this.registryUrl ?
+            this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}@${artifact.digest}`;
         }
       });
     });
   }
   getAllLabels(): void {
-    forkJoin(this.labelService.getGLabels(), this.labelService.getPLabels(this.projectId)).subscribe(results => {
-      results.forEach(labels => {
-        labels.forEach(data => {
+    // get all project labels
+    this.labelService.ListLabelsResponse({
+      pageSize: PAGE_SIZE,
+      page: 1,
+      scope: 'p',
+      projectId: this.projectId
+    }).subscribe(res => {
+      if (res.headers) {
+        const xHeader: string = res.headers.get("X-Total-Count");
+        const totalCount = parseInt(xHeader, 0);
+        let arr = res.body || [];
+        if (totalCount <= PAGE_SIZE) { // already gotten all project labels
+          if (arr && arr.length) {
+            arr.forEach(data => {
+              this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
+            });
+            this.imageFilterLabels = clone(this.imageLabels);
+            this.imageStickLabels = clone(this.imageLabels);
+          }
+        } else { // get all the project labels in specified times
+          const times: number = Math.ceil(totalCount / PAGE_SIZE);
+          const observableList: Observable<Label[]>[] = [];
+          for (let i = 2; i <= times; i++) {
+            observableList.push(this.labelService.ListLabels({
+              page: i,
+              pageSize: PAGE_SIZE,
+              scope: 'p',
+              projectId: this.projectId
+            }));
+          }
+          this.handleLabelRes(observableList, arr);
+        }
+      }
+    });
+    // get all global labels
+    this.labelService.ListLabelsResponse({
+      pageSize: PAGE_SIZE,
+      page: 1,
+      scope: 'g',
+    }).subscribe(res => {
+      if (res.headers) {
+        const xHeader: string = res.headers.get("X-Total-Count");
+        const totalCount = parseInt(xHeader, 0);
+        let arr = res.body || [];
+        if (totalCount <= PAGE_SIZE) { // already gotten all global labels
+          if (arr && arr.length) {
+            arr.forEach(data => {
+              this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
+            });
+            this.imageFilterLabels = clone(this.imageLabels);
+            this.imageStickLabels = clone(this.imageLabels);
+          }
+        } else { // get all the global labels in specified times
+          const times: number = Math.ceil(totalCount / PAGE_SIZE);
+          const observableList: Observable<Label[]>[] = [];
+          for (let i = 2; i <= times; i++) {
+            observableList.push(this.labelService.ListLabels({
+              page: i,
+              pageSize: PAGE_SIZE,
+              scope: 'g',
+            }));
+          }
+          this.handleLabelRes(observableList, arr);
+        }
+      }
+    });
+  }
+  handleLabelRes(observableList: Observable<Label[]>[], arr: Label[]) {
+    forkJoin(observableList).subscribe(response => {
+      if (response && response.length) {
+        response.forEach(item => {
+          arr = arr.concat(item);
+        });
+        arr.forEach(data => {
           this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
         });
-      });
-      this.imageFilterLabels = clone(this.imageLabels);
-      this.imageStickLabels = clone(this.imageLabels);
-    }, error => this.errorHandlerService.error(error));
+        this.imageFilterLabels = clone(this.imageLabels);
+        this.imageStickLabels = clone(this.imageLabels);
+      }
+    });
   }
 
   labelSelectedChange(artifact?: Artifact[]): void {
@@ -834,8 +889,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   goIntoArtifactSummaryPage(artifact: Artifact): void {
     const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {publicAndNotLogged: YES} });
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute, queryParams: {[UN_LOGGED_PARAM]: YES} });
     } else {
       this.router.navigate(relativeRouterLink , { relativeTo: this.activatedRoute });
     }
@@ -957,8 +1012,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       depth = artifact.digest;
     }
     const linkUrl = ['harbor', 'projects', this.projectId, 'repositories', this.repoName, 'depth', depth];
-    if (this.activatedRoute.snapshot.queryParams['publicAndNotLogged'] === YES) {
-      this.router.navigate(linkUrl, {queryParams: {publicAndNotLogged: YES}});
+    if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
+      this.router.navigate(linkUrl, {queryParams: {[UN_LOGGED_PARAM]: YES}});
     } else {
       this.router.navigate(linkUrl);
     }

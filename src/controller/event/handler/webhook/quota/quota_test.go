@@ -18,14 +18,15 @@ import (
 	"context"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"
@@ -64,7 +65,7 @@ func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
 		OccurAt:   time.Now().UTC(),
 		RepoName:  "hello-world",
 		Resource:  res,
-		Project: &models.Project{
+		Project: &proModels.Project{
 			ProjectID: 1,
 			Name:      "library",
 		},

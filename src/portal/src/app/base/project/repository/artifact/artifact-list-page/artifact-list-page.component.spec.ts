@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ArtifactListPageComponent } from './artifact-list-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -12,7 +12,6 @@ import { SessionService } from "../../../../../shared/services/session.service";
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { ArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 import { ArtifactDefaultService } from "../artifact.service";
-import { CURRENT_BASE_HREF } from "../../../../../shared/units/utils";
 
 describe('ArtifactListPageComponent', () => {
     let component: ArtifactListPageComponent;

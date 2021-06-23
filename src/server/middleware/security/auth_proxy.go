@@ -19,15 +19,16 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
+	pkguser "github.com/goharbor/harbor/src/pkg/user"
 )
 
 type authProxy struct{}
@@ -50,7 +51,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		log.Errorf("user name %s doesn't meet the auth proxy name pattern", proxyUserName)
 		return nil
 	}
-	httpAuthProxyConf, err := config.HTTPAuthProxySetting()
+	httpAuthProxyConf, err := config.HTTPAuthProxySetting(orm.Context())
 	if err != nil {
 		log.Errorf("failed to get auth proxy settings: %v", err)
 		return nil
@@ -64,29 +65,24 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return nil
 	}
-	user, err := dao.GetUser(models.User{
-		Username: rawUserName,
-	})
-	if err != nil {
-		log.Errorf("failed to get user %s: %v", rawUserName, err)
-		return nil
-	}
-	if user == nil {
+	user, err := pkguser.Mgr.GetByName(req.Context(), rawUserName)
+	if errors.IsNotFoundErr(err) {
 		// onboard user if it's not yet onboarded.
-		uid, err := auth.SearchAndOnBoardUser(rawUserName)
-		if err != nil {
+		uid, err2 := auth.SearchAndOnBoardUser(rawUserName)
+		if err2 != nil {
 			log.Errorf("failed to search and onboard user %s: %v", rawUserName, err)
 			return nil
 		}
-		user, err = dao.GetUser(models.User{
-			UserID: uid,
-		})
-		if err != nil {
+		user, err2 = pkguser.Mgr.Get(req.Context(), uid)
+		if err2 != nil {
 			log.Errorf("failed to get user, name: %s, ID: %d: %v", rawUserName, uid, err)
 			return nil
 		}
+	} else if err != nil {
+		log.Errorf("failed to get user %s: %v", rawUserName, err)
+		return nil
 	}
-	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus, httpAuthProxyConf.AdminGroups)
+	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus, httpAuthProxyConf.AdminGroups, httpAuthProxyConf.AdminUsernames)
 	if err != nil {
 		log.Errorf("failed to get user information from token review status: %v", err)
 		return nil

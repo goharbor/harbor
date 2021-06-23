@@ -1,12 +1,8 @@
-import {
-  Component,
-  Input,
-  OnInit,
-} from "@angular/core";
+import { Component, Input, OnInit, } from "@angular/core";
 import { AdditionsService } from "../additions.service";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import  * as yaml  from "js-yaml";
+import * as yaml from "js-yaml";
 import { finalize } from "rxjs/operators";
 import { isObject } from "../../../../../../shared/units/utils";
 

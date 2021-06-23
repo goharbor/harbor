@@ -21,12 +21,8 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	{{ range .DefaultImports -}}
-	{{ printf "%q" .}}
-	{{ end -}}
-	{{ range $key, $value := .Imports -}}
-	{{ $key }} {{ printf "%q" $value }}
-	{{ end -}}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 const (
@@ -72,7 +68,7 @@ func New(c Config) *{{ pascalize .Name }} {
 	cli := new({{ pascalize .Name }})
 	cli.Transport = transport
 	{{ range .OperationGroups -}}
-	cli.{{ pascalize .Name }} = {{ .Name }}.New(transport, strfmt.Default, c.AuthInfo)
+	  cli.{{ pascalize .Name }} = {{ .PackageAlias }}.New(transport, strfmt.Default, c.AuthInfo)
 	{{ end -}}
 
 	return cli
@@ -81,7 +77,7 @@ func New(c Config) *{{ pascalize .Name }} {
 // {{ pascalize .Name }} is a client for {{ humanize .Name }}
 type {{ pascalize .Name }} struct {
 	{{ range .OperationGroups -}}
-	{{ pascalize .Name }} *{{ snakize .Name }}.Client
+	  {{ pascalize .Name }} *{{ .PackageAlias }}.Client
 	{{ end -}}
 	Transport runtime.ClientTransport
 }

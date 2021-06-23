@@ -19,6 +19,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/dghubble/sling"
+	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job/test"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	"github.com/goharbor/harbor/src/lib/config"
+	libOrm "github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/security"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,26 +41,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
-
-	"github.com/astaxie/beego"
-	"github.com/dghubble/sling"
-	"github.com/goharbor/harbor/src/common/api"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/job/test"
-	"github.com/goharbor/harbor/src/common/models"
-	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	apimodels "github.com/goharbor/harbor/src/core/api/models"
-	_ "github.com/goharbor/harbor/src/core/auth/db"
-	_ "github.com/goharbor/harbor/src/core/auth/ldap"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/goharbor/harbor/src/server/middleware/orm"
-	"github.com/goharbor/harbor/src/server/middleware/security"
-	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
 
 const (
+	TestUserName     = "testUser0001"
+	TestUserPwd      = "testUser0001"
 	jsonAcceptHeader = "application/json"
 	testAcceptHeader = "text/plain"
 	adminName        = "admin"
@@ -77,12 +77,12 @@ type usrInfo struct {
 }
 
 func init() {
-	config.Init()
 	testutils.InitDatabaseFromEnv()
+	config.Init()
 	dao.PrepareTestData([]string{"delete from harbor_user where user_id >2", "delete from project where owner_id >2"}, []string{})
 	config.Upload(testutils.GetUnitTestConfig())
 
-	allCfgs, _ := config.GetSystemCfg()
+	allCfgs, _ := config.GetSystemCfg(libOrm.Context())
 	testutils.TraceCfgMap(allCfgs)
 
 	_, file, _, _ := runtime.Caller(0)
@@ -92,25 +92,7 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
-	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
-	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
-	beego.Router("/api/users/search", &UserAPI{}, "get:Search")
-	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
-	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
-	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &ProjectMemberAPI{})
-	beego.Router("/api/statistics", &StatisticAPI{})
-	beego.Router("/api/users/?:id", &UserAPI{})
-	beego.Router("/api/usergroups/?:ugid([0-9]+)", &UserGroupAPI{})
-	beego.Router("/api/configurations", &ConfigAPI{})
-	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
-	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
-	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
 
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
@@ -314,7 +296,7 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 
 // Update properties for a selected project.
 func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
-	project *models.Project) (int, error) {
+	project *proModels.Project) (int, error) {
 	path := "/api/projects/" + projectID
 	_sling := sling.New().Put(a.basePath).Path(path).BodyJSON(project)
 
@@ -381,31 +363,6 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 		err = json.Unmarshal(body, &successPayload)
 	}
 	return httpStatusCode, successPayload, err
-}
-
-// Add project role member accompany with  projectID
-// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, int, error) {
-func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/projects/" + projectID + "/members/"
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(member)
-	httpStatusCode, header, _, err := request0(_sling, jsonAcceptHeader, prjUsr)
-
-	var memberID int
-	location := header.Get("Location")
-	if location != "" {
-		parts := strings.Split(location, "/")
-		if len(parts) > 0 {
-			i, err := strconv.Atoi(parts[len(parts)-1])
-			if err == nil {
-				memberID = i
-			}
-		}
-	}
-
-	return httpStatusCode, memberID, err
 }
 
 // Delete project role member accompany with  projectID
@@ -677,82 +634,6 @@ func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	return httpStatusCode, err
 }
 
-// Post ldap test
-func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, error) {
-
-	_sling := sling.New().Post(a.basePath)
-
-	// create path and map variables
-	path := "/api/ldap/ping"
-
-	_sling = _sling.Path(path)
-
-	// body params
-	_sling = _sling.BodyJSON(ldapConf)
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Search Ldap Groups
-func (a testapi) LdapGroupsSearch(groupName, groupDN string, authInfo ...usrInfo) (int, []apilib.LdapGroupsSearch, error) {
-	_sling := sling.New().Get(a.basePath)
-	// create path and map variables
-	path := "/api/ldap/groups/search"
-	_sling = _sling.Path(path)
-	// body params
-	type QueryParams struct {
-		GroupName string `url:"groupname, omitempty"`
-		GroupDN   string `url:"groupdn, omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{GroupName: groupName, GroupDN: groupDN})
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo...)
-	var successPayLoad []apilib.LdapGroupsSearch
-	if 200 == httpStatusCode && nil == err {
-		err = json.Unmarshal(body, &successPayLoad)
-	}
-	return httpStatusCode, successPayLoad, err
-}
-
-func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
-	_sling := sling.New().Base(a.basePath).Get("/api/configurations")
-
-	cfg := map[string]*value{}
-
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && code == 200 {
-		err = json.Unmarshal(body, &cfg)
-	}
-	return code, cfg, err
-}
-
-func (a testapi) GetInternalConfig(authInfo usrInfo) (int, map[string]interface{}, error) {
-	_sling := sling.New().Base(a.basePath).Get("/api/configs")
-
-	cfg := map[string]interface{}{}
-
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && code == 200 {
-		err = json.Unmarshal(body, &cfg)
-	}
-	return code, cfg, err
-}
-
-func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]interface{}) (int, error) {
-	_sling := sling.New().Base(a.basePath).Put("/api/configurations").BodyJSON(cfg)
-
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return code, err
-}
-
-func (a testapi) ResetConfig(authInfo usrInfo) (int, error) {
-	_sling := sling.New().Base(a.basePath).Post("/api/configurations/reset")
-
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return code, err
-}
-
 func (a testapi) PingEmail(authInfo usrInfo, settings []byte) (int, string, error) {
 	_sling := sling.New().Base(a.basePath).Post("/api/email/ping").Body(bytes.NewReader(settings))
 
@@ -827,16 +708,6 @@ func (a testapi) RegistryDelete(authInfo usrInfo, registryID int64) (int, error)
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil || code != http.StatusOK {
 		return code, fmt.Errorf("delete registry error: %v", err)
-	}
-
-	return code, nil
-}
-
-func (a testapi) RegistryUpdate(authInfo usrInfo, registryID int64, req *apimodels.RegistryUpdateRequest) (int, error) {
-	_sling := sling.New().Base(a.basePath).Put(fmt.Sprintf("/api/registries/%d", registryID)).BodyJSON(req)
-	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err != nil || code != http.StatusOK {
-		return code, fmt.Errorf("update registry error: %v", err)
 	}
 
 	return code, nil

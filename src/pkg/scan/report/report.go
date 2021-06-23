@@ -16,6 +16,7 @@ package report
 
 import (
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
@@ -52,4 +53,37 @@ func MergeNativeReport(r1, r2 interface{}) (interface{}, error) {
 	}
 
 	return nr1.Merge(nr2), nil
+}
+
+// Reports slice of scan.Reports pointer
+type Reports []*scan.Report
+
+// ResolveData resolve the data from the reports and merge them together
+func (l Reports) ResolveData(mimeType string) (interface{}, error) {
+	var result interface{}
+
+	for _, rp := range l {
+		// Resolve scan report data only when it is ready and its mime type equal the given one
+		if len(rp.Report) == 0 || rp.MimeType != mimeType {
+			continue
+		}
+
+		vrp, err := ResolveData(rp.MimeType, []byte(rp.Report), WithArtifactDigest(rp.Digest))
+		if err != nil {
+			return nil, err
+		}
+
+		if result == nil {
+			result = vrp
+		} else {
+			r, err := Merge(rp.MimeType, result, vrp)
+			if err != nil {
+				return nil, err
+			}
+
+			result = r
+		}
+	}
+
+	return result, nil
 }

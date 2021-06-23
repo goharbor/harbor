@@ -17,8 +17,8 @@ package dao
 import (
 	"errors"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/astaxie/beego/orm"
@@ -104,17 +104,11 @@ func GetOrmer() orm.Ormer {
 	return globalOrm
 }
 
-// IsDupRecErr checks if the error is due to a duplication of record, currently this
-// works only for pgSQL
-func IsDupRecErr(e error) bool {
-	return strings.Contains(e.Error(), "duplicate key value violates unique constraint")
-}
-
 // ClearTable is the shortcut for test cases, it should be called only in test cases.
 func ClearTable(table string) error {
 	o := GetOrmer()
 	sql := fmt.Sprintf("delete from %s where 1=1", table)
-	if table == models.ProjectTable {
+	if table == proModels.ProjectTable {
 		sql = fmt.Sprintf("delete from %s where project_id > 1", table)
 	}
 	if table == models.UserTable {
@@ -128,30 +122,6 @@ func ClearTable(table string) error {
 	}
 	_, err := o.Raw(sql).Exec()
 	return err
-}
-
-// PaginateForRawSQL ...
-func PaginateForRawSQL(sql string, limit, offset int64) string {
-	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
-}
-
-// PaginateForQuerySetter ...
-func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
-	if size > 0 {
-		qs = qs.Limit(size)
-		if page > 0 {
-			qs = qs.Offset((page - 1) * size)
-		}
-	}
-	return qs
-}
-
-// Escape ..
-func Escape(str string) string {
-	str = strings.Replace(str, `\`, `\\`, -1)
-	str = strings.Replace(str, `%`, `\%`, -1)
-	str = strings.Replace(str, `_`, `\_`, -1)
-	return str
 }
 
 // implements github.com/golang-migrate/migrate/v4.Logger

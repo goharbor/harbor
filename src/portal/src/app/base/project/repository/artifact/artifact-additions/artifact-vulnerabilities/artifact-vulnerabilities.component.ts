@@ -6,21 +6,19 @@ import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addi
 import {
   ProjectService,
   ScannerVo,
-  ScanningResultService, SystemInfoService,
+  ScanningResultService,
+  SystemInfoService,
   UserPermissionService,
   USERSTATICPERMISSION,
   VulnerabilityItem
 } from "../../../../../../shared/services";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import {
-  SEVERITY_LEVEL_MAP,
-  VULNERABILITY_SEVERITY
-} from "../../../../../../shared/units/utils";
+import { SEVERITY_LEVEL_MAP, VULNERABILITY_SEVERITY } from "../../../../../../shared/units/utils";
 import { ChannelService } from "../../../../../../shared/services/channel.service";
 import { ResultBarChartComponent } from "../../vulnerability-scanning/result-bar-chart.component";
 import { Subscription } from "rxjs";
 import { Artifact } from "../../../../../../../../ng-swagger-gen/models/artifact";
-import {SessionService} from "../../../../../../shared/services/session.service";
+import { SessionService } from "../../../../../../shared/services/session.service";
 
 @Component({
   selector: 'hbr-artifact-vulnerabilities',

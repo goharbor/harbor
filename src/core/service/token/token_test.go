@@ -20,6 +20,12 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -29,14 +35,13 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
+	test.InitDatabaseFromEnv()
 	config.Init()
 	InitCreators()
 	result := m.Run()
@@ -133,7 +138,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := MakeToken(u, svc, ra)
+	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
@@ -242,7 +247,7 @@ func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resou
 	return false
 }
 
-func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {
+func (f *fakeSecurityContext) GetMyProjects() ([]*proModels.Project, error) {
 	return nil, nil
 }
 func (f *fakeSecurityContext) GetProjectRoles(interface{}) []int {

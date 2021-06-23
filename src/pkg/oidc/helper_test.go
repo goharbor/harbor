@@ -16,6 +16,13 @@ package oidc
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/encrypt"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"net/url"
 	"os"
 	"strings"
@@ -23,13 +30,12 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
+	test.InitDatabaseFromEnv()
 	conf := map[string]interface{}{
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://accounts.google.com",
@@ -39,7 +45,7 @@ func TestMain(m *testing.M) {
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
 	}
-	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
 
 	config.InitWithSettings(conf, kp)
 
@@ -53,7 +59,7 @@ func TestHelperLoadConf(t *testing.T) {
 	assert.Nil(t, testP.setting.Load())
 	err := testP.reloadSetting()
 	assert.Nil(t, err)
-	assert.Equal(t, "test", testP.setting.Load().(models.OIDCSetting).Name)
+	assert.Equal(t, "test", testP.setting.Load().(cfgModels.OIDCSetting).Name)
 }
 
 func TestHelperCreate(t *testing.T) {
@@ -82,11 +88,12 @@ func TestHelperGet(t *testing.T) {
 		common.OIDCClientSecret: "new-secret",
 		common.ExtEndpoint:      "https://harbor.test",
 	}
-	config.GetCfgManager().UpdateConfig(update)
+	ctx := orm.Context()
+	config.GetCfgManager(ctx).UpdateConfig(ctx, update)
 
 	t.Log("Sleep for 5 seconds")
 	time.Sleep(5 * time.Second)
-	assert.Equal(t, "new-secret", testP.setting.Load().(models.OIDCSetting).ClientSecret)
+	assert.Equal(t, "new-secret", testP.setting.Load().(cfgModels.OIDCSetting).ClientSecret)
 }
 
 func TestAuthCodeURL(t *testing.T) {
@@ -100,7 +107,8 @@ func TestAuthCodeURL(t *testing.T) {
 		common.ExtEndpoint:            "https://harbor.test",
 		common.OIDCExtraRedirectParms: `{"test_key":"test_value"}`,
 	}
-	config.GetCfgManager().UpdateConfig(conf)
+	ctx := orm.Context()
+	config.GetCfgManager(ctx).UpdateConfig(ctx, conf)
 	res, err := AuthCodeURL("random")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
@@ -187,7 +195,7 @@ func TestGroupsFromClaim(t *testing.T) {
 func TestUserInfoFromClaims(t *testing.T) {
 	s := []struct {
 		input   map[string]interface{}
-		setting models.OIDCSetting
+		setting cfgModels.OIDCSetting
 		expect  *UserInfo
 	}{
 		{
@@ -196,7 +204,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "daniel@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			setting: models.OIDCSetting{
+			setting: cfgModels.OIDCSetting{
 				Name:        "t1",
 				GroupsClaim: "grouplist",
 				UserClaim:   "",
@@ -217,7 +225,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "daniel@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			setting: models.OIDCSetting{
+			setting: cfgModels.OIDCSetting{
 				Name:        "t2",
 				GroupsClaim: "groups",
 				UserClaim:   "",
@@ -241,7 +249,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":      "jack@gmail.com",
 				"groupclaim": []interface{}{},
 			},
-			setting: models.OIDCSetting{
+			setting: cfgModels.OIDCSetting{
 				Name:        "t3",
 				GroupsClaim: "groupclaim",
 				UserClaim:   "",
@@ -263,7 +271,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				"email":  "airadier@gmail.com",
 				"groups": []interface{}{"g1", "g2"},
 			},
-			setting: models.OIDCSetting{
+			setting: cfgModels.OIDCSetting{
 				Name:        "t4",
 				GroupsClaim: "grouplist",
 				UserClaim:   "email",

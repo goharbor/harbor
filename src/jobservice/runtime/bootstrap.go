@@ -32,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
-	"github.com/goharbor/harbor/src/jobservice/job/impl/gcreadonly"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
@@ -126,7 +125,12 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Create hook agent, it's a singleton object
 		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
 		hookCallback := func(URL string, change *job.StatusChange) error {
-			msg := fmt.Sprintf("status change: job=%s, status=%s", change.JobID, change.Status)
+			msg := fmt.Sprintf(
+				"status change: job=%s, status=%s, revision=%d",
+				change.JobID,
+				change.Status,
+				change.Metadata.Revision,
+			)
 			if !utils.IsEmptyStr(change.CheckIn) {
 				// Ignore the real check in message to avoid too big message stream
 				cData := change.CheckIn
@@ -138,12 +142,17 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 			evt := &hook.Event{
 				URL:       URL,
-				Timestamp: time.Now().Unix(),
+				Timestamp: change.Metadata.UpdateTime, // use update timestamp to avoid duplicated resending.
 				Data:      change,
 				Message:   msg,
 			}
 
-			return hookAgent.Trigger(evt)
+			// Hook event sending should not influence the main job flow (because job may call checkin() in the job run).
+			if err := hookAgent.Trigger(evt); err != nil {
+				logger.Error(err)
+			}
+
+			return nil
 		}
 
 		// Create job life cycle management controller
@@ -165,12 +174,6 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Ignore returned error
 		if err = lcmCtl.Serve(); err != nil {
 			return errors.Errorf("start life cycle controller error: %s", err)
-		}
-
-		// Start agent
-		// Non blocking call
-		if err = hookAgent.Serve(); err != nil {
-			return errors.Errorf("start hook agent error: %s", err)
 		}
 	} else {
 		return errors.Errorf("worker backend '%s' is not supported", cfg.PoolConfig.Backend)
@@ -274,7 +277,6 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Functional jobs
 			job.ImageScanJob:           (*scan.Job)(nil),
 			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
-			job.ImageGCReadOnly:        (*gcreadonly.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),

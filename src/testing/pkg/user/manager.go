@@ -18,6 +18,62 @@ type Manager struct {
 	mock.Mock
 }
 
+// Count provides a mock function with given fields: ctx, query
+func (_m *Manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) int64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Create provides a mock function with given fields: ctx, _a1
+func (_m *Manager) Create(ctx context.Context, _a1 *models.User) (int, error) {
+	ret := _m.Called(ctx, _a1)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User) int); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.User) error); ok {
+		r1 = rf(ctx, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Delete provides a mock function with given fields: ctx, id
+func (_m *Manager) Delete(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *Manager) Get(ctx context.Context, id int) (*models.User, error) {
 	ret := _m.Called(ctx, id)
@@ -85,4 +141,90 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) (usermodels.Users, 
 	}
 
 	return r0, r1
+}
+
+// MatchLocalPassword provides a mock function with given fields: ctx, username, password
+func (_m *Manager) MatchLocalPassword(ctx context.Context, username string, password string) (*models.User, error) {
+	ret := _m.Called(ctx, username, password)
+
+	var r0 *models.User
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.User); ok {
+		r0 = rf(ctx, username, password)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, username, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Onboard provides a mock function with given fields: ctx, _a1
+func (_m *Manager) Onboard(ctx context.Context, _a1 *models.User) error {
+	ret := _m.Called(ctx, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User) error); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetSysAdminFlag provides a mock function with given fields: ctx, id, admin
+func (_m *Manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
+	ret := _m.Called(ctx, id, admin)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) error); ok {
+		r0 = rf(ctx, id, admin)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePassword provides a mock function with given fields: ctx, id, newPassword
+func (_m *Manager) UpdatePassword(ctx context.Context, id int, newPassword string) error {
+	ret := _m.Called(ctx, id, newPassword)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, string) error); ok {
+		r0 = rf(ctx, id, newPassword)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateProfile provides a mock function with given fields: ctx, _a1, col
+func (_m *Manager) UpdateProfile(ctx context.Context, _a1 *models.User, col ...string) error {
+	_va := make([]interface{}, len(col))
+	for _i := range col {
+		_va[_i] = col[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, _a1)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.User, ...string) error); ok {
+		r0 = rf(ctx, _a1, col...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

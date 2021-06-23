@@ -2,6 +2,7 @@ package chartserver
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"path"
 	"strings"
 	"sync"
@@ -9,7 +10,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"helm.sh/helm/v3/cmd/helm/search"
 
-	"github.com/goharbor/harbor/src/core/config"
 	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 

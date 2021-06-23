@@ -29,15 +29,15 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-           go-version: 1.15.6
+           go-version: 1.15.12
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
         with:
-          docker_version: 18.09
+          docker_version: 20.04
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
@@ -95,10 +95,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.15.12
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -155,10 +155,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.15.12
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -215,10 +215,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.15.12
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -273,10 +273,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.15
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.15.12
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -332,7 +332,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v1
         with:
-          node-version: '10.16.2'
+          node-version: '16'
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor

@@ -250,7 +250,7 @@
         "QUOTA_UNLIMIT_TIP": "Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Harbor, Aws ECR, Azure ACR, Quay und Google GCR.",
+        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay und Google GCR.",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt"
     },
@@ -617,18 +617,33 @@
         "SOURCE_NAMESPACES": "Quell-Namespaces",
         "DEST_REGISTRY": "Ziel-Registry",
         "DEST_NAMESPACE": "Ziel-Namespace",
-        "NAMESPACE_TOOLTIP": "Der Name des Namespaces sollte mindestens 2 Zeichen lang sein mit Kleinschreibung, Ziffern und ._- . Er muss mit Zeichen oder Ziffern beginnen.",
+        "NAMESPACE_TOOLTIP": "Der Name des Namespaces sollte mindestens 2 Zeichen lang sein mit Kleinschreibung, Ziffern und ._-/ . Er muss mit Zeichen oder Ziffern beginnen.",
         "TAG": "Tag",
         "LABEL": "Label",
         "RESOURCE": "Ressource",
-	"ENABLE_TITLE": "Aktiviere Regel",
-	"ENABLE_SUMMARY": "Soll die Regel {{param}} aktiviert werden?",
-	"DISABLE_TITLE": "Deaktiviere Regel",
-	"DISABLE_SUMMARY": "Soll die Regel {{param}} deaktiviert werden?",
-	"ENABLE_SUCCESS": "Aktivieren der Regel erfolgreich",
+	    "ENABLE_TITLE": "Aktiviere Regel",
+	    "ENABLE_SUMMARY": "Soll die Regel {{param}} aktiviert werden?",
+	    "DISABLE_TITLE": "Deaktiviere Regel",
+	    "DISABLE_SUMMARY": "Soll die Regel {{param}} deaktiviert werden?",
+	    "ENABLE_SUCCESS": "Aktivieren der Regel erfolgreich",
         "ENABLE_FAILED": "Aktivieren der Regel fehlgeschlagen",
         "DISABLE_SUCCESS": "Deaktivieren der Regel erfolgreich",
-        "DISABLE_FAILED": "Deaktivieren der Regel fehlgeschlagen"
+        "DISABLE_FAILED": "Deaktivieren der Regel fehlgeschlagen",
+        "DES_REPO_FLATTENING": "Destination Repository Flattening",
+        "NAMESPACE": "Namespace",
+        "REPO_FLATTENING": "Flattening",
+        "NO_FLATTING": "No Flatting",
+        "FLATTEN_LEVEL_1": "Flatten 1 Level",
+        "FLATTEN_LEVEL_2": "Flatten 2 Levels",
+        "FLATTEN_LEVEL_3": "Flatten 3 Levels",
+        "FLATTEN_ALL": "Flatten All Levels",
+        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Assuming that the nested repository structure is 'a/b/c/d/img' and the destination namespace is 'ns', the corresponding results of each item are as below:",
+        "FLATTEN_LEVEL_TIP_ALL": "'Flatten All Levels'(Used prior v2.3): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'No Flatting': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
+        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: `a/chart`"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Neuer Endpunkt",
@@ -663,7 +678,7 @@
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
         "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-	"DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+	    "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -801,7 +816,8 @@
         "MAINTAINER": "Maintainer(s)",
         "DEVELOPER": "Developer(s)",
         "GUEST": "Guest(s)",
-        "LIMITED_GUEST": "Limited guest(s)"
+        "LIMITED_GUEST": "Limited guest(s)",
+        "SEE_ALL": "SEE ALL"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Einige Änderungen wurden noch nicht gespeichert. Sollen diese verworfen werden?"
@@ -991,16 +1007,14 @@
     },
     "TOP_REPO": "Beliebte Repositories",
     "STATISTICS": {
-        "TITLE": "STATISTIKEN",
         "PRO_ITEM": "PROJEKTE",
         "REPO_ITEM": "REPOSITORIES",
         "INDEX_PRIVATE": "PRIVAT",
-        "INDEX_MY_PROJECTS": "MEINE PROJEKTE",
-        "INDEX_MY_REPOSITORIES": "MEINE REPOSITORIES",
         "INDEX_PUB": "ÖFFENTLICH",
         "INDEX_TOTAL": "GESAMT",
         "STORAGE": "SPEICHER",
-        "LIMIT": "Limit"
+        "LIMIT": "Limit",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Suche...",
@@ -1151,7 +1165,8 @@
         "SAVE_SUCCESS": "Ändern der Begrenzung erfolgreich",
         "UNLIMITED": "unlimitiert",
         "INVALID_INPUT": "ungültige Eingabe",
-        "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden"
+        "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden",
+        "FILTER_PLACEHOLDER": "Search by name(exact match)"
     },
     "WEEKLY": {
         "MONDAY": "Montag",

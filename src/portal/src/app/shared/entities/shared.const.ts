@@ -240,3 +240,19 @@ export enum ResourceType {
   CHART_VERSION = 2,
   REPOSITORY_TAG = 3,
 }
+
+export const TRUE_STR: string = 'true';
+export const FALSE_STR: string = 'false';
+
+export const CARD_VIEW_LOCALSTORAGE_KEY = 'card-view';
+
+export const PROJECT_SUMMARY_CARD_VIEW_LOCALSTORAGE_KEY = 'project_card-view';
+
+export enum ScheduleType {
+  NONE = "None",
+  DAILY = "Daily",
+  WEEKLY = "Weekly",
+  HOURLY = "Hourly",
+  CUSTOM = "Custom",
+  MANUAL = 'Manual'
+}

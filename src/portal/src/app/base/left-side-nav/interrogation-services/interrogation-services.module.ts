@@ -17,7 +17,6 @@ import { SharedModule } from "../../../shared/shared.module";
 import { NewScannerModalComponent } from "./scanner/new-scanner-modal/new-scanner-modal.component";
 import { ScannerMetadataComponent } from "./scanner/scanner-metadata/scanner-metadata.component";
 import { NewScannerFormComponent } from "./scanner/new-scanner-form/new-scanner-form.component";
-import { ConfigScannerService } from "./scanner/config-scanner.service";
 import { RouterModule, Routes } from "@angular/router";
 import { ConfigurationScannerComponent } from "./scanner/config-scanner.component";
 import { VulnerabilityConfigComponent } from "./vulnerability/vulnerability-config.component";
@@ -61,7 +60,6 @@ const routes: Routes = [
         VulnerabilityConfigComponent
     ],
     providers: [
-        ConfigScannerService,
         ScanAllRepoService,
         {provide: ScanApiRepository, useClass: ScanApiDefaultRepository },
     ]

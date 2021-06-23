@@ -15,11 +15,13 @@
 package models
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
+	// "time"
+
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 )
 
 // User ...
-type User = models.User
+type User = commonmodels.User
 
 // Users the collection for User
 type Users []*User

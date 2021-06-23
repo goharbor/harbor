@@ -16,10 +16,10 @@ package dao
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/models"
 	"os"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -133,6 +133,12 @@ func ExecuteBatchSQL(sqls []string) {
 			fmt.Printf("failed to execute batch sql, sql:%v, error: %v", sql, err)
 		}
 	}
+}
+
+// CleanUser - Clean this user information from DB, this is a shortcut for UT.
+func CleanUser(id int64) error {
+	_, err := GetOrmer().QueryTable(&models.User{}).Filter("UserID", id).Delete()
+	return err
 }
 
 // ArrayEqual ...

@@ -160,3 +160,7 @@ Test Case - Metrics
 Test Case - Project Level Policy Content Trust
     [Tags]  content_trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
+
+Test Case - Webhook CRUD
+    [Tags]  webhook
+    Harbor API Test  ./tests/apitests/python/test_webhook_crud.py

@@ -13,6 +13,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
 const (
@@ -193,6 +195,10 @@ func (hc *HTTPClient) post(url string, cred *auth.Credential, body interface{}, 
 	if (res.StatusCode / 100) != 2 {
 		// Return the server error content in the error.
 		return nil, fmt.Errorf("%s '%s' error: %s %s", http.MethodPost, res.Request.URL.String(), res.Status, bytes)
+	} else if res.StatusCode == http.StatusAlreadyReported {
+		// Currently because if image was already preheated at least once, Dragonfly will return StatusAlreadyReported.
+		// And we should preserve http status code info to process this case later.
+		return bytes, &common_http.Error{Code: http.StatusAlreadyReported, Message: "status already reported"}
 	}
 
 	return bytes, nil

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
-import time
 import subprocess
+import time
+
 import client
 import swagger_client
 import v2_swagger_client
+
 try:
     from urllib import getproxies
 except ImportError:
@@ -28,7 +29,9 @@ def get_endpoint():
 
 def _create_client(server, credential, debug, api_type="products"):
     cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota', 'replication', 'registry', 'robot', 'gc', 'retention', "immutable", "system_cve_allowlist"):
+    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
+                    'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
+                    'configure', 'user', 'member', 'health', 'label', 'webhook'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -51,12 +54,12 @@ def _create_client(server, credential, debug, api_type="products"):
         cfg.auth_settings = types.MethodType(lambda self: {}, cfg)
 
     return {
-        "chart":   client.ChartRepositoryApi(client.ApiClient(cfg)),
-        "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
-        "projectv2":  v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
-        "artifact":   v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
-        "preheat":   v2_swagger_client.PreheatApi(v2_swagger_client.ApiClient(cfg)),
-        "quota":   v2_swagger_client.QuotaApi(v2_swagger_client.ApiClient(cfg)),
+        "chart": client.ChartRepositoryApi(client.ApiClient(cfg)),
+        "products": swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
+        "projectv2":v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
+        "artifact": v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
+        "preheat": v2_swagger_client.PreheatApi(v2_swagger_client.ApiClient(cfg)),
+        "quota": v2_swagger_client.QuotaApi(v2_swagger_client.ApiClient(cfg)),
         "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
         "scan": v2_swagger_client.ScanApi(v2_swagger_client.ApiClient(cfg)),
         "scanall": v2_swagger_client.ScanAllApi(v2_swagger_client.ApiClient(cfg)),
@@ -64,10 +67,16 @@ def _create_client(server, credential, debug, api_type="products"):
         "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
         "registry": v2_swagger_client.RegistryApi(v2_swagger_client.ApiClient(cfg)),
         "robot": v2_swagger_client.RobotApi(v2_swagger_client.ApiClient(cfg)),
-        "gc":   v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),
-        "retention":   v2_swagger_client.RetentionApi(v2_swagger_client.ApiClient(cfg)),
-        "immutable":   v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),
-        "system_cve_allowlist":  v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
+        "gc": v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),
+        "retention": v2_swagger_client.RetentionApi(v2_swagger_client.ApiClient(cfg)),
+        "immutable": v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),
+        "system_cve_allowlist": v2_swagger_client.SystemCVEAllowlistApi(v2_swagger_client.ApiClient(cfg)),
+        "configure": v2_swagger_client.ConfigureApi(v2_swagger_client.ApiClient(cfg)),
+        "label": v2_swagger_client.LabelApi(v2_swagger_client.ApiClient(cfg)),
+        "user": v2_swagger_client.UserApi(v2_swagger_client.ApiClient(cfg)),
+        "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
+        "health": v2_swagger_client.HealthApi(v2_swagger_client.ApiClient(cfg)),
+        "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg))
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
@@ -118,8 +127,6 @@ def restart_process(process):
     if pid in [None, ""]:
         raise Exception("Failed to start process {}.".format(full_process_name))
     run_command_with_popen("ps aux |grep " + full_process_name)
-
-
 
 def run_command_with_popen(command):
     print("Command: ", command)

@@ -17,8 +17,6 @@ import {
     ViewChild,
     Input
 } from "@angular/core";
-import { Label } from "../../services";
-import { LabelService } from "../../services";
 import { ErrorHandler } from "../../units/error-handler";
 import { CreateEditLabelComponent } from "./create-edit-label/create-edit-label.component";
 import {
@@ -35,6 +33,10 @@ import { Observable, throwError as observableThrowError, forkJoin } from "rxjs";
 import { errorHandler } from "../../units/shared.utils";
 import { ConfirmationMessage } from "../../../base/global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../base/global-confirmation-dialog/confirmation-state-message";
+import { LabelService } from "../../../../../ng-swagger-gen/services/label.service";
+import { Label } from "../../../../../ng-swagger-gen/models/label";
+import { DEFAULT_PAGE_SIZE, getSortingString } from "../../units/utils";
+import { ClrDatagridStateInterface } from "@clr/angular";
 @Component({
     selector: "hbr-label",
     templateUrl: "./label.component.html",
@@ -42,7 +44,7 @@ import { ConfirmationAcknowledgement } from "../../../base/global-confirmation-d
 })
 export class LabelComponent implements OnInit {
     timerHandler: any;
-    loading: boolean;
+    loading: boolean = true;
     targets: Label[];
     targetName: string;
     selectedRow: Label[] = [];
@@ -58,6 +60,9 @@ export class LabelComponent implements OnInit {
     @ViewChild("confirmationDialog")
     confirmationDialogComponent: ConfirmationDialogComponent;
 
+    page: number = 1;
+    pageSize: number = DEFAULT_PAGE_SIZE;
+    total: number = 0;
     constructor(private labelService: LabelService,
         private errorHandlerEntity: ErrorHandler,
         private translateService: TranslateService,
@@ -65,18 +70,40 @@ export class LabelComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.retrieve(this.scope);
     }
 
-    retrieve(scope: string, name = "") {
-        this.loading = true;
+    retrieve(state?: ClrDatagridStateInterface) {
         this.selectedRow = [];
-        this.targetName = "";
-        this.labelService.getLabels(scope, this.projectId, name).pipe(finalize(() => {
+        // this.targetName = "";
+        if (state && state.page) {
+            this.pageSize = state.page.size;
+        }
+        let sort: string;
+        if (state && state.sort && state.sort.by) {
+            sort =  getSortingString(state);
+        } else { // sort by creation_time desc by default
+            sort = `-creation_time`;
+        }
+        this.loading = true;
+        this.labelService.ListLabelsResponse({
+            page: this.page,
+            pageSize: this.pageSize,
+            name: this.targetName,
+            sort: sort,
+            scope: this.scope,
+            projectId: this.projectId
+        }).pipe(finalize(() => {
             this.loading = false;
         }))
-            .subscribe(targets => {
-                this.targets = targets || [];
+            .subscribe(res => {
+                // Get total count
+                if (res.headers) {
+                    let xHeader: string = res.headers.get("X-Total-Count");
+                    if (xHeader) {
+                        this.total = parseInt(xHeader, 0);
+                    }
+                }
+                this.targets = res.body || [];
             }, error => {
                 this.errorHandlerEntity.error(error);
             });
@@ -87,21 +114,28 @@ export class LabelComponent implements OnInit {
     }
 
     reload(): void {
-        this.retrieve(this.scope);
+        this.targetName = "";
+        this.page = 1;
+        this.total = 0;
+        this.selectedRow = [];
+        this.retrieve();
     }
 
     doSearchTargets(targetName: string) {
-        this.retrieve(this.scope, targetName);
+        this.targetName = targetName;
+        this.page = 1;
+        this.total = 0;
+        this.selectedRow = [];
+        this.retrieve();
     }
 
     refreshTargets() {
-        this.retrieve(this.scope);
+        this.targetName = "";
+        this.page = 1;
+        this.total = 0;
+        this.selectedRow = [];
+        this.retrieve();
     }
-
-    selectedChange(): void {
-        // this.forceRefreshView(5000);
-    }
-
     editLabel(label: Label[]): void {
         this.createEditLabel.editModel(label[0].id, label);
     }
@@ -134,8 +168,7 @@ export class LabelComponent implements OnInit {
                     observableLists.push(this.delOperate(target));
                 });
                 forkJoin(...observableLists).subscribe((item) => {
-                    this.selectedRow = [];
-                    this.retrieve(this.scope);
+                    this.reload();
                 }, error => {
                     this.errorHandlerEntity.error(error);
                 });
@@ -153,7 +186,7 @@ export class LabelComponent implements OnInit {
         this.operationService.publishInfo(operMessage);
 
         return this.labelService
-            .deleteLabel(target.id)
+            .DeleteLabel({labelId: target.id})
             .pipe(map(
                 response => {
                     this.translateService.get('BATCH.DELETED_SUCCESS')

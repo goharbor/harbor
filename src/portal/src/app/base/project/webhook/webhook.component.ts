@@ -17,17 +17,19 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { AddWebhookComponent } from './add-webhook/add-webhook.component';
 import { AddWebhookFormComponent } from './add-webhook-form/add-webhook-form.component';
 import { ActivatedRoute } from '@angular/router';
-import { LastTrigger, Webhook } from './webhook';
-import { WebhookService } from './webhook.service';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { Project } from '../project';
-import { clone } from '../../../shared/units/utils';
+import { clone, DEFAULT_PAGE_SIZE, getSortingString } from '../../../shared/units/utils';
 import { forkJoin, Observable } from 'rxjs';
 import { UserPermissionService, USERSTATICPERMISSION } from '../../../shared/services';
-import { ClrLoadingState } from '@clr/angular';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { WebhookService } from "../../../../../ng-swagger-gen/services/webhook.service";
+import { WebhookLastTrigger } from "../../../../../ng-swagger-gen/models/webhook-last-trigger";
+import { WebhookPolicy } from "../../../../../ng-swagger-gen/models/webhook-policy";
+import { ProjectWebhookService } from "./webhook.service";
 
 @Component({
   templateUrl: './webhook.component.html',
@@ -40,23 +42,26 @@ export class WebhookComponent implements OnInit {
   addWebhookFormComponent: AddWebhookFormComponent;
   @ViewChild("confirmationDialogComponent")
   confirmationDialogComponent: ConfirmationDialogComponent;
-  lastTriggers: LastTrigger[] = [];
-  lastTriggerCount: number = 0;
+  lastTriggers: WebhookLastTrigger[] = [];
   projectId: number;
   projectName: string;
-  selectedRow: Webhook[] = [];
-  webhookList: Webhook[] = [];
+  selectedRow: WebhookPolicy[] = [];
+  webhookList: WebhookPolicy[] = [];
   metadata: any;
-  loadingMetadata: boolean = false;
-  loadingWebhookList: boolean = false;
+  loadingMetadata: boolean = true;
+  loadingWebhookList: boolean = true;
   loadingTriggers: boolean = false;
   hasCreatPermission: boolean = false;
   hasUpdatePermission: boolean = false;
-  addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  page: number = 1;
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  total: number = 0;
+  state: ClrDatagridStateInterface;
   constructor(
     private route: ActivatedRoute,
     private translate: TranslateService,
     private webhookService: WebhookService,
+    private projectWebhookService: ProjectWebhookService,
     private messageHandlerService: MessageHandlerService,
     private userPermissionService: UserPermissionService) { }
 
@@ -76,25 +81,29 @@ export class WebhookComponent implements OnInit {
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.CREATE));
     permissionsList.push(this.userPermissionService.getPermission(this.projectId,
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.UPDATE));
-    this.addBtnState = ClrLoadingState.LOADING;
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasCreatPermission, this.hasUpdatePermission] = Rules;
-      this.addBtnState = ClrLoadingState.SUCCESS;
     }, error => {
       this.messageHandlerService.error(error);
-      this.addBtnState = ClrLoadingState.ERROR;
     });
   }
-
+  refresh() {
+    this.page = 1;
+    this.total = 0;
+    this.selectedRow = [];
+    this.getWebhooks(this.state);
+    this.getData();
+  }
   getData() {
     this.getMetadata();
     this.getLastTriggers();
-    this.getWebhooks();
     this.selectedRow = [];
   }
   getMetadata() {
     this.loadingMetadata = true;
-    this.webhookService.getWebhookMetadata(this.projectId)
+    this.webhookService.GetSupportedEventTypes({
+      projectNameOrId: this.projectId.toString()
+    })
       .pipe(finalize(() => (this.loadingMetadata = false)))
       .subscribe(
         response => {
@@ -118,12 +127,13 @@ export class WebhookComponent implements OnInit {
   getLastTriggers() {
     this.loadingTriggers = true;
     this.webhookService
-      .listLastTrigger(this.projectId)
+      .LastTrigger({
+        projectNameOrId: this.projectId.toString()
+      })
       .pipe(finalize(() => (this.loadingTriggers = false)))
       .subscribe(
         response => {
           this.lastTriggers = response;
-          this.lastTriggerCount = response.length;
         },
         error => {
           this.messageHandlerService.handleError(error);
@@ -131,14 +141,43 @@ export class WebhookComponent implements OnInit {
       );
   }
 
-  getWebhooks() {
+  getWebhooks(state?: ClrDatagridStateInterface) {
+    if (state) {
+      this.state = state;
+    }
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
+    let q: string;
+    if (state && state.filters && state.filters.length) {
+      q = encodeURIComponent(`${state.filters[0].property}=~${state.filters[0].value}`);
+    }
+    let sort: string;
+    if (state && state.sort && state.sort.by) {
+      sort =  getSortingString(state);
+    } else { // sort by creation_time desc by default
+      sort = `-creation_time`;
+    }
     this.loadingWebhookList = true;
     this.webhookService
-      .listWebhook(this.projectId)
+      .ListWebhookPoliciesOfProjectResponse({
+        projectNameOrId: this.projectId.toString(),
+        page: this.page,
+        pageSize: this.pageSize,
+        sort: sort,
+        q: q
+      })
       .pipe(finalize(() => (this.loadingWebhookList = false)))
       .subscribe(
         response => {
-          this.webhookList = response;
+          // Get total count
+          if (response.headers) {
+            let xHeader: string = response.headers.get("X-Total-Count");
+            if (xHeader) {
+              this.total = parseInt(xHeader, 0);
+            }
+          }
+          this.webhookList = response.body || [];
         },
         error => {
           this.messageHandlerService.handleError(error);
@@ -172,11 +211,14 @@ export class WebhookComponent implements OnInit {
       message.state === ConfirmationState.CONFIRMED) {
       if (JSON.stringify(message.data) === '{}') {
         this.webhookService
-          .editWebhook(this.projectId, this.selectedRow[0].id,
-            Object.assign({}, this.selectedRow[0], { enabled: !this.selectedRow[0].enabled }))
+          .UpdateWebhookPolicyOfProject({
+            projectNameOrId: this.projectId.toString(),
+            webhookPolicyId: this.selectedRow[0].id,
+            policy: Object.assign({}, this.selectedRow[0], { enabled: !this.selectedRow[0].enabled })
+          })
           .subscribe(
             response => {
-              this.getData();
+              this.refresh();
             },
             error => {
               this.messageHandlerService.handleError(error);
@@ -185,11 +227,14 @@ export class WebhookComponent implements OnInit {
       } else {
         const observableLists: Observable<any>[] = [];
         message.data.forEach(item => {
-          observableLists.push(this.webhookService.deleteWebhook(this.projectId, item.id));
+          observableLists.push(this.webhookService.DeleteWebhookPolicyOfProject({
+           projectNameOrId: this.projectId.toString(),
+           webhookPolicyId: item.id
+          }));
         });
         forkJoin(...observableLists).subscribe(
           response => {
-            this.getData();
+            this.refresh();
           },
           error => {
             this.messageHandlerService.handleError(error);
@@ -219,12 +264,20 @@ export class WebhookComponent implements OnInit {
       this.addWebhookComponent.isEdit = false;
       this.addWebhookComponent.addWebhookFormComponent.isModify = false;
       this.addWebhookComponent.addWebhookFormComponent.currentForm.reset({notifyType: this.metadata.notify_type[0]});
-      this.addWebhookComponent.addWebhookFormComponent.webhook = new Webhook();
+      this.addWebhookComponent.addWebhookFormComponent.webhook = {
+        enabled: true,
+        event_types: [],
+        targets: [{
+          type: 'http',
+          address: '',
+          skip_cert_verify: true
+        }]
+      };
       this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.metadata.event_type);
     }
   }
   success() {
-   this.getData();
+   this.refresh();
   }
 
   deleteWebhook() {
@@ -247,6 +300,6 @@ export class WebhookComponent implements OnInit {
     this.confirmationDialogComponent.open(msg);
   }
   eventTypeToText(eventType: string): string {
-    return this.webhookService.eventTypeToText(eventType);
+    return this.projectWebhookService.eventTypeToText(eventType);
   }
 }

@@ -11,23 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ArtifactClickEvent, State, SystemInfo, SystemInfoService } from "../../../../../../shared/services";
-import {
-  ConfirmationDialogComponent,
-} from "../../../../../../shared/components/confirmation-dialog";
+import { ConfirmationDialogComponent, } from "../../../../../../shared/components/confirmation-dialog";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { ArtifactService } from "../../artifact.service";
 import { ConfirmationState, ConfirmationTargets } from "../../../../../../shared/entities/shared.const";
 import { ActivatedRoute } from "@angular/router";
 import { Project } from '../../../../project';
-import {
-  RepositoryService as NewRepositoryService
-} from "../../../../../../../../ng-swagger-gen/services/repository.service";
+import { RepositoryService as NewRepositoryService } from "../../../../../../../../ng-swagger-gen/services/repository.service";
 import { dbEncodeURIComponent } from '../../../../../../shared/units/utils';
 import { ConfirmationMessage } from "../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../global-confirmation-dialog/confirmation-state-message";
+
 const TabLinkContentMap: { [index: string]: string } = {
   'repo-info': 'info',
   'repo-image': 'image'

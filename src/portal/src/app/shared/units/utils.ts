@@ -580,6 +580,38 @@ export function formatSize(tagSize: string): string {
 }
 
 /**
+ * get size number of target size (in byte)
+ * @param size
+ */
+export function getSizeNumber(size: number): string | number {
+    if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
+        return (size / Math.pow(1024, 1)).toFixed(2);
+    } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
+        return (size / Math.pow(1024, 2)).toFixed(2);
+    } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
+        return (size / Math.pow(1024, 3)).toFixed(2);
+    } else {
+        return size;
+    }
+}
+
+/**
+ * get size unit of target size (in byte)
+ * @param size
+ */
+export function getSizeUnit(size: number): string  {
+    if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
+        return "KB";
+    } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
+        return "MB";
+    } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
+        return "GB";
+    } else {
+        return "Byte";
+    }
+}
+
+/**
  * Simple object check.
  * @param item
  * @returns {boolean}
@@ -631,6 +663,10 @@ export function deleteEmptyKey(obj: Object): void {
     }
 }
 
+/**
+ * Get sorting string from  current state
+ * @param state
+ */
 export function getSortingString(state: ClrDatagridStateInterface): string {
     if (state && state.sort && state.sort.by) {
         let sortString: string;
@@ -643,6 +679,32 @@ export function getSortingString(state: ClrDatagridStateInterface): string {
             sortString = `-${sortString}`;
         }
         return sortString;
+    }
+    return null;
+}
+
+
+/**
+ * Get query string from current state, rules as below:
+ * query string format: q=k=v,k=~v,k=[min~max],k={v1 v2 v3},k=(v1 v2 v3)
+ * exact match: k=v
+ * fuzzy match: k=~v
+ * range: k=[min~max]
+ * or list: k={v1 v2 v3}
+ * and list: k=(v1 v2 v3)
+ * @param state
+ */
+export function getQueryString(state: ClrDatagridStateInterface): string {
+    let str: string = '';
+    if (state && state.filters && state.filters.length) {
+        state.filters.forEach(item => {
+            if (str) {
+                str += `,${item.property}=~${item.value}`;
+            } else {
+                str += `${item.property}=~${item.value}`;
+            }
+        });
+        return encodeURIComponent(str);
     }
     return null;
 }
@@ -722,4 +784,34 @@ export function isSameArrayValue(a: any, b: any): boolean {
         }
     }
     return false;
+}
+
+/**
+ * delete specified param from target url
+ * @param url
+ * @param key
+ */
+export function delUrlParam(url: string, key: string): string {
+    if (url && url.indexOf('?') !== -1) {
+        const baseUrl: string = url.split('?')[0];
+        const query: string = url.split('?')[1];
+        if (query.indexOf(key) > -1) {
+            let obj = {};
+            let arr: any[] = query.split('&');
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = arr[i].split('=');
+                obj[arr[i][0]] = arr[i][1];
+            }
+            delete obj[key];
+            if (!Object.keys(obj) || !Object.keys(obj).length) {
+                return baseUrl;
+            }
+            return baseUrl + '?' +
+              JSON.stringify(obj)
+                .replace(/[\"\{\}]/g, '')
+                .replace(/\:/g, '=')
+                .replace(/\,/g, '&');
+        }
+    }
+    return url;
 }

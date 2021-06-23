@@ -49,7 +49,7 @@
         left: -8px;
     }
     .currentLang {
-        padding-right: 30px;
+        padding-right: 40px;
     }
 }
 
@@ -66,5 +66,8 @@
     outline: none;
 }
 .dropdown-lang {
-    padding-right: 1.3rem;
+    padding-right: 0.5rem;
+}
+.user-down {
+    right: 1rem !important;
 }

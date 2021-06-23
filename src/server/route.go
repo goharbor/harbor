@@ -15,12 +15,12 @@
 package server
 
 import (
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/controllers"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/token"
@@ -45,7 +45,6 @@ func registerRoutes() {
 	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
 	beego.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
-	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 	beego.Router("/api/internal/switchquota", &api.InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")

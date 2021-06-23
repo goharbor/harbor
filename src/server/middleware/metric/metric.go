@@ -2,12 +2,12 @@ package metric
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/metric"
 )

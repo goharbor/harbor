@@ -46,3 +46,14 @@ clr-modal {
 .set-btns {
     display: flex;
 }
+:host::ng-deep.upload-secret {
+    width: 24.5rem;
+}
+.pwd-input {
+    padding-right: 26px;
+}
+.pw-eye {
+    margin-left: -20px;
+    margin-right: 8px;
+    cursor: pointer;
+}

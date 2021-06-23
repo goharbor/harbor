@@ -1,0 +1,41 @@
+extends: [[spectral:oas, all]]
+
+functionsDir: "./tools/spectral/functions"
+
+functions: [requireRequestId]
+
+rules:
+  info-contact: false
+  info-license: false
+  license-url: false
+  no-$ref-siblings: false
+  oas2-valid-definition-example: false
+  oas2-valid-response-schema-example: false
+  openapi-tags: false
+  operation-default-response: false
+  operation-tag-defined: false
+
+  required-operationId:
+    description: must have a operationId.
+    given: $.paths[*][*]
+    severity: error
+    then:
+      field: operationId
+      function: truthy
+
+  camel-case-operationId:
+    description: should be camelCased.
+    type: style
+    given: $.paths[*][*].operationId
+    then:
+      function: casing
+      functionOptions:
+        type: camel
+
+  requestId-required:
+    description: must have a requestId paramaters.
+    given: $.paths[*][*]
+    severity: error
+    then:
+      field: parameters
+      function: requireRequestId

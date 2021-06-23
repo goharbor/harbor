@@ -25,3 +25,6 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/robot --name Controller --output ./robot --outpkg robot
 //go:generate mockery --case snake --dir ../../controller/proxy --name RemoteInterface --output ./proxy --outpkg proxy
 //go:generate mockery --case snake --dir ../../controller/retention --name Controller --output ./retention --outpkg retention
+//go:generate mockery --case snake --dir ../../controller/config --name Controller --output ./config --outpkg config
+//go:generate mockery --case snake --dir ../../controller/user --name Controller --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../controller/repository --name Controller --output ./repository --outpkg repository

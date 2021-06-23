@@ -5,7 +5,7 @@ import (
 	"fmt"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -85,8 +85,8 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		expiresAt = -1
 	} else if r.Duration == 0 {
 		// system default robot duration
-		r.Duration = int64(config.RobotTokenDuration())
-		expiresAt = time.Now().AddDate(0, 0, config.RobotTokenDuration()).Unix()
+		r.Duration = int64(config.RobotTokenDuration(ctx))
+		expiresAt = time.Now().AddDate(0, 0, config.RobotTokenDuration(ctx)).Unix()
 	} else {
 		expiresAt = time.Now().AddDate(0, 0, int(r.Duration)).Unix()
 	}
@@ -216,7 +216,7 @@ func (d *controller) populate(ctx context.Context, r *model.Robot, option *Optio
 	// for the v2 robots, add prefix to the robot name
 	// for the v1 legacy robots, keep the robot name
 	if robot.Editable {
-		robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(), r.Name)
+		robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(ctx), r.Name)
 	} else {
 		robot.Name = r.Name
 	}

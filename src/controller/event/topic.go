@@ -16,9 +16,9 @@ package event
 
 import (
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
@@ -318,7 +318,7 @@ func (c *ChartEvent) String() string {
 // QuotaEvent is project quota related event data to publish
 type QuotaEvent struct {
 	EventType string
-	Project   *models.Project
+	Project   *proModels.Project
 	Resource  *ImgResource
 	OccurAt   time.Time
 	RepoName  string

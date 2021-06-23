@@ -6,6 +6,7 @@ import (
 	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 )
@@ -18,7 +19,7 @@ var (
 // Manager is used for ldap management
 type Manager interface {
 	// Ping ldap test
-	Ping(ctx context.Context, cfg model.LdapConf) (bool, error)
+	Ping(ctx context.Context, cfg cfgModels.LdapConf) (bool, error)
 	SearchUser(ctx context.Context, sess *Session, username string) ([]model.User, error)
 	ImportUser(ctx context.Context, sess *Session, ldapImportUsers []string) ([]model.FailedImportUser, error)
 	SearchGroup(ctx context.Context, sess *Session, groupName, groupDN string) ([]model.Group, error)
@@ -32,7 +33,7 @@ func New() Manager {
 type manager struct {
 }
 
-func (m *manager) Ping(ctx context.Context, cfg model.LdapConf) (bool, error) {
+func (m *manager) Ping(ctx context.Context, cfg cfgModels.LdapConf) (bool, error) {
 	return TestConfig(cfg)
 }
 

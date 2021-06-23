@@ -219,11 +219,14 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 			registry.Type = *params.Registry.Type
 		}
 		if params.Registry.URL != nil {
-			url, err := lib.ValidateHTTPURL(registry.URL)
+			url, err := lib.ValidateHTTPURL(*params.Registry.URL)
 			if err != nil {
 				return r.SendError(ctx, err)
 			}
 			registry.URL = url
+		}
+		if params.Registry.Insecure != nil {
+			registry.Insecure = *params.Registry.Insecure
 		}
 		if params.Registry.CredentialType != nil {
 			if registry.Credential == nil {

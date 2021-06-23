@@ -16,112 +16,118 @@ package label
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/stretchr/testify/mock"
+	"github.com/goharbor/harbor/src/pkg/label/model"
+	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/label/dao"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-type fakeDao struct {
-	mock.Mock
-}
-
-func (f *fakeDao) Get(ctx context.Context, id int64) (*models.Label, error) {
-	args := f.Called()
-	var label *models.Label
-	if args.Get(0) != nil {
-		label = args.Get(0).(*models.Label)
-	}
-	return label, args.Error(1)
-}
-func (f *fakeDao) Create(ctx context.Context, label *models.Label) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-func (f *fakeDao) Delete(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
-}
-func (f *fakeDao) ListByArtifact(ctx context.Context, artifactID int64) ([]*models.Label, error) {
-	args := f.Called()
-	var labels []*models.Label
-	if args.Get(0) != nil {
-		labels = args.Get(0).([]*models.Label)
-	}
-	return labels, args.Error(1)
-}
-func (f *fakeDao) CreateReference(ctx context.Context, reference *Reference) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-func (f *fakeDao) DeleteReference(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
-}
-func (f *fakeDao) DeleteReferences(ctx context.Context, query *q.Query) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-
 type managerTestSuite struct {
 	suite.Suite
 	mgr *manager
-	dao *fakeDao
+	dao *dao.DAO
 }
 
 func (m *managerTestSuite) SetupTest() {
-	m.dao = &fakeDao{}
+	m.dao = &dao.DAO{}
 	m.mgr = &manager{
 		dao: m.dao,
 	}
 }
 
-func (m *managerTestSuite) TestGet() {
-	m.dao.On("Get").Return(nil, nil)
-	_, err := m.mgr.Get(nil, 1)
-	m.Require().Nil(err)
+func (m *managerTestSuite) TestCreate() {
+	m.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	_, err := m.mgr.Create(context.Background(), &model.Label{})
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestListArtifact() {
-	m.dao.On("ListByArtifact").Return(nil, nil)
-	_, err := m.mgr.ListByArtifact(nil, 1)
-	m.Require().Nil(err)
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
+	n, err := m.mgr.Count(context.Background(), nil)
+	m.Nil(err)
+	m.Equal(int64(1), n)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestDelete() {
+	m.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.Delete(context.Background(), 1)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestGet() {
+	m.dao.On("Get", mock.Anything, mock.Anything).Return(&model.Label{
+		ID:   1,
+		Name: "label",
+	}, nil)
+	label, err := m.mgr.Get(context.Background(), 1)
+	m.Nil(err)
+	m.Equal("label", label.Name)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestUpdate() {
+	m.dao.On("Update", mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.Update(context.Background(), &model.Label{})
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestListByArtifact() {
+	m.dao.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{
+		{
+			ID:   1,
+			Name: "label",
+		},
+	}, nil)
+	rpers, err := m.mgr.ListByArtifact(context.Background(), 1)
+	m.Nil(err)
+	m.Equal(1, len(rpers))
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestList() {
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.Label{
+		{
+			ID:   1,
+			Name: "label",
+		},
+	}, nil)
+	rpers, err := m.mgr.List(context.Background(), nil)
+	m.Nil(err)
+	m.Equal(1, len(rpers))
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestAddTo() {
-	m.dao.On("CreateReference").Return(1, nil)
-	err := m.mgr.AddTo(nil, 1, 1)
-	m.Require().Nil(err)
+	m.dao.On("CreateReference", mock.Anything, mock.Anything).Return(int64(1), nil)
+	err := m.mgr.AddTo(context.Background(), 1, 1)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestRemoveFrom() {
-	// success
-	m.dao.On("DeleteReferences").Return(1, nil)
-	err := m.mgr.RemoveFrom(nil, 1, 1)
-	m.Require().Nil(err)
-
-	// reset mock
-	m.SetupTest()
-
-	// not found
-	m.dao.On("DeleteReferences").Return(0, nil)
-	err = m.mgr.RemoveFrom(nil, 1, 1)
-	m.Require().NotNil(err)
-	m.True(errors.IsErr(err, errors.NotFoundCode))
+	m.dao.On("DeleteReferences", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	err := m.mgr.RemoveFrom(context.Background(), 1, 1)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestRemoveAllFrom() {
-	m.dao.On("DeleteReferences").Return(2, nil)
-	err := m.mgr.RemoveAllFrom(nil, 1)
-	m.Require().Nil(err)
+	m.dao.On("DeleteReferences", mock.Anything, mock.Anything).Return(int64(1), nil)
+	err := m.mgr.RemoveAllFrom(context.Background(), 1)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestRemoveFromAllArtifacts() {
-	m.dao.On("DeleteReferences").Return(2, nil)
-	err := m.mgr.RemoveFromAllArtifacts(nil, 1)
-	m.Require().Nil(err)
+	m.dao.On("DeleteReferences", mock.Anything, mock.Anything).Return(int64(1), nil)
+	err := m.mgr.RemoveFromAllArtifacts(context.Background(), 1)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
 
 func TestManager(t *testing.T) {

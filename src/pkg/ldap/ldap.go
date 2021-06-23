@@ -18,6 +18,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"net/url"
 	"strconv"
@@ -54,13 +55,13 @@ var ErrEmptyBaseDN = errors.New("empty base dn")
 
 // Session - define a LDAP session
 type Session struct {
-	basicCfg model.LdapConf
-	groupCfg model.GroupConf
+	basicCfg models.LdapConf
+	groupCfg models.GroupConf
 	ldapConn *goldap.Conn
 }
 
 // NewSession create session with configs
-func NewSession(basicCfg model.LdapConf, groupCfg model.GroupConf) *Session {
+func NewSession(basicCfg models.LdapConf, groupCfg models.GroupConf) *Session {
 	return &Session{
 		basicCfg: basicCfg,
 		groupCfg: groupCfg,
@@ -113,8 +114,8 @@ func formatURL(ldapURL string) (string, error) {
 }
 
 // TestConfig - test ldap session connection, out of the scope of normal session create/close
-func TestConfig(ldapConfig model.LdapConf) (bool, error) {
-	ts := NewSession(ldapConfig, model.GroupConf{})
+func TestConfig(ldapConfig models.LdapConf) (bool, error) {
+	ts := NewSession(ldapConfig, models.GroupConf{})
 	if err := ts.Open(); err != nil {
 		if goldap.IsErrorWithCode(err, goldap.ErrorNetwork) {
 			return false, ErrLDAPServerTimeout
@@ -371,6 +372,8 @@ func (s *Session) searchGroup(groupDN, filter, gName, groupNameAttribute string)
 	groupName := ""
 	if len(result.Entries[0].Attributes) > 0 {
 		groupName = result.Entries[0].Attributes[0].Values[0]
+	} else {
+		groupName = groupDN
 	}
 	group := model.Group{
 		Dn:   result.Entries[0].DN,

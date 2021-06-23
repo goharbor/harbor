@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
@@ -56,4 +57,34 @@ func (s *ScannerRegistration) ToSwagger(ctx context.Context) *models.ScannerRegi
 // NewScannerRegistration ...
 func NewScannerRegistration(scanner *scanner.Registration) *ScannerRegistration {
 	return &ScannerRegistration{Registration: scanner}
+}
+
+// ScannerMetadata ...
+type ScannerMetadata struct {
+	*v1.ScannerAdapterMetadata
+}
+
+// ToSwagger ...
+func (s *ScannerMetadata) ToSwagger(ctx context.Context) *models.ScannerAdapterMetadata {
+	if s.ScannerAdapterMetadata == nil {
+		return nil
+	}
+
+	var capabilities []*models.ScannerCapability
+	for _, c := range s.Capabilities {
+		capabilities = append(capabilities, &models.ScannerCapability{
+			ConsumesMimeTypes: c.ConsumesMimeTypes,
+			ProducesMimeTypes: c.ProducesMimeTypes,
+		})
+	}
+	return &models.ScannerAdapterMetadata{
+		Scanner:      (*models.Scanner)(s.Scanner),
+		Properties:   s.Properties,
+		Capabilities: capabilities,
+	}
+}
+
+// NewScannerMetadata ...
+func NewScannerMetadata(md *v1.ScannerAdapterMetadata) *ScannerMetadata {
+	return &ScannerMetadata{ScannerAdapterMetadata: md}
 }

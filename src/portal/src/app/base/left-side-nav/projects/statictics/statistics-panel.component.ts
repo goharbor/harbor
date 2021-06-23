@@ -13,37 +13,28 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
-
-import { StatisticsService } from "./statistics.service";
-import { Statistics } from "./statistics";
-
 import { SessionService } from "../../../../shared/services/session.service";
-import { Volumes } from "./volumes";
-
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { StatisticHandler } from "./statistic-handler.service";
-import { AppConfigService } from "../../../../services/app-config.service";
+import { Statistic } from "../../../../../../ng-swagger-gen/models/statistic";
+import { StatisticService } from "../../../../../../ng-swagger-gen/services/statistic.service";
+import { getSizeNumber, getSizeUnit } from "../../../../shared/units/utils";
 
 
 @Component({
     selector: "statistics-panel",
     templateUrl: "statistics-panel.component.html",
-    styleUrls: ["statistics.component.scss"],
-    providers: [StatisticsService]
-})
+    styleUrls: ["statistics-panel.component.scss"],
+   })
 
 export class StatisticsPanelComponent implements OnInit, OnDestroy {
 
-    originalCopy: Statistics = new Statistics();
-    volumesInfo: Volumes = new Volumes();
+    originalCopy: Statistic;
     refreshSub: Subscription;
-    small: number;
-
     constructor(
-        private statistics: StatisticsService,
+        private statistics: StatisticService,
         private msgHandler: MessageHandlerService,
         private session: SessionService,
-        private appConfigService: AppConfigService,
         private statisticHandler: StatisticHandler) {
     }
 
@@ -56,10 +47,6 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         if (this.session.getCurrentUser()) {
             this.getStatistics();
         }
-
-        if (this.isValidSession) {
-            this.getVolumes();
-        }
     }
 
     ngOnDestroy() {
@@ -67,60 +54,27 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
             this.refreshSub.unsubscribe();
         }
     }
-
-    public get totalStorage(): number {
-        let count: number = 0;
-        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
-            this.volumesInfo.storage.forEach(item => {
-                count += item.total;
-            });
-        }
-        return this.getGBFromBytes(count);
-    }
-
-    public get freeStorage(): number {
-        let count: number = 0;
-        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
-            this.volumesInfo.storage.forEach(item => {
-                count += item.free;
-            });
-        }
-        return this.getGBFromBytes(count);
-    }
-
-    public getStatistics(): void {
-        this.statistics.getStatistics()
+    getStatistics(): void {
+        this.statistics.getStatistic()
             .subscribe(statistics => this.originalCopy = statistics
                 , error => {
                     this.msgHandler.handleError(error);
                 });
     }
-
-    public getVolumes(): void {
-        this.statistics.getVolumes()
-            .subscribe(volumes => this.volumesInfo = volumes
-                , error => {
-                    this.msgHandler.handleError(error);
-                });
-    }
-
-    public get isValidSession(): boolean {
+    get isValidSession(): boolean {
         let user = this.session.getCurrentUser();
         return user && user.has_admin_role;
     }
-
-    public get isValidStorage(): boolean {
-        let count: number = 0;
-        if (this.volumesInfo && this.volumesInfo.storage && this.volumesInfo.storage.length) {
-            this.volumesInfo.storage.forEach(item => {
-                count += item.total;
-            });
+    getSizeNumber(): number | string {
+        if (this.originalCopy) {
+            return getSizeNumber(this.originalCopy.total_storage_consumption);
         }
-        return count !== 0 &&
-            this.appConfigService.getConfig().registry_storage_provider_name === "filesystem";
+        return 0;
     }
-
-    getGBFromBytes(bytes: number): number {
-        return Math.round((bytes / (1024 * 1024 * 1024)));
+    getSizeUnit(): number | string {
+        if (this.originalCopy) {
+            return getSizeUnit(this.originalCopy.total_storage_consumption);
+        }
+        return null;
     }
 }

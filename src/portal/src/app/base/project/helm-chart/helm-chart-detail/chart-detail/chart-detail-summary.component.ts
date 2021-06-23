@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  Input
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
 import { HelmChartMetaData, HelmChartSecurity } from "../helm-chart.interface.service";
 import { HelmChartService } from "../helm-chart.service";
 import { Label } from "../../../../../shared/services";

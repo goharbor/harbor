@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ArtifactVulnerabilitiesComponent } from './artifact-vulnerabilities.component';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { ClarityModule } from "@clr/angular";
@@ -16,9 +16,9 @@ import {
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { ChannelService } from "../../../../../../shared/services/channel.service";
-import {SessionService} from "../../../../../../shared/services/session.service";
-import {SessionUser} from "../../../../../../shared/entities/session-user";
-import {delay} from "rxjs/operators";
+import { SessionService } from "../../../../../../shared/services/session.service";
+import { SessionUser } from "../../../../../../shared/entities/session-user";
+import { delay } from "rxjs/operators";
 
 
 describe('ArtifactVulnerabilitiesComponent', () => {

@@ -19,26 +19,20 @@ import {
   Input,
   OnInit,
   ViewChild,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef
 } from "@angular/core";
-
-import { Label } from "../../../services/interface";
-
 import { clone, compareValue } from "../../../units/utils";
-
-import { LabelService } from "../../../services/label.service";
-import { ErrorHandler } from "../../../units/error-handler/error-handler";
+import { ErrorHandler } from "../../../units/error-handler";
 import { NgForm } from "@angular/forms";
 import { Subject } from "rxjs";
 import { debounceTime } from "rxjs/operators";
 import { LabelColor } from "../../../entities/shared.const";
+import { Label } from "../../../../../../ng-swagger-gen/models/label";
+import { LabelService } from "../../../../../../ng-swagger-gen/services/label.service";
 
 @Component({
   selector: "hbr-create-edit-label",
   templateUrl: "./create-edit-label.component.html",
   styleUrls: ["./create-edit-label.component.scss"],
-  changeDetection: ChangeDetectionStrategy.Default
 })
 export class CreateEditLabelComponent implements OnInit, OnDestroy {
   formShow: boolean;
@@ -61,12 +55,15 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
   constructor(
     private labelService: LabelService,
     private errorHandler: ErrorHandler,
-    private ref: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.nameChecker.pipe(debounceTime(500)).subscribe((name: string) => {
-        this.labelService.getLabels(this.scope, this.projectId, name)
+        this.labelService.ListLabels({
+          scope: this.scope,
+          projectId: this.projectId,
+          name: name
+        })
         .subscribe(targets => {
           this.isLabelNameExist = false;
           if (targets && targets.length) {
@@ -79,8 +76,6 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
         }, error => {
           this.errorHandler.error(error);
         });
-      let hnd = setInterval(() => this.ref.markForCheck(), 100);
-      setTimeout(() => clearInterval(hnd), 5000);
     });
   }
 
@@ -142,8 +137,9 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     if (this.labelId <= 0) {
       this.labelModel.scope = this.scope;
       this.labelModel.project_id = this.projectId;
-      this.labelService.createLabel(this.labelModel)
-        .subscribe(res => {
+      this.labelService.CreateLabel({
+        label: this.labelModel
+      }).subscribe(res => {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
@@ -153,7 +149,10 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
           this.errorHandler.error(err);
         });
     } else {
-        this.labelService.updateLabel(this.labelId, this.labelModel)
+        this.labelService.UpdateLabel({
+          labelId: this.labelId,
+          label: this.labelModel
+        })
         .subscribe(res => {
           this.inProgress = false;
           this.reload.emit();

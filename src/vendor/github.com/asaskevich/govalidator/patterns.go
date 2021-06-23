@@ -48,6 +48,7 @@ const (
 	hasUpperCase      string = ".*[[:upper:]]"
 	hasWhitespace     string = ".*[[:space:]]"
 	hasWhitespaceOnly string = "^[[:space:]]+$"
+	IMEI              string = "^[0-9a-f]{14}$|^\\d{15}$|^\\d{18}$"
 )
 
 // Used by IsFilePath func
@@ -100,4 +101,5 @@ var (
 	rxHasUpperCase      = regexp.MustCompile(hasUpperCase)
 	rxHasWhitespace     = regexp.MustCompile(hasWhitespace)
 	rxHasWhitespaceOnly = regexp.MustCompile(hasWhitespaceOnly)
+	rxIMEI              = regexp.MustCompile(IMEI)
 )

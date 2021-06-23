@@ -1,10 +1,10 @@
 <div class="row">
     <h4 class="mt-1">{{'WEBHOOK.WEBHOOKS' | translate}}</h4>
-    <clr-datagrid [clrDgLoading]="loadingWebhookList || loadingMetadata" [(clrDgSelected)]="selectedRow">
+    <clr-datagrid (clrDgRefresh)="getWebhooks($event)" [clrDgLoading]="loadingWebhookList" [(clrDgSelected)]="selectedRow">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
-                    <button [disabled]="!hasCreatPermission" [clrLoading]="addBtnState" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
+                    <button [disabled]="loadingMetadata||!hasCreatPermission" [clrLoading]="loadingMetadata" id="new-webhook" type="button" class="btn  btn-secondary" (click)="newWebhook()">
                         <clr-icon shape="plus" size="16"></clr-icon>
                         {{'WEBHOOK.NEW_WEBHOOK' | translate}}
                     </button>
@@ -43,7 +43,7 @@
                 <div class="clr-col-5">
                     <div class="action-head-pos">
                             <span class="refresh-btn">
-                                 <clr-icon shape="refresh" (click)="success()" [hidden]="loadingWebhookList || loadingMetadata"></clr-icon>
+                                 <clr-icon shape="refresh" (click)="refresh()" [hidden]="loadingWebhookList || loadingMetadata"></clr-icon>
                             </span>
                     </div>
                 </div>
@@ -54,12 +54,12 @@
         <clr-dg-column>{{'WEBHOOK.NOTIFY_TYPE' | translate}}</clr-dg-column>
         <clr-dg-column class="min-width-340">{{'WEBHOOK.TARGET' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.EVENT_TYPES' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'creation_time'">{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column>{{'WEBHOOK.DESCRIPTION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>
             {{'WEBHOOK.NO_WEBHOOK' | translate}}
         </clr-dg-placeholder>
-        <clr-dg-row *clrDgItems="let w of webhookList" [clrDgItem]="w">
+        <clr-dg-row *ngFor="let w of webhookList" [clrDgItem]="w">
             <clr-dg-cell>{{w.name}}</clr-dg-cell>
             <clr-dg-cell [ngSwitch]="w.enabled">
                 <div *ngSwitchCase="true" class="icon-wrap">
@@ -101,9 +101,10 @@
             </clr-dg-row-detail>
         </clr-dg-row>
         <clr-dg-footer>
-            <clr-dg-pagination [clrDgPageSize]="15">
+            <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="page" [clrDgTotalItems]="total">
                 <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
-                <span *ngIf="webhookList?.length > 0">1 - {{webhookList?.length}} {{'WEBHOOK.OF' | translate}} </span> {{webhookList?.length}} {{'WEBHOOK.ITEMS' | translate}}
+                <span *ngIf="total">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'WEBHOOK.OF' | translate}}</span>
+                {{total}} {{'WEBHOOK.ITEMS' | translate}}
             </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>

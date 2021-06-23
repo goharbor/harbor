@@ -16,8 +16,13 @@ package scanner
 
 import (
 	"context"
+	"fmt"
+	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -47,12 +52,24 @@ func New() Controller {
 
 // basicController is default implementation of api.Controller interface
 type basicController struct {
+	sync.Once
+
 	// Managers for managing the scanner registrations
 	manager rscanner.Manager
 	// For operating the project level configured scanner
 	proMetaMgr metadata.Manager
 	// Client pool for talking to adapters
 	clientPool v1.ClientPool
+	// Cache of the scanner metadata
+	cache cache.Cache
+}
+
+func (bc *basicController) Cache() cache.Cache {
+	bc.Do(func() {
+		bc.cache, _ = cache.New(cache.Memory, cache.Expiration(time.Second*30))
+	})
+
+	return bc.cache
 }
 
 // ListRegistrations ...
@@ -266,56 +283,28 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 		return nil, errors.New("nil registration to ping")
 	}
 
-	client, err := registration.Client(bc.clientPool)
+	var (
+		err  error
+		meta *v1.ScannerAdapterMetadata
+	)
+
+	if registration.ID > 0 {
+		meta, err = bc.getScannerAdapterMetadataWithCache(registration)
+	} else {
+		meta, err = bc.getScannerAdapterMetadata(registration)
+	}
+
 	if err != nil {
+		log.G(ctx).WithField("error", err).Error("failed to ping scanner")
+
 		return nil, errors.Wrap(err, "scanner controller: ping")
 	}
 
-	meta, err := client.GetMetadata()
-	if err != nil {
-		return nil, errors.Wrap(err, "scanner controller: ping")
+	if err := meta.Validate(); err != nil {
+		return nil, err
 	}
 
-	// Validate the required properties
-	if meta.Scanner == nil ||
-		len(meta.Scanner.Name) == 0 ||
-		len(meta.Scanner.Version) == 0 ||
-		len(meta.Scanner.Vendor) == 0 {
-		return nil, errors.New("invalid scanner in metadata")
-	}
-
-	if len(meta.Capabilities) == 0 {
-		return nil, errors.New("invalid capabilities in metadata")
-	}
-
-	for _, ca := range meta.Capabilities {
-		// v1.MimeTypeDockerArtifact is required now
-		found := false
-		for _, cm := range ca.ConsumesMimeTypes {
-			if cm == v1.MimeTypeDockerArtifact {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return nil, errors.Errorf("missing %s in consumes_mime_types", v1.MimeTypeDockerArtifact)
-		}
-
-		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
-		found = false
-		for _, pm := range ca.ProducesMimeTypes {
-			if pm == v1.MimeTypeNativeReport || pm == v1.MimeTypeGenericVulnerabilityReport {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return nil, errors.Errorf("missing %s or %s in produces_mime_types", v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport)
-		}
-	}
-
-	return meta, err
+	return meta, nil
 }
 
 // GetMetadata ...
@@ -336,6 +325,35 @@ func (bc *basicController) GetMetadata(ctx context.Context, registrationUUID str
 	return bc.Ping(ctx, r)
 }
 
+func (bc *basicController) getScannerAdapterMetadata(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+	client, err := registration.Client(bc.clientPool)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.GetMetadata()
+}
+
+func (bc *basicController) getScannerAdapterMetadataWithCache(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+	key := fmt.Sprintf("reg:%d:metadata", registration.ID)
+
+	var result MetadataResult
+	err := cache.FetchOrSave(bc.Cache(), key, &result, func() (interface{}, error) {
+		meta, err := bc.getScannerAdapterMetadata(registration)
+		if err != nil {
+			return &MetadataResult{Error: err.Error()}, nil
+		}
+
+		return &MetadataResult{Metadata: meta}, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Unpack()
+}
+
 var (
 	reservedNames = []string{"Trivy"}
 )
@@ -348,4 +366,20 @@ func isReservedName(name string) bool {
 	}
 
 	return false
+}
+
+// MetadataResult metadata or error saved in cache
+type MetadataResult struct {
+	Metadata *v1.ScannerAdapterMetadata
+	Error    string
+}
+
+// Unpack get ScannerAdapterMetadata and error from the result
+func (m *MetadataResult) Unpack() (*v1.ScannerAdapterMetadata, error) {
+	var err error
+	if m.Error != "" {
+		err = fmt.Errorf(m.Error)
+	}
+
+	return m.Metadata, err
 }

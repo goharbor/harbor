@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 
-	"github.com/goharbor/harbor/src/common/models"
 	hlog "github.com/goharbor/harbor/src/lib/log"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -27,7 +27,7 @@ const (
 // ChartVersion extends the helm ChartVersion with additional labels
 type ChartVersion struct {
 	helm_repo.ChartVersion
-	Labels []*models.Label `json:"labels"`
+	Labels []*model.Label `json:"labels"`
 }
 
 // ChartVersions is an array of extended ChartVersion
@@ -40,7 +40,7 @@ type ChartVersionDetails struct {
 	Values       map[string]interface{}  `json:"values"`
 	Files        map[string]string       `json:"files"`
 	Security     *SecurityReport         `json:"security"`
-	Labels       []*models.Label         `json:"labels"`
+	Labels       []*model.Label          `json:"labels"`
 }
 
 // SecurityReport keeps the info related with security

@@ -540,10 +540,10 @@ func convertExecutionToPayload(model *task.Execution) (*models.Execution, error)
 	}
 
 	execution := &models.Execution{
-		EndTime:       model.EndTime.String(),
+		EndTime:       model.EndTime.Format(time.RFC3339),
 		ExtraAttrs:    model.ExtraAttrs,
 		ID:            model.ID,
-		StartTime:     model.StartTime.String(),
+		StartTime:     model.StartTime.Format(time.RFC3339),
 		Status:        model.Status,
 		StatusMessage: model.StatusMessage,
 		Trigger:       model.Trigger,

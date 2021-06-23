@@ -25,11 +25,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	gooidc "github.com/coreos/go-oidc"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"golang.org/x/oauth2"
 )
@@ -81,7 +85,7 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 }
 
 func (p *providerHelper) reloadSetting() error {
-	conf, err := config.OIDCSetting()
+	conf, err := config.OIDCSetting(orm.Context())
 	if err != nil {
 		return fmt.Errorf("failed to load OIDC setting: %v", err)
 	}
@@ -93,7 +97,7 @@ func (p *providerHelper) create() error {
 	if p.setting.Load() == nil {
 		return errors.New("the configuration is not loaded")
 	}
-	s := p.setting.Load().(models.OIDCSetting)
+	s := p.setting.Load().(cfgModels.OIDCSetting)
 	ctx := clientCtx(context.Background(), s.VerifyCert)
 	provider, err := gooidc.NewProvider(ctx, s.Endpoint)
 	if err != nil {
@@ -136,7 +140,7 @@ func getOauthConf() (*oauth2.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(models.OIDCSetting)
+	setting := provider.setting.Load().(cfgModels.OIDCSetting)
 	scopes := make([]string, 0)
 	for _, sc := range setting.Scope {
 		if strings.HasPrefix(p.Endpoint().AuthURL, googleEndpoint) && sc == gooidc.ScopeOfflineAccess {
@@ -163,7 +167,7 @@ func AuthCodeURL(state string) (string, error) {
 		return "", err
 	}
 	var options []oauth2.AuthCodeOption
-	setting := provider.setting.Load().(models.OIDCSetting)
+	setting := provider.setting.Load().(cfgModels.OIDCSetting)
 	for k, v := range setting.ExtraRedirectParms {
 		options = append(options, oauth2.SetAuthURLParam(k, v))
 	}
@@ -181,7 +185,7 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return nil, err
 	}
-	setting := provider.setting.Load().(models.OIDCSetting)
+	setting := provider.setting.Load().(cfgModels.OIDCSetting)
 	ctx = clientCtx(ctx, setting.VerifyCert)
 	oauthToken, err := oauth.Exchange(ctx, code)
 	if err != nil {
@@ -206,7 +210,7 @@ func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.
 	if err != nil {
 		return nil, err
 	}
-	settings := provider.setting.Load().(models.OIDCSetting)
+	settings := provider.setting.Load().(cfgModels.OIDCSetting)
 	if conf == nil {
 		conf = &gooidc.Config{ClientID: settings.ClientID}
 	}
@@ -234,7 +238,7 @@ func refreshToken(ctx context.Context, token *Token) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(models.OIDCSetting)
+	setting := provider.setting.Load().(cfgModels.OIDCSetting)
 	cctx := clientCtx(ctx, setting.VerifyCert)
 	ts := oauthCfg.TokenSource(cctx, &token.Token)
 	nt, err := ts.Token()
@@ -256,7 +260,7 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(models.OIDCSetting)
+	setting := provider.setting.Load().(cfgModels.OIDCSetting)
 	local, err := UserInfoFromIDToken(ctx, token, setting)
 	if err != nil {
 		return nil, err
@@ -302,7 +306,7 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 	return res
 }
 
-func userInfoFromRemote(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
+func userInfoFromRemote(ctx context.Context, token *Token, setting cfgModels.OIDCSetting) (*UserInfo, error) {
 	p, err := provider.get()
 	if err != nil {
 		return nil, err
@@ -316,7 +320,7 @@ func userInfoFromRemote(ctx context.Context, token *Token, setting models.OIDCSe
 }
 
 // UserInfoFromIDToken extract user info from ID token
-func UserInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
+func UserInfoFromIDToken(ctx context.Context, token *Token, setting cfgModels.OIDCSetting) (*UserInfo, error) {
 	if token.RawIDToken == "" {
 		return nil, nil
 	}
@@ -328,7 +332,7 @@ func UserInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCS
 	return userInfoFromClaims(idt, setting)
 }
 
-func userInfoFromClaims(c claimsProvider, setting models.OIDCSetting) (*UserInfo, error) {
+func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserInfo, error) {
 	res := &UserInfo{}
 	if err := c.Claims(res); err != nil {
 		return nil, err
@@ -385,7 +389,7 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 type populate func(groupNames []string) ([]int, error)
 
 func populateGroupsDB(groupNames []string) ([]int, error) {
-	return group.PopulateGroup(models.UserGroupsFromName(groupNames, common.OIDCGroupType))
+	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(groupNames, common.OIDCGroupType))
 }
 
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.

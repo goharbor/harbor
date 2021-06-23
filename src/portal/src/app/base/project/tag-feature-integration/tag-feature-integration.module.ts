@@ -8,6 +8,7 @@ import { TagRetentionService } from './tag-retention/tag-retention.service';
 import { ImmutableTagComponent } from "./immutable-tag/immutable-tag.component";
 import { ImmutableTagService } from "./immutable-tag/immutable-tag.service";
 import { AddImmutableRuleComponent } from "./immutable-tag/add-rule/add-immutable-rule.component";
+import { TagRetentionTasksComponent } from './tag-retention/tag-retention-tasks/tag-retention-tasks/tag-retention-tasks.component';
 
 
 const routes: Routes = [
@@ -37,7 +38,8 @@ const routes: Routes = [
     TagRetentionComponent,
     AddRuleComponent,
     ImmutableTagComponent,
-    AddImmutableRuleComponent
+    AddImmutableRuleComponent,
+    TagRetentionTasksComponent
   ],
   providers: [
     TagRetentionService,

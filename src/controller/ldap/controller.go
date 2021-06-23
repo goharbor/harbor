@@ -17,7 +17,8 @@ package ldap
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/ldap"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -31,7 +32,7 @@ var (
 // Controller define the operations related to LDAP
 type Controller interface {
 	// Ping test the ldap config
-	Ping(ctx context.Context, cfg model.LdapConf) (bool, error)
+	Ping(ctx context.Context, cfg models.LdapConf) (bool, error)
 	// SearchUser search ldap user with name
 	SearchUser(ctx context.Context, username string) ([]model.User, error)
 	// ImportUser import ldap users to harbor
@@ -52,16 +53,16 @@ func NewController() Controller {
 }
 
 func (c *controller) Session(ctx context.Context) (*ldap.Session, error) {
-	cfg, groupCfg, err := c.ldapConfigs()
+	cfg, groupCfg, err := c.ldapConfigs(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return ldap.NewSession(*cfg, *groupCfg), nil
 }
 
-func (c *controller) Ping(ctx context.Context, cfg model.LdapConf) (bool, error) {
+func (c *controller) Ping(ctx context.Context, cfg models.LdapConf) (bool, error) {
 	if len(cfg.SearchPassword) == 0 {
-		pwd, err := defaultPassword()
+		pwd, err := defaultPassword(ctx)
 		if err != nil {
 			return false, err
 		}
@@ -73,34 +74,34 @@ func (c *controller) Ping(ctx context.Context, cfg model.LdapConf) (bool, error)
 	return c.mgr.Ping(ctx, cfg)
 }
 
-func (c *controller) ldapConfigs() (*model.LdapConf, *model.GroupConf, error) {
-	cfg, err := config.LDAPConf()
+func (c *controller) ldapConfigs(ctx context.Context) (*models.LdapConf, *models.GroupConf, error) {
+	cfg, err := config.LDAPConf(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-	groupCfg, err := config.LDAPGroupConf()
+	groupCfg, err := config.LDAPGroupConf(ctx)
 	if err != nil {
 		log.Warningf("failed to get the ldap group config, error %v", err)
-		groupCfg = &model.GroupConf{}
+		groupCfg = &models.GroupConf{}
 	}
 	return cfg, groupCfg, nil
 }
 
 func (c *controller) SearchUser(ctx context.Context, username string) ([]model.User, error) {
-	cfg, groupCfg, err := c.ldapConfigs()
+	cfg, groupCfg, err := c.ldapConfigs(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return c.mgr.SearchUser(ctx, ldap.NewSession(*cfg, *groupCfg), username)
 }
 
-func defaultPassword() (string, error) {
-	mod, err := config.AuthMode()
+func defaultPassword(ctx context.Context) (string, error) {
+	mod, err := config.AuthMode(ctx)
 	if err != nil {
 		return "", err
 	}
 	if mod == common.LDAPAuth {
-		conf, err := config.LDAPConf()
+		conf, err := config.LDAPConf(ctx)
 		if err != nil {
 			return "", err
 		}
@@ -113,7 +114,7 @@ func defaultPassword() (string, error) {
 }
 
 func (c *controller) ImportUser(ctx context.Context, ldapImportUsers []string) ([]model.FailedImportUser, error) {
-	cfg, groupCfg, err := c.ldapConfigs()
+	cfg, groupCfg, err := c.ldapConfigs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +122,7 @@ func (c *controller) ImportUser(ctx context.Context, ldapImportUsers []string) (
 }
 
 func (c *controller) SearchGroup(ctx context.Context, groupName, groupDN string) ([]model.Group, error) {
-	cfg, groupCfg, err := c.ldapConfigs()
+	cfg, groupCfg, err := c.ldapConfigs(ctx)
 	if err != nil {
 		return nil, err
 	}

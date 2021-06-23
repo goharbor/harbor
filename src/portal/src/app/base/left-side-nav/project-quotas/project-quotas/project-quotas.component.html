@@ -22,8 +22,11 @@
                                 {{'QUOTA.EDIT' | translate}}
                             </button>
                         </div>
-                        <div class="clr-col-1">
-                            <div class="action-head-pos">
+                        <div class="clr-col">
+                            <div class="clr-row search">
+                                <hbr-filter [withDivider]="true"
+                                            filterPlaceholder='{{"QUOTA.FILTER_PLACEHOLDER" | translate}}'
+                                            (filterEvt)="doSearch($event)"></hbr-filter>
                                <span class="refresh-btn" (click)="refresh()">
                                    <clr-icon shape="refresh"></clr-icon>
                                </span>

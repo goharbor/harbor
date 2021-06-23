@@ -140,7 +140,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy, pro
 		return err
 	}
 	// update the policy
-	if err := c.repMgr.Update(ctx, p); err != nil {
+	if err := c.repMgr.Update(ctx, p, props...); err != nil {
 		return err
 	}
 	// create schedule if needed

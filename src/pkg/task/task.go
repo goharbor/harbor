@@ -18,11 +18,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"time"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"

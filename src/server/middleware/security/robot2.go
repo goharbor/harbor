@@ -6,7 +6,7 @@ import (
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
 	robot_ctl "github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -25,12 +25,12 @@ func (r *robot2) Generate(req *http.Request) security.Context {
 	if !ok {
 		return nil
 	}
-	if !strings.HasPrefix(name, config.RobotPrefix()) {
+	if !strings.HasPrefix(name, config.RobotPrefix(req.Context())) {
 		return nil
 	}
 	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
 	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
-		"name": strings.TrimPrefix(name, config.RobotPrefix()),
+		"name": strings.TrimPrefix(name, config.RobotPrefix(req.Context())),
 	}), &robot_ctl.Option{
 		WithPermission: true,
 	})

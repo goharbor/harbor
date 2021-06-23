@@ -17,7 +17,6 @@ package task
 import (
 	"context"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -49,13 +48,10 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 	logger := log.GetLogger(ctx)
 
 	jobID := sc.JobID
-	// when a "KindScheduled" job is scheduled by a periodical job, it's "JobID" field
-	// is set as "87bbdee19bed5ce09c48a149@1605104520" which contains "@". In this case,
-	// read the parent periodical job ID from "sc.Metadata.UpstreamJobID"
-	if sc.Metadata.JobKind == job.KindScheduled {
-		if len(sc.Metadata.UpstreamJobID) > 0 {
-			jobID = sc.Metadata.UpstreamJobID
-		}
+	// the "JobID" field of some kinds of jobs are set as "87bbdee19bed5ce09c48a149@1605104520" which contains "@".
+	// In this case, read the parent periodical job ID from "sc.Metadata.UpstreamJobID"
+	if len(sc.Metadata.UpstreamJobID) > 0 {
+		jobID = sc.Metadata.UpstreamJobID
 	}
 	tasks, err := h.taskDAO.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
@@ -83,7 +79,7 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 		}
 		t := &Task{}
 		t.From(task)
-		return processor(ctx, t, sc.CheckIn)
+		return processor(ctx, t, sc)
 	}
 
 	// update task status

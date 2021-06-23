@@ -233,6 +233,7 @@ export class NewRobotComponent implements OnInit, OnDestroy {
     this.isEditMode = isEditMode;
     this.addRobotOpened = true;
     this.inlineAlertComponent.close();
+    this._nameSubject.next('');
   }
   disabled(): boolean {
     if (!this.isEditMode) {

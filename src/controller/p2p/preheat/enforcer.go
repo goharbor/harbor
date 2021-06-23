@@ -17,29 +17,29 @@ package preheat
 import (
 	"context"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
 	pol "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
-	"github.com/goharbor/harbor/src/pkg/scan/report"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -170,7 +170,7 @@ func NewEnforcer() Enforcer {
 					Actions: []string{resourcePullAction},
 				},
 			}
-			t, err := token.MakeToken("distributor", token.Registry, ac)
+			t, err := token.MakeToken(orm.Context(), "distributor", token.Registry, ac)
 			if err != nil {
 				return "", err
 			}
@@ -344,7 +344,7 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 }
 
 // getCandidates get the initial candidates by evaluating the policy
-func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *models.Project) ([]*selector.Candidate, error) {
+func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *proModels.Project) ([]*selector.Candidate, error) {
 	// Get the initial candidates
 	// Here we have a hidden filter, the artifact type filter.
 	// Only get the image type at this moment.
@@ -480,9 +480,8 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 }
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
-func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Project, art *artifact.Artifact) (uint, error) {
-	al := p.CVEAllowlist.CVESet()
-	r, err := de.scanCtl.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}, report.WithCVEAllowlist(&al))
+func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *proModels.Project, art *artifact.Artifact) (uint, error) {
+	vulnerable, err := de.scanCtl.GetVulnerable(ctx, art, p.CVEAllowlist.CVESet())
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			// no vulnerability report
@@ -492,29 +491,21 @@ func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *models.Pr
 		return defaultSeverityCode, errors.Wrap(err, "get vulnerability severity")
 	}
 
-	// Severity is based on the native report format or the generic vulnerability report format.
-	// In case no supported report format, treat as same to the no report scenario
-	sum, ok := r[v1.MimeTypeNativeReport]
-	if !ok {
-		// check if a report with MimeTypeGenericVulnerabilityReport is present.
-		// return the default severity code only if it does not exist
-		sum, ok = r[v1.MimeTypeGenericVulnerabilityReport]
-		if !ok {
-			return defaultSeverityCode, nil
-		}
-
+	if !vulnerable.IsScanSuccess() {
+		// scan status may running or error
+		return defaultSeverityCode, nil
 	}
 
-	sm, ok := sum.(*vuln.NativeReportSummary)
-	if !ok {
-		return defaultSeverityCode, errors.New("malformed native summary report")
+	// no vulnerability found
+	if vulnerable.Severity == nil {
+		return (uint)(vuln.None.Code()), nil
 	}
 
-	return (uint)(sm.Severity.Code()), nil
+	return (uint)(vulnerable.Severity.Code()), nil
 }
 
 // toCandidates converts the artifacts to filtering candidates
-func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, arts []*artifact.Artifact) ([]*selector.Candidate, error) {
+func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Project, arts []*artifact.Artifact) ([]*selector.Candidate, error) {
 	// Convert to filtering candidates first
 	candidates := make([]*selector.Candidate, 0)
 
@@ -548,7 +539,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *models.Project, 
 }
 
 // getProject gets the full metadata of the specified project
-func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*models.Project, error) {
+func (de *defaultEnforcer) getProject(ctx context.Context, id int64) (*proModels.Project, error) {
 	// Get project info with CVE allow list and metadata
 	return de.proCtl.Get(ctx, id, project.WithEffectCVEAllowlist())
 }
@@ -569,7 +560,7 @@ func pureRepository(ns, r string) string {
 }
 
 // getLabels gets label texts from the label objects
-func getLabels(labels []*models.Label) []string {
+func getLabels(labels []*model.Label) []string {
 	lt := make([]string, 0)
 	for _, l := range labels {
 		lt = append(lt, l.Name)
@@ -608,7 +599,7 @@ func checkProviderHealthy(inst *provider.Instance) error {
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
 // the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
-func overrideSecuritySettings(p *pol.Schema, pro *models.Project) [][]interface{} {
+func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interface{} {
 	if p == nil || pro == nil {
 		return nil
 	}

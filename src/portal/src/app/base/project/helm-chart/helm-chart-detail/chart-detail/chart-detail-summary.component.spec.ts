@@ -1,12 +1,13 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { ChartDetailSummaryComponent } from './chart-detail-summary.component';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
-import { MarkedOptions, MarkdownModule } from 'ngx-markdown';
+import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { HelmChartService } from '../helm-chart.service';
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { MessageHandlerService } from "../../../../../shared/services/message-handler.service";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
+
 describe('ChartDetailSummaryComponent', () => {
     let component: ChartDetailSummaryComponent;
     let fixture: ComponentFixture<ChartDetailSummaryComponent>;

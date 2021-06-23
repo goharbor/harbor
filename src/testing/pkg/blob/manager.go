@@ -58,6 +58,27 @@ func (_m *Manager) AssociateWithProject(ctx context.Context, blobID int64, proje
 	return r0, r1
 }
 
+// CalculateTotalSize provides a mock function with given fields: ctx, excludeForeignLayer
+func (_m *Manager) CalculateTotalSize(ctx context.Context, excludeForeignLayer bool) (int64, error) {
+	ret := _m.Called(ctx, excludeForeignLayer)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, bool) int64); ok {
+		r0 = rf(ctx, excludeForeignLayer)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, bool) error); ok {
+		r1 = rf(ctx, excludeForeignLayer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CalculateTotalSizeByProject provides a mock function with given fields: ctx, projectID, excludeForeignLayer
 func (_m *Manager) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error) {
 	ret := _m.Called(ctx, projectID, excludeForeignLayer)
@@ -140,6 +161,29 @@ func (_m *Manager) Delete(ctx context.Context, id int64) error {
 	}
 
 	return r0
+}
+
+// FindBlobsShouldUnassociatedWithProject provides a mock function with given fields: ctx, projectID, blobs
+func (_m *Manager) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projectID int64, blobs []*models.Blob) ([]*models.Blob, error) {
+	ret := _m.Called(ctx, projectID, blobs)
+
+	var r0 []*models.Blob
+	if rf, ok := ret.Get(0).(func(context.Context, int64, []*models.Blob) []*models.Blob); ok {
+		r0 = rf(ctx, projectID, blobs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Blob)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, []*models.Blob) error); ok {
+		r1 = rf(ctx, projectID, blobs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Get provides a mock function with given fields: ctx, digest

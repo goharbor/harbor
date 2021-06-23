@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -69,7 +70,7 @@ func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error
 			return orm.WrapConflictError(err, "The project named %s already exists", project.Name)
 		}
 
-		member := &Member{
+		member := &models.Member{
 			ProjectID:    projectID,
 			EntityID:     project.OwnerID,
 			Role:         common.RoleProjectAdmin,
@@ -112,7 +113,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	}
 
 	project.Deleted = true
-	project.Name = fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
+	project.Name = lib.Truncate(project.Name, fmt.Sprintf("#%d", project.ProjectID), 255)
 
 	o, err := orm.FromContext(ctx)
 	if err != nil {
@@ -169,7 +170,7 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Project, erro
 }
 
 func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
-	qs, err := orm.QuerySetter(ctx, &Member{}, nil)
+	qs, err := orm.QuerySetter(ctx, &models.Member{}, nil)
 	if err != nil {
 		return nil, err
 	}

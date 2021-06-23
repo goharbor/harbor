@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
 
-	commonModels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/config"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/replication"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -33,7 +34,7 @@ func (r *ReplicationHandler) Name() string {
 
 // Handle ...
 func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
-	if !config.NotificationEnable() {
+	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
 	}
@@ -72,7 +73,7 @@ func (r *ReplicationHandler) IsStateful() bool {
 	return false
 }
 
-func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *commonModels.Project, error) {
+func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *proModels.Project, error) {
 	ctx := orm.Context()
 	task, err := replication.Ctl.GetTask(ctx, event.ReplicationTaskID)
 	if err != nil {

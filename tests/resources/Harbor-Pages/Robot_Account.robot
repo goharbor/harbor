@@ -107,7 +107,7 @@ Create A New System Robot Account
         ${permission_item_list}=  Get From Dictionary  ${tmp}  permission_item_list
         Log To Console  permission_item_list: ${permission_item_list}
         Filter Project In Project Permisstion List  ${project_name}
-        Retry Element Click  //clr-dg-row[contains(.,'${project_name}')]//clr-checkbox-wrapper/label
+        Retry Element Click  //clr-dg-row[contains(.,'${project_name}')]//div[contains(@class,'clr-checkbox-wrapper')]/label
         Retry Element Click  //clr-dg-row[contains(., '${project_name}')]//clr-dropdown/button
         Select Project Permission  ${project_name}  ${permission_item_list}
     END

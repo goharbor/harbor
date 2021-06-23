@@ -24,8 +24,6 @@ const (
 	ImageScanJob = "IMAGE_SCAN"
 	// GarbageCollection job name
 	GarbageCollection = "GARBAGE_COLLECTION"
-	// ImageGCReadOnly the name of image garbage collection read only job in job service
-	ImageGCReadOnly = "IMAGE_GC_READ_ONLY"
 	// Replication : the name of the replication job in job service
 	Replication = "REPLICATION"
 	// WebhookJob : the name of the webhook job in job service

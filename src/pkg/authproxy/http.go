@@ -1,12 +1,17 @@
 package authproxy
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -16,7 +21,7 @@ import (
 )
 
 // TokenReview ...
-func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_api_v1beta1.TokenReviewStatus, error) {
+func TokenReview(rawToken string, authProxyConfig *cfgModels.HTTPAuthProxy) (k8s_api_v1beta1.TokenReviewStatus, error) {
 
 	emptyStatus := k8s_api_v1beta1.TokenReviewStatus{}
 	// Init auth client with the auth proxy endpoint.
@@ -43,7 +48,7 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 			Token: rawToken,
 		},
 	}
-	res := authClient.Post().Body(tokenReviewRequest).Do()
+	res := authClient.Post().Body(tokenReviewRequest).Do(context.Background())
 	err = res.Error()
 	if err != nil {
 		log.Errorf("fail to POST auth request, %v", err)
@@ -65,7 +70,7 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 
 }
 
-func getTLSConfig(config *models.HTTPAuthProxy) rest.TLSClientConfig {
+func getTLSConfig(config *cfgModels.HTTPAuthProxy) rest.TLSClientConfig {
 	if config.VerifyCert && len(config.ServerCertificate) > 0 {
 		return rest.TLSClientConfig{
 			CAData: []byte(config.ServerCertificate),
@@ -78,23 +83,30 @@ func getTLSConfig(config *models.HTTPAuthProxy) rest.TLSClientConfig {
 
 // UserFromReviewStatus transform a review status to a user model.
 // Group entries will be populated if needed.
-func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups []string) (*models.User, error) {
-
+func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups []string, adminUsernames []string) (*models.User, error) {
 	if !status.Authenticated {
 		return nil, fmt.Errorf("failed to authenticate the token, error in status: %s", status.Error)
 	}
 	user := &models.User{
 		Username: status.User.Username,
 	}
+	for _, au := range adminUsernames {
+		if status.User.Username == au {
+			log.Debugf("Username: %s in the adminusers list, assigning user admin permission", au)
+			user.AdminRoleInAuth = true
+			break
+		}
+	}
+
 	if len(status.User.Groups) > 0 {
-		userGroups := models.UserGroupsFromName(status.User.Groups, common.HTTPGroupType)
-		groupIDList, err := group.PopulateGroup(userGroups)
+		userGroups := model.UserGroupsFromName(status.User.Groups, common.HTTPGroupType)
+		groupIDList, err := usergroup.Mgr.Populate(orm.Context(), userGroups)
 		if err != nil {
 			return nil, err
 		}
 		log.Debugf("current user's group ID list is %+v", groupIDList)
 		user.GroupIDs = groupIDList
-		if len(adminGroups) > 0 {
+		if len(adminGroups) > 0 && !user.AdminRoleInAuth { // skip checking admin group if user already has admin role
 			agm := make(map[string]struct{})
 			for _, ag := range adminGroups {
 				agm[ag] = struct{}{}
@@ -108,5 +120,4 @@ func UserFromReviewStatus(status k8s_api_v1beta1.TokenReviewStatus, adminGroups 
 		}
 	}
 	return user, nil
-
 }

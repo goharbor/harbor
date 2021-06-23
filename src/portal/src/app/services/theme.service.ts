@@ -19,7 +19,7 @@ loadStyle(styleName: string) {
         'client-theme'
     ) as HTMLLinkElement;
     if (themeLink) {
-        themeLink.href = styleName;
+        themeLink.href = `${styleName}?buildTimeStamp=${environment.buildTimestamp}`;
     } else {
         const style = this.document.createElement('link');
         style.id = 'client-theme';

@@ -71,7 +71,7 @@
         "RESOURCE_FILTER": "过滤资源的类型。",
         "PUSH_BASED": "把资源由本地Harbor推送到远端仓库。",
         "PULL_BASED": "把资源由远端仓库拉取到本地Harbor。",
-        "DESTINATION_NAMESPACE": "指定目的端名称空间。如果不填，资源会被放到和源相同的名称空间下。",
+        "DESTINATION_NAMESPACE": "指定目标名称空间。如果不填，资源会被放到和源相同的名称空间下。",
         "OVERRIDE": "如果存在具有相同名称的资源，请指定是否覆盖目标上的资源。",
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
         "USER_NAME": "不能包含特殊字符且长度不能超过255。",
@@ -249,7 +249,7 @@
         "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Harbor, Aws ECR, Azure ACR, Quay 和 Google GCR 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay 和 Google GCR 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址"
     },
@@ -546,7 +546,7 @@
         "DISABLE": "停用",
         "REPLICATION_MODE": "复制模式",
         "SRC_REGISTRY": "源仓库",
-        "DESTINATION_NAMESPACE": "目标仓库:命名空间",
+        "DESTINATION_NAMESPACE": "目标仓库:名称空间",
         "DESTINATION_NAME_IS_REQUIRED": "目标名称为必填项。",
         "NEW_DESTINATION": "创建目标",
         "DESTINATION_URL": "目标URL",
@@ -573,6 +573,7 @@
         "ADVANCED": "高级检索",
         "STATUS": "状态",
         "OPERATION": "操作",
+        "REPLICATION_TRIGGER": "触发器",
         "CREATION_TIME": "创建时间",
         "UPDATE_TIME": "更新时间",
         "END_TIME": "结束时间",
@@ -610,15 +611,15 @@
         "DELETE_ENABLED": "默认启用该规则",
         "NEW": "新增",
         "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
-        "DESTINATION_NAME_TOOLTIP": "目标名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
+        "DESTINATION_NAME_TOOLTIP": "名称空间由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "ACKNOWLEDGE": "确认",
         "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。",
         "REPLI_MODE": "复制模式",
-        "SOURCE_REGISTRY": "源Registry",
-        "SOURCE_NAMESPACES": "源Namespace",
-        "DEST_REGISTRY": "目的Registry",
-        "DEST_NAMESPACE": "目的Namespace",
-        "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "SOURCE_REGISTRY": "源仓库",
+        "SOURCE_NAMESPACES": "源名称空间",
+        "DEST_REGISTRY": "目标仓库",
+        "DEST_NAMESPACE": "目标名称空间",
+        "NAMESPACE_TOOLTIP": "名称空间名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "TAG": "Tag",
         "LABEL": "标签",
         "RESOURCE": "资源",
@@ -629,7 +630,22 @@
         "ENABLE_SUCCESS": "启用规则成功",
         "ENABLE_FAILED": "启用规则失败",
         "DISABLE_SUCCESS": "禁用规则成功",
-        "DISABLE_FAILED": "禁用规则失败"
+        "DISABLE_FAILED": "禁用规则失败",
+        "DES_REPO_FLATTENING": "目标仓库扁平化",
+        "NAMESPACE": "名称空间",
+        "REPO_FLATTENING": "仓库扁平化",
+        "NO_FLATTING": "无替换",
+        "FLATTEN_LEVEL_1": "替换1级",
+        "FLATTEN_LEVEL_2": "替换2级",
+        "FLATTEN_LEVEL_3": "替换3级",
+        "FLATTEN_ALL": "替换所有级",
+        "FLATTEN_LEVEL_TIP": "此项用以在复制镜像时减少仓库的层级结构。假设仓库的层级结构为 'a/b/c/d/img' 且目标名称空间为 'ns'，则每一项对应的结果如下：",
+        "FLATTEN_LEVEL_TIP_ALL": "'替换所有级'(v2.3之前版本所使用的行为): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'无替换': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'替换1级'(默认项): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'替换2级': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'",
+        "NOTE": "注意: Chartmuseum Charts 仅支持2层的仓库结构：如 `a/chart`"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -802,7 +818,8 @@
         "MAINTAINER": "维护人员",
         "DEVELOPER": "开发者",
         "GUEST": "访客",
-        "LIMITED_GUEST": "受限访客"
+        "LIMITED_GUEST": "受限访客",
+        "SEE_ALL": "查看全部"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -991,16 +1008,14 @@
     },
     "TOP_REPO": "受欢迎的镜像仓库",
     "STATISTICS": {
-        "TITLE": "统计",
         "PRO_ITEM": "项目",
         "REPO_ITEM": "镜像仓库",
         "INDEX_PRIVATE": "私有",
-        "INDEX_MY_PROJECTS": "我的项目",
-        "INDEX_MY_REPOSITORIES": "我的镜像仓库",
         "INDEX_PUB": "公开",
         "INDEX_TOTAL": "总计",
         "STORAGE": "存储",
-        "LIMIT": "容量"
+        "LIMIT": "容量",
+        "STORAGE_USED": "已使用的存储空间"
     },
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",
@@ -1151,7 +1166,8 @@
         "SAVE_SUCCESS": "项目容量修改成功",
         "UNLIMITED": "不设限",
         "INVALID_INPUT": "输入错误",
-        "PLACEHOLDER": "我们找不到任何可以配置定额的项目"
+        "PLACEHOLDER": "我们找不到任何可以配置定额的项目",
+        "FILTER_PLACEHOLDER": "按名称查找（完全匹配）"
     },
     "WEEKLY": {
         "MONDAY": "周一",

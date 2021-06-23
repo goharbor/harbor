@@ -17,41 +17,47 @@ package ldap
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"regexp"
 	"strings"
 
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/ldap/model"
+	"github.com/goharbor/harbor/src/pkg/user"
+	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
+
 	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/utils"
 
 	"github.com/goharbor/harbor/src/common/models"
 	ldapCtl "github.com/goharbor/harbor/src/controller/ldap"
+	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/pkg/ldap"
 
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
 type Auth struct {
 	auth.DefaultAuthenticateHelper
+	userMgr user.Manager
 }
 
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.
 func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-
+	ctx := orm.Context()
 	p := m.Principal
 	if len(strings.TrimSpace(p)) == 0 {
 		log.Debugf("LDAP authentication failed for empty user id.")
 		return nil, auth.NewErrAuth("Empty user id")
 	}
-	ldapSession, err := ldapCtl.Ctl.Session(context.Background())
+	ldapSession, err := ldapCtl.Ctl.Session(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can not load system ldap config: %v", err)
 	}
@@ -87,16 +93,16 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Realname = ldapUsers[0].Realname
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 
-	l.syncUserInfoFromDB(&u)
-	l.attachLDAPGroup(ldapUsers, &u, ldapSession)
+	l.syncUserInfoFromDB(ctx, &u)
+	l.attachLDAPGroup(ctx, ldapUsers, &u, ldapSession)
 
 	return &u, nil
 }
 
-func (l *Auth) attachLDAPGroup(ldapUsers []model.User, u *models.User, sess *ldap.Session) {
+func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *models.User, sess *ldap.Session) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
-	groupCfg, err := config.LDAPGroupConf()
+	groupCfg, err := config.LDAPGroupConf(ctx)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
 		// most likely user doesn't configure user group info, it should not block user login
@@ -112,7 +118,11 @@ func (l *Auth) attachLDAPGroup(ldapUsers []model.User, u *models.User, sess *lda
 		}
 
 	}
-	userGroups := make([]models.UserGroup, 0)
+	// skip to attach group when ldap_group_search_filter is empty
+	if len(groupCfg.Filter) == 0 {
+		return
+	}
+	userGroups := make([]ugModel.UserGroup, 0)
 	for _, dn := range ldapUsers[0].GroupDNList {
 		lGroups, err := sess.SearchGroupByDN(dn)
 		if err != nil {
@@ -123,22 +133,21 @@ func (l *Auth) attachLDAPGroup(ldapUsers []model.User, u *models.User, sess *lda
 			log.Warningf("Can not get the ldap group name with DN %v", dn)
 			continue
 		}
-		userGroups = append(userGroups, models.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+		userGroups = append(userGroups, ugModel.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
-	u.GroupIDs, err = group.PopulateGroup(userGroups)
+	u.GroupIDs, err = ugCtl.Ctl.Populate(orm.Context(), userGroups)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
 	}
 }
 
-func (l *Auth) syncUserInfoFromDB(u *models.User) {
+func (l *Auth) syncUserInfoFromDB(ctx context.Context, u *models.User) {
 	// Retrieve SysAdminFlag from DB so that it transfer to session
-	dbUser, err := dao.GetUser(models.User{Username: u.Username})
-	if err != nil {
-		log.Errorf("failed to sync user info from DB error %v", err)
+	dbUser, err := l.userMgr.GetByName(ctx, u.Username)
+	if errors.IsNotFoundErr(err) {
 		return
-	}
-	if dbUser == nil {
+	} else if err != nil {
+		log.Errorf("failed to sync user info from DB error %v", err)
 		return
 	}
 	u.SysAdminFlag = dbUser.SysAdminFlag
@@ -155,23 +164,23 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 	u.Password = "12345678AbC" // Password is not kept in local db
 	u.Comment = "from LDAP."   // Source is from LDAP
 
-	return dao.OnBoardUser(u)
+	return l.userMgr.Onboard(orm.Context(), u)
 }
 
 // SearchUser -- Search user in ldap
 func (l *Auth) SearchUser(username string) (*models.User, error) {
 	var user models.User
-	s, err := ldapCtl.Ctl.Session(context.Background())
+	s, err := ldapCtl.Ctl.Session(orm.Context())
 	if err != nil {
 		return nil, err
 	}
 	if err = s.Open(); err != nil {
-		return nil, fmt.Errorf("Failed to load system ldap config, %v", err)
+		return nil, fmt.Errorf("failed to load system ldap config, %v", err)
 	}
 	defer s.Close()
 	lUsers, err := s.SearchUser(username)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to search user in ldap")
+		return nil, fmt.Errorf("failed to search user in ldap")
 	}
 
 	if len(lUsers) > 1 {
@@ -185,18 +194,18 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 
 		log.Debugf("Found ldap user %v", user)
 	} else {
-		return nil, fmt.Errorf("No user found, %v", username)
+		return nil, fmt.Errorf("no user found, %v", username)
 	}
 
 	return &user, nil
 }
 
 // SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
-func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
+func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
 	if _, err := goldap.ParseDN(groupKey); err != nil {
 		return nil, auth.ErrInvalidLDAPGroupDN
 	}
-	s, err := ldapCtl.Ctl.Session(context.Background())
+	s, err := ldapCtl.Ctl.Session(orm.Context())
 
 	if err != nil {
 		return nil, fmt.Errorf("can not load system ldap config: %v", err)
@@ -215,9 +224,9 @@ func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, fmt.Errorf("Failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, fmt.Errorf("failed to searh ldap group with groupDN:%v", groupKey)
 	}
-	userGroup := models.UserGroup{
+	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,
 		LdapGroupDN: userGroupList[0].Dn,
 	}
@@ -225,7 +234,8 @@ func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 }
 
 // OnBoardGroup -- Create Group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
+	ctx := orm.Context()
 	if _, err := goldap.ParseDN(u.LdapGroupDN); err != nil {
 		return auth.ErrInvalidLDAPGroupDN
 	}
@@ -234,44 +244,41 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	}
 	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
-	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
+	userGroupList, err := ugCtl.Ctl.List(ctx, ugModel.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {
 		return err
 	}
 	if len(userGroupList) > 0 {
 		return auth.ErrDuplicateLDAPGroup
 	}
-	return group.OnBoardUserGroup(u)
+	return ugCtl.Ctl.Ensure(ctx, u)
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
 func (l *Auth) PostAuthenticate(u *models.User) error {
 
-	exist, err := dao.UserExists(*u, "username")
+	ctx := orm.Context()
+	query := q.New(q.KeyWords{"Username": u.Username})
+	n, err := l.userMgr.Count(ctx, query)
 	if err != nil {
 		return err
 	}
 
-	if exist {
-		queryCondition := models.User{
-			Username: u.Username,
-		}
-		dbUser, err := dao.GetUser(queryCondition)
-		if err != nil {
-			return err
-		}
-		if dbUser == nil {
+	if n > 0 {
+		dbUser, err := l.userMgr.GetByName(ctx, u.Username)
+		if errors.IsNotFoundErr(err) {
 			fmt.Printf("User not found in DB %+v", u)
 			return nil
+		} else if err != nil {
+			return err
 		}
 		u.UserID = dbUser.UserID
-
 		if dbUser.Email != u.Email {
 			Re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 			if !Re.MatchString(u.Email) {
 				log.Debugf("Not a valid email address: %v, skip to sync", u.Email)
 			} else {
-				if err = dao.ChangeUserProfile(*u, "Email"); err != nil {
+				if err = l.userMgr.UpdateProfile(ctx, u, "Email"); err != nil {
 					u.Email = dbUser.Email
 					log.Errorf("failed to sync user email: %v", err)
 				}
@@ -286,11 +293,13 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 		return err
 	}
 	if u.UserID <= 0 {
-		return fmt.Errorf("Can not OnBoardUser %v", u)
+		return fmt.Errorf("cannot OnBoardUser %v", u)
 	}
 	return nil
 }
 
 func init() {
-	auth.Register(common.LDAPAuth, &Auth{})
+	auth.Register(common.LDAPAuth, &Auth{
+		userMgr: user.New(),
+	})
 }

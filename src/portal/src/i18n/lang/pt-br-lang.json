@@ -248,7 +248,7 @@
         "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
@@ -609,7 +609,7 @@
         "DELETE_ENABLED": "Enabled this policy",
         "NEW": "Novo",
         "NAME_TOOLTIP": "nome da regra de replicação deve conter ao menos 2 caracteres sendo caracteres minusculos, números e  ._- e devem iniciar com letras e números.",
-        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._-/ and must be start with characters or numbers.",
+        "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "ACKNOWLEDGE": "Reconhecer",
         "RULE_DISABLED": "Essa regra foi desabilitada pois uma label usada no seu filtro foi removida. \n Edite a regra e atualize seu filtro para habilitá-la.",
         "REPLI_MODE": "Replication mode",
@@ -617,7 +617,7 @@
         "SOURCE_NAMESPACES": "Source namespaces",
         "DEST_REGISTRY": "Destination registry",
         "DEST_NAMESPACE": "Destination namespace",
-        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._-/ and must be start with characters or numbers.",
         "TAG": "Tag",
         "LABEL": "Label",
         "RESOURCE": "Resource",
@@ -628,7 +628,22 @@
         "ENABLE_SUCCESS": "Enabled rule successfully",
         "ENABLE_FAILED": "Enabling rule failed",
         "DISABLE_SUCCESS": "Disabled rule successfully",
-        "DISABLE_FAILED": "Disabling rule failed"
+        "DISABLE_FAILED": "Disabling rule failed",
+        "DES_REPO_FLATTENING": "Destination Repository Flattening",
+        "NAMESPACE": "Namespace",
+        "REPO_FLATTENING": "Flattening",
+        "NO_FLATTING": "No Flatting",
+        "FLATTEN_LEVEL_1": "Flatten 1 Level",
+        "FLATTEN_LEVEL_2": "Flatten 2 Levels",
+        "FLATTEN_LEVEL_3": "Flatten 3 Levels",
+        "FLATTEN_ALL": "Flatten All Levels",
+        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Assuming that the nested repository structure is 'a/b/c/d/img' and the destination namespace is 'ns', the corresponding results of each item are as below:",
+        "FLATTEN_LEVEL_TIP_ALL": "'Flatten All Levels'(Used prior v2.3): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'No Flatting': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
+        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: `a/chart`"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endpoint",
@@ -798,7 +813,8 @@
         "MAINTAINER": "Maintainer(s)",
         "DEVELOPER": "Developer(s)",
         "GUEST": "Guest(s)",
-        "LIMITED_GUEST": "Limited guest(s)"
+        "LIMITED_GUEST": "Limited guest(s)",
+        "SEE_ALL": "SEE ALL"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algumas alterações ainda não foram salvas. Você deseja cancelar?"
@@ -987,16 +1003,14 @@
     },
     "TOP_REPO": "Repositórios Populares",
     "STATISTICS": {
-        "TITLE": "ESTATÍSTICAS",
         "PRO_ITEM": "PROJETOS",
         "REPO_ITEM": "REPOSITÓRIOS",
         "INDEX_PRIVATE": "PRIVADO",
-        "INDEX_MY_PROJECTS": "MEUS PROJETOS",
-        "INDEX_MY_REPOSITORIES": "MEUS REPOSITÓRIOS",
         "INDEX_PUB": "PUBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ARMAZENAMENTO",
-        "LIMIT": "Limite"
+        "LIMIT": "Limite",
+        "STORAGE_USED": "Storage used"
     },
     "SEARCH": {
         "IN_PROGRESS": "Buscando...",
@@ -1144,7 +1158,8 @@
         "SAVE_SUCCESS": "Quota edit success",
         "UNLIMITED": "unlimited",
         "INVALID_INPUT": "invalid input",
-        "PLACEHOLDER": "We couldn't find any project quotas"
+        "PLACEHOLDER": "We couldn't find any project quotas",
+        "FILTER_PLACEHOLDER": "Search by name(exact match)"
     },
     "WEEKLY": {
         "MONDAY": "Segunda Feira",

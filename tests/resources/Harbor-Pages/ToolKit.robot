@@ -97,7 +97,7 @@ Multi-delete User
 Multi-delete Member
     [Arguments]    @{obj}
     FOR  ${obj}  IN  @{obj}
-        Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//clr-checkbox-wrapper/label
+        Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//div[contains(@class,'clr-checkbox-wrapper')]/label
     END
     Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
     Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${delete_btn}

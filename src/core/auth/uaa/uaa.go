@@ -21,12 +21,14 @@ import (
 	"sync"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	userpkg "github.com/goharbor/harbor/src/pkg/user"
 )
 
 // Auth is the implementation of AuthenticateHelper to access uaa for authentication.
@@ -34,6 +36,7 @@ type Auth struct {
 	sync.Mutex
 	client uaa.Client
 	auth.DefaultAuthenticateHelper
+	userMgr userpkg.Manager
 }
 
 // Authenticate ...
@@ -70,7 +73,7 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	}
 	fillEmailRealName(user)
 	user.Comment = "From UAA"
-	return dao.OnBoardUser(user)
+	return u.userMgr.Onboard(orm.Context(), user)
 }
 
 func fillEmailRealName(user *models.User) {
@@ -84,20 +87,19 @@ func fillEmailRealName(user *models.User) {
 
 // PostAuthenticate will check if user exists in DB, if not on Board user, if he does, update the profile.
 func (u *Auth) PostAuthenticate(user *models.User) error {
-	dbUser, err := dao.GetUser(models.User{Username: user.Username})
-	if err != nil {
-		return err
-	}
-	if dbUser == nil {
+	ctx := orm.Context()
+	dbUser, err := u.userMgr.GetByName(ctx, user.Username)
+	if errors.IsNotFoundErr(err) {
 		return u.OnBoardUser(user)
+	} else if err != nil {
+		return err
 	}
 	user.UserID = dbUser.UserID
 	user.SysAdminFlag = dbUser.SysAdminFlag
 	fillEmailRealName(user)
-	if err2 := dao.ChangeUserProfile(*user, "Email", "Realname"); err2 != nil {
+	if err2 := u.userMgr.UpdateProfile(ctx, user, "Email", "Realname"); err2 != nil {
 		log.Warningf("Failed to update user profile, user: %s, error: %v", user.Username, err2)
 	}
-
 	return nil
 }
 
@@ -114,7 +116,7 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 		return nil, nil
 	}
 	if len(l) > 1 {
-		return nil, fmt.Errorf("Multiple entries found for username: %s", username)
+		return nil, fmt.Errorf("multiple entries found for username: %s", username)
 	}
 	e := l[0]
 	email := ""
@@ -129,7 +131,7 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 
 func (u *Auth) ensureClient() error {
 	var cfg *uaa.ClientConfig
-	UAASettings, err := config.UAASettings()
+	UAASettings, err := config.UAASettings(orm.Context())
 	//	log.Debugf("Uaa settings: %+v", UAASettings)
 	if err != nil {
 		log.Warningf("Failed to get UAA setting from Admin Server, error: %v", err)
@@ -157,5 +159,7 @@ func (u *Auth) ensureClient() error {
 	return nil
 }
 func init() {
-	auth.Register(common.UAAAuth, &Auth{})
+	auth.Register(common.UAAAuth, &Auth{
+		userMgr: userpkg.New(),
+	})
 }

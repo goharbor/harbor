@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ArtifactTagComponent } from './artifact-tag.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -8,8 +8,11 @@ import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { ArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import {
-  USERSTATICPERMISSION,
-  UserPermissionService, UserPermissionDefaultService, SystemInfoService } from '../../../../../shared/services';
+  SystemInfoService,
+  UserPermissionDefaultService,
+  UserPermissionService,
+  USERSTATICPERMISSION
+} from '../../../../../shared/services';
 import { delay } from 'rxjs/operators';
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { SharedTestingModule } from "../../../../../shared/shared.module";

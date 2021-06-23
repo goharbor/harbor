@@ -19,8 +19,8 @@ import { ProjectService } from "../../../../../ng-swagger-gen/services/project.s
 import { AuditLog } from "../../../../../ng-swagger-gen/models/audit-log";
 import { Project } from "../project";
 import { finalize } from "rxjs/operators";
-import {DEFAULT_PAGE_SIZE} from "../../../shared/units/utils";
-import {ClrDatagridStateInterface} from "@clr/angular";
+import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { ClrDatagridStateInterface } from "@clr/angular";
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 

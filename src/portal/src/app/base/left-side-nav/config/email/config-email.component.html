@@ -22,9 +22,10 @@
         </clr-input-container>
         <clr-input-container>
             <label for="emailPassword">{{'CONFIG.MAIL_PASSWORD' | translate}}</label>
+            <!--disable property should be consistent with 'email_username', as the back end API won't return this fielder, -->
             <input clrInput name="emailPassword" type="password" #emailPasswordInput="ngModel"
                 [(ngModel)]="currentConfig.email_password.value" id="emailPassword" size="40"
-                [disabled]="disabled(currentConfig.email_password)" />
+                [disabled]="disabled(currentConfig.email_username)" />
         </clr-input-container>
         <clr-input-container>
             <label for="emailFrom" class="required">{{'CONFIG.MAIL_FROM' | translate}}</label>
@@ -33,7 +34,7 @@
                 [disabled]="disabled(currentConfig.email_from)" />
             <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
         </clr-input-container>
-        <div class="clr-form-control">
+        <div class="clr-form-control" [class.clr-form-control-disabled]="disabled(currentConfig.email_ssl)">
             <label class="clr-control-label" for="emailSSL">{{'CONFIG.MAIL_SSL' | translate}}
                     <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -52,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control" [class.clr-form-control-disabled]="disabled(currentConfig.email_insecure)">
             <label class="clr-control-label" for="emailInsecure">{{'CONFIG.MAIL_INSECURE' | translate}}
                     <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

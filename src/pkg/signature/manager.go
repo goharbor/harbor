@@ -16,7 +16,7 @@ package signature
 
 import (
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
@@ -83,7 +83,7 @@ func (m *mgr) getTargetsByRepo(ctx context.Context, repo string) ([]model.Target
 	} else {
 		name = sc.GetUsername()
 	}
-	return notary.GetInternalTargets(config.InternalNotaryEndpoint(), name, repo)
+	return notary.GetInternalTargets(ctx, config.InternalNotaryEndpoint(), name, repo)
 }
 
 var instance = &mgr{}

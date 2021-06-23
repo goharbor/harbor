@@ -16,6 +16,10 @@ package testing
 
 import (
 	"context"
+	"fmt"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/config"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io"
 	"math/rand"
 	"net/http"
@@ -25,8 +29,6 @@ import (
 
 	o "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/opencontainers/go-digest"
@@ -101,7 +103,9 @@ func (suite *Suite) WithProject(f func(int64, string), projectNames ...string) {
 		projectName = suite.RandString(5)
 	}
 
-	projectID, err := dao.AddProject(models.Project{
+	ctx := suite.Context()
+
+	projectID, err := suite.AddProject(ctx, &proModels.Project{
 		Name:    projectName,
 		OwnerID: 1,
 	})
@@ -110,7 +114,7 @@ func (suite *Suite) WithProject(f func(int64, string), projectNames ...string) {
 	}
 
 	defer func() {
-		dao.DeleteProject(projectID)
+		suite.DeleteProject(ctx, projectName, projectID)
 	}()
 
 	f(projectID, projectName)
@@ -157,4 +161,61 @@ func (suite *Suite) ExecSQL(query string, args ...interface{}) {
 // IsNotFoundErr ...
 func (suite *Suite) IsNotFoundErr(err error) bool {
 	return suite.True(errors.IsNotFoundErr(err))
+}
+
+// AddProject put here is to avoid import cycle
+func (suite *Suite) AddProject(ctx context.Context, project *proModels.Project) (int64, error) {
+	// Create create a project instance
+	var projectID int64
+
+	h := func(ctx context.Context) error {
+		o, err := orm.FromContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		now := time.Now()
+		project.CreationTime = now
+		project.UpdateTime = now
+
+		projectID, err = o.Insert(project)
+		if err != nil {
+			return orm.WrapConflictError(err, "The project named %s already exists", project.Name)
+		}
+
+		member := &proModels.Member{
+			ProjectID:    projectID,
+			EntityID:     project.OwnerID,
+			Role:         common.RoleProjectAdmin,
+			EntityType:   common.UserMember,
+			CreationTime: now,
+			UpdateTime:   now,
+		}
+
+		if _, err := o.Insert(member); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := orm.WithTransaction(h)(ctx); err != nil {
+		return 0, err
+	}
+
+	return projectID, nil
+}
+
+// DeleteProject put here is to avoid import cycle
+func (suite *Suite) DeleteProject(ctx context.Context, projectName string, projectID int64) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	name := fmt.Sprintf("%s#%d", projectName, projectID)
+	sql := `update project
+		set deleted = true, name = ?
+		where project_id = ?`
+	_, err = o.Raw(sql, name, projectID).Exec()
+	return err
 }

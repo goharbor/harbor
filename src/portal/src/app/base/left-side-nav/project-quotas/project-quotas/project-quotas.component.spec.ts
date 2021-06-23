@@ -5,12 +5,16 @@ import {
   Quota, RequestQueryParams
 } from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { APP_BASE_HREF } from '@angular/common';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 import { EditProjectQuotasComponent } from "./edit-project-quotas/edit-project-quotas.component";
 import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
+import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
+import { StrictHttpResponse } from "../../../../../../ng-swagger-gen/strict-http-response";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
 
 
 describe('ProjectQuotasComponent', () => {
@@ -53,6 +57,11 @@ describe('ProjectQuotasComponent', () => {
   const timeout = (ms: number) => {
      return new Promise(resolve => setTimeout(resolve, ms));
   };
+  const fakedProjectService = {
+    listProjects() {
+      return of([]);
+    }
+  };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -63,6 +72,7 @@ describe('ProjectQuotasComponent', () => {
         EditProjectQuotasComponent
       ],
       providers: [
+        { provide: ProjectService, useValue: fakedProjectService },
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: APP_BASE_HREF, useValue : '/' },
         { provide: Router, useValue: fakedRouter }
@@ -82,17 +92,15 @@ describe('ProjectQuotasComponent', () => {
     component.loading = true;
     quotaService = fixture.debugElement.injector.get(QuotaService);
     spy = spyOn(quotaService, 'listQuotasResponse')
-      .and.callFake(function (params: RequestQueryParams) {
-        let header = new Map();
-        header.set("X-Total-Count", 123);
-        const httpRes = {
-          headers: header,
+      .and.callFake(function (params: QuotaService.ListQuotasParams): Observable<HttpResponse<Quota[]>> {
+        const response: HttpResponse<Array<Quota>> = new HttpResponse<Array<Quota>>({
+          headers: new HttpHeaders({'x-total-count': '123'}),
           body: mockQuotaList
-        };
-        return of(httpRes).pipe(delay(0));
+        });
+        return of(response).pipe(delay(0));
       });
     spyUpdate = spyOn(quotaService, 'updateQuota').and.returnValue(of(null));
-    spyRoute = spyOn(fixture.debugElement.injector.get(Router), 'navigate').and.returnValue(of(null));
+    spyRoute = spyOn(fixture.debugElement.injector.get(Router), 'navigate').and.returnValue(Promise.resolve(true));
     fixture.detectChanges();
   }));
 
@@ -120,4 +128,22 @@ describe('ProjectQuotasComponent', () => {
     a.dispatchEvent(new Event("click"));
     expect(spyRoute.calls.count()).toEqual(1);
   });
+  it('should refresh', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.doSearch(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(spy.calls.count()).toEqual(2);
+  });
+  it('should get no quota', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.doSearch('test');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.quotaList.length).toEqual(0);
+  });
 });
+
+

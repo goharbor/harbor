@@ -5,7 +5,7 @@ package project
 import (
 	context "context"
 
-	models "github.com/goharbor/harbor/src/common/models"
+	models "github.com/goharbor/harbor/src/pkg/project/models"
 	mock "github.com/stretchr/testify/mock"
 
 	q "github.com/goharbor/harbor/src/lib/q"

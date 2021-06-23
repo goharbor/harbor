@@ -198,11 +198,11 @@ Switch To Email
     Sleep  1
 
 Config Email
-    Input Text  xpath=//*[@id='mailServer']  smtp.vmware.com
+    Input Text  xpath=//*[@id='mailServer']  smtp.harbortest.com
     Input Text  xpath=//*[@id='emailPort']  25
-    Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
+    Input Text  xpath=//*[@id='emailUsername']  example@harbortest.com
     Input Text  xpath=//*[@id='emailPassword']  example
-    Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
+    Input Text  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
     Sleep  1
     Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
@@ -212,10 +212,10 @@ Config Email
     Sleep  6
 
 Verify Email
-    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.vmware.com
+    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.harbortest.com
     Textfield Value Should Be  xpath=//*[@id='emailPort']  25
-    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@vmware.com
-    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@vmware.com>
+    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@harbortest.com
+    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
     Checkbox Should Be Selected  xpath=//*[@id='emailSSL']
     Checkbox Should Not Be Selected  xpath=//*[@id='emailInsecure']
 
@@ -276,7 +276,7 @@ Create New Labels
 
 Update A Label
     [Arguments]  ${labelname}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Edit')]
     Sleep  1
@@ -287,7 +287,7 @@ Update A Label
 
 Delete A Label
     [Arguments]  ${labelname}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
@@ -367,7 +367,7 @@ Set User Name Claim And Save
 
 Select Distribution
     [Arguments]    ${name}
-    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper/label
+    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]/label
 
 Distribution Exist
     [Arguments]  ${name}  ${endpoint}

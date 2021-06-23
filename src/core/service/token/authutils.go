@@ -17,6 +17,7 @@ package token
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"strings"
 	"time"
 
@@ -27,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
@@ -109,12 +109,12 @@ func filterAccess(ctx context.Context, access []*token.ResourceActions,
 }
 
 // MakeToken makes a valid jwt token based on parms.
-func MakeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
+func MakeToken(ctx context.Context, username, service string, access []*token.ResourceActions) (*models.Token, error) {
 	options, err := tokenpkg.NewOptions(signingMethod, v2.Issuer, privateKey)
 	if err != nil {
 		return nil, err
 	}
-	expiration, err := config.TokenExpiration()
+	expiration, err := config.TokenExpiration(ctx)
 	if err != nil {
 		return nil, err
 	}

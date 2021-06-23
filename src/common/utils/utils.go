@@ -295,3 +295,13 @@ func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 	}
 	return results
 }
+
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
+	placeholders := []string{}
+	for i := 0; i < n; i++ {
+		placeholders = append(placeholders, "?")
+	}
+	return strings.Join(placeholders, ",")
+}

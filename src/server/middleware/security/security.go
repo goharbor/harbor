@@ -15,10 +15,11 @@
 package security
 
 import (
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -48,7 +49,7 @@ type generator interface {
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		log := log.G(r.Context())
-		mode, err := config.AuthMode()
+		mode, err := config.AuthMode(orm.Context())
 		if err == nil {
 			r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
 		} else {

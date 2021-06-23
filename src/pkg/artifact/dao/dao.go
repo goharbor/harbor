@@ -53,22 +53,22 @@ type DAO interface {
 }
 
 const (
-	// both tagged and untagged artifacts
-	both = `IN (
-		SELECT DISTINCT art.id FROM artifact art
-		LEFT JOIN tag ON art.id=tag.artifact_id
-		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
-		WHERE tag.id IS NOT NULL OR ref.id IS NULL)`
-	// only untagged artifacts
-	untagged = `IN (
-		SELECT DISTINCT art.id FROM artifact art
-		LEFT JOIN tag ON art.id=tag.artifact_id
-		WHERE tag.id IS NULL)`
-	// only tagged artifacts
-	tagged = `IN (
-		SELECT DISTINCT art.id FROM artifact art
-		JOIN tag ON art.id=tag.artifact_id
-		WHERE tag.id IS NOT NULL)`
+	// the QuerySetter of beego doesn't support "EXISTS" directly, use qs.FilterRaw("id", "=id AND xxx") to workaround the limitation
+	// base filter: both tagged and untagged artifacts
+	both = `=id AND (
+		EXISTS (SELECT 1 FROM tag WHERE tag.artifact_id = T0.id)
+		OR 
+		NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = T0.id)
+	)`
+	// tag filter: only untagged artifacts
+	// the "untagged" filter is based on "base" filter, so we consider the tag only
+	untagged = `=id AND NOT EXISTS(
+		SELECT 1 FROM tag WHERE tag.artifact_id = T0.id
+	)`
+	// tag filter: only tagged artifacts
+	tagged = `=id AND EXISTS (
+		SELECT 1 FROM tag WHERE tag.artifact_id = T0.id
+	)`
 )
 
 // New returns an instance of the default DAO
@@ -273,7 +273,7 @@ func querySetter(ctx context.Context, query *q.Query) (beegoorm.QuerySeter, erro
 
 // handle q=base=*
 // when "q=base=*" is specified in the query, the base collection is the all artifacts of database,
-// otherwise the base connection is only the tagged artifacts and untagged artifacts that aren't
+// otherwise the base collection is only the tagged artifacts and untagged artifacts that aren't
 // referenced by others
 func setBaseQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
 	if query == nil || len(query.Keywords) == 0 {

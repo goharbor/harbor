@@ -16,11 +16,11 @@ package quota
 
 import (
 	"fmt"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -64,7 +64,7 @@ func (suite *RequestMiddlewareTestSuite) SetupTest() {
 	suite.projectController = &projecttesting.Controller{}
 	projectController = suite.projectController
 
-	mock.OnAnything(suite.projectController, "GetByName").Return(&models.Project{ProjectID: 1, Name: "library"}, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(&proModels.Project{ProjectID: 1, Name: "library"}, nil)
 
 	suite.originallQuotaController = quotaController
 	suite.quotaController = &quotatesting.Controller{}
@@ -208,7 +208,7 @@ func (suite *RequestMiddlewareTestSuite) TestResourcesRequestDenied() {
 
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 	var errs pquota.Errors
-	errs = errs.Add(fmt.Errorf("Exceed"))
+	errs = errs.Add(fmt.Errorf("exceed"))
 	mock.OnAnything(suite.quotaController, "Request").Return(errs)
 
 	RequestMiddleware(config)(next).ServeHTTP(rr, req)

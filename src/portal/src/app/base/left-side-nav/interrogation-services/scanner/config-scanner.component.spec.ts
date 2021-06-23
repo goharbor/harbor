@@ -1,17 +1,15 @@
 import { ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { ClarityModule } from "@clr/angular";
 import { of } from "rxjs";
+import { delay } from "rxjs/operators";
 import { ConfigurationScannerComponent } from "./config-scanner.component";
-import { ConfigScannerService } from "./config-scanner.service";
-import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { SharedTestingModule } from "../../../../shared/shared.module";
 import { ScannerMetadataComponent } from "./scanner-metadata/scanner-metadata.component";
 import { NewScannerModalComponent } from "./new-scanner-modal/new-scanner-modal.component";
 import { NewScannerFormComponent } from "./new-scanner-form/new-scanner-form.component";
-import { TranslateService } from "@ngx-translate/core";
-import { ErrorHandler } from "../../../../shared/units/error-handler";
-import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
+import { ScannerService } from "../../../../../../ng-swagger-gen/services/scanner.service";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
+import { ClrLoadingState } from "@clr/angular";
 
 describe('ConfigurationScannerComponent', () => {
   let mockScannerMetadata = {
@@ -35,10 +33,14 @@ describe('ConfigurationScannerComponent', () => {
   let fixture: ComponentFixture<ConfigurationScannerComponent>;
   let fakedConfigScannerService = {
     getScannerMetadata() {
-      return of(mockScannerMetadata);
+      return of(mockScannerMetadata).pipe(delay(10));
     },
-    getScanners() {
-      return of([mockScanner1]);
+    listScannersResponse() {
+      const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+        headers: new HttpHeaders({'x-total-count': [mockScanner1].length.toString()}),
+        body: [mockScanner1]
+      });
+      return of(response).pipe(delay(10));
     },
     updateScanner() {
       return of(true);
@@ -48,8 +50,6 @@ describe('ConfigurationScannerComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
-        BrowserAnimationsModule,
-        ClarityModule,
       ],
       declarations: [
         ConfigurationScannerComponent,
@@ -58,11 +58,7 @@ describe('ConfigurationScannerComponent', () => {
         NewScannerFormComponent
       ],
       providers: [
-        ErrorHandler,
-        MessageHandlerService,
-        ConfirmationDialogService,
-        TranslateService,
-        { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+        { provide: ScannerService, useValue: fakedConfigScannerService },
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
@@ -71,9 +67,11 @@ describe('ConfigurationScannerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfigurationScannerComponent);
     component = fixture.componentInstance;
+    component.newScannerDialog.saveBtnState = ClrLoadingState.LOADING;
     fixture.detectChanges();
   });
-  it('should create', () => {
+  it('should create', async () => {
+    await fixture.whenStable();
     expect(component).toBeTruthy();
     expect(component.scanners.length).toBe(1);
   });

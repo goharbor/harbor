@@ -4,10 +4,10 @@ import { FormBuilder } from "@angular/forms";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ClarityModule } from "@clr/angular";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
-import { ConfigScannerService } from "../config-scanner.service";
 import { of } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { delay } from "rxjs/operators";
+import { ScannerService } from "../../../../../../../ng-swagger-gen/services/scanner.service";
 
 describe('NewScannerFormComponent', () => {
   let mockScanner1 = {
@@ -19,7 +19,7 @@ describe('NewScannerFormComponent', () => {
   let component: NewScannerFormComponent;
   let fixture: ComponentFixture<NewScannerFormComponent>;
   let fakedConfigScannerService = {
-    getScannersByName() {
+    listScanners() {
       return of([mockScanner1]).pipe(delay(500));
     },
     getScannersByEndpointUrl() {
@@ -37,7 +37,7 @@ describe('NewScannerFormComponent', () => {
       providers: [
         FormBuilder,
         TranslateService,
-        { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+        { provide: ScannerService, useValue: fakedConfigScannerService },
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]

@@ -193,6 +193,9 @@ export class CreateEditEndpointComponent
     this.onGoing = false;
 
     // Reset data
+    if (this.targetForm && this.targetForm.controls && this.targetForm.controls.targetName) {
+      this.targetForm.controls.targetName.reset();
+    }
     this.target = this.initEndpoint();
     this.initVal = this.initEndpoint();
     this.formValues = null;

@@ -96,12 +96,12 @@ type TriggerParam struct {
 
 // GetRetention Get Retention
 func (r *defaultController) GetRetention(ctx context.Context, id int64) (*policy.Metadata, error) {
-	return r.manager.GetPolicy(id)
+	return r.manager.GetPolicy(ctx, id)
 }
 
 // CreateRetention Create Retention
 func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metadata) (int64, error) {
-	id, err := r.manager.CreatePolicy(p)
+	id, err := r.manager.CreatePolicy(ctx, p)
 	if err != nil {
 		return 0, err
 	}
@@ -124,7 +124,7 @@ func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metad
 
 // UpdateRetention Update Retention
 func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metadata) error {
-	p0, err := r.manager.GetPolicy(p.ID)
+	p0, err := r.manager.GetPolicy(ctx, p.ID)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 			return fmt.Errorf("not support Trigger %s", p.Trigger.Kind)
 		}
 	}
-	if err = r.manager.UpdatePolicy(p); err != nil {
+	if err = r.manager.UpdatePolicy(ctx, p); err != nil {
 		return err
 	}
 	if needUn {
@@ -184,7 +184,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 
 // DeleteRetention Delete Retention
 func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error {
-	p, err := r.manager.GetPolicy(id)
+	p, err := r.manager.GetPolicy(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
-	return r.manager.DeletePolicy(id)
+	return r.manager.DeletePolicy(ctx, id)
 }
 
 // deleteExecs delete executions
@@ -226,7 +226,7 @@ func (r *defaultController) deleteExecs(ctx context.Context, vendorID int64) err
 
 // TriggerRetentionExec Trigger Retention Execution
 func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID int64, trigger string, dryRun bool) (int64, error) {
-	p, err := r.manager.GetPolicy(policyID)
+	p, err := r.manager.GetPolicy(ctx, policyID)
 	if err != nil {
 		return 0, err
 	}

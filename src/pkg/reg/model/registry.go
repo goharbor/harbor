@@ -70,6 +70,9 @@ const (
 	Healthy = "healthy"
 	// Unhealthy indicates registry is unhealthy
 	Unhealthy = "unhealthy"
+
+	RepositoryPathComponentTypeOnlyTwo    = "ONLY_TWO"
+	RepositoryPathComponentTypeAtLeastTwo = "AT_LEAST_TWO"
 )
 
 // Credential keeps the access key and/or secret for the related registry
@@ -130,11 +133,12 @@ type CredentialPattern struct {
 
 // RegistryInfo provides base info and capability declarations of the registry
 type RegistryInfo struct {
-	Type                     string         `json:"type"`
-	Description              string         `json:"description"`
-	SupportedResourceTypes   []string       `json:"-"`
-	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
-	SupportedTriggers        []string       `json:"supported_triggers"`
+	Type                                 string         `json:"type"`
+	Description                          string         `json:"description"`
+	SupportedResourceTypes               []string       `json:"-"`
+	SupportedResourceFilters             []*FilterStyle `json:"supported_resource_filters"`
+	SupportedTriggers                    []string       `json:"supported_triggers"`
+	SupportedRepositoryPathComponentType string         `json:"supported_repository_path_component_type"` // how many path components are allowed in the repository name
 }
 
 // AdapterPattern provides base info and capability declarations of the registry

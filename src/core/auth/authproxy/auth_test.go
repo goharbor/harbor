@@ -15,18 +15,24 @@
 package authproxy
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	cut "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/auth/authproxy/test"
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	"github.com/goharbor/harbor/src/pkg/user"
+	"github.com/goharbor/harbor/src/pkg/usergroup"
+	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
-	"os"
-	"testing"
 )
 
 var mockSvr *httptest.Server
@@ -44,6 +50,7 @@ func TestMain(m *testing.M) {
 	a = &Auth{
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
+		userMgr:             user.New(),
 	}
 	cfgMap := cut.GetUnitTestConfig()
 	conf := map[string]interface{}{
@@ -70,7 +77,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth_Authenticate(t *testing.T) {
-	userGroups := []models.UserGroup{
+	userGroups := []model.UserGroup{
 		{GroupName: "vsphere.local\\users", GroupType: common.HTTPGroupType},
 		{GroupName: "vsphere.local\\administrators", GroupType: common.HTTPGroupType},
 		{GroupName: "vsphere.local\\caadmins", GroupType: common.HTTPGroupType},
@@ -79,8 +86,7 @@ func TestAuth_Authenticate(t *testing.T) {
 		{GroupName: "vsphere.local\\licenseservice.administrators", GroupType: common.HTTPGroupType},
 		{GroupName: "vsphere.local\\everyone", GroupType: common.HTTPGroupType},
 	}
-
-	groupIDs, err := group.PopulateGroup(userGroups)
+	groupIDs, err := usergroup.Mgr.Populate(orm.Context(), userGroups)
 	if err != nil {
 		t.Fatal("Failed to get groupIDs")
 	}
@@ -189,18 +195,18 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 }
 
 func TestAuth_OnBoardGroup(t *testing.T) {
-	input := &models.UserGroup{
+	input := &model.UserGroup{
 		GroupName: "OnBoardTest",
 		GroupType: common.HTTPGroupType,
 	}
 	a.OnBoardGroup(input, "")
 
 	assert.True(t, input.ID > 0, "The OnBoardGroup should have a valid group ID")
-	g, er := group.GetUserGroup(input.ID)
+	g, er := usergroup.Mgr.Get(orm.Context(), input.ID)
 	assert.Nil(t, er)
 	assert.Equal(t, "OnBoardTest", g.GroupName)
 
-	emptyGroup := &models.UserGroup{}
+	emptyGroup := &model.UserGroup{}
 	err := a.OnBoardGroup(emptyGroup, "")
 	if err == nil {
 		t.Fatal("Empty user group should failed to OnBoard")
@@ -214,11 +220,11 @@ func TestGetTLSConfig(t *testing.T) {
 		nilRootCA bool
 	}
 	cases := []struct {
-		input  *models.HTTPAuthProxy
+		input  *cfgModels.HTTPAuthProxy
 		expect result
 	}{
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          false,
@@ -232,7 +238,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          false,
@@ -246,7 +252,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,
@@ -258,7 +264,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,
@@ -272,7 +278,7 @@ func TestGetTLSConfig(t *testing.T) {
 			},
 		},
 		{
-			input: &models.HTTPAuthProxy{
+			input: &cfgModels.HTTPAuthProxy{
 				Endpoint:            "https://127.0.0.1/login",
 				TokenReviewEndpoint: "https://127.0.0.1/tokenreview",
 				VerifyCert:          true,

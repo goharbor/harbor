@@ -292,6 +292,20 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor 
 		return nil
 	}
 
+	mount, repository, err := t.dst.CanBeMount(digest)
+	if err != nil {
+		t.logger.Errorf("failed to check whether the blob %s can be mounted on the destination registry: %v", digest, err)
+		return err
+	}
+	if mount {
+		if err = t.dst.MountBlob(repository, digest, dstRepo); err != nil {
+			t.logger.Errorf("failed to mount the blob %s on the destination registry: %v", digest, err)
+			return err
+		}
+		t.logger.Infof("the blob %s mounted from the repository %s on the destination registry directly", digest, repository)
+		return nil
+	}
+
 	size, data, err := t.src.PullBlob(srcRepo, digest)
 	if err != nil {
 		t.logger.Errorf("failed to pulling the blob %s: %v", digest, err)

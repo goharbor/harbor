@@ -17,8 +17,8 @@ package session
 import (
 	"github.com/astaxie/beego"
 	beegosession "github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"

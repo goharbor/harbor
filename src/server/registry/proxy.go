@@ -16,12 +16,12 @@ package registry
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/core/config"
 )
 
 var proxy = newProxy()

@@ -61,7 +61,14 @@ func (d *dao) Create(ctx context.Context, projectID int64, name, value string) (
 		UpdateTime:   now,
 	}
 
-	return o.Insert(md)
+	id, err := o.Insert(md)
+	if err != nil {
+		if e := orm.AsConflictError(err, "metadata %s already exists for project %d", name, projectID); e != nil {
+			err = e
+		}
+		return 0, err
+	}
+	return id, nil
 }
 
 // Delete delete metadata interfaces filtered the query

@@ -17,14 +17,14 @@ package systeminfo
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"io"
 	"os"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/systeminfo"
@@ -84,7 +84,7 @@ type controller struct{}
 
 func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	logger := log.GetLogger(ctx)
-	cfg, err := config.GetSystemCfg()
+	cfg, err := config.GetSystemCfg(ctx)
 	if err != nil {
 		logger.Errorf("Error occurred getting config: %v", err)
 		return nil, err
@@ -95,7 +95,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 	}
 	if res.AuthMode == common.HTTPAuth {
-		if s, err := config.HTTPAuthProxySetting(); err == nil {
+		if s, err := config.HTTPAuthProxySetting(ctx); err == nil {
 			res.AuthProxySettings = s
 		} else {
 			logger.Warningf("Failed to get auth proxy setting, error: %v", err)
@@ -117,7 +117,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	res.Protected = &protectedData{
 		WithNotary:                  config.WithNotary(),
 		WithChartMuseum:             config.WithChartMuseum(),
-		ReadOnly:                    config.ReadOnly(),
+		ReadOnly:                    config.ReadOnly(ctx),
 		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,
 		HasCARoot:                   enableCADownload,

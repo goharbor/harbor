@@ -75,7 +75,7 @@ ${replication_rule_action}              //*[@id='rule-action']
 ${replication_rule_action_bar_edit}     //*[@id='edit_replication_rule_id']
 ${replication_rule_action_bar_delete}   //*[@id='delete_replication_rule_id']
 ${replication_rule_exec_id}             //*[@id='replication_exe_id']
-${replication_task_line_1}  //clr-datagrid//clr-dg-row/div/div[2]//clr-checkbox-wrapper/label[1]
+${replication_task_line_1}  //clr-datagrid//clr-dg-row/div/div[2]//div[contains(@class,'clr-checkbox-wrapper')]/label[1]
 ${is_overide_xpath}  //label[contains(.,'Replace the destination resources if name exists')]
 ${enable_rule_xpath}  //label[contains(.,'Enable rule')]
 ${targetCron_id}  //*[@id='targetCron']
@@ -89,9 +89,4 @@ ${filter_rules_input}  //*[@id='filter-rules']//input
 ${del_remote_checkbox}  //label[@for='ruleDeletion']
 ${filter_registry_btn}  //hbr-filter
 ${filter_registry_input}  //input[contains(@class,'filter-input')]
-
-
-
-
-
-
+${flattening_select}  //select[@id='dest_namespace_replace_count']

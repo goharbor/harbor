@@ -22,11 +22,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 

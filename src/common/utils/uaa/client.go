@@ -160,7 +160,7 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
+		return nil, fmt.Errorf("unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
 	}
 	res := &SearchUserRes{}
 	if err := json.Unmarshal(bytes, res); err != nil {

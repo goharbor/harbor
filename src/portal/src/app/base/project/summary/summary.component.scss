@@ -1,63 +1,67 @@
-.summary {
-  color: #000;
-  padding-right: 0.3rem;
-  font-size: 13px;
-  justify-content: space-between;
-  .summary-left {
-    padding-top: .25rem;
-    .project-detail {
-      width: 17rem;
-      min-height: 1.45rem;
-
-      ul {
-        width: 8rem;
-      }
-    }
-  }
-
-  h5 {
-    font-size: 13px;
-    font-weight: 700;
-    color: #000;
-  }
-
-  .summary-right {
-    .quotas-progress {
-      min-width: 10rem;
-      justify-content: space-between;
-      ;
-    }
-  }
-}
-.width-7-5 {
-  width: 7.5rem;
-}
-.display-flex {
-  display: flex;
-}
-
-.progress,
-.progress-static {
-  progress {
-    max-height: 0.48rem;
-  }
-}
-::ng-deep {
-  .progress {
-    &.warning>progress {
-      color: orange;
-
-      &::-webkit-progress-value {
-        background-color: orange;
-      }
-
-      &::-moz-progress-bar {
-        background-color: orange;
-      }
-    }
-  }
+.title-width {
+  width: 12rem;
 }
 
 .pt-05 {
-  padding-top: 0.5rem;
+  padding-top: 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.card-row {
+  justify-content: flex-end;
+  padding-right: 2rem;
+}
+.mr-5px {
+  margin-right: 5px;
+}
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+.card {
+  width: 24rem;
+  margin-right: 1rem;
+  flex-grow:0;
+  flex-shrink:0;
+}
+.number {
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #266aac;
+  height: 4rem;
+}
+.column {
+  font-size: 10px;
+  font-weight: bolder;
+  text-transform: uppercase;
+}
+.card-header {
+  padding-bottom: 0;
+}
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-block {
+  min-height: 6rem;
+}
+.size-24 {
+  width: 20px;
+  height: 20px;
+}
+.chart-name {
+  display: flex;
+  align-items: center;
+}
+.no-underline {
+  border-bottom-style: none;
+}
+.center {
+  justify-content: center;
+  align-items: center;
 }

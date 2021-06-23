@@ -17,17 +17,20 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/pkg/notification"
 
 	"github.com/go-openapi/runtime/middleware"
-	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
@@ -54,6 +57,88 @@ func (r *repositoryAPI) Prepare(ctx context.Context, operation string, params in
 	}
 
 	return nil
+}
+
+func (r *repositoryAPI) ListAllRepositories(ctx context.Context, params operation.ListAllRepositoriesParams) middleware.Responder {
+	// set query
+	query, err := r.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return r.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
+	}
+	if !secCtx.IsSysAdmin() && !secCtx.IsSolutionUser() {
+		projectIDs, err := r.listAuthorizedProjectIDs(ctx)
+		if err != nil {
+			return r.SendError(ctx, err)
+		}
+		// no authorized projects, return nil directly
+		if len(projectIDs) == 0 {
+			return operation.NewListAllRepositoriesOK().
+				WithXTotalCount(0).
+				WithLink(r.Links(ctx, params.HTTPRequest.URL, 0, query.PageNumber, query.PageSize).String()).
+				WithPayload(nil)
+		}
+		orList := &q.OrList{}
+		for _, projectID := range projectIDs {
+			orList.Values = append(orList.Values, projectID)
+		}
+		query.Keywords["ProjectID"] = orList
+	}
+
+	total, err := r.repoCtl.Count(ctx, query)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	repositories, err := r.repoCtl.List(ctx, query)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	var repos []*models.Repository
+	for _, repository := range repositories {
+		repos = append(repos, r.assembleRepository(ctx, model.NewRepoRecord(repository)))
+	}
+	return operation.NewListAllRepositoriesOK().
+		WithXTotalCount(total).
+		WithLink(r.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(repos)
+}
+
+func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, error) {
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return nil, errors.UnauthorizedError(errors.New("security context not found"))
+	}
+	query := &q.Query{
+		Keywords: map[string]interface{}{},
+	}
+	if secCtx.IsAuthenticated() {
+		switch secCtx.(type) {
+		case *local.SecurityContext:
+			currentUser := secCtx.(*local.SecurityContext).User()
+			query.Keywords["member"] = &project.MemberQuery{
+				UserID:     currentUser.UserID,
+				GroupIDs:   currentUser.GroupIDs,
+				WithPublic: true,
+			}
+		default:
+			query.Keywords["public"] = true
+		}
+	} else {
+		query.Keywords["public"] = true
+	}
+
+	projects, err := r.proCtl.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var ids []int64
+	for _, project := range projects {
+		ids = append(ids, project.ProjectID)
+	}
+	return ids, nil
 }
 
 func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.ListRepositoriesParams) middleware.Responder {
@@ -124,7 +209,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
-	if err := r.repoCtl.Update(ctx, &cmodels.RepoRecord{
+	if err := r.repoCtl.Update(ctx, &repomodel.RepoRecord{
 		RepositoryID: repository.RepositoryID,
 		Description:  params.Repository.Description,
 	}, "Description"); err != nil {

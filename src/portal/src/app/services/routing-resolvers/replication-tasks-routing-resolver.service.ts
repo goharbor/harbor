@@ -33,8 +33,9 @@ export class ReplicationTasksRoutingResolverService implements Resolve<Replicati
     if (!executionId) {
       executionId = route.queryParams['project_id'];
     }
-    return this.replicationService.getReplicationExecution(+executionId)
-      .pipe(map((res: ReplicationExecution) => {
+    return this.replicationService.getReplicationExecution({
+      id: +executionId
+    }).pipe(map((res: ReplicationExecution) => {
         if (!res) {
           this.router.navigate(['/harbor', 'projects']);
         }

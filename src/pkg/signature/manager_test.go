@@ -2,7 +2,10 @@ package signature
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/test"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
@@ -11,6 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	testutils.InitDatabaseFromEnv()
 	// B/C the notary requires private key for signing token, b
 	// before running locally, please make sure the env var is set as follow:
 	// export TOKEN_PRIVATE_KEY_PATH="/harbor/tests/private_key.pem"

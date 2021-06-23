@@ -17,8 +17,7 @@ package utils
 
 import (
 	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/core/config"
-
+	"github.com/goharbor/harbor/src/lib/config"
 	"sync"
 )
 

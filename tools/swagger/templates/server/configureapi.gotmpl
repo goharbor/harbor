@@ -19,10 +19,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/runtime/security"
 
-	{{range .DefaultImports}}{{printf "%q" .}}
-	{{end}}
-	{{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
-	{{end}}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 {{ $package := .Package }}
 
@@ -33,15 +31,19 @@ const AuthKey contextKey = "Auth"
 {{ range .OperationGroups -}}
 // go:generate mockery -name {{ pascalize .Name}}API -inpkg
 
-// {{ pascalize .Name }}API {{ .Description }}
+/* {{ pascalize .Name }}API {{ .Description }} */
 type {{ pascalize .Name }}API interface {
-	// Prepare action before the operation
+	/* Prepare action before the operation */
 	Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder
+
 {{ range .Operations -}}
-	{{ if .Description -}}
-	// {{ pascalize .Name }} is {{ .Description }}
+	{{ if .Summary -}}
+	/* {{ pascalize .Name }} {{ .Summary }} */
+	{{ else if .Description -}}
+	/* {{ pascalize .Name }} {{ .Description }} */
 	{{ end -}}
 	{{ pascalize .Name }}(ctx context.Context, params {{.Package}}.{{ pascalize .Name }}Params) middleware.Responder
+
 {{ end -}}
 }
 {{ end }}
@@ -74,6 +76,13 @@ type Config struct {
 	Auth{{ pascalize .ID }} func(token string, scopes []string) (interface{}, error)
 	{{ end -}}
 	{{ end -}}
+
+	// Authenticator to use for all APIKey authentication
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// Authenticator to use for all Bearer authentication
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// Authenticator to use for all Basic authentication
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 }
 
 // Handler returns an http.Handler given the handler configuration
@@ -94,6 +103,16 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	api := {{.Package}}.New{{ pascalize .Name }}API(spec)
 	api.ServeError = errors.ServeError
 	api.Logger = c.Logger
+
+	if c.APIKeyAuthenticator != nil {
+		api.APIKeyAuthenticator = c.APIKeyAuthenticator
+	}
+	if c.BasicAuthenticator  != nil {
+		api.BasicAuthenticator  = c.BasicAuthenticator
+	}
+	if c.BearerAuthenticator  != nil {
+		api.BearerAuthenticator  = c.BearerAuthenticator
+	}
 
 	{{ range .Consumes -}}
 	{{ if .Implementation -}}
@@ -146,7 +165,8 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	{{ end -}}
 
 	{{ range .Operations -}}
-	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func(params {{.Package}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
+	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler =
+    {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)

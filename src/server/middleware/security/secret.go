@@ -15,12 +15,12 @@
 package security
 
 import (
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
 	securitysecret "github.com/goharbor/harbor/src/common/security/secret"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 

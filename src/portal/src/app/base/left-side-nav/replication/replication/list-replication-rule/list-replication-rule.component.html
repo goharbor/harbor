@@ -46,6 +46,7 @@
     <clr-dg-column class="col-width">{{'REPLICATION.SRC_REGISTRY' | translate}}</clr-dg-column>
     <clr-dg-column class="col-width">{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.DES_REPO_FLATTENING' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
@@ -79,6 +80,7 @@
         <clr-dg-cell class="min-width">
             {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}
         </clr-dg-cell>
+        <clr-dg-cell>{{(getFlattenLevelString(p.dest_namespace_replace_count)) | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
         <clr-dg-cell>
             {{p.description ? trancatedDescription(p.description) : '-'}}

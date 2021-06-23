@@ -1,6 +1,7 @@
 package csrf
 
 import (
+	"github.com/goharbor/harbor/src/lib/config"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"

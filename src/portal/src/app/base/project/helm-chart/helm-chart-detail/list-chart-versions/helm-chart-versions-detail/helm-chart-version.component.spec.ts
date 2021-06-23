@@ -1,9 +1,6 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ChartVersionComponent } from './helm-chart-version.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { HelmChartService } from "../../helm-chart.service";
 import { LabelFilterComponent } from "../../label-filter/label-filter.component";
 import { of } from 'rxjs';
@@ -11,6 +8,7 @@ import { LabelService, SystemInfoService, UserPermissionService } from "../../..
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../../shared/components/operation/operation.service";
 import { delay } from "rxjs/operators";
+import { SharedTestingModule } from "../../../../../../shared/shared.module";
 
 describe('ChartVersionComponent', () => {
     let component: ChartVersionComponent;
@@ -85,13 +83,10 @@ describe('ChartVersionComponent', () => {
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule
+                SharedTestingModule
             ],
             declarations: [ChartVersionComponent, LabelFilterComponent],
             providers: [
-                TranslateService,
                 { provide: SystemInfoService, useValue: mockSystemInfoService },
                 { provide: LabelService, useValue: mockLabelService },
                 { provide: UserPermissionService, useValue: mockUserPermissionService },

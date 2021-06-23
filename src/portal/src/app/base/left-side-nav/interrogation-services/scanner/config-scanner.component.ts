@@ -1,14 +1,16 @@
 import { Component, ViewChild, OnInit, OnDestroy } from "@angular/core";
-import { Scanner } from "./scanner";
+import { Scanner, SCANNERS_DOC } from "./scanner";
 import { NewScannerModalComponent } from "./new-scanner-modal/new-scanner-modal.component";
-import { ConfigScannerService, SCANNERS_DOC } from "./config-scanner.service";
 import { finalize } from "rxjs/operators";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
-import { clone } from "../../../../shared/units/utils";
+import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../../shared/units/utils";
 import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../shared/entities/shared.const";
 import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
+import { ScannerService } from "../../../../../../ng-swagger-gen/services/scanner.service";
+import { ClrDatagridStateInterface } from "@clr/angular";
+import { ScannerRegistrationReq } from "../../../../../../ng-swagger-gen/models/scanner-registration-req";
 
 @Component({
     selector: 'config-scanner',
@@ -18,13 +20,17 @@ import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirm
 export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     scanners: Scanner[] = [];
     selectedRow: Scanner;
-    onGoing: boolean = false;
+    onGoing: boolean = true;
     @ViewChild(NewScannerModalComponent)
     newScannerDialog: NewScannerModalComponent;
     deletionSubscription: any;
     scannerDocUrl: string = SCANNERS_DOC;
+    page: number = 1;
+    pageSize: number = DEFAULT_PAGE_SIZE;
+    total: number = 0;
+    state: ClrDatagridStateInterface;
     constructor(
-        private configScannerService: ConfigScannerService,
+        private configScannerService: ScannerService,
         private errorHandler: ErrorHandler,
         private msgHandler: MessageHandlerService,
         private deletionDialogService: ConfirmationDialogService,
@@ -35,17 +41,18 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
                 if (confirmed &&
                     confirmed.source === ConfirmationTargets.SCANNER &&
                     confirmed.state === ConfirmationState.CONFIRMED) {
-                    this.configScannerService.deleteScanners(confirmed.data)
+                    this.configScannerService.deleteScanner({
+                        registrationId: confirmed.data[0].uuid
+                    })
                         .subscribe(response => {
                             this.msgHandler.showSuccess("SCANNER.DELETE_SUCCESS");
-                            this.getScanners();
+                            this.refresh();
                         }, error => {
                             this.errorHandler.error(error);
                         });
                 }
             });
         }
-        this.getScanners();
     }
     ngOnDestroy(): void {
         if (this.deletionSubscription) {
@@ -53,13 +60,45 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             this.deletionSubscription = null;
         }
     }
-    getScanners() {
+    refresh() {
+        this.page = 1;
+        this.selectedRow = null;
+        this.total = 0;
+        this.getScanners(this.state);
+    }
+    getScanners(state?: ClrDatagridStateInterface) {
+        this.state = state;
+        if (state && state.page) {
+            this.pageSize = state.page.size;
+        }
+        let q: string;
+        if (state && state.filters && state.filters.length) {
+            q = encodeURIComponent(`${state.filters[0].property}=~${state.filters[0].value}`);
+        }
+        let sort: string;
+        if (state && state.sort && state.sort.by) {
+            sort =  getSortingString(state);
+        } else { // sort by creation_time desc by default
+            sort = `-creation_time`;
+        }
         this.onGoing = true;
-        this.configScannerService.getScanners()
+        this.configScannerService.listScannersResponse({
+            page: this.page,
+            pageSize: this.pageSize,
+            q: q,
+            sort: sort
+        })
             .pipe(finalize(() => this.onGoing = false))
             .subscribe(response => {
-            this.scanners = response;
-            this.getMetadataForAll();
+                // Get total count
+                if (response.headers) {
+                    let xHeader: string = response.headers.get("X-Total-Count");
+                    if (xHeader) {
+                        this.total = parseInt(xHeader, 0);
+                    }
+                }
+                this.scanners = response.body || [];
+                this.getMetadataForAll();
         }, error => {
             this.errorHandler.error(error);
         });
@@ -69,7 +108,9 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             this.scanners.forEach((scanner, index) => {
                 if (scanner.uuid ) {
                     this.scanners[index].loadingMetadata = true;
-                    this.configScannerService.getScannerMetadata(scanner.uuid)
+                    this.configScannerService.getScannerMetadata({
+                        registrationId: scanner.uuid
+                    })
                         .pipe(finalize(() => this.scanners[index].loadingMetadata = false))
                         .subscribe(response => {
                             this.scanners[index].metadata = response;
@@ -91,12 +132,15 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     }
     changeStat() {
         if (this.selectedRow) {
-            let scanner: Scanner = clone(this.selectedRow);
+            let scanner: ScannerRegistrationReq = clone(this.selectedRow);
             scanner.disabled = !scanner.disabled;
-            this.configScannerService.updateScanner(scanner)
+            this.configScannerService.updateScanner({
+                registrationId: this.selectedRow.uuid,
+                registration: scanner
+            })
                 .subscribe(response => {
                     this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
-                    this.getScanners();
+                    this.refresh();
                 }, error => {
                     this.errorHandler.error(error);
                 });
@@ -104,10 +148,15 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     }
     setAsDefault() {
         if (this.selectedRow) {
-            this.configScannerService.setAsDefault(this.selectedRow.uuid)
+            this.configScannerService.setScannerAsDefault({
+                registrationId: this.selectedRow.uuid,
+                payload: {
+                    is_default: true
+                }
+            })
                 .subscribe(response => {
                     this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
-                    this.getScanners();
+                    this.refresh();
                 }, error => {
                     this.errorHandler.error(error);
                 });

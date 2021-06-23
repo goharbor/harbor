@@ -1,24 +1,9 @@
-import { ScannerMetadata } from "./scanner-metadata";
+import { ScannerRegistration } from "../../../../../../ng-swagger-gen/models/scanner-registration";
+import { ScannerAdapterMetadata } from "../../../../../../ng-swagger-gen/models/scanner-adapter-metadata";
 
-export class Scanner {
-    name?: string;
-    description?: string;
-    uuid?: string;
-    url?: string;
-    auth?: string;
-    access_credential?: string;
-    adapter?: string;
-    disabled?: boolean;
-    is_default?: boolean;
-    skip_certVerify?: boolean;
-    use_internal_addr?: boolean;
-    create_time?: any;
-    update_time?: any;
-    vendor?: string;
-    version?: string;
-    metadata?: ScannerMetadata;
+export interface Scanner extends ScannerRegistration {
+    metadata?: ScannerAdapterMetadata;
     loadingMetadata?: boolean;
-    health?: string;
-    constructor() {
-    }
 }
+
+export const SCANNERS_DOC: string = "https://goharbor.io/blog/harbor-1.10-release/#vulnerability-scanning-with-pluggable-scanners";

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"net/url"
 	"strings"
@@ -27,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -111,10 +111,10 @@ type endpointParser struct {
 func (e endpointParser) parse(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
+		return nil, fmt.Errorf("unable to parse image from string: %s", s)
 	}
 	if repo[0] != e.endpoint {
-		return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
+		return nil, fmt.Errorf("mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
 	}
 	return parseImg(repo[1])
 }
@@ -123,7 +123,7 @@ func (e endpointParser) parse(s string) (*image, error) {
 func parseImg(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
+		return nil, fmt.Errorf("unable to parse image from string: %s", s)
 	}
 	i := strings.SplitN(repo[1], ":", 2)
 	res := &image{
@@ -148,7 +148,7 @@ func (reg registryFilter) filter(ctx context.Context, ctl project.Controller,
 	a *token.ResourceActions) error {
 	// Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
-		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
+		return fmt.Errorf("unable to handle, type: %s, name: %s", a.Type, a.Name)
 	}
 
 	secCtx, ok := security.FromContext(ctx)
@@ -245,7 +245,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return MakeToken(ctx.GetUsername(), g.service, access)
+	return MakeToken(r.Context(), ctx.GetUsername(), g.service, access)
 }
 
 func parseScopes(u *url.URL) []string {

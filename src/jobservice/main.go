@@ -19,15 +19,15 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common"
-	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
+	cfgLib "github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 )
 
 func main() {
@@ -63,9 +63,10 @@ func main() {
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-		coreURL := config.GetCoreURL()
-		configURL := coreURL + common.CoreConfigPath
-		cfgMgr := comcfg.NewRESTCfgManager(configURL, secret)
+		cfgMgr, err := cfgLib.GetManager(common.RestCfgManager)
+		if err != nil {
+			return nil, err
+		}
 		jobCtx := impl.NewContext(ctx, cfgMgr)
 
 		if err := jobCtx.Init(); err != nil {

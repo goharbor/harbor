@@ -251,3 +251,27 @@ artifact-list-tab {
 .label-color-input {
   color: $label-color-input !important;
 }
+// for repos page grid view
+.central-block-loading {
+  background-color: $central-block-loading-bg-color;
+}
+.backStyle {
+  color: $back-link-color;
+}
+.back-icon {
+  color: $back-link-color;
+}
+.breadcrumb a {
+  color: $back-link-color;
+}
+.arrow-block a{
+  color: $back-link-color;
+}
+.onback {
+  color: $back-link-color;
+}
+app-tag-feature-integration {
+  .checked {
+    background-color: $radio-button-checked;
+  }
+}

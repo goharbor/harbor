@@ -16,9 +16,10 @@
     <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showDialogModalAction)="openModal($event)"></navigator>
     <div class="content-container">
-        <div class="content-area" [class.container-override]="showSearch"
+        <div #scrollDiv class="content-area" [class.container-override]="showSearch"
             [class.content-area-override]="!shouldOverrideContent"
-            [class.start-content-padding]="shouldOverrideContent">
+            [class.start-content-padding]="shouldOverrideContent"
+             (scroll)="publishScrollEvent()">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
@@ -61,7 +62,7 @@
                             {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
                         </a>
                         <a clrVerticalNavLink routerLink="/harbor/distribution/instances" routerLinkActive="active">
-                            <clr-icon shape="share"></clr-icon>
+                            <clr-icon shape="share" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.DISTRIBUTIONS.NAME' | translate}}
                         </a>
                         <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels"

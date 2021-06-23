@@ -115,3 +115,24 @@ func (_m *mockDAO) Update(ctx context.Context, s *schedule, props ...string) err
 
 	return r0
 }
+
+// UpdateRevision provides a mock function with given fields: ctx, id, revision
+func (_m *mockDAO) UpdateRevision(ctx context.Context, id int64, revision int64) (int64, error) {
+	ret := _m.Called(ctx, id, revision)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) int64); ok {
+		r0 = rf(ctx, id, revision)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int64) error); ok {
+		r1 = rf(ctx, id, revision)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

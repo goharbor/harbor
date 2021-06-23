@@ -2,17 +2,19 @@ package systeminfo
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/stretchr/testify/suite"
 )
 
 type sysInfoCtlTestSuite struct {
-	suite.Suite
+	htesting.Suite
 	ctl Controller
 }
 

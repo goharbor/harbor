@@ -1,80 +1,89 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { StatisticsPanelComponent } from './statistics-panel.component';
-import { StatisticsComponent } from './statistics.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { StatisticsService } from "./statistics.service";
 import { SessionService } from "../../../../shared/services/session.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { StatisticHandler } from "./statistic-handler.service";
 import { AppConfigService } from "../../../../services/app-config.service";
-import { Statistics } from './statistics';
-import { Volumes } from './volumes';
+import { Statistic } from "../../../../../../ng-swagger-gen/models/statistic";
+import { SharedTestingModule } from "../../../../shared/shared.module";
+import { StatisticService } from "../../../../../../ng-swagger-gen/services/statistic.service";
+
 describe('StatisticsPanelComponent', () => {
-    let component: StatisticsPanelComponent;
-    let fixture: ComponentFixture<StatisticsPanelComponent>;
-    const mockStatisticsService = {
-        getStatistics: () => of(new Statistics()),
-        getVolumes: () => of(new Volumes()),
-    };
-    const mockSessionService = {
-        getCurrentUser: () => { }
-    };
-    const mockAppConfigService = {
-        getConfig: () => {
-            return {
-                registry_storage_provider_name : ""
-            };
-        }
-    };
-    const mockMessageHandlerService = {
-        handleError: () => { }
-    };
-    const mockStatisticHandler = {
-        refreshChan$: of(null)
-    };
-    const mockRouter = {
-        navigate: () => { }
-    };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
-            ],
-            declarations: [StatisticsPanelComponent, StatisticsComponent],
-            providers: [
-                TranslateService,
-                { provide: SessionService, useValue: mockSessionService },
-                { provide: AppConfigService, useValue: mockAppConfigService },
-                { provide: StatisticsService, useValue: mockStatisticsService },
-                { provide: StatisticHandler, useValue: mockStatisticHandler },
-                { provide: MessageHandlerService, useValue: mockMessageHandlerService }
-            ]
-        }).compileComponents();
-    }));
+  const mockedStatistic: Statistic = {
+    "private_project_count": 2,
+    "private_repo_count": 0,
+    "public_project_count": 3,
+    "public_repo_count": 1,
+    "total_project_count": 5,
+    "total_repo_count": 1,
+    "total_storage_consumption": 4564
+  };
+  let component: StatisticsPanelComponent;
+  let fixture: ComponentFixture<StatisticsPanelComponent>;
+  const mockStatisticsService = {
+    getStatistic: () => of(mockedStatistic),
+  };
+  const mockSessionService = {
+    getCurrentUser: () => {
+        return {
+          has_admin_role: true
+        };
+    }
+  };
+  const mockAppConfigService = {
+    getConfig: () => {
+      return {
+        registry_storage_provider_name: ""
+      };
+    }
+  };
+  const mockMessageHandlerService = {
+    handleError: () => {
+    }
+  };
+  const mockStatisticHandler = {
+    refreshChan$: of(null)
+  };
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ],
+      imports: [
+        SharedTestingModule
+      ],
+      declarations: [StatisticsPanelComponent],
+      providers: [
+        {provide: SessionService, useValue: mockSessionService},
+        {provide: AppConfigService, useValue: mockAppConfigService},
+        {provide: StatisticService, useValue: mockStatisticsService},
+        {provide: StatisticHandler, useValue: mockStatisticHandler},
+        {provide: MessageHandlerService, useValue: mockMessageHandlerService}
+      ]
+    }).compileComponents();
+  }));
 
-    beforeEach(() => {
-        fixture = TestBed.createComponent(StatisticsPanelComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(StatisticsPanelComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+  it('should have 3 cards', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const cards = fixture.nativeElement.querySelectorAll('.card');
+    expect(cards.length).toEqual(3);
+  });
+  it('should display right size number', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const sizeHtml: HTMLSpanElement = fixture.nativeElement.querySelector('.size-number');
+    expect(sizeHtml.innerText).toEqual('4.46');
+  });
 });

@@ -79,12 +79,14 @@ func mergeSeverity(s1, s2 Severity) Severity {
 	return s2
 }
 
-func mergeScanStatus(s1, s2 string) string {
+// MergeScanStatus ...
+func MergeScanStatus(s1, s2 string) string {
 	j1, j2 := job.Status(s1), job.Status(s2)
 
 	if j1 == job.RunningStatus || j2 == job.RunningStatus {
 		return job.RunningStatus.String()
 	} else if j1 == job.SuccessStatus || j2 == job.SuccessStatus {
+		// the scan status of the image index will be treated as a success when one of its children is success
 		return job.SuccessStatus.String()
 	}
 

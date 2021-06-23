@@ -17,10 +17,10 @@ package dao
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/lib/pq"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 )

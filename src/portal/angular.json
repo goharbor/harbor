@@ -13,6 +13,7 @@
           "options": {
             "allowedCommonJsDependencies": [
               "swagger-ui",
+              "buffer",
               "js-yaml"
             ],
             "outputPath": "dist",
@@ -20,7 +21,6 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "extractCss": true,
             "assets": [
               "src/images",
               "src/favicon.ico",
@@ -47,22 +47,28 @@
             "scripts": [
               "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
               "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
-              "node_modules/core-js/client/shim.min.js",
-              "node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
               "node_modules/@clr/icons/clr-icons.min.js",
-              "node_modules/web-animations-js/web-animations.min.js",
               "node_modules/marked/lib/marked.js",
               "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-yaml.min.js",
-              "node_modules/popper.js/dist/umd/popper.js"
-            ]
+              "node_modules/prismjs/components/prism-yaml.min.js"
+            ],
+            "aot": false,
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
-              "optimization": true,
+              "optimization": {
+                "styles": {
+                  "inlineCritical": false
+                }
+              },
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -75,7 +81,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -102,14 +109,9 @@
             "polyfills": "src/polyfills.ts",
             "karmaConfig": "karma.conf.js",
             "scripts": [
-              "node_modules/core-js/client/shim.min.js",
-              "node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
-              "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-              "node_modules/@clr/icons/clr-icons.min.js",
-              "node_modules/web-animations-js/web-animations.min.js",
-              "node_modules/marked/lib/marked.js",
-              "node_modules/prismjs/prism.js",
-              "node_modules/prismjs/components/prism-yaml.min.js"
+              "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
+              "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
+              "node_modules/@clr/icons/clr-icons.min.js"
             ],
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
@@ -151,8 +153,7 @@
   "defaultProject": "harbor-portal",
   "schematics": {
     "@schematics/angular:component": {
-      "prefix": "app",
-      "styleext": "scss"
+      "prefix": "app"
     },
     "@schematics/angular:directive": {
       "prefix": "app"

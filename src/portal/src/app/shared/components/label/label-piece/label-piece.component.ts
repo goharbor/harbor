@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { Label } from "../../../services";
 import { LabelColor } from "../../../entities/shared.const";
+import { Label } from "../../../../../../ng-swagger-gen/models/label";
 
 
 @Component({

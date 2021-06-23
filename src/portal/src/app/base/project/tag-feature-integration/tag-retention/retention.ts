@@ -155,3 +155,6 @@ export class RuleMetadate {
     }
 }
 
+export const RUNNING: string = "Running";
+export const PENDING: string = "Pending";
+export const TIMEOUT: number = 5000;

@@ -1,17 +1,16 @@
-
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+# Copyright Project Harbor Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
 *** Settings ***
 Documentation  Harbor BATs
@@ -52,6 +51,7 @@ Test Case - Push ORAS and Display
     Wait Until Page Contains  ${tag}
     Close Browser
 
+## TODO: uncomment it once #14470 fixed
 # Test Case - Push SIF and Display
 #     [Tags]  push_sif
 #     Init Chrome Driver
@@ -61,8 +61,6 @@ Test Case - Push ORAS and Display
 
 #     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
 #     Create An New Project And Go Into Project  test${d}
-
-#     Clean All Local Images
 
 #     ${repo_name}=  Set Variable  busybox
 #     ${tag}=  Set Variable  1.28
@@ -286,7 +284,7 @@ Test Case - User View Logs
     Create An New Project And Go Into Project  project${d}
     Logout Harbor
 
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}

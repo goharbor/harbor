@@ -20,8 +20,8 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
@@ -85,7 +85,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 	// pass for action pull
 	action = rbac.ActionPull
 	resource = project.NewNamespace(1).Resource(rbac.ResourceRepository)
-	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
+	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&proModels.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}, nil)
@@ -98,7 +98,7 @@ func (p *proxyCacheSecretTestSuite) TestCan() {
 	// pass for action push
 	action = rbac.ActionPush
 	resource = project.NewNamespace(1).Resource(rbac.ResourceRepository)
-	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&models.Project{
+	p.ctl.On("Get", mock.Anything, mock.Anything).Return(&proModels.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}, nil)

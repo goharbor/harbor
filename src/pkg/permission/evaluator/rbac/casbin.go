@@ -17,6 +17,7 @@ package rbac
 import (
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -47,7 +48,7 @@ func makeEnforcer(rbacUser types.RBACUser) *casbin.Enforcer {
 	m := model.Model{}
 	m.LoadModelFromText(modelText)
 
-	e := casbin.NewEnforcer(m, &adapter{rbacUser: rbacUser})
+	e := casbin.NewEnforcer(m, &adapter{rbacUser: rbacUser}, log.GetLevel() <= log.DebugLevel)
 	e.AddFunction("keyMatch2", keyMatch2Func)
 	return e
 }

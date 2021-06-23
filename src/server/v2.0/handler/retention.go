@@ -227,10 +227,26 @@ func (r *retentionAPI) checkRuleConflict(p *policy.Metadata) error {
 	return nil
 }
 
+func (r *retentionAPI) DeleteRetention(ctx context.Context, params operation.DeleteRetentionParams) middleware.Responder {
+	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
+	if err != nil {
+		return r.SendError(ctx, errors.BadRequestError(err))
+	}
+	err = r.requireAccess(ctx, p, rbac.ActionDelete)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+
+	if err = r.retentionCtl.DeleteRetention(ctx, params.ID); err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewDeleteRetentionOK()
+}
+
 func (r *retentionAPI) TriggerRetentionExecution(ctx context.Context, params operation.TriggerRetentionExecutionParams) middleware.Responder {
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {
-		return r.SendError(ctx, errors.BadRequestError((err)))
+		return r.SendError(ctx, errors.BadRequestError(err))
 	}
 	err = r.requireAccess(ctx, p, rbac.ActionUpdate)
 	if err != nil {

@@ -1,9 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ActivatedRoute } from '@angular/router';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../../../shared/services/session.service';
 import { ListChartVersionsComponent } from './list-chart-versions.component';
 

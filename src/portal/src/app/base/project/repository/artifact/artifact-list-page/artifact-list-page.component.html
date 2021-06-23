@@ -1,5 +1,6 @@
 <div>
     <div class="breadcrumb" *ngIf="!withAdmiral">
+        <span class="back-icon"><</span>
         <a (click)="goProBack()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
         <span class="back-icon"><</span>
         <a (click)="watchGoBackEvt(projectId)">{{projectName}}</a>

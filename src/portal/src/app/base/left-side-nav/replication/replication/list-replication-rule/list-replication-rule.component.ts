@@ -40,6 +40,7 @@ import { errorHandler } from "../../../../../shared/units/shared.utils";
 import { ConfirmationAcknowledgement } from "../../../../global-confirmation-dialog/confirmation-state-message";
 import { ConfirmationMessage } from "../../../../global-confirmation-dialog/confirmation-message";
 import { HELM_HUB } from "../../../../../shared/services/endpoint.service";
+import { Flatten_I18n_MAP } from "../../replication";
 @Component({
     selector: "hbr-list-replication-rule",
     templateUrl: "./list-replication-rule.component.html",
@@ -260,5 +261,11 @@ export class ListReplicationRuleComponent  {
     }
     isHelmHub(srcRegistry: any): boolean {
       return srcRegistry && srcRegistry.type === HELM_HUB;
+    }
+    getFlattenLevelString(level: number) {
+        if (level !== null && Flatten_I18n_MAP[level]) {
+            return Flatten_I18n_MAP[level];
+        }
+        return level;
     }
 }

@@ -44,6 +44,11 @@ func (suite *HTTPClientTestSuite) SetupSuite() {
 			return
 		}
 
+		// set http status code if needed
+		if r.URL.String() == "/statusCode" {
+			w.WriteHeader(http.StatusAlreadyReported)
+		}
+
 		w.Header().Add("Content-type", "application/json")
 		_, _ = w.Write([]byte("{}"))
 	}))
@@ -98,4 +103,7 @@ func (suite *HTTPClientTestSuite) TestPost() {
 	data, err := c.Post(suite.ts.URL, cred, []byte("{}"), map[string]string{"Accept": "application/json"})
 	suite.NoError(err, "post data")
 	suite.Equal("{}", string(data), "post json data")
+
+	data, err = c.Post(suite.ts.URL+"/statusCode", cred, []byte("{}"), map[string]string{"Accept": "application/json"})
+	suite.Error(err, "post data")
 }

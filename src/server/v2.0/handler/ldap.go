@@ -6,6 +6,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/ldap"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	ldapModel "github.com/goharbor/harbor/src/pkg/ldap/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -25,7 +26,7 @@ func (l *ldapAPI) PingLdap(ctx context.Context, params operation.PingLdapParams)
 	if err := l.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceConfiguration); err != nil {
 		return l.SendError(ctx, err)
 	}
-	basicCfg := ldapModel.LdapConf{
+	basicCfg := cfgModels.LdapConf{
 		URL:            params.Ldapconf.LdapURL,
 		BaseDn:         params.Ldapconf.LdapBaseDn,
 		SearchDn:       params.Ldapconf.LdapSearchDn,

@@ -23,7 +23,7 @@ export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 export NOTARY_AUTH=$(echo $USER:$PWD | base64)
 echo $USER:$PWD
 
-NOTARY_CMD_OPTIONS="notary -s https://$NOTARY_SERVER_ENDPOINT --tlscacert /notary_ca.crt -d /root/.docker/trust"
+NOTARY_CMD_OPTIONS="notary -s https://$NOTARY_SERVER_ENDPOINT -d /root/.docker/trust"
 if [ "$CMD" == "key_rotate" ]; then
     echo "$NOTARY_CMD_OPTIONS key rotate  $HOST/$PROJECT/$IMAGE snapshot -r"
     $NOTARY_CMD_OPTIONS key rotate  $HOST/$PROJECT/$IMAGE snapshot -r

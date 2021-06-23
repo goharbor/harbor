@@ -18,15 +18,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 // Handler preprocess chart event data
@@ -83,10 +83,10 @@ func (cph *Handler) IsStateful() bool {
 	return false
 }
 
-func constructChartPayload(event *event.ChartEvent, project *models.Project) (*model.Payload, error) {
-	repoType := models.ProjectPrivate
+func constructChartPayload(event *event.ChartEvent, project *proModels.Project) (*model.Payload, error) {
+	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
-		repoType = models.ProjectPublic
+		repoType = proModels.ProjectPublic
 	}
 
 	payload := &model.Payload{

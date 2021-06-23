@@ -320,11 +320,11 @@ func Test_convertExecutionToPayload(t *testing.T) {
 				EndTime:       time.Time{},
 			},
 			expect: &models.Execution{
-				EndTime:       "0001-01-01 00:00:00 +0000 UTC",
+				EndTime:       "0001-01-01T00:00:00Z",
 				ExtraAttrs:    nil,
 				ID:            1,
 				Metrics:       nil,
-				StartTime:     "0001-01-01 00:00:00 +0000 UTC",
+				StartTime:     "0001-01-01T00:00:00Z",
 				Status:        "",
 				StatusMessage: "",
 				Trigger:       "",

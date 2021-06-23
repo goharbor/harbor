@@ -1,5 +1,5 @@
-import { OnInit, Input, EventEmitter, Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
-import {ClrDatagridFilterInterface} from "@clr/angular";
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, ViewChild } from '@angular/core';
+import { ClrDatagridFilterInterface } from "@clr/angular";
 import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { HelmChartVersion } from '../helm-chart.interface.service';

@@ -1,8 +1,4 @@
-import {
-  Component,
-  OnInit,
-  Input,
-} from "@angular/core";
+import { Component, Input, OnInit, } from "@angular/core";
 import { ArtifactDependency } from "../models";
 import { AdditionsService } from "../additions.service";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";

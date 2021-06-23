@@ -42,7 +42,7 @@ func getRegion(url string) (region string, err error) {
 	}
 	rs := regRegion.FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("Invalid Rgistry|CR service url")
+		return "", errors.New("invalid Rgistry|CR service url")
 	}
 	// fmt.Println(rs)
 	return rs[2], nil
@@ -145,31 +145,42 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 }
 
 func getAdapterInfo() *model.AdapterPattern {
+	var endpoints []*model.Endpoint
+	// https://help.aliyun.com/document_detail/40654.html?spm=a2c4g.11186623.2.7.58683ae5Q4lo1o
+	for _, e := range []string{
+		"cn-qingdao",
+		"cn-beijing",
+		"cn-zhangjiakou",
+		"cn-huhehaote",
+		"cn-wulanchabu",
+		"cn-hangzhou",
+		"cn-shanghai",
+		"cn-shenzhen",
+		"cn-heyuan",
+		"cn-guangzhou",
+		"cn-chengdu",
+		"cn-hongkong",
+		"ap-southeast-1",
+		"ap-southeast-2",
+		"ap-southeast-3",
+		"ap-southeast-5",
+		"ap-south-1",
+		"ap-northeast-1",
+		"us-west-1",
+		"us-east-1",
+		"eu-central-1",
+		"eu-west-1",
+		"me-east-1",
+	} {
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e,
+			Value: fmt.Sprintf("https://registry.%s.aliyuncs.com", e),
+		})
+	}
 	info := &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
 			EndpointType: model.EndpointPatternTypeList,
-			Endpoints: []*model.Endpoint{
-				{Key: "cn-hangzhou", Value: "https://registry.cn-hangzhou.aliyuncs.com"},
-				{Key: "cn-shanghai", Value: "https://registry.cn-shanghai.aliyuncs.com"},
-				{Key: "cn-qingdao", Value: "https://registry.cn-qingdao.aliyuncs.com"},
-				{Key: "cn-beijing", Value: "https://registry.cn-beijing.aliyuncs.com"},
-				{Key: "cn-zhangjiakou", Value: "https://registry.cn-zhangjiakou.aliyuncs.com"},
-				{Key: "cn-huhehaote", Value: "https://registry.cn-huhehaote.aliyuncs.com"},
-				{Key: "cn-shenzhen", Value: "https://registry.cn-shenzhen.aliyuncs.com"},
-				{Key: "cn-chengdu", Value: "https://registry.cn-chengdu.aliyuncs.com"},
-				{Key: "cn-hongkong", Value: "https://registry.cn-hongkong.aliyuncs.com"},
-				{Key: "ap-southeast-1", Value: "https://registry.ap-southeast-1.aliyuncs.com"},
-				{Key: "ap-southeast-2", Value: "https://registry.ap-southeast-2.aliyuncs.com"},
-				{Key: "ap-southeast-3", Value: "https://registry.ap-southeast-3.aliyuncs.com"},
-				{Key: "ap-southeast-5", Value: "https://registry.ap-southeast-5.aliyuncs.com"},
-				{Key: "ap-northeast-1", Value: "https://registry.ap-northeast-1.aliyuncs.com"},
-				{Key: "ap-south-1", Value: "https://registry.ap-south-1.aliyuncs.com"},
-				{Key: "eu-central-1", Value: "https://registry.eu-central-1.aliyuncs.com"},
-				{Key: "eu-west-1", Value: "https://registry.eu-west-1.aliyuncs.com"},
-				{Key: "us-west-1", Value: "https://registry.us-west-1.aliyuncs.com"},
-				{Key: "us-east-1", Value: "https://registry.us-east-1.aliyuncs.com"},
-				{Key: "me-east-1", Value: "https://registry.me-east-1.aliyuncs.com"},
-			},
+			Endpoints:    endpoints,
 		},
 	}
 	return info
@@ -281,7 +292,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 			var tags []string
 			tags, err = a.getTags(repo, client)
 			if err != nil {
-				return fmt.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
+				return fmt.Errorf("list tags for repo '%s' error: %v", repo.RepoName, err)
 			}
 
 			var filterTags []string
@@ -290,7 +301,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 					var ok bool
 					ok, err = util.Match(tagsPattern, tag)
 					if err != nil {
-						return fmt.Errorf("Match tag '%s' error: %v", tag, err)
+						return fmt.Errorf("match tag '%s' error: %v", tag, err)
 					}
 					if ok {
 						filterTags = append(filterTags, tag)

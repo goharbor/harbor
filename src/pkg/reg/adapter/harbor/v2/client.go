@@ -16,12 +16,13 @@ package v2
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
 type client struct {
@@ -29,7 +30,7 @@ type client struct {
 }
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
-	repositories := []*models.RepoRecord{}
+	repositories := []*repomodel.RepoRecord{}
 	url := fmt.Sprintf("%s/projects/%s/repositories", c.BasePath(), project.Name)
 	if err := c.C.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err
@@ -76,4 +77,16 @@ func (c *client) deleteTag(repo, tag string) error {
 	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags/%s",
 		c.BasePath(), project, repo, tag, tag)
 	return c.C.Delete(url)
+}
+
+func (c *client) getRepositoryByBlobDigest(digest string) (string, error) {
+	repositories := []*repomodel.RepoRecord{}
+	url := fmt.Sprintf("%s/repositories?q=blob_digest=%s&page_size=1&page_number=1", c.BasePath(), digest)
+	if err := c.C.Get(url, &repositories); err != nil {
+		return "", err
+	}
+	if len(repositories) == 0 {
+		return "", nil
+	}
+	return repositories[0].Name, nil
 }

@@ -114,6 +114,7 @@ func (a *Adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedRepositoryPathComponentType: model.RepositoryPathComponentTypeAtLeastTwo,
 	}
 
 	enabled, err := a.Client.ChartRegistryEnabled()

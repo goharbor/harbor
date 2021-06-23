@@ -16,13 +16,14 @@ package project
 
 import (
 	"context"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/graph-gophers/dataloader"
 )
 
@@ -49,22 +50,24 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		return handleError(err)
 	}
 
-	var ownerIDs []int
-	var projectsMap = make(map[int64]*models.Project, len(projectIDs))
+	var ownerIDs []interface{}
+	var projectsMap = make(map[int64]*proModels.Project, len(projectIDs))
 	for _, project := range projects {
 		ownerIDs = append(ownerIDs, project.OwnerID)
 		projectsMap[project.ProjectID] = project
 	}
 
-	// TODO: change to use user manager
-	owners, err := dao.ListUsers(&models.UserQuery{UserIDs: ownerIDs})
+	owners, err := user.Mgr.List(ctx, q.New(q.KeyWords{
+		"UserID": q.NewOrList(ownerIDs),
+	}))
+
 	if err != nil {
 		return handleError(err)
 	}
 
 	var ownersMap = make(map[int]*models.User, len(owners))
 	for i, owner := range owners {
-		ownersMap[owner.UserID] = &owners[i]
+		ownersMap[owner.UserID] = owners[i]
 	}
 
 	var results []*dataloader.Result

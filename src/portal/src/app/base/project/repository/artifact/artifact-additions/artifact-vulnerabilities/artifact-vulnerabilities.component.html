@@ -83,7 +83,7 @@
 
             <clr-dg-footer>
                 <div class="report">
-                    <i>{{'VULNERABILITY.REPORTED_BY' | translate: {scanner: getScannerInfo(scanner)} }}</i>
+                    <i *ngIf="scanner">{{'VULNERABILITY.REPORTED_BY' | translate: {scanner: getScannerInfo(scanner)} }}</i>
                 </div>
                 <clr-dg-pagination #pagination [clrDgPageSize]="25" [clrDgTotalItems]="scanningResults?.length">
                     <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>

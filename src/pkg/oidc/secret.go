@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/pkg/oidc/dao"
+
 	"sync"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -30,51 +31,56 @@ func verifyError(err error) error {
 // SecretManager is the interface for store and verify the secret
 type SecretManager interface {
 	// VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
-	// refreshed during the verification.  It returns a populated user model based on the ID token associated with the secret.
-	VerifySecret(ctx context.Context, username string, secret string) (*models.User, error)
+	// refreshed during the verification.
+	VerifySecret(ctx context.Context, username string, secret string) (*UserInfo, error)
 }
 
-type defaultManager struct {
-	sync.Mutex
+type keyGetter struct {
+	sync.RWMutex
 	key string
 }
 
-var m SecretManager = &defaultManager{}
-
-func (dm *defaultManager) getEncryptKey() (string, error) {
-	if dm.key == "" {
-		dm.Lock()
-		defer dm.Unlock()
-		if dm.key == "" {
-			key, err := config.SecretKey()
+func (kg *keyGetter) encryptKey() (string, error) {
+	kg.RLock()
+	if kg.key == "" {
+		kg.RUnlock()
+		kg.Lock()
+		defer kg.Unlock()
+		if kg.key == "" {
+			k, err := config.SecretKey()
 			if err != nil {
 				return "", err
 			}
-			dm.key = key
+			kg.key = k
 		}
+	} else {
+		defer kg.RUnlock()
 	}
-	return dm.key, nil
+	return kg.key, nil
+}
+
+var keyLoader = &keyGetter{}
+
+type defaultManager struct {
+	metaDao dao.MetaDAO
+}
+
+var m SecretManager = &defaultManager{
+	metaDao: dao.NewMetaDao(),
 }
 
 // VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
 // refreshed during the verification.  It returns a populated user model based on the ID token associated with the secret.
-func (dm *defaultManager) VerifySecret(ctx context.Context, username string, secret string) (*models.User, error) {
+func (dm *defaultManager) VerifySecret(ctx context.Context, username string, secret string) (*UserInfo, error) {
 	log.Debugf("Verifying the secret for user: %s", username)
-	user, err := dao.GetUser(models.User{Username: username})
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, verifyError(fmt.Errorf("user does not exist, name: %s", username))
-	}
-	oidcUser, err := dao.GetOIDCUserByUserID(user.UserID)
+	oidcUser, err := dm.metaDao.GetByUsername(ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oidc user info, error: %v", err)
 	}
 	if oidcUser == nil {
 		return nil, fmt.Errorf("user is not onboarded as OIDC user, username: %s", username)
 	}
-	key, err := dm.getEncryptKey()
+	key, err := keyLoader.encryptKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the key for encryption/decryption： %v", err)
 	}
@@ -106,7 +112,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		}
 		encToken, _ := utils.ReversibleEncrypt(string(tb), key)
 		oidcUser.Token = encToken
-		err = dao.UpdateOIDCUser(oidcUser)
+		err = dm.metaDao.Update(ctx, oidcUser)
 		if err != nil {
 			log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
 		}
@@ -116,12 +122,10 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	if err != nil {
 		return nil, verifyError(err)
 	}
-	InjectGroupsToUser(info, user)
-	log.Debugf("Secret verification succeed, username: %s", username)
-	return user, nil
+	return info, nil
 }
 
 // VerifySecret calls the manager to verify the secret.
-func VerifySecret(ctx context.Context, name string, secret string) (*models.User, error) {
+func VerifySecret(ctx context.Context, name string, secret string) (*UserInfo, error) {
 	return m.VerifySecret(ctx, name, secret)
 }

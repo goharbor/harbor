@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import base
-import swagger_client
 import v2_swagger_client
-from v2_swagger_client.rest import ApiException
 from library.base import _assert_status_code
+from v2_swagger_client.models.role_request import RoleRequest
+from v2_swagger_client.rest import ApiException
+
+import base
+
 
 def is_member_exist_in_project(members, member_user_name, expected_member_role_id = None):
     result = False
@@ -125,15 +127,15 @@ class Project(base.Base):
         return count
 
     def get_project_members(self, project_id, **kwargs):
-        kwargs['api_type'] = 'products'
-        return self._get_client(**kwargs).projects_project_id_members_get(project_id)
+        kwargs['api_type'] = 'member'
+        return self._get_client(**kwargs).list_project_members(project_id)
 
     def get_project_member(self, project_id, member_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         from swagger_client.rest import ApiException
-        kwargs['api_type'] = 'products'
+        kwargs['api_type'] = 'member'
         data = []
         try:
-            data, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_get_with_http_info(project_id, member_id,)
+            data, status_code, _ = self._get_client(**kwargs).get_project_member_with_http_info(project_id, member_id,)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:
@@ -145,7 +147,7 @@ class Project(base.Base):
         return data
 
     def get_project_member_id(self, project_id, member_user_name, **kwargs):
-        kwargs['api_type'] = 'products'
+        kwargs['api_type'] = 'member'
         members = self.get_project_members(project_id, **kwargs)
         result = get_member_id_by_name(list(members), member_user_name)
         if result == None:
@@ -154,36 +156,36 @@ class Project(base.Base):
             return result
 
     def check_project_member_not_exist(self, project_id, member_user_name, **kwargs):
-        kwargs['api_type'] = 'products'
+        kwargs['api_type'] = 'member'
         members = self.get_project_members(project_id, **kwargs)
         result = is_member_exist_in_project(list(members), member_user_name)
         if result == True:
             raise Exception(r"User {} should not be a member of project with ID {}.".format(member_user_name, project_id))
 
     def check_project_members_exist(self, project_id, member_user_name, expected_member_role_id = None, **kwargs):
-        kwargs['api_type'] = 'products'
+        kwargs['api_type'] = 'member'
         members = self.get_project_members(project_id, **kwargs)
         result = is_member_exist_in_project(members, member_user_name, expected_member_role_id = expected_member_role_id)
         if result == False:
             raise Exception(r"User {} should be a member of project with ID {}.".format(member_user_name, project_id))
 
     def update_project_member_role(self, project_id, member_id, member_role_id, expect_status_code = 200, **kwargs):
-        kwargs['api_type'] = 'products'
-        role = swagger_client.Role(role_id = member_role_id)
-        data, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_put_with_http_info(project_id, member_id, role = role)
+        kwargs['api_type'] = 'member'
+        role = RoleRequest(role_id = member_role_id)
+        data, status_code, _ = self._get_client(**kwargs).update_project_member_with_http_info(project_id, member_id, role = role)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
         return data
 
     def delete_project_member(self, project_id, member_id, expect_status_code = 200, **kwargs):
-        kwargs['api_type'] = 'products'
-        _, status_code, _ = self._get_client(**kwargs).projects_project_id_members_mid_delete_with_http_info(project_id, member_id)
+        kwargs['api_type'] = 'member'
+        _, status_code, _ = self._get_client(**kwargs).delete_project_member_with_http_info(project_id, member_id)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
 
     def add_project_members(self, project_id, user_id = None, member_role_id = None, _ldap_group_dn=None, expect_status_code = 201, **kwargs):
-        kwargs['api_type'] = 'products'
-        projectMember = swagger_client.ProjectMember()
+        kwargs['api_type'] = 'member'
+        projectMember = v2_swagger_client.ProjectMember()
         if user_id is not None:
            projectMember.member_user = {"user_id": int(user_id)}
         if member_role_id is None:
@@ -191,12 +193,12 @@ class Project(base.Base):
         else:
             projectMember.role_id = member_role_id
         if _ldap_group_dn is not None:
-            projectMember.member_group = swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
+            projectMember.member_group = v2_swagger_client.UserGroup(ldap_group_dn=_ldap_group_dn)
 
         data = []
         try:
-            data, status_code, header = self._get_client(**kwargs).projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
-        except swagger_client.rest.ApiException as e:
+            data, status_code, header = self._get_client(**kwargs).create_project_member_with_http_info(project_id, project_member = projectMember)
+        except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
         else:
             base._assert_status_code(expect_status_code, status_code)

@@ -29,12 +29,12 @@ ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration'
 ${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
 
-${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label/a[contains(.,'Tag Immutability')]
+${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label[contains(.,'Tag Immutability')]
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
 ${delete_confirm_btn}  xpath=//button[contains(.,'DELETE')]
-${project_statistics_private_repository_icon}  xpath=//projects/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+${project_statistics_private_repository_icon}  xpath=//projects/div/div/div[1]/div/statistics-panel/div/div[2]/div/div[1]/div[2]
 ${project_statistics_total_projects_icon}  xpath=//div[contains(@class, 'statistic-column-block') and contains(., 'TOTAL')]//div[1]/statistics//span[contains(@class, 'statistic-data')]
 ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
 ${repo_retag_confirm_dlg}  css=${modal-dialog}
@@ -49,7 +49,7 @@ ${repo_search_input}  xpath=//hbr-filter//input
 ${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
 #${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
 #${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
-${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
+${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//div[contains(@class,'clr-checkbox-wrapper')]
 ${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
 ${tag_table_column_vulnerabilities}  xpath=//clr-dg-column//span[contains(.,'Vulnerabilities')]
 ${tag_table_column_os_arch}  xpath=//clr-dg-column//span[contains(.,'OS/ARCH')]

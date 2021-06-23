@@ -16,9 +16,10 @@ package label
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/label/dao"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 	"time"
 )
 
@@ -27,10 +28,21 @@ var Mgr = New()
 
 // Manager manages the labels and references between label and resource
 type Manager interface {
+	// Create the label
+	Create(ctx context.Context, label *model.Label) (id int64, err error)
 	// Get the label specified by ID
-	Get(ctx context.Context, id int64) (label *models.Label, err error)
+	Get(ctx context.Context, id int64) (label *model.Label, err error)
+	// Count returns the total count of Labels according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
+	// Update the label
+	Update(ctx context.Context, label *model.Label) error
+	// Delete the label
+	Delete(ctx context.Context, id int64) (err error)
+	// List ...
+	List(ctx context.Context, query *q.Query) ([]*model.Label, error)
+
 	// List labels that added to the artifact specified by the ID
-	ListByArtifact(ctx context.Context, artifactID int64) (labels []*models.Label, err error)
+	ListByArtifact(ctx context.Context, artifactID int64) (labels []*model.Label, err error)
 	// Add label to the artifact specified the ID
 	AddTo(ctx context.Context, labelID int64, artifactID int64) (err error)
 	// Remove the label added to the artifact specified by the ID
@@ -44,25 +56,45 @@ type Manager interface {
 // New creates an instance of the default label manager
 func New() Manager {
 	return &manager{
-		dao: &defaultDAO{},
+		dao: dao.New(),
 	}
 }
 
 type manager struct {
-	dao DAO
+	dao dao.DAO
 }
 
-func (m *manager) Get(ctx context.Context, id int64) (*models.Label, error) {
+func (m *manager) Create(ctx context.Context, label *model.Label) (id int64, err error) {
+	return m.dao.Create(ctx, label)
+}
+
+func (m *manager) Get(ctx context.Context, id int64) (*model.Label, error) {
 	return m.dao.Get(ctx, id)
 }
 
-func (m *manager) ListByArtifact(ctx context.Context, artifactID int64) ([]*models.Label, error) {
+func (m *manager) Count(ctx context.Context, query *q.Query) (total int64, err error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) Update(ctx context.Context, label *model.Label) error {
+	return m.dao.Update(ctx, label)
+}
+
+func (m *manager) Delete(ctx context.Context, id int64) error {
+	return m.dao.Delete(ctx, id)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.Label, error) {
+	return m.dao.List(ctx, query)
+}
+
+func (m *manager) ListByArtifact(ctx context.Context, artifactID int64) ([]*model.Label, error) {
 	return m.dao.ListByArtifact(ctx, artifactID)
 }
 
 func (m *manager) AddTo(ctx context.Context, labelID int64, artifactID int64) error {
 	now := time.Now()
-	_, err := m.dao.CreateReference(ctx, &Reference{
+	_, err := m.dao.CreateReference(ctx, &model.Reference{
 		LabelID:      labelID,
 		ArtifactID:   artifactID,
 		CreationTime: now,

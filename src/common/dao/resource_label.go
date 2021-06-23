@@ -15,10 +15,11 @@
 package dao
 
 import (
+	"github.com/goharbor/harbor/src/common/models"
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 // AddResourceLabel add a label to a resource
@@ -60,7 +61,7 @@ func GetResourceLabel(rType string, rIDOrName interface{}, labelID int64) (*mode
 
 // GetLabelsOfResource returns the label list of the resource
 // Get the labels by ResourceID if rIDOrName is int, or get the labels by ResourceName
-func GetLabelsOfResource(rType string, rIDOrName interface{}) ([]*models.Label, error) {
+func GetLabelsOfResource(rType string, rIDOrName interface{}) ([]*model.Label, error) {
 	sql := `select l.id, l.name, l.description, l.color, l.scope, l.project_id, l.creation_time, l.update_time
 				from harbor_resource_label rl
 				join harbor_label l on rl.label_id=l.id
@@ -71,7 +72,7 @@ func GetLabelsOfResource(rType string, rIDOrName interface{}) ([]*models.Label, 
 		sql += ` rl.resource_name = ?`
 	}
 
-	labels := []*models.Label{}
+	labels := []*model.Label{}
 	_, err := GetOrmer().Raw(sql, rType, rIDOrName).QueryRows(&labels)
 	return labels, err
 }

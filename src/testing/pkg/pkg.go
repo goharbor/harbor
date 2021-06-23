@@ -28,10 +28,14 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/task --name Manager --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../pkg/task --name ExecutionManager --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../pkg/user --name Manager --output ./user --outpkg user
+//go:generate mockery --case snake --dir ../../pkg/user/dao --name DAO --output ./user/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/oidc --name MetaManager --output ./oidc --outpkg oidc
+//go:generate mockery --case snake --dir ../../pkg/oidc/dao --name MetaDAO --output ./oidc/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/rbac --name Manager --output ./rbac --outpkg rbac
 //go:generate mockery --case snake --dir ../../pkg/rbac/dao --name DAO --output ./rbac/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/robot --name Manager --output ./robot --outpkg robot
 //go:generate mockery --case snake --dir ../../pkg/robot/dao --name DAO --output ./robot/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/repository --name Manager --output ./repository --outpkg repository
 //go:generate mockery --case snake --dir ../../pkg/repository/dao --name DAO --output ./repository/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/notification/job/dao --name DAO --output ./notification/job/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/notification/policy/dao --name DAO --output ./notification/policy/dao --outpkg dao
@@ -45,3 +49,5 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/reg/adapter --name Adapter --output ./reg/adapter --outpkg adapter
 //go:generate mockery --case snake --dir ../../pkg/replication/dao --name DAO --output ./replication/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/replication --name Manager --output ./replication --outpkg manager
+//go:generate mockery --case snake --dir ../../pkg/label --name Manager --output ./label --outpkg label
+//go:generate mockery --case snake --dir ../../pkg/label/dao --name DAO --output ./label/dao --outpkg dao

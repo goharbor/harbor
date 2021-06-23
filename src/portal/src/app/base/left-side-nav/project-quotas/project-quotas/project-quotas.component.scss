@@ -51,7 +51,7 @@
   margin-bottom: .35rem;
 }
 
-::ng-deep {
+:host::ng-deep {
   .progress {
     &.warning>progress {
       color: orange;
@@ -76,4 +76,15 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+}
+.search {
+  align-items: baseline;
+  padding-top: 0.2rem;
+  justify-content: flex-end;
+  margin-right: 2rem;
+}
+:host::ng-deep {
+  .filter-input {
+    width: 210px;
+  }
 }

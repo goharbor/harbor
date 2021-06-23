@@ -1,11 +1,13 @@
 package api
 
 import (
+	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/label"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 // LabelResourceAPI provides the related basic functions to handle marking labels to resources
@@ -19,7 +21,9 @@ func (lra *LabelResourceAPI) Prepare() {
 	lra.BaseController.Prepare()
 
 	// Create label manager
-	lra.labelManager = &label.BaseManager{}
+	lra.labelManager = &label.BaseManager{
+		LabelMgr: pkg_label.Mgr,
+	}
 }
 
 func (lra *LabelResourceAPI) getLabelsOfResource(rType string, rIDOrName interface{}) {
@@ -52,7 +56,7 @@ func (lra *LabelResourceAPI) removeLabelFromResource(rType string, rIDOrName int
 }
 
 // eat the error of validate method of label manager
-func (lra *LabelResourceAPI) validate(labelID, projectID int64) (*models.Label, bool) {
+func (lra *LabelResourceAPI) validate(labelID, projectID int64) (*model.Label, bool) {
 	label, err := lra.labelManager.Validate(labelID, projectID)
 	if err != nil {
 		lra.handleErrors(err)
@@ -63,7 +67,7 @@ func (lra *LabelResourceAPI) validate(labelID, projectID int64) (*models.Label, 
 }
 
 // eat the error of exists method of label manager
-func (lra *LabelResourceAPI) exists(labelID int64) (*models.Label, bool) {
+func (lra *LabelResourceAPI) exists(labelID int64) (*model.Label, bool) {
 	label, err := lra.labelManager.Exists(labelID)
 	if err != nil {
 		return nil, false

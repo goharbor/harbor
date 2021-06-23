@@ -8,8 +8,8 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/robot"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	pkg "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -312,8 +312,8 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		if params.Robot.Duration == -1 {
 			r.ExpiresAt = -1
 		} else if params.Robot.Duration == 0 {
-			r.Duration = int64(config.RobotTokenDuration())
-			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration()).Unix()
+			r.Duration = int64(config.RobotTokenDuration(ctx))
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration(ctx)).Unix()
 		} else {
 			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
 		}

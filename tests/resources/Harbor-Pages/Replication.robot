@@ -49,6 +49,12 @@ Select Source Registry
     Retry Element Click    ${src_registry_dropdown_list}
     Retry Element Click    ${src_registry_dropdown_list}//option[contains(.,'${endpoint}')]
 
+Select flattening
+    [Arguments]    ${type}
+    Retry Element Click    ${flattening_select}
+    Retry Element Click    ${flattening_select}//option[contains(.,'${type}')]
+
+
 Select Trigger
     [Arguments]    ${mode}
     Retry Element Click    ${rule_trigger_select}
@@ -84,8 +90,8 @@ Create A New Endpoint
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint
-    [Arguments]    ${name}    ${replication_mode}    ${filter_project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
-    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}
+    [Arguments]  ${name}  ${replication_mode}  ${filter_project_name}  ${resource_type}  ${endpoint}  ${dest_namespace}
+    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}  ${flattening}=Flatten 1 Level
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
@@ -98,6 +104,7 @@ Create A Rule With Existing Endpoint
     Run Keyword If  '${filter_tag}' != '${false}'  Retry Text Input    ${filter_tag_id}    ${filter_tag}
     Run Keyword And Ignore Error    Select From List By Value    ${rule_resource_selector}    ${resource_type}
     Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
+    Select flattening  ${flattening}
     #set trigger
     Select Trigger  ${mode}
     Run Keyword If  '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
@@ -217,7 +224,7 @@ Delete Endpoint
     Retry Element Click  ${endpoint_filter_search}
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${registry_del_btn}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]  Retry Wait Element  ${registry_del_btn}
     Retry Element Click  ${registry_del_btn}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}

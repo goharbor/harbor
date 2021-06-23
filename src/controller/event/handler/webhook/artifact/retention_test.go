@@ -2,10 +2,16 @@ package artifact
 
 import (
 	"context"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/config"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/retention"
-	"github.com/goharbor/harbor/src/core/config"
+
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
@@ -15,9 +21,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
-	"time"
 )
 
 func TestRetentionHandler_Handle(t *testing.T) {

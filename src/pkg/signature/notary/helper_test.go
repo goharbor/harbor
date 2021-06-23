@@ -16,11 +16,14 @@ package notary
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	test2 "github.com/goharbor/harbor/src/pkg/signature/notary/test"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 
 	"net/http/httptest"
@@ -54,19 +57,19 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetInternalTargets(t *testing.T) {
-	targets, err := GetInternalTargets(notaryServer.URL, "admin", "library/busybox")
+	targets, err := GetInternalTargets(orm.Context(), notaryServer.URL, "admin", "library/busybox")
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 1, len(targets), "")
 	assert.Equal(t, "latest-signed", targets[0].Tag, "")
 }
 
 func TestGetTargets(t *testing.T) {
-	targets, err := GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "library/busybox"))
+	targets, err := GetTargets(orm.Context(), notaryServer.URL, "admin", path.Join(endpoint, "library/busybox"))
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 1, len(targets), "")
 	assert.Equal(t, "latest-signed", targets[0].Tag, "")
 
-	targets, err = GetTargets(notaryServer.URL, "admin", path.Join(endpoint, "library/notexist"))
+	targets, err = GetTargets(orm.Context(), notaryServer.URL, "admin", path.Join(endpoint, "library/notexist"))
 	assert.Nil(t, err, fmt.Sprintf("Unexpected error: %v", err))
 	assert.Equal(t, 0, len(targets), "Targets list should be empty for non exist repo.")
 }

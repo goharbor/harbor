@@ -96,6 +96,12 @@ func (f *fakeRegistry) PushBlob(repository, digest string, size int64, blob io.R
 func (f *fakeRegistry) DeleteTag(repository, tag string) error {
 	return nil
 }
+func (f *fakeRegistry) CanBeMount(digest string) (bool, string, error) {
+	return false, "", nil
+}
+func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) error {
+	return nil
+}
 
 func TestFactory(t *testing.T) {
 	tr, err := factory(nil, nil)

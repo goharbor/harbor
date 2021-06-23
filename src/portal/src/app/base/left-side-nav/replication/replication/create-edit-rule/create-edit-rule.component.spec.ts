@@ -9,7 +9,6 @@ import { InlineAlertComponent } from "../../../../../shared/components/inline-al
 import {
   ReplicationRule,
   ReplicationJob,
-  Endpoint,
   ReplicationJobItem
 } from "../../../../../shared/services";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
@@ -22,7 +21,8 @@ import { of } from "rxjs";
 import {HttpHeaders, HttpResponse} from "@angular/common/http";
 import {delay} from "rxjs/operators";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
-import { EndpointService } from "../../../../../shared/services/endpoint.service";
+import { RegistryService } from "../../../../../../../ng-swagger-gen/services/registry.service";
+import { Registry } from "../../../../../../../ng-swagger-gen/models/registry";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -83,7 +83,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     data: mockJobs
   };
 
-  let mockEndpoints: Endpoint[] = [
+  let mockEndpoints: Registry[] = [
     {
       id: 1,
       credential: {
@@ -215,7 +215,14 @@ describe("CreateEditRuleComponent (inline template)", () => {
     }
   };
   const fakedEndpointService = {
-    getEndpoints() {
+    listRegistriesResponse() {
+      const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
+        headers: new HttpHeaders({'x-total-count': mockEndpoints.length.toString()}),
+        body: mockEndpoints
+      });
+      return of(response).pipe(delay(0));
+    },
+    listRegistries() {
       return of(mockEndpoints).pipe(delay(0));
     }
   };
@@ -234,7 +241,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
       providers: [
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: ReplicationService, useValue: fakedReplicationService },
-        { provide: EndpointService, useValue: fakedEndpointService },
+        { provide: RegistryService, useValue: fakedEndpointService },
       ]
     });
   }));
@@ -260,7 +267,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open modal to edit replication rule", fakeAsync( () => {
     fixture.detectChanges();
-    comp.openCreateEditRule(mockRule.id);
+    comp.openCreateEditRule(mockRule);
     fixture.detectChanges();
     tick(5000);
     const ruleNameInput: HTMLInputElement = fixture.nativeElement.querySelector("#ruleName");

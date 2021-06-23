@@ -48,6 +48,11 @@ func (hc *SystemInfoCollector) Collect(c chan<- prometheus.Metric) {
 	}
 }
 
+// GetName returns the name of the system info collector
+func (hc *SystemInfoCollector) GetName() string {
+	return systemInfoCollectorName
+}
+
 func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 	if CacheEnabled() {
 		value, ok := CacheGet(systemInfoCollectorName)

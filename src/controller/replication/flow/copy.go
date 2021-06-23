@@ -78,7 +78,14 @@ func (c *copyFlow) Run(ctx context.Context) error {
 	}
 
 	srcResources = assembleSourceResources(srcResources, c.policy)
-	dstResources := assembleDestinationResources(srcResources, c.policy)
+	info, err := dstAdapter.Info()
+	if err != nil {
+		return err
+	}
+	dstResources, err := assembleDestinationResources(srcResources, c.policy, info.SupportedRepositoryPathComponentType)
+	if err != nil {
+		return err
+	}
 
 	if err = prepareForPush(dstAdapter, dstResources); err != nil {
 		return err
