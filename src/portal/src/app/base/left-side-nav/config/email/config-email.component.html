@@ -34,7 +34,7 @@
                 [disabled]="disabled(currentConfig.email_from)" />
             <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
         </clr-input-container>
-        <div class="clr-form-control">
+        <div class="clr-form-control" [class.clr-form-control-disabled]="disabled(currentConfig.email_ssl)">
             <label class="clr-control-label" for="emailSSL">{{'CONFIG.MAIL_SSL' | translate}}
                     <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -53,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control" [class.clr-form-control-disabled]="disabled(currentConfig.email_insecure)">
             <label class="clr-control-label" for="emailInsecure">{{'CONFIG.MAIL_INSECURE' | translate}}
                     <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
