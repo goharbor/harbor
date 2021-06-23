@@ -391,7 +391,7 @@ Verify Artifact Display Verbose
         ${total_artifact_count}=  Get From Dictionary  ${item}  total_artifact_count
         ${archive_count}=  Get From Dictionary  ${item}  archive_count
         Log To Console  Check image ${image}:${tag} replication to Project ${pro_name}
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  times=2
+        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  times=6
     END
 
 Verify Artifact Display
@@ -402,7 +402,7 @@ Verify Artifact Display
         ${item}=  Get Substring  ${item}  1  -1
         ${item}=  Evaluate  ${item}
         ${image}=  Get From Dictionary  ${item}  image
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  times=2
+        Image Should Be Replicated To Project  ${pro_name}  ${image}  times=6
     END
 
 Replication With Flattening
