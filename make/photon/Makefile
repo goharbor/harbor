@@ -18,8 +18,8 @@ TIMESTAMP=$(shell date +"%Y%m%d")
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build
-DOCKERBUILD_WITH_PULL_PARA=$(DOCKERCMD) build --pull=$(PULL_BASE_FROM_DOCKERHUB)
+DOCKERBUILD=$(DOCKERCMD) build --no-cache
+DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMAGES=$(DOCKERCMD) images
 BASEIMAGENAMESPACE=goharbor
@@ -106,11 +106,11 @@ NOTARYSERVER=notary-server
 NOTARYSIGNER=notary-signer
 DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
 DOCKERFILEPATH_NOTARYSERVER=$(DOCKERFILEPATH)/$(NOTARYSERVER)
-DOCKERFILENAME_NOTARYSIGNER=Dockerfile
-DOCKERIMAGENAME_NOTARYSIGNER=goharbor/$(NOTARYSIGNER)-photon
-DOCKERFILEPATH_NOTARYSIGNER=$(DOCKERFILEPATH)/$(NOTARYSIGNER)
 DOCKERFILENAME_NOTARYSERVER=Dockerfile
 DOCKERIMAGENAME_NOTARYSERVER=goharbor/$(NOTARYSERVER)-photon
+DOCKERFILEPATH_NOTARYSIGNER=$(DOCKERFILEPATH)/$(NOTARYSIGNER)
+DOCKERFILENAME_NOTARYSIGNER=Dockerfile
+DOCKERIMAGENAME_NOTARYSIGNER=goharbor/$(NOTARYSIGNER)-photon
 
 REDIS=redis
 DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/$(REDIS)
@@ -250,7 +250,7 @@ _build_notary:
 		$(call _build_base,$(NOTARYSIGNER),$(DOCKERFILEPATH_NOTARYSIGNER)) ; \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_NOTARY)/binary && mkdir -p $(DOCKERFILEPATH_NOTARY)/binary && \
-			$(call _get_binary, $(NORARYURL), $(DOCKERFILEPATH_NOTARY)/binary-bundle.tgz); \
+			$(call _get_binary, $(NOTARYURL), $(DOCKERFILEPATH_NOTARY)/binary-bundle.tgz); \
 			cd $(DOCKERFILEPATH_NOTARY) && tar -zvxf binary-bundle.tgz && cd - ; \
 		else \
 			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) $(NOTARYMIGRATEVERSION) && cd - ; \
@@ -318,7 +318,9 @@ define _build_base
 endef
 
 build: _build_chart_server _build_notary _build_clair _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_clair_adapter _build_trivy_adapter _build_redis
-
+	@if [ -n "$(REGISTRYUSER)"  ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+		docker logout ; \
+	fi
 cleanimage:
 	@echo "cleaning image for photon..."
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
