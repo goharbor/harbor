@@ -65,9 +65,26 @@ describe('OperationComponent', () => {
         expect(errorSpan.style.display).toEqual('none');
     });
     it('check calculateTime function', () => {
-        expect(component.calculateTime(1000)).toEqual('less than 1 minute');
-        expect(component.calculateTime(61000)).toEqual('1 minute(s) ago');
-        expect(component.calculateTime(3601000)).toEqual('1 hour(s) ago');
-        expect(component.calculateTime(24 * 3601000)).toEqual('1 day(s) ago');
+        expect(component.calculateTime(
+          1000,
+          'less than 1 minute',
+          ' minute(s) ago',
+          ' hour(s) ago',
+          ' day(s) ago')).toEqual('less than 1 minute');
+        expect(component.calculateTime(61000,
+          'less than 1 minute',
+          ' minute(s) ago',
+          ' hour(s) ago',
+          ' day(s) ago')).toEqual('1 minute(s) ago');
+        expect(component.calculateTime(3601000,
+          'less than 1 minute',
+          ' minute(s) ago',
+          ' hour(s) ago',
+          ' day(s) ago')).toEqual('1 hour(s) ago');
+        expect(component.calculateTime(24 * 3601000,
+          'less than 1 minute',
+          ' minute(s) ago',
+          ' hour(s) ago',
+          ' day(s) ago')).toEqual('1 day(s) ago');
     });
 });
