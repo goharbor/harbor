@@ -324,6 +324,11 @@ build:
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG)
 
 build_base_docker:
+	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+	else \
+		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
+	fi
 	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
 		echo $$name ; \
 		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t goharbor/harbor-$$name-base:$(BASEIMAGETAG) . && \
