@@ -569,11 +569,13 @@ export const validateLimit = unitContrl => {
 export function formatSize(tagSize: string): string {
     let size: number = Number.parseInt(tagSize);
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
-        return (size / Math.pow(1024, 1)).toFixed(2) + "KB";
+        return (size / Math.pow(1024, 1)).toFixed(2) + "KiB";
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
-        return (size / Math.pow(1024, 2)).toFixed(2) + "MB";
+        return (size / Math.pow(1024, 2)).toFixed(2) + "MiB";
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-        return (size / Math.pow(1024, 3)).toFixed(2) + "GB";
+        return (size / Math.pow(1024, 3)).toFixed(2) + "GiB";
+    } else if (Math.pow(1024, 4) <= size && size < Math.pow(1024, 5)) {
+        return (size / Math.pow(1024, 4)).toFixed(2) + "TiB";
     } else {
         return size + "B";
     }
@@ -590,6 +592,8 @@ export function getSizeNumber(size: number): string | number {
         return (size / Math.pow(1024, 2)).toFixed(2);
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
         return (size / Math.pow(1024, 3)).toFixed(2);
+    } else if (Math.pow(1024, 4) <= size && size < Math.pow(1024, 5)) {
+        return (size / Math.pow(1024, 4)).toFixed(2);
     } else {
         return size;
     }
@@ -601,11 +605,13 @@ export function getSizeNumber(size: number): string | number {
  */
 export function getSizeUnit(size: number): string  {
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
-        return "KB";
+        return "KiB";
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
-        return "MB";
+        return "MiB";
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-        return "GB";
+        return "GiB";
+    } else if (Math.pow(1024, 4) <= size && size < Math.pow(1024, 5)) {
+        return "TiB";
     } else {
         return "Byte";
     }
