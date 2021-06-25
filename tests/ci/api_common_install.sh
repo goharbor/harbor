@@ -56,5 +56,5 @@ pip -V
 
 #sudo apt-get update && sudo apt-get install -y --no-install-recommends libssl-dev && sudo apt-get autoremove -y && sudo rm -rf /var/lib/apt/lists/*
 sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
-sudo make install GOBUILDIMAGE=golang:1.15.6 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true
+sudo make install GOBUILDIMAGE=golang:1.15.6 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true BUILDBIN=true
 sleep 10
