@@ -142,7 +142,9 @@ class DockerAPI(object):
         if expected_error_message == "":
             expected_error_message = None
         try:
-            ret = self.DCLIENT.pull(r'{}:{}'.format(image, _tag))
+            image_full_name = r'{}:{}'.format(image, _tag)
+            print("Image full name:", image_full_name)
+            ret = self.DCLIENT.pull(image_full_name)
         except Exception as err:
             print( "Docker image pull catch exception:", str(err))
             err_message = str(err)

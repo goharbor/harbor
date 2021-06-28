@@ -71,8 +71,8 @@ class TestProxyCache(unittest.TestCase):
             # Memo: ctr will not send image pull request if manifest list already exist, so we pull different manifest list for different registry;
             index_for_ctr = dict(image = "alpine", tag = "3.12.0")
         else:
-            user_namespace = "nightly"
-            registry = "https://cicd.harbor.vmwarecna.net"
+            user_namespace = "goharbor/nightly"
+            registry = "https://ghcr.io"
             index_for_ctr = dict(image = "busybox", tag = "1.32.0")
 
         registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=False, **ADMIN_CLIENT)
