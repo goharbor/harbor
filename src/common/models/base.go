@@ -23,7 +23,6 @@ func init() {
 		new(User),
 		new(Role),
 		new(ResourceLabel),
-		new(JobLog),
 		new(OIDCUser),
 	)
 }

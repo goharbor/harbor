@@ -3,8 +3,9 @@ package getter
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/joblog"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
@@ -23,7 +24,7 @@ func (dbg *DBGetter) Retrieve(logID string) ([]byte, error) {
 		return nil, errors.New("empty log identify")
 	}
 
-	jobLog, err := dao.GetJobLog(logID)
+	jobLog, err := joblog.Mgr.Get(orm.Context(), logID)
 	if err != nil {
 		// Other errors have been ignored by GetJobLog()
 		return nil, errs.NoObjectFoundError(fmt.Sprintf("log entity: %s", logID))
