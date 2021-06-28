@@ -149,7 +149,9 @@ export class NavigatorComponent implements OnInit {
     switchLanguage(lang: string): void {
         this.selectedLang = lang;
         localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, lang);
-        this.translate.use(lang);
+        // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
+        // have to reload
+        this.translate.use(lang).subscribe(() => window.location.reload());
     }
 
     // Handle the home action
