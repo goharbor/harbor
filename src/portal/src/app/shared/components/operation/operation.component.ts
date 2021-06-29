@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { OperationService } from "./operation.service";
-import { Subscription } from "rxjs";
-import { OperateInfo, OperationState } from "./operate";
+import { forkJoin, Subscription } from "rxjs";
+import { OperateInfo, OperateInfosLocalstorage, OperationState } from "./operate";
 import { SlideInOutAnimation } from "../../_animations/slide-in-out.animation";
 import { TranslateService } from "@ngx-translate/core";
 import { SessionService } from "../../services/session.service";
@@ -26,12 +26,11 @@ export class OperationComponent implements OnInit, OnDestroy {
   @HostListener('window:beforeunload', ['$event'])
   beforeUnloadHander(event) {
     if (this.session.getCurrentUser()) {
-      // storage to localStorage
-      const timp = new Date().getTime();
+      // store into localStorage
       // group by user id
       localStorage.setItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`,
         JSON.stringify({
-          timp: timp,
+          updated: new Date().getTime(),
           data: this.resultLists,
           newMessageCount: this._newMessageCount
         }));
@@ -107,28 +106,27 @@ export class OperationComponent implements OnInit, OnDestroy {
 
   init() {
     if (this.session.getCurrentUser()) {
-      let requestCookie = localStorage.getItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`);
-      if (requestCookie) {
-        let operInfors: any = JSON.parse(requestCookie);
-        if (operInfors) {
-          if (operInfors.newMessageCount) {
-            this._newMessageCount = operInfors.newMessageCount;
+      const operationInfosString: string = localStorage.getItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`);
+      if (operationInfosString) {
+        const operationInfos: OperateInfosLocalstorage = JSON.parse(operationInfosString);
+        if (operationInfos) {
+          if (operationInfos.newMessageCount) {
+            this._newMessageCount = operationInfos.newMessageCount;
           }
-          if ((new Date().getTime() - operInfors.timp) > MAX_SAVING_TIME) {
-            localStorage.removeItem(`${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`);
-          } else {
-            if (operInfors.data) {
-              operInfors.data.forEach(operInfo => {
-                if (operInfo.state === OperationState.progressing) {
-                  operInfo.state = OperationState.interrupt;
-                  operInfo.data.errorInf = 'operation been interrupted';
-                }
-              });
-              this.resultLists = operInfors.data;
-            }
+          if (operationInfos.data && operationInfos.data.length) {
+            // remove expired items
+            operationInfos.data = operationInfos.data.filter(item => {
+              return (new Date().getTime() - item.timeStamp) < MAX_SAVING_TIME;
+            });
+            operationInfos.data.forEach(operInfo => {
+              if (operInfo.state === OperationState.progressing) {
+                operInfo.state = OperationState.interrupt;
+                operInfo.data.errorInf = 'operation been interrupted';
+              }
+            });
+            this.resultLists = operationInfos.data;
           }
         }
-
       }
     }
   }
@@ -167,29 +165,31 @@ export class OperationComponent implements OnInit, OnDestroy {
 
 
   TabEvent(): void {
-    let timp: any;
+    let secondsAgo: string, minutesAgo: string, hoursAgo: string, daysAgo: string;
+      forkJoin([
+      this.translate.get("OPERATION.SECOND_AGO"),
+      this.translate.get("OPERATION.MINUTE_AGO"),
+      this.translate.get("OPERATION.HOUR_AGO"),
+      this.translate.get("OPERATION.DAY_AGO"),
+    ]).subscribe(res => {
+      [secondsAgo, minutesAgo, hoursAgo, daysAgo] = res;
+    });
     this.resultLists.forEach(data => {
-      timp = new Date().getTime() - +data.timeStamp;
-      data.timeDiff = this.calculateTime(timp);
+      const timeDiff: number = new Date().getTime() - +data.timeStamp;
+      data.timeDiff = this.calculateTime(timeDiff, secondsAgo, minutesAgo, hoursAgo, daysAgo);
     });
   }
 
-  calculateTime(timp: number) {
-    let dist = Math.floor(timp / 1000 / 60);  // change to minute;
+  calculateTime(timeDiff: number, s: string, m: string, h: string, d: string) {
+    const dist = Math.floor(timeDiff / 1000 / 60);  // change to minute;
     if (dist > 0 && dist < 60) {
-      return Math.floor(dist) + ' minute(s) ago';
+      return Math.floor(dist) + m;
     } else if (dist >= 60 && Math.floor(dist / 60) < 24) {
-      return Math.floor(dist / 60) + ' hour(s) ago';
+      return Math.floor(dist / 60) + h;
     } else if (Math.floor(dist / 60) >= 24) {
-      return Math.floor(dist / 60 / 24) + ' day(s) ago';
+      return Math.floor(dist / 60 / 24) + d;
     } else {
-      return 'less than 1 minute';
+      return s;
     }
-  }
-
-  translateTime(tim: string, param?: number) {
-    this.translate.get(tim, {'param': param}).subscribe((res: string) => {
-      return res;
-    });
   }
 }
