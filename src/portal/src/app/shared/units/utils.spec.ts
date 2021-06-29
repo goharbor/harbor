@@ -60,13 +60,15 @@ describe('functions in utils.ts should work', () => {
     expect(getSizeNumber(10)).toEqual(10);
     expect(getSizeNumber(456400)).toEqual('445.70');
     expect(getSizeNumber(45640000)).toEqual('43.53');
+    expect(getSizeNumber(4564000000000)).toEqual('4.15');    
   });
 
   it('function getSizeUnit() should work', () => {
     expect(getSizeUnit).toBeTruthy();
-    expect(getSizeUnit(4564)).toEqual('KB');
+    expect(getSizeUnit(4564)).toEqual('KiB');
     expect(getSizeUnit(10)).toEqual('Byte');
-    expect(getSizeUnit(4564000)).toEqual('MB');
-    expect(getSizeUnit(4564000000)).toEqual('GB');
+    expect(getSizeUnit(4564000)).toEqual('MiB');
+    expect(getSizeUnit(4564000000)).toEqual('GiB');
+    expect(getSizeUnit(4564000000000)).toEqual('TiB');
   });
 });
