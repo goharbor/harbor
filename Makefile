@@ -97,6 +97,7 @@ BUILD_BASE=true
 PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
 BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
+IMAGENAMESPACE=goharbor
 BASEIMAGENAMESPACE=goharbor
 # #input true/false only
 PULL_BASE_FROM_DOCKERHUB=true
@@ -229,15 +230,15 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
-DOCKER_IMAGE_NAME_PREPARE=goharbor/prepare
-DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
-DOCKERIMAGENAME_CORE=goharbor/harbor-core
-DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
-DOCKERIMAGENAME_LOG=goharbor/harbor-log
-DOCKERIMAGENAME_DB=goharbor/harbor-db
-DOCKERIMAGENAME_CHART_SERVER=goharbor/chartmuseum-photon
-DOCKERIMAGENAME_REGCTL=goharbor/harbor-registryctl
-DOCKERIMAGENAME_EXPORTER=goharbor/harbor-exporter
+DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare
+DOCKERIMAGENAME_PORTAL=$(IMAGENAMESPACE)/harbor-portal
+DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/harbor-core
+DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/harbor-jobservice
+DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/harbor-log
+DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/harbor-db
+DOCKERIMAGENAME_CHART_SERVER=$(IMAGENAMESPACE)/chartmuseum-photon
+DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/harbor-registryctl
+DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-exporter
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -270,9 +271,9 @@ DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) \
-		goharbor/redis-photon:$(VERSIONTAG) \
-		goharbor/nginx-photon:$(VERSIONTAG) \
-		goharbor/registry-photon:$(VERSIONTAG)
+		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -291,10 +292,10 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/notary-server-photon:$(VERSIONTAG) goharbor/notary-signer-photon:$(VERSIONTAG)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/notary-server-photon:$(VERSIONTAG) $(IMAGENAMESPACE)/notary-signer-photon:$(VERSIONTAG)
 endif
 ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/trivy-adapter-photon:$(VERSIONTAG)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
 endif
 # append chartmuseum parameters if set
 ifeq ($(CHARTFLAG), true)
@@ -314,7 +315,7 @@ define prepare_docker_image
 endef
 
 # lint swagger doc
-SPECTRAL_IMAGENAME=goharbor/spectral
+SPECTRAL_IMAGENAME=$(IMAGENAMESPACE)/spectral
 SPECTRAL_VERSION=v5.9.1
 SPECTRAL_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/spectral/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SPECTRAL_VERSION=${SPECTRAL_VERSION} -t ${SPECTRAL_IMAGENAME}:$(SPECTRAL_VERSION) .
 SPECTRAL=$(RUNCONTAINER) $(SPECTRAL_IMAGENAME):$(SPECTRAL_VERSION)
@@ -323,7 +324,7 @@ lint_apis:
 	$(call prepare_docker_image,${SPECTRAL_IMAGENAME},${SPECTRAL_VERSION},${SPECTRAL_IMAGE_BUILD_CMD})
 	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
 
-SWAGGER_IMAGENAME=goharbor/swagger
+SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
 SWAGGER_VERSION=v0.25.0
 SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
@@ -344,7 +345,7 @@ gen_apis: lint_apis
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
 
-MOCKERY_IMAGENAME=goharbor/mockery
+MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
 MOCKERY_VERSION=v2.1.0
 MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
@@ -402,12 +403,12 @@ update_prepare_version:
 	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
 
 gen_tls:
-	@$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
+	@$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
 
 prepare: update_prepare_version
 	@echo "preparing..."
 	@if [ -n "$(GEN_TLS)" ] ; then \
-		$(DOCKERCMD) run --rm -v /:/hostfs:z goharbor/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
@@ -432,7 +433,7 @@ build:
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
-	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
+	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e CHARTURL=$(CHARTURL) -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
@@ -482,7 +483,7 @@ package_online: update_prepare_version
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
-		$(SEDCMDI) -e 's/image\: goharbor/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(SEDCMDI) -e 's/image\: $(IMAGENAMESPACE)/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
