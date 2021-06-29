@@ -1,8 +1,13 @@
 package models
 
 import (
+	"github.com/astaxie/beego/orm"
 	"time"
 )
+
+func init() {
+	orm.RegisterModel(&JobLog{})
+}
 
 // JobLogTable is the name of the table that record the job execution result.
 const JobLogTable = "job_log"
