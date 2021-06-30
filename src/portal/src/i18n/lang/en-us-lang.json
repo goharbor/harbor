@@ -14,7 +14,9 @@
         "INVALID_MSG": "Invalid user name or password.",
         "FORGOT_PWD": "Forgot password",
         "HEADER_LINK": "Sign In",
-        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
+        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available.",
+        "OR": "OR",
+        "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB"
     },
     "SIGN_UP": {
         "TITLE": "Sign Up"
