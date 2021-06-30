@@ -41,6 +41,8 @@ type Manager interface {
 	UpdateRole(ctx context.Context, projectID int64, pmID int, role int) error
 	// SearchMemberByName search project member by name
 	SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error)
+	// DeleteMemberByUserID delete project member by user id
+	DeleteMemberByUserID(ctx context.Context, uid int) error
 	// GetTotalOfProjectMembers get the total amount of project members
 	GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error)
 	// ListRoles list project roles
@@ -93,6 +95,10 @@ func (m *manager) List(ctx context.Context, queryMember models.Member, query *q.
 
 func (m *manager) Delete(ctx context.Context, projectID int64, memberID int) error {
 	return m.dao.DeleteProjectMemberByID(ctx, projectID, memberID)
+}
+
+func (m *manager) DeleteMemberByUserID(ctx context.Context, uid int) error {
+	return m.dao.DeleteProjectMemberByUserID(ctx, uid)
 }
 
 // NewManager ...

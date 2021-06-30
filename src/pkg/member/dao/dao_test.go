@@ -266,6 +266,30 @@ func (s *DaoTestSuite) TestDeleteProjectMember() {
 
 }
 
+func (s *DaoTestSuite) TestDeleteProjectMemberByUserId() {
+	ctx := s.Context()
+	userID := 22
+	var addMember = models.Member{
+		ProjectID:  s.projectID,
+		EntityID:   userID,
+		EntityType: common.UserMember,
+		Role:       common.RoleDeveloper,
+	}
+	pmid, err := s.dao.AddProjectMember(ctx, addMember)
+	s.Nil(err)
+	s.True(pmid > 0)
+
+	err = s.dao.DeleteProjectMemberByUserID(ctx, userID)
+	s.Nil(err)
+
+	queryMember := models.Member{ProjectID: s.projectID, EntityID: userID, EntityType: common.UserMember}
+
+	// not exist
+	members, err := s.dao.GetProjectMember(ctx, queryMember, nil)
+	s.True(len(members) == 0)
+	s.Nil(err)
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }

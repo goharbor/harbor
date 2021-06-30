@@ -31,6 +31,8 @@ type MetaManager interface {
 	Create(ctx context.Context, oidcUser *models.OIDCUser) (int, error)
 	// GetByUserID gets the oidc meta record by user's ID
 	GetByUserID(ctx context.Context, uid int) (*models.OIDCUser, error)
+	// DeleteByUserID delete by user id
+	DeleteByUserID(ctx context.Context, uid int) error
 	// GetBySubIss gets the oidc meta record by the subject and issuer
 	GetBySubIss(ctx context.Context, sub, iss string) (*models.OIDCUser, error)
 	// SetCliSecretByUserID updates the cli secret of a user based on the user ID
@@ -41,6 +43,10 @@ type MetaManager interface {
 
 type metaManager struct {
 	dao dao.MetaDAO
+}
+
+func (m *metaManager) DeleteByUserID(ctx context.Context, uid int) error {
+	return m.dao.DeleteByUserID(ctx, uid)
 }
 
 func (m *metaManager) Update(ctx context.Context, oidcUser *models.OIDCUser, cols ...string) error {

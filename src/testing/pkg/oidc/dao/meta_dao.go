@@ -38,6 +38,20 @@ func (_m *MetaDAO) Create(ctx context.Context, oidcUser *models.OIDCUser) (int, 
 	return r0, r1
 }
 
+// DeleteByUserID provides a mock function with given fields: ctx, uid
+func (_m *MetaDAO) DeleteByUserID(ctx context.Context, uid int) error {
+	ret := _m.Called(ctx, uid)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetByUsername provides a mock function with given fields: ctx, username
 func (_m *MetaDAO) GetByUsername(ctx context.Context, username string) (*models.OIDCUser, error) {
 	ret := _m.Called(ctx, username)

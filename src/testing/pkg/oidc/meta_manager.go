@@ -35,6 +35,20 @@ func (_m *MetaManager) Create(ctx context.Context, oidcUser *models.OIDCUser) (i
 	return r0, r1
 }
 
+// DeleteByUserID provides a mock function with given fields: ctx, uid
+func (_m *MetaManager) DeleteByUserID(ctx context.Context, uid int) error {
+	ret := _m.Called(ctx, uid)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetBySubIss provides a mock function with given fields: ctx, sub, iss
 func (_m *MetaManager) GetBySubIss(ctx context.Context, sub string, iss string) (*models.OIDCUser, error) {
 	ret := _m.Called(ctx, sub, iss)
