@@ -87,23 +87,23 @@ export const  QuotaUnits = [
     UNIT: "Byte",
   },
   {
-    UNIT: "KB",
+    UNIT: "KiB",
   },
   {
-    UNIT: "MB",
+    UNIT: "MiB",
   },
   {
-    UNIT: "GB",
+    UNIT: "GiB",
   },
   {
-    UNIT: "TB",
+    UNIT: "TiB",
   },
 ];
 export const QuotaUnlimited = -1;
 export const StorageMultipleConstant = 1024;
 export const LimitCount = 100000000;
 export enum QuotaUnit {
-  TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT = "Byte"
+  TB = "TiB", GB = "GiB", MB = "MiB", KB = "KiB", BIT = "Byte"
 }
 export enum QuotaProgress {
   COUNT_USED = "COUNT_USED", COUNT_HARD = "COUNT_HARD", STROAGE_USED = "STORAGE_USED", STORAGE_HARD = "STORAGE_HARD"
