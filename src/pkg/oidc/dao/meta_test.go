@@ -27,9 +27,10 @@ import (
 
 type MetaDaoTestSuite struct {
 	htesting.Suite
-	dao      MetaDAO
-	userID   int
-	username string
+	dao          MetaDAO
+	userID       int
+	username     string
+	deleteUserID int
 }
 
 func (suite *MetaDaoTestSuite) SetupSuite() {
@@ -37,8 +38,10 @@ func (suite *MetaDaoTestSuite) SetupSuite() {
 	suite.ClearSQLs = []string{}
 	suite.dao = NewMetaDao()
 	suite.userID = 1234
+	suite.deleteUserID = 2234
 	suite.username = "oidc_meta_testuser"
 	suite.ExecSQL("INSERT INTO harbor_user (user_id, username,password,realname) VALUES(?,?,'test','test')", suite.userID, suite.username)
+	suite.ExecSQL("INSERT INTO harbor_user (user_id, username,password,realname) VALUES(?,?,'test','test')", suite.deleteUserID, suite.deleteUserID)
 	ctx := orm.Context()
 	_, err := suite.dao.Create(ctx, &models.OIDCUser{
 		UserID: suite.userID,
@@ -48,6 +51,14 @@ func (suite *MetaDaoTestSuite) SetupSuite() {
 	})
 	suite.Nil(err)
 	suite.appendClearSQL(suite.userID)
+	_, err = suite.dao.Create(ctx, &models.OIDCUser{
+		UserID: suite.deleteUserID,
+		SubIss: `ca4bb144-4b5c-4d1b-9469-69cb3768af9fhttps://sso.andrea.muellerpublic.de/auth/realms/harbor`,
+		Secret: `<enc-v1>7uBP9yqtdnVAhoA243GSv8nOXBWygqzaaEdq9Kqla+q4hOaBZmEMH9vUJi4Yjbh3`,
+		Token:  `xxxx`,
+	})
+	suite.Nil(err)
+	suite.appendClearSQL(suite.deleteUserID)
 }
 
 func (suite *MetaDaoTestSuite) TestList() {
@@ -80,6 +91,15 @@ func (suite *MetaDaoTestSuite) TestUpdate() {
 	l, err = suite.dao.List(ctx, q.New(q.KeyWords{"user_id": suite.userID}))
 	suite.Nil(err)
 	suite.Equal("newsecret", l[0].Secret)
+}
+
+func (suite *MetaDaoTestSuite) TestDeleteByUserId() {
+	ctx := orm.Context()
+	err := suite.dao.DeleteByUserID(ctx, suite.deleteUserID)
+	suite.Nil(err)
+	l, err := suite.dao.List(ctx, q.New(q.KeyWords{"user_id": suite.deleteUserID}))
+	suite.Nil(err)
+	suite.True(len(l) == 0)
 }
 
 func (suite *MetaDaoTestSuite) appendClearSQL(uid int) {

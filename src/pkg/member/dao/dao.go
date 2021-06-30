@@ -42,6 +42,8 @@ type DAO interface {
 	UpdateProjectMemberRole(ctx context.Context, projectID int64, pmID int, role int) error
 	// DeleteProjectMemberByID - Delete Project Member by ID
 	DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid int) error
+	// DeleteProjectMemberByUserID -- Delete project member by user id
+	DeleteProjectMemberByUserID(ctx context.Context, uid int) error
 	// SearchMemberByName search members of the project by entity_name
 	SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error)
 	// ListRoles lists the roles of user for the specific project
@@ -73,7 +75,7 @@ func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, q
 		select pm.id as id, pm.project_id as project_id, u.user_id as entity_id, u.username as entity_name, u.creation_time, u.update_time, r.name as rolename,
 		r.role_id as role, pm.entity_type as entity_type from harbor_user u join project_member pm
 		on pm.project_id = ? and u.user_id = pm.entity_id
-		join role r on pm.role = r.role_id where u.deleted = false and pm.entity_type = 'u') as a where a.project_id = ? `
+		join role r on pm.role = r.role_id where pm.entity_type = 'u') as a where a.project_id = ? `
 
 	queryParam := make([]interface{}, 1)
 	// used ProjectID already
@@ -183,6 +185,16 @@ func (d *dao) DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid
 	return nil
 }
 
+func (d *dao) DeleteProjectMemberByUserID(ctx context.Context, uid int) error {
+	sql := "delete from project_member where entity_type = 'u' and entity_id = ? "
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Raw(sql, uid).Exec()
+	return err
+}
+
 func (d *dao) SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
@@ -195,7 +207,7 @@ func (d *dao) SearchMemberByName(ctx context.Context, projectID int64, entityNam
 			  from project_member pm
          left join harbor_user u on pm.entity_id = u.user_id and pm.entity_type = 'u'
 		 left join role r on pm.role = r.role_id
-			 where u.deleted = false and pm.project_id = ? and u.username like ?
+			 where pm.project_id = ? and u.username like ?
 			union
 		   select pm.id, pm.project_id,
 			       ug.group_name as entity_name,

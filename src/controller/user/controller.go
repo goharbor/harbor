@@ -17,6 +17,9 @@ package user
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/member"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -72,6 +75,7 @@ func NewController() Controller {
 	return &controller{
 		mgr:         user.New(),
 		oidcMetaMgr: oidc.NewMetaMgr(),
+		memberMgr:   member.Mgr,
 	}
 }
 
@@ -83,6 +87,7 @@ type Option struct {
 type controller struct {
 	mgr         user.Manager
 	oidcMetaMgr oidc.MetaManager
+	memberMgr   member.Manager
 }
 
 func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error {
@@ -167,6 +172,16 @@ func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 func (c *controller) Delete(ctx context.Context, id int) error {
+	// cleanup project member with the user
+	if err := c.memberMgr.DeleteMemberByUserID(ctx, id); err != nil {
+		return errors.UnknownError(err).WithMessage("delete user failed, user id: %v, cannot delete project user member, error:%v", id, err)
+	}
+	// delete oidc metadata under the user
+	if lib.GetAuthMode(ctx) == common.OIDCAuth {
+		if err := c.oidcMetaMgr.DeleteByUserID(ctx, id); err != nil {
+			return errors.UnknownError(err).WithMessage("delete user failed, user id: %v, cannot delete oidc user, error:%v", id, err)
+		}
+	}
 	return c.mgr.Delete(ctx, id)
 }
 
