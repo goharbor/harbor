@@ -73,36 +73,25 @@ export class AppComponent {
         });
     }
     initLanguage() {
-        /**
-         * due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
-         *  we have to call use method for all supported languages
-         *  use method will load related language json from backend server
-         */
-        const usedLangs: Array<Observable<any>> = [];
-        supportedLangs.forEach(lang => {
-            usedLangs.push(this.translate.use(lang));
-        });
-        forkJoin(usedLangs).subscribe(() => { // use target lang after all langs json loaded
-            this.translate.addLangs(supportedLangs);
-            this.translate.setDefaultLang(DeFaultLang);
-            let selectedLang: string = DeFaultLang;
-            if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {// If user has selected lang, then directly use it
-                selectedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
-            } else {// If user has not selected lang, then use browser language(if contained in supportedLangs)
-                const browserCultureLang: string = this.translate
-                    .getBrowserCultureLang()
-                    .toLowerCase();
-                if (browserCultureLang && browserCultureLang.trim() !== "") {
-                    if (supportedLangs && supportedLangs.length > 0) {
-                        if (supportedLangs.find(lang => lang === browserCultureLang)) {
-                            selectedLang = browserCultureLang;
-                        }
+        this.translate.addLangs(supportedLangs);
+        this.translate.setDefaultLang(DeFaultLang);
+        let selectedLang: string = DeFaultLang;
+        if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {// If user has selected lang, then directly use it
+            selectedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+        } else {// If user has not selected lang, then use browser language(if contained in supportedLangs)
+            const browserCultureLang: string = this.translate
+                .getBrowserCultureLang()
+                .toLowerCase();
+            if (browserCultureLang && browserCultureLang.trim() !== "") {
+                if (supportedLangs && supportedLangs.length > 0) {
+                    if (supportedLangs.find(lang => lang === browserCultureLang)) {
+                        selectedLang = browserCultureLang;
                     }
                 }
             }
-            localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, selectedLang);
-            this.translate.use(selectedLang);
-            }
-        );
+        }
+        localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, selectedLang);
+        // use method will load related language json from backend server
+        this.translate.use(selectedLang);
     }
 }
