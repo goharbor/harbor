@@ -109,6 +109,9 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	switch authMode {
 	case common.LDAPAuth:
 		query.GroupType = common.LDAPGroupType
+		if params.LdapGroupDn != nil && len(*params.LdapGroupDn) > 0 {
+			query.LdapGroupDN = *params.LdapGroupDn
+		}
 	case common.HTTPAuth:
 		query.GroupType = common.HTTPGroupType
 	}

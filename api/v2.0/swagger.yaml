@@ -2697,6 +2697,11 @@ paths:
         - usergroup
       parameters:
         - $ref: '#/parameters/requestId'
+        - name: ldap_group_dn
+          in: query
+          type: string
+          required: false
+          description: search with ldap group DN
       responses:
         '200':
           description: Get user group successfully.
