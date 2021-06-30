@@ -19,6 +19,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${log_oidc_provider_btn}       //*[@id='log_oidc']
 ${login_with_email_btn}    //span[contains(., 'Log in with Email')]
 ${login_with_ldap_btn}     //span[contains(., 'Log in with LDAP')]
+${login_with_db_btn}     //*[@id='login-db']
 ${dex_login_btn}    //*[@id='login']
 ${dex_pwd_btn}    //*[@id='password']
 ${submit_login_btn}    //*[@id='submit-login']
