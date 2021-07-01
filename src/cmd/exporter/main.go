@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common/models"
 
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,7 +20,6 @@ import (
 func main() {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("harbor")
-	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	dbCfg := &models.Database{
 		Type: "postgresql",
