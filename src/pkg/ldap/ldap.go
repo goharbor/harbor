@@ -53,6 +53,9 @@ var ErrInvalidFilter = errors.New("invalid filter syntax")
 // ErrEmptyBaseDN ...
 var ErrEmptyBaseDN = errors.New("empty base dn")
 
+// ErrEmptySearchDN ...
+var ErrEmptySearchDN = errors.New("empty search dn")
+
 // Session - define a LDAP session
 type Session struct {
 	basicCfg models.LdapConf
@@ -125,7 +128,7 @@ func TestConfig(ldapConfig models.LdapConf) (bool, error) {
 	defer ts.Close()
 
 	if ts.basicCfg.SearchDn == "" {
-		return false, ErrEmptyBaseDN
+		return false, ErrEmptySearchDN
 	}
 	if err := ts.Bind(ts.basicCfg.SearchDn, ts.basicCfg.SearchPassword); err != nil {
 		if goldap.IsErrorWithCode(err, goldap.LDAPResultInvalidCredentials) {
