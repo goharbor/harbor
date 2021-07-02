@@ -14,31 +14,6 @@
     top: -5px;
 }
 
-.popular-repo-wrapper {
-    background-color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-grow: 1;
-    margin-top: 24px;
-    justify-content: center;
-    flex-direction: column;
-    height: auto;
-    position: relative;
-    border-left: 1px solid #eee;
-}
-
-.repo-container {
-    width: 100%;
-    margin-top: -210px;
-}
-
-.more-info-link {
-    position: relative;
-    top: 80px;
-    left: 294px;
-    padding-right: 36px;
-}
-
 .tm-font {
     font-size: 14px !important;
     position: relative;
@@ -59,10 +34,6 @@
         background:transparent;
     }
 }
-.login-oidc{
-    margin-top: 50px;
-}
-
 .reset-label {
     font-size:inherit;
     color:inherit;
@@ -81,4 +52,42 @@
 }
 .pwd-input {
     padding-right: 26px;
+}
+
+.divider-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.divider {
+    margin: 0;
+    width: 8.5rem;
+}
+.login {
+    padding-bottom: 180px;
+}
+.back-icon {
+    position: absolute;
+    top: 1rem;
+    display: flex;
+    align-items: center;
+    color: #007cbb;
+    font-size: 16px;
+    cursor: pointer;
+}
+.margin-left-3 {
+    margin-left: 3px;
+}
+.title {
+    position: absolute;
+    top: 10rem
+}
+.login-group {
+    width: 70%;
+    position: absolute;
+    top: 10rem
+}
+.more-info {
+    text-align: right;
+    padding-top: 2rem;
 }
