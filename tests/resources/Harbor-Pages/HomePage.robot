@@ -20,9 +20,10 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Sign In Harbor
-    [Arguments]  ${url}  ${user}  ${pw}
-    Go To    ${url}
+    [Arguments]  ${url}  ${user}  ${pw}  ${is_oidc}=${false}
+    Go To  ${url}
     Retry Wait Element  ${harbor_span_title}
+    Run Keyword If  ${is_oidc}==${true}  Retry Element Click  ${login_with_db_btn}
     Retry Wait Element  ${login_name}
     Retry Wait Element  ${login_pwd}
     Input Text  ${login_name}  ${user}

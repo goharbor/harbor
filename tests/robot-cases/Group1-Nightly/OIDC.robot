@@ -90,17 +90,17 @@ Test Case - Helm CLI Push
 
 Test Case - Onboard OIDC User Sign In
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
     Check Automatic Onboarding And Save
     Logout Harbor
     Sign In Harbor With OIDC User  ${HARBOR_URL}  test8  is_onboard=${true}
     Logout Harbor
-	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
     Set User Name Claim And Save  email
     Logout Harbor
     Sign In Harbor With OIDC User  ${HARBOR_URL}  test9  is_onboard=${true}  username_claim=email
     Logout Harbor
-	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+	Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
     Set User Name Claim And Save  ${null}
     Sleep  2
     Close Browser
