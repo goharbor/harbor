@@ -30,7 +30,7 @@ func init() {
 	)
 }
 
-// RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
+// RepoRecord holds the record of an repository in DB, all the infos are from the registry notification event.
 type RepoRecord struct {
 	RepositoryID int64     `orm:"pk;auto;column(repository_id)" json:"repository_id"`
 	Name         string    `orm:"column(name)" json:"name"`
@@ -57,7 +57,7 @@ func (r *RepoRecord) FilterByBlobDigest(ctx context.Context, qs orm.QuerySeter, 
 	return qs.FilterRaw("repository_id", fmt.Sprintf("in (%s)", sql))
 }
 
-// TableName is required by by beego orm to map RepoRecord to table repository
+// TableName is required by beego orm to map RepoRecord to table repository
 func (r *RepoRecord) TableName() string {
 	return "repository"
 }
