@@ -21,11 +21,17 @@ import (
 )
 
 func TestMatchManifestURLPattern(t *testing.T) {
-	_, _, ok := MatchManifestURLPattern("")
-	assert.False(t, ok)
+	_, _, ok := MatchManifestURLPattern("/v2/library/hello-world/manifests/.Invalid")
+	assert.True(t, ok)
 
 	_, _, ok = MatchManifestURLPattern("/v2/")
 	assert.False(t, ok)
+
+	_, _, ok = MatchManifestURLPattern("/v2/library/hello-world/manifests//")
+	assert.True(t, ok)
+
+	_, _, ok = MatchManifestURLPattern("/v2/library/hello-world/manifests/###")
+	assert.True(t, ok)
 
 	repository, reference, ok := MatchManifestURLPattern("/v2/library/hello-world/manifests/latest")
 	assert.True(t, ok)
