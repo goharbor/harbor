@@ -90,12 +90,12 @@ type IntType struct {
 }
 
 func (t *IntType) validate(str string) error {
-	_, err := strconv.Atoi(str)
+	_, err := parseInt(str)
 	return err
 }
 
 func (t *IntType) get(str string) (interface{}, error) {
-	return strconv.Atoi(str)
+	return parseInt(str)
 }
 
 // PortType ...
@@ -236,4 +236,18 @@ func parseInt64(str string) (int64, error) {
 	}
 
 	return 0, fmt.Errorf("invalid int64 string: %s", str)
+}
+
+func parseInt(str string) (int, error) {
+	val, err := strconv.ParseInt(str, 10, 32)
+	if err == nil {
+		return int(val), nil
+	}
+
+	fval, err := strconv.ParseFloat(str, 32)
+	if err == nil && fval == math.Trunc(fval) {
+		return int(fval), nil
+	}
+
+	return 0, fmt.Errorf("invalid int string: %s", str)
 }
