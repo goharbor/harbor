@@ -16,6 +16,7 @@ package artifactinfo
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -30,6 +31,7 @@ func TestParseURL(t *testing.T) {
 		input  string
 		expect map[string]string
 		match  bool
+		rc     string
 	}{
 		{
 			input:  "/api/projects",
@@ -60,8 +62,12 @@ func TestParseURL(t *testing.T) {
 		{
 			input: "/v2/development/golang/manifests/shaxxx:**********************************************************************************************************************************",
 
-			expect: map[string]string{},
-			match:  false,
+			expect: map[string]string{
+				lib.RepositorySubexp: "development/golang",
+				lib.ReferenceSubexp:  "shaxxx:**********************************************************************************************************************************",
+				"tag":                "shaxxx:**********************************************************************************************************************************",
+			},
+			match: true,
 		},
 		{
 			input: "/v2/multi/sector/repository/blobs/sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
@@ -99,6 +105,12 @@ func TestParseURL(t *testing.T) {
 			},
 			match: true,
 		},
+		{
+			input:  "/v2/library/centos/manifest/.Invalid",
+			expect: map[string]string{},
+			match:  false,
+			rc:     errors.NotFoundCode,
+		},
 	}
 
 	for _, c := range cases {
@@ -106,7 +118,10 @@ func TestParseURL(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		e, m := parse(url)
+		e, m, err := parse(url)
+		if err != nil {
+			assert.True(t, errors.IsErr(err, c.rc))
+		}
 		assert.Equal(t, c.match, m)
 		assert.Equal(t, c.expect, e)
 	}
