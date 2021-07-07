@@ -665,16 +665,16 @@ func convertTaskToPayload(model *task.Task) (*models.Task, error) {
 	}
 
 	return &models.Task{
-		CreationTime:  model.CreationTime.String(),
-		EndTime:       model.EndTime.String(),
+		CreationTime:  model.CreationTime.Format(time.RFC3339),
+		EndTime:       model.EndTime.Format(time.RFC3339),
 		ExecutionID:   model.ExecutionID,
 		ExtraAttrs:    model.ExtraAttrs,
 		ID:            model.ID,
 		RunCount:      model.RunCount,
-		StartTime:     model.StartTime.String(),
+		StartTime:     model.StartTime.Format(time.RFC3339),
 		Status:        model.Status,
 		StatusMessage: model.StatusMessage,
-		UpdateTime:    model.UpdateTime.String(),
+		UpdateTime:    model.UpdateTime.Format(time.RFC3339),
 	}, nil
 }
 
