@@ -350,7 +350,6 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
 			res.Username = username
 		} else {
-			log.Debugf("OIDC. Failed to recover Username from claims: %+v", allClaims)
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
 	}
