@@ -289,8 +289,12 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 		Subject: local.Subject,
 		Issuer:  local.Issuer,
 		// Used data from userinfo
-		Username: remote.Username,
-		Email:    remote.Email,
+		Email: remote.Email,
+	}
+	if remote.Username != "" {
+		res.Username = remote.Username
+	} else {
+		res.Username = local.Username
 	}
 	if remote.hasGroupClaim {
 		res.Groups = remote.Groups
@@ -346,6 +350,7 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
 			res.Username = username
 		} else {
+			log.Debugf("OIDC. Failed to recover Username from claims: %+v", allClaims)
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
 	}
