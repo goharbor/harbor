@@ -212,7 +212,7 @@ func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.
 	}
 	settings := provider.setting.Load().(cfgModels.OIDCSetting)
 	if conf == nil {
-		conf = &gooidc.Config{ClientID: settings.ClientID}
+		conf = &gooidc.Config{ClientID: settings.ClientID, SkipIssuerCheck: true}
 	}
 	verifier := p.Verifier(conf)
 	ctx = clientCtx(ctx, settings.VerifyCert)
