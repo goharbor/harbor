@@ -209,16 +209,6 @@ func SafeCastFloat64(value interface{}) float64 {
 	return 0
 }
 
-// ParseOfftime ...
-func ParseOfftime(offtime int64) (hour, minite, second int) {
-	offtime = offtime % (3600 * 24)
-	hour = int(offtime / 3600)
-	offtime = offtime % 3600
-	minite = int(offtime / 60)
-	second = int(offtime % 60)
-	return
-}
-
 // TrimLower ...
 func TrimLower(str string) string {
 	return strings.TrimSpace(strings.ToLower(str))
@@ -268,11 +258,6 @@ func IsContainIllegalChar(s string, illegalChar []string) bool {
 	return false
 }
 
-// IsDigest A sha256 is a string with 64 characters.
-func IsDigest(ref string) bool {
-	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
-}
-
 // ParseJSONInt ...
 func ParseJSONInt(value interface{}) (int, bool) {
 	switch value.(type) {
@@ -294,14 +279,4 @@ func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 		results[regex.SubexpNames()[i]] = name
 	}
 	return results
-}
-
-// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
-// e.g. n=3, returns "?,?,?"
-func ParamPlaceholderForIn(n int) string {
-	placeholders := []string{}
-	for i := 0; i < n; i++ {
-		placeholders = append(placeholders, "?")
-	}
-	return strings.Join(placeholders, ",")
 }

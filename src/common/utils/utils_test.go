@@ -160,43 +160,6 @@ func TestGenerateRandomStringWithLen(t *testing.T) {
 	}
 }
 
-func TestParseLink(t *testing.T) {
-	raw := ""
-	links := ParseLink(raw)
-	if len(links) != 0 {
-		t.Errorf("unexpected length: %d != %d", len(links), 0)
-	}
-	raw = "a;b,c"
-	links = ParseLink(raw)
-	if len(links) != 0 {
-		t.Errorf("unexpected length: %d != %d", len(links), 0)
-	}
-
-	raw = `</api/users?page=1&page_size=100>; rel="prev"`
-	links = ParseLink(raw)
-	if len(links) != 1 {
-		t.Errorf("unexpected length: %d != %d", len(links), 1)
-	}
-	prev := `/api/users?page=1&page_size=100`
-	if links.Prev() != prev {
-		t.Errorf("unexpected prev: %s != %s", links.Prev(), prev)
-	}
-
-	raw = `</api/users?page=1&page_size=100>; rel="prev", </api/users?page=3&page_size=100>; rel="next"`
-	links = ParseLink(raw)
-	if len(links) != 2 {
-		t.Errorf("unexpected length: %d != %d", len(links), 2)
-	}
-	prev = `/api/users?page=1&page_size=100`
-	if links.Prev() != prev {
-		t.Errorf("unexpected prev: %s != %s", links.Prev(), prev)
-	}
-	next := `/api/users?page=3&page_size=100`
-	if links.Next() != next {
-		t.Errorf("unexpected prev: %s != %s", links.Next(), next)
-	}
-}
-
 func TestTestTCPConn(t *testing.T) {
 	server := httptest.NewServer(nil)
 	defer server.Close()
@@ -354,29 +317,6 @@ func TestSafeCastFloat64(t *testing.T) {
 	}
 }
 
-func TestParseOfftime(t *testing.T) {
-	cases := []struct {
-		offtime int64
-		hour    int
-		minite  int
-		second  int
-	}{
-		{0, 0, 0, 0},
-		{1, 0, 0, 1},
-		{60, 0, 1, 0},
-		{3600, 1, 0, 0},
-		{3661, 1, 1, 1},
-		{3600*24 + 60, 0, 1, 0},
-	}
-
-	for _, c := range cases {
-		h, m, s := ParseOfftime(c.offtime)
-		assert.Equal(t, c.hour, h)
-		assert.Equal(t, c.minite, m)
-		assert.Equal(t, c.second, s)
-	}
-}
-
 func TestTrimLower(t *testing.T) {
 	type args struct {
 		str string
@@ -425,10 +365,4 @@ func TestGetStrValueOfAnyType(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestIsDigest(t *testing.T) {
-	assert := assert.New(t)
-	assert.False(IsDigest("latest"))
-	assert.True(IsDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
 }
