@@ -3,9 +3,10 @@ package backend
 import (
 	"bufio"
 	"bytes"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/joblog"
+	"github.com/goharbor/harbor/src/pkg/joblog/models"
 )
 
 // DBLogger is an implementation of logger.Interface.
@@ -47,7 +48,7 @@ func (dbl *DBLogger) Close() error {
 		Content: dbl.buffer.String(),
 	}
 
-	_, err = dao.CreateOrUpdateJobLog(&jobLog)
+	_, err = joblog.Mgr.Create(orm.Context(), &jobLog)
 	if err != nil {
 		return err
 	}

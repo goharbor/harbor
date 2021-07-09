@@ -237,6 +237,13 @@ func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.Create
 		return api.SendError(ctx, err)
 	}
 
+	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+	// override project ID
+	policy.ProjectID = project.ProjectID
+
 	_, err = api.preheatCtl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -658,16 +665,16 @@ func convertTaskToPayload(model *task.Task) (*models.Task, error) {
 	}
 
 	return &models.Task{
-		CreationTime:  model.CreationTime.String(),
-		EndTime:       model.EndTime.String(),
+		CreationTime:  model.CreationTime.Format(time.RFC3339),
+		EndTime:       model.EndTime.Format(time.RFC3339),
 		ExecutionID:   model.ExecutionID,
 		ExtraAttrs:    model.ExtraAttrs,
 		ID:            model.ID,
 		RunCount:      model.RunCount,
-		StartTime:     model.StartTime.String(),
+		StartTime:     model.StartTime.Format(time.RFC3339),
 		Status:        model.Status,
 		StatusMessage: model.StatusMessage,
-		UpdateTime:    model.UpdateTime.String(),
+		UpdateTime:    model.UpdateTime.Format(time.RFC3339),
 	}, nil
 }
 

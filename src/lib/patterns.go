@@ -19,7 +19,7 @@ const (
 
 var (
 	// V2ManifestURLRe is the regular expression for matching request v2 handler to view/delete manifest
-	V2ManifestURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/manifests/(?P<%s>%s|%s)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp, reference.TagRegexp.String(), digest.DigestRegexp.String()))
+	V2ManifestURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/manifests/(?P<%s>.*)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
 	// V2TagListURLRe is the regular expression for matching request to v2 handler to list tags
 	V2TagListURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/tags/list`, RepositorySubexp, reference.NameRegexp.String()))
 	// V2BlobURLRe is the regular expression for matching request to v2 handler to retrieve head/delete a blob

@@ -13,6 +13,12 @@ export class OperateInfo {
     }
 }
 
+export interface OperateInfosLocalstorage {
+    updated: number; // millisecond
+    data: OperateInfo[];
+    newMessageCount: number;
+}
+
 export function  operateChanges(list: OperateInfo, state?: string, errorInfo?: string, timeStamp?: 0) {
     list.state = state;
     list.data.errorInf = errorInfo;

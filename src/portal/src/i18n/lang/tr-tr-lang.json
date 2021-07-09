@@ -14,7 +14,9 @@
         "INVALID_MSG": "Geçersiz kullanıcı adı veya şifre.",
         "FORGOT_PWD": "Parolamı Unuttum",
         "HEADER_LINK": "Oturum aç",
-        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available."
+        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available.",
+        "OR": "OR",
+        "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB"
     },
     "SIGN_UP": {
         "TITLE": "Kayıt ol"

@@ -28,6 +28,7 @@ import { AboutDialogComponent } from "../../shared/components/about-dialog/about
 import { CommonRoutes, CONFIG_AUTH_MODE } from "../../shared/entities/shared.const";
 import { SignInCredential } from "./sign-in-credential";
 import { UserPermissionService } from "../../shared/services";
+import {finalize} from "rxjs/operators";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -45,7 +46,6 @@ const expireDays = 10;
 export class SignInComponent implements AfterViewChecked, OnInit {
     showPwd: boolean = false;
     redirectUrl: string = "";
-    appConfig: AppConfig = new AppConfig();
     // Remeber me indicator
     rememberMe: boolean = false;
     rememberedName: string = "";
@@ -68,6 +68,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         password: ""
     };
     isCoreServiceAvailable: boolean = true;
+    steps: number = 1;
+    hasLoadedAppConfig: boolean = false;
     constructor(
         private router: Router,
         private session: SessionService,
@@ -88,15 +90,6 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 this.customAppTitle = customSkinObj.loginTitle;
             }
         }
-
-        // Before login: Make sure the updated configuration can be loaded
-        this.appConfigService.load()
-            .subscribe(updatedConfig => this.appConfig = updatedConfig
-                , error => {
-                    // Catch the error
-                    console.error("Failed to load bootstrap options with error: ", error);
-                });
-
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
@@ -117,7 +110,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // App title
     public get appTitle(): string {
-        if (this.appConfig && this.appConfig.with_admiral) {
+        if (this.appConfigService.getConfig() && this.appConfigService.getConfig().with_admiral) {
             return "APP_TITLE.VIC";
         }
 
@@ -140,11 +133,11 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // Whether show the 'sign up' link
     public get selfSignUp(): boolean {
-        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.DB_AUTH
-            && this.appConfig.self_registration;
+        return this.appConfigService.getConfig() && this.appConfigService.getConfig().auth_mode === CONFIG_AUTH_MODE.DB_AUTH
+            && this.appConfigService.getConfig().self_registration;
     }
     public get isOidcLoginMode(): boolean {
-        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
+        return this.appConfigService.getConfig() && this.appConfigService.getConfig().auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
     }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {
@@ -261,11 +254,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
                 // after login successfully: Make sure the updated configuration can be loaded
                 this.appConfigService.load()
-                    .subscribe(updatedConfig => this.appConfig = updatedConfig
-                        , error => {
-                            // Catch the error
-                            console.error("Failed to load bootstrap options with error: ", error);
-                        });
+                    .subscribe();
             }, error => {
                 // 403 oidc login no body;
                 if (this.isOidcLoginMode && error && error.status === 403) {

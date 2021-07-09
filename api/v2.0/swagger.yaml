@@ -2697,6 +2697,11 @@ paths:
         - usergroup
       parameters:
         - $ref: '#/parameters/requestId'
+        - name: ldap_group_dn
+          in: query
+          type: string
+          required: false
+          description: search with ldap group DN
       responses:
         '200':
           description: Get user group successfully.
@@ -8272,27 +8277,33 @@ definitions:
     properties:
       value:
         type: string
+        x-omitempty: false
         description: The string value of current config item
       editable:
         type: boolean
+        x-omitempty: false
         description: The configure item can be updated or not
   BoolConfigItem:
     type: object
     properties:
       value:
         type: boolean
+        x-omitempty: false
         description: The boolean value of current config item
       editable:
         type: boolean
+        x-omitempty: false
         description: The configure item can be updated or not
   IntegerConfigItem:
     type: object
     properties:
       value:
         type: integer
+        x-omitempty: false
         description: The integer value of current config item
       editable:
         type: boolean
+        x-omitempty: false
         description: The configure item can be updated or not
   ProjectMemberEntity:
     type: object

@@ -2,7 +2,8 @@ package sweeper
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/joblog"
 	"time"
 )
 
@@ -28,7 +29,7 @@ func (dbs *DBSweeper) Sweep() (int, error) {
 
 	// Start to sweep logs
 	before := time.Now().Add(time.Duration(dbs.duration) * oneDay * -1)
-	count, err := dao.DeleteJobLogsBefore(before)
+	count, err := joblog.Mgr.DeleteBefore(orm.Context(), before)
 
 	if err != nil {
 		return 0, fmt.Errorf("sweep logs in DB failed before %s with error: %s", before, err)

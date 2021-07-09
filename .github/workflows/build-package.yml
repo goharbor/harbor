@@ -26,10 +26,10 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
       - run: gcloud info
-      - name: Set up Go 1.15
+      - name: Set up Go 1.16
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.12
+          go-version: 1.16.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1

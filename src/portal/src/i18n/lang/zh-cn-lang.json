@@ -14,7 +14,9 @@
         "INVALID_MSG": "用户名或者密码不正确。",
         "FORGOT_PWD": "忘记密码",
         "HEADER_LINK": "登录",
-        "CORE_SERVICE_NOT_AVAILABLE": "核心服务不可用。"
+        "CORE_SERVICE_NOT_AVAILABLE": "核心服务不可用。",
+        "OR": "或",
+        "VIA_LOCAL_DB": "通过本地数据库登录"
     },
     "SIGN_UP": {
         "TITLE": "注册"
