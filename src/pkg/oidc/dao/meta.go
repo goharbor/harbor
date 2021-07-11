@@ -29,6 +29,8 @@ type MetaDAO interface {
 	Create(ctx context.Context, oidcUser *models.OIDCUser) (int, error)
 	// GetByUsername get the oidc meta record by the user's username
 	GetByUsername(ctx context.Context, username string) (*models.OIDCUser, error)
+	// DeleteByUserID delete the oidc metadata by user id
+	DeleteByUserID(ctx context.Context, uid int) error
 	// Update ...
 	Update(ctx context.Context, oidcUser *models.OIDCUser, props ...string) error
 	// List provides a way to query with flexible filter
@@ -41,6 +43,16 @@ func NewMetaDao() MetaDAO {
 }
 
 type metaDAO struct{}
+
+func (md *metaDAO) DeleteByUserID(ctx context.Context, uid int) error {
+	sql := `DELETE from oidc_user where user_id = ?`
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = ormer.Raw(sql, uid).Exec()
+	return err
+}
 
 func (md *metaDAO) GetByUsername(ctx context.Context, username string) (*models.OIDCUser, error) {
 	sql := `SELECT oidc_user.id, oidc_user.user_id, oidc_user.secret, oidc_user.token,
