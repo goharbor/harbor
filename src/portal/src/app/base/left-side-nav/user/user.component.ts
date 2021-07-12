@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-import { Subscription, Observable, forkJoin } from "rxjs";
+import { Subscription, Observable, forkJoin, of } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { SessionService } from '../../../shared/services/session.service';
@@ -22,7 +22,6 @@ import { UserService } from './user.service';
 import { User } from './user';
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { map, catchError } from 'rxjs/operators';
-import { throwError as observableThrowError } from "rxjs";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
@@ -34,6 +33,7 @@ import {
 } from "../../../shared/entities/shared.const";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { HttpErrorResponse } from "@angular/common/http";
 
 
 /**
@@ -265,12 +265,25 @@ export class UserComponent implements OnInit, OnDestroy {
                 observableLists.push(this.delOperate(user));
             });
 
-            forkJoin(...observableLists).subscribe((item) => {
+            forkJoin(...observableLists).subscribe((resArr) => {
+                let error;
+                if (resArr && resArr.length) {
+                    resArr.forEach(item => {
+                        if (item instanceof HttpErrorResponse) {
+                            error = errorHandler(item);
+                        }
+                    });
+                }
+                if (error) {
+                    this.msgHandler.handleError(error);
+                } else {
+                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+                        this.msgHandler.showSuccess(res);
+                    });
+                }
                 this.selectedRow = [];
                 this.currentTerm = '';
                 this.refresh();
-            }, error => {
-                this.msgHandler.handleError(error);
             });
         }
     }
@@ -299,7 +312,7 @@ export class UserComponent implements OnInit, OnDestroy {
             this.translate.get(message).subscribe(res =>
                 operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(error);
+            return of(error);
         }));
     }
 

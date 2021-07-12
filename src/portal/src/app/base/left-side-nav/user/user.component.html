@@ -21,7 +21,7 @@
                                 <div class="dropdown-divider"></div>
                                 <button id="deleteUser" type="button" class="btn  btn-secondary"
                                     (click)="deleteUsers(selectedRow)"
-                                    [disabled]="!selectedRow.length || onlySelf || !canCreateUser">
+                                    [disabled]="!selectedRow.length || onlySelf">
                                     <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'USER.DEL_ACTION' | translate}}
                                 </button>
                             </clr-dropdown>
