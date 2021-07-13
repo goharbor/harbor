@@ -33,7 +33,6 @@ var (
 		&idToken{},
 		&authProxy{},
 		&robot{},
-		&robot2{},
 		&basicAuth{},
 		&session{},
 		&proxyCacheSecret{},
