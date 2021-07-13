@@ -15,60 +15,76 @@
 package security
 
 import (
-	"net/http"
-	"strings"
-
-	"github.com/goharbor/harbor/src/common"
+	"fmt"
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
-	ctl_robot "github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/common/utils"
+	robot_ctl "github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	pkg_token "github.com/goharbor/harbor/src/pkg/token"
-	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"strings"
+	"time"
+
+	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"net/http"
 )
 
 type robot struct{}
 
 func (r *robot) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	robotName, robotTk, ok := req.BasicAuth()
+	name, secret, ok := req.BasicAuth()
 	if !ok {
 		return nil
 	}
-	if !strings.HasPrefix(robotName, common.RobotPrefix) {
+	if !strings.HasPrefix(name, config.RobotPrefix(req.Context())) {
 		return nil
 	}
-	rClaims := &robot_claim.Claim{}
-	defaultOpt := pkg_token.DefaultTokenOptions()
-	if defaultOpt == nil {
-		log.Error("failed to get default token options")
-		return nil
-	}
-	rtk, err := pkg_token.Parse(defaultOpt, robotTk, rClaims)
+	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
+	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
+		"name": strings.TrimPrefix(name, config.RobotPrefix(req.Context())),
+	}), &robot_ctl.Option{
+		WithPermission: true,
+	})
 	if err != nil {
-		log.Debugf("failed to decrypt robot token of v1 robot: %s, as: %v", robotName, err)
+		log.Errorf("failed to list robots: %v", err)
 		return nil
 	}
-	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
-	ctr := ctl_robot.Ctl
-	robot, err := ctr.Get(req.Context(), rtk.Claims.(*robot_claim.Claim).TokenID, nil)
-	if err != nil {
-		log.Errorf("failed to get robot %s: %v", robotName, err)
+	if len(robots) == 0 {
 		return nil
 	}
-	if robot == nil {
-		log.Error("the token provided doesn't exist.")
-		return nil
-	}
-	if robotName != robot.Name {
-		log.Errorf("failed to authenticate : %v", robotName)
+
+	robot := robots[0]
+	if utils.Encrypt(secret, robot.Salt, utils.SHA256) != robot.Secret {
+		log.Errorf("failed to authenticate robot account: %s", name)
 		return nil
 	}
 	if robot.Disabled {
-		log.Errorf("the robot account %s is disabled", robot.Name)
+		log.Errorf("failed to authenticate disabled robot account: %s", name)
 		return nil
 	}
-	log.Debugf("a robot security context generated for request %s %s", req.Method, req.URL.Path)
+	now := time.Now().Unix()
+	if robot.ExpiresAt != -1 && robot.ExpiresAt <= now {
+		log.Errorf("the robot account is expired: %s", name)
+		return nil
+	}
 
-	return robotCtx.NewSecurityContext(&robot.Robot, false, rtk.Claims.(*robot_claim.Claim).Access)
+	var accesses []*types.Policy
+	for _, p := range robot.Permissions {
+		for _, a := range p.Access {
+			accesses = append(accesses, &types.Policy{
+				Action:   a.Action,
+				Effect:   a.Effect,
+				Resource: types.Resource(fmt.Sprintf("%s/%s", p.Scope, a.Resource)),
+			})
+		}
+	}
+
+	modelRobot := &model.Robot{
+		Name: name,
+	}
+	log.Infof("a robot security context generated for request %s %s", req.Method, req.URL.Path)
+	return robotCtx.NewSecurityContext(modelRobot, robot.Level == robot_ctl.LEVELSYSTEM, accesses)
 }
