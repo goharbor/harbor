@@ -71,52 +71,6 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def set_gc_schedule(self, schedule_type = 'None', cron = None, expect_status_code = 200, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-        gc_schedule = swagger_client.AdminJobSchedule()
-        gc_schedule.type = schedule_type
-        if cron is not None:
-            gc_schedule.cron = cron
-        try:
-            data, status_code, _ = client.system_gc_schedule_put_with_http_info(gc_schedule)
-        except ApiException as e:
-            if e.status == expect_status_code:
-                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
-                    raise Exception(r"Get configuration response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
-                else:
-                    return e.reason, e.body
-            else:
-                raise Exception(r"Get configuration result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
-        base._assert_status_code(expect_status_code, status_code)
-        return data
-
-    def create_gc_schedule(self, schedule_type, is_delete_untagged, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
-        client = self._get_client(**kwargs)
-
-        gc_parameters = {'delete_untagged':is_delete_untagged}
-
-        gc_schedule = swagger_client.AdminJobScheduleObj()
-        gc_schedule.type = schedule_type
-        if cron is not None:
-            gc_schedule.cron = cron
-
-        gc_job = swagger_client.AdminJobSchedule()
-        gc_job.schedule = gc_schedule
-        gc_job.parameters = gc_parameters
-
-        try:
-            _, status_code, header = client.system_gc_schedule_post_with_http_info(gc_job)
-        except ApiException as e:
-            if e.status == expect_status_code:
-                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
-                    raise Exception(r"Create GC schedule response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
-                else:
-                    return e.reason, e.body
-            else:
-                raise Exception(r"Create GC schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
-        base._assert_status_code(expect_status_code, status_code)
-        return base._get_id_from_header(header)
-
     def set_cve_allowlist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
         cve_list = [swagger_client.CVEAllowlistItem(cve_id=c) for c in cve_ids]
