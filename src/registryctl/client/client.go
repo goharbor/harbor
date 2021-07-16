@@ -15,7 +15,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
@@ -25,8 +24,6 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/registryctl/api/registry/gc"
 )
 
 // const definition
@@ -38,8 +35,6 @@ const (
 type Client interface {
 	// Health tests the connection with registry server
 	Health() error
-	// StartGC enable the gc of registry server
-	StartGC() (*gc.Result, error)
 	// DeleteBlob deletes the specified blob. The "reference" should be "digest"
 	DeleteBlob(reference string) (err error)
 	// DeleteManifest deletes the specified manifest. The "reference" can be "tag" or "digest"
@@ -81,36 +76,6 @@ func (c *client) Health() error {
 		addr = addr + ":80"
 	}
 	return utils.TestTCPConn(addr, 60, 2)
-}
-
-// StartGC ...
-func (c *client) StartGC() (*gc.Result, error) {
-	url := c.baseURL + "/api/registry/gc"
-	gcr := &gc.Result{}
-
-	req, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := c.do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("Failed to start gc: %d", resp.StatusCode)
-		return nil, fmt.Errorf("failed to start GC: %d", resp.StatusCode)
-	}
-	if err := json.Unmarshal(data, gcr); err != nil {
-		return nil, err
-	}
-
-	return gcr, nil
 }
 
 // DeleteBlob ...
