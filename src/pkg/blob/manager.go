@@ -59,6 +59,9 @@ type Manager interface {
 	// Get get blob by digest
 	Get(ctx context.Context, digest string) (*Blob, error)
 
+	// Get get blob by artifact digest
+	GetByArt(ctx context.Context, digest string) ([]*models.Blob, error)
+
 	// Update the blob
 	Update(ctx context.Context, blob *Blob) error
 
@@ -123,6 +126,10 @@ func (m *manager) FindBlobsShouldUnassociatedWithProject(ctx context.Context, pr
 
 func (m *manager) Get(ctx context.Context, digest string) (*Blob, error) {
 	return m.dao.GetBlobByDigest(ctx, digest)
+}
+
+func (m *manager) GetByArt(ctx context.Context, digest string) ([]*models.Blob, error) {
+	return m.dao.GetBlobsByArtDigest(ctx, digest)
 }
 
 func (m *manager) Update(ctx context.Context, blob *Blob) error {
