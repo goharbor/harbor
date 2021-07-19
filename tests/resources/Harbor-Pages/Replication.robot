@@ -243,17 +243,18 @@ Image Should Be Replicated To Project
         Switch To Project Repo
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
         Log To Console  Return value is ${out[0]}
-        Exit For Loop If  '${out[0]}'=='PASS'
-        Sleep  5
+        Continue For Loop If  '${out[0]}'=='FAIL'
+        Go Into Repo  ${project}/${image}
+        ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
+        Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
+        ${index_out}  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  return_immediately=${true}
+        Log All  index_out: ${index_out}
+        Run Keyword If  '${index_out}'=='PASS'  Exit For Loop
+        Sleep  30
     END
-    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
-    Should Be Equal As Strings  '${out[0]}'  'PASS'
-    Go Into Repo  ${project}/${image}
-    ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
-    Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
-    Run Keyword If  '${total_artifact_count}'!='${null}'  Run Keywords
-    ...  Should Not Be Empty  ${tag}
-    ...  AND  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}
+
+Verify Artifacts Counts In Archive
+    [Arguments]  ${total_artifact_count}  ${tag}  ${total_artifact_count}  ${archive_count}
 
 Executions Result Count Should Be
     [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}

@@ -74,9 +74,9 @@ Test Case - Project Quotas Control Under GC
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  200
-    ${storage_quota_unit}=  Set Variable  MB
+    ${storage_quota_unit}=  Set Variable  MiB
     ${image_a}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    321.03MB
+    ${image_a_size}=    Set Variable    321.03MiB
     ${image_a_ver}=  Set Variable  6.8.3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
