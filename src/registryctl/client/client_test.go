@@ -43,13 +43,6 @@ func (c *clientTestSuite) TesHealth() {
 	c.Require().Nil(err)
 }
 
-func (c *clientTestSuite) TesStartGC() {
-	gcr, err := c.client.StartGC()
-	c.Require().Nil(err)
-	c.Equal(gcr.Msg, "hello-world")
-	c.Equal(gcr.Status, true)
-}
-
 func (c *clientTestSuite) TestDeleteManifest() {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
