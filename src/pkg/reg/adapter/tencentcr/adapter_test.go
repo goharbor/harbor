@@ -26,6 +26,8 @@ var (
 )
 
 func setup() {
+	os.Setenv("UTTEST", "true")
+
 	if ak := os.Getenv("TENCENT_AK"); ak != "" {
 		log.Info("USE AK from ENV")
 		mockAccessKey = ak
@@ -70,6 +72,10 @@ func TestAdapter_NewAdapter_NilAKSK(t *testing.T) {
 }
 
 func TestAdapter_NewAdapter_InvalidEndpoint(t *testing.T) {
+	res := os.Getenv("UTTEST")
+	os.Unsetenv("UTTEST")
+	defer os.Setenv("UTTEST", res)
+
 	// Invaild endpoint
 	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeTencentTcr,
@@ -111,14 +117,32 @@ func TestAdapter_NewAdapter_InvalidAKSK(t *testing.T) {
 	assert.Nil(t, adapter)
 }
 
+func getTestServer() *httptest.Server {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/v2/",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Www-Authenticate", `Bearer realm="https://harbor-community.tencentcloudcr.com/service/token",service="harbor-registry"`)
+				w.WriteHeader(http.StatusUnauthorized)
+			},
+		},
+	)
+
+	return server
+}
+
 func TestAdapter_NewAdapter_Ok(t *testing.T) {
+	server := getTestServer()
+	defer server.Close()
+
 	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeTencentTcr,
 		Credential: &model.Credential{
 			AccessKey:    mockAccessKey,
 			AccessSecret: mockAccessSecret,
 		},
-		URL: "https://harbor-community.tencentcloudcr.com",
+		URL: server.URL,
 	})
 	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
 		log.Infof("sdk error, error=%v", sdkerr)
@@ -130,6 +154,9 @@ func TestAdapter_NewAdapter_Ok(t *testing.T) {
 }
 
 func TestAdapter_NewAdapter_InsecureOk(t *testing.T) {
+	server := getTestServer()
+	defer server.Close()
+
 	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeTencentTcr,
 		Credential: &model.Credential{
@@ -137,7 +164,7 @@ func TestAdapter_NewAdapter_InsecureOk(t *testing.T) {
 			AccessSecret: mockAccessSecret,
 		},
 		Insecure: true,
-		URL:      "https://harbor-community.tencentcloudcr.com",
+		URL:      server.URL,
 	})
 	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
 		log.Infof("sdk error, error=%v", sdkerr)
