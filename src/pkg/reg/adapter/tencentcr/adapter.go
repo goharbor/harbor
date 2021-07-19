@@ -89,9 +89,12 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	var registryURL *url.URL
 	registryURL, _ = url.Parse(registry.URL)
 
-	if strings.Index(registryURL.Host, ".tencentcloudcr.com") < 0 {
-		log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
-		return nil, errInvalidTcrEndpoint
+	// only validate registryURL.Host in non-mock scenario
+	if !strings.HasPrefix(registryURL.Host, "127.0.0.1") {
+		if strings.Index(registryURL.Host, ".tencentcloudcr.com") < 0 {
+			log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
+			return nil, errInvalidTcrEndpoint
+		}
 	}
 
 	realm, service, err := ping(registry)
