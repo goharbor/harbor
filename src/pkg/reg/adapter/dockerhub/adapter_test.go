@@ -2,12 +2,13 @@ package dockerhub
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/h2non/gock.v1"
 )
 
 const (
@@ -15,24 +16,26 @@ const (
 	testPassword = ""
 )
 
-func getAdapter(t *testing.T) adp.Adapter {
-	assert := assert.New(t)
-	factory, err := adp.GetFactory(model.RegistryTypeDockerHub)
-	assert.Nil(err)
-	assert.NotNil(factory)
+func mockRequest() *gock.Request {
+	return gock.New("https://hub.docker.com")
+}
 
-	adapter, err := newAdapter(&model.Registry{
+func getMockAdapter(t *testing.T) *adapter {
+	r := &model.Registry{
 		Type: model.RegistryTypeDockerHub,
 		URL:  baseURL,
 		Credential: &model.Credential{
 			AccessKey:    testUser,
 			AccessSecret: testPassword,
 		},
-	})
-	assert.Nil(err)
-	assert.NotNil(adapter)
-
-	return adapter
+	}
+	ad, err := newAdapter(r)
+	if err != nil {
+		t.Fatalf("Failed to call newAdapter(), reason=[%v]", err)
+	}
+	a := ad.(*adapter)
+	gock.InterceptClient(a.client.client)
+	return a
 }
 
 func TestInfo(t *testing.T) {
@@ -51,26 +54,32 @@ func TestListCandidateNamespaces(t *testing.T) {
 	require.Equal(t, 1, len(namespaces))
 	assert.Equal(t, "library", namespaces[0])
 }
+
 func TestListNamespaces(t *testing.T) {
-	if testUser == "" {
-		return
-	}
+	defer gock.Off()
+	gock.Observe(gock.DumpRequest)
 
-	assert := assert.New(t)
-	ad := getAdapter(t)
-	adapter := ad.(*adapter)
+	mockRequest().Get("/v2/repositories/namespaces").
+		Reply(http.StatusOK).BodyString("{}")
 
-	namespaces, err := adapter.listNamespaces()
-	assert.Nil(err)
+	a := getMockAdapter(t)
+
+	namespaces, err := a.listNamespaces()
+	assert.Nil(t, err)
 	for _, ns := range namespaces {
 		fmt.Println(ns)
 	}
 }
 
 func TestFetchArtifacts(t *testing.T) {
-	ad := getAdapter(t)
-	adapter := ad.(*adapter)
-	_, err := adapter.FetchArtifacts([]*model.Filter{
+	defer gock.Off()
+	gock.Observe(gock.DumpRequest)
+
+	mockRequest().Get("/v2/repositories/goharbor/").
+		Reply(http.StatusOK).BodyString("{}")
+
+	a := getMockAdapter(t)
+	_, err := a.FetchArtifacts([]*model.Filter{
 		{
 			Type:  model.FilterTypeName,
 			Value: "goharbor/harbor-core",
