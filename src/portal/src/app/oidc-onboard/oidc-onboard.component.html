@@ -27,12 +27,16 @@
         <p class="body-message">{{'CONFIG.OIDC.OIDC_SETNAMECONTENT' | translate}}</p>
       </div>
       <br />
-      <div class="username-div">
-        <label for="oidcUsername" class="required">{{'CONFIG.OIDC.OIDC_USERNAME' | translate}}</label>
-        <label for="oidcUsername" role="tooltip" class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-          <input name="oidcUsername" type="text" [formControl]="oidcUsername" required id="oidcUsername" size="40">
-        </label>
-      </div>
+      <form class="clr-form clr-form-horizontal">
+        <div class="clr-form-control">
+          <label for="oidcUsername" class="clr-control-label required">{{'CONFIG.OIDC.OIDC_USERNAME' | translate}}</label>
+          <div class="clr-control-container">
+            <div class="clr-input-wrapper">
+              <input class="clr-input" name="oidcUsername" type="text" [formControl]="oidcUsername" required id="oidcUsername" size="40">
+            </div>
+          </div>
+        </div>
+      </form>
       <div class="modal-footer">
         <button class="btn btn-outline" type="button" (click)="backHarborPage()" id="cancelButton">{{'BUTTON.CANCEL' | translate }}</button>
         <button class="btn btn-primary" id="saveButton" (click)="clickSaveBtn()" [disabled]="oidcUsername.invalid"
