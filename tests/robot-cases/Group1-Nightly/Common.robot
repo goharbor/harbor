@@ -115,7 +115,7 @@ Test Case - Repo Size
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  alpine  2.6  2.6
     Go Into Project  library
     Go Into Repo  alpine
-    Wait Until Page Contains  1.92MB
+    Wait Until Page Contains  1.92MiB
     Close Browser
 
 Test Case - Staticsinfo
@@ -517,7 +517,7 @@ Test Case - Create An New Project With Quotas Set
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  600
-    ${storage_quota_unit}=  Set Variable  GB
+    ${storage_quota_unit}=  Set Variable  GiB
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project    project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
@@ -528,11 +528,11 @@ Test Case - Project Storage Quotas Dispaly And Control
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  350
-    ${storage_quota_unit}=  Set Variable  MB
+    ${storage_quota_unit}=  Set Variable  MiB
     ${image_a}=  Set Variable  one_layer
     ${image_b}=  Set Variable  redis
-    ${image_a_size}=    Set Variable   330.83MB
-    ${image_b_size}=    Set Variable   34.1\\dMB
+    ${image_a_size}=    Set Variable   330.83MiB
+    ${image_b_size}=    Set Variable   34.1\\dMiB
     ${image_a_ver}=  Set Variable  1.0
     ${image_b_ver}=  Set Variable  donotremove5.0
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -561,7 +561,7 @@ Test Case - Project Quotas Control Under Copy
     ${image_a_ver}=  Set Variable  donotremove5.0
     ${image_b_ver}=  Set Variable  do_not_remove_6.8.3
     ${storage_quota}=  Set Variable  330
-    ${storage_quota_unit}=  Set Variable  MB
+    ${storage_quota_unit}=  Set Variable  MiB
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_a_${d}
     Create An New Project And Go Into Project  project_b_${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}

@@ -596,7 +596,7 @@ def request(url, method, user = None, userp = None, **kwargs):
     if userp is None:
         userp = "Harbor12345"
     kwargs.setdefault('headers', kwargs.get('headers', {}))
-    kwargs['headers']['Accept'] = 'application/json'
+    #kwargs['headers']['Accept'] = 'application/json'
     if 'body' in kwargs:
         kwargs['headers']['Content-Type'] = 'application/json'
         kwargs['data'] = json.dumps(kwargs['body'])
@@ -666,12 +666,12 @@ def do_data_creation():
 
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],
-                                   float(data["configuration"]["emailsetting"]["emailport"]),
+                                   int(data["configuration"]["emailsetting"]["emailport"]),
                                    data["configuration"]["emailsetting"]["emailuser"],
                                    data["configuration"]["projectcreation"],
                                    data["configuration"]["selfreg"],
-                                   float(data["configuration"]["token"]),
-                                   float(data["configuration"]["robot_token"]), version=args.version)
+                                   int(data["configuration"]["token"]),
+                                   int(data["configuration"]["robot_token"]), version=args.version)
 
     harborAPI.add_sys_allowlist(data["configuration"]["deployment_security"], version=args.version)
 
