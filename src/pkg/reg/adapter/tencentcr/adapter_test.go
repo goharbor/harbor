@@ -82,7 +82,6 @@ func TestAdapter_NewAdapter_InvalidEndpoint(t *testing.T) {
 		URL: "$$$",
 	})
 	assert.NotNil(t, err)
-	//assert.EqualError(t, err, errInvalidTcrEndpoint.Error())
 	assert.Nil(t, adapter)
 }
 
