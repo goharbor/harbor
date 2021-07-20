@@ -3,10 +3,8 @@ package dockerhub
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,10 +16,11 @@ const (
 	testPassword = ""
 )
 
-var ad adp.Adapter
+func mockRequest() *gock.Request {
+	return gock.New("https://hub.docker.com")
+}
 
-func init() {
-	var err error
+func getMockAdapter(t *testing.T) *adapter {
 	r := &model.Registry{
 		Type: model.RegistryTypeDockerHub,
 		URL:  baseURL,
@@ -30,16 +29,13 @@ func init() {
 			AccessSecret: testPassword,
 		},
 	}
-	ad, err = newAdapter(r)
+	ad, err := newAdapter(r)
 	if err != nil {
-		os.Exit(1)
+		t.Fatalf("Failed to call newAdapter(), reason=[%v]", err)
 	}
 	a := ad.(*adapter)
 	gock.InterceptClient(a.client.client)
-}
-
-func mockRequest() *gock.Request {
-	return gock.New("https://hub.docker.com")
+	return a
 }
 
 func TestInfo(t *testing.T) {
@@ -66,7 +62,7 @@ func TestListNamespaces(t *testing.T) {
 	mockRequest().Get("/v2/repositories/namespaces").
 		Reply(http.StatusOK).BodyString("{}")
 
-	a := ad.(*adapter)
+	a := getMockAdapter(t)
 
 	namespaces, err := a.listNamespaces()
 	assert.Nil(t, err)
@@ -82,7 +78,7 @@ func TestFetchArtifacts(t *testing.T) {
 	mockRequest().Get("/v2/repositories/goharbor/").
 		Reply(http.StatusOK).BodyString("{}")
 
-	a := ad.(*adapter)
+	a := getMockAdapter(t)
 	_, err := a.FetchArtifacts([]*model.Filter{
 		{
 			Type:  model.FilterTypeName,

@@ -89,8 +89,8 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	var registryURL *url.URL
 	registryURL, _ = url.Parse(registry.URL)
 
-	// only validate registryURL.Host in non-mock scenario
-	if !strings.HasPrefix(registryURL.Host, "127.0.0.1") {
+	// only validate registryURL.Host in non-UT scenario
+	if os.Getenv("UTTEST") != "true" {
 		if strings.Index(registryURL.Host, ".tencentcloudcr.com") < 0 {
 			log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
 			return nil, errInvalidTcrEndpoint

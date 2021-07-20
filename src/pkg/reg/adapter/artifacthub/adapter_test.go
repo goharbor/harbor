@@ -2,7 +2,6 @@ package artifacthub
 
 import (
 	"net/http"
-	"os"
 	"testing"
 
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -11,23 +10,21 @@ import (
 	"gopkg.in/h2non/gock.v1"
 )
 
-var ahAdapter *adapter
+func mockRequest() *gock.Request {
+	return gock.New("https://artifacthub.io")
+}
 
-func init() {
-	var err error
+func getMockAdapter(t *testing.T) *adapter {
 	ahRegistry := &model.Registry{
 		Type: model.RegistryTypeArtifactHub,
 		URL:  "https://artifacthub.io",
 	}
-	ahAdapter, err = newAdapter(ahRegistry)
+	a, err := newAdapter(ahRegistry)
 	if err != nil {
-		os.Exit(1)
+		t.Fatalf("Failed to call newAdapter(), reason=[%v]", err)
 	}
-	gock.InterceptClient(ahAdapter.client.httpClient)
-}
-
-func mockRequest() *gock.Request {
-	return gock.New("https://artifacthub.io")
+	gock.InterceptClient(a.client.httpClient)
+	return a
 }
 
 func TestAdapter_NewAdapter(t *testing.T) {
@@ -48,7 +45,8 @@ func TestAdapter_NewAdapter(t *testing.T) {
 }
 
 func TestAdapter_Info(t *testing.T) {
-	info, err := ahAdapter.Info()
+	a := getMockAdapter(t)
+	info, err := a.Info()
 	assert.Nil(t, err)
 	assert.NotNil(t, info)
 
@@ -63,13 +61,15 @@ func TestAdapter_HealthCheck(t *testing.T) {
 
 	mockRequest().Get("/").Reply(http.StatusOK).BodyString("{}")
 
-	h, err := ahAdapter.HealthCheck()
+	a := getMockAdapter(t)
+	h, err := a.HealthCheck()
 	assert.Nil(t, err)
 	assert.EqualValues(t, model.Healthy, h)
 }
 
 func TestAdapter_PrepareForPush(t *testing.T) {
-	err := ahAdapter.PrepareForPush(nil)
+	a := getMockAdapter(t)
+	err := a.PrepareForPush(nil)
 	assert.NotNil(t, err)
 }
 
@@ -84,15 +84,17 @@ func TestAdapter_ChartExist(t *testing.T) {
 	mockRequest().Get("/api/v1/packages/helm/harbor/harbor/not-exists").
 		Reply(http.StatusNotFound).BodyString("{}")
 
-	b, err := ahAdapter.ChartExist("harbor/harbor", "1.5.0")
+	a := getMockAdapter(t)
+
+	b, err := a.ChartExist("harbor/harbor", "1.5.0")
 	assert.Nil(t, err)
 	assert.True(t, b)
 
-	b, err = ahAdapter.ChartExist("harbor/not-exists", "1.5.0")
+	b, err = a.ChartExist("harbor/not-exists", "1.5.0")
 	assert.Nil(t, err)
 	assert.False(t, b)
 
-	b, err = ahAdapter.ChartExist("harbor/harbor", "not-exists")
+	b, err = a.ChartExist("harbor/harbor", "not-exists")
 	assert.Nil(t, err)
 	assert.False(t, b)
 }
@@ -104,21 +106,26 @@ func TestAdapter_DownloadChart(t *testing.T) {
 	gock.New("https://helm.goharbor.io/").Get("/harbor-1.5.0.tgz").
 		Reply(http.StatusOK).BodyString("{}")
 
-	data, err := ahAdapter.DownloadChart("harbor/harbor", "1.5.0", "")
+	a := getMockAdapter(t)
+	data, err := a.DownloadChart("harbor/harbor", "1.5.0", "")
 	assert.NotNil(t, err)
 	assert.Nil(t, data)
 
-	data, err = ahAdapter.DownloadChart("harbor/harbor", "1.5.0", "https://helm.goharbor.io/harbor-1.5.0.tgz")
+	data, err = a.DownloadChart("harbor/harbor", "1.5.0", "https://helm.goharbor.io/harbor-1.5.0.tgz")
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
 }
 
 func TestAdapter_DeleteChart(t *testing.T) {
-	err := ahAdapter.DeleteChart("harbor/harbor", "1.5.0")
+	a := getMockAdapter(t)
+
+	err := a.DeleteChart("harbor/harbor", "1.5.0")
 	assert.NotNil(t, err)
 }
 
 func TestAdapter_UploadChart(t *testing.T) {
-	err := ahAdapter.UploadChart("harbor/harbor", "1.5.0", nil)
+	a := getMockAdapter(t)
+
+	err := a.UploadChart("harbor/harbor", "1.5.0", nil)
 	assert.NotNil(t, err)
 }

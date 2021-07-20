@@ -16,7 +16,6 @@ package huawei
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -25,9 +24,11 @@ import (
 	gock "gopkg.in/h2non/gock.v1"
 )
 
-var HWAdapter adapter
+func mockRequest() *gock.Request {
+	return gock.New("https://swr.cn-north-1.myhuaweicloud.com")
+}
 
-func init() {
+func getHwMockAdapter(t *testing.T) *adapter {
 	hwRegistry := &model.Registry{
 		ID:          1,
 		Name:        "Huawei",
@@ -40,16 +41,14 @@ func init() {
 	}
 	adp, err := newAdapter(hwRegistry)
 	if err != nil {
-		os.Exit(1)
+		t.Fatalf("Failed to call newAdapter(), reason=[%v]", err)
 	}
-	HWAdapter = *adp.(*adapter)
+	a := adp.(*adapter)
 
-	gock.InterceptClient(HWAdapter.client.GetClient())
-	gock.InterceptClient(HWAdapter.oriClient)
-}
+	gock.InterceptClient(a.client.GetClient())
+	gock.InterceptClient(a.oriClient)
 
-func mockRequest() *gock.Request {
-	return gock.New("https://swr.cn-north-1.myhuaweicloud.com")
+	return a
 }
 
 func mockGetJwtToken(repository string) {
@@ -73,7 +72,8 @@ func TestAdapter_FetchArtifacts(t *testing.T) {
 			{Name: "name2"},
 		})
 
-	resources, err := HWAdapter.FetchArtifacts(nil)
+	a := getHwMockAdapter(t)
+	resources, err := a.FetchArtifacts(nil)
 	assert.NoError(t, err)
 	assert.Len(t, resources, 2)
 }
@@ -89,7 +89,8 @@ func TestAdapter_ManifestExist(t *testing.T) {
 			MediaType: distribution.ManifestMediaTypes()[0],
 		})
 
-	exist, _, err := HWAdapter.ManifestExist("sundaymango_mango/hello-world", "latest")
+	a := getHwMockAdapter(t)
+	exist, _, err := a.ManifestExist("sundaymango_mango/hello-world", "latest")
 	assert.NoError(t, err)
 	assert.True(t, exist)
 }
@@ -101,6 +102,7 @@ func TestAdapter_DeleteManifest(t *testing.T) {
 	mockGetJwtToken("sundaymango_mango/hello-world")
 	mockRequest().Delete("/v2/sundaymango_mango/hello-world/manifests/latest").Reply(200)
 
-	err := HWAdapter.DeleteManifest("sundaymango_mango/hello-world", "latest")
+	a := getHwMockAdapter(t)
+	err := a.DeleteManifest("sundaymango_mango/hello-world", "latest")
 	assert.NoError(t, err)
 }
