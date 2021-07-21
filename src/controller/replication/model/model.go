@@ -111,6 +111,11 @@ func (p *Policy) Validate() error {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("invalid filter type")
 		}
+
+		if filter.Decoration != "" && filter.Decoration != model.Matches && filter.Decoration != model.Excludes {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("invalid filter decoration")
+		}
 	}
 
 	// valid the destination namespace
