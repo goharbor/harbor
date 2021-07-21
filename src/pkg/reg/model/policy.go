@@ -24,12 +24,18 @@ const (
 	TriggerTypeManual     = "manual"
 	TriggerTypeScheduled  = "scheduled"
 	TriggerTypeEventBased = "event_based"
+
+	// Matches [pattern] for tag (default)
+	Matches = "matches"
+	// Excludes [pattern] for tag
+	Excludes = "excludes"
 )
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type  string      `json:"type"`
-	Value interface{} `json:"value"`
+	Type       string      `json:"type"`
+	Value      interface{} `json:"value"`
+	Decoration string      `json:"decoration,omitempty"`
 }
 
 // Trigger holds info for a trigger

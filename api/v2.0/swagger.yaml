@@ -6477,6 +6477,9 @@ definitions:
       value:
         type: object
         description: 'The value of replication policy filter.'
+      decoration:
+        type: string
+        description: 'matches or excludes the result'
   RegistryCredential:
     type: object
     properties:
