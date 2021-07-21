@@ -36,7 +36,8 @@ func BuildRepositoryFilters(filters []*model.Filter) (RepositoryFilters, error) 
 		switch filter.Type {
 		case model.FilterTypeName:
 			f = &repositoryNameFilter{
-				pattern: filter.Value.(string),
+				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
 			}
 		}
 		if f != nil {
@@ -68,6 +69,8 @@ func (r RepositoryFilters) Filter(repositories []*model.Repository) ([]*model.Re
 
 type repositoryNameFilter struct {
 	pattern string
+	// "matches", "excludes"
+	decoration string
 }
 
 func (r *repositoryNameFilter) Filter(repositories []*model.Repository) ([]*model.Repository, error) {
@@ -80,9 +83,16 @@ func (r *repositoryNameFilter) Filter(repositories []*model.Repository) ([]*mode
 		if err != nil {
 			return nil, err
 		}
-		if match {
-			result = append(result, repository)
-			continue
+		if r.decoration == model.Excludes {
+			if !match {
+				result = append(result, repository)
+				continue
+			}
+		} else {
+			if match {
+				result = append(result, repository)
+				continue
+			}
 		}
 	}
 	return result, nil
