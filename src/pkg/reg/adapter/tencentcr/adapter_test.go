@@ -26,8 +26,6 @@ var (
 )
 
 func setup() {
-	os.Setenv("UTTEST", "true")
-
 	if ak := os.Getenv("TENCENT_AK"); ak != "" {
 		log.Info("USE AK from ENV")
 		mockAccessKey = ak
@@ -82,6 +80,7 @@ func TestAdapter_NewAdapter_InvalidEndpoint(t *testing.T) {
 		URL: "$$$",
 	})
 	assert.NotNil(t, err)
+	assert.EqualError(t, err, errInvalidTcrEndpoint.Error())
 	assert.Nil(t, adapter)
 }
 
@@ -128,6 +127,8 @@ func getTestServer() *httptest.Server {
 }
 
 func TestAdapter_NewAdapter_Ok(t *testing.T) {
+	os.Setenv("UTTEST", "true")
+
 	server := getTestServer()
 	defer server.Close()
 
@@ -149,6 +150,8 @@ func TestAdapter_NewAdapter_Ok(t *testing.T) {
 }
 
 func TestAdapter_NewAdapter_InsecureOk(t *testing.T) {
+	os.Setenv("UTTEST", "true")
+
 	server := getTestServer()
 	defer server.Close()
 
