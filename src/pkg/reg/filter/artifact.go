@@ -37,17 +37,19 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 		switch filter.Type {
 		case model.FilterTypeLabel:
 			f = &artifactLabelFilter{
-				labels: filter.Value.([]string),
+				labels:     filter.Value.([]string),
+				decoration: filter.Decoration,
 			}
 		case model.FilterTypeTag:
 			f = &artifactTagFilter{
-				pattern: filter.Value.(string),
+				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
 			}
 		case model.FilterTypeResource:
 			v := filter.Value.(string)
 			if v != model.ResourceTypeArtifact && v != model.ResourceTypeChart {
 				f = &artifactTypeFilter{
-					types: []string{string(v)},
+					types: []string{v},
 				}
 			}
 		}
@@ -102,6 +104,8 @@ func (a *artifactTypeFilter) Filter(artifacts []*model.Artifact) ([]*model.Artif
 // in the filter is the valid one
 type artifactLabelFilter struct {
 	labels []string
+	// "matches", "excludes"
+	decoration string
 }
 
 func (a *artifactLabelFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
@@ -122,8 +126,14 @@ func (a *artifactLabelFilter) Filter(artifacts []*model.Artifact) ([]*model.Arti
 			}
 		}
 		// add the artifact to the result list if it contains all labels defined for the filter
-		if match {
-			result = append(result, artifact)
+		if a.decoration == model.Excludes {
+			if !match {
+				result = append(result, artifact)
+			}
+		} else {
+			if match {
+				result = append(result, artifact)
+			}
 		}
 	}
 	return result, nil
@@ -147,6 +157,8 @@ func (a *artifactTaggedFilter) Filter(artifacts []*model.Artifact) ([]*model.Art
 
 type artifactTagFilter struct {
 	pattern string
+	// "matches", "excludes"
+	decoration string
 }
 
 func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
@@ -161,8 +173,14 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 			if err != nil {
 				return nil, err
 			}
-			if match {
-				result = append(result, artifact)
+			if a.decoration == model.Excludes {
+				if !match {
+					result = append(result, artifact)
+				}
+			} else {
+				if match {
+					result = append(result, artifact)
+				}
 			}
 			continue
 		}
@@ -174,9 +192,14 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 			if err != nil {
 				return nil, err
 			}
-			if match {
-				tags = append(tags, tag)
-				continue
+			if a.decoration == model.Excludes {
+				if !match {
+					tags = append(tags, tag)
+				}
+			} else {
+				if match {
+					tags = append(tags, tag)
+				}
 			}
 		}
 		if len(tags) == 0 {

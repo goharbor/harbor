@@ -34,6 +34,11 @@ func TestMatch(t *testing.T) {
 			match:   true,
 		},
 		{
+			pattern: "",
+			str:     "",
+			match:   true,
+		},
+		{
 			pattern: "*",
 			str:     "library",
 			match:   true,

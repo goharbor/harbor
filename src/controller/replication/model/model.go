@@ -94,6 +94,12 @@ func (p *Policy) Validate() error {
 						WithMessage("invalid resource filter: %s", value)
 				}
 			}
+			if filter.Type == model.FilterTypeName || filter.Type == model.FilterTypeResource {
+				if filter.Decoration != "" {
+					return errors.New(nil).WithCode(errors.BadRequestCode).
+						WithMessage("only tag and label filter support decoration")
+				}
+			}
 		case model.FilterTypeLabel:
 			labels, ok := filter.Value.([]interface{})
 			if !ok {
@@ -110,6 +116,11 @@ func (p *Policy) Validate() error {
 		default:
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("invalid filter type")
+		}
+
+		if filter.Decoration != "" && filter.Decoration != model.Matches && filter.Decoration != model.Excludes {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("invalid filter decoration, :%s", filter.Decoration)
 		}
 	}
 
@@ -229,10 +240,11 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 }
 
 type filter struct {
-	Type    string      `json:"type"`
-	Value   interface{} `json:"value"`
-	Kind    string      `json:"kind"`
-	Pattern string      `json:"pattern"`
+	Type       string      `json:"type"`
+	Value      interface{} `json:"value"`
+	Decoration string      `json:"decoration"`
+	Kind       string      `json:"kind"`
+	Pattern    string      `json:"pattern"`
 }
 
 type trigger struct {
@@ -260,8 +272,9 @@ func parseFilters(str string) ([]*model.Filter, error) {
 	filters := []*model.Filter{}
 	for _, item := range items {
 		filter := &model.Filter{
-			Type:  item.Type,
-			Value: item.Value,
+			Type:       item.Type,
+			Value:      item.Value,
+			Decoration: item.Decoration,
 		}
 		// keep backwards compatibility
 		if len(filter.Type) == 0 {
