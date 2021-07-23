@@ -247,12 +247,14 @@ Image Should Be Replicated To Project
         Go Into Repo  ${project}/${image}
         ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
         Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
-        Run Keyword If  '${total_artifact_count}'!='${null}'  Should Not Be Empty  ${tag}
-        ${out}  Run Keyword If  '${total_artifact_count}'!='${null}'  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  return_immediately=${true}
-        Log All  out: ${out}
-        Exit For Loop If  '${out}'=='PASS'
+        ${index_out}  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  return_immediately=${true}
+        Log All  index_out: ${index_out}
+        Run Keyword If  '${index_out}'=='PASS'  Exit For Loop
         Sleep  30
     END
+
+Verify Artifacts Counts In Archive
+    [Arguments]  ${total_artifact_count}  ${tag}  ${total_artifact_count}  ${archive_count}
 
 Executions Result Count Should Be
     [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}

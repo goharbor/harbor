@@ -255,6 +255,8 @@ Click Index Achieve
 
 Go Into Index And Contain Artifacts
     [Arguments]  ${tag_name}  ${total_artifact_count}=3  ${archive_count}=0  ${return_immediately}=${false}
+    Run Keyword If  '${total_artifact_count}' == '${null}'  Return From Keyword   PASS
+    Should Not Be Empty  ${tag_name}
     Retry Double Keywords When Error  Click Index Achieve  ${tag_name}  Page Should Contain Element  ${tag_table_column_os_arch}
     FOR  ${n}  IN RANGE  1  10
         ${out1}  Run Keyword And Ignore Error  Page Should Contain Element  ${artifact_rows}  limit=${total_artifact_count}
