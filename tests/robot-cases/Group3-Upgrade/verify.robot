@@ -88,6 +88,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Trivy Is Default Scanner
     Run Keyword  Verify Artifact Index  ${data}
     Run Keyword  Verify Quotas Display  ${data}
+    Run Keyword  Verify Re-sign Image  ${data}
 
 Test Case - Upgrade Verify
     [Tags]  2.1-latest
@@ -115,3 +116,4 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Distributions  ${data}
     Run Keyword  Verify P2P Preheat Policy  ${data}
     Run Keyword  Verify Quotas Display  ${data}
+    Run Keyword  Verify Re-sign Image  ${data}

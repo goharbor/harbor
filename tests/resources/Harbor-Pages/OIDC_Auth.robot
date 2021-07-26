@@ -70,8 +70,8 @@ Able To Delete An OIDC User
     Switch to User Tag
     Retry Element Click   ${user_test7_checkbox}
     Retry Element Click   ${member_action_btn}
+    Retry Element Click   ${user_actions_del_btn}
     Retry Element Click   ${delete_btn}
-    Retry Element Click   ${confirm_delete_btn}
     Retry Wait Until Page Not Contains Element   ${user_test7_checkbox}
 
 Should Contain Target User

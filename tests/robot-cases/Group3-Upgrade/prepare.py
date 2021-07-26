@@ -13,6 +13,9 @@ parser = argparse.ArgumentParser(description='The script to generate data for ha
 parser.add_argument('--endpoint', '-e', dest='endpoint', required=True, help='The endpoint to harbor')
 parser.add_argument('--version', '-v', dest='version', required=False, help='The version to harbor')
 parser.add_argument('--libpath', '-l', dest='libpath', required=False, help='e2e library')
+parser.add_argument('--src-registry', '-g', dest='LOCAL_REGISTRY', required=False, help='Sample images registry')
+parser.add_argument('--src-repo', '-p', dest='LOCAL_REGISTRY_NAMESPACE', required=False, help='Sample images repo')
+
 args = parser.parse_args()
 
 from os import path
@@ -56,8 +59,8 @@ def get_feature_branch(func):
 
 class HarborAPI:
     @get_feature_branch
-    def populate_projects(self, **kwargs):
-        for project in data["projects"]:
+    def populate_projects(self, key_name, create_project_only = False, **kwargs):
+        for project in data[key_name]:
             if kwargs["branch"] in [1,2]:
                 if "registry_name" in project:
                     print("Populate proxy project...")
@@ -67,6 +70,8 @@ class HarborAPI:
             else:
                 raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
             self.create_project(project, version=args.version)
+            if create_project_only:
+                continue
             for member in project["member"]:
                 self.add_member(project["name"], member["name"], member["role"], version=args.version)
             for robot_account in project["robot_account"]:
@@ -621,7 +626,8 @@ def push_image(image, project):
     os.system("docker push "+args.endpoint+"/"+project+"/library/"+image)
 
 def push_signed_image(image, project, tag):
-    os.system("./sign_image.sh" + " " + args.endpoint + " " + project + " " + image + " " + tag)
+    print("LOCAL_REGISTRY:{} LOCAL_REGISTRY_NAMESPACE:{}".format(args.LOCAL_REGISTRY, args.LOCAL_REGISTRY_NAMESPACE))
+    os.system("./sign_image.sh" + " " + args.endpoint + " " + project + " " + image + " " + tag + " " + args.LOCAL_REGISTRY + " " + args.LOCAL_REGISTRY_NAMESPACE)
 
 @get_feature_branch
 def set_url(**kwargs):
@@ -650,13 +656,15 @@ def do_data_creation():
     for distribution in data["distributions"]:
         harborAPI.add_distribution(distribution, version=args.version)
 
-    harborAPI.populate_projects(version=args.version)
+    harborAPI.populate_projects("projects", version=args.version)
+    harborAPI.populate_projects("notary_projects", create_project_only=True, version=args.version)
     harborAPI.populate_quotas(version=args.version)
 
     harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
     #pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_self_build_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
-    push_signed_image("alpine", data["projects"][0]["name"], "latest")
+    for project in data["notary_projects"]:
+        push_signed_image("alpine", project["name"], "latest")
 
     for replicationrule in data["replicationrule"]:
         harborAPI.add_replication_rule(replicationrule, version=args.version)

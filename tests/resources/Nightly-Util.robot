@@ -52,9 +52,20 @@ Nightly Test Setup In Ubuntu
     Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
-    #Log To Console  Start Containerd Daemon Locally ...
-    #Run Keyword  Start Containerd Daemon Locally
     Prepare Helm Plugin
+    #Docker login
+    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
+
+Nightly Test Setup In Ubuntu For Upgrade
+    [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
+    Get And Setup Harbor CA  ${ip}  ${HARBOR_PASSWORD}  CA Setup In ubuntu  ip1=${ip1}
+    Prepare Test Tools
+    Log To Console  Start Docker Daemon Locally ...
+    Run Keyword  Start Docker Daemon Locally
+    Prepare Helm Plugin
+    #For upgrade pipeline: get notary targets key from last execution.
+    ${rc}  ${output}=  Run And Return Rc And Output  [ -f "/key_store/private_keys_backup.tar.gz" ] && tar -zxvf /key_store/private_keys_backup.tar.gz -C /
+    #Docker login
     Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
 CA Setup In ubuntu
