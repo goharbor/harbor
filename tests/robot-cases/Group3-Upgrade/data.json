@@ -136,6 +136,40 @@
          "insecure":true
       }
    ],
+   "notary_projects":[
+      {
+         "name":"projects_notary_1",
+         "registry_name":null,
+         "has_image":true,
+         "accesslevel":"public",
+         "repocounts":2,
+         "count_limit":1234,
+         "storage_limit":53687091200,
+         "repo":[
+            {
+               "name":"alpine",
+               "tag":"latest",
+               "signed":"false"
+            }
+         ]
+      },
+      {
+         "name":"projects_notary_2",
+         "registry_name":null,
+         "has_image":true,
+         "accesslevel":"public",
+         "repocounts":2,
+         "count_limit":1234,
+         "storage_limit":53687091200,
+         "repo":[
+            {
+               "name":"alpine",
+               "tag":"latest",
+               "signed":"false"
+            }
+         ]
+      }
+   ],
    "projects":[
       {
          "name":"project1194",

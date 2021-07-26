@@ -569,3 +569,12 @@ Verify Quotas Display
         Should Match Regexp  ${storage_quota_ret}  ${str_expected}
     END
     Close Browser
+
+
+Verify Re-sign Image
+    [Arguments]    ${json}
+    Log To Console  "Verify Quotas Display..."
+    @{project}=  Get Value From Json  ${json}  $.notary_projects.[*].name
+    FOR    ${project}    IN    @{project}
+        Body Of Admin Push Signed Image  ${project}  alpine  new_tag  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  clear_trust_dir=${false}
+    END
