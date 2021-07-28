@@ -13,3 +13,8 @@ export const Flatten_I18n_MAP = {
   [Flatten_Level.FLATTEN_LEVEl_3]: 'REPLICATION.FLATTEN_LEVEL_3',
   [Flatten_Level.FLATTEN_ALL]: 'REPLICATION.FLATTEN_ALL',
 };
+
+export enum Decoration {
+  MATCHES = 'matches',
+  EXCLUDES = 'excludes'
+}
