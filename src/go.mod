@@ -22,7 +22,6 @@ require (
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dghubble/sling v1.1.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c // indirect
 	github.com/docker/go-metrics v0.0.0-20181218153428-b84716841b82 // indirect
@@ -40,6 +39,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocraft/work v0.5.1
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
