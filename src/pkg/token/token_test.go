@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
+	jwt "github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 )
 
