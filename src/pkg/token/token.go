@@ -5,8 +5,8 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/golang-jwt/jwt"
 )
 
 // Token is a jwt token for harbor robot account,

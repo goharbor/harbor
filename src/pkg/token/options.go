@@ -6,8 +6,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"io/ioutil"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/golang-jwt/jwt"
 )
 
 const (

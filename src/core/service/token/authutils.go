@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
 	"github.com/goharbor/harbor/src/common/models"
@@ -31,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
+	"github.com/golang-jwt/jwt"
 )
 
 const (
