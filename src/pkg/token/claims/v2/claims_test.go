@@ -3,8 +3,8 @@ package v2
 import (
 	"testing"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
+	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/assert"
 )
 

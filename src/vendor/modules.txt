@@ -169,7 +169,6 @@ github.com/denverdino/aliyungo/util
 ## explicit
 github.com/dghubble/sling
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
-## explicit
 github.com/dgrijalva/jwt-go
 # github.com/docker/distribution v2.7.1+incompatible
 ## explicit
@@ -291,6 +290,9 @@ github.com/gocraft/work
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+# github.com/golang-jwt/jwt v3.2.1+incompatible
+## explicit
+github.com/golang-jwt/jwt
 # github.com/golang-migrate/migrate/v4 v4.11.0
 ## explicit
 github.com/golang-migrate/migrate/v4
