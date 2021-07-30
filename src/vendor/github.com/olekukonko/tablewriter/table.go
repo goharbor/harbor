@@ -308,6 +308,33 @@ func (t *Table) Append(row []string) {
 	t.lines = append(t.lines, line)
 }
 
+// Append row to table with color attributes
+func (t *Table) Rich(row []string, colors []Colors) {
+	rowSize := len(t.headers)
+	if rowSize > t.colSize {
+		t.colSize = rowSize
+	}
+
+	n := len(t.lines)
+	line := [][]string{}
+	for i, v := range row {
+
+		// Detect string  width
+		// Detect String height
+		// Break strings into words
+		out := t.parseDimension(v, i, n)
+
+		if len(colors) > i {
+			color := colors[i]
+			out[0] = format(out[0], color)
+		}
+
+		// Append broken words
+		line = append(line, out)
+	}
+	t.lines = append(t.lines, line)
+}
+
 // Allow Support for Bulk Append
 // Eliminates repeated for loops
 func (t *Table) AppendBulk(rows [][]string) {
