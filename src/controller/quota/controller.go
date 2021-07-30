@@ -23,19 +23,17 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
-	"github.com/gomodule/redigo/redis"
 
 	// quota driver
 	_ "github.com/goharbor/harbor/src/controller/quota/driver"
 )
 
 var (
-	// expire reserved resources when no actions on the key of the reserved resources in redis during 1 hour
-	defaultReservedExpiration = time.Hour
+	defaultRetryTimeout = time.Minute * 5
 )
 
 var (
@@ -82,8 +80,7 @@ type Controller interface {
 // NewController creates an instance of the default quota controller
 func NewController() Controller {
 	return &controller{
-		reservedExpiration: defaultReservedExpiration,
-		quotaMgr:           quota.Mgr,
+		quotaMgr: quota.Mgr,
 	}
 }
 
@@ -167,107 +164,46 @@ func (c *controller) List(ctx context.Context, query *q.Query, options ...Option
 	return quotas, nil
 }
 
-func (c *controller) getReservedResources(ctx context.Context, reference, referenceID string) (types.ResourceList, error) {
-	conn := redislib.DefaultPool().Get()
-	defer conn.Close()
-
-	key := reservedResourcesKey(reference, referenceID)
-
-	str, err := redis.String(conn.Do("GET", key))
-	if err == redis.ErrNil {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	return types.NewResourceList(str)
-}
-
-func (c *controller) setReservedResources(ctx context.Context, reference, referenceID string, resources types.ResourceList) error {
-	conn := redislib.DefaultPool().Get()
-	defer conn.Close()
-
-	key := reservedResourcesKey(reference, referenceID)
-
-	reply, err := redis.String(conn.Do("SET", key, resources.String(), "EX", int64(c.reservedExpiration/time.Second)))
-	if err != nil {
-		return err
-	}
-
-	if reply != "OK" {
-		return fmt.Errorf("bad reply value")
-	}
-
-	return nil
-}
-
-func (c *controller) reserveResources(ctx context.Context, reference, referenceID string, resources types.ResourceList) error {
-	reserve := func(ctx context.Context) error {
-		q, err := c.quotaMgr.GetByRefForUpdate(ctx, reference, referenceID)
+func (c *controller) updateUsageWithRetry(ctx context.Context, reference, referenceID string, op func(hardLimits, used types.ResourceList) (types.ResourceList, error)) error {
+	f := func() error {
+		q, err := c.quotaMgr.GetByRef(ctx, reference, referenceID)
 		if err != nil {
-			return err
+			return retry.Abort(err)
 		}
 
 		hardLimits, err := q.GetHard()
 		if err != nil {
-			return err
+			return retry.Abort(err)
 		}
 
 		used, err := q.GetUsed()
 		if err != nil {
-			return err
+			return retry.Abort(err)
 		}
 
-		reserved, err := c.getReservedResources(ctx, reference, referenceID)
+		newUsed, err := op(hardLimits, used)
 		if err != nil {
-			log.G(ctx).Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
-			return err
+			return retry.Abort(err)
 		}
 
-		newReserved := types.Add(reserved, resources)
+		q.SetUsed(newUsed)
 
-		if err := quota.IsSafe(hardLimits, types.Add(used, reserved), types.Add(used, newReserved), false); err != nil {
-			return errors.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
+		err = c.quotaMgr.Update(ctx, q)
+		if err != nil && !errors.Is(err, orm.ErrOptimisticLock) {
+			return retry.Abort(err)
 		}
 
-		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {
-			log.G(ctx).Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
-			return err
-		}
-
-		return nil
+		return err
 	}
 
-	return orm.WithTransaction(reserve)(ctx)
-}
-
-func (c *controller) unreserveResources(ctx context.Context, reference, referenceID string, resources types.ResourceList) error {
-	unreserve := func(ctx context.Context) error {
-		if _, err := c.quotaMgr.GetByRefForUpdate(ctx, reference, referenceID); err != nil {
-			return err
-		}
-
-		reserved, err := c.getReservedResources(ctx, reference, referenceID)
-		if err != nil {
-			log.G(ctx).Errorf("failed to get reserved resources for %s %s, error: %v", reference, referenceID, err)
-			return err
-		}
-
-		newReserved := types.Subtract(reserved, resources)
-		// ensure that new used is never negative
-		if negativeUsed := types.IsNegative(newReserved); len(negativeUsed) > 0 {
-			return fmt.Errorf("reserved resources is negative for resource(s): %s", quota.PrettyPrintResourceNames(negativeUsed))
-		}
-
-		if err := c.setReservedResources(ctx, reference, referenceID, newReserved); err != nil {
-			log.G(ctx).Errorf("failed to set reserved resources for %s %s, error: %v", reference, referenceID, err)
-			return err
-		}
-
-		return nil
+	options := []retry.Option{
+		retry.Timeout(defaultRetryTimeout),
+		retry.Backoff(false),
+		retry.Callback(func(err error, sleep time.Duration) {
+			log.G(ctx).Debugf("failed to update the quota usage for %s %s, error: %v", reference, referenceID, err)
+		}),
 	}
-
-	return orm.WithTransaction(unreserve)(ctx)
+	return retry.Retry(f, options...)
 }
 
 func (c *controller) Refresh(ctx context.Context, reference, referenceID string, options ...Option) error {
@@ -278,44 +214,17 @@ func (c *controller) Refresh(ctx context.Context, reference, referenceID string,
 
 	opts := newOptions(options...)
 
-	refresh := func(ctx context.Context) error {
-		q, err := c.quotaMgr.GetByRefForUpdate(ctx, reference, referenceID)
-		if err != nil {
-			return err
-		}
-
-		hardLimits, err := q.GetHard()
-		if err != nil {
-			return err
-		}
-
-		used, err := q.GetUsed()
-		if err != nil {
-			return err
-		}
-
+	calculateUsage := func() (types.ResourceList, error) {
 		newUsed, err := driver.CalculateUsage(ctx, referenceID)
 		if err != nil {
 			log.G(ctx).Errorf("failed to calculate quota usage for %s %s, error: %v", reference, referenceID, err)
-			return err
+			return nil, err
 		}
 
-		// ensure that new used is never negative
-		if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {
-			return fmt.Errorf("quota usage is negative for resource(s): %s", quota.PrettyPrintResourceNames(negativeUsed))
-		}
-
-		if err := quota.IsSafe(hardLimits, used, newUsed, opts.IgnoreLimitation); err != nil {
-			return err
-		}
-
-		q.SetUsed(newUsed)
-		q.UpdateTime = time.Now()
-
-		return c.quotaMgr.Update(ctx, q)
+		return newUsed, err
 	}
 
-	return orm.WithTransaction(refresh)(ctx)
+	return c.updateUsageWithRetry(ctx, reference, referenceID, refreshResources(calculateUsage, opts.IgnoreLimitation))
 }
 
 func (c *controller) Request(ctx context.Context, reference, referenceID string, resources types.ResourceList, f func() error) error {
@@ -323,28 +232,26 @@ func (c *controller) Request(ctx context.Context, reference, referenceID string,
 		return f()
 	}
 
-	if err := c.reserveResources(ctx, reference, referenceID, resources); err != nil {
+	if err := c.updateUsageWithRetry(ctx, reference, referenceID, reserveResources(resources)); err != nil {
+		log.G(ctx).Errorf("reserve resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, err)
 		return err
 	}
 
-	defer func() {
-		if err := c.unreserveResources(ctx, reference, referenceID, resources); err != nil {
-			// ignore this error because reserved resources will be expired
-			// when no actions on the key of the reserved resources in redis during sometimes
-			log.G(ctx).Warningf("unreserve resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, err)
+	err := f()
+
+	if err != nil {
+		if er := c.updateUsageWithRetry(ctx, reference, referenceID, rollbackResources(resources)); er != nil {
+			// ignore this error, the quota usage will be correct when users do operations which will call refresh quota
+			log.G(ctx).Warningf("rollback resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, er)
 		}
-	}()
-
-	if err := f(); err != nil {
-		return err
 	}
 
-	return c.Refresh(ctx, reference, referenceID)
+	return err
 }
 
 func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
-	update := func(ctx context.Context) error {
-		q, err := c.quotaMgr.GetByRefForUpdate(ctx, u.Reference, u.ReferenceID)
+	f := func() error {
+		q, err := c.quotaMgr.GetByRef(ctx, u.Reference, u.ReferenceID)
 		if err != nil {
 			return err
 		}
@@ -361,11 +268,15 @@ func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
 			}
 		}
 
-		q.UpdateTime = time.Now()
 		return c.quotaMgr.Update(ctx, q)
 	}
 
-	return orm.WithTransaction(update)(ctx)
+	options := []retry.Option{
+		retry.Timeout(defaultRetryTimeout),
+		retry.Backoff(false),
+	}
+
+	return retry.Retry(f, options...)
 }
 
 // Driver returns quota driver for the reference
@@ -388,6 +299,46 @@ func Validate(ctx context.Context, reference string, hardLimits types.ResourceLi
 	return d.Validate(hardLimits)
 }
 
-func reservedResourcesKey(reference, referenceID string) string {
-	return fmt.Sprintf("quota:%s:%s:reserved", reference, referenceID)
+func reserveResources(resources types.ResourceList) func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+	return func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+		newUsed := types.Add(used, resources)
+
+		if err := quota.IsSafe(hardLimits, used, newUsed, false); err != nil {
+			return nil, errors.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
+		}
+
+		return newUsed, nil
+	}
+}
+
+func rollbackResources(resources types.ResourceList) func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+	return func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+		newUsed := types.Subtract(used, resources)
+		// ensure that new used is never negative
+		if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {
+			return nil, fmt.Errorf("resources is negative for resource(s): %s", quota.PrettyPrintResourceNames(negativeUsed))
+		}
+
+		return newUsed, nil
+	}
+}
+
+func refreshResources(calculateUsage func() (types.ResourceList, error), ignoreLimitation bool) func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+	return func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+		newUsed, err := calculateUsage()
+		if err != nil {
+			return nil, err
+		}
+
+		// ensure that new used is never negative
+		if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {
+			return nil, fmt.Errorf("quota usage is negative for resource(s): %s", quota.PrettyPrintResourceNames(negativeUsed))
+		}
+
+		if err := quota.IsSafe(hardLimits, used, newUsed, ignoreLimitation); err != nil {
+			return nil, err
+		}
+
+		return newUsed, nil
+	}
 }
