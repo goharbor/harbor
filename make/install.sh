@@ -10,7 +10,8 @@ set +o noglob
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
 Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.yml bacause notary must run under https. 
 Please set --with-trivy if needs enable Trivy in Harbor
-Please set --with-chartmuseum if needs enable Chartmuseum in Harbor'
+Please set --with-chartmuseum if needs enable Chartmuseum in Harbor
+Please set --no-autostart if needs no autostart Harbor'
 item=0
 
 # notary is not enabled by default
@@ -21,6 +22,8 @@ with_clair=$false
 with_trivy=$false
 # chartmuseum is not enabled by default
 with_chartmuseum=$false
+# script starts Harbor by default
+no_autostart=$false
 
 while [ $# -gt 0 ]; do
         case $1 in
@@ -35,6 +38,8 @@ while [ $# -gt 0 ]; do
             with_trivy=true;;
             --with-chartmuseum)
             with_chartmuseum=true;;
+            --no_autostart)
+            no_autostart=true;;
             *)
             note "$usage"
             exit 1;;
@@ -95,7 +100,13 @@ then
 fi
 echo ""
 
+if [ $no_autostart ]
+then
+success $"----Harbor has been installed successfully. Start it with `docker-compose up -d`.----"
+
+else
 h2 "[Step $item]: starting Harbor ..."
 docker-compose up -d
 
 success $"----Harbor has been installed and started successfully.----"
+fi
