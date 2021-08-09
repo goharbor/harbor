@@ -43,17 +43,17 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/jinzhu/gorm v1.9.8 // indirect
-	github.com/lib/pq v1.8.0
+	github.com/lib/pq v1.10.0
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
 	github.com/ncw/swift v1.0.49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/olekukonko/tablewriter v0.0.2
+	github.com/olekukonko/tablewriter v0.0.4
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
@@ -62,27 +62,28 @@ require (
 	github.com/robfig/cron v1.0.0
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect
 	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
 	github.com/theupdateframework/notary v0.6.1
 	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/h2non/gock.v1 v1.0.16
-	gopkg.in/yaml.v2 v2.3.0
-	helm.sh/helm/v3 v3.4.2
-	k8s.io/api v0.19.4
-	k8s.io/apimachinery v0.19.4
-	k8s.io/client-go v0.19.4
+	gopkg.in/yaml.v2 v2.4.0
+	helm.sh/helm/v3 v3.6.1
+	k8s.io/api v0.21.0
+	k8s.io/apimachinery v0.21.0
+	k8s.io/client-go v0.21.0
+	rsc.io/letsencrypt v0.0.3 // indirect
 )
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.3+incompatible
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/goharbor/harbor => ../
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )
