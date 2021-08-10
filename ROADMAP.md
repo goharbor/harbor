@@ -16,7 +16,21 @@ Please open an issue to track any initiative on the roadmap of Harbor (Usually d
 The following table includes the current roadmap for Harbor. If you have any questions or would like to contribute to Harbor, please attend a [community meeting](https://goharbor.io/community/) to discuss with our team. If you don't know where to start, we are always looking for contributors that will help us reduce technical, automation, and documentation debt. Please take the timelines & dates as proposals and goals. Priorities and requirements change based on community feedback, roadblocks encountered, community contributions, etc. If you depend on a specific item, we encourage you to attend community meetings to get updated status information, or help us deliver that feature by contributing to Harbor.
 
 
-`Last Updated: June 2020`
+`Last Updated: July 2021`
+
+|Theme|Description|Timeline|
+|--|--|--|
+|Harbor Lite for Edge|Create a lightweight Harbor with reduced feature set for minimal footprint|2021 H2|
+|Deployment|Improve Kubernetes Operator for Harbor, enabling improved Day1 and Day2 operations including enterprise grade HA, faster deployments and upgrades, automate backups and restores, and sensible defaults|2021 H2|
+|Image Signing|Leverage Notary v2 as well as Sigstore Cosign to deliver persisting image signatures across image replications|2021 H2|
+|Tracing|Leverage OpenTelemetry for enhanced tracing capabilities and identify bottlenecks and improve performance |2021 H2
+|Regex Support|Add full Regex support to all modules within Harbor consistently including configuration of replication policies, retention policies, immutability policies and more|2021 H2|
+|ARM Harbor|release an ARM deployment of Harbor|2022 H1|
+|Backup & Restore|Leverage Project Velero to offer application-aware Harbor backup, including databases, Kubernetes objects and Persistent Volumes|2022 H1|
+|Networking|Support an IPv6-only network for Harbor pods in a Kubernetes cluster|2022 H1|
+
+
+### Completed Items
 
 |Theme|Description|Timeline|
 |--|--|--|
@@ -24,11 +38,7 @@ The following table includes the current roadmap for Harbor. If you have any que
 |Image Distribution|Ability for Harbor registry to function as a pull-through cache for remote registry|Sep 2020|
 |Performance & Reliability|Non-blocking Garbage Collection|Sep 2020|
 |Image Distribution|Leverage P2P providers like Alibaba Dragonfly and Uber Kraken to geo-distribute artifacts at higher rates|Oct 2020|
-|Deployment|Kubernetes operator for Harbor, enabling Day1 and Day2 operations including enterprise grade HA|Oct 2020|
 |Extensibility|Allow vendors to publish and share OCI artifacts like Machine Learning (Kubeflow) workloads generated datatypes on Harbor|Oct 2020|
 |Registry|Improve support for Windows containers layers|Oct 2020|
-|I&AM and RBAC|Service accounts with proper RBAC and differentiated access permissions|Dec 2020|
 |I&AM and RBAC|Improved Multi-tenancy through granular access and ability to manage teams of users and robot accounts through workspaces|Dec 2020|
 |Observability|Expose Harbor metrics through Prometheus Integration|Mar 2021|
-|Backup & Restore|Leverage Velero to offer application-aware Harbor backup, including databases, Kubernetes objects and persistent volumes|Mar 2021|
-|Networking|Support an IPv6-only network for Harbor pods in a Kubernetes cluster|Mar 2021|
