@@ -1,13 +1,13 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-FROM node:15.4.0 as nodeportal
+FROM node:16.5.0 as nodeportal
 
 WORKDIR /build_dir
 
 ARG npm_registry=https://registry.npmjs.org
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python-yaml=3.12-1
+    && apt-get install -y --no-install-recommends python-yaml
 
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
