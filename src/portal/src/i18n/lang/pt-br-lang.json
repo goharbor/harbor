@@ -130,7 +130,7 @@
         "RENAME_SUCCESS": "Renomeado com sucesso!",
         "RENAME_CONFIRM_INFO": "Atenção, alterar o nome para admin@harbor.local não pode ser desfeito.",
         "CLI_PASSWORD": "Segredo CLI",
-        "CLI_PASSWORD_TIP": "Você Pode USAR este Segredo de clitóris Como senha Ao USAR clitóris de estivador /leme para acessar Harbor.",
+        "CLI_PASSWORD_TIP": "Você pode usar este segredo como senha ao usar docker / helm cli para acessar o Harbor.",
         "COPY_SUCCESS": "SUCESSO de cópia",
         "COPY_ERROR": "Cópia falhou",
         "ADMIN_CLI_SECRET_BUTTON": "GENERATE SECRET",
