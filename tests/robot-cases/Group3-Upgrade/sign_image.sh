@@ -1,6 +1,10 @@
 #!/bin/bash
+set -x
+set -e
 
-docker pull $3:$4
+echo "registry:"$5
+echo "repo:"$6
+docker pull $5/$6/$3:$4
 
 IP=$1
 PASSHRASE='Harbor12345'
@@ -25,5 +29,7 @@ export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
 docker login -u admin -p Harbor12345 $IP
-docker tag $3:$4 $IP/$2/$3:$4
+docker tag $5/$6/$3:$4 $IP/$2/$3:$4
 docker push $IP/$2/$3:$4
+rm -rf /key_store/*
+umask 077; tar -zcvf /key_store/private_keys_backup.tar.gz ~/.docker/trust/private; umask 022
