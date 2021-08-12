@@ -423,7 +423,7 @@ export class CreateEditEndpointComponent
     if (!this.target || !this.initVal) {
       return changes;
     }
-    for (let prop of Object.keys(this.target)) {
+    for (let prop of Object.keys(Object.assign({}, this.target, this.initVal))) {
       let field: any = this.initVal[prop];
       if (typeof field !== "object") {
         if (!compareValue(field, this.target[prop])) {
@@ -439,7 +439,7 @@ export class CreateEditEndpointComponent
           }
         }
       } else {
-        for (let pro of Object.keys(field)) {
+        for (let pro of Object.keys(Object.assign({}, field, this.target[prop]))) {
           if (!compareValue(field[pro], this.target[prop][pro])) {
             changes[pro] = this.target[prop][pro];
             // Number
