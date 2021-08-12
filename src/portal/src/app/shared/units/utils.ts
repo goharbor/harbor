@@ -567,7 +567,7 @@ export const validateLimit = unitContrl => {
 };
 
 export function formatSize(tagSize: string): string {
-    const size: number = Number.parseInt(tagSize);
+    const size: number = Number.parseInt(tagSize, 10);
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
         return (size / Math.pow(1024, 1)).toFixed(2) + "KiB";
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
