@@ -15,7 +15,6 @@
 package security
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -23,11 +22,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"net/http"
 )
 
@@ -71,20 +68,6 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	var accesses []*types.Policy
-	for _, p := range robot.Permissions {
-		for _, a := range p.Access {
-			accesses = append(accesses, &types.Policy{
-				Action:   a.Action,
-				Effect:   a.Effect,
-				Resource: types.Resource(fmt.Sprintf("%s/%s", p.Scope, a.Resource)),
-			})
-		}
-	}
-
-	modelRobot := &model.Robot{
-		Name: name,
-	}
 	log.Infof("a robot security context generated for request %s %s", req.Method, req.URL.Path)
-	return robotCtx.NewSecurityContext(modelRobot, robot.Level == robot_ctl.LEVELSYSTEM, accesses)
+	return robotCtx.NewSecurityContext(robot)
 }
