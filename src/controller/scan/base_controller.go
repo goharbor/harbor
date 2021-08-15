@@ -313,6 +313,24 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	return nil
 }
 
+// Stop scan job of a given artifact
+func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact) error {
+	if artifact == nil {
+		return errors.New("nil artifact to stop scan")
+	}
+	query := q.New(q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest})
+	executions, err := bc.execMgr.List(ctx, query)
+	if err != nil {
+		return err
+	}
+	if len(executions) == 0 {
+		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
+		return errors.BadRequestError(nil).WithMessage(message)
+	}
+	execution := executions[0]
+	return bc.execMgr.Stop(ctx, execution.ID)
+}
+
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
 	executionID, err := bc.execMgr.Create(ctx, VendorTypeScanAll, 0, trigger)
 	if err != nil {

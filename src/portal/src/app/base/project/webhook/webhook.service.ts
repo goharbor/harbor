@@ -24,6 +24,7 @@ const EVENT_TYPES_TEXT_MAP = {
   'QUOTA_EXCEED': 'Quota exceed',
   'QUOTA_WARNING': 'Quota near threshold',
   'SCANNING_FAILED': 'Scanning failed',
+  'SCANNING_STOPPED': 'Scanning stopped',
   'SCANNING_COMPLETED': 'Scanning finished',
   'TAG_RETENTION': 'Tag retention finished',
 };

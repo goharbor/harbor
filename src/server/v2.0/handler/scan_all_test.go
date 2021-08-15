@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -51,6 +52,9 @@ type ScanAllTestSuite struct {
 }
 
 func (suite *ScanAllTestSuite) SetupSuite() {
+	// this is because orm.Context()
+	dao.PrepareTestForPostgresSQL()
+
 	suite.execution = &task.Execution{
 		Status: "Running",
 		Metrics: &taskdao.Metrics{
@@ -235,6 +239,41 @@ func (suite *ScanAllTestSuite) TestGetLatestScheduledScanAllMetrics() {
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.True(stats.Ongoing)
+	}
+}
+
+func (suite *ScanAllTestSuite) TestStopScanAll() {
+	times := 3
+	suite.Security.On("IsAuthenticated").Return(true).Times(times)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
+	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
+
+	{
+		// create stop scan all but get latest scan all execution failed
+		mock.OnAnything(suite.execMgr, "List").Return(nil, fmt.Errorf("list executions failed")).Once()
+
+		res, err := suite.Post("/system/scanAll/stop", nil)
+		suite.NoError(err)
+		suite.Equal(500, res.StatusCode)
+	}
+
+	{
+		// create stop scan all but no latest scan all execution
+		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{}, nil).Once()
+
+		res, err := suite.Post("/system/scanAll/stop", nil)
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// successfully stop scan all
+		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{suite.execution}, nil).Once()
+		mock.OnAnything(suite.execMgr, "Stop").Return(nil).Once()
+
+		res, err := suite.Post("/system/scanAll/stop", nil)
+		suite.NoError(err)
+		suite.Equal(202, res.StatusCode)
 	}
 }
 
