@@ -71,6 +71,7 @@ func Test_mergeScanStatus(t *testing.T) {
 	errorStatus := job.ErrorStatus.String()
 	runningStatus := job.RunningStatus.String()
 	successStatus := job.SuccessStatus.String()
+	stoppedStatus := job.StoppedStatus.String()
 
 	type args struct {
 		s1 string
@@ -88,6 +89,9 @@ func Test_mergeScanStatus(t *testing.T) {
 		{"success and success", args{successStatus, successStatus}, successStatus},
 		{"error and error", args{errorStatus, errorStatus}, errorStatus},
 		{"error and empty string", args{errorStatus, ""}, errorStatus},
+		{"running and stopped", args{runningStatus, stoppedStatus}, runningStatus},
+		{"success and stopped", args{successStatus, stoppedStatus}, stoppedStatus},
+		{"stopped and stopped", args{stoppedStatus, stoppedStatus}, stoppedStatus},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

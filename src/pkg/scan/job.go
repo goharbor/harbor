@@ -146,6 +146,16 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Get logger
 	myLogger := ctx.GetLogger()
 
+	// shouldStop checks if the job should be stopped
+	shouldStop := func() bool {
+		if cmd, ok := ctx.OPCommand(); ok && cmd == job.StopCommand {
+			myLogger.Info("scan job being stopped")
+			return true
+		}
+
+		return false
+	}
+
 	// Ignore errors as they have been validated already
 	r, _ := extractRegistration(params)
 	req, _ := ExtractScanReq(params)
@@ -155,6 +165,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	printJSONParameter(JobParamRegistration, params[JobParamRegistration].(string), myLogger)
 	printJSONParameter(JobParameterRequest, removeAuthInfo(req), myLogger)
 	myLogger.Infof("Report mime types: %v\n", mimeTypes)
+
+	if shouldStop() {
+		return nil
+	}
 
 	// Submit scan request to the scanner adapter
 	client, err := r.Client(v1.DefaultClientPool)
@@ -180,6 +194,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 	if err != nil {
 		logAndWrapError(myLogger, err, "scan job: make authorization")
+	}
+
+	if shouldStop() {
+		return nil
 	}
 
 	req.Registry.Authorization = authorization
@@ -210,6 +228,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 			for {
 				select {
 				case t := <-tm.C:
+					if shouldStop() {
+						return
+					}
+
 					myLogger.Debugf("check scan report for mime %s at %s", m, t.Format("2006/01/02 15:04:05"))
 
 					rawReport, err := client.GetScanReport(resp.ID, m)
@@ -249,6 +271,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Wait for all the retrieving routines are completed
 	wg.Wait()
+
+	if shouldStop() {
+		return nil
+	}
 
 	// Merge errors
 	for _, e := range errs {

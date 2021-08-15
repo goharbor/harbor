@@ -50,6 +50,16 @@ type Controller interface {
 	//     error  : non nil error if any errors occurred
 	Scan(ctx context.Context, artifact *artifact.Artifact, options ...Option) error
 
+	// Stop scan job of the given artifact
+	//
+	//   Arguments:
+	//     ctx context.Context : the context for this method
+	//     artifact *artifact.Artifact : the artifact whose scan job to be stopped
+	//
+	//   Returns:
+	//     error  : non nil error if any errors occurred
+	Stop(ctx context.Context, artifact *artifact.Artifact) error
+
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
 	//   Arguments:

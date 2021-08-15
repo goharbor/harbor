@@ -38,6 +38,7 @@ const (
 	TopicCreateTag         = "CREATE_TAG"
 	TopicDeleteTag         = "DELETE_TAG"
 	TopicScanningFailed    = "SCANNING_FAILED"
+	TopicScanningStopped   = "SCANNING_STOPPED"
 	TopicScanningCompleted = "SCANNING_COMPLETED"
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
 	TopicQuotaWarning    = "QUOTA_WARNING"

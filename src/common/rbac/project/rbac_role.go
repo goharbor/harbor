@@ -98,6 +98,7 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
@@ -185,6 +186,7 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 

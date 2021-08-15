@@ -30,6 +30,7 @@ func init() {
 	notifier.Subscribe(event.TopicQuotaExceed, &quota.Handler{})
 	notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
 	notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
+	notifier.Subscribe(event.TopicScanningStopped, &scan.Handler{})
 	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
 	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
 	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})

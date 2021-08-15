@@ -329,3 +329,26 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 func TestExecutionDAOSuite(t *testing.T) {
 	suite.Run(t, &executionDAOTestSuite{})
 }
+
+func Test_buildInClauseSqlForExtraAttrs(t *testing.T) {
+	type args struct {
+		keys []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"extra_attrs.", args{[]string{}}, ""},
+		{"extra_attrs.id", args{[]string{"id"}}, "select id from execution where extra_attrs->>?=?"},
+		{"extra_attrs.artifact.digest", args{[]string{"artifact", "digest"}}, "select id from execution where extra_attrs->?->>?=?"},
+		{"extra_attrs.a.b.c", args{[]string{"a", "b", "c"}}, "select id from execution where extra_attrs->?->?->>?=?"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := buildInClauseSqlForExtraAttrs(tt.args.keys); got != tt.want {
+				t.Errorf("buildInClauseSqlForExtraAttrs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

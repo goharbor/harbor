@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -52,6 +54,30 @@ type scanAllAPI struct {
 
 func (s *scanAllAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
 	return nil
+}
+
+// StopScanAll stops the execution of scan all artifacts.
+func (s *scanAllAPI) StopScanAll(ctx context.Context, params operation.StopScanAllParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionStop); err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	execution, err := s.getLatestScanAllExecution(ctx)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+	if execution == nil {
+		message := fmt.Sprintf("no scan all job is found currently")
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(message))
+	}
+	go func(ctx context.Context, eid int64) {
+		err := s.execMgr.Stop(ctx, eid)
+		if err != nil {
+			log.Errorf("failed to stop the execution of executionID=%+v", execution.ID)
+		}
+	}(orm.Context(), execution.ID)
+
+	return operation.NewStopScanAllAccepted()
 }
 
 func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation.CreateScanAllScheduleParams) middleware.Responder {
