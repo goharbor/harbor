@@ -79,48 +79,9 @@ func (p *Policy) Validate() error {
 	}
 
 	// valid the filters
-	for _, filter := range p.Filters {
-		switch filter.Type {
-		case model.FilterTypeResource, model.FilterTypeName, model.FilterTypeTag:
-			value, ok := filter.Value.(string)
-			if !ok {
-				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("the type of filter value isn't string")
-			}
-			if filter.Type == model.FilterTypeResource {
-				rt := value
-				if !(rt == model.ResourceTypeArtifact || rt == model.ResourceTypeImage || rt == model.ResourceTypeChart) {
-					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("invalid resource filter: %s", value)
-				}
-			}
-			if filter.Type == model.FilterTypeName || filter.Type == model.FilterTypeResource {
-				if filter.Decoration != "" {
-					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("only tag and label filter support decoration")
-				}
-			}
-		case model.FilterTypeLabel:
-			labels, ok := filter.Value.([]interface{})
-			if !ok {
-				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("the type of label filter value isn't string slice")
-			}
-			for _, label := range labels {
-				_, ok := label.(string)
-				if !ok {
-					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("the type of label filter value isn't string slice")
-				}
-			}
-		default:
-			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid filter type")
-		}
-
-		if filter.Decoration != "" && filter.Decoration != model.Matches && filter.Decoration != model.Excludes {
-			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid filter decoration, :%s", filter.Decoration)
+	for _, f := range p.Filters {
+		if err := f.Validate(); err != nil {
+			return err
 		}
 	}
 
