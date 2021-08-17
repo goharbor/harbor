@@ -17,6 +17,9 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/security/robot"
+	robotCtr "github.com/goharbor/harbor/src/controller/robot"
+	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -122,6 +125,25 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 				UserID:     currentUser.UserID,
 				GroupIDs:   currentUser.GroupIDs,
 				WithPublic: true,
+			}
+		case *robot.SecurityContext:
+			// for the system level robot that covers all the project, see it as the system admin.
+			var coverAll bool
+			var names []string
+			r := secCtx.(*robot.SecurityContext).User()
+			for _, p := range r.Permissions {
+				if p.Scope == robotCtr.SCOPEALLPROJECT {
+					coverAll = true
+					break
+				}
+				names = append(names, p.Namespace)
+			}
+			if !coverAll {
+				namesQuery := &pkgModels.NamesQuery{
+					Names:      names,
+					WithPublic: true,
+				}
+				query.Keywords["names"] = namesQuery
 			}
 		default:
 			query.Keywords["public"] = true

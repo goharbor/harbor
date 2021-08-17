@@ -27,12 +27,14 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	robotSec "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/retention"
+	robotCtr "github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
@@ -44,6 +46,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
+	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/robot"
@@ -414,6 +417,26 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				}
 
 				query.Keywords["member"] = member
+			} else if r, ok := secCtx.(*robotSec.SecurityContext); ok {
+				// for the system level robot that covers all the project, see it as the system admin.
+				var coverAll bool
+				var names []string
+				for _, p := range r.User().Permissions {
+					if p.Scope == robotCtr.SCOPEALLPROJECT {
+						coverAll = true
+						break
+					}
+					names = append(names, p.Namespace)
+				}
+				if !coverAll {
+					namesQuery := &pkgModels.NamesQuery{
+						Names: names,
+					}
+					if public, ok := query.Keywords["public"]; !ok || lib.ToBool(public) {
+						namesQuery.WithPublic = true
+					}
+					query.Keywords["names"] = namesQuery
+				}
 			} else {
 				// can't get the user info, force to return public projects
 				query.Keywords["public"] = true

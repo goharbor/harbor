@@ -56,6 +56,12 @@ type Project struct {
 	RegistryID   int64                  `orm:"column(registry_id)" json:"registry_id"`
 }
 
+// NamesQuery ...
+type NamesQuery struct {
+	Names      []string // the names of project
+	WithPublic bool     // include the public projects
+}
+
 // GetMetadata ...
 func (p *Project) GetMetadata(key string) (string, bool) {
 	if len(p.Metadata) == 0 {
@@ -177,6 +183,30 @@ func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key str
 
 		tpl := "(%s) UNION (SELECT project_id FROM project_member pm, user_group ug WHERE pm.entity_id = ug.id AND pm.entity_type = 'g' AND ug.id IN (%s))"
 		subQuery = fmt.Sprintf(tpl, subQuery, strings.TrimSpace(strings.Join(elems, ", ")))
+	}
+
+	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+}
+
+// FilterByNames returns orm.QuerySeter with name filter
+func (p *Project) FilterByNames(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+	query, ok := value.(*NamesQuery)
+	if !ok {
+		return qs
+	}
+
+	if len(query.Names) == 0 {
+		return qs
+	}
+
+	var names []string
+	for _, v := range query.Names {
+		names = append(names, `'`+v+`'`)
+	}
+	subQuery := fmt.Sprintf("SELECT project_id FROM project where name IN (%s)", strings.Join(names, ","))
+
+	if query.WithPublic {
+		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
 	}
 
 	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
