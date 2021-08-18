@@ -4,7 +4,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { SessionService } from "../../../shared/services/session.service";
-import { MemberService } from "./member.service";
+import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
 import { AppConfigService } from "../../../services/app-config.service";
 import { of } from 'rxjs';
 import { OperationService } from "../../../shared/components/operation/operation.service";
@@ -14,20 +14,42 @@ import { ConfirmationDialogService } from "../../global-confirmation-dialog/conf
 import { SharedTestingModule } from "../../../shared/shared.module";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
 import { Registry } from "../../../../../ng-swagger-gen/models/registry";
+import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
+import { delay } from "rxjs/operators";
 
 describe('MemberComponent', () => {
     let component: MemberComponent;
     let fixture: ComponentFixture<MemberComponent>;
+    const mockedMembers: ProjectMemberEntity[] = [
+        {
+            id: 1,
+            project_id: 1,
+            entity_name: 'test1',
+            role_name: 'projectAdmin',
+            role_id: 1,
+            entity_id: 1,
+            entity_type: 'u'
+        },
+        {
+            id: 2,
+            project_id: 1,
+            entity_name: 'test2',
+            role_name: 'projectAdmin',
+            role_id: 1,
+            entity_id: 2,
+            entity_type: 'u'
+        }
+    ];
     const mockMemberService = {
         getUsersNameList: () => {
             return of([]);
         },
         listProjectMembersResponse: () => {
             const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
-                headers: new HttpHeaders({'x-total-count': '0'}),
-                body: []
+                headers: new HttpHeaders({'x-total-count': '2'}),
+                body: mockedMembers
             });
-            return of(response);
+            return of(response).pipe(delay(0));
         },
         updateProjectMember: () => {
             return of(null);
@@ -118,11 +140,16 @@ describe('MemberComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(MemberComponent);
         component = fixture.componentInstance;
-        component.loading = true;
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+    it('should render member list', async () => {
+        fixture.autoDetectChanges(true);
+        await fixture.whenStable();
+        const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
+        expect(rows.length).toEqual(2);
     });
 });
