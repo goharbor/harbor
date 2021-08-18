@@ -55,7 +55,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   roleNum: number;
   isDelete = false;
   isChangeRole = false;
-  loading = false;
+  loading = true;
 
   isChangingRole = false;
   batchChangeRoleInfos = {};
