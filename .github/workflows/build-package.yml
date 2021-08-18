@@ -18,7 +18,7 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
           project_id: ${{ secrets.GCP_PROJECT_ID }}
