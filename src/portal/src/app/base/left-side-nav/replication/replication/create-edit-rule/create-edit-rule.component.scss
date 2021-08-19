@@ -19,10 +19,6 @@ h4 {
     font-size: 12px;
 }
 
-.inputWidth {
-    width: 270px;
-}
-
 .endpointSelect {
     width: 270px;
     margin-right: 10px;
@@ -38,32 +34,8 @@ h4 {
     margin-left: 10px;
 }
 
-.filterSelect label {
-    width: 190px;
-}
-
-.filterSelect label input {
-    width: 100%;
-}
-
-.pull-left {
-    float: left;
-}
-
 .padLeft0 {
     padding-left: 0;
-}
-
-.width-70 {
-    display: inline-block;
-    width: 70px;
-    margin-right: 10px;
-}
-
-.width-115 {
-    display: inline-block;
-    width: 115px;
-    margin-right: 10px;
 }
 
 .schedule-style {
@@ -164,7 +136,7 @@ h4 {
 
 clr-modal {
     ::ng-deep div.modal-dialog {
-        width: 29rem;
+        width: 32rem;
     }
 }
 
@@ -200,25 +172,6 @@ clr-modal {
     width: 100%;
 }
 
-.loading-center {
-    display: block;
-    text-align: center;
-}
- 
-.width-315 {
-    display: flex;
-    align-items: center;
-    width:315px;
-}
-
-.mr-t-10 {
-    margin-top: 10px;
-}
-
-.resource-box {
-    display: inline-block;
-    width: 190px;
-}
 .form-cron {
     padding-left:3.8rem;
 }
@@ -266,9 +219,6 @@ clr-modal {
     outline: none;
     border-bottom: 1px solid rgb(154, 154, 154);
 }
-.labelDiv {
-    padding-left: 26px;
-}
 .ellipsis {
     margin-left: 0.2rem;
     font-size: 16px;
@@ -280,30 +230,40 @@ clr-modal {
     justify-content: space-between;
 }
 
-.select-width {
-    min-width:11rem;
-}
 .flex {
     display: flex;
 }
 .sub-label {
-    display: inline-block;
-    width: 100px;
-    margin-right: 10px;
+    flex: 0 0 5rem;
 }
 .clr-control-label {
     width: 8.6rem;
 }
-.count {
-    width: 34px;
-    margin-left: 10px;
-}
+
 .des-tooltip {
-    margin-left: 10px;
+    margin-left: 0.5rem;
 }
-.count-type {
-    width: 158px;
-}
+
 :host::ng-deep.flatten {
     width: 23rem!important;
+}
+
+.width-input {
+    width: 17rem;
+}
+
+.width-name-resource {
+    flex: 0 0 12rem;
+    width: 12rem;
+}
+
+.width-match-exclude {
+    width: 5rem;
+}
+
+.width-tag-label {
+    width: 6rem;
+}
+.right-align {
+    transform: translateX(-4.3rem) translateY(1.25rem)!important;
 }
