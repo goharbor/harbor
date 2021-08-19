@@ -85,8 +85,9 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
 			policy.Filters = append(policy.Filters, &model.Filter{
-				Type:  filter.Type,
-				Value: filter.Value,
+				Type:       filter.Type,
+				Value:      filter.Value,
+				Decoration: filter.Decoration,
 			})
 		}
 	}
@@ -141,8 +142,9 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
 			policy.Filters = append(policy.Filters, &model.Filter{
-				Type:  filter.Type,
-				Value: filter.Value,
+				Type:       filter.Type,
+				Value:      filter.Value,
+				Decoration: filter.Decoration,
 			})
 		}
 	}
@@ -423,8 +425,9 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 	if len(policy.Filters) > 0 {
 		for _, filter := range policy.Filters {
 			p.Filters = append(p.Filters, &models.ReplicationFilter{
-				Type:  string(filter.Type),
-				Value: filter.Value,
+				Type:       string(filter.Type),
+				Value:      filter.Value,
+				Decoration: filter.Decoration,
 			})
 		}
 	}

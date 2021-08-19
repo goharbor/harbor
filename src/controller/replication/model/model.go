@@ -79,37 +79,9 @@ func (p *Policy) Validate() error {
 	}
 
 	// valid the filters
-	for _, filter := range p.Filters {
-		switch filter.Type {
-		case model.FilterTypeResource, model.FilterTypeName, model.FilterTypeTag:
-			value, ok := filter.Value.(string)
-			if !ok {
-				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("the type of filter value isn't string")
-			}
-			if filter.Type == model.FilterTypeResource {
-				rt := value
-				if !(rt == model.ResourceTypeArtifact || rt == model.ResourceTypeImage || rt == model.ResourceTypeChart) {
-					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("invalid resource filter: %s", value)
-				}
-			}
-		case model.FilterTypeLabel:
-			labels, ok := filter.Value.([]interface{})
-			if !ok {
-				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("the type of label filter value isn't string slice")
-			}
-			for _, label := range labels {
-				_, ok := label.(string)
-				if !ok {
-					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("the type of label filter value isn't string slice")
-				}
-			}
-		default:
-			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid filter type")
+	for _, f := range p.Filters {
+		if err := f.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -229,10 +201,11 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 }
 
 type filter struct {
-	Type    string      `json:"type"`
-	Value   interface{} `json:"value"`
-	Kind    string      `json:"kind"`
-	Pattern string      `json:"pattern"`
+	Type       string      `json:"type"`
+	Value      interface{} `json:"value"`
+	Decoration string      `json:"decoration"`
+	Kind       string      `json:"kind"`
+	Pattern    string      `json:"pattern"`
 }
 
 type trigger struct {
@@ -260,8 +233,9 @@ func parseFilters(str string) ([]*model.Filter, error) {
 	filters := []*model.Filter{}
 	for _, item := range items {
 		filter := &model.Filter{
-			Type:  item.Type,
-			Value: item.Value,
+			Type:       item.Type,
+			Value:      item.Value,
+			Decoration: item.Decoration,
 		}
 		// keep backwards compatibility
 		if len(filter.Type) == 0 {

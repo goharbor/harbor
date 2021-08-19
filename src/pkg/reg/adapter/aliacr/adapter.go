@@ -18,6 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
@@ -236,12 +237,9 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	// get filter pattern
 	var repoPattern string
 	var tagsPattern string
-	for _, filter := range filters {
-		if filter.Type == model.FilterTypeName {
-			repoPattern = filter.Value.(string)
-		}
-		if filter.Type == model.FilterTypeTag {
-			tagsPattern = filter.Value.(string)
+	for _, f := range filters {
+		if f.Type == model.FilterTypeName {
+			repoPattern = f.Value.(string)
 		}
 	}
 	var namespacePattern = strings.Split(repoPattern, "/")[0]
@@ -295,23 +293,18 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 				return fmt.Errorf("list tags for repo '%s' error: %v", repo.RepoName, err)
 			}
 
-			var filterTags []string
-			if tagsPattern != "" {
-				for _, tag := range tags {
-					var ok bool
-					ok, err = util.Match(tagsPattern, tag)
-					if err != nil {
-						return fmt.Errorf("match tag '%s' error: %v", tag, err)
-					}
-					if ok {
-						filterTags = append(filterTags, tag)
-					}
-				}
-			} else {
-				filterTags = tags
+			var artifacts []*model.Artifact
+			for _, tag := range tags {
+				artifacts = append(artifacts, &model.Artifact{
+					Tags: []string{tag},
+				})
+			}
+			filterArtifacts, err := filter.DoFilterArtifacts(artifacts, filters)
+			if err != nil {
+				return err
 			}
 
-			if len(filterTags) > 0 {
+			if len(filterArtifacts) > 0 {
 				rawResources[index] = &model.Resource{
 					Type:     model.ResourceTypeImage,
 					Registry: a.registry,
@@ -319,7 +312,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 						Repository: &model.Repository{
 							Name: filepath.Join(repo.RepoNamespace, repo.RepoName),
 						},
-						Vtags: filterTags,
+						Artifacts: filterArtifacts,
 					},
 				}
 			}
