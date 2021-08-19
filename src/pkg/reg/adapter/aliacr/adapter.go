@@ -5,15 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -56,7 +53,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	}
 	// fix url (allow user input cr service url)
 	registry.URL = fmt.Sprintf(registryEndpointTpl, region)
-	realm, service, err := ping(registry)
+	realm, service, err := util.Ping(registry)
 	if err != nil {
 		return nil, err
 	}
@@ -68,28 +65,6 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		domain:   fmt.Sprintf(endpointTpl, region),
 		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
 	}, nil
-}
-
-func ping(registry *model.Registry) (string, string, error) {
-	client := &http.Client{}
-	if registry.Insecure {
-		client.Transport = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		client.Transport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	}
-
-	resp, err := client.Get(registry.URL + "/v2/")
-	if err != nil {
-		return "", "", err
-	}
-	defer resp.Body.Close()
-	challenges := challenge.ResponseChallenges(resp)
-	for _, challenge := range challenges {
-		if challenge.Scheme == "bearer" {
-			return challenge.Parameters["realm"], challenge.Parameters["service"], nil
-		}
-	}
-	return "", "", fmt.Errorf("bearer auth scheme isn't supported: %v", challenges)
 }
 
 type factory struct {

@@ -15,6 +15,9 @@
 package util
 
 import (
+	"github.com/docker/distribution/registry/client/auth/challenge"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"net/http"
 	"strings"
 
@@ -27,6 +30,25 @@ func GetHTTPTransport(insecure bool) *http.Transport {
 		return commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
 	}
 	return commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+}
+
+func Ping(registry *model.Registry) (string, string, error) {
+	client := &http.Client{
+		Transport: GetHTTPTransport(registry.Insecure),
+	}
+
+	resp, err := client.Get(registry.URL + "/v2/")
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+	challenges := challenge.ResponseChallenges(resp)
+	for _, challenge := range challenges {
+		if challenge.Scheme == "bearer" {
+			return challenge.Parameters["realm"], challenge.Parameters["service"], nil
+		}
+	}
+	return "", "", errors.New(nil).WithCode(errors.ChallengesUnsupportedCode).WithMessage("bearer auth scheme isn't supported: %v", challenges)
 }
 
 // ParseRepository parses the "repository" provided into two parts: namespace and the rest

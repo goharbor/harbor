@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/distribution/registry/client/auth/challenge"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -97,7 +96,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		}
 	}
 
-	realm, service, err := ping(registry)
+	realm, service, err := util.Ping(registry)
 	log.Debugf("[tencent-tcr.newAdapter] realm=%s, service=%s error=%v", realm, service, err)
 	if err != nil {
 		log.Errorf("[tencent-tcr.newAdapter] ping failed. error=%v", err)
@@ -164,26 +163,6 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		),
 		Adapter: native.NewAdapterWithAuthorizer(registry, authorizer),
 	}, nil
-}
-
-func ping(registry *model.Registry) (string, string, error) {
-	client := &http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}
-
-	resp, err := client.Get(registry.URL + "/v2/")
-	log.Debugf("[tencent-tcr.ping] error=%v", err)
-	if err != nil {
-		return "", "", err
-	}
-	defer resp.Body.Close()
-	challenges := challenge.ResponseChallenges(resp)
-	for _, challenge := range challenges {
-		if challenge.Scheme == "bearer" {
-			return challenge.Parameters["realm"], challenge.Parameters["service"], nil
-		}
-	}
-	return "", "", fmt.Errorf("[tencent-tcr.ping] bearer auth scheme isn't supported: %v", challenges)
 }
 
 func (a *adapter) Info() (info *model.RegistryInfo, err error) {
