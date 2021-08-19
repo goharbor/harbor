@@ -49,6 +49,7 @@ export interface PingEndpoint extends Base {
 export interface Filter {
   type: string;
   style: string;
+  decoration?: string;
   values?: string[];
 }
 
