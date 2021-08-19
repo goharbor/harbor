@@ -17,14 +17,13 @@ package user
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
+	"strings"
 )
 
 var (
@@ -39,7 +38,7 @@ type Manager interface {
 	// GetByName get user by username, it will return an error if the user does not exist
 	GetByName(ctx context.Context, username string) (*models.User, error)
 	// List users according to the query
-	List(ctx context.Context, query *q.Query) (models.Users, error)
+	List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error)
 	// Count counts the number of users according to the query
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Create creates the user, the password of input should be plaintext
@@ -177,21 +176,20 @@ func (m *manager) GetByName(ctx context.Context, username string) (*models.User,
 }
 
 // List users according to the query
-func (m *manager) List(ctx context.Context, query *q.Query) (models.Users, error) {
+func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error) {
 	query = q.MustClone(query)
-	excludeAdmin := true
 	for key := range query.Keywords {
 		str := strings.ToLower(key)
 		if str == "user_id__in" {
-			excludeAdmin = false
+			options = append(options, models.WithDefaultAdmin())
 			break
 		} else if str == "user_id" {
-			excludeAdmin = false
+			options = append(options, models.WithDefaultAdmin())
 			break
 		}
 	}
-	if excludeAdmin {
-		// Exclude admin account when not filter by UserIDs, see https://github.com/goharbor/harbor/issues/2527
+	opts := models.NewOptions(options...)
+	if !opts.IncludeDefaultAdmin {
 		query.Keywords["user_id__gt"] = 1
 	}
 	return m.dao.List(ctx, query)

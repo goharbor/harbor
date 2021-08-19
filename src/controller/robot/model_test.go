@@ -31,6 +31,24 @@ func (suite *ModelTestSuite) TestSetLevel() {
 	suite.Equal(LEVELPROJECT, r.Level)
 }
 
+func (suite *ModelTestSuite) TestIsSysLevel() {
+	r := Robot{
+		Robot: model.Robot{
+			ProjectID: 0,
+		},
+	}
+	r.setLevel()
+	suite.True(r.IsSysLevel())
+
+	r = Robot{
+		Robot: model.Robot{
+			ProjectID: 1,
+		},
+	}
+	r.setLevel()
+	suite.False(r.IsSysLevel())
+}
+
 func (suite *ModelTestSuite) TestSetEditable() {
 	r := Robot{
 		Robot: model.Robot{
@@ -38,7 +56,7 @@ func (suite *ModelTestSuite) TestSetEditable() {
 		},
 	}
 	r.setEditable()
-	suite.Equal(false, r.Editable)
+	suite.False(r.Editable)
 
 	r = Robot{
 		Robot: model.Robot{
@@ -66,7 +84,29 @@ func (suite *ModelTestSuite) TestSetEditable() {
 		},
 	}
 	r.setEditable()
-	suite.Equal(true, r.Editable)
+	suite.True(r.Editable)
+}
+
+func (suite *ModelTestSuite) TestIsCoverAll() {
+	p := &Permission{
+		Kind:      "project",
+		Namespace: "library",
+		Access: []*types.Policy{
+			{
+				Resource: "repository",
+				Action:   "push",
+			},
+			{
+				Resource: "repository",
+				Action:   "pull",
+			},
+		},
+		Scope: "/project/*",
+	}
+	suite.True(p.IsCoverAll())
+
+	p.Scope = "/system"
+	suite.False(p.IsCoverAll())
 }
 
 func TestModelTestSuite(t *testing.T) {

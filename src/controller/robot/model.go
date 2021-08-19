@@ -31,6 +31,11 @@ type Robot struct {
 	Permissions []*Permission `json:"permissions"`
 }
 
+// IsSysLevel, true is a system level robot, others are project level.
+func (r *Robot) IsSysLevel() bool {
+	return r.Level == LEVELSYSTEM
+}
+
 // setLevel, 0 is a system level robot, others are project level.
 func (r *Robot) setLevel() {
 	if r.ProjectID == 0 {
@@ -54,6 +59,11 @@ type Permission struct {
 	Namespace string          `json:"namespace"`
 	Access    []*types.Policy `json:"access"`
 	Scope     string          `json:"-"`
+}
+
+// IsCoverAll ...
+func (p *Permission) IsCoverAll() bool {
+	return p.Scope == SCOPEALLPROJECT
 }
 
 // Option ...
