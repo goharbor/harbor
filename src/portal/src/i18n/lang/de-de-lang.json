@@ -254,7 +254,8 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay und Google GCR.",
         "ENDPOINT": "Endpunkt",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
