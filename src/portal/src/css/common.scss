@@ -275,3 +275,9 @@ app-tag-feature-integration {
     background-color: $radio-button-checked;
   }
 }
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px $input-autofill-bg-color inset;
+  -webkit-text-fill-color: $input-autofill-color !important;
+  caret-color: $input-autofill-color
+}
