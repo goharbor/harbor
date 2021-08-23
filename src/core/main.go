@@ -26,15 +26,14 @@ import (
 	"syscall"
 	"time"
 
-	configCtl "github.com/goharbor/harbor/src/controller/config"
-	"github.com/goharbor/harbor/src/pkg/oidc"
-
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/astaxie/beego/session/redis_sentinel"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	configCtl "github.com/goharbor/harbor/src/controller/config"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
@@ -53,9 +52,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/migration"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
+	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
@@ -175,6 +176,15 @@ func main() {
 		metric.RegisterCollectors()
 		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
 	}
+	ctx := context.Background()
+	if tracelib.Enabled() {
+		tp := tracelib.InitGlobalTracer(ctx)
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Errorf("Error shutting down tracer provider: %v", err)
+			}
+		}()
+	}
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
@@ -186,7 +196,8 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	ctx := orm.Context()
+	// ctx := orm.Context()
+	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}

@@ -23,7 +23,11 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego/orm"
+	"go.opentelemetry.io/otel/codes"
+	oteltrace "go.opentelemetry.io/otel/trace"
+
 	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
 
 // NewCondition alias function of orm.NewCondition
@@ -84,27 +88,51 @@ func Clone(ctx context.Context) context.Context {
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		var span oteltrace.Span
+		if tracelib.Enabled() {
+			span = oteltrace.SpanFromContext(ctx)
+			tr := span.TracerProvider().Tracer("goharbor/harbor/src/lib/orm")
+			ctx, span = tr.Start(ctx, "start transaction")
+			defer span.End()
+		}
 		o, err := FromContext(ctx)
 		if err != nil {
+			if tracelib.Enabled() {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "get orm from ctx failed")
+			}
 			return err
 		}
 
 		tx := ormerTx{Ormer: o}
 		if err := tx.Begin(); err != nil {
+			if tracelib.Enabled() {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "begin transaction failed")
+			}
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
 
 		if err := f(ctx); err != nil {
+			span.AddEvent("rollback transaction")
 			if e := tx.Rollback(); e != nil {
+				if tracelib.Enabled() {
+					span.RecordError(err)
+					span.SetStatus(codes.Error, "rollback transaction failed")
+				}
 				log.Errorf("rollback transaction failed: %v", e)
 				return e
 			}
 
 			return err
 		}
-
+		span.AddEvent("commit transaction")
 		if err := tx.Commit(); err != nil {
+			if tracelib.Enabled() {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "commit transaction failed")
+			}
 			log.Errorf("commit transaction failed: %v", err)
 			return err
 		}

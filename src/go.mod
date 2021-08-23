@@ -17,7 +17,7 @@ require (
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0
-	github.com/cenkalti/backoff/v4 v4.1.0
+	github.com/cenkalti/backoff/v4 v4.1.1
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
@@ -67,6 +67,12 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
 	github.com/theupdateframework/notary v0.6.1
 	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.22.0
+	go.opentelemetry.io/otel v1.0.0-RC2
+	go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC1
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.0-RC2
+	go.opentelemetry.io/otel/sdk v1.0.0-RC2
+	go.opentelemetry.io/otel/trace v1.0.0-RC2
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
