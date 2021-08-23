@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/log"
 	"github.com/goharbor/harbor/src/server/middleware/mergeslash"
 	"github.com/goharbor/harbor/src/server/middleware/metric"
+	"github.com/goharbor/harbor/src/server/middleware/trace"
 	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
@@ -79,6 +80,7 @@ var (
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
 		mergeslash.Middleware(),
+		trace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
 		log.Middleware(),
