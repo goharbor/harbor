@@ -199,3 +199,19 @@ proxy:
 #   enabled: false
 #   port: 9090
 #   path: /metrics
+
+trace:
+  enabled: true
+  sample_rate: 1
+  jaeger:
+    endpoint: http://localhost
+    username: http://localhost
+    password:
+    agent_host: localhost
+    agent_port: 6832
+  otel:
+    endpoint: http://localhost
+    url_path: /v1/traces
+    compression: no
+    insecure: false
+    timeout: 10s

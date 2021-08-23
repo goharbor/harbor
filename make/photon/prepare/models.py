@@ -103,19 +103,16 @@ class InternalTLS:
                     return
                 raise Exception('cert file {} should include SAN'.format(filename))
 
-
-    def validate(self) -> bool:
+    def validate(self):
         if not self.enabled:
             # pass the validation if not enabled
-            return True
+            return
 
         if not internal_tls_dir.exists():
             raise Exception('Internal dir for tls {} not exist'.format(internal_tls_dir))
 
         for filename in self.required_filenames:
             self._check(filename)
-
-        return True
 
     def prepare(self):
         """
@@ -140,7 +137,6 @@ class InternalTLS:
             else:
                 os.chown(file, DEFAULT_UID, DEFAULT_GID)
 
-
 class Metric:
     def __init__(self, enabled: bool = False, port: int = 8080, path: str = "metrics" ):
         self.enabled = enabled
@@ -150,3 +146,49 @@ class Metric:
     def validate(self):
         if not port_number_valid(self.port):
             raise Exception('Port number in metrics is not valid')
+
+
+class JaegerExporter:
+    def __init__(self, config: dict):
+        if not config:
+            return None
+        self.endpoint = config.get('endpoint')
+        self.username = config.get('username')
+        self.password = config.get('password')
+        self.agent_host = config.get('agent_host')
+        self.agent_port = config.get('agent_port')
+
+    def validate(self):
+        if not self.endpoint and self.agent_host is None:
+            raise Exception('Jaeger Colector Endpoint or Agent host not set')
+
+class OtelExporter:
+    def __init__(self, config: dict):
+        if not config:
+            return None
+        self.endpoint = config.get('endpoint')
+        self.url_path = config.get('url_path')
+        self.compression = config.get('compression') or False
+        self.insecure = config.get('insecure') or False
+        self.timeout = config.get('timeout') or '10s'
+
+    def validate(self):
+        if not self.endpoint:
+            raise Exception('Trace endpoint not set')
+        if not self.url_path:
+            raise Exception('Trace url path not set')
+
+class Trace:
+    def __init__(self, config: dict):
+        self.enabled = config.get('enabled', False)
+        self.sample_rate = config.get('sample_rate', 1)
+        self.jaeger = config.get('jaeger', {})
+        self.otel_exporter = config.get('otel_exporter', {})
+
+    def validate(self):
+        if self.jaeger is None and self.otel_exporter is None:
+            raise Exception('Trace enabled but no trace exporter set')
+        if self.jaeger is not None:
+            JaegerExporter(self.jaeger).validate()
+        if self.otel_exporter is not None:
+            OtelExporter(self.otel_exporter).validate()
