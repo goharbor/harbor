@@ -1,52 +1,63 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListProjectROComponent } from './list-project-ro.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { SearchTriggerService } from '../global-search/search-trigger.service';
+import { SharedTestingModule } from "../../shared.module";
+import { Project } from "../../../../../ng-swagger-gen/models/project";
+import { Component } from '@angular/core';
+
+// mock a TestHostComponent for ListProjectROComponent
+@Component({
+    template: `
+    <list-project-ro [projects]="projects">
+    </list-project-ro>`
+})
+class TestHostComponent {
+    projects: Project[] = [];
+}
 
 describe('ListProjectROComponent', () => {
-    let component: ListProjectROComponent;
-    let fixture: ComponentFixture<ListProjectROComponent>;
-    const mockSearchTriggerService = {
-        closeSearch: () => { }
-    };
+    let component: TestHostComponent;
+    let fixture: ComponentFixture<TestHostComponent>;
+    const  mockedProjects: Project[] = [
+        {
+            chart_count: 0,
+            name: "test1",
+            metadata: {},
+            project_id: 1,
+            repo_count: 1
+        },
+        {
+            chart_count: 0,
+            name: "test2",
+            metadata: {},
+            project_id: 2,
+            repo_count: 1
+        }
+    ];
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
-            declarations: [ListProjectROComponent],
-            providers: [
-                TranslateService,
-                { provide: SearchTriggerService, useValue: mockSearchTriggerService }
-
-            ]
-        })
-            .compileComponents();
+            declarations: [ListProjectROComponent,
+                TestHostComponent],
+        }).compileComponents();
     }));
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(ListProjectROComponent);
+        fixture = TestBed.createComponent(TestHostComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('should render project list', async () => {
+        component.projects = mockedProjects;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
+        expect(rows.length).toEqual(2);
     });
 });

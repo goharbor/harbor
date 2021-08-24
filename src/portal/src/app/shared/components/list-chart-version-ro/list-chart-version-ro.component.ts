@@ -1,5 +1,5 @@
 import { Router } from '@angular/router';
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
 import { HelmChartSearchResultItem, HelmChartVersion, HelmChartMaintainer } from '../../../base/project/helm-chart/helm-chart-detail/helm-chart.interface.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { ProjectService } from "../../services";
@@ -7,11 +7,10 @@ import { ProjectService } from "../../services";
 
 @Component({
   selector: 'list-chart-version-ro',
-  templateUrl: './list-chart-version-ro.component.html'
+  templateUrl: './list-chart-version-ro.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListChartVersionRoComponent implements OnInit {
-
-  @Input() projectId: number;
   @Input() charts: HelmChartSearchResultItem[];
 
   constructor(

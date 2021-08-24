@@ -11,35 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
-import { State } from '../../services/interface';
-
-import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { Project } from '../../../base/project/project';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Project } from "../../../../../ng-swagger-gen/models/project";
 
 @Component({
-  selector: 'list-project-ro',
-  templateUrl: 'list-project-ro.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'list-project-ro',
+    templateUrl: 'list-project-ro.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListProjectROComponent {
-  @Input() projects: Project[];
-  @Output() paginate = new EventEmitter<State>();
+    @Input() projects: Project[];
 
+    constructor() {
+    }
 
-  constructor(
-    private searchTrigger: SearchTriggerService,
-    private router: Router) {}
-
-  goToLink(proId: number): void {
-    this.searchTrigger.closeSearch(true);
-
-    let linkUrl = ['harbor', 'projects', proId, 'repositories'];
-    this.router.navigate(linkUrl);
-  }
-
-  refresh(state: State) {
-    this.paginate.emit(state);
-  }
+    getLink(proId: number) {
+        return `/harbor/projects/${proId}/repositories`;
+    }
 }
