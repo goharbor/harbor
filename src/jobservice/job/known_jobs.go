@@ -38,4 +38,6 @@ const (
 	PurgeAudit = "PURGE_AUDIT"
 	// SystemArtifactCleanup : the name of the SystemArtifact cleanup job
 	SystemArtifactCleanup = "SYSTEM_ARTIFACT_CLEANUP"
+	// ScanDataExport : the name of the scan data export job
+	ScanDataExport = "SCAN_DATA_EXPORT"
 )

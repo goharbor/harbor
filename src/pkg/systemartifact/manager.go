@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 	"io"
 	"sync"
+	"time"
 )
 
 var (
@@ -18,8 +19,8 @@ var (
 	keyFormat = "%s:%s"
 )
 
-const repositoryFormat = "sys_harbor/%s/%s"
-const systemArtifactProjectName = "sys_h@rb0r"
+const repositoryFormat = "sys_harb0r/%s/%s"
+const systemArtifactProjectName = "sys_harb0r"
 
 // Manager provides a low-level interface for harbor services
 // to create registry artifacts containing arbitrary data but which
@@ -91,7 +92,10 @@ func NewManager() Manager {
 
 func (mgr *systemArtifactManager) Create(ctx context.Context, artifactRecord *model.SystemArtifact, reader io.Reader) (int64, error) {
 	var artifactID int64
-
+	// create time defaults to current time if unset
+	if artifactRecord.CreateTime.IsZero() {
+		artifactRecord.CreateTime = time.Now()
+	}
 	// the entire create operation is executed within a transaction to ensure that any failures
 	// during the blob creation or tracking record creation result in a rollback of the transaction
 	createError := orm.WithTransaction(func(ctx context.Context) error {
@@ -103,6 +107,7 @@ func (mgr *systemArtifactManager) Create(ctx context.Context, artifactRecord *mo
 		repoName := mgr.getRepositoryName(artifactRecord.Vendor, artifactRecord.Repository)
 		err = mgr.regCli.PushBlob(repoName, artifactRecord.Digest, artifactRecord.Size, reader)
 		if err != nil {
+			log.Errorf("Error creating system artifact record for %s/%s/%s: %v", artifactRecord.Vendor, artifactRecord.Repository, artifactRecord.Digest, err)
 			return err
 		}
 		artifactID = id

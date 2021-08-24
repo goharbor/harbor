@@ -5595,6 +5595,122 @@ paths:
         '500':
           $ref: '#/responses/500'
 
+  /export/cve:
+    post:
+      summary: Export scan data for selected projects
+      description: Export scan data for selected projects
+      tags:
+        - scan data export
+      operationId: exportScanData
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/scanDataType'
+        - name: criteria
+          in: body
+          description: The criteria for the export
+          required: true
+          schema:
+            $ref: '#/definitions/ScanDataExportRequest'
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/ScanDataExportJob'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/execution/{execution_id}:
+    get:
+      summary: Get the specific scan data export execution
+      description: Get the scan data export execution specified by ID
+      tags:
+        - scan data export
+      operationId: getScanDataExportExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ScanDataExportExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/executions:
+    get:
+      summary: Get a list of specific scan data export execution jobs for a specified user
+      description: Get the scan data export execution specified by ID
+      tags:
+        - scan data export
+      operationId: getScanDataExportExecutionList
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/userName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ScanDataExportExecutionList'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/download/{execution_id}:
+    get:
+      summary: Download the scan data export file
+      description: Download the scan data report. Default format is CSV
+      tags:
+        - scan data export
+      operationId: downloadScanData
+      produces:
+        - text/csv
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+        - name: format
+          in: query
+          type: string
+          required: false
+          description: The format of the data to be exported. e.g. CSV or PDF
+      responses:
+        '200':
+          description: Data file containing the export data
+          schema:
+            type: file
+          headers:
+            Content-Disposition:
+              type: string
+              description: Value is a CSV formatted file; filename=export.csv
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
 parameters:
   query:
     name: q
@@ -5762,6 +5878,18 @@ parameters:
     required: true
     type: integer
     format: int64
+  scanDataType:
+    name: X-Scan-Data-Type
+    description: The type of scan data to export
+    in: header
+    type: string
+    required: true
+  userName:
+    name: user_name
+    description: The name of the user
+    in: query
+    type: string
+    required: true
 
 responses:
   '200':
@@ -9036,3 +9164,89 @@ definitions:
         type: string
         format: date-time
         description: The creation time of the accessory
+
+  ScanDataExportRequest:
+    type: object
+    description: The criteria to select the scan data to export.
+    properties:
+      job_name:
+        type: string
+        description: Name of the scan data export job
+      projects:
+        type: array
+        items:
+          type: integer
+          format: int64
+        description: A list of one or more projects for which to export the scan data, defaults to all if empty
+      labels:
+        type: array
+        items:
+          type: integer
+          format: int64
+        description: A list of one or more labels for which to export the scan data, defaults to all if empty
+      repositories:
+        type: string
+        description: A list of repositories for which to export the scan data, defaults to all if empty
+      cveIds:
+        type: string
+        description: CVE-IDs for which to export data. Multiple CVE-IDs can be specified by separating using ',' and enclosed between '{}'. Defaults to all if empty
+      tags:
+        type: string
+        description: A list of tags enclosed within '{}'. Defaults to all if empty
+  ScanDataExportJob:
+    type: object
+    description: The metadata associated with the scan data export job
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The id of the scan data export job
+  ScanDataExportExecution:
+    type: object
+    description: The replication execution
+    properties:
+      id:
+        type: integer
+        description: The ID of the execution
+      user_id:
+        type: integer
+        description: The ID if the user triggering the export job
+      status:
+        type: string
+        description: The status of the execution
+      trigger:
+        type: string
+        description: The trigger mode
+      start_time:
+        type: string
+        format: date-time
+        description: The start time
+      end_time:
+        type: string
+        format: date-time
+        description: The end time
+      status_text:
+        type: string
+        x-omitempty: false
+        description: The status text
+      job_name:
+        type: string
+        x-omitempty: false
+        description: The name of the job as specified by the user
+      user_name:
+        type: string
+        x-omitempty: false
+        description: The name of the user triggering the job
+      file_present:
+        type: boolean
+        x-omitempty: false
+        description: Indicates whether the export artifact is present in registry
+  ScanDataExportExecutionList:
+    type: object
+    description: The list of scan data export executions
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/ScanDataExportExecution'
+        description: The list of scan data export executions
