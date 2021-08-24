@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/scandataexport"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"net/url"
 	"os"
 	"os/signal"
@@ -66,7 +68,11 @@ import (
 )
 
 const (
-	adminUserID = 1
+	adminUserID         = 1
+	CRON_TYPE_ENV_KEY   = "CronType"
+	CRON_ENV_KEY        = "Cron"
+	TIME_WINDOW_ENV_KEY = "TimeWindow"
+	PAGE_SIZE_ENV_KEY   = "PageSize"
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
@@ -254,6 +260,7 @@ func main() {
 	log.Info("Fix empty subiss for meta info data.")
 	oidc.FixEmptySubIss(orm.Context())
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+	scheduleExportDataCleanupJob(ctx)
 }
 
 const (
@@ -299,4 +306,38 @@ func getDefaultScannerName() string {
 		return trivyScanner
 	}
 	return ""
+}
+
+func scheduleExportDataCleanupJob(ctx context.Context) {
+	cronType := "Daily"
+	cron := "0 0 0 * * *"
+	params := scandataexport.TriggerParam{}
+	if cronFromEnv, ok := os.LookupEnv(CRON_ENV_KEY); ok {
+		cron = cronFromEnv
+	}
+	if cronTypeFromEnv, ok := os.LookupEnv(CRON_TYPE_ENV_KEY); ok {
+		cronType = cronTypeFromEnv
+	}
+
+	if pageSizeFromEnv, ok := os.LookupEnv(PAGE_SIZE_ENV_KEY); ok {
+		pageSize, err := strconv.Atoi(pageSizeFromEnv)
+		if err != nil {
+			log.Fatalf("Incorrect value for page size environment variable : %v", pageSizeFromEnv)
+		}
+		params.PageSize = pageSize
+	}
+
+	if timeWindowFromEnv, ok := os.LookupEnv(TIME_WINDOW_ENV_KEY); ok {
+		timeWindow, err := strconv.Atoi(timeWindowFromEnv)
+		if err != nil {
+			log.Fatalf("Incorrect value for page size environment variable : %v", timeWindowFromEnv)
+		}
+		params.TimeWindowMinutes = timeWindow
+	}
+	extras := make(map[string]interface{})
+	scheduleId, err := scheduler.Sched.Schedule(ctx, scandataexport.VendorTypeExportDataCleanup, 0, cronType, cron, scandataexport.ExportDataCleanupCallback, params, extras)
+	if err != nil {
+		log.Fatalf("Encountered error when scheduling scan data export cleanup job : %v", err)
+	}
+	log.Infof("Scheduled scan data export cleanup job with ID : %v", scheduleId)
 }

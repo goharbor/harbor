@@ -114,7 +114,7 @@ func (f *FakeClient) MountBlob(srcRepository, digest, dstRepository string) (err
 
 // DeleteBlob ...
 func (f *FakeClient) DeleteBlob(repository, digest string) (err error) {
-	args := f.Called()
+	args := f.Called(repository, digest)
 	return args.Error(0)
 }
 

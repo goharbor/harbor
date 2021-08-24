@@ -34,4 +34,6 @@ const (
 	Retention = "RETENTION"
 	// P2PPreheat : the name of the P2P preheat job
 	P2PPreheat = "P2P_PREHEAT"
+	// ScanDataExport : the name of the scan data export job
+	ScanDataExport = "SCAN_DATA_EXPORT"
 )
