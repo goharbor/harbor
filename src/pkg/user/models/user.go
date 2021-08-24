@@ -35,3 +35,25 @@ func (users Users) MapByUserID() map[int]*User {
 
 	return m
 }
+
+type Option func(*Options)
+
+type Options struct {
+	IncludeDefaultAdmin bool
+}
+
+// WithDefaultAdmin set the IncludeAdmin = true
+func WithDefaultAdmin() Option {
+	return func(o *Options) {
+		o.IncludeDefaultAdmin = true
+	}
+}
+
+// NewOptions ...
+func NewOptions(options ...Option) *Options {
+	opts := &Options{}
+	for _, f := range options {
+		f(opts)
+	}
+	return opts
+}
