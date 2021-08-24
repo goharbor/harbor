@@ -18,14 +18,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/pkg/member"
-
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/user/models"
@@ -45,7 +44,7 @@ type Controller interface {
 	// UpdatePassword ...
 	UpdatePassword(ctx context.Context, id int, password string) error
 	// List ...
-	List(ctx context.Context, query *q.Query) ([]*models.User, error)
+	List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error)
 	// Create ...
 	Create(ctx context.Context, u *models.User) (int, error)
 	// Count ...
@@ -185,8 +184,8 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 	return c.mgr.Delete(ctx, id)
 }
 
-func (c *controller) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
-	return c.mgr.List(ctx, query)
+func (c *controller) List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error) {
+	return c.mgr.List(ctx, query, options...)
 }
 
 func (c *controller) UpdatePassword(ctx context.Context, id int, password string) error {

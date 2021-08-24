@@ -120,13 +120,20 @@ func (_m *Manager) GetByName(ctx context.Context, username string) (*models.User
 	return r0, r1
 }
 
-// List provides a mock function with given fields: ctx, query
-func (_m *Manager) List(ctx context.Context, query *q.Query) (usermodels.Users, error) {
-	ret := _m.Called(ctx, query)
+// List provides a mock function with given fields: ctx, query, options
+func (_m *Manager) List(ctx context.Context, query *q.Query, options ...usermodels.Option) (usermodels.Users, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, query)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 usermodels.Users
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) usermodels.Users); ok {
-		r0 = rf(ctx, query)
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query, ...usermodels.Option) usermodels.Users); ok {
+		r0 = rf(ctx, query, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(usermodels.Users)
@@ -134,8 +141,8 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) (usermodels.Users, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
-		r1 = rf(ctx, query)
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query, ...usermodels.Option) error); ok {
+		r1 = rf(ctx, query, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
