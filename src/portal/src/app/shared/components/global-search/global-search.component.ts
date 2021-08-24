@@ -1,4 +1,3 @@
-
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
@@ -13,20 +12,17 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject ,  Subscription } from "rxjs";
-
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from "rxjs";
 import { SearchTriggerService } from './search-trigger.service';
-
 import { AppConfigService } from '../../../services/app-config.service';
-
-
-
-import {TranslateService} from "@ngx-translate/core";
-import {SkinableConfig} from "../../../services/skinable-config.service";
+import { TranslateService } from "@ngx-translate/core";
+import { SkinableConfig } from "../../../services/skinable-config.service";
+import { Location } from '@angular/common';
 
 const deBounceTime = 500; // ms
+const SEARCH_KEY: string = 'globalSearch';
 
 @Component({
     selector: 'global-search',
@@ -43,13 +39,13 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
 
     // To indicate if the result panel is opened
     isResPanelOpened: boolean = false;
-    searchTerm: string = "";
-
     placeholderText: string;
-
+    private _searchTerm = "";
     constructor(
         private searchTrigger: SearchTriggerService,
         private router: Router,
+        private activatedRoute: ActivatedRoute,
+        private location: Location,
         private appConfigService: AppConfigService,
         private translate: TranslateService,
         private skinableConfig: SkinableConfig) {
@@ -71,8 +67,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         }
 
         this.searchSub = this.searchTerms.pipe(
-            debounceTime(deBounceTime),
-            distinctUntilChanged())
+            debounceTime(deBounceTime))
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
@@ -82,6 +77,11 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
 
         if (this.appConfigService.isIntegrationMode()) {
             this.placeholderText = "GLOBAL_SEARCH.PLACEHOLDER_VIC";
+        }
+        // init _searchTerm from queryParams
+        this._searchTerm = this.activatedRoute.snapshot.queryParams[SEARCH_KEY];
+        if (this._searchTerm) {
+            this.searchTerms.next(this._searchTerm);
         }
     }
 
@@ -98,7 +98,24 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Handle the term inputting event
     search(term: string): void {
         // Send event even term is empty
-
         this.searchTerms.next(term.trim());
+    }
+    get searchTerm(): string {
+        return this._searchTerm;
+    }
+    set searchTerm(s) {
+        let url: string;
+        if (s) {
+             url = this.router.createUrlTree([], {
+                relativeTo: this.activatedRoute,
+                queryParams: {[SEARCH_KEY]: s}
+            }).toString();
+        } else {
+            url = this.router.createUrlTree([], {
+                relativeTo: this.activatedRoute,
+            }).toString();
+        }
+        this.location.replaceState(url);
+        this._searchTerm = s;
     }
 }
