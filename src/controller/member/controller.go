@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
-	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 )
 
 // Controller defines the operation related to project member
@@ -151,14 +150,26 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		member.EntityID = userID
 	} else if len(req.MemberGroup.LdapGroupDN) > 0 {
 		req.MemberGroup.GroupType = common.LDAPGroupType
-		// If groupname provided, use the provided groupname to name this group
-		groupID, err := auth.SearchAndOnBoardGroup(req.MemberGroup.LdapGroupDN, req.MemberGroup.GroupName)
+		// if the ldap group dn already exist
+		ugs, err := usergroup.Mgr.List(ctx, q.New(q.KeyWords{"LdapGroupDN": req.MemberGroup.LdapGroupDN, "GroupType": req.MemberGroup.GroupType}))
 		if err != nil {
 			return 0, err
 		}
-		member.EntityID = groupID
-	} else if len(req.MemberGroup.GroupName) > 0 && req.MemberGroup.GroupType == common.HTTPGroupType || req.MemberGroup.GroupType == common.OIDCGroupType {
-		ugs, err := usergroup.Mgr.List(ctx, ugModel.UserGroup{GroupName: req.MemberGroup.GroupName, GroupType: req.MemberGroup.GroupType})
+		if len(ugs) > 0 {
+			member.EntityID = ugs[0].ID
+			member.EntityType = common.GroupMember
+		} else {
+			// If groupname provided, use the provided groupname to name this group
+			groupID, err := auth.SearchAndOnBoardGroup(req.MemberGroup.LdapGroupDN, req.MemberGroup.GroupName)
+			if err != nil {
+				return 0, err
+			}
+			member.EntityID = groupID
+		}
+
+	} else if len(req.MemberGroup.GroupName) > 0 {
+		// all group type can be added to project member by name
+		ugs, err := usergroup.Mgr.List(ctx, q.New(q.KeyWords{"GroupName": req.MemberGroup.GroupName, "GroupType": req.MemberGroup.GroupType}))
 		if err != nil {
 			return 0, err
 		}

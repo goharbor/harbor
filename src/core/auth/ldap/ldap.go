@@ -194,7 +194,7 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 
 		log.Debugf("Found ldap user %v", user)
 	} else {
-		return nil, fmt.Errorf("no user found, %v", username)
+		return nil, errors.NotFoundError(nil).WithMessage("no user found: %v", username)
 	}
 
 	return &user, nil
@@ -224,7 +224,7 @@ func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, fmt.Errorf("failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, errors.NotFoundError(nil).WithMessage("failed to searh ldap group with groupDN:%v", groupKey)
 	}
 	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,
@@ -244,7 +244,7 @@ func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
 	}
 	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
-	userGroupList, err := ugCtl.Ctl.List(ctx, ugModel.UserGroup{LdapGroupDN: u.LdapGroupDN})
+	userGroupList, err := ugCtl.Ctl.List(ctx, q.New(q.KeyWords{"LdapGroupDN": u.LdapGroupDN}))
 	if err != nil {
 		return err
 	}

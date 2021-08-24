@@ -19,6 +19,7 @@ import (
 	"errors"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 )
@@ -35,7 +36,9 @@ type Manager interface {
 	// Create create user group
 	Create(ctx context.Context, userGroup model.UserGroup) (int, error)
 	// List list user group
-	List(ctx context.Context, query model.UserGroup) ([]*model.UserGroup, error)
+	List(ctx context.Context, query *q.Query) ([]*model.UserGroup, error)
+	// Count get user group count
+	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Get get user group by id
 	Get(ctx context.Context, id int) (*model.UserGroup, error)
 	// Populate populate user group from external auth server to Harbor and return the group id
@@ -57,11 +60,7 @@ func newManager() Manager {
 }
 
 func (m *manager) Create(ctx context.Context, userGroup model.UserGroup) (int, error) {
-	query := model.UserGroup{
-		GroupName: userGroup.GroupName,
-		GroupType: userGroup.GroupType,
-	}
-	ug, err := m.dao.Query(ctx, query)
+	ug, err := m.dao.Query(ctx, q.New(q.KeyWords{"GroupName": userGroup.GroupName, "GroupType": userGroup.GroupType}))
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +70,7 @@ func (m *manager) Create(ctx context.Context, userGroup model.UserGroup) (int, e
 	return m.dao.Add(ctx, userGroup)
 }
 
-func (m *manager) List(ctx context.Context, query model.UserGroup) ([]*model.UserGroup, error) {
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.UserGroup, error) {
 	return m.dao.Query(ctx, query)
 }
 
@@ -126,4 +125,8 @@ func (m *manager) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup
 		g.LdapGroupDN = prevGroup.LdapGroupDN
 	}
 	return nil
+}
+
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
 }

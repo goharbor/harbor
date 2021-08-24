@@ -19,6 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/ldap"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
@@ -44,7 +45,9 @@ type Controller interface {
 	// Populate populate user group and get the user group's id
 	Populate(ctx context.Context, userGroups []model.UserGroup) ([]int, error)
 	// List list user groups
-	List(ctx context.Context, userGroup model.UserGroup) ([]*model.UserGroup, error)
+	List(ctx context.Context, q *q.Query) ([]*model.UserGroup, error)
+	// Count user group count
+	Count(ctx context.Context, q *q.Query) (int64, error)
 }
 
 type controller struct {
@@ -55,8 +58,8 @@ func newController() Controller {
 	return &controller{mgr: usergroup.Mgr}
 }
 
-func (c *controller) List(ctx context.Context, userGroup model.UserGroup) ([]*model.UserGroup, error) {
-	return c.mgr.List(ctx, userGroup)
+func (c *controller) List(ctx context.Context, query *q.Query) ([]*model.UserGroup, error) {
+	return c.mgr.List(ctx, query)
 }
 
 func (c *controller) Populate(ctx context.Context, userGroups []model.UserGroup) ([]int, error) {
@@ -72,7 +75,7 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 }
 
 func (c *controller) Update(ctx context.Context, id int, groupName string) error {
-	ug, err := c.mgr.List(ctx, model.UserGroup{ID: id})
+	ug, err := c.mgr.List(ctx, q.New(q.KeyWords{"ID": id}))
 	if err != nil {
 		return err
 	}
@@ -108,4 +111,8 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 
 func (c *controller) Get(ctx context.Context, id int) (*model.UserGroup, error) {
 	return c.mgr.Get(ctx, id)
+}
+
+func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return c.mgr.Count(ctx, query)
 }
