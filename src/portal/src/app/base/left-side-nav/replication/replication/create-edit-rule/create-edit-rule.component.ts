@@ -207,7 +207,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   get isValid() {
     if (this.ruleForm.controls["dest_namespace"].value) {
-      if (this.ruleForm.controls["dest_namespace"].invalid) {
+      if (this.ruleForm.controls["dest_namespace"].invalid) {this.ruleForm.get('trigger').get('trigger_settings').get('cron').value
         return false;
       }
     }
@@ -567,6 +567,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         && this.ruleForm.get('trigger').get('trigger_settings').get('cron')
         && (this.ruleForm.get('trigger').get('trigger_settings').get('cron').touched
             || this.ruleForm.get('trigger').get('trigger_settings').get('cron').dirty)
+        && this.ruleForm.get('trigger').get('trigger_settings').get('cron').value
         && !cronRegex(this.ruleForm.get('trigger').get('trigger_settings').get('cron').value);
   }
   stickLabel(value, index) {
