@@ -214,7 +214,10 @@ export class CreateEditEndpointComponent
       this.endpointService.getEndpoint(targetId).subscribe(
         target => {
           this.target = target;
-          this.urlDisabled = this.target.type === 'docker-hub';
+          this.urlDisabled = this.adapterInfo &&
+              this.adapterInfo[this.target.type] &&
+              this.adapterInfo[this.target.type].endpoint_pattern &&
+              this.adapterInfo[this.target.type].endpoint_pattern.endpoint_type === FIXED_PATTERN_TYPE;
           // Keep data cache
           this.initVal = clone(target);
           this.initVal.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
