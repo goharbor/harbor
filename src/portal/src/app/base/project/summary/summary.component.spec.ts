@@ -132,13 +132,13 @@ describe('SummaryComponent', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should show three cards', async () => {
+  it('should show two cards', async () => {
     component.summaryInformation = mockedSummaryInformation;
     component.isCardView = true;
     component.hasReadChartPermission = true;
     fixture.detectChanges();
     await fixture.whenStable();
     const cards = fixture.nativeElement.querySelectorAll(".card");
-    expect(cards.length).toEqual(3);
+    expect(cards.length).toEqual(2);
   });
 });
