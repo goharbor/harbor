@@ -16,7 +16,6 @@ package trace
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -27,20 +26,11 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
-)
+	oteltrace "go.opentelemetry.io/otel/trace"
 
-const (
-	service          = "core"
-	environment      = "production"
-	traceServiceName = "goharbor/harbor"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/version"
 )
-
-type ProviderConfig struct {
-	ExporterType string
-	URL          string
-	Attribute    map[string]string
-}
 
 func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 	var err error
@@ -48,6 +38,7 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 	cfg := GetConfig()
 	if len(cfg.Jaeger.Endpoint) != 0 {
 		// Jaeger collector exporter
+		log.Infof("init trace provider jaeger collector on %s with user %s", cfg.Jaeger.Endpoint, cfg.Jaeger.Username)
 		exp, err = jaeger.New(jaeger.WithCollectorEndpoint(
 			jaeger.WithEndpoint(cfg.Jaeger.Endpoint),
 			jaeger.WithUsername(cfg.Jaeger.Username),
@@ -55,12 +46,14 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 		))
 	} else if len(cfg.Jaeger.AgentHost) != 0 {
 		// Jaeger agent exporter
+		log.Infof("init trace provider jaeger agent on %s", cfg.Jaeger.AgentHost)
 		exp, err = jaeger.New(jaeger.WithAgentEndpoint(
 			jaeger.WithAgentHost(cfg.Jaeger.AgentHost),
 			jaeger.WithAgentPort(cfg.Jaeger.AgentPort),
 		))
 	} else if len(cfg.Otel.Endpoint) != 0 {
 		// Otel exporter
+		log.Infof("init trace provider otel on %s/%s", cfg.Otel.Endpoint, cfg.Otel.URLPath)
 		opts := []otlptracehttp.Option{
 			otlptracehttp.WithEndpoint(cfg.Otel.Endpoint),
 			otlptracehttp.WithURLPath(cfg.Otel.URLPath),
@@ -69,7 +62,9 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 		if cfg.Otel.Compression {
 			opts = append(opts, otlptracehttp.WithCompression(otlptracehttp.GzipCompression))
 		}
-
+		if cfg.Otel.Insecure {
+			opts = append(opts, otlptracehttp.WithInsecure())
+		}
 		exp, err = otlptracehttp.New(ctx, opts...)
 	} else {
 		log.Fatalf("Trace is enabled but no tracer provider is specified")
@@ -79,44 +74,59 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 
 func initProvider(exp tracesdk.SpanExporter) (*tracesdk.TracerProvider, error) {
 	cfg := GetConfig()
-	ops := make([]tracesdk.TracerProviderOption, 4)
 
-	ops = append(ops,
-		// Always be sure to batch in production.
-		tracesdk.WithBatcher(exp),
-		// Record information about this application in an Resource.
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(service),
-		)),
-	)
-
-	attriSlice := make([]attribute.KeyValue, 0, len(cfg.Attribute))
-	if cfg.Attribute != nil {
-		for i, a := range cfg.Attribute {
+	// prepare attribute resources
+	attriSlice := []attribute.KeyValue{
+		semconv.ServiceNameKey.String(cfg.ServiceName),
+		semconv.ServiceVersionKey.String(version.ReleaseVersion)}
+	if cfg.Namespace != "" {
+		attriSlice = append(attriSlice, semconv.ServiceNamespaceKey.String(cfg.Namespace))
+	}
+	if cfg.Attributes != nil {
+		for i, a := range cfg.Attributes {
 			attriSlice = append(attriSlice, attribute.String(i, a))
 		}
-		ops = append(ops, tracesdk.WithResource(resource.NewWithAttributes(semconv.SchemaURL, attriSlice...)))
 	}
-	bsp := tracesdk.NewBatchSpanProcessor(exp)
-	ops = append(ops, tracesdk.WithSpanProcessor(bsp), tracesdk.WithSampler(tracesdk.TraceIDRatioBased(cfg.SampleRate)))
-	tp := tracesdk.NewTracerProvider(ops...)
 
+	// prepare tp options
+	ops := make([]tracesdk.TracerProviderOption, 0, 4)
+	ops = append(ops,
+		// Always be sure to batch in production.
+		// tracesdk.WithBatcher(exp),
+		tracesdk.WithBatcher(exp),
+		// Record information about this application in an Resource.
+		tracesdk.WithResource(resource.NewWithAttributes(semconv.SchemaURL, attriSlice...)),
+		tracesdk.WithSampler(tracesdk.TraceIDRatioBased(cfg.SampleRate)),
+	)
+	// init trace provider
+	tp := tracesdk.NewTracerProvider(ops...)
 	return tp, nil
 }
 
-func InitGlobalTracer(ctx context.Context) *tracesdk.TracerProvider {
+// ShutdownFunc is a function to shutdown the trace provider
+type ShutdownFunc func()
+
+// Shutdown shutdown the trace provider
+func (s ShutdownFunc) Shutdown() {
+	s()
+}
+
+// Init initializes the trace provider
+func InitGlobalTracer(ctx context.Context) ShutdownFunc {
+	if !Enabled() {
+		otel.SetTracerProvider(oteltrace.NewNoopTracerProvider())
+		return func() {}
+	}
 	exp, err := initExporter(ctx)
 	handleErr(err, "fail in exporter initialization")
 	tp, err := initProvider(exp)
 	handleErr(err, "fail in tracer initialization")
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	otel.SetTracerProvider(tp)
-	return tp
-}
-
-func GetGlobalTracer(instrumentationName string, opts ...trace.TracerOption) trace.Tracer {
-	return otel.GetTracerProvider().Tracer(instrumentationName, opts...)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return func() {
+		log.Infof("shutdown trace provider")
+		handleErr(tp.Shutdown(ctx), "fail in tracer shutdown")
+	}
 }
 
 func handleErr(err error, message string) {

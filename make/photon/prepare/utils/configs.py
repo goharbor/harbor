@@ -329,8 +329,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
 
     # trace configs
     trace_config = configs.get('trace')
-    if trace_config:
-        config_dict = Trace(trace_config)
+    config_dict['trace'] = Trace(trace_config or {})
 
     if config_dict['internal_tls'].enabled:
         config_dict['portal_url'] = 'https://portal:8443'

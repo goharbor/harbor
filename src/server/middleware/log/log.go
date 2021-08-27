@@ -35,8 +35,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 			ctx := log.WithLogger(r.Context(), logger.WithFields(log.Fields{"requestID": rid}))
 			if tracelib.Enabled() {
-				span := oteltrace.SpanFromContext(ctx)
-				span.SetAttributes(attribute.Key("request ID").String(rid))
+				oteltrace.SpanFromContext(ctx).SetAttributes(attribute.Key("request-id").String(rid))
 			}
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
