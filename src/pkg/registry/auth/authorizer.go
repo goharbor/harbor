@@ -36,7 +36,7 @@ func NewAuthorizer(username, password string, insecure bool) lib.Authorizer {
 		username: username,
 		password: password,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransportByInsecure(insecure),
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 		},
 	}
 }
@@ -101,7 +101,7 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if challenge, exist := cm["bearer"]; exist {
 		a.authorizer = bearer.NewAuthorizer(challenge.Parameters["realm"],
 			challenge.Parameters["service"], basic.NewAuthorizer(a.username, a.password),
-			a.client.Transport.(*http.Transport))
+			a.client.Transport)
 		return nil
 	}
 	if _, exist := cm["basic"]; exist {

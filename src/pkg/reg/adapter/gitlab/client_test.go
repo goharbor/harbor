@@ -1,13 +1,13 @@
 package gitlab
 
 import (
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProjects(t *testing.T) {
@@ -76,7 +76,7 @@ func TestProjects(t *testing.T) {
 		token:    "test",
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(true),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
 			}),
 	}
 	projects, e := client.getProjects()

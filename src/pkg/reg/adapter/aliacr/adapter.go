@@ -61,7 +61,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
-	authorizer := bearer.NewAuthorizer(realm, service, credential, util.GetHTTPTransport(registry.Insecure))
+	authorizer := bearer.NewAuthorizer(realm, service, credential, commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
 	return &adapter{
 		region:   region,
 		registry: registry,
@@ -71,11 +71,8 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 }
 
 func ping(registry *model.Registry) (string, string, error) {
-	client := &http.Client{}
-	if registry.Insecure {
-		client.Transport = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		client.Transport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+	client := &http.Client{
+		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)),
 	}
 
 	resp, err := client.Get(registry.URL + "/v2/")
