@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/replication"
@@ -129,7 +130,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 
 		// as we start a new transaction in the goroutine, the execution record may not
 		// be inserted yet, wait until it is ready before continue
-		if err := lib.RetryUntil(func() error {
+		if err := retry.Retry(func() error {
 			_, err := c.execMgr.Get(ctx, id)
 			return err
 		}); err != nil {
