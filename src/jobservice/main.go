@@ -19,6 +19,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -27,6 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 )
 
@@ -55,6 +58,15 @@ func main() {
 	// Initialize logger
 	if err := logger.Init(ctx); err != nil {
 		panic(err)
+	}
+
+	if tracelib.Enabled() {
+		tp := tracelib.InitGlobalTracer(ctx)
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Errorf("Error shutting down tracer provider: %v", err)
+			}
+		}()
 	}
 
 	// Set job context initializer
