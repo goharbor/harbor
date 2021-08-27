@@ -15,14 +15,10 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"net/http"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/registryctl/config"
-	"github.com/goharbor/harbor/src/registryctl/handlers"
 
 	_ "github.com/docker/distribution/registry/storage/driver/azure"
 	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
@@ -33,6 +29,12 @@ import (
 	_ "github.com/docker/distribution/registry/storage/driver/oss"
 	_ "github.com/docker/distribution/registry/storage/driver/s3-aws"
 	_ "github.com/docker/distribution/registry/storage/driver/swift"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	"github.com/goharbor/harbor/src/registryctl/config"
+	"github.com/goharbor/harbor/src/registryctl/handlers"
 )
 
 // RegistryCtl for registry controller
@@ -76,6 +78,15 @@ func main() {
 	}
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
+	}
+
+	if tracelib.Enabled() {
+		tp := tracelib.InitGlobalTracer(context.Background())
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Errorf("Error shutting down tracer provider: %v", err)
+			}
+		}()
 	}
 
 	regCtl := &RegistryCtl{
