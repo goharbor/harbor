@@ -16,7 +16,6 @@ package client
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -62,9 +61,7 @@ func NewClient(baseURL string, cfg *Config) Client {
 	}
 	if cfg != nil {
 		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
-		client.client = common_http.NewClient(&http.Client{
-			Transport: common_http.GetHTTPTransport(common_http.SecureTransport),
-		}, authorizer)
+		client.client = common_http.NewClient(nil, authorizer)
 	}
 	return client
 }

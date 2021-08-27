@@ -18,19 +18,21 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib/log"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/lib/log"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
 )
 
 // Credential ...
@@ -103,17 +105,12 @@ func getAwsSvc(region, accessKey, accessSecret string, insecure bool, forceEndpo
 	} else {
 		cred = ec2rolecreds.NewCredentials(sess)
 	}
-	var tr *http.Transport
-	if insecure {
-		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
-	} else {
-		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
-	}
+
 	config := &aws.Config{
 		Credentials: cred,
 		Region:      &region,
 		HTTPClient: &http.Client{
-			Transport: tr,
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 		},
 	}
 	if forceEndpoint != nil {

@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -105,7 +106,7 @@ func NewClient(url, username, password string, insecure bool) Client {
 		url:        url,
 		authorizer: auth.NewAuthorizer(username, password, insecure),
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransportByInsecure(insecure),
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 			Timeout:   30 * time.Minute,
 		},
 	}
@@ -113,18 +114,11 @@ func NewClient(url, username, password string, insecure bool) Client {
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
 func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool) Client {
-	var transportType uint
-	if insecure {
-		transportType = commonhttp.InsecureTransport
-	} else {
-		transportType = commonhttp.SecureTransport
-	}
-
 	return &client{
 		url:        url,
 		authorizer: authorizer,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(transportType),
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 		},
 	}
 }
