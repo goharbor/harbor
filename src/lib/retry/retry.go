@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package retry
 
 import (
-	"errors"
-	"math"
 	"math/rand"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/jpillora/backoff"
 )
 
 func init() {
@@ -30,51 +31,51 @@ var (
 	ErrRetryTimeout = errors.New("retry timeout")
 )
 
-// RetryOptions options for the retry functions
-type RetryOptions struct {
+// Options options for the retry functions
+type Options struct {
 	InitialInterval time.Duration                        // the initial interval for retring after failure, default 100 milliseconds
 	MaxInterval     time.Duration                        // the max interval for retring after failure, default 1 second
 	Timeout         time.Duration                        // the total time before returning if something is wrong, default 1 minute
 	Callback        func(err error, sleep time.Duration) // the callback function for Retry when the f called failed
 }
 
-// RetryOption ...
-type RetryOption func(*RetryOptions)
+// Option ...
+type Option func(*Options)
 
-// RetryInitialInterval set initial interval
-func RetryInitialInterval(initial time.Duration) RetryOption {
-	return func(opts *RetryOptions) {
+// InitialInterval set initial interval
+func InitialInterval(initial time.Duration) Option {
+	return func(opts *Options) {
 		opts.InitialInterval = initial
 	}
 }
 
-// RetryMaxInterval set max interval
-func RetryMaxInterval(max time.Duration) RetryOption {
-	return func(opts *RetryOptions) {
+// MaxInterval set max interval
+func MaxInterval(max time.Duration) Option {
+	return func(opts *Options) {
 		opts.MaxInterval = max
 	}
 }
 
-// RetryTimeout set timeout interval
-func RetryTimeout(timeout time.Duration) RetryOption {
-	return func(opts *RetryOptions) {
+// Timeout set timeout interval
+func Timeout(timeout time.Duration) Option {
+	return func(opts *Options) {
 		opts.Timeout = timeout
 	}
 }
 
-// RetryCallback set callback
-func RetryCallback(callback func(err error, sleep time.Duration)) RetryOption {
-	return func(opts *RetryOptions) {
+// Callback set callback
+func Callback(callback func(err error, sleep time.Duration)) Option {
+	return func(opts *Options) {
 		opts.Callback = callback
 	}
 }
 
-// RetryUntil retry until f run successfully or timeout
+// Retry retry until f run successfully or timeout
 //
 // NOTE: This function will use exponential backoff and jitter for retrying, see
 // https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/ for more information
-func RetryUntil(f func() error, options ...RetryOption) error {
-	opts := &RetryOptions{}
+func Retry(f func() error, options ...Option) error {
+	opts := &Options{}
 
 	for _, o := range options {
 		o(opts)
@@ -92,42 +93,32 @@ func RetryUntil(f func() error, options ...RetryOption) error {
 		opts.Timeout = time.Minute
 	}
 
+	b := &backoff.Backoff{
+		Min:    opts.InitialInterval,
+		Max:    opts.MaxInterval,
+		Factor: 2,
+		Jitter: true,
+	}
+
+	var err error
+
 	timeout := time.After(opts.Timeout)
-	for attempt := 1; ; attempt++ {
+	for {
 		select {
 		case <-timeout:
-			return ErrRetryTimeout
+			return errors.New(ErrRetryTimeout).WithCause(err)
 		default:
-			if err := f(); err != nil {
-				sleep := getBackoff(attempt, opts.InitialInterval, opts.MaxInterval, true)
-				if opts.Callback != nil {
-					opts.Callback(err, sleep)
-				}
-
-				time.Sleep(sleep)
-			} else {
+			err = f()
+			if err == nil {
 				return nil
 			}
+
+			sleep := b.Duration()
+			if opts.Callback != nil {
+				opts.Callback(err, sleep)
+			}
+
+			time.Sleep(sleep)
 		}
 	}
-}
-
-func getBackoff(attempt int, initialInterval, maxInterval time.Duration, equalJitter bool) time.Duration {
-	max := float64(maxInterval)
-	base := float64(initialInterval)
-
-	dur := base * math.Pow(2, float64(attempt))
-	if equalJitter {
-		dur = dur/2 + float64(rand.Int63n(int64(dur))/2)
-	}
-
-	if dur < base {
-		dur = base
-	}
-
-	if dur > max {
-		dur = max
-	}
-
-	return time.Duration(dur)
 }

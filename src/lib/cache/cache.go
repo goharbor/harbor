@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/retry"
 )
 
 const (
@@ -102,16 +102,16 @@ func Initialize(typ, addr string) error {
 		redactedAddr = redacted(u)
 	}
 
-	options := []lib.RetryOption{
-		lib.RetryInitialInterval(time.Millisecond * 500),
-		lib.RetryMaxInterval(time.Second * 10),
-		lib.RetryTimeout(time.Minute),
-		lib.RetryCallback(func(err error, sleep time.Duration) {
+	options := []retry.Option{
+		retry.InitialInterval(time.Millisecond * 500),
+		retry.MaxInterval(time.Second * 10),
+		retry.Timeout(time.Minute),
+		retry.Callback(func(err error, sleep time.Duration) {
 			log.Errorf("failed to ping %s, retry after %s : %v", redactedAddr, sleep, err)
 		}),
 	}
 
-	if err := lib.RetryUntil(c.Ping, options...); err != nil {
+	if err := retry.Retry(c.Ping, options...); err != nil {
 		return err
 	}
 
