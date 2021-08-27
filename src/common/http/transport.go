@@ -67,6 +67,7 @@ func newDefaultTransport() *http.Transport {
 	}
 }
 
+// WithInternalTLSConfig returns a TransportOption that configures the transport to use the internal TLS configuration
 func WithInternalTLSConfig() func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tlsConfig, err := GetInternalTLSConfig()
@@ -76,24 +77,29 @@ func WithInternalTLSConfig() func(*http.Transport) {
 		tr.TLSClientConfig = tlsConfig
 	}
 }
+
+// WithInsecureSkipVerify returns a TransportOption that configures the transport to skip verification of the server's certificate
 func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.TLSClientConfig.InsecureSkipVerify = skipVerify
 	}
 }
 
+// WithMaxIdleConnsPerHost returns a TransportOption that configures the transport to use the specified number of idle connections per host
 func WithMaxIdleConns(maxIdleConns int) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.MaxIdleConns = maxIdleConns
 	}
 }
 
+// WithIdleConnTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
 func WithIdleconnectionTimeout(idleConnectionTimeout time.Duration) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.IdleConnTimeout = idleConnectionTimeout
 	}
 }
 
+// NewTransport returns a new http.Transport with the specified options
 func NewTransport(opts ...func(*http.Transport)) http.RoundTripper {
 	tr := newDefaultTransport()
 	for _, opt := range opts {
@@ -102,11 +108,15 @@ func NewTransport(opts ...func(*http.Transport)) http.RoundTripper {
 	return tr
 }
 
+// TransportConfig is the configuration for http transport
 type TransportConfig struct {
 	Insecure bool
 }
+
+// TransportOption is the option for http transport
 type TransportOption func(*TransportConfig)
 
+// WithInsecure returns a TransportOption that configures the transport to skip verification of the server's certificate
 func WithInsecure(skipVerify bool) TransportOption {
 	return func(cfg *TransportConfig) {
 		cfg.Insecure = skipVerify

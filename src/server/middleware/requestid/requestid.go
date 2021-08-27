@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/server/middleware"
+
 	"github.com/google/uuid"
 )
 
@@ -32,7 +33,6 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 			rid = uuid.New().String()
 			r.Header.Set(HeaderXRequestID, rid)
 		}
-
 		w.Header().Set(HeaderXRequestID, rid)
 		next.ServeHTTP(w, r)
 	}, skippers...)

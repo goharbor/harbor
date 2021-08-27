@@ -19,6 +19,10 @@ import (
 	"crypto/tls"
 	"flag"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	_ "github.com/docker/distribution/registry/storage/driver/azure"
 	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
@@ -50,6 +54,21 @@ func (s *RegistryCtl) Start() {
 		Handler:   s.Handler,
 		TLSConfig: common_http.NewServerTLSConfig(),
 	}
+	ctx := context.Background()
+	regCtl.RegisterOnShutdown(tracelib.InitGlobalTracer(ctx))
+	// graceful shutdown
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+		<-sig
+		context, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		log.Infof("Got an interrupt, shutting down...")
+		if err := regCtl.Shutdown(context); err != nil {
+			log.Fatalf("Failed to shutdown registry controller: %v", err)
+		}
+		log.Infof("Registry controller is shut down properly")
+	}()
 
 	var err error
 	if s.ServerConf.Protocol == "https" {
@@ -60,11 +79,10 @@ func (s *RegistryCtl) Start() {
 	} else {
 		err = regCtl.ListenAndServe()
 	}
-
+	<-ctx.Done()
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	return
 }
 
@@ -79,16 +97,6 @@ func main() {
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
-
-	if tracelib.Enabled() {
-		tp := tracelib.InitGlobalTracer(context.Background())
-		defer func() {
-			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Errorf("Error shutting down tracer provider: %v", err)
-			}
-		}()
-	}
-
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,
 		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),

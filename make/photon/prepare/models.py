@@ -151,7 +151,9 @@ class Metric:
 class JaegerExporter:
     def __init__(self, config: dict):
         if not config:
-            return None
+            self.enabled = False
+            return
+        self.enabled = True
         self.endpoint = config.get('endpoint')
         self.username = config.get('username')
         self.password = config.get('password')
@@ -165,7 +167,9 @@ class JaegerExporter:
 class OtelExporter:
     def __init__(self, config: dict):
         if not config:
-            return None
+            self.enabled = False
+            return
+        self.enabled = True
         self.endpoint = config.get('endpoint')
         self.url_path = config.get('url_path')
         self.compression = config.get('compression') or False
@@ -180,15 +184,17 @@ class OtelExporter:
 
 class Trace:
     def __init__(self, config: dict):
-        self.enabled = config.get('enabled', False)
+        self.enabled = config.get('enabled') or False
         self.sample_rate = config.get('sample_rate', 1)
-        self.jaeger = config.get('jaeger', {})
-        self.otel_exporter = config.get('otel_exporter', {})
+        self.namespace = config.get('namespace') or ''
+        self.jaeger = JaegerExporter(config.get('jaeger'))
+        self.otel = OtelExporter(config.get('otel'))
+        self.attributes = config.get('attributes') or {}
 
     def validate(self):
-        if self.jaeger is None and self.otel_exporter is None:
+        if not self.jaeger.enabled and not self.enabled:
             raise Exception('Trace enabled but no trace exporter set')
-        if self.jaeger is not None:
+        if self.jaeger.enabled:
             JaegerExporter(self.jaeger).validate()
-        if self.otel_exporter is not None:
-            OtelExporter(self.otel_exporter).validate()
+        if self.otel.enabled:
+            OtelExporter(self.otel).validate()

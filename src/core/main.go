@@ -87,17 +87,27 @@ func updateInitPassword(ctx context.Context, userID int, password string) error 
 	return nil
 }
 
-func gracefulShutdown(closing, done chan struct{}) {
+func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
 	close(closing)
-	select {
-	case <-done:
+	shutdownChan := make(chan struct{}, 1)
+	go func() {
+		for _, s := range shutdowns {
+			s()
+		}
+		<-done
 		log.Infof("Goroutines exited normally")
+		shutdownChan <- struct{}{}
+	}()
+	select {
+	case <-shutdownChan:
+		log.Infof("all shutdown jobs done")
 	case <-time.After(time.Second * 3):
 		log.Infof("Timeout waiting goroutines to exit")
 	}
+
 	os.Exit(0)
 }
 
@@ -177,14 +187,7 @@ func main() {
 		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
 	}
 	ctx := context.Background()
-	if tracelib.Enabled() {
-		tp := tracelib.InitGlobalTracer(ctx)
-		defer func() {
-			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Errorf("Error shutting down tracer provider: %v", err)
-			}
-		}()
-	}
+	shutdownTracerProvider := tracelib.InitGlobalTracer(ctx)
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
@@ -196,7 +199,6 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	// ctx := orm.Context()
 	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -222,7 +224,7 @@ func main() {
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
-	go gracefulShutdown(closing, done)
+	go gracefulShutdown(closing, done, shutdownTracerProvider)
 	// Start health checker for registries
 	go registry.Ctl.StartRegularHealthCheck(orm.Context(), closing, done)
 
