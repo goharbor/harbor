@@ -2,11 +2,12 @@ package gc
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/gomodule/redigo/redis"
-	"time"
 )
 
 // delKeys ...
@@ -52,9 +53,9 @@ func v2DeleteManifest(repository, digest string) error {
 	if !exist {
 		return nil
 	}
-	return lib.RetryUntil(func() error {
+	return retry.Retry(func() error {
 		return registry.Cli.DeleteManifest(repository, digest)
-	}, lib.RetryCallback(func(err error, sleep time.Duration) {
+	}, retry.Callback(func(err error, sleep time.Duration) {
 		fmt.Printf("failed to exec DeleteManifest retry after %s : %v\n", sleep, err)
 	}))
 }

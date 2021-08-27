@@ -28,12 +28,12 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/retry"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -322,7 +322,7 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 	if async {
 		go func(ctx context.Context) {
 			// if async, this is running in another goroutine ensure the execution exists in db
-			err := lib.RetryUntil(func() error {
+			err := retry.Retry(func() error {
 				_, err := bc.execMgr.Get(ctx, executionID)
 				return err
 			})

@@ -226,8 +226,6 @@ github.com/denverdino/aliyungo/util
 # github.com/dghubble/sling v1.1.0
 ## explicit
 github.com/dghubble/sling
-# github.com/dgrijalva/jwt-go v3.2.0+incompatible
-github.com/dgrijalva/jwt-go
 # github.com/docker/cli v20.10.5+incompatible
 github.com/docker/cli/cli/config
 github.com/docker/cli/cli/config/configfile
@@ -491,6 +489,9 @@ github.com/inconshreveable/mousetrap
 ## explicit
 # github.com/jmespath/go-jmespath v0.3.0
 github.com/jmespath/go-jmespath
+# github.com/jpillora/backoff v1.0.0
+## explicit
+github.com/jpillora/backoff
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
 # github.com/lib/pq v1.10.0

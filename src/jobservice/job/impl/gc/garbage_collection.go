@@ -15,7 +15,6 @@
 package gc
 
 import (
-	"github.com/goharbor/harbor/src/lib"
 	"os"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -271,11 +271,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				}
 				// for manifest, it has to delete the revisions folder of each repository
 				gc.logger.Infof("delete manifest from storage: %s", blob.Digest)
-				if err := lib.RetryUntil(func() error {
+				if err := retry.Retry(func() error {
 					return ignoreNotFound(func() error {
 						return gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
 					})
-				}, lib.RetryCallback(func(err error, sleep time.Duration) {
+				}, retry.Callback(func(err error, sleep time.Duration) {
 					gc.logger.Infof("failed to exec DeleteManifest retry after %s : %v", sleep, err)
 				})); err != nil {
 					if err := ignoreNotFound(func() error {
@@ -299,11 +299,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 		// for the foreign layer, as it's not stored in the storage, no need to call the delete api and count size, but still have to delete the DB record.
 		if !blob.IsForeignLayer() {
 			gc.logger.Infof("delete blob from storage: %s", blob.Digest)
-			if err := lib.RetryUntil(func() error {
+			if err := retry.Retry(func() error {
 				return ignoreNotFound(func() error {
 					return gc.registryCtlClient.DeleteBlob(blob.Digest)
 				})
-			}, lib.RetryCallback(func(err error, sleep time.Duration) {
+			}, retry.Callback(func(err error, sleep time.Duration) {
 				gc.logger.Infof("failed to exec DeleteBlob retry after %s : %v", sleep, err)
 			})); err != nil {
 				if err := ignoreNotFound(func() error {
