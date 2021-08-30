@@ -260,7 +260,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				// Harbor cannot know the existing tags in the backend from its database, so let the v2 DELETE manifest to remove all of them.
 				gc.logger.Infof("delete the manifest with registry v2 API: %s, %s, %s",
 					art.RepositoryName, blob.ContentType, blob.Digest)
-				if err := v2DeleteManifest(art.RepositoryName, blob.Digest); err != nil {
+				if err := v2DeleteManifest(gc.logger, art.RepositoryName, blob.Digest); err != nil {
 					gc.logger.Errorf("failed to delete manifest with v2 API, %s, %s, %v", art.RepositoryName, blob.Digest, err)
 					if err := ignoreNotFound(func() error {
 						return gc.markDeleteFailed(ctx, blob)
@@ -276,7 +276,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 						return gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
 					})
 				}, retry.Callback(func(err error, sleep time.Duration) {
-					gc.logger.Infof("failed to exec DeleteManifest retry after %s : %v", sleep, err)
+					gc.logger.Infof("failed to exec DeleteManifest, error: %v, will retry again after: %s", err, sleep)
 				})); err != nil {
 					if err := ignoreNotFound(func() error {
 						return gc.markDeleteFailed(ctx, blob)
@@ -304,7 +304,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 					return gc.registryCtlClient.DeleteBlob(blob.Digest)
 				})
 			}, retry.Callback(func(err error, sleep time.Duration) {
-				gc.logger.Infof("failed to exec DeleteBlob retry after %s : %v", sleep, err)
+				gc.logger.Infof("failed to exec DeleteBlob, error: %v, will retry again after: %s", err, sleep)
 			})); err != nil {
 				if err := ignoreNotFound(func() error {
 					return gc.markDeleteFailed(ctx, blob)
@@ -461,19 +461,19 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) []*blob_mo
 			}
 			blobs, err := gc.blobMgr.List(ctx.SystemContext(), q)
 			if err != nil {
-				gc.logger.Errorf("failed to get blobs of project, %v", err)
+				gc.logger.Errorf("failed to get blobs of project: %d, %v", p.ProjectID, err)
 				break
 			}
 			if gc.dryRun {
 				unassociated, err := gc.blobMgr.FindBlobsShouldUnassociatedWithProject(ctx.SystemContext(), p.ProjectID, blobs)
 				if err != nil {
-					gc.logger.Errorf("failed to find untagged blobs of project, %v", err)
+					gc.logger.Errorf("failed to find untagged blobs of project: %d, %v", p.ProjectID, err)
 					break
 				}
 				untaggedBlobs = append(untaggedBlobs, unassociated...)
 			} else {
 				if err := gc.blobMgr.CleanupAssociationsForProject(ctx.SystemContext(), p.ProjectID, blobs); err != nil {
-					gc.logger.Errorf("failed to clean untagged blobs of project, %v", err)
+					gc.logger.Errorf("failed to clean untagged blobs of project: %d, %v", p.ProjectID, err)
 					break
 				}
 			}
