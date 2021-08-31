@@ -11,64 +11,51 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { debounceTime, finalize } from 'rxjs/operators';
-import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, } from '@angular/core';
+import { debounceTime, finalize, switchMap } from 'rxjs/operators';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { ActivatedRoute } from "@angular/router";
-import { forkJoin, Subject } from "rxjs";
-import { TranslateService } from '@ngx-translate/core';
+import { of, Subject, Subscription } from "rxjs";
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { UserService } from '../../../left-side-nav/user/user.service';
-import { User } from "../../../left-side-nav/user/user";
 import { Project } from "../../project";
-import { Member } from '../member';
-import { MemberService } from '../member.service';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
-import { ProjectMemberEntity } from "../../../../../../ng-swagger-gen/models/project-member-entity";
+import { ClrLoadingState } from "@clr/angular";
+import { MemberService } from 'ng-swagger-gen/services/member.service';
+import { UserService } from 'ng-swagger-gen/services/user.service';
+import { UserResp } from "../../../../../../ng-swagger-gen/models/user-resp";
+import { UserEntity } from "../../../../../../ng-swagger-gen/models/user-entity";
 
 
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
   styleUrls: ['add-member.component.scss'],
-  providers: [UserService],
 })
-export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
-
-  @Input() memberList: ProjectMemberEntity[] = [];
-  member: ProjectMemberEntity = new Member();
-
-  addMemberOpened: boolean;
-
-  memberForm: NgForm;
-
+export class AddMemberComponent implements OnInit, OnDestroy {
+  member: UserEntity = {};
+  addMemberOpened: boolean = false;
   staticBackdrop: boolean = true;
   closable: boolean = false;
-
   @ViewChild('memberForm', {static: true})
   currentForm: NgForm;
-
-  hasChanged: boolean;
-
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
-
   @Input() projectId: number;
   @Output() added = new EventEmitter<boolean>();
-
   isMemberNameValid: boolean = true;
   memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
   nameChecker: Subject<string> = new Subject<string>();
+  searcher: Subject<string> = new Subject<string>();
+  nameCheckerSub: Subscription;
+  searcherSub: Subscription;
   checkOnGoing: boolean = false;
-  selectUserName: string[] = [];
-  userLists: User[];
+  searchedUserLists: UserResp[] = [];
+  btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
+  roleId: number = 1; // default value is 1(project admin)
 
   constructor(private memberService: MemberService,
     private userService: UserService,
-    private errorHandle: ErrorHandler,
     private messageHandlerService: MessageHandlerService,
-    private translateService: TranslateService,
     private route: ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -78,115 +65,130 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
     if (hasProjectAdminRole) {
-      this.nameChecker.pipe(
-        debounceTime(500))
-        .subscribe((name: string) => {
-          let cont = this.currentForm.controls['member_name'];
-          if (cont) {
-            this.isMemberNameValid = cont.valid;
-            if (cont.valid) {
-              this.checkOnGoing = true;
-              forkJoin([this.userService.getUsersNameList(cont.value, 20), this.memberService
-              .listMembers(this.projectId, cont.value)]).subscribe((res: Array<any>) => {
-                this.userLists = res[0];
-                if (res[1].filter(m => { return m.entity_name === cont.value; }).length > 0) {
-                  this.isMemberNameValid = false;
-                  this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
-                }
-                this.checkOnGoing = false;
-                if (this.userLists && this.userLists.length) {
-                  this.selectUserName = [];
-                  this.userLists.forEach(data => {
-                    if (data.username.startsWith(cont.value) && !this.memberList.find(mem => mem.entity_name === data.username)) {
-                      if (this.selectUserName.length < 10) {
-                        this.selectUserName.push(data.username);
-                      }
-                    }
-                  });
-                }
-              }, error => {
-                this.checkOnGoing = false;
-              });
-            } else {
-              this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
+      if (!this.searcherSub) {
+        this.searcherSub = this.searcher.pipe(
+            debounceTime(500),
+            switchMap(name => {
+              if (name) {
+                return this.userService.listUsers({
+                  page: 1,
+                  pageSize: 10,
+                  q: encodeURIComponent(`username=~${name}`)
+                });
+              } else {
+                return of([]);
+              }
+            }),
+        ).subscribe(res => {
+          if (res) {
+            this.searchedUserLists = res;
+          }
+        });
+      }
+      if (!this.nameCheckerSub) {
+        this.nameCheckerSub = this.nameChecker.pipe(
+            debounceTime(500),
+            switchMap(name => {
+              if (name) {
+                this.checkOnGoing = true;
+                return this.memberService.listProjectMembers({
+                  page: 1,
+                  pageSize: 10,
+                  projectNameOrId: this.projectId.toString(),
+                  entityname: name
+                }).pipe(
+                    finalize(() => this.checkOnGoing = false)
+                );
+              } else {
+                return of([]);
+              }
+            }),
+        ).subscribe(res => {
+          if (res && res.length) {
+            if (res.filter(m => m.entity_name === this.member.username).length > 0) {
+              this.isMemberNameValid = false;
+              this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
             }
           }
         });
+      }
     }
   }
 
   ngOnDestroy(): void {
-    this.nameChecker.unsubscribe();
+    if (this.nameCheckerSub) {
+      this.nameCheckerSub.unsubscribe();
+      this.nameCheckerSub = null;
+    }
+    if (this.searcherSub) {
+      this.searcherSub.unsubscribe();
+      this.searcherSub = null;
+    }
   }
 
   onSubmit(): void {
-    if (!this.member.entity_name || this.member.entity_name.length === 0) { return; }
+    if (!this.member.username || this.member.username.length === 0) { return; }
+    this.btnStatus = ClrLoadingState.LOADING;
     this.memberService
-      .addUserMember(this.projectId, {username: this.member.entity_name}, +this.member.role_id).pipe(
-      finalize(() => {
-        this.addMemberOpened = false;
-        this.member.role_id = null;
-      }
-    ))
+      .createProjectMember({
+        projectNameOrId: this.projectId.toString(),
+        projectMember: {
+          role_id: this.roleId,
+          member_user: this.member
+        }
+      })
       .subscribe(
       () => {
+        this.addMemberOpened = false;
+        this.btnStatus = ClrLoadingState.SUCCESS;
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
         this.added.emit(true);
       },
       error => {
-        this.errorHandle.error(error);
+        this.btnStatus = ClrLoadingState.ERROR;
+        this.inlineAlert.showInlineError(error);
       });
   }
 
   selectedName(username: string) {
-    this.member.entity_name = username;
-    this.selectUserName = [];
+    this.member.username = username;
+    this.nameChecker.next(username);
+    this.searchedUserLists = [];
   }
 
   onCancel() {
       this.addMemberOpened = false;
-      this.memberForm.reset();
   }
 
   leaveInput() {
-    this.selectUserName = [];
+    this.searchedUserLists = [];
   }
-  ngAfterViewChecked(): void {
-    if (this.memberForm !== this.currentForm) {
-      this.memberForm = this.currentForm;
-    }
-    if (this.memberForm) {
-      this.memberForm.valueChanges.subscribe(data => {
-        let memberName = data['member_name'];
-        if (memberName && memberName !== '') {
-          this.hasChanged = true;
-        } else {
-          this.hasChanged = false;
-        }
-      });
-    }
-  }
-
   openAddMemberModal(): void {
-    this.currentForm.reset();
-    this.member = new Member();
+    this.currentForm.reset({
+      member_role: 1
+    });
+    this.inlineAlert.close();
+    this.member = {};
     this.addMemberOpened = true;
-    this.hasChanged = false;
-    this.member.role_id = 1;
-    this.member.entity_name = '';
+    this.member.username = '';
     this.isMemberNameValid = true;
     this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
-    this.selectUserName = [];
+    this.searchedUserLists = [];
   }
 
   handleValidation(): void {
-    let cont = this.currentForm.controls['member_name'];
-    if (cont) {
-      this.nameChecker.next(cont.value);
+    this.nameChecker.next(this.member.username);
+    this.searcher.next(this.member.username);
+    if (!this.member.username) {
+      this.searchedUserLists = [];
+      this.isMemberNameValid = false;
+      this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
+    } else {
+      this.isMemberNameValid = true;
     }
   }
 
-  public get isValid(): boolean {
+  isValid(): boolean {
     return this.currentForm &&
     this.currentForm.valid &&
     this.isMemberNameValid &&
