@@ -59,13 +59,14 @@ func TestMain(m *testing.M) {
 func TestEnsureClient(t *testing.T) {
 	assert := assert.New(t)
 	auth := Auth{client: nil}
-	err := auth.ensureClient()
+	err := auth.ensureClient(orm.Context())
 	assert.Nil(err)
 	assert.NotNil(auth.client)
 }
 
 func TestAuthenticate(t *testing.T) {
 	assert := assert.New(t)
+	ctx := orm.Context()
 	client := &uaa.FakeClient{
 		Username: "user1",
 		Password: "password1",
@@ -78,7 +79,7 @@ func TestAuthenticate(t *testing.T) {
 		Principal: "user1",
 		Password:  "password1",
 	}
-	u1, err1 := auth.Authenticate(m1)
+	u1, err1 := auth.Authenticate(ctx, m1)
 	assert.Nil(err1)
 	assert.NotNil(u1)
 	assert.Equal("fake@fake.com", u1.Email)
@@ -86,7 +87,7 @@ func TestAuthenticate(t *testing.T) {
 		Principal: "wrong",
 		Password:  "wrong",
 	}
-	u2, err2 := auth.Authenticate(m2)
+	u2, err2 := auth.Authenticate(ctx, m2)
 	assert.NotNil(err2)
 	assert.Nil(u2)
 	err3 := dao.ClearTable(models.UserTable)
@@ -102,14 +103,14 @@ func TestOnBoardUser(t *testing.T) {
 	um1 := &models.User{
 		Username: " ",
 	}
-	err1 := auth.OnBoardUser(um1)
+	err1 := auth.OnBoardUser(ctx, um1)
 	assert.NotNil(err1)
 	um2 := &models.User{
 		Username: "test   ",
 	}
 	user2, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Nil(user2)
-	err2 := auth.OnBoardUser(um2)
+	err2 := auth.OnBoardUser(ctx, um2)
 	assert.Nil(err2)
 	user, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal("test", user.Realname)
@@ -121,24 +122,24 @@ func TestOnBoardUser(t *testing.T) {
 
 func TestPostAuthenticate(t *testing.T) {
 	assert := assert.New(t)
+	ctx := orm.Context()
 	auth := Auth{
 		userMgr: userpkg.New(),
 	}
 	um := &models.User{
 		Username: "test",
 	}
-	err := auth.PostAuthenticate(um)
+	err := auth.PostAuthenticate(ctx, um)
 	// need a new user model to simulate a login case...
 	um2 := &models.User{
 		Username: "test",
 	}
-	ctx := orm.Context()
 	assert.Nil(err)
 	user, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal("", user.Email)
 	um2.Email = "newEmail@new.com"
 	um2.Realname = "newName"
-	err2 := auth.PostAuthenticate(um2)
+	err2 := auth.PostAuthenticate(ctx, um2)
 	assert.Equal(user.UserID, um2.UserID)
 	assert.Nil(err2)
 	user2, _ := auth.userMgr.GetByName(ctx, "test")
@@ -148,7 +149,7 @@ func TestPostAuthenticate(t *testing.T) {
 	um3 := &models.User{
 		Username: "test",
 	}
-	err3 := auth.PostAuthenticate(um3)
+	err3 := auth.PostAuthenticate(ctx, um3)
 	assert.Nil(err3)
 	user3, _ := auth.userMgr.GetByName(ctx, "test")
 	assert.Equal(user3.UserID, um3.UserID)
@@ -160,19 +161,20 @@ func TestPostAuthenticate(t *testing.T) {
 
 func TestSearchUser(t *testing.T) {
 	assert := assert.New(t)
+	ctx := orm.Context()
 	client := &uaa.FakeClient{
 		Username: "user1",
 		Password: "password1",
 	}
 	auth := Auth{client: client}
-	_, err0 := auth.SearchUser("error")
+	_, err0 := auth.SearchUser(ctx, "error")
 	assert.NotNil(err0)
-	u1, err1 := auth.SearchUser("one")
+	u1, err1 := auth.SearchUser(ctx, "one")
 	assert.Nil(err1)
 	assert.Equal("one@email.com", u1.Email)
-	_, err2 := auth.SearchUser("two")
+	_, err2 := auth.SearchUser(ctx, "two")
 	assert.NotNil(err2)
-	user3, err3 := auth.SearchUser("none")
+	user3, err3 := auth.SearchUser(ctx, "none")
 	assert.Nil(user3)
 	assert.Nil(err3)
 }

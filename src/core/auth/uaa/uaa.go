@@ -15,6 +15,7 @@
 package uaa
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -27,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -40,8 +40,8 @@ type Auth struct {
 }
 
 // Authenticate ...
-func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	if err := u.ensureClient(); err != nil {
+func (u *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
+	if err := u.ensureClient(ctx); err != nil {
 		return nil, err
 	}
 	t, err := u.client.PasswordAuth(m.Principal, m.Password)
@@ -63,7 +63,7 @@ func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, return the user's profile.
-func (u *Auth) OnBoardUser(user *models.User) error {
+func (u *Auth) OnBoardUser(ctx context.Context, user *models.User) error {
 	user.Username = strings.TrimSpace(user.Username)
 	if len(user.Username) == 0 {
 		return fmt.Errorf("the Username is empty")
@@ -73,7 +73,7 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	}
 	fillEmailRealName(user)
 	user.Comment = "From UAA"
-	return u.userMgr.Onboard(orm.Context(), user)
+	return u.userMgr.Onboard(ctx, user)
 }
 
 func fillEmailRealName(user *models.User) {
@@ -86,11 +86,10 @@ func fillEmailRealName(user *models.User) {
 }
 
 // PostAuthenticate will check if user exists in DB, if not on Board user, if he does, update the profile.
-func (u *Auth) PostAuthenticate(user *models.User) error {
-	ctx := orm.Context()
+func (u *Auth) PostAuthenticate(ctx context.Context, user *models.User) error {
 	dbUser, err := u.userMgr.GetByName(ctx, user.Username)
 	if errors.IsNotFoundErr(err) {
-		return u.OnBoardUser(user)
+		return u.OnBoardUser(ctx, user)
 	} else if err != nil {
 		return err
 	}
@@ -104,8 +103,8 @@ func (u *Auth) PostAuthenticate(user *models.User) error {
 }
 
 // SearchUser search user on uaa server, transform it to Harbor's user model
-func (u *Auth) SearchUser(username string) (*models.User, error) {
-	if err := u.ensureClient(); err != nil {
+func (u *Auth) SearchUser(ctx context.Context, username string) (*models.User, error) {
+	if err := u.ensureClient(ctx); err != nil {
 		return nil, err
 	}
 	l, err := u.client.SearchUser(username)
@@ -129,9 +128,9 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 	}, nil
 }
 
-func (u *Auth) ensureClient() error {
+func (u *Auth) ensureClient(ctx context.Context) error {
 	var cfg *uaa.ClientConfig
-	UAASettings, err := config.UAASettings(orm.Context())
+	UAASettings, err := config.UAASettings(ctx)
 	//	log.Debugf("Uaa settings: %+v", UAASettings)
 	if err != nil {
 		log.Warningf("Failed to get UAA setting from Admin Server, error: %v", err)
