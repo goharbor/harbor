@@ -11,14 +11,16 @@
             <clr-dg-action-bar>
                 <div class="clr-row center">
                     <div class="ml-05">
-                        <button id="scan-btn" (click)="scanNow()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)">
-                            <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
-                            <span>{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
+                        <button id="scan-btn" (click)="scanOrStop()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!canScan()">
+                            <clr-icon shape="shield-check" size="16" *ngIf="!isRunningState()"></clr-icon>&nbsp;
+                            <clr-icon shape="stop" size="16" *ngIf="isRunningState()"></clr-icon>&nbsp;
+                            <span *ngIf="!isRunningState()">{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
+                            <span *ngIf="isRunningState()">{{'VULNERABILITY.STOP_NOW' | translate}}</span>
                         </button>
                     </div>
                     <div class="ml-1">
                         <div [hidden]="!shouldShowBar()">
-                            <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [inputScanner]="scanner"
+                            <hbr-vulnerability-bar (submitStopFinish)="submitStopFinish($event)" [summary]="handleScanOverview(artifact?.scan_overview)" [inputScanner]="scanner"
                                                    (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                                                    [artifactDigest]="digest">
                             </hbr-vulnerability-bar>

@@ -36,7 +36,6 @@ import { CopyInputComponent } from "../../../../../../../shared/components/push-
 import { ErrorHandler } from "../../../../../../../shared/units/error-handler";
 import { ArtifactService } from "../../../artifact.service";
 import { OperationService } from "../../../../../../../shared/components/operation/operation.service";
-import { ChannelService } from "../../../../../../../shared/services/channel.service";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../../shared/components/operation/operate";
 import { artifactDefault, ArtifactFront as Artifact, ArtifactFront, artifactPullCommands, mutipleFilter } from '../../../artifact';
@@ -52,6 +51,7 @@ import { ConfirmationAcknowledgement } from "../../../../../../global-confirmati
 import { UN_LOGGED_PARAM } from "../../../../../../../account/sign-in/sign-in.service";
 import { Label } from "../../../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
+import { EventService, HarborEvent } from "../../../../../../../services/event-service/event.service";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -142,6 +142,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   hasEnabledScanner: boolean;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   onSendingScanCommand: boolean;
+  onSendingStopScanCommand: boolean = false;
+  onStopScanArtifactsLength: number = 0;
+  scanStoppedArtifactLength: number = 0;
 
   artifactDigest: string;
   depth: string;
@@ -157,6 +160,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   scanFinishedArtifactLength: number = 0;
   onScanArtifactsLength: number = 0;
+  stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  updateArtifactSub: Subscription;
   constructor(
     private errorHandlerService: ErrorHandler,
     private userPermissionService: UserPermissionService,
@@ -165,7 +170,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     private newArtifactService: NewArtifactService,
     private translateService: TranslateService,
     private operationService: OperationService,
-    private channel: ChannelService,
+    private eventService: EventService,
     private activatedRoute: ActivatedRoute,
     private scanningService: ScanningResultService,
     private router:  Router,
@@ -186,6 +191,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       }
       this.init();
     });
+    if (!this.updateArtifactSub) {
+      this.updateArtifactSub = this.eventService.subscribe(HarborEvent.UPDATE_VULNERABILITY_INFO, (artifact: Artifact) => {
+        if (this.artifactList && this.artifactList.length) {
+          this.artifactList.forEach(item => {
+            if (item.digest === artifact.digest) {
+              item.scan_overview = artifact.scan_overview;
+            }
+          });
+        }
+      });
+    }
   }
   ngOnDestroy() {
     if (this.triggerSub) {
@@ -199,6 +215,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     if (this.stickLabelNameFilterSub) {
       this.stickLabelNameFilterSub.unsubscribe();
       this.stickLabelNameFilterSub = null;
+    }
+    if (this.updateArtifactSub) {
+      this.updateArtifactSub.unsubscribe();
+      this.updateArtifactSub = null;
     }
   }
   init() {
@@ -921,12 +941,21 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
   }
-  // Whether show the 'scan now' menu
+  // if has running job, return false
   canScanNow(): boolean {
     if (!this.hasScanImagePermission) { return false; }
     if (this.onSendingScanCommand) { return false; }
-    let st: string = this.scanStatus(this.selectedRow[0]);
-    return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
+    if (this.selectedRow && this.selectedRow.length) {
+      let flag: boolean = true;
+      this.selectedRow.forEach(item => {
+        const st: string = this.scanStatus(item);
+        if (this.isRunningState(st)) {
+          flag = false;
+        }
+      });
+      return flag;
+    }
+    return false;
   }
   getImagePermissionRule(projectId: number): void {
     const permissions = [
@@ -958,7 +987,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     this.onSendingScanCommand = true;
     this.selectedRow.forEach((data: any) => {
       let digest = data.digest;
-      this.channel.publishScanEvent(this.repoName + "/" + digest);
+      this.eventService.publish(HarborEvent.START_SCAN_ARTIFACT, this.repoName + "/" + digest);
     });
   }
   selectedRowHasVul(): boolean {
@@ -972,8 +1001,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   }
   submitFinish(e: boolean) {
     this.scanFinishedArtifactLength += 1;
-    // all selected scan action has start
+    // all selected scan action has started
     if (this.scanFinishedArtifactLength === this.onScanArtifactsLength) {
+      this.onSendingScanCommand = e;
+    }
+  }
+  submitStopFinish(e: boolean) {
+    this.scanStoppedArtifactLength += 1;
+    // all selected scan action has stopped
+    if (this.scanStoppedArtifactLength === this.onStopScanArtifactsLength) {
       this.onSendingScanCommand = e;
     }
   }
@@ -1108,12 +1144,43 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               if (res.headers) {
                 let xHeader: string = res.headers.get("x-total-count");
                 if (xHeader) {
-                  item.tagNumber = Number.parseInt(xHeader);
+                  item.tagNumber = Number.parseInt(xHeader, 10);
                 }
               }
               item.tags = res.body;
             }
         );
+      });
+    }
+  }
+  // return true if all selected rows are in "running" state
+  canStopScan(): boolean {
+    if (this.onSendingStopScanCommand) { return false; }
+     if (this.selectedRow && this.selectedRow.length) {
+       let flag: boolean = true;
+       this.selectedRow.forEach(item => {
+         const st: string = this.scanStatus(item);
+         if (!this.isRunningState(st)) {
+           flag =  false;
+         }
+       });
+       return flag;
+     }
+     return false;
+  }
+  isRunningState(state: string): boolean {
+    return state === VULNERABILITY_SCAN_STATUS.RUNNING ||
+        state === VULNERABILITY_SCAN_STATUS.PENDING ||
+        state === VULNERABILITY_SCAN_STATUS.SCHEDULED;
+  }
+  stopNow() {
+    if (this.selectedRow && this.selectedRow.length) {
+      this.scanStoppedArtifactLength = 0;
+      this.onStopScanArtifactsLength = this.selectedRow.length;
+      this.onSendingStopScanCommand = true;
+      this.selectedRow.forEach((data: any) => {
+        let digest = data.digest;
+        this.eventService.publish(HarborEvent.STOP_SCAN_ARTIFACT, this.repoName + "/" + digest);
       });
     }
   }

@@ -6,7 +6,6 @@ import { delay } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { SystemInfo, SystemInfoDefaultService, SystemInfoService, } from "../../../../../../shared/services";
 import { ArtifactDefaultService, ArtifactService } from "../../artifact.service";
-import { ChannelService } from "../../../../../../shared/services/channel.service";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { RepositoryService as NewRepositoryService } from "../../../../../../../../ng-swagger-gen/services/repository.service";
 import { SharedTestingModule } from "../../../../../../shared/shared.module";
@@ -34,9 +33,6 @@ describe('ArtifactListComponent (inline template)', () => {
       }
     },
     snapshot: { data: null }
-  };
-  let mockChannelService = {
-    scanCommand$: of(1)
   };
   let mockSystemInfo: SystemInfo = {
     'with_notary': true,
@@ -72,7 +68,6 @@ describe('ArtifactListComponent (inline template)', () => {
       ],
       providers: [
         { provide: ErrorHandler, useValue: fakedErrorHandler },
-        { provide: ChannelService, useValue: mockChannelService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: ArtifactService, useClass: ArtifactDefaultService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },

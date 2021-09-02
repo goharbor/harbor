@@ -92,6 +92,11 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "resource": "scan",
         "action": "create",
         "checked": true
+    },
+    {
+        "resource": "scan",
+        "action": "stop",
+        "checked": true
     }
 ];
 
@@ -108,7 +113,8 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'tag': 'REPLICATION.TAG',
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
     'scan': 'SYSTEM_ROBOT.SCAN',
-    'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL'
+    'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL',
+    'stop': 'SYSTEM_ROBOT.STOP'
 };
 
 export enum ExpirationType {
