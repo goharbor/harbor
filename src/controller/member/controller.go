@@ -17,6 +17,7 @@ package member
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -143,7 +144,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		if u != nil {
 			userID = u.UserID
 		} else {
-			userID, err = auth.SearchAndOnBoardUser(req.MemberUser.Username)
+			userID, err = auth.SearchAndOnBoardUser(ctx, req.MemberUser.Username)
 			if err != nil {
 				return 0, err
 			}
@@ -152,7 +153,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 	} else if len(req.MemberGroup.LdapGroupDN) > 0 {
 		req.MemberGroup.GroupType = common.LDAPGroupType
 		// If groupname provided, use the provided groupname to name this group
-		groupID, err := auth.SearchAndOnBoardGroup(req.MemberGroup.LdapGroupDN, req.MemberGroup.GroupName)
+		groupID, err := auth.SearchAndOnBoardGroup(ctx, req.MemberGroup.LdapGroupDN, req.MemberGroup.GroupName)
 		if err != nil {
 			return 0, err
 		}
@@ -163,7 +164,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 			return 0, err
 		}
 		if len(ugs) == 0 {
-			groupID, err := auth.SearchAndOnBoardGroup(req.MemberGroup.GroupName, "")
+			groupID, err := auth.SearchAndOnBoardGroup(ctx, req.MemberGroup.GroupName, "")
 			if err != nil {
 				return 0, err
 			}

@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
 
@@ -49,7 +48,7 @@ type onboardReq struct {
 
 // Prepare include public code path for call request handler of OIDCController
 func (oc *OIDCController) Prepare() {
-	if mode, _ := config.AuthMode(orm.Context()); mode != common.OIDCAuth {
+	if mode, _ := config.AuthMode(oc.Context()); mode != common.OIDCAuth {
 		oc.SendPreconditionFailedError(fmt.Errorf("auth mode: %s is not OIDC based", mode))
 		return
 	}
