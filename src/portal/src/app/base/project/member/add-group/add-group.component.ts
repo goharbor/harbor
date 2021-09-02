@@ -1,170 +1,233 @@
-import { forkJoin, of as observableOf, throwError as observableThrowError } from "rxjs";
-import { catchError, mergeMap } from 'rxjs/operators';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import { debounceTime, finalize, switchMap } from 'rxjs/operators';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { TranslateService } from '@ngx-translate/core';
-import { UserGroup } from "../../../left-side-nav/group/group";
-import { MemberService } from "../member.service";
-import { GroupService } from "../../../left-side-nav/group/group.service";
-import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { OperationService } from "../../../../shared/components/operation/operation.service";
-import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
-import { ProjectRoles } from "../../../../shared/entities/shared.const";
-import { errorHandler } from "../../../../shared/units/shared.utils";
-import { ProjectMemberEntity } from "../../../../../../ng-swagger-gen/models/project-member-entity";
+import { AppConfigService } from "../../../../services/app-config.service";
+import { ProjectRootInterface } from "../../../../shared/services";
+import { GroupType, PROJECT_ROOTS } from "../../../../shared/entities/shared.const";
+import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { UsergroupService } from "../../../../../../ng-swagger-gen/services/usergroup.service";
+import { of, Subject, Subscription } from "rxjs";
+import { UserGroup } from 'ng-swagger-gen/models/user-group';
+import { ClrLoadingState } from "@clr/angular";
+import { MemberService } from 'ng-swagger-gen/services/member.service';
+import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
+
 
 @Component({
-  selector: "add-group",
-  templateUrl: "./add-group.component.html",
-  styleUrls: ["./add-group.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'add-group',
+  templateUrl: './add-group.component.html',
+  styleUrls: ['./add-group.component.scss'],
 })
-export class AddGroupComponent implements OnInit {
-  opened = false;
-  createGroupMode = false;
-  onLoading = false;
-  roles = ProjectRoles;
-  currentTerm = '';
 
-  selectedRole = 1;
-  group = new UserGroup(1);
-  selectedGroups: UserGroup[] = [];
-  groups: UserGroup[] = [];
-  totalCount = 0;
+export class AddGroupComponent implements OnInit, OnDestroy {
+  projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
+  memberGroup: UserGroup = {
+    group_name: ''
+  };
+  roleId: number = 1; // default value is 1(project admin);
+  addGroupOpened: boolean = false;
+  staticBackdrop: boolean = true;
+  closable: boolean = false;
 
-  dnTooltip = 'TOOLTIP.ITEM_REQUIRED';
+  @ViewChild('groupForm', {static: true})
+  currentForm: NgForm;
+
+  @ViewChild(InlineAlertComponent)
+  inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;
-  @Input() memberList: ProjectMemberEntity[] = [];
   @Output() added = new EventEmitter<boolean>();
 
-  @ViewChild('groupForm')
-  groupForm: NgForm;
+  checkOnGoing: boolean = false;
+  searchedGroups: UserGroup[] = [];
+  groupChecker: Subject<string> = new Subject<string>();
+  groupSearcher: Subject<string> = new Subject<string>();
+  groupCheckerSub: Subscription;
+  groupSearcherSub: Subscription;
+  btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
+  isGroupNameValid: boolean = true;
+  groupTooltip: string = 'MEMBER.GROUP_NAME_REQUIRED';
+  isNameChecked: boolean = false; // this is only for LDAP mode
+  constructor(private memberService: MemberService,
+    private appConfigService: AppConfigService, private messageHandlerService: MessageHandlerService,
+    private userGroupService: UsergroupService) { }
 
-  constructor(
-    private translateService: TranslateService,
-    private msgHandler: MessageHandlerService,
-    private operationService: OperationService,
-    private ref: ChangeDetectorRef,
-    private groupService: GroupService,
-    private memberService: MemberService
-  ) {}
-
-  ngOnInit() { }
-
-  public get isValid(): boolean {
-    if (this.createGroupMode) {
-      return this.groupForm && this.groupForm.valid;
-    } else {
-      return this.selectedGroups.length > 0;
-    }
-  }
-  public get isDNInvalid(): boolean {
-    if (!this.groupForm) {return false; }
-    let dnControl = this.groupForm.controls['ldap_group_dn'];
-    return  dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
-  }
-
-  loadGroups() {
-    this.onLoading = true;
-    this.groupService.getUserGroups().subscribe(groups => {
-      this.groups = groups.filter(group => {
-        if (!group.group_name) {group.group_name = ''; }
-        return group.group_name.includes(this.currentTerm)
-        && !this.memberList.some(member => member.entity_type === 'g' && member.entity_id === group.id);
-      });
-      this.totalCount = groups.length;
-      this.onLoading = false;
-      this.ref.detectChanges();
-    });
-  }
-
-  doFilter(name: string) {
-    this.currentTerm = name;
-    this.loadGroups();
-  }
-
-  resetModaldata() {
-    this.createGroupMode = false;
-    this.group = new UserGroup(1);
-    this.selectedRole = 1;
-    this.selectedGroups = [];
-    this.groups = [];
-  }
-
-  public open() {
-    this.resetModaldata();
-    this.loadGroups();
-    this.opened = true;
-    this.ref.detectChanges();
-  }
-
-  public close() {
-    this.resetModaldata();
-    this.opened = false;
-  }
-
-  onSave() {
-    if (!this.createGroupMode) {
-      this.addGroups();
-    } else {
-      this.createGroupAsMember();
-    }
-  }
-
-  onCancel() {
-    this.opened = false;
-  }
-
-  addGroups() {
-    let GroupAdders$ = this.selectedGroups.map(group => {
-      let operMessage = new OperateInfo();
-      operMessage.name = 'OPERATION.ADD_GROUP';
-      operMessage.data.id = group.id;
-      operMessage.state = OperationState.progressing;
-      operMessage.data.name = group.group_name;
-      this.operationService.publishInfo(operMessage);
-      return this.memberService
-        .addGroupMember(this.projectId, group, this.selectedRole).pipe(
-        mergeMap(response => {
-           return this.translateService.get("BATCH.DELETED_SUCCESS").pipe(
-           mergeMap(res => {
-            operateChanges(operMessage, OperationState.success);
-            return observableOf(res);
-           })); }),
-            catchError(
-              error => {
-                  const message = errorHandler(error);
-                  this.translateService.get(message).subscribe(res =>
-                    operateChanges(operMessage, OperationState.failure, res)
-                  );
-                  return observableThrowError(error);
-              }),
-        catchError(error => observableThrowError(error)), );
-      });
-    forkJoin(GroupAdders$)
-      .subscribe(results => {
-        if (results.some(code => code < 200 || code > 299)) {
-          this.added.emit(false);
-        } else {
-          this.added.emit(true);
+  ngOnInit(): void {
+    if (!this.groupCheckerSub) {
+      this.groupCheckerSub = this.groupChecker.pipe(
+          debounceTime(500),
+          switchMap((name) => {
+            if (name) {
+              this.checkOnGoing = true;
+              const params: MemberService.ListProjectMembersParams = {
+                projectNameOrId: this.projectId.toString(),
+                page: 1,
+                pageSize: 10,
+                entityname: name
+              };
+              return this.memberService.listProjectMembers(params).pipe(finalize(() => this.checkOnGoing = false));
+            } else {
+              return of([]);
+            }
+          })).subscribe(res => {
+        if (res && res.length) {
+          if (res.filter(g => g.entity_name === this.memberGroup.group_name).length > 0) {
+            this.isGroupNameValid = false;
+            this.groupTooltip = 'MEMBER.GROUP_ALREADY_ADDED';
+          }
         }
-      }, error => {
-        this.msgHandler.handleError(error);
       });
-    this.opened = false;
+    }
+    if (!this.groupSearcherSub) {
+      this.groupSearcherSub = this.groupSearcher.pipe(
+          debounceTime(500),
+          switchMap(name => {
+            if (name) {
+              return this.userGroupService.searchUserGroups({
+                page: 1,
+                pageSize: 10,
+                groupname: name
+              });
+            } else {
+              return of([]);
+            }
+          })
+      ).subscribe(res => {
+        if (res) {
+          this.searchedGroups = res;
+        }
+        // for LDAP mode, if input group name is not found from search result, then show "Group name does not exists" error
+        if (this.appConfigService.isLdapMode() && this.memberGroup.group_name) {
+          let flag = false;
+          this.searchedGroups.forEach(item => {
+            if (item.group_name === this.memberGroup.group_name) {
+              flag = true;
+            }
+          });
+          if (!flag) {
+            this.isGroupNameValid = false;
+            this.groupTooltip = 'MEMBER.NON_EXISTENT_GROUP';
+          } else { // it means input group name is valid
+            this.isNameChecked = true;
+          }
+        }
+      });
+    }
+  }
+  ngOnDestroy() {
+    if (this.groupCheckerSub) {
+      this.groupCheckerSub.unsubscribe();
+      this.groupCheckerSub = null;
+    }
+    if (this.groupSearcherSub) {
+      this.groupSearcherSub.unsubscribe();
+      this.groupSearcherSub = null;
+    }
   }
 
   createGroupAsMember() {
-    let groupCopy = Object.assign({}, this.group);
-    this.memberService.addGroupMember(this.projectId, groupCopy, this.selectedRole)
-    .subscribe(
-      res => this.added.emit(true),
-      err => {
-        this.msgHandler.handleError(err);
-        this.added.emit(false);
+    this.btnStatus = ClrLoadingState.LOADING;
+    if (this.appConfigService.isHttpAuthMode()) {
+      this.memberGroup.group_type = GroupType.HTTP_TYPE;
+    }
+    if (this.appConfigService.isLdapMode()) {
+      this.memberGroup.group_type = GroupType.LDAP_TYPE;
+    }
+    if (this.appConfigService.isOidcMode()) {
+      this.memberGroup.group_type = GroupType.OIDC_TYPE;
+    }
+    this.memberService.createProjectMember({
+      projectNameOrId: this.projectId.toString(),
+      projectMember: {
+        role_id: this.roleId,
+        member_group: this.memberGroup
       }
-    );
-    this.opened = false;
+    }).subscribe(
+        res => {
+          this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
+          this.btnStatus = ClrLoadingState.SUCCESS;
+          this.addGroupOpened = false;
+          this.added.emit(true);
+        },
+        err => {
+          this.btnStatus = ClrLoadingState.ERROR;
+          this.inlineAlert.showInlineError(err);
+          this.added.emit(false);
+        }
+      );
+  }
+  onSubmit(): void {
+    this.createGroupAsMember();
+  }
+
+  onCancel() {
+    this.addGroupOpened = false;
+  }
+
+
+  openAddGroupModal(): void {
+    this.currentForm.reset({
+      member_role: 1
+    });
+    this.addGroupOpened = true;
+    this.inlineAlert.close();
+    this.memberGroup = {
+      group_name: ''
+    };
+    this.isGroupNameValid = true;
+    this.groupTooltip = "MEMBER.USERNAME_IS_REQUIRED";
+    this.searchedGroups = [];
+  }
+  isValid(): boolean {
+    if (this.appConfigService.isLdapMode()) {
+      if (!this.isNameChecked) {
+        return false;
+      }
+    }
+    return this.isGroupNameValid && this.currentForm &&
+      this.currentForm.valid &&
+      !this.checkOnGoing;
+  }
+
+  selectGroup(groupName) {
+    if (this.appConfigService.isLdapMode()) {
+      this.isNameChecked = true;
+      this.isGroupNameValid = true;
+    }
+    this.memberGroup.group_name = groupName;
+    this.groupChecker.next(groupName);
+    this.searchedGroups = [];
+  }
+
+  leaveInput() {
+    this.searchedGroups = [];
+  }
+
+  input() {
+    if (this.appConfigService.isLdapMode()) {
+      this.isNameChecked = false;
+    }
+    this.groupChecker.next(this.memberGroup.group_name);
+    this.groupSearcher.next(this.memberGroup.group_name);
+    if (!this.memberGroup.group_name) {
+      this.searchedGroups = [];
+      this.isGroupNameValid = false;
+      this.groupTooltip = 'MEMBER.GROUP_NAME_REQUIRED';
+    } else {
+      this.isGroupNameValid = true;
+    }
   }
 }

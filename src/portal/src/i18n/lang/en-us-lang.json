@@ -321,9 +321,9 @@
         "GROUP_TYPE": "Group",
         "USER_TYPE": "User",
         "USERNAME_IS_REQUIRED": "Username is required",
-        "USERNAME_DOES_NOT_EXISTS": "Username does not exist.",
-        "USERNAME_ALREADY_EXISTS": "Username already exists.",
-        "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
+        "USERNAME_DOES_NOT_EXISTS": "Username does not exist",
+        "USERNAME_ALREADY_EXISTS": "Username has been already added to this project",
+        "UNKNOWN_ERROR": "Unknown error occurred while adding member",
         "FILTER_PLACEHOLDER": "Filter Members",
         "DELETION_TITLE": "Confirm project members deletion",
         "DELETION_SUMMARY": "Do you want to delete project members {{param}}?",
@@ -334,7 +334,10 @@
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
         "SET_ROLE": "Set Role",
-        "REMOVE": "Remove"
+        "REMOVE": "Remove",
+        "GROUP_NAME_REQUIRED": "Group name is required",
+        "NON_EXISTENT_GROUP": "Group name does not exists",
+        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Name",

@@ -16,7 +16,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { SessionUser, SessionUserBackend } from '../entities/session-user';
-import { Member } from '../../base/project/member/member';
 import { SessionViewmodelFactory } from './session.viewmodel.factory';
 import {
     HTTP_FORM_OPTIONS,
@@ -27,6 +26,7 @@ import {
 import { FlushAll } from "../units/cache-util";
 import { SignInCredential } from "../../account/sign-in/sign-in-credential";
 import { DeFaultLang } from "../entities/shared.const";
+import { ProjectMemberEntity } from "../../../../ng-swagger-gen/models/project-member-entity";
 
 
 const signInUrl = '/c/login';
@@ -52,7 +52,7 @@ const langMap = {
 })
 export class SessionService {
     currentUser: SessionUser = null;
-    projectMembers: Member[];
+    projectMembers: ProjectMemberEntity[];
     constructor(private http: HttpClient, public sessionViewmodel: SessionViewmodelFactory) { }
 
     // Handle the related exceptions
@@ -180,11 +180,11 @@ export class SessionService {
             .pipe(catchError(error => this.handleError(error)));
     }
 
-    setProjectMembers(projectMembers: Member[]): void {
+    setProjectMembers(projectMembers: ProjectMemberEntity[]): void {
         this.projectMembers = projectMembers;
     }
 
-    getProjectMembers(): Member[] {
+    getProjectMembers(): ProjectMemberEntity[] {
         return this.projectMembers;
     }
 

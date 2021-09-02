@@ -332,7 +332,10 @@
         "SWITCH_TITLE": "Confirmar alteração dos membros do projeto",
         "SWITCH_SUMMARY": "Você quer alterar os membros do projeto {{param}}?",
         "SET_ROLE": "DEFINIR FUNÇÃO",
-        "REMOVE": "Remover"
+        "REMOVE": "Remover",
+        "GROUP_NAME_REQUIRED": "Group name is required",
+        "NON_EXISTENT_GROUP": "Group name does not exists",
+        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Nome",
