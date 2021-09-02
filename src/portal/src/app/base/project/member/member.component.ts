@@ -19,8 +19,6 @@ import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { SessionService } from "../../../shared/services/session.service";
 import { SessionUser } from "../../../shared/entities/session-user";
-import { AddGroupComponent } from './add-group/add-group.component';
-import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../../services/app-config.service";
 import { OperationService } from "../../../shared/components/operation/operation.service";
@@ -35,6 +33,7 @@ import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
 import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
+import { AddGroupComponent } from './add-group/add-group.component';
 
 @Component({
   templateUrl: "member.component.html",
@@ -64,11 +63,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   isOidcMode: boolean;
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
-
   @ViewChild(AddGroupComponent)
   addGroupComponent: AddGroupComponent;
-  @ViewChild(AddHttpAuthGroupComponent)
-  addHttpAuthGroupComponent: AddHttpAuthGroupComponent;
   hasCreateMemberPermission: boolean;
   hasUpdateMemberPermission: boolean;
   hasDeleteMemberPermission: boolean;
@@ -193,11 +189,7 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   // Add group
   openAddGroupModal() {
-    if (this.isLdapMode) {
-      this.addGroupComponent.open();
-    } else {
-      this.addHttpAuthGroupComponent.openAddMemberModal();
-    }
+      this.addGroupComponent.openAddGroupModal();
   }
   addedGroup(result: boolean) {
     this.searchMember = "";

@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AddMemberComponent } from './add-member.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { MemberService } from '../member.service';
 import { UserService } from '../../../left-side-nav/user/user.service';
 import { of } from 'rxjs';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { ActivatedRoute } from '@angular/router';
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { MemberService } from 'ng-swagger-gen/services/member.service';
 
 describe('AddMemberComponent', () => {
     let component: AddMemberComponent;
     let fixture: ComponentFixture<AddMemberComponent>;
     const mockMemberService = {
-        getUsersNameList: () => {
+        listProjectMembers: () => {
             return of([]);
         }
     };
     const mockUserService = {
-        getUsersNameList: () => {
+        listUsers: () => {
             return of([
                 [], []
             ]);

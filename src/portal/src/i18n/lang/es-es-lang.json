@@ -335,7 +335,10 @@
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
         "SET_ROLE": "Set Role",
-        "REMOVE": "Remove"
+        "REMOVE": "Remove",
+        "GROUP_NAME_REQUIRED": "Group name is required",
+        "NON_EXISTENT_GROUP": "Group name does not exists",
+        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Name",

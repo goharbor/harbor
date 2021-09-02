@@ -331,7 +331,10 @@
     "SWITCH_TITLE": "切換項目成員確認",
     "SWITCH_SUMMARY": "你確認切換項目成員{{param}}??",
     "SET_ROLE": "設置角色",
-    "REMOVE": "移除成員"
+    "REMOVE": "移除成員",
+    "GROUP_NAME_REQUIRED": "Group name is required",
+    "NON_EXISTENT_GROUP": "Group name does not exists",
+    "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
   },
   "ROBOT_ACCOUNT":{
     "NAME": "名稱",
