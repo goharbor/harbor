@@ -15,11 +15,12 @@
 package db
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -30,8 +31,8 @@ type Auth struct {
 }
 
 // Authenticate calls dao to authenticate user.
-func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	u, err := d.userMgr.MatchLocalPassword(orm.Context(), m.Principal, m.Password)
+func (d *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
+	u, err := d.userMgr.MatchLocalPassword(ctx, m.Principal, m.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +43,8 @@ func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 }
 
 // SearchUser - Check if user exist in local db
-func (d *Auth) SearchUser(username string) (*models.User, error) {
-	u, err := d.userMgr.GetByName(orm.Context(), username)
+func (d *Auth) SearchUser(ctx context.Context, username string) (*models.User, error) {
+	u, err := d.userMgr.GetByName(ctx, username)
 	if errors.IsNotFoundErr(err) {
 		return nil, nil
 	} else if err != nil {
@@ -53,7 +54,7 @@ func (d *Auth) SearchUser(username string) (*models.User, error) {
 }
 
 // OnBoardUser -
-func (d *Auth) OnBoardUser(u *models.User) error {
+func (d *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
 	return nil
 }
 

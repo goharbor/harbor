@@ -15,11 +15,13 @@
 package security
 
 import (
-	_ "github.com/goharbor/harbor/src/core/auth/db"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
+
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBasicAuth(t *testing.T) {
@@ -27,6 +29,7 @@ func TestBasicAuth(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
 	req.SetBasicAuth("admin", "Harbor12345")
+	req = req.WithContext(orm.Context())
 	ctx := basicAuth.Generate(req)
 	assert.NotNil(t, ctx)
 }

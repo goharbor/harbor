@@ -3,6 +3,7 @@ package ldap
 import (
 	"context"
 	"fmt"
+
 	goldap "github.com/go-ldap/ldap/v3"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
@@ -104,7 +105,7 @@ func (m *manager) ImportUser(ctx context.Context, sess *Session, ldapImportUsers
 		user.Username = ldapUsers[0].Username
 		user.Realname = ldapUsers[0].Realname
 		user.Email = ldapUsers[0].Email
-		err = auth.OnBoardUser(&user)
+		err = auth.OnBoardUser(ctx, &user)
 
 		if err != nil || user.UserID <= 0 {
 			u.UID = tempUID
