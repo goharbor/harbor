@@ -2,13 +2,12 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth/authproxy"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -26,7 +25,7 @@ type AuthProxyController struct {
 
 // Prepare checks the auth mode and fail early
 func (apc *AuthProxyController) Prepare() {
-	am, err := config.AuthMode(orm.Context())
+	am, err := config.AuthMode(apc.Context())
 	if err != nil {
 		apc.SendInternalServerError(err)
 		return
@@ -45,13 +44,13 @@ func (apc *AuthProxyController) HandleRedirect() {
 		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
 		return
 	}
-	u, err := helper.VerifyToken(token)
+	u, err := helper.VerifyToken(apc.Context(), token)
 	if err != nil {
 		log.Errorf("Failed to verify token, error: %v", err)
 		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
 		return
 	}
-	if err := helper.PostAuthenticate(u); err != nil {
+	if err := helper.PostAuthenticate(apc.Context(), u); err != nil {
 		log.Errorf("Failed to onboard user, error: %v", err)
 		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
 		return

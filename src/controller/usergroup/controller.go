@@ -16,6 +16,7 @@ package usergroup
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -87,7 +88,7 @@ func (c *controller) Update(ctx context.Context, id int, groupName string) error
 
 func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, error) {
 	if group.GroupType == common.LDAPGroupType {
-		ldapGroup, err := auth.SearchGroup(group.LdapGroupDN)
+		ldapGroup, err := auth.SearchGroup(ctx, group.LdapGroupDN)
 		if err == ldap.ErrNotFound || ldapGroup == nil {
 			return 0, errors.BadRequestError(nil).WithMessage("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
 		}

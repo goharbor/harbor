@@ -1,10 +1,11 @@
 package oidc
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 )
@@ -15,7 +16,7 @@ type Auth struct {
 }
 
 // SearchGroup is skipped in OIDC mode, so it makes sure any group will be onboarded.
-func (a *Auth) SearchGroup(groupKey string) (*model.UserGroup, error) {
+func (a *Auth) SearchGroup(ctx context.Context, groupKey string) (*model.UserGroup, error) {
 	return &model.UserGroup{
 		GroupName: groupKey,
 		GroupType: common.OIDCGroupType,
@@ -23,12 +24,12 @@ func (a *Auth) SearchGroup(groupKey string) (*model.UserGroup, error) {
 }
 
 // OnBoardGroup create user group entity in Harbor DB, altGroupName is not used.
-func (a *Auth) OnBoardGroup(u *model.UserGroup, altGroupName string) error {
+func (a *Auth) OnBoardGroup(ctx context.Context, u *model.UserGroup, altGroupName string) error {
 	// if group name provided, on board the user group
 	if len(u.GroupName) == 0 || u.GroupType != common.OIDCGroupType {
 		return fmt.Errorf("invalid input group for OIDC mode: %v", *u)
 	}
-	return usergroup.Mgr.Onboard(orm.Context(), u)
+	return usergroup.Mgr.Onboard(ctx, u)
 }
 
 func init() {
