@@ -15,6 +15,7 @@
 package usergroup
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
@@ -41,8 +42,7 @@ func (s *ManagerTestSuite) TestOnboardGroup() {
 	}
 	err := s.mgr.Onboard(ctx, ug)
 	s.Nil(err)
-	qm := model.UserGroup{GroupType: 1, LdapGroupDN: "cn=harbor_dev,ou=groups,dc=example,dc=com"}
-	ugs, err := s.mgr.List(ctx, qm)
+	ugs, err := s.mgr.List(ctx, q.New(q.KeyWords{"GroupType": 1, "LdapGroupDN": "cn=harbor_dev,ou=groups,dc=example,dc=com"}))
 	s.Nil(err)
 	s.True(len(ugs) > 0)
 }

@@ -2697,6 +2697,8 @@ paths:
         - usergroup
       parameters:
         - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
         - name: ldap_group_dn
           in: query
           type: string
@@ -2709,6 +2711,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserGroup'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string  
         '401':
           $ref: '#/responses/401'
         '403':
@@ -2742,6 +2751,41 @@ paths:
           $ref: '#/responses/403'
         '409':
           $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /usergroups/search:
+    get:
+      summary: Search groups by groupname
+      description: |
+        This endpoint is to search groups by group name.  It's open for all authenticated requests.
+      tags:
+        - usergroup
+      operationId: searchUserGroups
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: groupname
+          in: query
+          type: string
+          required: true
+          description: Group name for filtering results.
+      responses:
+        '200':
+          description: Search groups successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserGroupSearchItem'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -7689,6 +7733,18 @@ definitions:
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
+  UserGroupSearchItem:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the user group
+      group_name:
+        type: string
+        description: The name of the user group
+      group_type:
+        type: integer
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'      
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.

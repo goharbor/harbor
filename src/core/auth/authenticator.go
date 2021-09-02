@@ -224,7 +224,7 @@ func SearchAndOnBoardUser(username string) (int, error) {
 		return 0, err
 	}
 	if user == nil {
-		return 0, ErrorUserNotExist
+		return 0, libErrors.NotFoundError(nil).WithMessage(fmt.Sprintf("user %s is not found", username))
 	}
 	err = OnBoardUser(user)
 	if err != nil {
