@@ -34,7 +34,7 @@ type Factory func(Logger, StopFunc) (Transfer, error)
 // Transfer defines an interface used to transfer the source
 // resource to the destination
 type Transfer interface {
-	Transfer(src *model.Resource, dst *model.Resource) error
+	Transfer(src *model.Resource, dst *model.Resource, speed int32) error
 }
 
 // Logger defines an interface for logging

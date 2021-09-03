@@ -45,6 +45,7 @@ type Policy struct {
 	Enabled                   bool            `json:"enabled"`
 	CreationTime              time.Time       `json:"creation_time"`
 	UpdateTime                time.Time       `json:"update_time"`
+	Speed                     int32           `json:"speed"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -130,6 +131,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.Enabled = policy.Enabled
 	p.CreationTime = policy.CreationTime
 	p.UpdateTime = policy.UpdateTime
+	p.Speed = policy.Speed
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -173,6 +175,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		ReplicateDeletion:         p.ReplicateDeletion,
 		CreationTime:              p.CreationTime,
 		UpdateTime:                p.UpdateTime,
+		Speed:                     p.Speed,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

@@ -56,7 +56,7 @@ func (r *Replication) Validate(params job.Parameters) error {
 func (r *Replication) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 
-	src, dst, err := parseParams(params)
+	src, dst, speed, err := parseParams(params)
 	if err != nil {
 		logger.Errorf("failed to parse parameters: %v", err)
 		return err
@@ -81,19 +81,38 @@ func (r *Replication) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
-	return trans.Transfer(src, dst)
+	return trans.Transfer(src, dst, speed)
 }
 
-func parseParams(params map[string]interface{}) (*model.Resource, *model.Resource, error) {
+func parseParams(params map[string]interface{}) (*model.Resource, *model.Resource, int32, error) {
 	src := &model.Resource{}
 	if err := parseParam(params, "src_resource", src); err != nil {
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
 	dst := &model.Resource{}
 	if err := parseParam(params, "dst_resource", dst); err != nil {
-		return nil, nil, err
+		return nil, nil, 0, err
 	}
-	return src, dst, nil
+	var speed int32 = 0
+	value, exist := params["speed"]
+	if !exist {
+		speed = 0
+	} else {
+		if s, ok := value.(int32); ok {
+			speed = s
+		} else {
+			if s, ok := value.(int); ok {
+				speed = int32(s)
+			} else {
+				if s, ok := value.(float64); ok {
+					speed = int32(s)
+				} else {
+					return nil, nil, 0, fmt.Errorf("the value of speed isn't integer (%T)", value)
+				}
+			}
+		}
+	}
+	return src, dst, speed, nil
 }
 
 func parseParam(params map[string]interface{}, name string, v interface{}) error {
