@@ -273,6 +273,14 @@ Retry Double Keywords When Error
     Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
+Retry File Should Exist
+    [Arguments]  ${path}
+    Retry Keyword N Times When Error  4  OperatingSystem.File Should Exist  ${path}
+
+Retry File Should Not Exist
+    [Arguments]  ${path}
+    Retry Keyword N Times When Error  4  OperatingSystem.File Should Not Exist  ${path}
+
 Run Curl And Return Json
     [Arguments]  ${curl_cmd}
     ${json_data_file}=  Set Variable  ${CURDIR}${/}cur_user_info.json

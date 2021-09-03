@@ -60,8 +60,8 @@ RUN pwd && mkdir /tool/binary && \
     pwd
 
 #ubuntu
-RUN wget https://github.com/sylabs/singularity/releases/download/v3.3.0/singularity-3.3.0.tar.gz && \
-    tar -xzf singularity-3.3.0.tar.gz && \
+RUN wget https://github.com/sylabs/singularity/releases/download/v3.7.4/singularity-3.7.4.tar.gz && \
+    tar -xzf singularity-3.7.4.tar.gz && \
     cd singularity && \
     ./mconfig && \
     make -C builddir && \

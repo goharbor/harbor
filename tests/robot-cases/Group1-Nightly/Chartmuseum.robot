@@ -23,7 +23,7 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - List Helm Charts And Delete Chart Files
+Test Case - List Helm Charts And Download And Delete Chart Files
     Body Of List Helm Charts
 
 Test Case - Helm CLI Push
