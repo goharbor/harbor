@@ -25,7 +25,6 @@ import (
 //sysnb	Getgid() (gid int)
 //sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
 //sysnb	Getuid() (uid int)
-//sysnb	InotifyInit() (fd int, err error)
 //sys	Lchown(path string, uid int, gid int) (err error)
 //sys	Lstat(path string, stat *Stat_t) (err error)
 //sys	Pause() (err error)
@@ -127,6 +126,10 @@ func (msghdr *Msghdr) SetIovlen(length int) {
 
 func (cmsg *Cmsghdr) SetLen(length int) {
 	cmsg.Len = uint64(length)
+}
+
+func (rsa *RawSockaddrNFCLLCP) SetServiceNameLen(length int) {
+	rsa.Service_name_len = uint64(length)
 }
 
 // Linux on s390x uses the old mmap interface, which requires arguments to be passed in a struct.
@@ -250,7 +253,7 @@ func getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen
 }
 
 func setsockopt(s int, level int, name int, val unsafe.Pointer, vallen uintptr) error {
-	args := [4]uintptr{uintptr(s), uintptr(level), uintptr(name), uintptr(val)}
+	args := [5]uintptr{uintptr(s), uintptr(level), uintptr(name), uintptr(val), vallen}
 	_, _, err := Syscall(SYS_SOCKETCALL, netSetSockOpt, uintptr(unsafe.Pointer(&args)), 0)
 	if err != 0 {
 		return err
