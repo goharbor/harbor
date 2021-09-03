@@ -17,14 +17,16 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // BootStrapTestSuite tests bootstrap
@@ -38,6 +40,8 @@ type BootStrapTestSuite struct {
 
 // SetupSuite prepares test suite
 func (suite *BootStrapTestSuite) SetupSuite() {
+	dao.PrepareTestForPostgresSQL()
+
 	// Load configurations
 	err := config.DefaultConfig.Load("../config_test.yml", true)
 	require.NoError(suite.T(), err, "load configurations error: %s", err)
@@ -51,7 +55,9 @@ func (suite *BootStrapTestSuite) SetupSuite() {
 	err = logger.Init(suite.ctx)
 	require.NoError(suite.T(), err, "init logger: nil error expected but got %s", err)
 
-	suite.jobService = &Bootstrap{}
+	suite.jobService = &Bootstrap{
+		syncEnabled: false,
+	}
 	suite.jobService.SetJobContextInitializer(nil)
 }
 
