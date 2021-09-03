@@ -91,7 +91,7 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return c.createTasks(ctx, srcResources, dstResources)
+	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed)
 }
 
 func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
@@ -102,7 +102,7 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 	return execution.Status == job.StoppedStatus.String(), nil
 }
 
-func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource) error {
+func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32) error {
 	for i, resource := range srcResources {
 		src, err := json.Marshal(resource)
 		if err != nil {
@@ -121,6 +121,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			Parameters: map[string]interface{}{
 				"src_resource": string(src),
 				"dst_resource": string(dest),
+				"speed":        speed,
 			},
 		}
 

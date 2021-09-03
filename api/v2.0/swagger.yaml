@@ -6543,6 +6543,11 @@ definitions:
         type: string
         format: date-time
         description: The update time of the policy.
+      speed:
+        type: integer
+        format: int32
+        description: speed limit for each task
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:

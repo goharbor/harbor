@@ -96,7 +96,7 @@ func TestCopy(t *testing.T) {
 		name:    "dest/harbor",
 		version: "0.2.0",
 	}
-	err := transfer.copy(src, dst, true)
+	err := transfer.copy(src, dst, true, 0)
 	assert.Nil(t, err)
 }
 
