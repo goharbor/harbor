@@ -337,6 +337,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.addP2pPolicyComponent.labels = null;
       this.addP2pPolicyComponent.isOpen = true;
       this.addP2pPolicyComponent.isEdit = true;
+      this.addP2pPolicyComponent.isNameExisting = false;
       this.addP2pPolicyComponent.inlineAlert.close();
       this.addP2pPolicyComponent.policy = clone(this.selectedRow);
       const filter: any[] = JSON.parse(this.selectedRow.filters);
