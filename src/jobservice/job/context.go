@@ -63,10 +63,10 @@ type Context interface {
 	//  flag to indicate if have command
 	OPCommand() (OPCommand, bool)
 
-	// Return the logger
+	// GetLogger returns the logger
 	GetLogger() logger.Interface
 
-	// Get tracker
+	// Tracker of job.
 	Tracker() Tracker
 }
 

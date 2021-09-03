@@ -15,6 +15,8 @@
 package job
 
 import (
+	"encoding/json"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -76,6 +78,16 @@ type ACK struct {
 	Status    string `json:"status"`
 	Revision  int64  `json:"revision"`
 	CheckInAt int64  `json:"check_in_at"`
+}
+
+// JSON of ACK.
+func (a *ACK) JSON() string {
+	str, err := json.Marshal(a)
+	if err != nil {
+		return ""
+	}
+
+	return string(str)
 }
 
 // ActionRequest defines for triggering job action like stop/cancel.

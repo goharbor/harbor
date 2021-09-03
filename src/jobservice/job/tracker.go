@@ -335,10 +335,20 @@ func (bt *basicTracker) Save() (err error) {
 	}
 	// Set update timestamp
 	args = append(args, "update_time", time.Now().Unix())
-	// Set the first revision
-	args = append(args, "revision", time.Now().Unix())
+	// Set the first revision if it is not set.
+	rev := time.Now().Unix()
+	if stats.Info.Revision > 0 {
+		rev = stats.Info.Revision
+	}
+	args = append(args, "revision", rev)
 
-	// ACK data is saved/updated not via tracker, so ignore the ACK saving
+	// For restoring if ACK is not nil.
+	if stats.Info.HookAck != nil {
+		ack := stats.Info.HookAck.JSON()
+		if len(ack) > 0 {
+			args = append(args, "ack")
+		}
+	}
 
 	// Do it in a transaction
 	err = conn.Send("MULTI")
