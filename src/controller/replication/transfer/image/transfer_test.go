@@ -144,8 +144,7 @@ func TestCopy(t *testing.T) {
 		repository: "destination",
 		tags:       []string{"b1", "b2"},
 	}
-	override := true
-	err := tr.copy(src, dst, override)
+	err := tr.copy(src, dst, true, 0)
 	require.Nil(t, err)
 }
 

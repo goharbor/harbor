@@ -69,9 +69,10 @@ type transfer struct {
 	isStopped trans.StopFunc
 	src       adapter.ArtifactRegistry
 	dst       adapter.ArtifactRegistry
+	speed     int32
 }
 
-func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
+func (t *transfer) Transfer(src *model.Resource, dst *model.Resource, speed int32) error {
 	// initialize
 	if err := t.initialize(src, dst); err != nil {
 		return err
@@ -88,7 +89,7 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 	}
 
 	// copy the repository from source registry to the destination
-	return t.copy(t.convert(src), t.convert(dst), dst.Override)
+	return t.copy(t.convert(src), t.convert(dst), dst.Override, speed)
 }
 
 func (t *transfer) convert(resource *model.Resource) *repository {
@@ -161,14 +162,18 @@ func (t *transfer) shouldStop() bool {
 	return isStopped
 }
 
-func (t *transfer) copy(src *repository, dst *repository, override bool) error {
+func (t *transfer) copy(src *repository, dst *repository, override bool, speed int32) error {
 	srcRepo := src.repository
 	dstRepo := dst.repository
 	t.logger.Infof("copying %s:[%s](source registry) to %s:[%s](destination registry)...",
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
+	if speed > 0 {
+		t.logger.Infof("limit network speed at %d kb/s", speed)
+	}
+
 	var err error
 	for i := range src.tags {
-		if e := t.copyArtifact(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
+		if e := t.copyArtifact(srcRepo, src.tags[i], dstRepo, dst.tags[i], override, speed); e != nil {
 			if e == errStopped {
 				return nil
 			}
@@ -187,7 +192,7 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	return nil
 }
 
-func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
+func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, override bool, speed int32) error {
 	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
 		srcRepo, srcRef, dstRepo, dstRef)
 	// pull the manifest from the source registry
@@ -221,7 +226,7 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 
 	// copy contents between the source and destination registries
 	for _, content := range manifest.References() {
-		if err = t.copyContent(content, srcRepo, dstRepo); err != nil {
+		if err = t.copyContent(content, srcRepo, dstRepo, speed); err != nil {
 			return err
 		}
 	}
@@ -237,7 +242,7 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 }
 
 // copy the content from source registry to destination according to its media type
-func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string) error {
+func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string, speed int32) error {
 	digest := content.Digest.String()
 	switch content.MediaType {
 	// when the media type of pulled manifest is index,
@@ -246,7 +251,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 		v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
-		return t.copyArtifact(srcRepo, digest, dstRepo, digest, true)
+		return t.copyArtifact(srcRepo, digest, dstRepo, digest, true, speed)
 	// handle foreign layer
 	case schema2.MediaTypeForeignLayer:
 		t.logger.Infof("the layer %s is a foreign layer, skip", digest)
@@ -255,15 +260,15 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	// the media type of the layer or config can be "application/octet-stream",
 	// schema1.MediaTypeManifestLayer, schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
 	default:
-		return t.copyBlobWithRetry(srcRepo, dstRepo, digest, content.Size)
+		return t.copyBlobWithRetry(srcRepo, dstRepo, digest, content.Size, speed)
 	}
 }
 
-func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDescriptor int64) error {
+func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, speed int32) error {
 	var err error
 	for i, backoff := 1, 2*time.Second; i <= retry; i, backoff = i+1, backoff*2 {
 		t.logger.Infof("copying the blob %s(the %dth running)...", digest, i)
-		if err = t.copyBlob(srcRepo, dstRepo, digest, sizeFromDescriptor); err == nil {
+		if err = t.copyBlob(srcRepo, dstRepo, digest, sizeFromDescriptor, speed); err == nil {
 			t.logger.Infof("copy the blob %s completed", digest)
 			return nil
 		}
@@ -278,7 +283,7 @@ func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDe
 
 // copy the layer or artifact config from the source registry to destination
 // the size parameter is taken from manifests.
-func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor int64) error {
+func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, speed int32) error {
 	if t.shouldStop() {
 		return errStopped
 	}
@@ -311,12 +316,17 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor 
 		t.logger.Errorf("failed to pulling the blob %s: %v", digest, err)
 		return err
 	}
+	if speed > 0 {
+		data = trans.NewReader(data, speed)
+	}
 	defer data.Close()
 	// get size 0 from PullBlob, use size from distribution.Descriptor instead.
 	if size == 0 {
 		size = sizeFromDescriptor
 		t.logger.Debugf("the blob size from remote registry is 0, use size %d from manifests instead", size)
 	}
+
+	t.logger.Debugf("the blob size is %d bytes", size)
 
 	if err = t.dst.PushBlob(dstRepo, digest, size, data); err != nil {
 		t.logger.Errorf("failed to pushing the blob %s, size %d: %v", digest, size, err)
