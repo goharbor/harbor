@@ -16,6 +16,9 @@
 Documentation  This resource provides helper functions for docker operations
 Resource  Util.robot
 
+*** Variables ***
+${download_directory}  /drone/download
+
 *** Keywords ***
 Start Selenium Standalone Server Locally
     OperatingSystem.File Should Exist  /go/selenium-server-standalone-3.4.0.jar
@@ -25,11 +28,14 @@ Start Selenium Standalone Server Locally
     [Return]  ${handle}
 
 Init Chrome Driver
+    Create Directory    ${download_directory}
     Run  pkill chromedriver
     Run  pkill chrome
     ${chrome options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
     ${capabilities}=    Evaluate    sys.modules['selenium.webdriver'].DesiredCapabilities.CHROME    sys
+    ${prefs}    Create Dictionary   download.default_directory=${download_directory}
     Set To Dictionary    ${capabilities}    acceptInsecureCerts    ${True}
+    Call Method    ${chrome options}    add_experimental_option    prefs    ${prefs}
     Call Method    ${chrome options}    add_argument    --headless
     Call Method    ${chrome options}    add_argument    --disable-gpu
     Call Method    ${chrome options}    add_argument    --start-maximized
