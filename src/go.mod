@@ -46,7 +46,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/handlers v1.4.2
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/jpillora/backoff v1.0.0
@@ -67,16 +67,21 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
 	github.com/theupdateframework/notary v0.6.1
 	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.22.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.22.0
-	go.opentelemetry.io/otel v1.0.0-RC2
-	go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC1
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.0-RC2
-	go.opentelemetry.io/otel/sdk v1.0.0-RC2
-	go.opentelemetry.io/otel/trace v1.0.0-RC2
+	go.opentelemetry.io/otel v1.0.0-RC3
+	go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC3
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.0-RC3 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.0-RC3
+	go.opentelemetry.io/otel/sdk v1.0.0-RC3
+	go.opentelemetry.io/otel/trace v1.0.0-RC3
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
+	golang.org/x/net v0.0.0-20210902165921-8d991716f632
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/gorethink/gorethink.v3 v3.0.5 // indirect
@@ -92,5 +97,6 @@ require (
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/goharbor/harbor => ../
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace => github.com/ninjadq/opentelemetry-go/exporters/otlp/otlptrace v1.0.0-RC3-sp1
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )
