@@ -111,5 +111,3 @@ func (suite *UtilsTestSuite) TestJobSerializeAndDeSerialize() {
 	assert.NotNil(suite.T(), deSerializedJob, "deserialized job should not be nil")
 	assert.Equal(suite.T(), job, deSerializedJob, "deSerializeJob should equal to job")
 }
-
-
