@@ -18,3 +18,7 @@ export enum Decoration {
   MATCHES = 'matches',
   EXCLUDES = 'excludes'
 }
+export enum BandwidthUnit {
+  MB = 'Mbps',
+  KB = 'Kbps'
+}
