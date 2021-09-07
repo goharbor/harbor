@@ -65,6 +65,7 @@ import { ConfirmationAcknowledgement } from "../../../global-confirmation-dialog
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
+const IN_PROCESS: string = 'InProgress';
 
 const ruleStatus: { [key: string]: any } = [
   { key: "all", description: "REPLICATION.ALL_STATUS" },
@@ -242,7 +243,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     this.jobsLoading = true;
-
+    this.selectedRow = [];
     this.replicationService.getExecutions(this.search.ruleId, params).subscribe(
       response => {
         this.totalCount = response.metadata.xTotalCount;
@@ -252,7 +253,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             let count: number = 0;
             this.jobs.forEach(job => {
               if (
-                job.status === "InProgress"
+                job.status === IN_PROCESS
               ) {
                 count++;
               }
@@ -403,8 +404,16 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.StopConfirmDialog.open(StopExecutionsMessage);
   }
   canStop() {
-    return this.selectedRow && this.selectedRow[0]
-        && this.selectedRow[0].status === 'InProgress';
+    if (this.selectedRow?.length) {
+      let flag: boolean = true;
+      this.selectedRow.forEach(item => {
+        if (item.status !== IN_PROCESS) {
+          flag = false;
+        }
+      });
+      return flag;
+    }
+    return false;
   }
 
   confirmStop(message: ConfirmationAcknowledgement) {
@@ -430,7 +439,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           finalize(() => {
             this.refreshJobs();
             this.isStopOnGoing = false;
-            this.selectedRow = [];
           })
         )
         .subscribe(() => { }
@@ -489,7 +497,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   refreshJobs() {
     this.currentTerm = "";
     this.currentPage = 1;
-
     let st: ClrDatagridStateInterface = {
       page: {
         from: 0,
