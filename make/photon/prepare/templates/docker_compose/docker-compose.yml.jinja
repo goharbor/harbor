@@ -4,7 +4,6 @@ services:
     image: goharbor/harbor-log:{{version}}
     container_name: harbor-log
     restart: always
-    dns_search: .
     cap_drop:
       - ALL
     cap_add:
@@ -61,7 +60,6 @@ services:
 {% endif %}
     networks:
       - harbor
-    dns_search: .
     depends_on:
       - log
     logging:
@@ -105,7 +103,6 @@ services:
 {% endif %}
     networks:
       - harbor
-    dns_search: .
     depends_on:
       - log
     logging:
@@ -134,7 +131,6 @@ services:
         aliases:
           - harbor-db
   {% endif %}
-    dns_search: .
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -196,7 +192,6 @@ services:
         aliases:
           - harbor-core
 {% endif %}
-    dns_search: .
     depends_on:
       - log
       - registry
@@ -236,7 +231,6 @@ services:
 {% endif %}
     networks:
       - harbor
-    dns_search: .
     depends_on:
       - log
     logging:
@@ -275,7 +269,6 @@ services:
 {% endif %}
     networks:
       - harbor
-    dns_search: .
     depends_on:
       - core
     logging:
@@ -303,7 +296,6 @@ services:
         aliases:
           - redis
   {% endif %}
-    dns_search: .
     depends_on:
       - log
     logging:
@@ -344,7 +336,6 @@ services:
 {% if with_notary %}
       - harbor-notary
 {% endif %}
-    dns_search: .
     ports:
       - {{http_port}}:8080
 {% if protocol == 'https' %}
@@ -374,7 +365,6 @@ services:
     networks:
       - notary-sig
       - harbor-notary
-    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -415,7 +405,6 @@ services:
       notary-sig:
         aliases:
           - notarysigner
-    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -455,7 +444,6 @@ services:
     restart: always
     cap_drop:
       - ALL
-    dns_search: .
     depends_on:
       - log
 {% if external_redis == False %}
@@ -503,7 +491,6 @@ services:
       - SETUID
     networks:
       - harbor-chartmuseum
-    dns_search: .
     depends_on:
       - log
     volumes:
@@ -542,7 +529,6 @@ services:
     restart: always
     networks:
       - harbor
-    dns_search: .
     depends_on:
       - core
   {% if external_database == False %}
