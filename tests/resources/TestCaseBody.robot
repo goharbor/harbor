@@ -436,3 +436,11 @@ Replication With Flattening
     END
     Log All  ${target_images}
     Body Of Replication Of Pull Images from Registry To Self   harbor  https://${src_endpoint}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${src_project}/**  ${null}  N  ${flattening_type}  @{target_images}
+
+Check Harbor Api Page
+    Retry Link Click  //a[contains(.,'Harbor API V2.0')]
+    Sleep  3
+    Switch Window  locator=NEW
+    ${Title}=  Get Title
+    Should Be Equal  ${Title}  Harbor Swagger
+    Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
