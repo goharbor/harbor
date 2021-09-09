@@ -15,13 +15,14 @@
 package proxy
 
 import (
+	"context"
 	"fmt"
+	"io"
+
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"io"
 )
 
 // RemoteInterface defines operations related to remote repository under proxy
@@ -42,22 +43,22 @@ type remoteHelper struct {
 }
 
 // NewRemoteHelper create a remote interface
-func NewRemoteHelper(regID int64) (RemoteInterface, error) {
+func NewRemoteHelper(ctx context.Context, regID int64) (RemoteInterface, error) {
 	r := &remoteHelper{
 		regID:       regID,
 		registryMgr: reg.Mgr}
-	if err := r.init(); err != nil {
+	if err := r.init(ctx); err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-func (r *remoteHelper) init() error {
+func (r *remoteHelper) init(ctx context.Context) error {
 
 	if r.registry != nil {
 		return nil
 	}
-	reg, err := r.registryMgr.Get(orm.Context(), r.regID)
+	reg, err := r.registryMgr.Get(ctx, r.regID)
 	if err != nil {
 		return err
 	}

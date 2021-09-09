@@ -17,8 +17,6 @@ package proxy
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/tag"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io"
 	"strings"
 	"sync"
@@ -29,11 +27,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/event/operator"
+	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -69,6 +69,7 @@ type Controller interface {
 	// EnsureTag ensure tag for digest
 	EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error
 }
+
 type controller struct {
 	blobCtl         blob.Controller
 	artifactCtl     artifact.Controller
@@ -179,6 +180,7 @@ func getManifestListKey(repo, dig string) string {
 	// actual redis key format is cache:manifestlist:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + dig
 }
+
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
@@ -227,15 +229,17 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 
 	return man, nil
 }
+
 func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
 }
+
 func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
-	rHelper, err := NewRemoteHelper(p.RegistryID)
+	rHelper, err := NewRemoteHelper(ctx, p.RegistryID)
 	if err != nil {
 		return 0, nil, err
 	}

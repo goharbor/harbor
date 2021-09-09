@@ -116,7 +116,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(p.RegistryID)
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID)
 	if err != nil {
 		return err
 	}
