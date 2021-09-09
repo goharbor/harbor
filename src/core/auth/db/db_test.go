@@ -14,22 +14,14 @@
 package db
 
 import (
-	"os"
+	"context"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testinguserpkg "github.com/goharbor/harbor/src/testing/pkg/user"
-
 	testifymock "github.com/stretchr/testify/mock"
 )
-
-func TestMain(m *testing.M) {
-	test.InitDatabaseFromEnv()
-	retCode := m.Run()
-	os.Exit(retCode)
-}
 
 func TestSearchUser(t *testing.T) {
 	user := &models.User{
@@ -49,7 +41,7 @@ func TestSearchUser(t *testing.T) {
 			return name == "existuser"
 		})).Return(user, nil)
 
-	newUser, err := auth.SearchUser("existuser")
+	newUser, err := auth.SearchUser(context.TODO(), "existuser")
 	if err != nil {
 		t.Fatalf("Failed to search user, error %v", err)
 	}

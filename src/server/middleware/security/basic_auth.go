@@ -32,7 +32,7 @@ func (b *basicAuth) Generate(req *http.Request) security.Context {
 	if !ok {
 		return nil
 	}
-	user, err := auth.Login(models.AuthModel{
+	user, err := auth.Login(req.Context(), models.AuthModel{
 		Principal: username,
 		Password:  password,
 	})

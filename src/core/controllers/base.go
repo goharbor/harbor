@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	o "github.com/astaxie/beego/orm"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -32,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -97,7 +95,7 @@ func (cc *CommonController) Login() {
 		return
 	}
 
-	user, err := auth.Login(models.AuthModel{
+	user, err := auth.Login(cc.Context(), models.AuthModel{
 		Principal: principal,
 		Password:  password,
 	})
@@ -119,7 +117,7 @@ func (cc *CommonController) LogOut() {
 
 // UserExists checks if user exists when user input value in sign in form.
 func (cc *CommonController) UserExists() {
-	ctx := orm.NewContext(cc.Ctx.Request.Context(), o.NewOrm())
+	ctx := cc.Context()
 	flag, err := config.SelfRegistration(ctx)
 	if err != nil {
 		log.Errorf("Failed to get the status of self registration flag, error: %v, disabling user existence check", err)
