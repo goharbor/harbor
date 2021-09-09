@@ -17,7 +17,6 @@ package preheat
 import (
 	"context"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,6 +33,7 @@ import (
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	ta "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -155,7 +155,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 			r := fmt.Sprintf("%s/%s", c.Namespace, c.Repository)
 			return fmt.Sprintf(manifestAPIPattern, "https://testing.harbor.com", r, c.Tags[0]), nil
 		},
-		credMaker: func(c *selector.Candidate) (s string, e error) {
+		credMaker: func(ctx context.Context, c *selector.Candidate) (s string, e error) {
 			return "fake-token", nil
 		},
 	}
