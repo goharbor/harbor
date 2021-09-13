@@ -58,6 +58,7 @@ func initSupportedNotifyType() {
 		event.TopicQuotaExceed,
 		event.TopicQuotaWarning,
 		event.TopicScanningFailed,
+		event.TopicScanningStopped,
 		event.TopicScanningCompleted,
 		event.TopicReplication,
 		event.TopicTagRetention,

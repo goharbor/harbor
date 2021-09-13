@@ -113,9 +113,8 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 
 	sum.TotalCount = 1
 
-	// If the status is not success/stopped, there will not be any report.
-	if r.Status != job.SuccessStatus.String() &&
-		r.Status != job.StoppedStatus.String() {
+	// If the status is not success, there will not be any report.
+	if r.Status != job.SuccessStatus.String() {
 		return sum, nil
 	}
 

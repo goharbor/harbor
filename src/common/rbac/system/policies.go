@@ -58,6 +58,7 @@ var (
 		{Resource: rbac.ResourceScanAll, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceScanAll, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceScanAll, Action: rbac.ActionList},
+		{Resource: rbac.ResourceScanAll, Action: rbac.ActionStop},
 
 		{Resource: rbac.ResourceSystemVolumes, Action: rbac.ActionRead},
 

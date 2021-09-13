@@ -29,7 +29,10 @@ func (si *ScanImageMetaData) Resolve(evt *event.Event) error {
 	case job.SuccessStatus:
 		eventType = event2.TopicScanningCompleted
 		topic = event2.TopicScanningCompleted
-	case job.ErrorStatus, job.StoppedStatus:
+	case job.StoppedStatus:
+		eventType = event2.TopicScanningStopped
+		topic = event2.TopicScanningStopped
+	case job.ErrorStatus:
 		eventType = event2.TopicScanningFailed
 		topic = event2.TopicScanningFailed
 	default:

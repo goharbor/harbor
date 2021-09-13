@@ -358,6 +358,45 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	}
 }
 
+// TestScanControllerStop ...
+func (suite *ControllerTestSuite) TestScanControllerStop() {
+	{
+		// artifact not provieded
+		suite.Require().Error(suite.c.Stop(context.TODO(), nil))
+	}
+
+	{
+		// success
+		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{
+			{ExtraAttrs: suite.makeExtraAttrs("rp-uuid-001"), Status: "Running"},
+		}, nil).Once()
+		mock.OnAnything(suite.execMgr, "Stop").Return(nil).Once()
+
+		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+
+		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact))
+	}
+
+	{
+		// failed due to no execution returned by List
+		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{}, nil).Once()
+		mock.OnAnything(suite.execMgr, "Stop").Return(nil).Once()
+
+		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+	}
+
+	{
+		// failed due to execMgr.List() errored out
+		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{}, fmt.Errorf("failed to call execMgr.List()")).Once()
+
+		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+	}
+}
+
 // TestScanControllerGetReport ...
 func (suite *ControllerTestSuite) TestScanControllerGetReport() {
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {

@@ -329,11 +329,25 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 				break
 			}
 		}
-		if len(keyPrefix) == 0 {
+		if len(keyPrefix) == 0 || keyPrefix == key {
 			return qs, nil
 		}
-		inClause, err := orm.CreateInClause(ctx, "select id from execution where extra_attrs->>?=?",
-			strings.TrimPrefix(key, keyPrefix), value)
+
+		// key with keyPrefix supports multi-level query operator on PostgreSQL JSON data
+		// examples:
+		// key = extra_attrs.id,
+		//  ==> sql = "select id from execution where extra_attrs->>?=?", args = {id, value}
+		// key = extra_attrs.artifact.digest
+		//  ==> sql = "select id from execution where extra_attrs->?->>?=?", args = {artifact, id, value}
+		// key = extra_attrs.a.b.c
+		//  ==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
+		keys := strings.Split(strings.TrimPrefix(key, keyPrefix), ".")
+		var args []interface{}
+		for _, item := range keys {
+			args = append(args, item)
+		}
+		args = append(args, value)
+		inClause, err := orm.CreateInClause(ctx, buildInClauseSqlForExtraAttrs(keys), args...)
 		if err != nil {
 			return nil, err
 		}
@@ -341,4 +355,24 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 	}
 
 	return qs, nil
+}
+
+// Param keys is strings.Split() after trim "extra_attrs."/"ExtraAttrs." prefix
+func buildInClauseSqlForExtraAttrs(keys []string) string {
+	switch len(keys) {
+	case 0:
+		// won't fall into this case, as the if condition on "keyPrefix == key"
+		// act as a place holder to ensure "default" is equivalent to "len(keys) >= 2"
+		return ""
+	case 1:
+		return fmt.Sprintf("select id from execution where extra_attrs->>?=?")
+	default:
+		// len(keys) >= 2
+		elements := make([]string, len(keys)-1)
+		for i := range elements {
+			elements[i] = "?"
+		}
+		s := strings.Join(elements, "->")
+		return fmt.Sprintf("select id from execution where extra_attrs->%s->>?=?", s)
+	}
 }

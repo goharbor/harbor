@@ -65,6 +65,7 @@ func (suite *JobTestSuite) TestJob() {
 	lg := &mockjobservice.MockJobLogger{}
 
 	ctx.On("GetLogger").Return(lg)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
 
 	r := &scanner.Registration{
 		ID:   0,

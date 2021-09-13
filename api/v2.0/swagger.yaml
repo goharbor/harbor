@@ -1166,6 +1166,31 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
+    post:
+      summary: Cancelling a scan job for a particular artifact
+      description: Cancelling a scan job for a particular artifact
+      tags:
+        - scan
+      operationId: stopScanArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
     get:
       summary: Get the log of the scan report
@@ -4209,6 +4234,26 @@ paths:
           $ref: '#/responses/409'
         '412':
           $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+  /system/scanAll/stop:
+    post:
+      summary: Stop scanAll job execution
+      description: Stop scanAll job execution
+      parameters:
+        - $ref: '#/parameters/requestId'
+      tags:
+        - scanAll
+      operationId: stopScanAll
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
   /ping:
