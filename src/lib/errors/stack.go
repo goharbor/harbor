@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const maxDeepth = 50
+const maxDepth = 50
 
 type stack []uintptr
 
@@ -28,7 +28,7 @@ func (s *stack) frames() StackFrames {
 
 // newStack ...
 func newStack() *stack {
-	var pcs [maxDeepth]uintptr
+	var pcs [maxDepth]uintptr
 	n := runtime.Callers(3, pcs[:])
 	var st stack = pcs[0:n]
 	return &st
