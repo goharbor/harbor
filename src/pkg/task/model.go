@@ -82,9 +82,10 @@ type Task struct {
 	// the time that the task record created
 	CreationTime time.Time `json:"creation_time"`
 	// the time that the underlying job starts
-	StartTime  time.Time `json:"start_time"`
-	UpdateTime time.Time `json:"update_time"`
-	EndTime    time.Time `json:"end_time"`
+	StartTime      time.Time `json:"start_time"`
+	UpdateTime     time.Time `json:"update_time"`
+	EndTime        time.Time `json:"end_time"`
+	StatusRevision int64     `json:"status_revision"`
 }
 
 // From constructs a task from DAO model
@@ -100,6 +101,7 @@ func (t *Task) From(task *dao.Task) {
 	t.StartTime = task.StartTime
 	t.UpdateTime = task.UpdateTime
 	t.EndTime = task.EndTime
+	t.StatusRevision = task.StatusRevision
 	if len(task.ExtraAttrs) > 0 {
 		extras := map[string]interface{}{}
 		if err := json.Unmarshal([]byte(task.ExtraAttrs), &extras); err != nil {
