@@ -10,3 +10,6 @@
 
 *   Jul 15 2021 <danfengl@vmware.com>
 -   Create this file to trigger build base action in buld-package workflow 
+
+*   Sept 14 2021 <jiaoya@vmware.com>
+-   The reason for updating this file is to refresh the bash image
