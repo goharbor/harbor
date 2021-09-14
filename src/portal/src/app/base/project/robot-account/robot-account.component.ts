@@ -96,7 +96,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
                 }));
           })).subscribe(response => {
         this.total = Number.parseInt(
-            response.headers.get('x-total-count')
+            response.headers.get('x-total-count'), 10
         );
         this.robots = response.body as Robot[];
       }, error => {
@@ -169,7 +169,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         .subscribe(
             response => {
               this.total = Number.parseInt(
-                  response.headers.get('x-total-count')
+                  response.headers.get('x-total-count'), 10
               );
               this.robots = response.body as Robot[];
             },
