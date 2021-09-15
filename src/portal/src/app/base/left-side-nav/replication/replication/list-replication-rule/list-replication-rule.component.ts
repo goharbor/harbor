@@ -40,7 +40,8 @@ import { errorHandler } from "../../../../../shared/units/shared.utils";
 import { ConfirmationAcknowledgement } from "../../../../global-confirmation-dialog/confirmation-state-message";
 import { ConfirmationMessage } from "../../../../global-confirmation-dialog/confirmation-message";
 import { HELM_HUB } from "../../../../../shared/services/endpoint.service";
-import { Flatten_I18n_MAP } from "../../replication";
+import { BandwidthUnit, Flatten_I18n_MAP } from "../../replication";
+import { KB_TO_MB } from "../create-edit-rule/create-edit-rule.component";
 @Component({
     selector: "hbr-list-replication-rule",
     templateUrl: "./list-replication-rule.component.html",
@@ -267,5 +268,14 @@ export class ListReplicationRuleComponent  {
             return Flatten_I18n_MAP[level];
         }
         return level;
+    }
+    getBandwidthStr(speed: number): string {
+        if (speed >= KB_TO_MB) {
+            return '' + (speed / KB_TO_MB).toFixed(2) + BandwidthUnit.MB;
+        }
+        if (speed > 0 && speed < KB_TO_MB) {
+            return '' + speed + BandwidthUnit.KB;
+        }
+        return 'REPLICATION.UNLIMITED';
     }
 }

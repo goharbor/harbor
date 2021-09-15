@@ -238,6 +238,40 @@
             <input type="checkbox" class="clr-checkbox" [checked]="false" id="ruleDeletion" formControlName="deletion">
             <label for="ruleDeletion">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
           </div>
+        </div>
+      </div>
+      <!--speed-->
+      <div class="clr-form-control">
+        <label for="speed" class="required clr-control-label">{{'REPLICATION.BANDWIDTH' | translate}}
+          <clr-tooltip>
+            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+              <span>{{'REPLICATION.BANDWIDTH_TOOLTIP' | translate}}</span>
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </label>
+        <div class="clr-control-container" [class.clr-error]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
+          <div class="clr-checkbox-wrapper speed">
+            <input type="text" id="speed" name="speed" class="clr-input"
+                   formControlName="speed" autocomplete="off" required pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" maxlength="5">
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <div class="clr-select-wrapper" [class.unit]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
+            <select class="clr-select" [ngModelOptions]="{standalone: true}" id="speed_unit" name="speed_unit" [(ngModel)]="selectedUnit">
+              <option *ngFor="let unit of speedUnits" [value]="unit.UNIT">{{ unit.UNIT }}</option>
+            </select>
+          </div>
+          <clr-control-error *ngIf="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))"
+                             class="tooltip-content">
+            {{'REPLICATION.BANDWIDTH_ERROR_TIP' | translate}}
+          </clr-control-error>
+        </div>
+      </div>
+
+      <!--override  and enable-->
+      <div class="clr-form-control">
+        <label class="clr-control-label"></label>
+        <div class="clr-control-container">
           <div class="clr-checkbox-wrapper clr-form-control">
             <input type="checkbox" class="clr-checkbox" [checked]="true" id="overridePolicy" formControlName="override">
             <label for="overridePolicy">{{'REPLICATION.OVERRIDE_INFO' | translate}}
@@ -259,6 +293,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-    <button type="submit" id="ruleBtnOk" class="btn btn-primary" [clrLoading]="inProgress" (click)="onSubmit()" [disabled]="!isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
+    <button type="submit" id="ruleBtnOk" class="btn btn-primary" [clrLoading]="inProgress" (click)="onSubmit()" [disabled]="inProgress || !isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
   </div>
 </clr-modal>

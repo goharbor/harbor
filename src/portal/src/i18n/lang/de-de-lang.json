@@ -649,7 +649,11 @@
         "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
         "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
         "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
-        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'"
+        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'",
+        "BANDWIDTH": "Bandwidth",
+        "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+        "UNLIMITED": "Unlimited"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Neuer Endpunkt",

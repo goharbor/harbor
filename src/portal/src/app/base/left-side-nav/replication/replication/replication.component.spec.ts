@@ -12,7 +12,6 @@ import { ReplicationJobItem } from '../../../../shared/services';
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, Subscription } from 'rxjs';
-import { CURRENT_BASE_HREF } from "../../../../shared/units/utils";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
 import { delay } from "rxjs/operators";
 import { SharedTestingModule } from "../../../../shared/shared.module";
@@ -32,7 +31,8 @@ describe('Replication Component (inline template)', () => {
           "src_registry": {id: 3},
           "src_namespaces": ["name1"],
           "enabled": true,
-          "override": true
+          "override": true,
+          "speed": -1
       },
       {
           "id": 2,
@@ -45,7 +45,8 @@ describe('Replication Component (inline template)', () => {
           "dest_registry": {id: 5},
           "src_namespaces": ["name1"],
           "enabled": true,
-          "override": true
+          "override": true,
+          "speed": -1
       }
   ];
 

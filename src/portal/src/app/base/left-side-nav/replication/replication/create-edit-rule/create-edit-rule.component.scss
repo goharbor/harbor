@@ -267,3 +267,13 @@ clr-modal {
 .right-align {
     transform: translateX(-4.3rem) translateY(1.25rem)!important;
 }
+.unit {
+    width: 4rem;
+}
+.speed {
+    width: 14.4rem;
+    display: inline-block;
+    input {
+      width: 12rem;
+    }
+}

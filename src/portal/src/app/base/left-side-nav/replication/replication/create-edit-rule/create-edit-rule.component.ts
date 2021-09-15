@@ -20,7 +20,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule } from "../../../../../shared/services/interface";
+import { Filter, ReplicationRule } from "../../../../../shared/services";
 import { forkJoin, Observable, Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, finalize } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
@@ -35,10 +35,11 @@ import { RegistryService } from "../../../../../../../ng-swagger-gen/services/re
 import { Registry } from "../../../../../../../ng-swagger-gen/models/registry";
 import { Label } from "../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../ng-swagger-gen/services/label.service";
-import { Decoration, Flatten_I18n_MAP, Flatten_Level } from "../../replication";
+import { BandwidthUnit, Decoration, Flatten_I18n_MAP, Flatten_Level } from "../../replication";
 
 const PREFIX: string = '0 ';
 const PAGE_SIZE: number = 100;
+export const KB_TO_MB: number = 1024;
 
 @Component({
   selector: "hbr-create-edit-rule",
@@ -82,6 +83,16 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   @ViewChild(InlineAlertComponent, {static: true}) inlineAlert: InlineAlertComponent;
   flattenLevelMap = Flatten_I18n_MAP;
+  speedUnits =  [
+    {
+      UNIT: BandwidthUnit.KB,
+    },
+    {
+      UNIT: BandwidthUnit.MB,
+    }
+  ];
+  selectedUnit: string = BandwidthUnit.KB;
+  copySpeedUnit: string = BandwidthUnit.KB;
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,
@@ -207,9 +218,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   get isValid() {
     if (this.ruleForm.controls["dest_namespace"].value) {
-      if (this.ruleForm.controls["dest_namespace"].invalid) {this.ruleForm.get('trigger').get('trigger_settings').get('cron').value
+      if (this.ruleForm.controls["dest_namespace"].invalid) {
         return false;
       }
+    }
+    if (this.ruleForm.controls["speed"].invalid) {
+      return false;
     }
     let controlName = !!this.ruleForm.controls["name"].value;
     let sourceRegistry = !!this.ruleForm.controls["src_registry"].value;
@@ -242,7 +256,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       filters: this.fb.array([]),
       enabled: true,
       deletion: false,
-      override: true
+      override: true,
+      speed: -1
     });
   }
 
@@ -268,15 +283,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       deletion: false,
       enabled: true,
       override: true,
-      dest_namespace_replace_count: Flatten_Level.FLATTEN_LEVEl_1
+      dest_namespace_replace_count: Flatten_Level.FLATTEN_LEVEl_1,
+      speed: -1
     });
     this.isPushMode = true;
+    this.selectedUnit = BandwidthUnit.KB;
   }
 
 
   updateRuleFormAndCopyUpdateForm(rule: ReplicationRule): void {
     this.isPushMode = rule.dest_registry.id !== 0;
     setTimeout(() => {
+      // convert speed unit to KB or MB
+      let speed: number = this.convertToInputValue(rule.speed);
       // There is no trigger_setting type when the harbor is upgraded from the old version.
       rule.trigger.trigger_settings = rule.trigger.trigger_settings ? rule.trigger.trigger_settings : {cron: ''};
       this.ruleForm.reset({
@@ -289,12 +308,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         trigger: rule.trigger,
         deletion: rule.deletion,
         enabled: rule.enabled,
-        override: rule.override
+        override: rule.override,
+        speed: speed
       });
       let filtersArray = this.getFilterArray(rule);
       this.noSelectedEndpoint = false;
       this.setFilter(filtersArray);
       this.copyUpdateForm = clone(this.ruleForm.value);
+      this.copySpeedUnit = this.selectedUnit;
       // keep trigger same value
       this.copyUpdateForm.trigger = clone(rule.trigger);
       this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
@@ -373,6 +394,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   public hasFormChange(): boolean {
+    if (this.copySpeedUnit !== this.selectedUnit) {// speed unit has been changed
+      return true;
+    }
     return !isEmptyObject(this.hasChanges());
   }
 
@@ -383,6 +407,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
+    // need to convert unit to KB for speed property
+    copyRuleForm.speed = this.convertToKB(copyRuleForm.speed);
     copyRuleForm.dest_namespace_replace_count = copyRuleForm.dest_namespace_replace_count
       ? parseInt(copyRuleForm.dest_namespace_replace_count.toString(), 10) : 0;
     if (this.isPushMode) {
@@ -659,5 +685,25 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+  // convert 'MB' or 'KB' to 'KB'
+  convertToKB(inputValue: number): number {
+    if (!inputValue) { // return default value
+      return -1;
+    }
+    if (this.selectedUnit === BandwidthUnit.KB) {
+      return +inputValue;
+    }
+    return  inputValue * KB_TO_MB;
+  }
+  // convert 'KB' to 'MB' or 'KB'
+  convertToInputValue(realSpeed: number): number {
+    if (realSpeed >= KB_TO_MB && realSpeed % KB_TO_MB === 0) {
+      this.selectedUnit = BandwidthUnit.MB;
+      return Math.ceil(realSpeed / KB_TO_MB);
+    } else {
+      this.selectedUnit = BandwidthUnit.KB;
+      return realSpeed ? realSpeed : -1;
+    }
   }
 }

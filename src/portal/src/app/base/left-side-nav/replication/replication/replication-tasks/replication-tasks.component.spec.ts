@@ -1,17 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { ReplicationExecution } from "../../../../../../../ng-swagger-gen/models/replication-execution";
 import { ReplicationTasksComponent } from "./replication-tasks.component";
 import { ActivatedRoute } from "@angular/router";
 import { ReplicationService } from "../../../../../../../ng-swagger-gen/services";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
-import { RouterTestingModule } from "@angular/router/testing";
-import { TranslateModule } from "@ngx-translate/core";
 import { of, Subscription } from "rxjs";
 import { delay } from "rxjs/operators";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import { ClarityModule } from "@clr/angular";
 import { ReplicationTask } from "../../../../../../../ng-swagger-gen/models/replication-task";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
 
