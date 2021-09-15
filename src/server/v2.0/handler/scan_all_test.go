@@ -16,6 +16,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -32,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
@@ -52,9 +54,6 @@ type ScanAllTestSuite struct {
 }
 
 func (suite *ScanAllTestSuite) SetupSuite() {
-	// this is because orm.Context()
-	dao.PrepareTestForPostgresSQL()
-
 	suite.execution = &task.Execution{
 		Status: "Running",
 		Metrics: &taskdao.Metrics{
@@ -89,6 +88,7 @@ func (suite *ScanAllTestSuite) SetupSuite() {
 			scanCtl:    suite.scanCtl,
 			scannerCtl: suite.scannerCtl,
 			scheduler:  suite.scheduler,
+			makeCtx:    func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
 		},
 	}
 
