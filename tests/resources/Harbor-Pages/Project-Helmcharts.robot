@@ -37,6 +37,16 @@ Go Into Chart Detail
     Retry Element Click  xpath=//hbr-helm-chart-version//a[contains(., '${version_name}')]
     Retry Wait Until Page Contains Element  ${chart_detail}
 
+Download Chart File
+    [Arguments]  ${chart_name}  ${chart_filename}
+    Switch To Project Charts
+    ${out}  Run Keyword And Ignore Error  OperatingSystem.File Should Not Exist  ${download_directory}/${chart_filename}
+    Run Keyword If  '${out[0]}'=='FAIL'  Run  rm -rf ${download_directory}/${chart_filename}
+    Retry File Should Not Exist  ${download_directory}/${chart_filename}
+    Retry Element Click  //clr-dg-row[contains(.,'${chart_name}')]//label
+    Retry Double Keywords When Error  Retry Element Click  ${download_chart_button}  Retry File Should Exist  ${download_directory}/${chart_filename}
+    Retry Element Click  //clr-dg-row[contains(.,'${chart_name}')]//label
+    
 Multi-delete Chart Files
     [Arguments]    @{obj}
     Switch To Project Charts

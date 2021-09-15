@@ -33,8 +33,8 @@ RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
     requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \
     apt-get clean all
-
-RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
+# Because the old version of chromedriver can’t download files, upgrade it to version 93.0.4577.15, which can download files normally.
+RUN wget -N http://chromedriver.storage.googleapis.com/93.0.4577.15/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip && \
     chmod +x chromedriver && \
     mv -f chromedriver /usr/local/share/chromedriver && \

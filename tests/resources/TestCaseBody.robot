@@ -151,7 +151,7 @@ Body Of List Helm Charts
     Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
 
     Go Into Project  project${d}  has_image=${false}
-    Switch To Project Charts
+    Retry Keyword N Times When Error  4  Download Chart File  ${prometheus_chart_name}  ${prometheus_chart_filename}
     Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
