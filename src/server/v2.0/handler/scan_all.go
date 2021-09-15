@@ -41,6 +41,7 @@ func newScanAllAPI() *scanAllAPI {
 		scanCtl:    scan.DefaultController,
 		scannerCtl: scanner.DefaultController,
 		scheduler:  scheduler.Sched,
+		makeCtx:    orm.Context,
 	}
 }
 
@@ -50,6 +51,7 @@ type scanAllAPI struct {
 	scanCtl    scan.Controller
 	scannerCtl scanner.Controller
 	scheduler  scheduler.Scheduler
+	makeCtx    func() context.Context
 }
 
 func (s *scanAllAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
@@ -75,7 +77,7 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, params operation.StopScanA
 		if err != nil {
 			log.Errorf("failed to stop the execution of executionID=%+v", execution.ID)
 		}
-	}(orm.Context(), execution.ID)
+	}(s.makeCtx(), execution.ID)
 
 	return operation.NewStopScanAllAccepted()
 }
