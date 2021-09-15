@@ -15,7 +15,6 @@ import {
 } from "../../../../../../shared/services";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import { ChannelService } from "../../../../../../shared/services/channel.service";
 import { SessionService } from "../../../../../../shared/services/session.service";
 import { SessionUser } from "../../../../../../shared/entities/session-user";
 import { delay } from "rxjs/operators";
@@ -66,13 +65,6 @@ describe('ArtifactVulnerabilitiesComponent', () => {
       return of(true);
     }
   };
-  const fakedChannelService = {
-    ArtifactDetail$: {
-      subscribe() {
-        return null;
-      }
-    }
-  };
   const mockedUser: SessionUser = {
     user_id: 1,
     username: 'admin',
@@ -120,7 +112,6 @@ describe('ArtifactVulnerabilitiesComponent', () => {
         {provide: AdditionsService, useValue: fakedAdditionsService},
         {provide: UserPermissionService, useValue: fakedUserPermissionService},
         {provide: ScanningResultService, useValue: fakedScanningResultService},
-        {provide: ChannelService, useValue: fakedChannelService},
         {provide: SessionService, useValue: fakedSessionService},
         {provide: ProjectService, useValue: fakedProjectService},
       ],
@@ -159,5 +150,11 @@ describe('ArtifactVulnerabilitiesComponent', () => {
     const firstRow = fixture.nativeElement.querySelector("clr-dg-row");
     const cells = firstRow.querySelectorAll("clr-dg-cell");
     expect(cells[cells.length - 1].innerText).toEqual("TAG_RETENTION.YES");
+  });
+
+  it("scan button should show the right text", async () => {
+    fixture.autoDetectChanges(true);
+    const scanBtn: HTMLButtonElement = fixture.nativeElement.querySelector("#scan-btn");
+    expect(scanBtn.innerText).toContain("VULNERABILITY.SCAN_NOW");
   });
 });

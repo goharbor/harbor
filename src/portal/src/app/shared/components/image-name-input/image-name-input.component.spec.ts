@@ -1,12 +1,9 @@
 import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
 import { ImageNameInputComponent } from "./image-name-input.component";
-import { ErrorHandler } from "../../units/error-handler/error-handler";
 import { ProjectDefaultService, ProjectService } from "../../services";
 import { Project } from "../../../base/project/project-config/project-policy-config/project";
 import { of } from "rxjs";
 import { HttpResponse } from "@angular/common/http";
-import { ChannelService } from "../../services/channel.service";
-import { CURRENT_BASE_HREF } from "../../units/utils";
 import { SharedTestingModule } from "../../shared.module";
 
 describe("ImageNameInputComponent (inline template)", () => {
@@ -35,8 +32,6 @@ describe("ImageNameInputComponent (inline template)", () => {
                 ImageNameInputComponent
             ],
             providers: [
-                ErrorHandler,
-                ChannelService,
                 { provide: ProjectService, useClass: ProjectDefaultService }
             ]
         });

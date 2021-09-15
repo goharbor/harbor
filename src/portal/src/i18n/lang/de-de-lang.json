@@ -965,6 +965,7 @@
 	    "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden."
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
             "TRIGGER_SCAN_ALL_SUCCESS": "Scan erfolgreich gestartet!",
             "TRIGGER_SCAN_ALL_FAIL": "Fehler beim Start des Scans: {{error}}",
             "TITLE": "Schwachstellen-Scanning",
@@ -1035,7 +1036,8 @@
             "OTHER_STATUS": "Nicht gescannt",
             "QUEUED": "In Warteschlange",
             "ERROR": "Log anzeigen",
-            "SCANNING": "Scanning"
+            "SCANNING": "Scanning",
+            "STOPPED": "Scan stopped"
         },
         "GRID": {
             "PLACEHOLDER": "Es wurden keine Scan-Ergebnisse gefunden!",
@@ -1078,7 +1080,9 @@
         "SCAN_NOW": "Scan",
         "SCAN_BY": "SCAN BY {{scanner}}",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "NO_SCANNER": "NO SCANNER"
+        "NO_SCANNER": "NO SCANNER",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Befehl",
@@ -1697,6 +1701,7 @@
         "FINAL_PROJECT_NAME_TIP": "Der zusammengesetzte Robot-Account-Name besteht aus dem Prefix, dem Projektnamen, einem plus und dem Inhalt des Eingabefeldes.",
         "FINAL_SYSTEM_NAME_TIP": "Der zusammengesetzte systemweite Robot-Account-Name besteht aus dem Prefix und dem Inhalt des Eingabefeldes.",
         "PUSH_AND_PULL": "Push",
-        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
+        "STOP": "Stop"
     }
 }

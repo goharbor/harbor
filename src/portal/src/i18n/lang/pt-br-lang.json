@@ -961,6 +961,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado."
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",
             "TRIGGER_SCAN_ALL_FAIL": "Falha ao disparar análise geral com erro: {{error}}",
             "TITLE": "Análise de vulnerabilidades",
@@ -1031,7 +1032,8 @@
             "OTHER_STATUS": "Não analisado",
             "QUEUED": "Solicitado",
             "ERROR": "Ver erros...",
-            "SCANNING": "Analisando"
+            "SCANNING": "Analisando",
+            "STOPPED": "Scan stopped"
         },
         "GRID": {
             "PLACEHOLDER": "Não foi possível encontrar nenhum resultado de análise!",
@@ -1074,7 +1076,9 @@
         "SCAN_NOW": "Analisar",
         "SCAN_BY": "SCAN BY {{scanner}}",
         "REPORTED_BY": "Relatado por {{scanner}}",
-        "NO_SCANNER": "NO SCANNER"
+        "NO_SCANNER": "NO SCANNER",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Comando Push",
@@ -1693,7 +1697,8 @@
         "FINAL_PROJECT_NAME_TIP": "Para evitar conflitos entre projetos, o nome completo será composto pelo nome do projeto concatenado a um marcador e o valor aqui informado.",
         "FINAL_SYSTEM_NAME_TIP": "Este valor será concatenado ao prefixo do projeto.",
         "PUSH_AND_PULL": "Push",
-        "PUSH_PERMISSION_TOOLTIP": "Permissões de envio (push) presume também a permissão e recebimento (pull)."
+        "PUSH_PERMISSION_TOOLTIP": "Permissões de envio (push) presume também a permissão e recebimento (pull).",
+        "STOP": "Stop"
     }
 
 }

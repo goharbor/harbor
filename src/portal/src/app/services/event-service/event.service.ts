@@ -76,5 +76,8 @@ export class EventService {
 export enum HarborEvent {
   SCROLL = 'scroll',
   SCROLL_TO_POSITION = 'scrollToPosition',
-  REFRESH_PROJECT_INFO = 'refreshProjectInfo'
+  REFRESH_PROJECT_INFO = 'refreshProjectInfo',
+  START_SCAN_ARTIFACT = 'startScanArtifact',
+  STOP_SCAN_ARTIFACT = 'stopScanArtifact',
+  UPDATE_VULNERABILITY_INFO = 'UpdateVulnerabilityInfo'
 }

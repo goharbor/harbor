@@ -966,6 +966,7 @@
             "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。"
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "停止扫描所有镜像任务成功!",
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
             "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}}",
             "TITLE": "缺陷扫描",
@@ -1036,7 +1037,8 @@
             "OTHER_STATUS": "未扫描",
             "QUEUED": "已入队列",
             "ERROR": "查看日志",
-            "SCANNING": "扫描中"
+            "SCANNING": "扫描中",
+            "STOPPED": "扫描中止"
         },
         "GRID": {
             "PLACEHOLDER": "没有扫描结果！",
@@ -1079,7 +1081,9 @@
         "SCAN_NOW": "扫描",
         "SCAN_BY": "使用 {{scanner}} 进行扫描",
         "REPORTED_BY": "结果由 {{scanner}} 提供",
-        "NO_SCANNER": "无扫描器"
+        "NO_SCANNER": "无扫描器",
+        "TRIGGER_STOP_SUCCESS": "停止扫描成功",
+        "STOP_NOW": "停止扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
@@ -1695,6 +1699,7 @@
         "FINAL_PROJECT_NAME_TIP": "项目级机器人的最终名称由前缀，项目名称，一个加号以及当前输入值组成",
         "FINAL_SYSTEM_NAME_TIP": "系统级机器人的最终名称由前缀和当前输入值组成",
         "PUSH_AND_PULL": "推送",
-        "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限"
+        "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限",
+        "STOP": "停止"
     }
 }
