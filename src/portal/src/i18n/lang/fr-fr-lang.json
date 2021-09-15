@@ -938,6 +938,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
             "TRIGGER_SCAN_ALL_FAIL": "Echec du déclenchement d'analyse globale avec des erreurs : {{error}}",
             "TITLE": "Analyse de vulnérabilité",
@@ -1008,7 +1009,8 @@
             "OTHER_STATUS": "Non Analysé",
             "QUEUED": "En fil d'attente",
             "ERROR": "Voir le Log",
-            "SCANNING": "En cours d'analyse"
+            "SCANNING": "En cours d'analyse",
+            "STOPPED": "Scan stopped"
         },
         "GRID": {
             "PLACEHOLDER": "Nous n'avons pas trouvé de résultats d'analyse !",
@@ -1051,7 +1053,9 @@
         "SCAN_NOW": "Analyser",
         "SCAN_BY": "SCAN BY {{scanner}}",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "NO_SCANNER": "NO SCANNER"
+        "NO_SCANNER": "NO SCANNER",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
@@ -1665,6 +1669,7 @@
         "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
         "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
         "PUSH_AND_PULL": "Push",
-        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
+        "STOP": "Stop"
     }
 }

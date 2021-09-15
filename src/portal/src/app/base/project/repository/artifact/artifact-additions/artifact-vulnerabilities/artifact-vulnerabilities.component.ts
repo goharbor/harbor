@@ -14,11 +14,11 @@ import {
 } from "../../../../../../shared/services";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { SEVERITY_LEVEL_MAP, VULNERABILITY_SEVERITY } from "../../../../../../shared/units/utils";
-import { ChannelService } from "../../../../../../shared/services/channel.service";
 import { ResultBarChartComponent } from "../../vulnerability-scanning/result-bar-chart.component";
 import { Subscription } from "rxjs";
 import { Artifact } from "../../../../../../../../ng-swagger-gen/models/artifact";
 import { SessionService } from "../../../../../../shared/services/session.service";
+import { EventService, HarborEvent } from "../../../../../../services/event-service/event.service";
 
 @Component({
   selector: 'hbr-artifact-vulnerabilities',
@@ -49,6 +49,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   cvssSort: ClrDatagridComparatorInterface<VulnerabilityItem>;
   hasScanningPermission: boolean = false;
   onSendingScanCommand: boolean = false;
+  onSendingStopCommand: boolean = false;
   hasShowLoading: boolean = false;
   @ViewChild(ResultBarChartComponent)
   resultBarChartComponent: ResultBarChartComponent;
@@ -60,7 +61,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     private additionsService: AdditionsService,
     private userPermissionService: UserPermissionService,
     private scanningService: ScanningResultService,
-    private channel: ChannelService,
+    private eventService: EventService,
     private session: SessionService,
     private projectService: ProjectService,
     private systemInfoService: SystemInfoService,
@@ -86,8 +87,10 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     this.getScanningPermission();
     this.getProjectScanner();
     if (!this.sub) {
-      this.sub = this.channel.ArtifactDetail$.subscribe(tag => {
-        this.getVulnerabilities();
+      this.sub = this.eventService.subscribe(HarborEvent.UPDATE_VULNERABILITY_INFO, (artifact: Artifact) => {
+        if (artifact?.digest === this.artifact?.digest) {
+          this.getVulnerabilities();
+        }
       });
     }
     setTimeout(() => {
@@ -190,20 +193,27 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   }
   scanNow() {
     this.onSendingScanCommand = true;
-    this.channel.publishScanEvent(this.repoName + "/" + this.digest);
+    this.eventService.publish(HarborEvent.START_SCAN_ARTIFACT, this.repoName + "/" + this.digest);
   }
   submitFinish(e: boolean) {
     this.onSendingScanCommand = e;
   }
+  submitStopFinish(e: boolean) {
+    this.onSendingStopCommand = e;
+  }
   shouldShowBar(): boolean {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
-      && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning || this.resultBarChartComponent.error);
+      && (this.resultBarChartComponent.queued
+            || this.resultBarChartComponent.scanning
+            || this.resultBarChartComponent.error
+            || this.resultBarChartComponent.stopped);
   }
   hasScanned(): boolean {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
       && !(this.resultBarChartComponent.completed
         || this.resultBarChartComponent.error
         || this.resultBarChartComponent.queued
+        || this.resultBarChartComponent.stopped
         || this.resultBarChartComponent.scanning);
   }
   handleScanOverview(scanOverview: any): any {
@@ -255,5 +265,24 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       }
     }
     return "";
+  }
+  isRunningState(): boolean {
+    return this.hasViewInitWithDelay && this.resultBarChartComponent
+    && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning);
+  }
+
+  scanOrStop() {
+    if (this.isRunningState()) {
+      this.stopNow();
+    } else {
+      this.scanNow();
+    }
+  }
+  stopNow() {
+    this.onSendingStopCommand = true;
+    this.eventService.publish(HarborEvent.STOP_SCAN_ARTIFACT, this.repoName + "/" + this.digest);
+  }
+  canScan(): boolean {
+    return this.hasEnabledScanner && this.hasScanningPermission && !this.onSendingScanCommand;
   }
 }

@@ -961,6 +961,7 @@
       "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
     },
     "SCANNING":{
+      "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
       "TRIGGER_SCAN_ALL_SUCCESS": "啟動掃描所有鏡像任務成功!",
       "TRIGGER_SCAN_ALL_FAIL": "啟動掃描所有鏡像任務失敗:{{error}}",
       "TITLE": "缺陷掃描",
@@ -1031,7 +1032,8 @@
       "OTHER_STATUS": "未掃描",
       "QUEUED": "已入隊列",
       "ERROR": "查看日誌",
-      "SCANNING": "掃描中"
+      "SCANNING": "掃描中",
+      "STOPPED": "Scan stopped"
     },
     "GRID":{
       "PLACEHOLDER": "沒有掃描結果！",
@@ -1074,7 +1076,9 @@
     "SCAN_NOW":"掃描",
     "SCAN_BY": "SCAN BY {{scanner}}",
     "REPORTED_BY": "Reported by {{scanner}}",
-    "NO_SCANNER": "NO SCANNER"
+    "NO_SCANNER": "NO SCANNER",
+    "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+    "STOP_NOW": "Stop Scan"
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
@@ -1682,6 +1686,7 @@
     "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
     "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
     "PUSH_AND_PULL": "Push",
-    "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
+    "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
+    "STOP": "Stop"
   }
 }
