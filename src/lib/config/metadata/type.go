@@ -148,6 +148,17 @@ func (t *Int64Type) get(str string) (interface{}, error) {
 	return parseInt64(str)
 }
 
+type Float64Type struct{}
+
+func (f *Float64Type) validate(str string) error {
+	_, err := parseFloat64(str)
+	return err
+}
+
+func (f *Float64Type) get(str string) (interface{}, error) {
+	return parseFloat64(str)
+}
+
 // BoolType ...
 type BoolType struct {
 }
@@ -250,4 +261,13 @@ func parseInt(str string) (int, error) {
 	}
 
 	return 0, fmt.Errorf("invalid int string: %s", str)
+}
+
+func parseFloat64(str string) (float64, error) {
+	val, err := strconv.ParseFloat(str, 64)
+	if err == nil {
+		return val, nil
+	}
+
+	return 0, fmt.Errorf("invalid float64 string: %s", str)
 }

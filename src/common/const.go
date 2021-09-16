@@ -169,4 +169,21 @@ const (
 	MetricEnable = "metric_enable"
 	MetricPort   = "metric_port"
 	MetricPath   = "metric_path"
+
+	// Trace setting items
+	TraceEnabled         = "trace_enabled"
+	TraceServiceName     = "trace_service_name"
+	TraceSampleRate      = "trace_sample_rate"
+	TraceNamespace       = "trace_namespace"
+	TraceAttributes      = "trace_attribute"
+	TraceJaegerEndpoint  = "trace_jaeger_endpoint"
+	TraceJaegerUsername  = "trace_jaeger_username"
+	TraceJaegerPassword  = "trace_jaeger_password"
+	TraceJaegerAgentHost = "trace_jaeger_agent_host"
+	TraceJaegerAgentPort = "trace_jaeger_agent_port"
+	TraceOtelEndpoint    = "trace_otel_endpoint"
+	TraceOtelURLPath     = "trace_otel_url_path"
+	TraceOtelCompression = "trace_otel_compression"
+	TraceOtelInsecure    = "trace_otel_insecure"
+	TraceOtelTimeout     = "trace_otel_timeout"
 )
