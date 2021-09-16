@@ -15,12 +15,7 @@
 package trace
 
 import (
-	"bytes"
 	"fmt"
-	"strings"
-
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -30,31 +25,8 @@ const (
 // C is the global configuration for trace
 var C Config
 
-func init() {
-	viper.SetConfigType("json")
-	viper.SetEnvPrefix(TraceEnvPrefix)
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.AutomaticEnv()
-	C = Config{Otel: OtelConfig{}, Jaeger: JaegerConfig{}}
-	C.Enabled = viper.GetBool("enabled")
-	C.SampleRate = viper.GetFloat64("sample_rate")
-	C.Namespace = viper.GetString("namespace")
-	C.ServiceName = viper.GetString("service_name")
-	C.Jaeger.Endpoint = viper.GetString("jaeger_endpoint")
-	C.Jaeger.Username = viper.GetString("jaeger_agent_username")
-	C.Jaeger.Password = viper.GetString("jaeger_agent_password")
-	C.Jaeger.AgentHost = viper.GetString("jaeger_agent_host")
-	C.Jaeger.AgentPort = viper.GetString("jaeger_agent_port")
-	C.Otel.Endpoint = viper.GetString("otel_endpoint")
-	C.Otel.URLPath = viper.GetString("otel_url_path")
-	C.Otel.Compression = viper.GetBool("otel_compression")
-	C.Otel.Insecure = viper.GetBool("otel_insecure")
-	C.Otel.Timeout = viper.GetInt("otel_timeout")
-	var jsonExample = []byte(viper.GetString("attributes"))
-	viper.ReadConfig(bytes.NewBuffer(jsonExample))
-	fmt.Println(viper.GetStringMapString("attributes"))
-	C.Attributes = viper.GetStringMapString("attributes")
-	log.Infof("ns: %s attr %+v", C.Namespace, C.Attributes)
+func InitGlobalConfig(opts ...Option) {
+	C = NewConfig(opts...)
 }
 
 // OtelConfig is the configuration for otel
@@ -66,6 +38,11 @@ type OtelConfig struct {
 	Timeout     int    `mapstructure:"otel_trace_timeout"`
 }
 
+func (c *OtelConfig) String() string {
+	return fmt.Sprintf("endpoint: %s, url_path: %s, compression: %t, insecure: %t, timeout: %d",
+		c.Endpoint, c.URLPath, c.Compression, c.Insecure, c.Timeout)
+}
+
 // JaegerConfig is the configuration for Jaeger
 type JaegerConfig struct {
 	Endpoint  string `mapstructure:"jaeger_endpoint"`
@@ -73,6 +50,11 @@ type JaegerConfig struct {
 	Password  string `mapstructure:"jaeger_password"`
 	AgentHost string `mapstructure:"jaeger_agent_host"`
 	AgentPort string `mapstructure:"jaeger_agent_port"`
+}
+
+func (c *JaegerConfig) String() string {
+	return fmt.Sprintf("endpoint: %s, username: %s, password: %s, agent_host: %s, agent_port: %s",
+		c.Endpoint, c.Username, c.Password, c.AgentHost, c.AgentPort)
 }
 
 // Config is the configuration for trace
@@ -86,8 +68,111 @@ type Config struct {
 	Attributes  map[string]string
 }
 
+func (c *Config) String() string {
+	return fmt.Sprintf("{Enabled: %v, ServiceName: %v,  SampleRate: %v, Namespace: %v, ServiceName: %v, Jaeger: %v, Otel: %v}", c.Enabled, c.ServiceName, c.SampleRate, c.Namespace, c.ServiceName, c.Jaeger, c.Otel)
+}
+
+type Option func(*Config)
+
+func WithEnabled(enabled bool) Option {
+	return func(c *Config) {
+		c.Enabled = enabled
+	}
+}
+
+func WithSampleRate(sampleRate float64) Option {
+	return func(c *Config) {
+		c.SampleRate = sampleRate
+	}
+}
+
+func WithNamespace(namespace string) Option {
+	return func(c *Config) {
+		c.Namespace = namespace
+	}
+}
+
+func WithServiceName(serviceName string) Option {
+	return func(c *Config) {
+		c.ServiceName = serviceName
+	}
+}
+
+func WithAttributes(attributes map[string]string) Option {
+	return func(c *Config) {
+		c.Attributes = attributes
+	}
+}
+
+func WithJaegerEndpoint(endpoint string) Option {
+	return func(c *Config) {
+		c.Jaeger.Endpoint = endpoint
+	}
+}
+
+func WithJaegerUsername(username string) Option {
+	return func(c *Config) {
+		c.Jaeger.Username = username
+	}
+}
+
+func WithJaegerPassword(password string) Option {
+	return func(c *Config) {
+		c.Jaeger.Password = password
+	}
+}
+
+func WithJaegerAgentHost(host string) Option {
+	return func(c *Config) {
+		c.Jaeger.AgentHost = host
+	}
+}
+func WithJaegerAgentPort(port string) Option {
+	return func(c *Config) {
+		c.Jaeger.AgentPort = port
+	}
+}
+
+func WithOtelEndpoint(endpoint string) Option {
+	return func(c *Config) {
+		c.Otel.Endpoint = endpoint
+	}
+}
+
+func WithOtelURLPath(urlPath string) Option {
+	return func(c *Config) {
+		c.Otel.URLPath = urlPath
+	}
+}
+
+func WithOtelCompression(compression bool) Option {
+	return func(c *Config) {
+		c.Otel.Compression = compression
+	}
+}
+
+func WithOtelInsecure(insecure bool) Option {
+	return func(c *Config) {
+		c.Otel.Insecure = insecure
+	}
+}
+
+func WithOtelTimeout(timeout int) Option {
+	return func(c *Config) {
+		c.Otel.Timeout = timeout
+	}
+}
+
+func NewConfig(opts ...Option) Config {
+	c := Config{Otel: OtelConfig{}, Jaeger: JaegerConfig{}}
+	for _, opt := range opts {
+		opt(&c)
+	}
+	return c
+}
+
 // GetConfig returns the global configuration for trace
-func GetConfig() Config {
+func GetGlobalConfig() Config {
 	return C
 }
 

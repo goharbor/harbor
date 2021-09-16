@@ -35,7 +35,7 @@ import (
 func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 	var err error
 	var exp tracesdk.SpanExporter
-	cfg := GetConfig()
+	cfg := GetGlobalConfig()
 	if len(cfg.Jaeger.Endpoint) != 0 {
 		// Jaeger collector exporter
 		log.Infof("init trace provider jaeger collector on %s with user %s", cfg.Jaeger.Endpoint, cfg.Jaeger.Username)
@@ -73,12 +73,15 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 }
 
 func initProvider(exp tracesdk.SpanExporter) (*tracesdk.TracerProvider, error) {
-	cfg := GetConfig()
+	cfg := GetGlobalConfig()
 
 	// prepare attribute resources
 	attriSlice := []attribute.KeyValue{
 		semconv.ServiceNameKey.String(cfg.ServiceName),
-		semconv.ServiceVersionKey.String(version.ReleaseVersion)}
+	}
+	if len(version.ReleaseVersion) != 0 {
+		attriSlice = append(attriSlice, semconv.ServiceVersionKey.String(version.ReleaseVersion))
+	}
 	if cfg.Namespace != "" {
 		attriSlice = append(attriSlice, semconv.ServiceNamespaceKey.String(cfg.Namespace))
 	}

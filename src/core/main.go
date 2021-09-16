@@ -54,6 +54,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/migration"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -187,6 +188,7 @@ func main() {
 		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
 	}
 	ctx := context.Background()
+	config.InitTraceConfig(ctx)
 	shutdownTracerProvider := tracelib.InitGlobalTracer(ctx)
 	token.InitCreators()
 	database, err := config.Database()

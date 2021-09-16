@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"time"
 
-	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -43,10 +42,11 @@ func init() {
 	} else {
 		secureHTTPTransport = NewTransport()
 	}
-	if tracelib.Enabled() {
-		insecureHTTPTransport = otelhttp.NewTransport(insecureHTTPTransport)
-		secureHTTPTransport = otelhttp.NewTransport(secureHTTPTransport)
-	}
+}
+
+func AddTracingWithGlobalTransport() {
+	insecureHTTPTransport = otelhttp.NewTransport(insecureHTTPTransport)
+	secureHTTPTransport = otelhttp.NewTransport(secureHTTPTransport)
 }
 
 // Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true

@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 )
 
@@ -59,6 +60,7 @@ func main() {
 		panic(err)
 	}
 
+	cfgLib.InitTraceConfig(ctx)
 	defer tracelib.InitGlobalTracer(context.Background()).Shutdown()
 
 	// Set job context initializer

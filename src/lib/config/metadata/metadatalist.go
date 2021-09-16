@@ -156,11 +156,28 @@ var (
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "30", ItemType: &IntType{}, Editable: true, Description: `The robot account token duration in days`},
 		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The rebot account name prefix`},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable notification`},
+
 		{Name: common.MetricEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
-		{Name: common.MetricPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PORT", DefaultValue: "9090", ItemType: &IntType{}, Editable: true},
+		{Name: common.MetricPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PORT", DefaultValue: "9090", ItemType: &PortType{}, Editable: true},
 		{Name: common.MetricPath, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PATH", DefaultValue: "/metrics", ItemType: &StringType{}, Editable: true},
 
 		{Name: common.QuotaPerProjectEnable, Scope: UserScope, Group: QuotaGroup, EnvKey: "QUOTA_PER_PROJECT_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable quota per project`},
 		{Name: common.StoragePerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "STORAGE_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true, Description: `The storage quota per project`},
+
+		{Name: common.TraceEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_ENABLED", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Enable trace`},
+		{Name: common.TraceServiceName, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_SERVICE_NAME", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The service name of the trace`},
+		{Name: common.TraceNamespace, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_NAMESPACE", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The namespace of the trace`},
+		{Name: common.TraceSampleRate, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_SAMPLE_RATE", DefaultValue: "1", ItemType: &Float64Type{}, Editable: false, Description: `The sample rate of the trace`},
+		{Name: common.TraceAttributes, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_ATTRIBUTES", DefaultValue: "", ItemType: &StringToStringMapType{}, Editable: false, Description: `The attribute of the trace`},
+		{Name: common.TraceJaegerEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_JAEGER_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint of the Jaeger`},
+		{Name: common.TraceJaegerUsername, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_JAEGER_USERNAME", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The username of the Jaeger`},
+		{Name: common.TraceJaegerPassword, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_JAEGER_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: false, Description: `The password of the Jaeger`},
+		{Name: common.TraceJaegerAgentHost, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_JAEGER_AGENT_HOSTNAME", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The agent host of the Jaeger`},
+		{Name: common.TraceJaegerAgentPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_JAEGER_AGENT_PORT", DefaultValue: "6831", ItemType: &StringType{}, Editable: false, Description: `The agent port of the Jaeger`},
+		{Name: common.TraceOtelEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_OTEL_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint of the Otel`},
+		{Name: common.TraceOtelURLPath, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_OTEL_URL_PATH", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The URL path of the Otel`},
+		{Name: common.TraceOtelCompression, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_OTEL_COMPRESSION", DefaultValue: "", ItemType: &BoolType{}, Editable: false, Description: `The compression of the Otel`},
+		{Name: common.TraceOtelInsecure, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_OTEL_INSECURE", DefaultValue: "", ItemType: &BoolType{}, Editable: false, Description: `The insecure of the Otel`},
+		{Name: common.TraceOtelTimeout, Scope: SystemScope, Group: BasicGroup, EnvKey: "TRACE_OTEL_TIMEOUT", DefaultValue: "", ItemType: &IntType{}, Editable: false, Description: `The timeout of the Otel`},
 	}
 )

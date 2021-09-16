@@ -35,8 +35,10 @@ import (
 	_ "github.com/docker/distribution/registry/storage/driver/swift"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
 )
@@ -83,7 +85,6 @@ func (s *RegistryCtl) Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return
 }
 
 func main() {
@@ -97,6 +98,9 @@ func main() {
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
+
+	cfgLib.InitTraceConfig(context.Background())
+
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,
 		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),
