@@ -122,4 +122,17 @@ func TestFetchImages(t *testing.T) {
 		assertions.Len(resources, v, k, v)
 	}
 
+	resources, err := adapter.FetchArtifacts([]*model.Filter{
+		{
+			Type:  model.FilterTypeName,
+			Value: "library/dockers",
+		},
+		{
+			Type:  model.FilterTypeTag,
+			Value: "{late*,v2}",
+		},
+	})
+	require.Nil(t, err)
+	require.Equal(t, 1, len(resources))
+	require.Equal(t, 2, len(resources[0].Metadata.Vtags))
 }
