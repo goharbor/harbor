@@ -17,7 +17,6 @@ package preheat
 import (
 	"context"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
@@ -30,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/label/model"
@@ -40,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/policy"
 	pr "github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -106,7 +105,7 @@ type extURLGetter func(c *selector.Candidate) (string, error)
 
 // accessCredMaker is a func template to generate the required credential header value
 // The purpose of defining such a func template is decoupling code
-type accessCredMaker func(c *selector.Candidate) (string, error)
+type accessCredMaker func(ctx context.Context, c *selector.Candidate) (string, error)
 
 // matchedPolicy is a temporary intermediary struct for passing parameters
 type matchedPolicy struct {
@@ -159,7 +158,7 @@ func NewEnforcer() Enforcer {
 			r := fmt.Sprintf("%s/%s", c.Namespace, c.Repository)
 			return fmt.Sprintf(manifestAPIPattern, edp, r, c.Tags[0]), nil
 		},
-		credMaker: func(c *selector.Candidate) (s string, e error) {
+		credMaker: func(ctx context.Context, c *selector.Candidate) (s string, e error) {
 			r := fmt.Sprintf("%s/%s", c.Namespace, c.Repository)
 
 			ac := []*tk.ResourceActions{
@@ -170,7 +169,7 @@ func NewEnforcer() Enforcer {
 					Actions: []string{resourcePullAction},
 				},
 			}
-			t, err := token.MakeToken(orm.Context(), "distributor", token.Registry, ac)
+			t, err := token.MakeToken(ctx, "distributor", token.Registry, ac)
 			if err != nil {
 				return "", err
 			}
@@ -434,7 +433,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 		return -1, err
 	}
 
-	cred, err := de.credMaker(candidate)
+	cred, err := de.credMaker(ctx, candidate)
 	if err != nil {
 		return -1, err
 	}
