@@ -23,6 +23,9 @@ import (
 var (
 	// ErrNoRows error from the beego orm
 	ErrNoRows = orm.ErrNoRows
+
+	// ErrOptimisticLock error when update object failed
+	ErrOptimisticLock = errors.New("the object has been modified; please apply your changes to the latest version and try again")
 )
 
 // WrapNotFoundError wrap error as NotFoundError when it is orm.ErrNoRows otherwise return err

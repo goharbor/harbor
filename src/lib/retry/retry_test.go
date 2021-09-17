@@ -22,7 +22,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRetryUntil(t *testing.T) {
+func TestAbort(t *testing.T) {
+	assert := assert.New(t)
+
+	e1 := Abort(nil)
+	assert.Equal("retry abort", e1.Error())
+
+	e2 := Abort(fmt.Errorf("failed to call func"))
+	assert.Equal("retry abort, error: failed to call func", e2.Error())
+}
+
+func TestRetry(t *testing.T) {
 	assert := assert.New(t)
 
 	i := 0
@@ -68,4 +78,16 @@ func TestRetryUntil(t *testing.T) {
 
 	assert.Error(err)
 	assert.Equal("retry timeout: always failed", err.Error())
+
+	i = 0
+	f4 := func() error {
+		if i == 3 {
+			return Abort(fmt.Errorf("abort"))
+		}
+
+		i++
+		return fmt.Errorf("error")
+	}
+	assert.Error(Retry(f4, InitialInterval(time.Second), MaxInterval(time.Second), Timeout(time.Second*5)))
+	assert.LessOrEqual(i, 3)
 }

@@ -15,11 +15,8 @@
 package dao
 
 import (
-	"context"
-	"sync"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -136,48 +133,6 @@ func (suite *DaoTestSuite) TestGetByRef() {
 	}
 }
 
-func (suite *DaoTestSuite) TestGetByRefForUpdate() {
-	hardLimits := types.ResourceList{types.ResourceStorage: 100}
-	usage := types.ResourceList{types.ResourceStorage: 0}
-
-	reference, referenceID := "project", "5"
-	id, err := suite.dao.Create(suite.Context(), reference, referenceID, hardLimits, usage)
-	suite.Nil(err)
-
-	var wg sync.WaitGroup
-
-	count := int64(10)
-
-	for i := int64(0); i < count; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			f := func(ctx context.Context) error {
-				q, err := suite.dao.GetByRefForUpdate(ctx, reference, referenceID)
-				suite.Nil(err)
-
-				used, _ := q.GetUsed()
-				used[types.ResourceStorage]++
-				q.SetUsed(used)
-
-				suite.dao.Update(ctx, q)
-
-				return nil
-			}
-
-			orm.WithTransaction(f)(suite.Context())
-		}()
-	}
-	wg.Wait()
-
-	{
-		q, err := suite.dao.Get(suite.Context(), id)
-		suite.Nil(err)
-		used, _ := q.GetUsed()
-		suite.Equal(count, used[types.ResourceStorage])
-	}
-}
-
 func (suite *DaoTestSuite) TestUpdate() {
 	hardLimits := types.ResourceList{types.ResourceStorage: 100}
 	usage := types.ResourceList{types.ResourceStorage: 0}
@@ -191,7 +146,16 @@ func (suite *DaoTestSuite) TestUpdate() {
 	{
 		q, err := suite.dao.Get(suite.Context(), id)
 		if suite.Nil(err) {
-			q.SetHard(newHardLimits).SetUsed(newUsage)
+			q.SetHard(newHardLimits)
+
+			suite.Nil(suite.dao.Update(suite.Context(), q))
+		}
+	}
+
+	{
+		q, err := suite.dao.Get(suite.Context(), id)
+		if suite.Nil(err) {
+			q.SetUsed(newUsage)
 
 			suite.Nil(suite.dao.Update(suite.Context(), q))
 		}

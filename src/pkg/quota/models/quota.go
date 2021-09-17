@@ -34,6 +34,9 @@ type Quota struct {
 	CreationTime time.Time        `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time        `orm:"column(update_time);auto_now" json:"update_time"`
 
+	HardVersion int64 `orm:"column(hard_version)" json:"-"`
+	UsedVersion int64 `orm:"column(used_version)" json:"-"`
+
 	HardChanged bool `orm:"-" json:"-"`
 	UsedChanged bool `orm:"-" json:"-"`
 }
