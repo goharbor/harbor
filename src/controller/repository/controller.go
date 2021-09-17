@@ -108,7 +108,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 		}
 		created = true
 		return nil
-	})(ctx); err != nil {
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-repository-ensure")); err != nil {
 		// isn't conflict error, return directly
 		if !errors.IsConflictErr(err) {
 			return false, 0, err

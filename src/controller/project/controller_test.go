@@ -50,16 +50,16 @@ func (suite *ControllerTestSuite) TestCreate() {
 	c := controller{projectMgr: mgr, allowlistMgr: allowlistMgr, metaMgr: metadataMgr}
 
 	{
-		metadataMgr.On("Add", ctx, mock.Anything, mock.Anything).Return(nil).Once()
-		mgr.On("Create", ctx, mock.Anything).Return(int64(2), nil).Once()
+		metadataMgr.On("Add", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mgr.On("Create", mock.Anything, mock.Anything).Return(int64(2), nil).Once()
 		projectID, err := c.Create(ctx, &models.Project{OwnerID: 1, Metadata: map[string]string{"public": "true"}})
 		suite.Nil(err)
 		suite.Equal(int64(2), projectID)
 	}
 
 	{
-		metadataMgr.On("Add", ctx, mock.Anything, mock.Anything).Return(fmt.Errorf("oops")).Once()
-		mgr.On("Create", ctx, mock.Anything).Return(int64(2), nil).Once()
+		metadataMgr.On("Add", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("oops")).Once()
+		mgr.On("Create", mock.Anything, mock.Anything).Return(int64(2), nil).Once()
 		projectID, err := c.Create(ctx, &models.Project{OwnerID: 1, Metadata: map[string]string{"public": "true"}})
 		suite.Error(err)
 		suite.Equal(int64(0), projectID)

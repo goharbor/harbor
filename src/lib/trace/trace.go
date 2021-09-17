@@ -72,7 +72,7 @@ func initExporter(ctx context.Context) (tracesdk.SpanExporter, error) {
 	return exp, err
 }
 
-func initProvider(exp tracesdk.SpanExporter) (*tracesdk.TracerProvider, error) {
+func initProvider(exp tracesdk.SpanExporter) *tracesdk.TracerProvider {
 	cfg := GetGlobalConfig()
 
 	// prepare attribute resources
@@ -102,8 +102,7 @@ func initProvider(exp tracesdk.SpanExporter) (*tracesdk.TracerProvider, error) {
 		tracesdk.WithSampler(tracesdk.TraceIDRatioBased(cfg.SampleRate)),
 	)
 	// init trace provider
-	tp := tracesdk.NewTracerProvider(ops...)
-	return tp, nil
+	return tracesdk.NewTracerProvider(ops...)
 }
 
 // ShutdownFunc is a function to shutdown the trace provider
@@ -122,8 +121,7 @@ func InitGlobalTracer(ctx context.Context) ShutdownFunc {
 	}
 	exp, err := initExporter(ctx)
 	handleErr(err, "fail in exporter initialization")
-	tp, err := initProvider(exp)
-	handleErr(err, "fail in tracer initialization")
+	tp := initProvider(exp)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return func() {

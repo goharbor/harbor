@@ -16,7 +16,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const tracerName = "goharbor/harbor/src/registryctl/api/registry/blob"
+const tracerName = "goharbor/harbor/src/registryctl/api/registry/manifest"
 
 // NewHandler returns the handler to handler manifest request
 func NewHandler(storageDriver storagedriver.StorageDriver) http.Handler {
@@ -71,7 +71,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	var tags []string
 	cleaner := storage.NewVacuum(ctx, h.storageDriver)
 	if err := cleaner.RemoveManifest(repoName, dgst, tags); err != nil {
-		tracelib.RecordError(span, err, "failed to remove blob")
+		tracelib.RecordError(span, err, "failed to remove manifest")
 		log.Infof("failed to remove manifest: %s, with error:%v", ref, err)
 		api.HandleError(w, err)
 		return

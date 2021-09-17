@@ -50,7 +50,10 @@ func RegisterModel(models ...interface{}) {
 
 type ormKey struct{}
 
-const tracerName = "goharbor/harbor/src/lib/orm"
+const (
+	tracerName               = "goharbor/harbor/src/lib/orm"
+	defaultTranscationOpName = "start-transaction"
+)
 
 func init() {
 	if os.Getenv("ORM_DEBUG") == "true" {
@@ -85,10 +88,32 @@ func Clone(ctx context.Context) context.Context {
 	return NewContext(ctx, orm.NewOrm())
 }
 
+type operationNameKey struct{}
+
+// SetTransactionOpName sets the transaction operation name
+func SetTransactionOpNameToContext(ctx context.Context, name string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, operationNameKey{}, name)
+}
+
+// GetTransactionOpNameFromContext returns the transaction operation name from context
+func GetTransactionOpNameFromContext(ctx context.Context) string {
+	opName, ok := ctx.Value(operationNameKey{}).(string)
+	if !ok {
+		return defaultTranscationOpName
+	}
+	if opName == "" {
+		return defaultTranscationOpName
+	}
+	return opName
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
-		_, span := tracelib.StartTrace(ctx, tracerName, "start-transaction")
+		cx, span := tracelib.StartTrace(ctx, tracerName, GetTransactionOpNameFromContext(ctx))
 		defer span.End()
 		o, err := FromContext(ctx)
 		if err != nil {
@@ -103,7 +128,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 
-		if err := f(ctx); err != nil {
+		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
