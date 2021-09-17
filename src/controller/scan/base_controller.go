@@ -379,7 +379,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 			return bc.Scan(ctx, artifact, WithExecutionID(executionID))
 		}
 
-		if err := orm.WithTransaction(scan)(bc.makeCtx()); err != nil {
+		if err := orm.WithTransaction(scan)(orm.SetTransactionOpNameToContext(bc.makeCtx(), "tx-start-scanall")); err != nil {
 			// Just logged
 			log.Errorf("failed to scan artifact %s, error %v", artifact, err)
 
@@ -500,7 +500,7 @@ func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner
 			return nil
 		}
 
-		if err := orm.WithTransaction(create)(ctx); err != nil {
+		if err := orm.WithTransaction(create)(orm.SetTransactionOpNameToContext(ctx, "tx-make-report-placeholder")); err != nil {
 			return nil, err
 		}
 

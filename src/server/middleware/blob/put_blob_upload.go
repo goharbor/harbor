@@ -78,7 +78,7 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		return orm.WithTransaction(h)(ctx)
+		return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-put-blob-mw"))
 	})
 
 	return middleware.Chain(before, after)

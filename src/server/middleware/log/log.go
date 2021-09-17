@@ -17,11 +17,7 @@ package log
 import (
 	"net/http"
 
-	"go.opentelemetry.io/otel/attribute"
-	oteltrace "go.opentelemetry.io/otel/trace"
-
 	"github.com/goharbor/harbor/src/lib/log"
-	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -34,9 +30,6 @@ func Middleware() func(http.Handler) http.Handler {
 			logger.Debugf("attach request id %s to the logger for the request %s %s", rid, r.Method, r.URL.Path)
 
 			ctx := log.WithLogger(r.Context(), logger.WithFields(log.Fields{"requestID": rid}))
-			if tracelib.Enabled() {
-				oteltrace.SpanFromContext(ctx).SetAttributes(attribute.Key("request-id").String(rid))
-			}
 			next.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			next.ServeHTTP(w, r)

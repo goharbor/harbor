@@ -86,7 +86,7 @@ func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error
 		return nil
 	}
 
-	if err := orm.WithTransaction(h)(ctx); err != nil {
+	if err := orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-create-project")); err != nil {
 		return 0, err
 	}
 

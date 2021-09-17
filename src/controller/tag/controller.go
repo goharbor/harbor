@@ -16,6 +16,8 @@ package tag
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -28,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"time"
 )
 
 var (
@@ -115,7 +116,7 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.PushTime = time.Now()
 		_, err = c.Create(ctx, tag)
 		return err
-	})(ctx); err != nil && !errors.IsConflictErr(err) {
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
 		return err
 	}
 

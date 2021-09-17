@@ -95,6 +95,7 @@ func (c *ConfigureValue) GetInt64() int64 {
 	return 0
 }
 
+// GetFloat64 - return the float64 value of current value
 func (c *ConfigureValue) GetFloat64() float64 {
 	if item, ok := Instance().GetByName(c.Name); ok {
 		val, err := item.ItemType.get(c.Value)

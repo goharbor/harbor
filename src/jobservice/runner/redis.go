@@ -92,7 +92,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 				b := backoff(retried)
 				logger.Errorf("Track job %s: stats may not have been ready yet, hold for %d ms and retry again", jID, b)
 				<-time.After(time.Duration(b) * time.Millisecond)
-				span.AddEvent("retring to get job stat")
+				span.AddEvent("retrying to get job stat")
 				continue
 			} else {
 				// Exit and never try.
