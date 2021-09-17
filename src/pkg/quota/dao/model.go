@@ -33,6 +33,7 @@ type Quota struct {
 	Hard         string    `orm:"column(hard);type(jsonb)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+	Version      int64     `orm:"column(version)" json:"-"`
 }
 
 // TableName returns table name for orm
@@ -48,6 +49,7 @@ type QuotaUsage struct {
 	Used         string    `orm:"column(used);type(jsonb)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+	Version      int64     `orm:"column(version)" json:"-"`
 }
 
 // TableName returns table name for orm

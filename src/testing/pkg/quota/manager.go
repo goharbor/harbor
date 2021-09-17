@@ -127,29 +127,6 @@ func (_m *Manager) GetByRef(ctx context.Context, reference string, referenceID s
 	return r0, r1
 }
 
-// GetByRefForUpdate provides a mock function with given fields: ctx, reference, referenceID
-func (_m *Manager) GetByRefForUpdate(ctx context.Context, reference string, referenceID string) (*models.Quota, error) {
-	ret := _m.Called(ctx, reference, referenceID)
-
-	var r0 *models.Quota
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.Quota); ok {
-		r0 = rf(ctx, reference, referenceID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Quota)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, reference, referenceID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // List provides a mock function with given fields: ctx, query
 func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Quota, error) {
 	ret := _m.Called(ctx, query)

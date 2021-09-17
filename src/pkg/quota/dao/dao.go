@@ -16,7 +16,9 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -41,9 +43,6 @@ type DAO interface {
 
 	// GetByRef returns quota by reference object
 	GetByRef(ctx context.Context, reference, referenceID string) (*models.Quota, error)
-
-	// GetByRefForUpdate get quota by reference object and lock it for update
-	GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error)
 
 	// Update update quota
 	Update(ctx context.Context, quota *models.Quota) error
@@ -171,47 +170,57 @@ func (d *dao) GetByRef(ctx context.Context, reference, referenceID string) (*mod
 	return toQuota(quota, usage), nil
 }
 
-func (d *dao) GetByRefForUpdate(ctx context.Context, reference, referenceID string) (*models.Quota, error) {
-	o, err := orm.FromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	quota := &Quota{Reference: reference, ReferenceID: referenceID}
-	if err := o.ReadForUpdate(quota, "reference", "reference_id"); err != nil {
-		return nil, orm.WrapNotFoundError(err, "quota not found for (%s, %s)", reference, referenceID)
-	}
-
-	usage := &QuotaUsage{Reference: reference, ReferenceID: referenceID}
-	if err := o.ReadForUpdate(usage, "reference", "reference_id"); err != nil {
-		return nil, orm.WrapNotFoundError(err, "quota usage not found for (%s, %s)", reference, referenceID)
-	}
-
-	return toQuota(quota, usage), nil
-}
-
 func (d *dao) Update(ctx context.Context, quota *models.Quota) error {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	if quota.UsedChanged {
-		usage := &QuotaUsage{ID: quota.ID, Used: quota.Used, UpdateTime: quota.UpdateTime}
+	if quota.UsedChanged && quota.HardChanged {
+		return errors.New("not support change both hard and used of the quota")
+	}
 
-		_, err := o.Update(usage, "used", "update_time")
-		if err != nil {
-			return err
+	if !quota.UsedChanged && !quota.HardChanged {
+		return nil
+	}
+
+	var (
+		sql    string
+		params []interface{}
+	)
+
+	if quota.UsedChanged {
+		sql = "UPDATE quota_usage SET used = ?, update_time = ?, version = ? WHERE id = ? AND version = ?"
+		params = []interface{}{
+			quota.Used,
+			time.Now(),
+			getVersion(quota.UsedVersion),
+			quota.ID,
+			quota.UsedVersion,
+		}
+	} else {
+		sql = "UPDATE quota SET hard = ?, update_time = ?, version = ? WHERE id = ? AND version = ?"
+		params = []interface{}{
+			quota.Hard,
+			time.Now(),
+			getVersion(quota.HardVersion),
+			quota.ID,
+			quota.HardVersion,
 		}
 	}
 
-	if quota.HardChanged {
-		md := &Quota{ID: quota.ID, Hard: quota.Hard, UpdateTime: quota.UpdateTime}
+	result, err := o.Raw(sql, params...).Exec()
+	if err != nil {
+		return err
+	}
 
-		_, err := o.Update(md, "hard", "update_time")
-		if err != nil {
-			return err
-		}
+	num, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if num == 0 {
+		return orm.ErrOptimisticLock
 	}
 
 	return nil
@@ -231,7 +240,9 @@ SELECT
   a.reference,
   a.reference_id,
   a.hard,
+  a.version as hard_version,
   b.used,
+  b.version as used_version,
   b.creation_time,
   b.update_time
 FROM
@@ -270,6 +281,16 @@ func toQuota(quota *Quota, usage *QuotaUsage) *models.Quota {
 		ReferenceID:  quota.ReferenceID,
 		Hard:         quota.Hard,
 		Used:         usage.Used,
+		HardVersion:  quota.Version,
+		UsedVersion:  usage.Version,
 		CreationTime: quota.CreationTime,
 	}
+}
+
+func getVersion(current int64) int64 {
+	if math.MaxInt64 == current {
+		return 0
+	}
+
+	return current + 1
 }

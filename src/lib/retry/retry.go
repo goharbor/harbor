@@ -15,6 +15,7 @@
 package retry
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -31,12 +32,30 @@ var (
 	ErrRetryTimeout = errors.New("retry timeout")
 )
 
+type abort struct {
+	cause error
+}
+
+func (a *abort) Error() string {
+	if a.cause != nil {
+		return fmt.Sprintf("retry abort, error: %v", a.cause)
+	}
+
+	return "retry abort"
+}
+
+// Abort wrap err to stop the Retry function
+func Abort(err error) error {
+	return &abort{cause: err}
+}
+
 // Options options for the retry functions
 type Options struct {
 	InitialInterval time.Duration                        // the initial interval for retring after failure, default 100 milliseconds
 	MaxInterval     time.Duration                        // the max interval for retring after failure, default 1 second
 	Timeout         time.Duration                        // the total time before returning if something is wrong, default 1 minute
 	Callback        func(err error, sleep time.Duration) // the callback function for Retry when the f called failed
+	Backoff         bool
 }
 
 // Option ...
@@ -70,12 +89,21 @@ func Callback(callback func(err error, sleep time.Duration)) Option {
 	}
 }
 
+// Backoff set backoff
+func Backoff(backoff bool) Option {
+	return func(opts *Options) {
+		opts.Backoff = backoff
+	}
+}
+
 // Retry retry until f run successfully or timeout
 //
 // NOTE: This function will use exponential backoff and jitter for retrying, see
 // https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/ for more information
 func Retry(f func() error, options ...Option) error {
-	opts := &Options{}
+	opts := &Options{
+		Backoff: true,
+	}
 
 	for _, o := range options {
 		o(opts)
@@ -93,11 +121,15 @@ func Retry(f func() error, options ...Option) error {
 		opts.Timeout = time.Minute
 	}
 
-	b := &backoff.Backoff{
-		Min:    opts.InitialInterval,
-		Max:    opts.MaxInterval,
-		Factor: 2,
-		Jitter: true,
+	var b *backoff.Backoff
+
+	if opts.Backoff {
+		b = &backoff.Backoff{
+			Min:    opts.InitialInterval,
+			Max:    opts.MaxInterval,
+			Factor: 2,
+			Jitter: true,
+		}
 	}
 
 	var err error
@@ -113,7 +145,16 @@ func Retry(f func() error, options ...Option) error {
 				return nil
 			}
 
-			sleep := b.Duration()
+			var ab *abort
+			if errors.As(err, &ab) {
+				return ab.cause
+			}
+
+			var sleep time.Duration
+			if opts.Backoff {
+				sleep = b.Duration()
+			}
+
 			if opts.Callback != nil {
 				opts.Callback(err, sleep)
 			}
