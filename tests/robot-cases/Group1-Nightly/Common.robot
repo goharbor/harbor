@@ -819,3 +819,10 @@ Test Case - System Robot Account
     ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
     System Robot Account Exist  ${name}  ${project_count}
     Close Browser
+
+Test Case - Go To Harbor Api Page
+    [Tags]  go_to_harbor_api_page
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Keyword N Times When Error  4  Check Harbor Api Page 
+    Close Browser
