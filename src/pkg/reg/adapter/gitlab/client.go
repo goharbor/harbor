@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"io"
 	"io/ioutil"
 	"net/http"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
 	"net/url"
 	"reflect"
+
+	"github.com/docker/distribution/registry/client/auth/challenge"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 const (
@@ -33,7 +32,7 @@ type Client struct {
 func NewClient(registry *model.Registry) (*Client, error) {
 
 	realm, _, err := ping(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
+		Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 	}, registry.URL)
 	if err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		token:    registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(registry.Insecure),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 			}),
 	}
 	return client, nil

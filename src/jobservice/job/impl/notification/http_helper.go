@@ -25,9 +25,9 @@ func init() {
 		clients: map[string]*http.Client{},
 	}
 	httpHelper.clients[secure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.SecureTransport),
+		Transport: commonhttp.GetHTTPTransport(),
 	}
 	httpHelper.clients[insecure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.InsecureTransport),
+		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
 	}
 }

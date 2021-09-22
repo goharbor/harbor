@@ -19,6 +19,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -27,6 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 )
 
@@ -56,6 +59,9 @@ func main() {
 	if err := logger.Init(ctx); err != nil {
 		panic(err)
 	}
+
+	cfgLib.InitTraceConfig(ctx)
+	defer tracelib.InitGlobalTracer(context.Background()).Shutdown()
 
 	// Set job context initializer
 	runtime.JobService.SetJobContextInitializer(func(ctx context.Context) (job.Context, error) {

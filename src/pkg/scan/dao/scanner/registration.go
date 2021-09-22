@@ -167,7 +167,7 @@ func SetDefaultRegistration(ctx context.Context, UUID string) error {
 		return err
 	}
 
-	return orm.WithTransaction(f)(ctx)
+	return orm.WithTransaction(f)(orm.SetTransactionOpNameToContext(ctx, "tx-scan-set-default-registration"))
 }
 
 // GetDefaultRegistration gets the default registration

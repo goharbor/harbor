@@ -3,11 +3,12 @@ package helmhub
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"io/ioutil"
 	"net/http"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // ErrHTTPNotFound defines the return error when receiving 404 response code
@@ -22,7 +23,7 @@ type Client struct {
 func NewClient(registry *model.Registry) *Client {
 	return &Client{
 		client: &http.Client{
-			Transport: util.GetHTTPTransport(registry.Insecure),
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)),
 		},
 	}
 }

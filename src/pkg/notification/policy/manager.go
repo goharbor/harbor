@@ -3,6 +3,9 @@ package policy
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -10,8 +13,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification/policy/dao"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
-	"net/http"
-	"time"
 )
 
 var (
@@ -159,7 +160,7 @@ func (m *manager) policyHTTPTest(address string, skipCertVerify bool) error {
 
 	req.Header.Set("Content-Type", "application/json")
 	client := http.Client{
-		Transport: commonhttp.GetHTTPTransportByInsecure(skipCertVerify),
+		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(skipCertVerify)),
 	}
 
 	resp, err := client.Do(req)

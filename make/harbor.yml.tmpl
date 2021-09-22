@@ -199,3 +199,30 @@ proxy:
 #   enabled: false
 #   port: 9090
 #   path: /metrics
+
+# Trace related config
+# only can enable one trace provider(jaeger or otel) at the same time,
+# and when using jaeger as provider, can only enable it with agent mode or collector mode.
+# if using jaeger collector mode, uncomment endpoint and uncomment username, password if needed
+# if using jaeger agetn mode uncomment agent_host and agent_port
+# trace:
+#   enabled: true
+#   # set sample_rate to 1 if you wanna sampling 100% of trace data; set 0.5 if you wanna sampling 50% of trace data, and so forth
+#   sample_rate: 1
+#   # # namespace used to differenciate different harbor services
+#   # namespace:
+#   # # attributes is a key value dict contains user defined attributes used to initialize trace provider
+#   # attributes:
+#   #   application: harbor
+#   # jaeger:
+#   #   endpoint: http://hostname:14268/api/traces
+#   #   username:
+#   #   password:
+#   #   agent_host: hostname
+#   #   agent_port: 6832
+#   # otel:
+#   #   endpoint: hostname:4318
+#   #   url_path: /v1/traces
+#   #   compression: false
+#   #   insecure: true
+#   #   timeout: 10s

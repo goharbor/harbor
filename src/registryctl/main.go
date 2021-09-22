@@ -15,14 +15,14 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"net/http"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/registryctl/config"
-	"github.com/goharbor/harbor/src/registryctl/handlers"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	_ "github.com/docker/distribution/registry/storage/driver/azure"
 	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
@@ -33,6 +33,14 @@ import (
 	_ "github.com/docker/distribution/registry/storage/driver/oss"
 	_ "github.com/docker/distribution/registry/storage/driver/s3-aws"
 	_ "github.com/docker/distribution/registry/storage/driver/swift"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
+	cfgLib "github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	"github.com/goharbor/harbor/src/registryctl/config"
+	"github.com/goharbor/harbor/src/registryctl/handlers"
 )
 
 // RegistryCtl for registry controller
@@ -48,6 +56,21 @@ func (s *RegistryCtl) Start() {
 		Handler:   s.Handler,
 		TLSConfig: common_http.NewServerTLSConfig(),
 	}
+	ctx := context.Background()
+	regCtl.RegisterOnShutdown(tracelib.InitGlobalTracer(ctx))
+	// graceful shutdown
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+		<-sig
+		context, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		log.Infof("Got an interrupt, shutting down...")
+		if err := regCtl.Shutdown(context); err != nil {
+			log.Fatalf("Failed to shutdown registry controller: %v", err)
+		}
+		log.Infof("Registry controller is shut down properly")
+	}()
 
 	var err error
 	if s.ServerConf.Protocol == "https" {
@@ -58,12 +81,10 @@ func (s *RegistryCtl) Start() {
 	} else {
 		err = regCtl.ListenAndServe()
 	}
-
+	<-ctx.Done()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return
 }
 
 func main() {
@@ -77,6 +98,8 @@ func main() {
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
+
+	cfgLib.InitTraceConfig(context.Background())
 
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,

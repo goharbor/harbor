@@ -17,11 +17,12 @@ package bearer
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -30,18 +31,15 @@ const (
 
 // NewAuthorizer return a bearer token authorizer
 // The parameter "a" is an authorizer used to fetch the token
-func NewAuthorizer(realm, service string, a lib.Authorizer, transport ...*http.Transport) lib.Authorizer {
+func NewAuthorizer(realm, service string, a lib.Authorizer, transport http.RoundTripper) lib.Authorizer {
 	authorizer := &authorizer{
 		realm:      realm,
 		service:    service,
 		authorizer: a,
 		cache:      newCache(cacheCapacity),
 	}
-	tp := http.DefaultTransport
-	if len(transport) > 0 && transport[0] != nil {
-		tp = transport[0]
-	}
-	authorizer.client = &http.Client{Transport: tp}
+
+	authorizer.client = &http.Client{Transport: transport}
 	return authorizer
 }
 

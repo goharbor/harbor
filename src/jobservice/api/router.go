@@ -16,12 +16,15 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/gorilla/mux"
+	"github.com/goharbor/harbor/src/lib/errors"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
 
 const (
@@ -59,6 +62,9 @@ func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	// Register routes here
 	br.registerRoutes()
 
+	if tracelib.Enabled() {
+		br.router.Use(otelmux.Middleware("serve-http"))
+	}
 	return br
 }
 

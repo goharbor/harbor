@@ -95,6 +95,22 @@ func (c *ConfigureValue) GetInt64() int64 {
 	return 0
 }
 
+// GetFloat64 - return the float64 value of current value
+func (c *ConfigureValue) GetFloat64() float64 {
+	if item, ok := Instance().GetByName(c.Name); ok {
+		val, err := item.ItemType.get(c.Value)
+		if err != nil {
+			log.Errorf("GetFloat64 failed, error: %+v", err)
+			return 0
+		}
+		if float64Value, suc := val.(float64); suc {
+			return float64Value
+		}
+	}
+	log.Errorf("GetFloat64 failed, the current value's metadata is not defined, %+v", c)
+	return 0
+}
+
 // GetBool - return the bool value of current setting
 func (c *ConfigureValue) GetBool() bool {
 	if item, ok := Instance().GetByName(c.Name); ok {

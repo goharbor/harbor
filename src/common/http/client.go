@@ -16,64 +16,17 @@ package http
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"reflect"
-	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib"
 )
-
-const (
-	// InsecureTransport used to get the insecure http Transport
-	InsecureTransport = iota
-	// SecureTransport used to get the external secure http Transport
-	SecureTransport
-)
-
-var (
-	secureHTTPTransport   *http.Transport
-	insecureHTTPTransport *http.Transport
-)
-
-func init() {
-	secureHTTPTransport = newDefaultTransport()
-	insecureHTTPTransport = newDefaultTransport()
-	insecureHTTPTransport.TLSClientConfig.InsecureSkipVerify = true
-
-	if InternalTLSEnabled() {
-		tlsConfig, err := GetInternalTLSConfig()
-		if err != nil {
-			panic(err)
-		}
-		secureHTTPTransport.TLSClientConfig = tlsConfig
-	}
-}
-
-// Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true
-// And that options introduced in go 1.13 will cause the https requests hang forever in replication environment
-func newDefaultTransport() *http.Transport {
-	return &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		TLSClientConfig:       &tls.Config{},
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
-}
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
 // Use Do instead if  those methods can not meet your requirement
@@ -87,27 +40,6 @@ func (c *Client) GetClient() *http.Client {
 	return c.client
 }
 
-// GetHTTPTransport returns HttpTransport based on insecure configuration
-func GetHTTPTransport(clientType uint) *http.Transport {
-	switch clientType {
-	case SecureTransport:
-		return secureHTTPTransport
-	case InsecureTransport:
-		return insecureHTTPTransport
-	default:
-		// default Transport is secure one
-		return secureHTTPTransport
-	}
-}
-
-// GetHTTPTransportByInsecure returns a insecure HttpTransport if insecure is true or it returns secure one
-func GetHTTPTransportByInsecure(insecure bool) *http.Transport {
-	if insecure {
-		return insecureHTTPTransport
-	}
-	return secureHTTPTransport
-}
-
 // NewClient creates an instance of Client.
 // Use net/http.Client as the default value if c is nil.
 // Modifiers modify the request before sending it.
@@ -117,7 +49,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	}
 	if client.client == nil {
 		client.client = &http.Client{
-			Transport: GetHTTPTransport(SecureTransport),
+			Transport: GetHTTPTransport(),
 		}
 	}
 	if len(modifiers) > 0 {

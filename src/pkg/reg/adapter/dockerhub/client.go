@@ -8,9 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
 // Client is a client to interact with DockerHub
@@ -26,7 +26,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 	client := &Client{
 		host: registry.URL,
 		client: &http.Client{
-			Transport: util.GetHTTPTransport(registry.Insecure),
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)),
 		},
 	}
 

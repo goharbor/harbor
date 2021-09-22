@@ -16,7 +16,6 @@ import (
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
@@ -147,7 +146,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	}
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
-	var transport = util.GetHTTPTransport(registry.Insecure)
+	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
 	var authorizer = bearer.NewAuthorizer(realm, service, credential, transport)
 
 	return &adapter{
@@ -168,7 +167,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 
 func ping(registry *model.Registry) (string, string, error) {
 	client := &http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
+		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)),
 	}
 
 	resp, err := client.Get(registry.URL + "/v2/")

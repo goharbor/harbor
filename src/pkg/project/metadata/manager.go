@@ -65,7 +65,7 @@ func (m *manager) Add(ctx context.Context, projectID int64, meta map[string]stri
 		}
 		return nil
 	}
-	return orm.WithTransaction(h)(ctx)
+	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-add-project"))
 }
 
 // Delete metadatas whose keys are specified in parameter meta, if it is absent, delete all
@@ -89,7 +89,7 @@ func (m *manager) Update(ctx context.Context, projectID int64, meta map[string]s
 		return nil
 	}
 
-	return orm.WithTransaction(h)(ctx)
+	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-delete-project"))
 }
 
 // Get metadatas whose keys are specified in parameter meta, if it is absent, get all

@@ -204,7 +204,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		created = true
 		artifact.ID = id
 		return nil
-	})(ctx); err != nil {
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-ensure-artifact")); err != nil {
 		// got error that isn't conflict error, return directly
 		if !errors.IsConflictErr(err) {
 			return false, nil, err
@@ -376,7 +376,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 			Digest:            art.Digest,
 		})
 		return err
-	})(ctx); err != nil && !errors.IsErr(err, errors.ConflictCode) {
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-deeply")); err != nil && !errors.IsErr(err, errors.ConflictCode) {
 		return err
 	}
 

@@ -106,7 +106,7 @@ func (d *dao) Update(ctx context.Context, instance *provider.Instance, props ...
 		_, err = o.Update(instance, props...)
 		return
 	}
-	return orm.WithTransaction(trans)(ctx)
+	return orm.WithTransaction(trans)(orm.SetTransactionOpNameToContext(ctx, "tx-prehead-update"))
 
 }
 

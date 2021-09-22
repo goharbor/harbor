@@ -15,7 +15,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
 // Client is a client to interact with DTR
@@ -35,7 +34,7 @@ func NewClient(registry *model.Registry) *Client {
 		password: registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(registry.Insecure),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 			}),
 	}
 	return client

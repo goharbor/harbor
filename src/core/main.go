@@ -26,15 +26,14 @@ import (
 	"syscall"
 	"time"
 
-	configCtl "github.com/goharbor/harbor/src/controller/config"
-	"github.com/goharbor/harbor/src/pkg/oidc"
-
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	_ "github.com/astaxie/beego/session/redis_sentinel"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	configCtl "github.com/goharbor/harbor/src/controller/config"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
@@ -53,9 +52,12 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/migration"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
+	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
@@ -86,17 +88,27 @@ func updateInitPassword(ctx context.Context, userID int, password string) error 
 	return nil
 }
 
-func gracefulShutdown(closing, done chan struct{}) {
+func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
 	close(closing)
-	select {
-	case <-done:
+	shutdownChan := make(chan struct{}, 1)
+	go func() {
+		for _, s := range shutdowns {
+			s()
+		}
+		<-done
 		log.Infof("Goroutines exited normally")
+		shutdownChan <- struct{}{}
+	}()
+	select {
+	case <-shutdownChan:
+		log.Infof("all shutdown jobs done")
 	case <-time.After(time.Second * 3):
 		log.Infof("Timeout waiting goroutines to exit")
 	}
+
 	os.Exit(0)
 }
 
@@ -175,6 +187,9 @@ func main() {
 		metric.RegisterCollectors()
 		go metric.ServeProm(metricCfg.Path, metricCfg.Port)
 	}
+	ctx := context.Background()
+	config.InitTraceConfig(ctx)
+	shutdownTracerProvider := tracelib.InitGlobalTracer(ctx)
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
@@ -186,7 +201,7 @@ func main() {
 	if err = migration.Migrate(database); err != nil {
 		log.Fatalf("failed to migrate: %v", err)
 	}
-	ctx := orm.Context()
+	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -211,7 +226,7 @@ func main() {
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
-	go gracefulShutdown(closing, done)
+	go gracefulShutdown(closing, done, shutdownTracerProvider)
 	// Start health checker for registries
 	go registry.Ctl.StartRegularHealthCheck(orm.Context(), closing, done)
 

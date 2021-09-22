@@ -41,5 +41,5 @@ func autoScan(ctx context.Context, a *artifact.Artifact, tags ...string) error {
 		}
 
 		return scan.DefaultController.Scan(ctx, a, options...)
-	})(ctx)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-auto-scan"))
 }

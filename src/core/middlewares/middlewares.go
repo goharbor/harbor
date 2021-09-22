@@ -32,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
+	"github.com/goharbor/harbor/src/server/middleware/trace"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
 )
 
@@ -79,6 +80,7 @@ var (
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
 		mergeslash.Middleware(),
+		trace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
 		log.Middleware(),

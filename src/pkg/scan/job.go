@@ -536,7 +536,7 @@ func makeBearerAuthorization(robotAccount *model.Robot, tokenURL string, reposit
 	req.Header.Set("Authorization", auth)
 
 	client := &http.Client{
-		Transport: commonhttp.GetHTTPTransportByInsecure(true),
+		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
 	}
 
 	resp, err := client.Do(req)

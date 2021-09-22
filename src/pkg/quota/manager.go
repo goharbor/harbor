@@ -74,7 +74,7 @@ func (m *manager) Create(ctx context.Context, reference, referenceID string, har
 		return err
 	}
 
-	err = orm.WithTransaction(h)(ctx)
+	err = orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-create-quota"))
 
 	return id, err
 }
@@ -88,7 +88,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 		return m.dao.Delete(ctx, id)
 	}
 
-	return orm.WithTransaction(h)(ctx)
+	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-delete-quota"))
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*Quota, error) {
