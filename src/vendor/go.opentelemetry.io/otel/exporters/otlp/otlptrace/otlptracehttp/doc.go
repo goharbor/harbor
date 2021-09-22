@@ -13,10 +13,7 @@
 // limitations under the License.
 
 /*
-Package otlptracehttp a client that sends traces to the collector
-using HTTP with binary protobuf payloads.
-
-This package is currently in a Release Candidate phase. Backwards incompatible changes
-may be introduced prior to v1.0.0, but we believe the current API is ready to stabilize.
+Package otlptracehttp a client that sends traces to the collector using HTTP
+with binary protobuf payloads.
 */
 package otlptracehttp // import "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"

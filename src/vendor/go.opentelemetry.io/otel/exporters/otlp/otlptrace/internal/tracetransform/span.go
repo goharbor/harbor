@@ -60,6 +60,7 @@ func Spans(sdl []tracesdk.ReadOnlySpan) []*tracepb.ResourceSpans {
 			ils = &tracepb.InstrumentationLibrarySpans{
 				InstrumentationLibrary: InstrumentationLibrary(sd.InstrumentationLibrary()),
 				Spans:                  []*tracepb.Span{},
+				SchemaUrl:              sd.InstrumentationLibrary().SchemaURL,
 			}
 		}
 		ils.Spans = append(ils.Spans, span(sd))
@@ -72,6 +73,7 @@ func Spans(sdl []tracesdk.ReadOnlySpan) []*tracepb.ResourceSpans {
 			rs = &tracepb.ResourceSpans{
 				Resource:                    Resource(sd.Resource()),
 				InstrumentationLibrarySpans: []*tracepb.InstrumentationLibrarySpans{ils},
+				SchemaUrl:                   sd.Resource().SchemaURL(),
 			}
 			rsm[rKey] = rs
 			continue

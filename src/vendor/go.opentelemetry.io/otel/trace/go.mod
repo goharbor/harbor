@@ -32,8 +32,6 @@ replace go.opentelemetry.io/otel/internal/tools => ../internal/tools
 
 replace go.opentelemetry.io/otel/metric => ../metric
 
-replace go.opentelemetry.io/otel/oteltest => ../oteltest
-
 replace go.opentelemetry.io/otel/sdk => ../sdk
 
 replace go.opentelemetry.io/otel/sdk/export/metric => ../sdk/export/metric
@@ -45,7 +43,7 @@ replace go.opentelemetry.io/otel/trace => ./
 require (
 	github.com/google/go-cmp v0.5.6
 	github.com/stretchr/testify v1.7.0
-	go.opentelemetry.io/otel v1.0.0-RC3
+	go.opentelemetry.io/otel v1.0.0
 )
 
 replace go.opentelemetry.io/otel/example/passthrough => ../example/passthrough

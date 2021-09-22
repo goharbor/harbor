@@ -132,6 +132,9 @@ func (r *Resource) Attributes() []attribute.KeyValue {
 }
 
 func (r *Resource) SchemaURL() string {
+	if r == nil {
+		return ""
+	}
 	return r.schemaURL
 }
 

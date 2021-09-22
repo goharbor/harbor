@@ -128,19 +128,6 @@ func (k Key) StringSlice(v []string) KeyValue {
 	}
 }
 
-// Array creates a KeyValue instance with an ARRAY Value.
-//
-// If creating both a key and value at the same time, use the provided
-// convenience function instead -- Array(name, value).
-//
-// Deprecated: Use the typed *Slice methods instead.
-func (k Key) Array(v interface{}) KeyValue {
-	return KeyValue{
-		Key:   k,
-		Value: ArrayValue(v),
-	}
-}
-
 // Defined returns true for non-empty keys.
 func (k Key) Defined() bool {
 	return len(k) != 0
