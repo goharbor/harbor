@@ -67,7 +67,6 @@ export class AuditLogComponent implements OnInit {
   filterOptions: FilterOption[] = [
     new FilterOption('all', 'AUDIT_LOG.ALL_OPERATIONS', true),
     new FilterOption('pull', 'AUDIT_LOG.PULL', true),
-    new FilterOption('push', 'AUDIT_LOG.PUSH', true),
     new FilterOption('create', 'AUDIT_LOG.CREATE', true),
     new FilterOption('delete', 'AUDIT_LOG.DELETE', true),
     new FilterOption('others', 'AUDIT_LOG.OTHERS', true)
