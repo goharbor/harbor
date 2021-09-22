@@ -32,7 +32,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/models"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	configCtl "github.com/goharbor/harbor/src/controller/config"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
@@ -122,7 +122,7 @@ func main() {
 		if err != nil {
 			panic("bad _REDIS_URL:" + redisURL)
 		}
-		gob.Register(models.User{})
+		gob.Register(commonmodels.User{})
 		if u.Scheme == "redis+sentinel" {
 			ps := strings.Split(u.Path, "/")
 			if len(ps) < 2 {

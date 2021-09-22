@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"regexp"
 	"strings"
 
@@ -34,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/user"
@@ -77,7 +77,7 @@ func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserPa
 	if err := requireValidSecret(params.UserReq.Password); err != nil {
 		return u.SendError(ctx, err)
 	}
-	m := &usermodels.User{
+	m := &commonmodels.User{
 		Username: params.UserReq.Username,
 		Realname: params.UserReq.Realname,
 		Email:    params.UserReq.Email,
@@ -241,7 +241,7 @@ func (u *usersAPI) UpdateUserProfile(ctx context.Context, params operation.Updat
 	if err := u.requireModifiable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
 	}
-	m := &usermodels.User{
+	m := &commonmodels.User{
 		UserID:   uid,
 		Realname: params.Profile.Realname,
 		Email:    params.Profile.Email,
@@ -446,7 +446,7 @@ func requireValidSecret(in string) error {
 	return errors.BadRequestError(nil).WithMessage("the password or secret must be longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
-func validateUserProfile(user *usermodels.User) error {
+func validateUserProfile(user *commonmodels.User) error {
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
 			return errors.BadRequestError(nil).WithMessage("email with illegal format")

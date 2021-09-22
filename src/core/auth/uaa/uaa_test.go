@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/lib/config"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
+	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,7 +91,7 @@ func TestAuthenticate(t *testing.T) {
 	u2, err2 := auth.Authenticate(ctx, m2)
 	assert.NotNil(err2)
 	assert.Nil(u2)
-	err3 := dao.ClearTable(models.UserTable)
+	err3 := dao.ClearTable(userModels.UserTable)
 	assert.Nil(err3)
 }
 
@@ -116,7 +117,7 @@ func TestOnBoardUser(t *testing.T) {
 	assert.Equal("test", user.Realname)
 	assert.Equal("test", user.Username)
 	assert.Equal("", user.Email)
-	err3 := dao.ClearTable(models.UserTable)
+	err3 := dao.ClearTable(userModels.UserTable)
 	assert.Nil(err3)
 }
 
@@ -155,7 +156,7 @@ func TestPostAuthenticate(t *testing.T) {
 	assert.Equal(user3.UserID, um3.UserID)
 	assert.Equal("", user3.Email)
 	assert.Equal("test", user3.Realname)
-	err4 := dao.ClearTable(models.UserTable)
+	err4 := dao.ClearTable(userModels.UserTable)
 	assert.Nil(err4)
 }
 
