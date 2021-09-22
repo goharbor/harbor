@@ -126,13 +126,14 @@ type Token struct {
 // UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
 // in the DB
 type UserInfo struct {
-	Issuer           string   `json:"iss"`
-	Subject          string   `json:"sub"`
-	Username         string   `json:"name"`
-	Email            string   `json:"email"`
-	Groups           []string `json:"groups"`
-	AdminGroupMember bool     `json:"admin_group_member"`
-	hasGroupClaim    bool
+	Issuer              string   `json:"iss"`
+	Subject             string   `json:"sub"`
+	Username            string   `json:"name"`
+	Email               string   `json:"email"`
+	Groups              []string `json:"groups"`
+	AdminGroupMember    bool     `json:"admin_group_member"`
+	autoOnboardUsername string
+	hasGroupClaim       bool
 }
 
 func getOauthConf() (*oauth2.Config, error) {
@@ -291,7 +292,13 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 		// Used data from userinfo
 		Email: remote.Email,
 	}
-	if remote.Username != "" {
+	// priority for username (high to low):
+	// 1. Username based on the auto onboard claim from ID token
+	// 2. Username from response of userinfo endpoint
+	// 3. Username from the default "name" claim from ID token
+	if local.autoOnboardUsername != "" {
+		res.Username = local.autoOnboardUsername
+	} else if remote.Username != "" {
 		res.Username = remote.Username
 	} else {
 		res.Username = local.Username
@@ -348,7 +355,7 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		}
 
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
-			res.Username = username
+			res.autoOnboardUsername = username
 		} else {
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
