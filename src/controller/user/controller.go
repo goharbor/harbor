@@ -16,7 +16,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -144,10 +143,7 @@ func (c *controller) Get(ctx context.Context, id int, opt *Option) (*models.User
 	if err != nil {
 		return nil, err
 	}
-	sctx, ok := security.FromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("can't find security context")
-	}
+	sctx, _ := security.FromContext(ctx)
 	lsc, ok := sctx.(*local.SecurityContext)
 	if ok && lsc.User() != nil && lsc.User().UserID == id {
 		u.AdminRoleInAuth = lsc.User().AdminRoleInAuth
