@@ -4,4 +4,4 @@ set -e
 
 /harbor/install_cert.sh
 
-/harbor/harbor_core
+exec /harbor/harbor_core
