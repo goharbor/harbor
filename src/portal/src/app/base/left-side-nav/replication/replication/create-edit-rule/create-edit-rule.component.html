@@ -243,12 +243,6 @@
       <!--speed-->
       <div class="clr-form-control">
         <label for="speed" class="required clr-control-label">{{'REPLICATION.BANDWIDTH' | translate}}
-          <clr-tooltip>
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-              <span>{{'REPLICATION.BANDWIDTH_TOOLTIP' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
         </label>
         <div class="clr-control-container" [class.clr-error]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
           <div class="clr-checkbox-wrapper speed">
@@ -256,10 +250,16 @@
                    formControlName="speed" autocomplete="off" required pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" maxlength="5">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
           </div>
-          <div class="clr-select-wrapper" [class.unit]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
-            <select class="clr-select" [ngModelOptions]="{standalone: true}" id="speed_unit" name="speed_unit" [(ngModel)]="selectedUnit">
+          <div class="clr-select-wrapper unit-select" [class.unit]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
+            <select class="clr-select unit-select" [ngModelOptions]="{standalone: true}" id="speed_unit" name="speed_unit" [(ngModel)]="selectedUnit">
               <option *ngFor="let unit of speedUnits" [value]="unit.UNIT">{{ unit.UNIT }}</option>
             </select>
+            <clr-tooltip class="ml-10px">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                <span>{{'REPLICATION.BANDWIDTH_TOOLTIP' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
           </div>
           <clr-control-error *ngIf="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))"
                              class="tooltip-content">

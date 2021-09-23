@@ -268,12 +268,19 @@ clr-modal {
     transform: translateX(-4.3rem) translateY(1.25rem)!important;
 }
 .unit {
-    width: 4rem;
+    width: 4.18rem !important;
 }
 .speed {
-    width: 14.4rem;
+    width: 14rem;
     display: inline-block;
     input {
       width: 12rem;
     }
 }
+.unit-select {
+    width: 3rem;
+}
+.ml-10px {
+    margin-left: 10px;
+}
+
