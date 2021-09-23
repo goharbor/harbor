@@ -134,3 +134,9 @@ button {
   margin-right: 5px;
   margin-left: 5px;
 }
+
+.project-name {
+  text-overflow: ellipsis;
+  max-width: 20rem;
+  overflow: hidden;
+}
