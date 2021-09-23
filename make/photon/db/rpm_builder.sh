@@ -12,7 +12,7 @@ function checkdep {
 		exit 1
 	fi
 
-	if ! bzip2 --version &> /dev/null
+	if ! [ -x "$(command -v bzip2)" ]
 	then
 		echo "Need to install bzip2 first and run this script again."
 		exit 1
