@@ -105,7 +105,7 @@ github.com/astaxie/beego/session/redis_sentinel
 github.com/astaxie/beego/toolbox
 github.com/astaxie/beego/utils
 github.com/astaxie/beego/validation
-# github.com/aws/aws-sdk-go v1.32.5
+# github.com/aws/aws-sdk-go v1.34.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
@@ -186,7 +186,8 @@ github.com/cespare/xxhash/v2
 ## explicit
 # github.com/containerd/cgroups v0.0.0-20200531161412-0dbf7f05ba59
 github.com/containerd/cgroups/stats/v1
-# github.com/containerd/containerd v1.4.4
+# github.com/containerd/containerd v1.4.8
+## explicit
 github.com/containerd/containerd/archive/compression
 github.com/containerd/containerd/content
 github.com/containerd/containerd/content/local
@@ -497,7 +498,7 @@ github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
 # github.com/jinzhu/gorm v1.9.8
 ## explicit
-# github.com/jmespath/go-jmespath v0.3.0
+# github.com/jmespath/go-jmespath v0.4.0
 github.com/jmespath/go-jmespath
 # github.com/jpillora/backoff v1.0.0
 ## explicit
@@ -558,13 +559,14 @@ github.com/opencontainers/go-digest
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/opencontainers/runc v0.1.1
+# github.com/opencontainers/runc v1.0.0-rc95
+## explicit
 github.com/opencontainers/runc/libcontainer/user
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit
 github.com/opentracing/opentracing-go
 github.com/opentracing/opentracing-go/log
-# github.com/pelletier/go-toml v1.4.0
+# github.com/pelletier/go-toml v1.7.0
 github.com/pelletier/go-toml
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
@@ -661,7 +663,8 @@ github.com/xeipuuv/gojsonreference
 github.com/xeipuuv/gojsonschema
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 github.com/xlab/treeprint
-# go.mongodb.org/mongo-driver v1.3.4
+# go.mongodb.org/mongo-driver v1.5.1
+## explicit
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec
 go.mongodb.org/mongo-driver/bson/bsonoptions
