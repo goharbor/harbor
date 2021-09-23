@@ -15,9 +15,6 @@
 /*
 Package propagation contains OpenTelemetry context propagators.
 
-This package is currently in a Release Candidate phase. Backwards incompatible changes
-may be introduced prior to v1.0.0, but we believe the current API is ready to stabilize.
-
 OpenTelemetry propagators are used to extract and inject context data from and
 into messages exchanged by applications. The propagator supported by this
 package is the W3C Trace Context encoding

@@ -14,9 +14,6 @@
 
 // Package semconv implements OpenTelemetry semantic conventions.
 //
-// This package is currently in a Release Candidate phase. Backwards incompatible changes
-// may be introduced prior to v1.0.0, but we believe the current API is ready to stabilize.
-//
 // OpenTelemetry semantic conventions are agreed standardized naming
 // patterns for OpenTelemetry things. This package represents the conventions
 // as of the v1.4.0 version of the OpenTelemetry specification.

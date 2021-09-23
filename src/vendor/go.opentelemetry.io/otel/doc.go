@@ -16,9 +16,6 @@
 Package otel provides global access to the OpenTelemetry API. The subpackages of
 the otel package provide an implementation of the OpenTelemetry API.
 
-This package is currently in a Release Candidate phase. Backwards incompatible changes
-may be introduced prior to v1.0.0, but we believe the current API is ready to stabilize.
-
 The provided API is used to instrument code and measure data about that code's
 performance and operation. The measured data, by default, is not processed or
 transmitted anywhere. An implementation of the OpenTelemetry SDK, like the

@@ -14,9 +14,6 @@
 
 // Package resource provides detecting and representing resources.
 //
-// This package is currently in a Release Candidate phase. Backwards incompatible changes
-// may be introduced prior to v1.0.0, but we believe the current API is ready to stabilize.
-//
 // The fundamental struct is a Resource which holds identifying information
 // about the entities for which telemetry is exported.
 //

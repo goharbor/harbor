@@ -11,15 +11,13 @@ It provides a set of APIs to directly measure performance and behavior of your s
 
 ## Project Status
 
-| Signal  | Status                 | Project                                                     |
-| ------- | ---------------------- | ----------------------------------------------------------- |
-| Traces  | Release Candidate      | [1.0.0](https://github.com/orgs/open-telemetry/projects/15) |
-| Metrics | Development paused [1] | N/A                                                         |
-| Logs    | Frozen [2]             | N/A                                                         |
+| Signal  | Status     | Project |
+| ------- | ---------- | ------- |
+| Traces  | Stable     | N/A     |
+| Metrics | Alpha      | N/A     |
+| Logs    | Frozen [1] | N/A     |
 
-- [1]: The development of the metrics API and SDK has paused due to limited development resources, prioritization of a stable Traces release, and instability of the official overall design from the OpenTelemetry specification.
-   Pull Requests for metrics related issues are not being accepted currently outside of security vulnerability mitigations.
-- [2]: The Logs signal development is halted for this project while we develop both Traces and Metrics.
+- [1]: The Logs signal development is halted for this project while we develop both Traces and Metrics.
    No Logs Pull Requests are currently being accepted.
 
 Progress and status specific to this repository is tracked in our local

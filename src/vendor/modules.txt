@@ -683,7 +683,7 @@ go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux
 # go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.22.0
 ## explicit
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
-# go.opentelemetry.io/otel v1.0.0-RC3
+# go.opentelemetry.io/otel v1.0.0
 ## explicit
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/attribute
@@ -694,20 +694,19 @@ go.opentelemetry.io/otel/internal/baggage
 go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/v1.4.0
-# go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC3
+# go.opentelemetry.io/otel/exporters/jaeger v1.0.0
 ## explicit
 go.opentelemetry.io/otel/exporters/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/agent
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/zipkincore
 go.opentelemetry.io/otel/exporters/jaeger/internal/third_party/thrift/lib/go/thrift
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.0-RC3 => github.com/ninjadq/opentelemetry-go/exporters/otlp/otlptrace v1.0.0-RC3-sp1
-## explicit
+# go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.0
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/retry
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.0-RC3
+# go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.0.0
 ## explicit
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp
 # go.opentelemetry.io/otel/internal/metric v0.22.0
@@ -718,13 +717,13 @@ go.opentelemetry.io/otel/metric/global
 go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
 go.opentelemetry.io/otel/metric/unit
-# go.opentelemetry.io/otel/sdk v1.0.0-RC3
+# go.opentelemetry.io/otel/sdk v1.0.0
 ## explicit
 go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
-# go.opentelemetry.io/otel/trace v1.0.0-RC3
+# go.opentelemetry.io/otel/trace v1.0.0
 ## explicit
 go.opentelemetry.io/otel/trace
 # go.opentelemetry.io/proto/otlp v0.9.0
@@ -807,6 +806,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
+## explicit
 golang.org/x/time/rate
 # google.golang.org/api v0.20.0 => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 google.golang.org/api/gensupport
@@ -1169,5 +1169,4 @@ sigs.k8s.io/structured-merge-diff/v4/value
 sigs.k8s.io/yaml
 # github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 # github.com/goharbor/harbor => ../
-# go.opentelemetry.io/otel/exporters/otlp/otlptrace => github.com/ninjadq/opentelemetry-go/exporters/otlp/otlptrace v1.0.0-RC3-sp1
 # google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
