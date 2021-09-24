@@ -195,10 +195,6 @@ Do Log Advanced Search
     #pull log
     Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Pull')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
-    #push log
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Push')]
-    Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'push')]
     #create log
     Retry Element Click  xpath=//audit-log//clr-dropdown/button
     Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Create')]
