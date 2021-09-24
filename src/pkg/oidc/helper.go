@@ -383,7 +383,9 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 	}
 	g, ok := claimMap[k].([]interface{})
 	if !ok {
-		log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)
+		if len(strings.TrimSpace(k)) > 0 {
+			log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)
+		}
 		return res, false
 	}
 	for _, e := range g {
