@@ -86,7 +86,8 @@ github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
 github.com/aliyun/alibaba-cloud-sdk-go/services/cr
 # github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129
 github.com/andres-erbsen/clock
-# github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
+# github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+## explicit
 github.com/asaskevich/govalidator
 # github.com/astaxie/beego v1.12.1
 ## explicit

@@ -10,6 +10,7 @@ require (
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/astaxie/beego v1.12.1
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
