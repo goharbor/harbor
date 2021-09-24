@@ -115,7 +115,6 @@ func init() {
 	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
-	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
 
 	// Init user Info

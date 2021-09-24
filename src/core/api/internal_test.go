@@ -20,42 +20,6 @@ import (
 )
 
 // cannot verify the real scenario here
-func TestSwitchQuota(t *testing.T) {
-	cases := []*codeCheckingCase{
-		// 401
-		{
-			request: &testingRequest{
-				method: http.MethodPut,
-				url:    "/api/internal/switchquota",
-			},
-			code: http.StatusUnauthorized,
-		},
-		// 200
-		{
-			request: &testingRequest{
-				method:     http.MethodPut,
-				url:        "/api/internal/switchquota",
-				credential: sysAdmin,
-				bodyJSON: &QuotaSwitcher{
-					Enabled: true,
-				},
-			},
-			code: http.StatusOK,
-		},
-		// 403
-		{
-			request: &testingRequest{
-				url:        "/api/internal/switchquota",
-				method:     http.MethodPut,
-				credential: nonSysAdmin,
-			},
-			code: http.StatusForbidden,
-		},
-	}
-	runCodeCheckingCases(t, cases...)
-}
-
-// cannot verify the real scenario here
 func TestSyncQuota(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 401

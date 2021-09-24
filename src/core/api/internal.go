@@ -69,40 +69,6 @@ func (ia *InternalAPI) RenameAdmin() {
 	ia.DestroySession()
 }
 
-// QuotaSwitcher ...
-type QuotaSwitcher struct {
-	Enabled bool
-}
-
-// SwitchQuota ...
-func (ia *InternalAPI) SwitchQuota() {
-	var req QuotaSwitcher
-	if err := ia.DecodeJSONReq(&req); err != nil {
-		ia.SendBadRequestError(err)
-		return
-	}
-	ctx := orm.NewContext(ia.Ctx.Request.Context(), o.NewOrm())
-	cur := config.ReadOnly(ctx)
-	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
-	if !config.QuotaPerProjectEnable(ctx) && req.Enabled {
-		if !cur {
-			config.GetCfgManager(ctx).Set(ctx, common.ReadOnly, true)
-			config.GetCfgManager(ctx).Save(ctx)
-		}
-		if err := quota.RefreshForProjects(ctx); err != nil {
-			ia.SendInternalServerError(err)
-			return
-		}
-	}
-	defer func() {
-		ctx := orm.Context()
-		config.GetCfgManager(ctx).Set(ctx, common.ReadOnly, cur)
-		config.GetCfgManager(ctx).Set(ctx, common.QuotaPerProjectEnable, req.Enabled)
-		config.GetCfgManager(ctx).Save(ctx)
-	}()
-	return
-}
-
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	if !config.QuotaPerProjectEnable(orm.Context()) {

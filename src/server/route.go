@@ -46,7 +46,6 @@ func registerRoutes() {
 	beego.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
-	beego.Router("/api/internal/switchquota", &api.InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")
 
 	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
