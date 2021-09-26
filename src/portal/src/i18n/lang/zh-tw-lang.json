@@ -904,9 +904,9 @@
       "VERIFY_CERT": "檢查來自LDAP服務端的證書",
       "REPO_TOOLTIP": "用戶在此模式下無法對鏡像執行任何操作。",
       "WEBHOOK_TOOLTIP": "當執行推送,拉動,刪除,掃描鏡像或chart 等特定操作時,啟用webhooks 以在指定端點接收回調",
-      "HOURLY_CRON": "每小時運行一次。相當於0 0 * * * *",
-      "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於0 0 * * * *",
-      "DAILY_CRON": "每天午夜運行一次。相當於0 0 * * * *"
+      "HOURLY_CRON": "每小時運行一次。相當於 0 0 * * * *",
+      "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於 0 0 0 * * 0",
+      "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *"
     },
     "LDAP":{
       "URL":"LDAP URL",
