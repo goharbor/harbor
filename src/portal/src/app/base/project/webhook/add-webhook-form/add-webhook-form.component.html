@@ -37,7 +37,7 @@
       <div class="clr-form-control">
         <label class="clr-control-label required">{{'WEBHOOK.EVENT_TYPE' | translate}}</label>
         <div class="clr-control-container clr-control-inline" [class.clr-error]="!hasEventType()">
-          <div class="clr-checkbox-wrapper width-7rem" *ngFor="let item of metadata?.event_type">
+          <div class="clr-checkbox-wrapper width-8rem" *ngFor="let item of metadata?.event_type">
             <input type="checkbox" id="{{item}}" name="eventTypes" value="{{item}}" class="clr-checkbox" (change)="setEventType(item)" [checked]="getEventType(item)">
             <label for="{{item}}" class="clr-control-label">{{eventTypeToText(item)}}</label>
           </div>
