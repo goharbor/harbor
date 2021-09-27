@@ -67,7 +67,7 @@ func redirectForOIDC(ctx context.Context, username string) bool {
 	}
 	us, err := user.Ctl.Get(ctx, u.UserID, &user.Option{WithOIDCInfo: true})
 	if err != nil {
-		log.Warningf("Failed to get OIDC user info for user, id: %d, error: %v", u.UserID, err)
+		log.Debugf("Failed to get OIDC user info for user, id: %d, error: %v", u.UserID, err)
 	}
 	if us != nil && us.OIDCUserMeta != nil {
 		return true

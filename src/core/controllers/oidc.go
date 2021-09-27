@@ -190,7 +190,7 @@ func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, u
 	}
 	oidc.InjectGroupsToUser(info, user)
 
-	log.Debugf("User created: %+v\n", *user)
+	log.Debugf("User created: %v\n", user.Username)
 
 	err = ctluser.Ctl.OnboardOIDCUser(ctx, user)
 	if err != nil {
