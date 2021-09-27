@@ -161,8 +161,10 @@ class JaegerExporter:
         self.agent_port = config.get('agent_port')
 
     def validate(self):
-        if not self.endpoint and self.agent_host is None:
-            raise Exception('Jaeger Colector Endpoint or Agent host not set')
+        if not self.endpoint and not self.agent_host:
+            raise Exception('Jaeger Colector Endpoint or Agent host not set, must set one')
+        if self.endpoint and self.agent_host:
+            raise Exception('Jaeger Colector Endpoint and Agent host both set, only can set one')
 
 class OtelExporter:
     def __init__(self, config: dict):
@@ -192,9 +194,13 @@ class Trace:
         self.attributes = config.get('attributes') or {}
 
     def validate(self):
-        if not self.jaeger.enabled and not self.enabled:
+        if not self.enabled:
+            return
+        if not self.jaeger.enabled and not self.otel.enabled:
             raise Exception('Trace enabled but no trace exporter set')
-        if self.jaeger.enabled:
-            JaegerExporter(self.jaeger).validate()
-        if self.otel.enabled:
-            OtelExporter(self.otel).validate()
+        elif self.jaeger.enabled and self.otel.enabled:
+            raise Exception('Only can have one trace exporter at a time')
+        elif self.jaeger.enabled:
+            self.jaeger.validate()
+        elif self.otel.enabled:
+            self.otel.validate()

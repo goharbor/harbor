@@ -76,6 +76,8 @@ def validate(conf: dict, **kwargs):
     # TODO:
     # If user enable trust cert dir, need check if the files in this dir is readable.
 
+    if conf.get('trace'):
+        conf['trace'].validate()
 
 def parse_versions():
     if not versions_file_path.is_file():
