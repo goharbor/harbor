@@ -180,7 +180,7 @@ func getHelper(ctx context.Context) (AuthenticateHelper, error) {
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, return the user's profile.
 func OnBoardUser(ctx context.Context, user *models.User) error {
-	log.Debugf("OnBoardUser, user %+v", user)
+	log.Debugf("OnBoardUser, user: %v", user.Username)
 	helper, err := getHelper(ctx)
 	if err != nil {
 		return err
@@ -259,7 +259,8 @@ func PostAuthenticate(ctx context.Context, u *models.User) error {
 func IsSuperUser(ctx context.Context, username string) bool {
 	u, err := user.Mgr.GetByName(ctx, username)
 	if err != nil {
-		log.Errorf("Failed to get user from DB, username: %s, error: %v", username, err)
+		// LDAP user can't be found before onboard to Harbor
+		log.Debugf("Failed to get user from DB, username: %s, error: %v", username, err)
 		return false
 	}
 	return u.UserID == 1
