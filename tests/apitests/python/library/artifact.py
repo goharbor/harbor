@@ -115,7 +115,7 @@ class Artifact(base.Base, object):
                 else:
                     raise Exception("Artifact should not be scanned {}.".format(artifact.scan_overview))
 
-            scan_status = artifact.scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
+            scan_status = artifact.scan_overview['application/vnd.security.vulnerability.report; version=1.1'].scan_status
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))

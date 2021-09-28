@@ -159,12 +159,30 @@ func (r *Registration) GetProducesMimeTypes(mimeType string) []string {
 	for _, capability := range r.Metadata.Capabilities {
 		for _, mt := range capability.ConsumesMimeTypes {
 			if mt == mimeType {
-				return capability.ProducesMimeTypes
+				return r.ignoreDuplicateMimeType(capability.ProducesMimeTypes)
 			}
 		}
 	}
 
 	return nil
+}
+
+// ignoreDuplicateMimeType removes deprecated v1.MimeTypeNativeReport if it's
+// specified along with v1.MimeTypeGenericVulnerabilityReport.
+func (r *Registration) ignoreDuplicateMimeType(mimeTypes []string) []string {
+	set := make(map[string]bool)
+	for _, mt := range mimeTypes {
+		set[mt] = true
+	}
+
+	var out []string
+	for mt := range set {
+		if mt == v1.MimeTypeNativeReport && set[v1.MimeTypeGenericVulnerabilityReport] {
+			continue
+		}
+		out = append(out, mt)
+	}
+	return out
 }
 
 // GetCapability returns capability for the mime type
