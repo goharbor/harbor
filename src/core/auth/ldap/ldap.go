@@ -259,7 +259,7 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 	if n > 0 {
 		dbUser, err := l.userMgr.GetByName(ctx, u.Username)
 		if errors.IsNotFoundErr(err) {
-			fmt.Printf("User not found in DB %+v", u)
+			log.Debugf("User not found in DB:%v", u.Username)
 			return nil
 		} else if err != nil {
 			return err
