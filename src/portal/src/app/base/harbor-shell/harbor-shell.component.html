@@ -4,7 +4,7 @@
         <div class="clr-col text-center">
             <clr-icon shape="info-standard" size="20"></clr-icon>
             <span class="ml-05">{{'SCANNER.HELP_INFO_1' | translate }}
-                <a target="_blank" href="{{scannerDocUrl}}">{{'SCANNER.HELP_INFO_2' | translate }}</a>
+                <a rel='noopener noreferrer' target="_blank" href="{{scannerDocUrl}}">{{'SCANNER.HELP_INFO_2' | translate }}</a>
             </span>
         </div>
         <div class="clr-col-2 right">
@@ -101,7 +101,7 @@
                         </a>
                     </ng-container>
                 </ng-container>
-                <a clrVerticalNavLink routerLinkActive="active" target="_blank" routerLink="/devcenter-api-2.0">
+                <a rel='noopener noreferrer' clrVerticalNavLink routerLinkActive="active" target="_blank" routerLink="/devcenter-api-2.0">
                     <clr-icon shape="network-globe" clrVerticalNavIcon></clr-icon>
                     {{'SIDE_NAV.HARBOR_API_MANAGEMENT' | translate}}
                 </a>

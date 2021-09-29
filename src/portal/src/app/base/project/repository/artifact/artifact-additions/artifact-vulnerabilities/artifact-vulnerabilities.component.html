@@ -45,13 +45,13 @@
             <clr-dg-row *clrDgItems="let res of scanningResults">
                 <clr-dg-cell>
                     <span *ngIf="!res.links || res.links.length === 0">{{res.id}}</span>
-                    <a *ngIf="res.links && res.links.length === 1" href="{{res.links[0]}}" target="_blank">{{res.id}}</a>
+                    <a rel='noopener noreferrer' *ngIf="res.links && res.links.length === 1" href="{{res.links[0]}}" target="_blank">{{res.id}}</a>
                     <span *ngIf="res.links && res.links.length > 1">
                         {{res.id}}
                         <clr-signpost>
                             <clr-signpost-content *clrIfOpen>
                                 <div class="mt-5px"  *ngFor="let link of res.links">
-                                    <a href="{{link}}" target="_blank">{{link}}</a>
+                                    <a rel='noopener noreferrer' href="{{link}}" target="_blank">{{link}}</a>
                                 </div>
                             </clr-signpost-content>
                         </clr-signpost>

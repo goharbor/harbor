@@ -72,7 +72,7 @@
                        *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
                 </ng-container>
                 <div class="more-info" [ngClass]="{'pt-1': (!isOidcLoginMode && steps === 1) || (isOidcLoginMode && steps ===2)}">
-                    <a href="https://github.com/goharbor/harbor" target="_blank">{{ 'BUTTON.MORE_INFO' | translate }}</a>
+                    <a rel='noopener noreferrer' href="https://github.com/goharbor/harbor" target="_blank">{{ 'BUTTON.MORE_INFO' | translate }}</a>
                 </div>
             </div>
         </form>

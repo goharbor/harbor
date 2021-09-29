@@ -3,7 +3,7 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
-                    <a #certDownloadLink *ngIf="canDownloadCert" [href]="downloadLink" target="_blank" class="btn btn-link btn-font download-link">
+                    <a rel='noopener noreferrer' #certDownloadLink *ngIf="canDownloadCert" [href]="downloadLink" target="_blank" class="btn btn-link btn-font download-link">
                         <clr-icon shape="download"></clr-icon>
                         {{'CONFIG.REGISTRY_CERTIFICATE' | translate | uppercase}}
                     </a>

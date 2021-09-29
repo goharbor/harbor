@@ -127,7 +127,7 @@
         <clr-dg-cell>{{t.start_time | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{getDuration(t)}}</clr-dg-cell>
         <clr-dg-cell>
-          <a target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
+          <a rel='noopener noreferrer' target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
             <clr-icon shape="list"></clr-icon>
           </a>
         </clr-dg-cell>

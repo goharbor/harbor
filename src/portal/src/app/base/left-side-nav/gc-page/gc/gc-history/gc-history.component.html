@@ -18,7 +18,7 @@
         <clr-dg-cell>{{job.creation_time | harborDatetime:'medium'}}</clr-dg-cell>
         <clr-dg-cell>{{job.update_time | harborDatetime:'medium'}}</clr-dg-cell>
         <clr-dg-cell>
-            <a *ngIf="job.job_status.toLowerCase() === 'success' || job.job_status.toLowerCase() === 'error'" target="_blank"
+            <a rel='noopener noreferrer' *ngIf="job.job_status.toLowerCase() === 'success' || job.job_status.toLowerCase() === 'error'" target="_blank"
                [href]="getLogLink(job.id)">
                 <clr-icon shape="list"></clr-icon>
             </a>
