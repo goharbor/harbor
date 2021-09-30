@@ -196,7 +196,7 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 	}
 
 	if !r.Editable {
-		err = rAPI.updateV1Robot(ctx, params, r)
+		err = errors.DeniedError(nil).WithMessage("editing of legacy robot is not allowed")
 	} else {
 		err = rAPI.updateV2Robot(ctx, params, r)
 	}
@@ -275,21 +275,6 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
 		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
-	}
-	return nil
-}
-
-// only disable can be updated for v1 robot
-func (rAPI *robotAPI) updateV1Robot(ctx context.Context, params operation.UpdateRobotParams, r *robot.Robot) error {
-	if err := rAPI.requireAccess(ctx, params.Robot.Level, r.ProjectID, rbac.ActionUpdate); err != nil {
-		return err
-	}
-	r.Disabled = params.Robot.Disable
-	r.Description = params.Robot.Description
-	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
-		WithPermission: false,
-	}); err != nil {
-		return err
 	}
 	return nil
 }
