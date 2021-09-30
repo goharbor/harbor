@@ -1702,6 +1702,8 @@
         "FINAL_SYSTEM_NAME_TIP": "Der zusammengesetzte systemweite Robot-Account-Name besteht aus dem Prefix und dem Inhalt des Eingabefeldes.",
         "PUSH_AND_PULL": "Push",
         "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
-        "STOP": "Stop"
+        "STOP": "Stop",
+        "LIST": "List",
+        "REPOSITORY": "Repository"
     }
 }

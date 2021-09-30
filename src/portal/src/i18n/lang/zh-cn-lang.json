@@ -1700,6 +1700,8 @@
         "FINAL_SYSTEM_NAME_TIP": "系统级机器人的最终名称由前缀和当前输入值组成",
         "PUSH_AND_PULL": "推送",
         "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限",
-        "STOP": "停止"
+        "STOP": "停止",
+        "LIST": "查询",
+        "REPOSITORY": "仓库"
     }
 }
