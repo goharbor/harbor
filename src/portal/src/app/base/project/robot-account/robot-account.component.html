@@ -34,7 +34,7 @@
           </button>
           <button *ngIf="selectedRows && selectedRows.length === 1 && selectedRows[0].disable" type="button" class="btn  btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable)">
+                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable) || !selectedRows[0].editable">
             <clr-icon size="16" shape="success-standard"></clr-icon>&nbsp;
             <span id="distribution-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
           </button>
@@ -42,7 +42,7 @@
                   type="button"
                   class="btn btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable)">
+                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable) || !selectedRows[0].editable">
             <clr-icon size="16" shape="ban"></clr-icon>&nbsp;
             <span id="distribution-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
           </button>
