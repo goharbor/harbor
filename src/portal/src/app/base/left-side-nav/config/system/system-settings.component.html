@@ -71,7 +71,7 @@
                     <span>{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
                 </clr-tooltip-content>
             </clr-tooltip>
-            <a #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
+            <a rel='noopener noreferrer' #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
         </label>
         <clr-checkbox-container *ngIf="!withAdmiral">
             <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}

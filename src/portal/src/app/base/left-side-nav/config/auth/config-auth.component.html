@@ -19,7 +19,7 @@
                     <option value="oidc_auth">{{'CONFIG.AUTH_MODE_OIDC' | translate }}</option>
                 </select>
             </div>
-            <a href="https://openid.net/connect/" *ngIf="currentConfig?.auth_mode?.value==='oidc_auth'" target="_blank"
+            <a rel='noopener noreferrer' href="https://openid.net/connect/" *ngIf="currentConfig?.auth_mode?.value==='oidc_auth'" target="_blank"
                 class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
         </div>
     </div>
