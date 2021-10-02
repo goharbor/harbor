@@ -31,6 +31,7 @@ import (
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
+	userDao "github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/stretchr/testify/assert"
@@ -241,7 +242,7 @@ func TestOnBoardUser_02(t *testing.T) {
 	}
 
 	assert.Equal(t, "", user.Email)
-	dao.CleanUser(int64(user.UserID))
+	userDao.New().Delete(ctx, user.UserID)
 }
 
 func TestOnBoardUser_03(t *testing.T) {
@@ -260,7 +261,7 @@ func TestOnBoardUser_03(t *testing.T) {
 	}
 
 	assert.Equal(t, "sample03@example.com", user.Email)
-	dao.CleanUser(int64(user.UserID))
+	userDao.New().Delete(ctx, user.UserID)
 }
 
 func TestAuthenticateHelperOnBoardUser(t *testing.T) {
@@ -363,14 +364,14 @@ func TestPostAuthentication(t *testing.T) {
 		t.Fatalf("Failed to get user, error %v", err)
 	}
 	assert.EqualValues("test003@example.com", dbUser.Email)
-	dao.CleanUser(int64(dbUser.UserID))
+	userDao.New().Delete(ctx, dbUser.UserID)
 }
 
 func TestSearchAndOnBoardUser(t *testing.T) {
 	ctx := orm.Context()
 
 	userID, err := auth.SearchAndOnBoardUser(ctx, "mike02")
-	defer dao.CleanUser(int64(userID))
+	defer userDao.New().Delete(ctx, userID)
 	if err != nil {
 		t.Errorf("Error occurred when SearchAndOnBoardUser: %v", err)
 	}

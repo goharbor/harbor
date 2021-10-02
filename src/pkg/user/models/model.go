@@ -14,30 +14,13 @@
 
 package models
 
-import (
-	// "time"
+// UserTable is the name of table in DB that holds the user object
+const UserTable = "harbor_user"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
-)
-
-// User ...
-type User = commonmodels.User
-
-// Users the collection for User
-type Users []*User
-
-// MapByUserID returns map which key is UserID of the user and value is the user itself
-func (users Users) MapByUserID() map[int]*User {
-	m := map[int]*User{}
-	for _, user := range users {
-		m[user.UserID] = user
-	}
-
-	return m
-}
-
+// Option ...
 type Option func(*Options)
 
+// Options ...
 type Options struct {
 	IncludeDefaultAdmin bool
 }

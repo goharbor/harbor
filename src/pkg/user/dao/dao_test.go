@@ -17,9 +17,9 @@ import (
 	"fmt"
 	"testing"
 
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/user/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
 )
@@ -48,7 +48,7 @@ func (suite *DaoTestSuite) TestCount() {
 
 		n, err := suite.dao.Count(ctx, nil)
 		suite.Nil(err)
-		id, err := suite.dao.Create(ctx, &models.User{
+		id, err := suite.dao.Create(ctx, &commonmodels.User{
 			Username:        "testuser2",
 			Realname:        "user test",
 			Email:           "testuser@test.com",
@@ -60,7 +60,7 @@ func (suite *DaoTestSuite) TestCount() {
 		n2, err := suite.dao.Count(ctx, nil)
 		suite.Nil(err)
 		suite.Equal(n+1, n2)
-		err2 := suite.dao.Update(ctx, &models.User{
+		err2 := suite.dao.Update(ctx, &commonmodels.User{
 			UserID:  id,
 			Deleted: true,
 		})
@@ -86,7 +86,7 @@ func (suite *DaoTestSuite) TestList() {
 		suite.Nil(err)
 		suite.Len(users, 1)
 	}
-	id, err := suite.dao.Create(ctx, &models.User{
+	id, err := suite.dao.Create(ctx, &commonmodels.User{
 		Username:        "list_test",
 		Realname:        "list test",
 		Email:           "list_test@test.com",
@@ -116,12 +116,12 @@ func (suite *DaoTestSuite) TestList() {
 func (suite *DaoTestSuite) TestCreate() {
 	cases := []struct {
 		name     string
-		input    *models.User
+		input    *commonmodels.User
 		hasError bool
 	}{
 		{
 			name: "create with user ID",
-			input: &models.User{
+			input: &commonmodels.User{
 				UserID:          3,
 				Username:        "testuser",
 				Realname:        "user test",
@@ -133,10 +133,32 @@ func (suite *DaoTestSuite) TestCreate() {
 		},
 		{
 			name: "create without user ID",
-			input: &models.User{
+			input: &commonmodels.User{
 				Username:        "testuser",
 				Realname:        "user test",
 				Email:           "testuser@test.com",
+				Password:        "somepassword",
+				PasswordVersion: "sha256",
+			},
+			hasError: false,
+		},
+		{
+			name: "create with empty email_1",
+			input: &commonmodels.User{
+				Username:        "emptyemail1",
+				Realname:        "empty test",
+				Email:           "",
+				Password:        "somepassword",
+				PasswordVersion: "sha256",
+			},
+			hasError: false,
+		},
+		{
+			name: "create with empty email_2",
+			input: &commonmodels.User{
+				Username:        "emptyemail2",
+				Realname:        "empty test2",
+				Email:           "",
 				Password:        "somepassword",
 				PasswordVersion: "sha256",
 			},

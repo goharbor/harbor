@@ -59,6 +59,20 @@ func (_m *DAO) Create(ctx context.Context, user *models.User) (int, error) {
 	return r0, r1
 }
 
+// Delete provides a mock function with given fields: ctx, userID
+func (_m *DAO) Delete(ctx context.Context, userID int) error {
+	ret := _m.Called(ctx, userID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.User, error) {
 	ret := _m.Called(ctx, query)

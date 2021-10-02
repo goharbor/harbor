@@ -15,14 +15,15 @@
 package dao
 
 import (
+	"database/sql"
 	"github.com/goharbor/harbor/src/common"
 	_ "github.com/goharbor/harbor/src/common/dao"
 	testDao "github.com/goharbor/harbor/src/common/dao"
-	comModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/user"
+	userDao "github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -125,9 +126,9 @@ func (s *DaoTestSuite) TestUpdateProjectMemberRole() {
 	proj, err := s.projectMgr.Get(ctx, "member_test_01")
 	s.Nil(err)
 	s.NotNil(proj)
-	user := comModels.User{
+	user := userDao.User{
 		Username: "pm_sample",
-		Email:    "pm_sample@example.com",
+		Email:    sql.NullString{String: "pm_sample@example.com", Valid: true},
 		Realname: "pm_sample",
 		Password: "1234567d",
 	}

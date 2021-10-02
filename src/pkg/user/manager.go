@@ -17,6 +17,7 @@ package user
 import (
 	"context"
 	"fmt"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -34,30 +35,30 @@ var (
 // Manager is used for user management
 type Manager interface {
 	// Get get user by user id
-	Get(ctx context.Context, id int) (*models.User, error)
+	Get(ctx context.Context, id int) (*commonmodels.User, error)
 	// GetByName get user by username, it will return an error if the user does not exist
-	GetByName(ctx context.Context, username string) (*models.User, error)
+	GetByName(ctx context.Context, username string) (*commonmodels.User, error)
 	// List users according to the query
-	List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error)
+	List(ctx context.Context, query *q.Query, options ...models.Option) (commonmodels.Users, error)
 	// Count counts the number of users according to the query
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Create creates the user, the password of input should be plaintext
-	Create(ctx context.Context, user *models.User) (int, error)
+	Create(ctx context.Context, user *commonmodels.User) (int, error)
 	// Delete deletes the user by updating user's delete flag and update the name and Email
 	Delete(ctx context.Context, id int) error
 	// SetSysAdminFlag sets the system admin flag of the user in local DB
 	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
 	// UpdateProfile updates the user's profile
-	UpdateProfile(ctx context.Context, user *models.User, col ...string) error
+	UpdateProfile(ctx context.Context, user *commonmodels.User, col ...string) error
 	// UpdatePassword updates user's password
 	UpdatePassword(ctx context.Context, id int, newPassword string) error
 	// MatchLocalPassword tries to match the record in DB based on the input, the first return value is
 	// the user model corresponding to the entry in DB
-	MatchLocalPassword(ctx context.Context, username, password string) (*models.User, error)
+	MatchLocalPassword(ctx context.Context, username, password string) (*commonmodels.User, error)
 	// Onboard will check if a user exists in user table, if not insert the user and
 	// put the id in the pointer of user model, if it does exist, return the user's profile.
 	// This is used for ldap and uaa authentication, such the user can have an ID in Harbor.
-	Onboard(ctx context.Context, user *models.User) error
+	Onboard(ctx context.Context, user *commonmodels.User) error
 }
 
 // New returns a default implementation of Manager
@@ -69,7 +70,7 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) Onboard(ctx context.Context, user *models.User) error {
+func (m *manager) Onboard(ctx context.Context, user *commonmodels.User) error {
 	u, err := m.GetByName(ctx, user.Username)
 	if err == nil {
 		user.Email = u.Email
@@ -101,7 +102,7 @@ func (m *manager) Delete(ctx context.Context, id int) error {
 	return m.dao.Update(ctx, u, "username", "email", "deleted")
 }
 
-func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, password string) (*models.User, error) {
+func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, password string) (*commonmodels.User, error) {
 	l, err := m.dao.List(ctx, q.New(q.KeyWords{"username_or_email": usernameOrEmail}))
 	if err != nil {
 		return nil, err
@@ -119,7 +120,7 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
 }
 
-func (m *manager) UpdateProfile(ctx context.Context, user *models.User, cols ...string) error {
+func (m *manager) UpdateProfile(ctx context.Context, user *commonmodels.User, cols ...string) error {
 	if cols == nil || len(cols) == 0 {
 		cols = []string{"Email", "Realname", "Comment"}
 	}
@@ -127,7 +128,7 @@ func (m *manager) UpdateProfile(ctx context.Context, user *models.User, cols ...
 }
 
 func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string) error {
-	user := &models.User{
+	user := &commonmodels.User{
 		UserID: id,
 	}
 	injectPasswd(user, newPassword)
@@ -135,20 +136,20 @@ func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string
 }
 
 func (m *manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
-	u := &models.User{
+	u := &commonmodels.User{
 		UserID:       id,
 		SysAdminFlag: admin,
 	}
 	return m.dao.Update(ctx, u, "sysadmin_flag")
 }
 
-func (m *manager) Create(ctx context.Context, user *models.User) (int, error) {
+func (m *manager) Create(ctx context.Context, user *commonmodels.User) (int, error) {
 	injectPasswd(user, user.Password)
 	return m.dao.Create(ctx, user)
 }
 
 // Get get user by user id
-func (m *manager) Get(ctx context.Context, id int) (*models.User, error) {
+func (m *manager) Get(ctx context.Context, id int) (*commonmodels.User, error) {
 	users, err := m.dao.List(ctx, q.New(q.KeyWords{"user_id": id}))
 	if err != nil {
 		return nil, err
@@ -162,7 +163,7 @@ func (m *manager) Get(ctx context.Context, id int) (*models.User, error) {
 }
 
 // GetByName get user by username
-func (m *manager) GetByName(ctx context.Context, username string) (*models.User, error) {
+func (m *manager) GetByName(ctx context.Context, username string) (*commonmodels.User, error) {
 	users, err := m.dao.List(ctx, q.New(q.KeyWords{"username": username}))
 	if err != nil {
 		return nil, err
@@ -176,7 +177,7 @@ func (m *manager) GetByName(ctx context.Context, username string) (*models.User,
 }
 
 // List users according to the query
-func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Option) (models.Users, error) {
+func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Option) (commonmodels.Users, error) {
 	query = q.MustClone(query)
 	for key := range query.Keywords {
 		str := strings.ToLower(key)
@@ -195,7 +196,7 @@ func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Op
 	return m.dao.List(ctx, query)
 }
 
-func injectPasswd(u *models.User, password string) {
+func injectPasswd(u *commonmodels.User, password string) {
 	salt := utils.GenerateRandomString()
 	u.Password = utils.Encrypt(password, salt, utils.SHA256)
 	u.Salt = salt
