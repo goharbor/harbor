@@ -8,6 +8,7 @@ It is because of you that we can bring great software to the community.
 This guide provides information on filing issues and guidelines for open source contributors. **Please leave comments / suggestions if you find something is missing or incorrect.**
 
 Contributors are encouraged to collaborate using the following resources in addition to the GitHub [issue tracker](https://github.com/goharbor/harbor/issues):
+**code changes to the master branch to form a new branch **
 
 * [Bi-weekly public community meetings][community-meetings]
   * Catch up with [past meetings on YouTube][past-meetings]
