@@ -8,7 +8,7 @@ import (
 	"crypto/rsa"
 )
 
-// Implements the RSAPSS family of signing methods signing methods
+// SigningMethodRSAPSS implements the RSAPSS family of signing methods signing methods
 type SigningMethodRSAPSS struct {
 	*SigningMethodRSA
 	Options *rsa.PSSOptions
@@ -79,7 +79,7 @@ func init() {
 	})
 }
 
-// Implements the Verify method from SigningMethod
+// Verify implements token verification for the SigningMethod.
 // For this verify method, key must be an rsa.PublicKey struct
 func (m *SigningMethodRSAPSS) Verify(signingString, signature string, key interface{}) error {
 	var err error
@@ -113,7 +113,7 @@ func (m *SigningMethodRSAPSS) Verify(signingString, signature string, key interf
 	return rsa.VerifyPSS(rsaKey, m.Hash, hasher.Sum(nil), sig, opts)
 }
 
-// Implements the Sign method from SigningMethod
+// Sign implements token signing for the SigningMethod.
 // For this signing method, key must be an rsa.PrivateKey struct
 func (m *SigningMethodRSAPSS) Sign(signingString string, key interface{}) (string, error) {
 	var rsaKey *rsa.PrivateKey

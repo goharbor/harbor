@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	ErrKeyMustBePEMEncoded = errors.New("Invalid Key: Key must be a PEM encoded PKCS1 or PKCS8 key")
-	ErrNotRSAPrivateKey    = errors.New("Key is not a valid RSA private key")
-	ErrNotRSAPublicKey     = errors.New("Key is not a valid RSA public key")
+	ErrKeyMustBePEMEncoded = errors.New("invalid key: Key must be a PEM encoded PKCS1 or PKCS8 key")
+	ErrNotRSAPrivateKey    = errors.New("key is not a valid RSA private key")
+	ErrNotRSAPublicKey     = errors.New("key is not a valid RSA public key")
 )
 
-// Parse PEM encoded PKCS1 or PKCS8 private key
+// ParseRSAPrivateKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 private key
 func ParseRSAPrivateKeyFromPEM(key []byte) (*rsa.PrivateKey, error) {
 	var err error
 
@@ -39,7 +39,11 @@ func ParseRSAPrivateKeyFromPEM(key []byte) (*rsa.PrivateKey, error) {
 	return pkey, nil
 }
 
-// Parse PEM encoded PKCS1 or PKCS8 private key protected with password
+// ParseRSAPrivateKeyFromPEMWithPassword parses a PEM encoded PKCS1 or PKCS8 private key protected with password
+//
+// Deprecated: This function is deprecated and should not be used anymore. It uses the deprecated x509.DecryptPEMBlock
+// function, which was deprecated since RFC 1423 is regarded insecure by design. Unfortunately, there is no alternative
+// in the Go standard library for now. See https://github.com/golang/go/issues/8860.
 func ParseRSAPrivateKeyFromPEMWithPassword(key []byte, password string) (*rsa.PrivateKey, error) {
 	var err error
 
@@ -71,7 +75,7 @@ func ParseRSAPrivateKeyFromPEMWithPassword(key []byte, password string) (*rsa.Pr
 	return pkey, nil
 }
 
-// Parse PEM encoded PKCS1 or PKCS8 public key
+// ParseRSAPublicKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 public key
 func ParseRSAPublicKeyFromPEM(key []byte) (*rsa.PublicKey, error) {
 	var err error
 

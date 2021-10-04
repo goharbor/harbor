@@ -1,17 +1,26 @@
 # jwt-go
 
 [![build](https://github.com/golang-jwt/jwt/actions/workflows/build.yml/badge.svg)](https://github.com/golang-jwt/jwt/actions/workflows/build.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/golang-jwt/jwt.svg)](https://pkg.go.dev/github.com/golang-jwt/jwt)
+[![Go Reference](https://pkg.go.dev/badge/github.com/golang-jwt/jwt/v4.svg)](https://pkg.go.dev/github.com/golang-jwt/jwt/v4)
 
 A [go](http://www.golang.org) (or 'golang' for search engine friendliness) implementation of [JSON Web Tokens](https://datatracker.ietf.org/doc/html/rfc7519).
 
-**IMPORT PATH CHANGE:** Starting from [v3.2.1](https://github.com/golang-jwt/jwt/releases/tag/v3.2.1), the import path has changed from `github.com/dgrijalva/jwt-go` to `github.com/golang-jwt/jwt`. After the original author of the library suggested migrating the maintenance of `jwt-go`, a dedicated team of open source maintainers decided to clone the existing library into this repository. See [dgrijalva/jwt-go#462](https://github.com/dgrijalva/jwt-go/issues/462) for a detailed discussion on this topic.
+Starting with [v4.0.0](https://github.com/golang-jwt/jwt/releases/tag/v4.0.0) this project adds Go module support, but maintains backwards compatibility with older `v3.x.y` tags and upstream `github.com/dgrijalva/jwt-go`.
+See the [`MIGRATION_GUIDE.md`](./MIGRATION_GUIDE.md) for more information.
 
-Future releases will be using the `github.com/golang-jwt/jwt` import path and continue the existing versioning scheme of `v3.x.x+incompatible`. Backwards-compatible patches and fixes will be done on the `v3` release branch, where as new build-breaking features will be developed in a `v4` release, possibly including a SIV-style import path.
+> After the original author of the library suggested migrating the maintenance of `jwt-go`, a dedicated team of open source maintainers decided to clone the existing library into this repository. See [dgrijalva/jwt-go#462](https://github.com/dgrijalva/jwt-go/issues/462) for a detailed discussion on this topic.
 
-**SECURITY NOTICE:** Some older versions of Go have a security issue in the crypto/elliptic. Recommendation is to upgrade to at least 1.8.3. See issue [dgrijalva/jwt-go#216](https://github.com/dgrijalva/jwt-go/issues/216) for more detail.
+
+**SECURITY NOTICE:** Some older versions of Go have a security issue in the crypto/elliptic. Recommendation is to upgrade to at least 1.15 See issue [dgrijalva/jwt-go#216](https://github.com/dgrijalva/jwt-go/issues/216) for more detail.
 
 **SECURITY NOTICE:** It's important that you [validate the `alg` presented is what you expect](https://auth0.com/blog/critical-vulnerabilities-in-json-web-token-libraries/). This library attempts to make it easy to do the right thing by requiring key types match the expected alg, but you should take the extra step to verify it in your usage.  See the examples provided.
+
+### Supported Go versions
+
+Our support of Go versions is aligned with Go's [version release policy](https://golang.org/doc/devel/release#policy).
+So we will support a major version of Go until there are two newer major releases.
+We no longer support building jwt-go with unsupported Go versions, as these contain security vulnerabilities
+which will not be fixed.
 
 ## What the heck is a JWT?
 
@@ -43,7 +52,7 @@ Here's an example of an extension that integrates with multiple Google Cloud Pla
 
 ## Compliance
 
-This library was last reviewed to comply with [RTF 7519](https://datatracker.ietf.org/doc/html/rfc7519) dated May 2015 with a few notable differences:
+This library was last reviewed to comply with [RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519) dated May 2015 with a few notable differences:
 
 * In order to protect against accidental use of [Unsecured JWTs](https://datatracker.ietf.org/doc/html/rfc7519#section-6), tokens using `alg=none` will only be accepted if the constant `jwt.UnsafeAllowNoneSignatureType` is provided as the key.
 
@@ -53,10 +62,8 @@ This library is considered production ready.  Feedback and feature requests are 
 
 This project uses [Semantic Versioning 2.0.0](http://semver.org).  Accepted pull requests will land on `main`.  Periodically, versions will be tagged from `main`.  You can find all the releases on [the project releases page](https://github.com/golang-jwt/jwt/releases).
 
-While we try to make it obvious when we make breaking changes, there isn't a great mechanism for pushing announcements out to users.  You may want to use this alternative package include: `gopkg.in/golang-jwt/jwt.v3`.  It will do the right thing WRT semantic versioning.
-
 **BREAKING CHANGES:*** 
-* Version 3.0.0 includes _a lot_ of changes from the 2.x line, including a few that break the API.  We've tried to break as few things as possible, so there should just be a few type signature changes.  A full list of breaking changes is available in `VERSION_HISTORY.md`.  See `MIGRATION_GUIDE.md` for more information on updating your code.
+A full list of breaking changes is available in `VERSION_HISTORY.md`.  See `MIGRATION_GUIDE.md` for more information on updating your code.
 
 ## Usage Tips
 
@@ -84,6 +91,7 @@ Each signing method expects a different object type for its signing keys. See th
 * The [HMAC signing method](https://pkg.go.dev/github.com/golang-jwt/jwt#SigningMethodHMAC) (`HS256`,`HS384`,`HS512`) expect `[]byte` values for signing and validation
 * The [RSA signing method](https://pkg.go.dev/github.com/golang-jwt/jwt#SigningMethodRSA) (`RS256`,`RS384`,`RS512`) expect `*rsa.PrivateKey` for signing and `*rsa.PublicKey` for validation
 * The [ECDSA signing method](https://pkg.go.dev/github.com/golang-jwt/jwt#SigningMethodECDSA) (`ES256`,`ES384`,`ES512`) expect `*ecdsa.PrivateKey` for signing and `*ecdsa.PublicKey` for validation
+* The [EdDSA signing method](https://pkg.go.dev/github.com/golang-jwt/jwt#SigningMethodEd25519) (`Ed25519`) expect `ed25519.PrivateKey` for signing and `ed25519.PublicKey` for validation
 
 ### JWT and OAuth
 
