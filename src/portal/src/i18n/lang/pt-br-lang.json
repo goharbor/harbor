@@ -1698,7 +1698,9 @@
         "FINAL_SYSTEM_NAME_TIP": "Este valor será concatenado ao prefixo do projeto.",
         "PUSH_AND_PULL": "Push",
         "PUSH_PERMISSION_TOOLTIP": "Permissões de envio (push) presume também a permissão e recebimento (pull).",
-        "STOP": "Stop"
+        "STOP": "Stop",
+        "LIST": "List",
+        "REPOSITORY": "Repository"
     }
 
 }

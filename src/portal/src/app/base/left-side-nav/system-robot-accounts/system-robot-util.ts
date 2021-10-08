@@ -28,16 +28,20 @@ export enum PermissionsKinds {
 }
 
 export enum Resource {
-    ARTIFACT = 'repository',
+    REPO = 'repository',
     HELM_CHART = 'helm-chart',
-    HELM_CHART_VERSION = 'helm-chart-version'
+    HELM_CHART_VERSION = 'helm-chart-version',
+    ARTIFACT = 'artifact'
 }
 
 export enum Action {
     PUSH = 'push',
     PULL = 'pull',
     READ = 'read',
-    CREATE = 'create'
+    CREATE = 'create',
+    LIST = 'list',
+    STOP = 'stop',
+    DELETE = 'delete'
 }
 
 export const NAMESPACE_ALL_PROJECTS: string = '*';
@@ -97,7 +101,17 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "resource": "scan",
         "action": "stop",
         "checked": true
-    }
+    },
+    {
+        "resource": "artifact",
+        "action": "list",
+        "checked": true
+    },
+    {
+        "resource": "repository",
+        "action": "list",
+        "checked": true
+    },
 ];
 
 export const ACTION_RESOURCE_I18N_MAP = {
@@ -106,7 +120,7 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'read': 'SYSTEM_ROBOT.READ',
     'create': 'SYSTEM_ROBOT.CREATE',
     'delete': 'SYSTEM_ROBOT.DELETE',
-    'repository': 'SYSTEM_ROBOT.ARTIFACT',
+    'repository': 'SYSTEM_ROBOT.REPOSITORY',
     'artifact': 'SYSTEM_ROBOT.ARTIFACT',
     'helm-chart': 'SYSTEM_ROBOT.HELM',
     'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
@@ -114,7 +128,8 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
     'scan': 'SYSTEM_ROBOT.SCAN',
     'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL',
-    'stop': 'SYSTEM_ROBOT.STOP'
+    'stop': 'SYSTEM_ROBOT.STOP',
+    'list': 'SYSTEM_ROBOT.LIST'
 };
 
 export enum ExpirationType {
@@ -128,10 +143,10 @@ export function onlyHasPushPermission(access: Access[]): boolean {
         let hasPushPermission: boolean = false;
         let hasPullPermission: boolean = false;
         access.forEach( item => {
-            if (item.action === Action.PUSH && item.resource === Resource.ARTIFACT) {
+            if (item.action === Action.PUSH && item.resource === Resource.REPO) {
                 hasPushPermission = true;
             }
-            if (item.action === Action.PULL && item.resource === Resource.ARTIFACT) {
+            if (item.action === Action.PULL && item.resource === Resource.REPO) {
                 hasPullPermission = true;
             }
         });
