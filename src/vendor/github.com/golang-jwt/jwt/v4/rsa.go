@@ -6,7 +6,7 @@ import (
 	"crypto/rsa"
 )
 
-// Implements the RSA family of signing methods signing methods
+// SigningMethodRSA implements the RSA family of signing methods.
 // Expects *rsa.PrivateKey for signing and *rsa.PublicKey for validation
 type SigningMethodRSA struct {
 	Name string
@@ -44,7 +44,7 @@ func (m *SigningMethodRSA) Alg() string {
 	return m.Name
 }
 
-// Implements the Verify method from SigningMethod
+// Verify implements token verification for the SigningMethod
 // For this signing method, must be an *rsa.PublicKey structure.
 func (m *SigningMethodRSA) Verify(signingString, signature string, key interface{}) error {
 	var err error
@@ -73,7 +73,7 @@ func (m *SigningMethodRSA) Verify(signingString, signature string, key interface
 	return rsa.VerifyPKCS1v15(rsaKey, m.Hash, hasher.Sum(nil), sig)
 }
 
-// Implements the Sign method from SigningMethod
+// Sign implements token signing for the SigningMethod
 // For this signing method, must be an *rsa.PrivateKey structure.
 func (m *SigningMethodRSA) Sign(signingString string, key interface{}) (string, error) {
 	var rsaKey *rsa.PrivateKey

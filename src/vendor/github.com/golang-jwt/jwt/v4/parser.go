@@ -13,7 +13,7 @@ type Parser struct {
 	SkipClaimsValidation bool     // Skip claims validation during token parsing
 }
 
-// Parse, validate, and return a token.
+// Parse parses, validates, and returns a token.
 // keyFunc will receive the parsed token and should return the key for validating.
 // If everything is kosher, err will be nil
 func (p *Parser) Parse(tokenString string, keyFunc Keyfunc) (*Token, error) {
@@ -87,12 +87,12 @@ func (p *Parser) ParseWithClaims(tokenString string, claims Claims, keyFunc Keyf
 	return token, vErr
 }
 
-// WARNING: Don't use this method unless you know what you're doing
+// ParseUnverified parses the token but doesn't validate the signature.
 //
-// This method parses the token but doesn't validate the signature. It's only
-// ever useful in cases where you know the signature is valid (because it has
-// been checked previously in the stack) and you want to extract values from
-// it.
+// WARNING: Don't use this method unless you know what you're doing.
+//
+// It's only ever useful in cases where you know the signature is valid (because it has
+// been checked previously in the stack) and you want to extract values from it.
 func (p *Parser) ParseUnverified(tokenString string, claims Claims) (token *Token, parts []string, err error) {
 	parts = strings.Split(tokenString, ".")
 	if len(parts) != 3 {

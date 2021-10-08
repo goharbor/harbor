@@ -41,7 +41,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocraft/work v0.5.1
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
-	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
