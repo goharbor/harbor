@@ -6,6 +6,7 @@ import unittest
 from testutils import ADMIN_CLIENT, CHART_API_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
+from testutils import files_directory
 import library.repository
 import library.helm
 from library.robot import Robot
@@ -23,7 +24,7 @@ class TestProjects(unittest.TestCase):
         self.url = ADMIN_CLIENT["endpoint"]
         self.chart_api_url = CHART_API_CLIENT['endpoint']
         self.user_push_chart_password = "Aa123456"
-        self.chart_file = "https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz"
+        self.chart_file = files_directory + "harbor-0.2.0.tgz"
         self.archive = "harbor/"
         self.CHART_NAME=self.archive.replace("/", "")
         self.verion = "0.2.0"

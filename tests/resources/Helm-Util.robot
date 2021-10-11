@@ -31,9 +31,7 @@ Helm Repo Add
 
 Helm Repo Push
     [Arguments]  ${user}  ${pwd}  ${chart_filename}  ${helm_repo_name}=myrepo  ${helm_cmd}=helm
-    ${current_dir}=  Run  pwd
-    Run  cd ${current_dir}
-    Run  wget ${harbor_chart_file_url}
+    Run  cp ${files_directory}/${chart_filename} ./
     Wait Unitl Command Success  ${helm_cmd} cm-push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
 
 Helm Chart Push

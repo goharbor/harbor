@@ -4,7 +4,7 @@ import sys
 import unittest
 
 from testutils import ADMIN_CLIENT, CHART_API_CLIENT, TEARDOWN, harbor_server, harbor_url, suppress_urllib3_warning
-from testutils import created_user, created_project
+from testutils import created_user, created_project, files_directory
 from library.user import User
 from library.project import Project
 from library.robot import Robot
@@ -195,7 +195,7 @@ class TestRobotAccount(unittest.TestCase):
         #1. Define a number of access lists;
         CHART_FILE_LIST = [dict(name = 'prometheus', version='7.0.2'), dict(name = 'harbor', version='0.2.0')]
         for i in range(2):
-            base.run_command( ["curl", r"-o", "./tests/apitests/python/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"]), "https://storage.googleapis.com/harbor-builds/helm-chart-test-files/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"])])
+            base.run_command(["cp", "{}/{}-{}.tgz".format(files_directory, CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"]), "./tests/apitests/python/{}-{}.tgz".format(CHART_FILE_LIST[i]["name"], CHART_FILE_LIST[i]["version"])])
 
         # In this priviledge check list, make sure that each of lines and rows must
         #   contains both True and False value.

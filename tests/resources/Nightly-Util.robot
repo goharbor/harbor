@@ -41,7 +41,7 @@ Nightly Test Setup In Photon
     Log To Console  Start Containerd Daemon Locally ...
     Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
-    Run  wget ${prometheus_chart_file_url}
+    Run  cp ${files_directory}/prometheus-7.0.2.tgz ./
     Prepare Helm Plugin
     #Prepare docker image for push special image keyword in replication test
     Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}

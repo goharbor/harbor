@@ -13,7 +13,7 @@ echo $IP
 
 
 export HELM_EXPERIMENTAL_OCI=1
-wget $CHART_FILE
+cp $CHART_FILE ./
 echo "========================"
 echo ${CHART_FILE##*/}
 echo "========================"

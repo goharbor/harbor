@@ -1,0 +1,39 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+appVersion: 1.5.0
+description: An Enterprise-class Docker Registry by VMware
+engine: gotpl
+home: https://github.com/vmware/harbor
+icon: https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png
+keywords:
+- - vmware
+- - docker
+- - registry
+- - harbor
+maintainers:
+- - email: huh@vmware.com
+  name: Jesse Hu
+- - email: username.taken@gmail.com
+  name: paulczar
+name: harbor
+sources:
+- - https://github.com/vmware/harbor/tree/master/contrib/helm/harbor
+version: 0.2.0
+
+...
+files:
+  harbor-0.2.0.tgz: sha256:7ec61bea83a569a7e24b1f627cdebba95c69bc00537cc1421a97651d87005751
+-----BEGIN PGP SIGNATURE-----
+
+wsDcBAEBCgAQBQJbYtzQCRDAnv7z0TaFkwAAMQUMAKHNgErDIvQDVoSVnvcRHXQM
+N3xSviXP46cp66PSswLIPVcFml3/L42tTNINOn2JhdjXCQ0UG6CLow7ftgnyhK+I
+eZecsGV2sQ1n7F3ZrO5EXYpqxA2LwC5cC2aGivbTjpSzM/KJUc/kL4AuUUcHLOeo
+FjbjxU913hCuuAU69AHyfknnQkmoCtLy6SC4YfRsuT2XrAN6rKwEPd/7MYgi3x0y
+b+jbZJmBvtyb1+xso7ByKTrDurzJUd3FTtMsFJrDfuMDkTJfLaSW56qpAhQSe44V
+eMUUS9nnXVtQV2jZBWuCHen/KekwJP41T48DwZoDe8+5ZY7s05YytIRKjfteZ2eF
+3UBhZ04CUpfn3XvxPs4S5f6ujhSyVLZtIeEfuhBZR3wpl9XUsExd1RsfHKQP40no
++I5UzYRUXRbu9aAqqhKv3Uljq/Q3rejp5cGI/x4lIzLYwd4cdnAXBu74Mt3XQnmU
+rV5yG5IPgLdqpK60AxizjPEqd7moNwoFzBRtK3WeKQ==
+=m9NT
+-----END PGP SIGNATURE-----

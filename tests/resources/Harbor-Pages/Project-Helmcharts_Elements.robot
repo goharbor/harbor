@@ -14,13 +14,10 @@ ${harbor_chart_name}  harbor
 ${harbor_chart_filename}  harbor-0.2.0.tgz
 ${harbor_chart_version}  0.2.0
 ${harbor_chart_prov_filename}  harbor-0.2.0.tgz.prov
-${harbor_chart_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
-${harbor_chart_prov_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz.prov
 
 ${prometheus_chart_name}  prometheus
 ${prometheus_chart_filename}  prometheus-7.0.2.tgz
 ${prometheus_chart_version}  7.0.2
-${prometheus_chart_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/prometheus-7.0.2.tgz
 ${prometheus_version}  //hbr-helm-chart//a[contains(.,'prometheus')]
 
 ${chart_detail}  //hbr-chart-detail

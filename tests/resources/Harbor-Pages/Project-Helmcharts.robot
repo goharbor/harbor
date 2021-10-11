@@ -9,19 +9,14 @@ Switch To Project Charts
     Retry Wait Until Page Contains Element  ${project_chart_list}
 
 Upload Chart files
-    ${current_dir}=  Run  pwd
-    Run  wget ${harbor_chart_file_url}
-    Run  wget ${harbor_chart_prov_file_url}
-    Run  wget ${prometheus_chart_file_url}
-
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
-    ${prometheus_file_path}  Set Variable  ${current_dir}/${prometheus_chart_filename}
+    ${prometheus_file_path}  Set Variable  ${files_directory}/${prometheus_chart_filename}
     Choose File  xpath=${chart_file_browse}  ${prometheus_file_path}
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
     Retry Wait Until Page Contains  ${prometheus_chart_name}
-    ${harbor_file_path}  Set Variable  ${current_dir}/${harbor_chart_filename}
-    ${harbor_prov_file_path}  Set Variable  ${current_dir}/${harbor_chart_prov_filename}
+    ${harbor_file_path}  Set Variable  ${files_directory}/${harbor_chart_filename}
+    ${harbor_prov_file_path}  Set Variable  ${files_directory}/${harbor_chart_prov_filename}
     Choose File  xpath=${chart_file_browse}  ${harbor_file_path}
     Choose File  xpath=${chart_prov_browse}  ${harbor_prov_file_path}
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}

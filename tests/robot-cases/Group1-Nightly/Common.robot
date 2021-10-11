@@ -704,7 +704,7 @@ Test Case - Push Docker Manifest Index and Display
 Test Case - Push Helm Chart and Display
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    ${chart_file}=  Set Variable  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
+    ${chart_file}=  Set Variable  ${files_directory}/harbor-0.2.0.tgz
     ${archive}=  Set Variable  harbor/
     ${verion}=  Set Variable  0.2.0
     ${repo_name}=  Set Variable  harbor_chart_test
