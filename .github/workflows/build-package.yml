@@ -18,7 +18,7 @@ jobs:
       - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@master
         with:
           version: '285.0.0'
           project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -46,7 +46,10 @@ jobs:
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
-        if: contains(steps.changed-files.outputs.modified, 'Dockerfile.base') || contains(steps.changed-files.outputs.modified, 'VERSION')
+        if: |
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'VERSION') ||
+            contains(steps.changed-files.outputs.modified, '.buildbaselog')
         run: |
           set -x
           base_image_tag=$(cat ./VERSION)
