@@ -22,7 +22,7 @@ def helm_save(chart_archive, harbor_server, project, repo_name):
     base.run_command(command)
 
 def helm_push(harbor_server, project, repo_name, version):
-    command = ["helm3", "chart","push", harbor_server+"/"+project+"/"+repo_name+":"+version]
+    command = ["helm3", "chart", "push", harbor_server+"/"+project+"/"+repo_name+":"+version]
     ret = base.run_command(command)
     return ret
 
@@ -39,7 +39,7 @@ def helm2_add_repo(helm_repo_name, harbor_url, project, username, password, expe
 
 def helm2_push(helm_repo_name, chart_file, project, username, password):
     get_chart_file(chart_file)
-    command = ["helm2", "push", "--username=" + username, "--password=" + password, chart_file.split('/')[-1], helm_repo_name]
+    command = ["helm2", "cm-push", "--username=" + username, "--password=" + password, chart_file.split('/')[-1], helm_repo_name]
     base.run_command(command)
 
 def helm2_repo_update():
