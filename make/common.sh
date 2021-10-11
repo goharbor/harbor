@@ -55,7 +55,7 @@ function check_golang {
 	fi
 
 	# go has been installed and check its version
-	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
+	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)[\.0-9]*) ]]
 	then
 		golang_version=${BASH_REMATCH[1]}
 		golang_version_major=${BASH_REMATCH[2]}
@@ -83,7 +83,7 @@ function check_docker {
 	fi
 
 	# docker has been installed and check its version
-	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
+	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)[\.0-9]*) ]]
 	then
 		docker_version=${BASH_REMATCH[1]}
 		docker_version_major=${BASH_REMATCH[2]}
@@ -110,7 +110,7 @@ function check_dockercompose {
 	fi
 
 	# docker-compose has been installed, check its version
-	if [[ $(docker-compose --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
+	if [[ $(docker-compose --version) =~ (([0-9]+)\.([0-9]+)[\.0-9]*) ]]
 	then
 		docker_compose_version=${BASH_REMATCH[1]}
 		docker_compose_version_major=${BASH_REMATCH[2]}
