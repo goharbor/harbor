@@ -58,11 +58,11 @@ function check_golang {
 	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		golang_version=${BASH_REMATCH[1]}
-		golang_version_part1=${BASH_REMATCH[2]}
-		golang_version_part2=${BASH_REMATCH[3]}
+		golang_version_major=${BASH_REMATCH[2]}
+		golang_version_minor=${BASH_REMATCH[3]}
 
 		# the version of golang does not meet the requirement
-		if [ "$golang_version_part1" -lt 1 ] || ([ "$golang_version_part1" -eq 1 ] && [ "$golang_version_part2" -lt 12 ])
+		if [ "$golang_version_major" -lt 1 ] || ([ "$golang_version_major" -eq 1 ] && [ "$golang_version_minor" -lt 12 ])
 		then
 			warn "Better to upgrade golang package to 1.12.0+ or use golang docker image build binary."
 			return
@@ -86,12 +86,12 @@ function check_docker {
 	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		docker_version=${BASH_REMATCH[1]}
-		docker_version_part1=${BASH_REMATCH[2]}
-		docker_version_part2=${BASH_REMATCH[3]}
+		docker_version_major=${BASH_REMATCH[2]}
+		docker_version_minor=${BASH_REMATCH[3]}
 
 		note "docker version: $docker_version"
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
+		if [ "$docker_version_major" -lt 17 ] || ([ "$docker_version_major" -eq 17 ] && [ "$docker_version_minor" -lt 6 ])
 		then
 			error "Need to upgrade docker package to 17.06.0+."
 			exit 1
@@ -113,12 +113,12 @@ function check_dockercompose {
 	if [[ $(docker-compose --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		docker_compose_version=${BASH_REMATCH[1]}
-		docker_compose_version_part1=${BASH_REMATCH[2]}
-		docker_compose_version_part2=${BASH_REMATCH[3]}
+		docker_compose_version_major=${BASH_REMATCH[2]}
+		docker_compose_version_minor=${BASH_REMATCH[3]}
 
 		note "docker-compose version: $docker_compose_version"
 		# the version of docker-compose does not meet the requirement
-		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 18 ])
+		if [ "$docker_compose_version_major" -lt 1 ] || ([ "$docker_compose_version_major" -eq 1 ] && [ "$docker_compose_version_minor" -lt 18 ])
 		then
 			error "Need to upgrade docker-compose package to 1.18.0+."
 			exit 1
