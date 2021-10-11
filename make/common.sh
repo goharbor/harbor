@@ -54,7 +54,7 @@ function check_golang {
 		return
 	fi
 
-	# docker has been installed and check its version
+	# go has been installed and check its version
 	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		golang_version=${BASH_REMATCH[1]}
