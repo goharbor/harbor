@@ -31,18 +31,16 @@ function traverseObject(obj) {
   if (obj) {
     if (Array.isArray(obj)) {
       for (let i = 0; i < obj.length; i++) {
-        traverseObject(obj[i])
+        traverseObject(obj[i]);
       }
     }
     if (typeof obj === 'object') {
       for (let name in obj) {
         if (obj.hasOwnProperty(name)) {
-          if (name === 'additionalProperties'
-            && obj[name].type === 'object'
-            && obj[name].additionalProperties === true) {
+          if (name === 'additionalProperties' && obj[name].type === 'object' && obj[name].additionalProperties === true) {
             obj[name] = true;
           } else {
-            traverseObject(obj[name])
+            traverseObject(obj[name]);
           }
         }
       }
