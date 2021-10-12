@@ -31,7 +31,7 @@ function traverseObject(obj) {
   if (obj) {
     if (Array.isArray(obj)) {
       for (let i = 0; i < obj.length; i++) {
-        traverseObject(obj[i])
+        traverseObject(obj[i]);
       }
     }
     if (typeof obj === 'object') {
@@ -42,7 +42,7 @@ function traverseObject(obj) {
             && obj[name].additionalProperties === true) {
             obj[name] = true;
           } else {
-            traverseObject(obj[name])
+            traverseObject(obj[name]);
           }
         }
       }
