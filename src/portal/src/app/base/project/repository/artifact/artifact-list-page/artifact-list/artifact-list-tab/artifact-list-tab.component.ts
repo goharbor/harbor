@@ -39,7 +39,8 @@ import {
   dbEncodeURIComponent,
   doSorting,
   DEFAULT_SUPPORTED_MIME_TYPES,
-  getSortingString
+  getSortingString,
+  VULNERABILITY_SEVERITY
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
@@ -71,6 +72,7 @@ import { ConfirmationAcknowledgement } from "../../../../../../global-confirmati
 import { UN_LOGGED_PARAM } from "../../../../../../../account/sign-in/sign-in.service";
 import { Label } from "../../../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
+import { NativeReportSummary } from "ng-swagger-gen/models/native-report-summary";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -1019,7 +1021,21 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
   handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
-      return Object.values(scanOverview)[0];
+      const summary: NativeReportSummary = Object.values(scanOverview)[0];
+      if (summary && summary.severity === VULNERABILITY_SEVERITY.NONE
+          && summary.summary
+      && summary.summary.total) { // if severity is None and total larger than 0, set severity to Negligible
+        summary.severity = VULNERABILITY_SEVERITY.NEGLIGIBLE;
+      }
+      if (summary && summary.summary && summary.summary.summary) {
+        for (let name in summary.summary.summary) {
+          if (name === VULNERABILITY_SEVERITY.NONE) { // map  None to Negligible
+            summary.summary.summary[VULNERABILITY_SEVERITY.NEGLIGIBLE] = summary.summary.summary[name];
+            delete summary.summary.summary[name];
+          }
+        }
+      }
+      return summary;
     }
     return null;
   }
