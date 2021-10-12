@@ -125,6 +125,11 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
             this.scan_overview = res;
             if (this.scan_overview && Object.values(this.scan_overview)[0]) {
               this.scanningResults = (Object.values(this.scan_overview)[0] as any).vulnerabilities || [];
+              this.scanningResults.forEach(item => {
+                if (item.severity === VULNERABILITY_SEVERITY.NONE) { // map None to Negligible
+                  item.severity = VULNERABILITY_SEVERITY.NEGLIGIBLE;
+                }
+              });
               // sort
               if (this.scanningResults) {
                 this.scanningResults.sort(((a, b) => this.getLevel(b) - this.getLevel(a)));
