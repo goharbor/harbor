@@ -18,6 +18,7 @@ Resource  Util.robot
 
 *** Variables ***
 ${download_directory}  /drone/download
+${files_directory}  ${EXECDIR}/tests/files
 
 *** Keywords ***
 Start Selenium Standalone Server Locally

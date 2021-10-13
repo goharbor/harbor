@@ -37,8 +37,13 @@ RUN pwd && mkdir /tool/binary && \
     tar zxvf helm-v$HELM3_VERSION-linux-amd64.tar.gz && \
     ls || pwd && \
     mv linux-amd64/helm /tool/binary/helm3 && \
+    # Install helm v3.7
+    HELM3_7_VERSION=3.7.0 && wget https://get.helm.sh/helm-v$HELM3_7_VERSION-linux-amd64.tar.gz && \
+    tar zxvf helm-v$HELM3_7_VERSION-linux-amd64.tar.gz && \
+    ls || pwd && \
+    mv linux-amd64/helm /tool/binary/helm3.7 && \
     # Install ORAS
-    ORAS_VERSION=0.9.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_amd64.tar.gz && \
+    ORAS_VERSION=0.12.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_amd64.tar.gz && \
     mkdir -p oras-install/  && \
     tar -zxf oras_${ORAS_VERSION}_*.tar.gz -C oras-install/  && \
     mv oras-install/oras /tool/binary/ && \
