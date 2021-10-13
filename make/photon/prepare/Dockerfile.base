@@ -2,4 +2,4 @@ FROM photon:2.0
 
 RUN tdnf install -y python3 \
     && tdnf install -y python3-pip python3-PyYAML python3-jinja2
-RUN pip3 install setuptools && pip3 install pipenv==2020.11.15
+RUN pip3 install setuptools && pip3 install pipenv==2021.5.29
