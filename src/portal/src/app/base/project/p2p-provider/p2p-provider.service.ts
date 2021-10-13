@@ -80,9 +80,7 @@ export const PROJECT_SEVERITY_LEVEL_MAP = {
   "high": 4,
   "medium": 3,
   "low": 2,
-  "negligible": 1,
-  "unknown": 0,
-  "none": 0
+  "none": 1
 };
 
 export const PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP = {
@@ -90,8 +88,7 @@ export const PROJECT_SEVERITY_LEVEL_TO_TEXT_MAP = {
   4: "high",
   3: "medium",
   2: "low",
-  1: "negligible",
-  0: "none",
+  1: "none",
 };
 
 export enum FILTER_TYPE {

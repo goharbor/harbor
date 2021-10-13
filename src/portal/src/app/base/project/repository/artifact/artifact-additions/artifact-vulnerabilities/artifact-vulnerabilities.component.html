@@ -62,8 +62,7 @@
                     <span *ngSwitchCase="'High'" class="label label-danger no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchCase="'Medium'" class="label label-medium no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchCase="'Low'" class="label label-low no-border">{{severityText(res.severity) | translate}}</span>
-                    <span *ngSwitchCase="'Negligible'" class="label label-negligible no-border">{{severityText(res.severity) | translate}}</span>
-                    <span *ngSwitchCase="'Unknown'" class="label label-unknown no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'None'" class="label label-none no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchDefault>{{severityText(res.severity) | translate}}</span>
                 </clr-dg-cell>
                 <clr-dg-cell>{{res.preferred_cvss?.score_v3}}</clr-dg-cell>

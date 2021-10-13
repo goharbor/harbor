@@ -1066,8 +1066,6 @@
             "HIGH": "Hoch",
             "MEDIUM": "Mittel",
             "LOW": "Niedrig",
-            "NEGLIGIBLE": "Geringfügig",
-            "UNKNOWN": "Unbekannt",
             "NONE": "Keine"
         },
         "SINGULAR": "Schwachstelle",
