@@ -21,8 +21,8 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Create A Random Permission Item List
-    ${permission_item_all_list}=  Create List  Push Artifact
-    ...                                    Pull Artifact
+    ${permission_item_all_list}=  Create List  Push Repository
+    ...                                    Pull Repository
     ...                                    Delete Artifact
     ...                                    Read Helm Chart
     ...                                    Create Helm Chart Version
@@ -31,6 +31,9 @@ Create A Random Permission Item List
     ...                                    Delete Tag
     ...                                    Create Artifact label
     ...                                    Create Scan
+    ...                                    Stop Scan
+    ...                                    List Artifact
+    ...                                    List Repository
 
 
     Set Suite Variable  ${permission_item_all_list}
