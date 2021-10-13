@@ -117,6 +117,14 @@ Test Case - Scan All Images
     [Tags]  scan_all
     Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
 
+Test Case - Stop Scan Image
+    [Tags]  stop_scan
+    Harbor API Test  ./tests/apitests/python/test_stop_scan_image_artifact.py
+
+Test Case - Stop Scan All Images
+    [Tags]  stop_scan_all
+    Harbor API Test  ./tests/apitests/python/test_system_level_stop_scan_all.py
+
 Test Case - Registry API
     [Tags]  reg_api
     Harbor API Test  ./tests/apitests/python/test_registry_api.py
