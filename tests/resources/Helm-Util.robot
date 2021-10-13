@@ -34,7 +34,7 @@ Helm Repo Push
     ${current_dir}=  Run  pwd
     Run  cd ${current_dir}
     Run  wget ${harbor_chart_file_url}
-    Wait Unitl Command Success  ${helm_cmd} push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
+    Wait Unitl Command Success  ${helm_cmd} cm-push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
 
 Helm Chart Push
     [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}
