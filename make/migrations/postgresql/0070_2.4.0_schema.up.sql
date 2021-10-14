@@ -6,3 +6,6 @@ ALTER TABLE replication_policy ADD COLUMN IF NOT EXISTS speed_kb int;
 /* add version fields for lock free quota */
 ALTER TABLE quota ADD COLUMN IF NOT EXISTS version bigint DEFAULT 0;
 ALTER TABLE quota_usage ADD COLUMN IF NOT EXISTS version bigint DEFAULT 0;
+
+/* convert Negligible to None for the severity of the vulnerability record */
+UPDATE vulnerability_record SET severity='None' WHERE severity='Negligible';
