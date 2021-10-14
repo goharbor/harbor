@@ -26,7 +26,7 @@ import (
 
 // const definition
 const (
-	MaxConcurrency = 30
+	MaxConcurrency = 100
 )
 
 var registry = map[string]Factory{}
