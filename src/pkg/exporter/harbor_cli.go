@@ -1,9 +1,10 @@
 package exporter
 
 import (
-	"fmt"
+	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 var hbrCli *HarborClient
@@ -19,7 +20,7 @@ type HarborClient struct {
 func (hc HarborClient) harborURL(p string) url.URL {
 	return url.URL{
 		Scheme: hc.HarborScheme,
-		Host:   fmt.Sprintf("%s:%d", hc.HarborHost, hc.HarborPort),
+		Host:   net.JoinHostPort(hc.HarborHost, strconv.Itoa(hc.HarborPort)),
 		Path:   p,
 	}
 }
