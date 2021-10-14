@@ -221,6 +221,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
     config_dict['trivy_insecure'] = trivy_configs.get("insecure") or False
+    config_dict['trivy_timeout'] = trivy_configs.get("timeout") or '5m0s'
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
