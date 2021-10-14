@@ -15,7 +15,7 @@
 package redis
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -107,7 +107,7 @@ func New(opts cache.Options) (cache.Cache, error) {
 		opts.Address = "redis://localhost:6379/0"
 	}
 
-	name := fmt.Sprintf("%x", md5.Sum([]byte(opts.Address)))
+	name := fmt.Sprintf("%x", sha256.Sum256([]byte(opts.Address)))
 
 	param := &libredis.PoolParam{
 		PoolMaxIdle:           100,
