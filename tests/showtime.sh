@@ -1,4 +1,4 @@
-#/bin/env bash
+#!/bin/env bash
 
 if [ ! -z "$*" ]; then
  $@ 2>&1 | while read line;do
