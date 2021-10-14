@@ -87,7 +87,7 @@ func NewController() Controller {
 		scheduler:  scheduler.Sched,
 		flowCtl:    flow.NewController(),
 		ormCreator: orm.Crt,
-		wp:         lib.NewWorkerPool(1024),
+		wp:         lib.NewWorkerPool(10),
 	}
 }
 
@@ -113,13 +113,15 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if err != nil {
 		return 0, err
 	}
-	c.wp.GetWorker()
 	// start the replication flow in background
 	// as the process runs inside a goroutine, the transaction in the outer ctx
-	// may be submitted already when the process starts, so pass a new context
+	// may be submitted already when the process starts, so create an new context
 	// with orm populated to the goroutine
-	go func(ctx context.Context) {
+	go func() {
+		c.wp.GetWorker()
 		defer c.wp.ReleaseWorker()
+
+		ctx := orm.NewContext(context.Background(), c.ormCreator.Create())
 		// recover in case panic during the adapter process
 		defer func() {
 			if err := recover(); err != nil {
@@ -145,7 +147,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			return
 		}
 		c.markError(ctx, id, err)
-	}(orm.NewContext(context.Background(), c.ormCreator.Create()))
+	}()
 	return id, nil
 }
 
