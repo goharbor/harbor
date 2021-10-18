@@ -20,7 +20,7 @@ require (
 	github.com/casbin/casbin v1.7.0
 	github.com/cenkalti/backoff/v4 v4.1.1
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
-	github.com/containerd/containerd v1.4.8 // indirect
+	github.com/containerd/containerd v1.4.11 // indirect
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dghubble/sling v1.1.0

@@ -1067,8 +1067,6 @@
             "HIGH": "High",
             "MEDIUM": "Medium",
             "LOW": "Low",
-            "NEGLIGIBLE": "Negligible",
-            "UNKNOWN": "Unknown",
             "NONE": "None"
         },
         "SINGULAR": "vulnerability",

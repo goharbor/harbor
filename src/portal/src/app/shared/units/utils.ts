@@ -257,8 +257,6 @@ export const VULNERABILITY_SCAN_STATUS = {
  * The severity of vulnerability scanning
  */
 export const VULNERABILITY_SEVERITY = {
-    NEGLIGIBLE: "Negligible",
-    UNKNOWN: "Unknown",
     LOW: "Low",
     MEDIUM: "Medium",
     HIGH: "High",
@@ -269,13 +267,11 @@ export const VULNERABILITY_SEVERITY = {
  * The level of vulnerability severity for comparing
  */
 export const SEVERITY_LEVEL_MAP = {
-    "Critical": 6,
-    "High": 5,
-    "Medium": 4,
-    "Low": 3,
-    "Negligible": 2,
-    "Unknown": 1,
-    "None": 0
+    "Critical": 5,
+    "High": 4,
+    "Medium": 3,
+    "Low": 2,
+    "None": 1
 };
 
 /**
