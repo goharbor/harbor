@@ -16,6 +16,7 @@ package http
 
 import (
 	"crypto/tls"
+	"github.com/goharbor/harbor/src/lib/trace"
 	"net"
 	"net/http"
 	"time"
@@ -45,8 +46,8 @@ func init() {
 }
 
 func AddTracingWithGlobalTransport() {
-	insecureHTTPTransport = otelhttp.NewTransport(insecureHTTPTransport)
-	secureHTTPTransport = otelhttp.NewTransport(secureHTTPTransport)
+	insecureHTTPTransport = otelhttp.NewTransport(insecureHTTPTransport, trace.HarborHTTPTraceOptions...)
+	secureHTTPTransport = otelhttp.NewTransport(secureHTTPTransport, trace.HarborHTTPTraceOptions...)
 }
 
 // Use this instead of Default Transport in library because it sets ForceAttemptHTTP2 to true
