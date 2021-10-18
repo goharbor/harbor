@@ -1067,9 +1067,7 @@
             "HIGH": "严重",
             "MEDIUM": "中等",
             "LOW": "较低",
-            "NEGLIGIBLE": "可忽略",
-            "UNKNOWN": "未知",
-            "NONE": "无"
+            "NONE": "无评分"
         },
         "SINGULAR": "漏洞",
         "OVERALL_SEVERITY": "漏洞严重度:",

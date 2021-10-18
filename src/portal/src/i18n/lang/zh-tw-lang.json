@@ -1062,8 +1062,6 @@
       "HIGH": "嚴重",
       "MEDIUM": "中等",
       "LOW": "較低",
-      "NEGLIGIBLE": "可忽略",
-      "UNKNOWN":"未知",
       "NONE":"無"
     },
     "SINGULAR": "漏洞",

@@ -1062,8 +1062,6 @@
             "HIGH": "Alta",
             "MEDIUM": "Média",
             "LOW": "Baixa",
-            "NEGLIGIBLE": "Negligenciável",
-            "UNKNOWN": "Desconhecida",
             "NONE": "Nenhum"
         },
         "SINGULAR": "vulnerabilidade",

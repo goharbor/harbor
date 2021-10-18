@@ -56,15 +56,16 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   sub: Subscription;
   hasViewInitWithDelay: boolean = false;
   currentCVEList: Array<{ "cve_id": string; }> = [];
+
   constructor(
-    private errorHandler: ErrorHandler,
-    private additionsService: AdditionsService,
-    private userPermissionService: UserPermissionService,
-    private scanningService: ScanningResultService,
-    private eventService: EventService,
-    private session: SessionService,
-    private projectService: ProjectService,
-    private systemInfoService: SystemInfoService,
+      private errorHandler: ErrorHandler,
+      private additionsService: AdditionsService,
+      private userPermissionService: UserPermissionService,
+      private scanningService: ScanningResultService,
+      private eventService: EventService,
+      private session: SessionService,
+      private projectService: ProjectService,
+      private systemInfoService: SystemInfoService,
   ) {
     const that = this;
     this.severitySort = {
@@ -101,74 +102,80 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       this.getCurrentCVEAllowList();
     }
   }
+
   ngOnDestroy() {
     if (this.sub) {
       this.sub.unsubscribe();
       this.sub = null;
     }
   }
+
   getVulnerabilities() {
     if (this.vulnerabilitiesLink
-      && !this.vulnerabilitiesLink.absolute
-      && this.vulnerabilitiesLink.href) {
+        && !this.vulnerabilitiesLink.absolute
+        && this.vulnerabilitiesLink.href) {
       if (!this.hasShowLoading) {
         this.loading = true;
         this.hasShowLoading = true;
       }
       this.additionsService.getDetailByLink(this.vulnerabilitiesLink.href, true, false)
-        .pipe(finalize(() => {
-          this.loading = false;
-          this.hasShowLoading = false;
-        }))
-        .subscribe(
-          res  => {
-            this.scan_overview = res;
-            if (this.scan_overview && Object.values(this.scan_overview)[0]) {
-              this.scanningResults = (Object.values(this.scan_overview)[0] as any).vulnerabilities || [];
-              // sort
-              if (this.scanningResults) {
-                this.scanningResults.sort(((a, b) => this.getLevel(b) - this.getLevel(a)));
+          .pipe(finalize(() => {
+            this.loading = false;
+            this.hasShowLoading = false;
+          }))
+          .subscribe(
+              res => {
+                this.scan_overview = res;
+                if (this.scan_overview && Object.values(this.scan_overview)[0]) {
+                  this.scanningResults = (Object.values(this.scan_overview)[0] as any).vulnerabilities || [];
+                  // sort
+                  if (this.scanningResults) {
+                    this.scanningResults.sort(((a, b) => this.getLevel(b) - this.getLevel(a)));
+                  }
+                  this.scanner = (Object.values(this.scan_overview)[0] as any).scanner;
+                }
+              }, error => {
+                this.errorHandler.error(error);
               }
-              this.scanner = (Object.values(this.scan_overview)[0] as any).scanner;
-            }
-        }, error => {
-          this.errorHandler.error(error);
-        }
-      );
+          );
     }
   }
+
   getScanningPermission(): void {
     const permissions = [
-      { resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE },
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
     ];
     this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
       this.hasScanningPermission = results[0];
       // only has label permission
     }, error => this.errorHandler.error(error));
   }
+
   getProjectScanner(): void {
     this.hasEnabledScanner = false;
     this.scanBtnState = ClrLoadingState.LOADING;
     this.scanningService.getProjectScanner(this.projectId)
-      .subscribe(response => {
-        if (response && "{}" !== JSON.stringify(response) && !response.disabled
-          && response.health === "healthy") {
-          this.scanBtnState = ClrLoadingState.SUCCESS;
-          this.hasEnabledScanner = true;
-        } else {
+        .subscribe(response => {
+          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+              && response.health === "healthy") {
+            this.scanBtnState = ClrLoadingState.SUCCESS;
+            this.hasEnabledScanner = true;
+          } else {
+            this.scanBtnState = ClrLoadingState.ERROR;
+          }
+          this.projectScanner = response;
+        }, error => {
           this.scanBtnState = ClrLoadingState.ERROR;
-        }
-        this.projectScanner = response;
-      }, error => {
-        this.scanBtnState = ClrLoadingState.ERROR;
-      });
+        });
   }
+
   getLevel(v: VulnerabilityItem): number {
     if (v && v.severity && SEVERITY_LEVEL_MAP[v.severity]) {
       return SEVERITY_LEVEL_MAP[v.severity];
     }
     return 0;
   }
+
   refresh(): void {
     this.getVulnerabilities();
   }
@@ -183,49 +190,55 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         return 'VULNERABILITY.SEVERITY.MEDIUM';
       case VULNERABILITY_SEVERITY.LOW:
         return 'VULNERABILITY.SEVERITY.LOW';
-      case VULNERABILITY_SEVERITY.NEGLIGIBLE:
-        return 'VULNERABILITY.SEVERITY.NEGLIGIBLE';
-      case VULNERABILITY_SEVERITY.UNKNOWN:
-        return 'VULNERABILITY.SEVERITY.UNKNOWN';
+      case VULNERABILITY_SEVERITY.NONE:
+        return 'VULNERABILITY.SEVERITY.NONE';
       default:
         return 'UNKNOWN';
     }
   }
+
   scanNow() {
     this.onSendingScanCommand = true;
     this.eventService.publish(HarborEvent.START_SCAN_ARTIFACT, this.repoName + "/" + this.digest);
   }
+
   submitFinish(e: boolean) {
     this.onSendingScanCommand = e;
   }
+
   submitStopFinish(e: boolean) {
     this.onSendingStopCommand = e;
   }
+
   shouldShowBar(): boolean {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
-      && (this.resultBarChartComponent.queued
+        && (this.resultBarChartComponent.queued
             || this.resultBarChartComponent.scanning
             || this.resultBarChartComponent.error
             || this.resultBarChartComponent.stopped);
   }
+
   hasScanned(): boolean {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
-      && !(this.resultBarChartComponent.completed
-        || this.resultBarChartComponent.error
-        || this.resultBarChartComponent.queued
-        || this.resultBarChartComponent.stopped
-        || this.resultBarChartComponent.scanning);
+        && !(this.resultBarChartComponent.completed
+            || this.resultBarChartComponent.error
+            || this.resultBarChartComponent.queued
+            || this.resultBarChartComponent.stopped
+            || this.resultBarChartComponent.scanning);
   }
+
   handleScanOverview(scanOverview: any): any {
     if (scanOverview) {
       return Object.values(scanOverview)[0];
     }
     return null;
   }
+
   isSystemAdmin(): boolean {
     const account = this.session.getCurrentUser();
     return account && account.has_admin_role;
   }
+
   getCurrentCVEAllowList() {
     this.projectService.getProject(this.projectId).subscribe(
         projectRes => {
@@ -245,6 +258,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         }
     );
   }
+
   isInAllowList(CVEId: string): boolean {
     if (this.currentCVEList && this.currentCVEList.length) {
       for (let i = 0; i < this.currentCVEList.length; i++) {
@@ -255,6 +269,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     }
     return false;
   }
+
   getScannerInfo(scanner: ScannerVo): string {
     if (scanner) {
       if (scanner.name && scanner.version) {
@@ -266,9 +281,10 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     }
     return "";
   }
+
   isRunningState(): boolean {
     return this.hasViewInitWithDelay && this.resultBarChartComponent
-    && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning);
+        && (this.resultBarChartComponent.queued || this.resultBarChartComponent.scanning);
   }
 
   scanOrStop() {
@@ -278,6 +294,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
       this.scanNow();
     }
   }
+
   stopNow() {
     this.onSendingStopCommand = true;
     this.eventService.publish(HarborEvent.STOP_SCAN_ARTIFACT, this.repoName + "/" + this.digest);

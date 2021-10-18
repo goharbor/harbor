@@ -1066,8 +1066,6 @@
             "HIGH": "Yüksek",
             "MEDIUM": "Orta",
             "LOW": "Düşük",
-            "NEGLIGIBLE": "Önemsiz",
-            "UNKNOWN": "Bilinmiyor",
             "NONE": "Hiç"
         },
         "SINGULAR": "güvenlik açığı",
