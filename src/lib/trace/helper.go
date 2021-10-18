@@ -16,6 +16,7 @@ package trace
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -51,8 +52,20 @@ func RecordError(span oteltrace.Span, err error, description string) {
 
 // HarborSpanNameFormatter common span name formatter in Harbor
 func HarborSpanNameFormatter(operation string, r *http.Request) string {
-	if len(r.URL.Path) != 0 {
-		return r.Method + "_" + r.URL.Path
+	schema := "http"
+	if r.URL != nil && len(r.URL.Scheme) != 0 {
+		schema = r.URL.Scheme
+	}
+	host := "host_unknown"
+	if len(r.Host) != 0 {
+		host = r.Host
+	}
+	path := ""
+	if r.URL != nil && len(r.URL.Path) != 0 {
+		path = r.URL.Path
+	}
+	if len(path) != 0 {
+		return fmt.Sprintf("%s %s://%s%s", r.Method, schema, host, path)
 	}
 	return operation
 }
