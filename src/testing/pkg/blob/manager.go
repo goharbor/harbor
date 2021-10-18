@@ -209,6 +209,29 @@ func (_m *Manager) Get(ctx context.Context, digest string) (*models.Blob, error)
 	return r0, r1
 }
 
+// GetByArt provides a mock function with given fields: ctx, digest
+func (_m *Manager) GetByArt(ctx context.Context, digest string) ([]*models.Blob, error) {
+	ret := _m.Called(ctx, digest)
+
+	var r0 []*models.Blob
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Blob); ok {
+		r0 = rf(ctx, digest)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Blob)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, digest)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Blob, error) {
 	ret := _m.Called(ctx, query)

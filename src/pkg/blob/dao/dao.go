@@ -79,6 +79,9 @@ type DAO interface {
 
 	// GetBlobsNotRefedByProjectBlob get the blobs that are not referenced by the table project_blob and also not in the reserve window(in hours)
 	GetBlobsNotRefedByProjectBlob(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error)
+
+	// GetBlobsByArtDigest get the blobs that are referenced by artifact
+	GetBlobsByArtDigest(ctx context.Context, digest string) ([]*models.Blob, error)
 }
 
 // New returns an instance of the default DAO
@@ -400,4 +403,20 @@ func (d *dao) GetBlobsNotRefedByProjectBlob(ctx context.Context, timeWindowHours
 	}
 
 	return noneRefed, nil
+}
+
+func (d *dao) GetBlobsByArtDigest(ctx context.Context, digest string) ([]*models.Blob, error) {
+	var blobs []*models.Blob
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return blobs, err
+	}
+
+	sql := `SELECT b.id, b.digest, b.content_type, b.status, b.version, b.size FROM artifact_blob AS ab LEFT JOIN blob b ON ab.digest_blob = b.digest WHERE ab.digest_af = ?`
+	_, err = ormer.Raw(sql, digest).QueryRows(&blobs)
+	if err != nil {
+		return blobs, err
+	}
+
+	return blobs, nil
 }
