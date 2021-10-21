@@ -597,6 +597,7 @@
         "PLACEHOLDER": "Herhangi bir çoğaltma kuralı bulamadık!",
         "JOB_PLACEHOLDER": "Çoğaltma işi bulamadık!",
         "NO_ENDPOINT_INFO": "Lütfen önce bir uç noktası ekleyin",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "Bu proje mevcut değil",
         "SOURCE_RESOURCE_FILTER": "Kaynak vasıtası filtresi",
         "SCHEDULED": "Belirlenmiş",
