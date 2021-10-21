@@ -214,12 +214,14 @@ proxy:
 #   # # attributes is a key value dict contains user defined attributes used to initialize trace provider
 #   # attributes:
 #   #   application: harbor
+#   # # jaeger should be 1.26 or newer.
 #   # jaeger:
 #   #   endpoint: http://hostname:14268/api/traces
 #   #   username:
 #   #   password:
 #   #   agent_host: hostname
-#   #   agent_port: 6832
+#   #   # export trace data by jaeger.thrift in compact mode
+#   #   agent_port: 6831
 #   # otel:
 #   #   endpoint: hostname:4318
 #   #   url_path: /v1/traces
