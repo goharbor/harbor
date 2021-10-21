@@ -75,7 +75,7 @@ func (l *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 		log.Warningf("Found more than one entry.")
 		return nil, auth.NewErrAuth("Multiple entries found")
 	}
-	log.Debugf("Found ldap user %+v", ldapUsers[0])
+	log.Debugf("Found ldap user: %v", ldapUsers[0].Username)
 
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
@@ -259,7 +259,7 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 	if n > 0 {
 		dbUser, err := l.userMgr.GetByName(ctx, u.Username)
 		if errors.IsNotFoundErr(err) {
-			fmt.Printf("User not found in DB %+v", u)
+			log.Debugf("User not found in DB:%v", u.Username)
 			return nil
 		} else if err != nil {
 			return err
