@@ -594,6 +594,7 @@
     "PLACEHOLDER": "未發現任何復制規則!",
     "JOB_PLACEHOLDER": "未發現任何復制任務!",
     "NO_ENDPOINT_INFO": "請先添加一個目標",
+    "NO_LABEL_INFO": "Please add a label first",
     "NO_PROJECT_INFO": "此項目不存在",
     "SOURCE_RESOURCE_FILTER": "源資源過濾器",
     "SCHEDULED": "定時",

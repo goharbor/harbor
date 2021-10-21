@@ -599,6 +599,7 @@
         "PLACEHOLDER": "未发现任何复制规则!",
         "JOB_PLACEHOLDER": "未发现任何复制任务!",
         "NO_ENDPOINT_INFO": "请先添加一个目标",
+        "NO_LABEL_INFO": "请先添加一个标签",
         "NO_PROJECT_INFO": "此项目不存在",
         "SOURCE_RESOURCE_FILTER": "源资源过滤器",
         "SCHEDULED": "定时",
