@@ -107,13 +107,13 @@ func (p *pgsql) Register(alias ...string) error {
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	port, err := strconv.ParseInt(p.port, 10, 64)
+	port, err := strconv.Atoi(p.port)
 	if err != nil {
 		return err
 	}
 	m, err := NewMigrator(&models.PostGreSQL{
 		Host:     p.host,
-		Port:     int(port),
+		Port:     port,
 		Username: p.usr,
 		Password: p.pwd,
 		Database: p.database,
