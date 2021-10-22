@@ -597,6 +597,7 @@
         "PLACEHOLDER": "Não foi possível encontrar nenhuma regra de replicação!",
         "JOB_PLACEHOLDER": "Não foi possível encontrar nenhuma tarefa de replicação!",
         "NO_ENDPOINT_INFO": "Por favor adicione antes um endpoint",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "Esse projeto não existe",
         "SOURCE_RESOURCE_FILTER": "Filtro de recursos da origem",
         "SCHEDULED": "Agendado",
