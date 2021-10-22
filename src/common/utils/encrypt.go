@@ -59,7 +59,14 @@ func ReversibleEncrypt(str, key string) (string, error) {
 	if block, err = aes.NewCipher(keyBytes); err != nil {
 		return "", err
 	}
-	cipherText := make([]byte, aes.BlockSize+len(str))
+
+	// ensures the value is no larger than 64 MB, which fits comfortably within an int and avoids the overflow
+	if len(str) > 64*1024*1024 {
+		return "", errors.New("str value too large")
+	}
+
+	size := aes.BlockSize + len(str)
+	cipherText := make([]byte, size)
 	iv := cipherText[:aes.BlockSize]
 	if _, err = io.ReadFull(rand.Reader, iv); err != nil {
 		return "", err

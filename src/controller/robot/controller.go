@@ -3,6 +3,9 @@ package robot
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -15,7 +18,6 @@ import (
 	rbac_model "github.com/goharbor/harbor/src/pkg/rbac/model"
 	robot "github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
-	"time"
 )
 
 var (
@@ -88,7 +90,12 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		r.Duration = int64(config.RobotTokenDuration(ctx))
 		expiresAt = time.Now().AddDate(0, 0, config.RobotTokenDuration(ctx)).Unix()
 	} else {
-		expiresAt = time.Now().AddDate(0, 0, int(r.Duration)).Unix()
+		durationStr := strconv.FormatInt(r.Duration, 10)
+		duration, err := strconv.Atoi(durationStr)
+		if err != nil {
+			return 0, "", err
+		}
+		expiresAt = time.Now().AddDate(0, 0, duration).Unix()
 	}
 
 	pwd := utils.GenerateRandomString()

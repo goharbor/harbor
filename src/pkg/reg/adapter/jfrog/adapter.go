@@ -20,7 +20,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
@@ -289,7 +288,7 @@ func (a *adapter) PushBlob(repository, digest string, size int64, blob io.Reader
 	if err != nil {
 		return err
 	}
-	rangeSize := strconv.Itoa(int(size))
+	rangeSize := fmt.Sprintf("%d", size)
 	req.Header.Set("Content-Length", rangeSize)
 	req.Header.Set("Content-Range", fmt.Sprintf("0-%s", rangeSize))
 	req.Header.Set("Content-Type", "application/octet-stream")

@@ -163,12 +163,9 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 
 	var id int64
 	var name string
-	switch value.(type) {
-	case int:
-		i := value.(int)
-		id = int64(i)
-	case int64:
-		id = value.(int64)
+	switch v := value.(type) {
+	case int, int64:
+		id = reflect.ValueOf(v).Int()
 	case string:
 		name = value.(string)
 	default:
