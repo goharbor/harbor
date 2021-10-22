@@ -597,6 +597,7 @@
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
         "SCHEDULED": "Scheduled",

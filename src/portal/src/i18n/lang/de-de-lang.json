@@ -597,6 +597,7 @@
         "PLACEHOLDER": "Es konnten keine Replikations-Regeln gefunden werden!",
         "JOB_PLACEHOLDER": "Es konnten keine Replikations-Jobs gefunden werden!",
         "NO_ENDPOINT_INFO": "Bitte zuerst einen Endpunkt hinzufügen",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "Dieses Projekt existiert nicht",
         "SOURCE_RESOURCE_FILTER": "Quellen-Filter",
         "SCHEDULED": "Geplant",
