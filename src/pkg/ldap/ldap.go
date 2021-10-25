@@ -154,6 +154,9 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 		groupDNList := make([]string, 0)
 		groupAttr := strings.ToLower(s.groupCfg.MembershipAttribute)
 		for _, attr := range ldapEntry.Attributes {
+			if attr == nil || len(attr.Values) == 0 {
+				continue
+			}
 			// OpenLdap sometimes contain leading space in username
 			val := strings.TrimSpace(attr.Values[0])
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
@@ -374,7 +377,9 @@ func (s *Session) searchGroup(groupDN, filter, gName, groupNameAttribute string)
 		return ldapGroups, nil
 	}
 	groupName := ""
-	if len(result.Entries[0].Attributes) > 0 {
+	if len(result.Entries[0].Attributes) > 0 &&
+		result.Entries[0].Attributes[0] != nil &&
+		len(result.Entries[0].Attributes[0].Values) > 0 {
 		groupName = result.Entries[0].Attributes[0].Values[0]
 	} else {
 		groupName = groupDN
