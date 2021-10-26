@@ -238,6 +238,21 @@ Helm3 CLI Push Without Sign In Harbor
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
 
+Helm3.7 CLI Work Flow
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  rm -rf ./${harbor_helm_name}
+    Wait Unitl Command Success  tar zxf ${files_directory}/${harbor_helm_filename}
+    Helm3.7 Registry Login  ${ip}  ${sign_in_user}  ${sign_in_pwd}
+    Helm3.7 Package  ./${harbor_helm_name}
+    Helm3.7 Push  ${harbor_helm_package}  ${ip}  project${d}
+    Run  rm -rf ./${harbor_helm_package}
+    Retry File Should Not Exist  ./${harbor_helm_package}
+    Helm3.7 Pull  ${ip}  project${d}  ${harbor_helm_version}
+    Retry File Should Exist  ./${harbor_helm_package}
+    Helm3.7 Registry Logout  ${ip}
+
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
