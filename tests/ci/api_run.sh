@@ -18,7 +18,7 @@ harbor_logs_bucket="harbor-ci-logs"
 #echo "content_language = en" >> $botofile
 #echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 DIR="$(cd "$(dirname "$0")" && pwd)"
-E2E_IMAGE="goharbor/harbor-e2e-engine:3.0.0-api"
+E2E_IMAGE="goharbor/harbor-e2e-engine:4.1.0-api"
 
 # GS util
 function uploader {

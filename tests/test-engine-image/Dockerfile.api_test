@@ -2,6 +2,7 @@
 # photon based image
 FROM photon:4.0
 ENV LANG C.UTF-8
+ENV HELM_EXPERIMENTAL_OCI=1
 
 COPY --from=tool_builder /tool/tools.tar.gz /usr/local/bin
 
