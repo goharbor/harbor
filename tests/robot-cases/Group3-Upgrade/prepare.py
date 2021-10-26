@@ -385,7 +385,6 @@ class HarborAPI:
                 raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
-        print(payload)
         body=dict(body=payload)
         request(url+"projects/"+projectid+"/robots", 'post', **body)
 
@@ -507,7 +506,6 @@ class HarborAPI:
                 ],
                 "enabled":webhook["enabled"]
             }
-            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         elif kwargs["branch"] == 2:
@@ -536,7 +534,6 @@ class HarborAPI:
                 "enabled":webhook["enabled"],
                 "name":webhook["name"]
             }
-            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         else:
@@ -606,7 +603,6 @@ def request(url, method, user = None, userp = None, **kwargs):
         kwargs['headers']['Content-Type'] = 'application/json'
         kwargs['data'] = json.dumps(kwargs['body'])
         del kwargs['body']
-    print("url: ", url)
     resp = requests.request(method, url, verify=False, auth=(user, userp), **kwargs)
     if resp.status_code >= 400:
         raise Exception("[Exception Message] - {}".format(resp.text))
