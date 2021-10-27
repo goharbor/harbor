@@ -1699,7 +1699,7 @@
         "PUSH_PERMISSION_TOOLTIP": "Permissões de envio (push) presume também a permissão e recebimento (pull).",
         "STOP": "Stop",
         "LIST": "List",
-        "REPOSITORY": "Repository"
+        "REPOSITORY": "Repository",
+        "HELM_LABEL": "Helm Chart label"
     }
-
 }

@@ -1703,6 +1703,7 @@
         "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
         "STOP": "Stop",
         "LIST": "List",
-        "REPOSITORY": "Repository"
+        "REPOSITORY": "Repository",
+        "HELM_LABEL": "Helm Chart label"
     }
 }

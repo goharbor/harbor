@@ -1701,6 +1701,7 @@
         "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限",
         "STOP": "停止",
         "LIST": "查询",
-        "REPOSITORY": "仓库"
+        "REPOSITORY": "仓库",
+        "HELM_LABEL": "Helm Chart label"
     }
 }

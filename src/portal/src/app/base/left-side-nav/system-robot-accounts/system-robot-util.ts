@@ -31,7 +31,7 @@ export enum Resource {
     REPO = 'repository',
     HELM_CHART = 'helm-chart',
     HELM_CHART_VERSION = 'helm-chart-version',
-    ARTIFACT = 'artifact'
+    ARTIFACT = 'artifact',
 }
 
 export enum Action {
@@ -93,6 +93,11 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "checked": true
     },
     {
+        "resource": "artifact-label",
+        "action": "delete",
+        "checked": true
+    },
+    {
         "resource": "scan",
         "action": "create",
         "checked": true
@@ -112,6 +117,16 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "action": "list",
         "checked": true
     },
+    {
+        "resource": "helm-chart-version-label",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "helm-chart-version-label",
+        "action": "delete",
+        "checked": true
+    },
 ];
 
 export const ACTION_RESOURCE_I18N_MAP = {
@@ -126,10 +141,11 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
     'tag': 'REPLICATION.TAG',
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
+    'helm-chart-version-label': 'SYSTEM_ROBOT.HELM_LABEL',
     'scan': 'SYSTEM_ROBOT.SCAN',
     'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL',
     'stop': 'SYSTEM_ROBOT.STOP',
-    'list': 'SYSTEM_ROBOT.LIST'
+    'list': 'SYSTEM_ROBOT.LIST',
 };
 
 export enum ExpirationType {
