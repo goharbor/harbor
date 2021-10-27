@@ -45,8 +45,6 @@
               }
             ],
             "scripts": [
-              "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
-              "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
               "node_modules/@clr/icons/clr-icons.min.js",
               "node_modules/marked/lib/marked.js",
               "node_modules/prismjs/prism.js",
@@ -109,8 +107,6 @@
             "polyfills": "src/polyfills.ts",
             "karmaConfig": "karma.conf.js",
             "scripts": [
-              "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
-              "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
               "node_modules/@clr/icons/clr-icons.min.js"
             ],
             "styles": [
