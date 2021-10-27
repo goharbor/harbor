@@ -27,9 +27,12 @@ Create A Random Permission Item List
     ...                                    Read Helm Chart
     ...                                    Create Helm Chart Version
     ...                                    Delete Helm Chart Version
+    ...                                    Create Helm Chart label
+    ...                                    Delete Helm Chart label
     ...                                    Create Tag
     ...                                    Delete Tag
     ...                                    Create Artifact label
+    ...                                    Delete Artifact label
     ...                                    Create Scan
     ...                                    Stop Scan
     ...                                    List Artifact
