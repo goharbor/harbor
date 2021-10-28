@@ -34,7 +34,7 @@
     border: 0;
 }
 
-:host>>>.dropdown-menu {
+:host::ng-deep.dropdown-menu {
     min-width: 360px;
     max-width: 720px;
 }

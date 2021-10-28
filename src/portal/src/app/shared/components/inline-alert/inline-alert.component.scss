@@ -10,6 +10,6 @@
     text-align: center;
     align-items: center;
 }
-:host >>> .alert-icon-wrapper{
+:host::ng-deep .alert-icon-wrapper{
     display: inline;
 }
