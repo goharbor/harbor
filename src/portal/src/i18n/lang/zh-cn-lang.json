@@ -1702,6 +1702,6 @@
         "STOP": "停止",
         "LIST": "查询",
         "REPOSITORY": "仓库",
-        "HELM_LABEL": "Helm Chart label"
+        "HELM_LABEL": "Helm Chart 标签"
     }
 }

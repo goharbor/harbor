@@ -11,6 +11,7 @@ import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { TranslateService } from "@ngx-translate/core";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { errorHandler } from "../../units/shared.utils";
+import { CopyInputComponent } from "../push-image/copy-input.component";
 
 @Component({
   selector: 'view-token',
@@ -28,6 +29,8 @@ export class ViewTokenComponent implements OnInit {
   @ViewChild(InlineAlertComponent)
   inlineAlertComponent: InlineAlertComponent;
   @ViewChild('secretForm', { static: true }) secretForm: NgForm;
+  @ViewChild('copyInputComponent')
+  copyInputComponent: CopyInputComponent;
   @Output()
   refreshSuccess: EventEmitter<boolean> = new EventEmitter<boolean>();
   copyToken: boolean = false;
@@ -111,6 +114,9 @@ export class ViewTokenComponent implements OnInit {
   onCpSuccess($event: any): void {
     this.copyToken = false;
     this.tokenModalOpened = false;
+    if (this.copyInputComponent) {
+      this.copyInputComponent.reset();
+    }
     this.translate
         .get("ROBOT_ACCOUNT.COPY_SUCCESS", { param: this.robot.name })
         .subscribe((res: string) => {

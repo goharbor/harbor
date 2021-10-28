@@ -281,3 +281,12 @@ input:-webkit-autofill {
   -webkit-text-fill-color: $input-autofill-color !important;
   caret-color: $input-autofill-color
 }
+
+hbr-copy-input {
+  .info-tips-icon {
+    color: $pull-command-icon-color;
+  }
+  .info-tips-icon:hover {
+    color: $pull-command-icon-hover-color;
+  }
+}
