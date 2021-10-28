@@ -826,3 +826,18 @@ Test Case - Go To Harbor Api Page
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Retry Keyword N Times When Error  4  Check Harbor Api Page 
     Close Browser
+
+Test Case - WASM Push And Pull To Harbor
+    [Tags]  wasm_push_and_pull_to_harbor
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  wget https://github.com/engineerd/wasm-to-oci/blob/v0.1.2/testdata/hello.wasm
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  wasm-to-oci push hello.wasm ${ip}/project${d}/wasm-to-oci:v1
+    Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry file should exist  test.wasm
