@@ -111,7 +111,8 @@
     "express": "^4.17.1",
     
     // To generate models and Angular services based on swagger.yaml. Required
-    "ng-swagger-gen": "^2.3.1",
+    // do not upgrade it
+    "ng-swagger-gen": "^1.8.1",
     
     // For e2e test. Required
     "protractor": "^7.0.0",
