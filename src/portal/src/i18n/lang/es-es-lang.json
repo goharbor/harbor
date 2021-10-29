@@ -343,7 +343,7 @@
     "ROBOT_ACCOUNT": {
         "NAME": "Name",
         "PERMISSIONS": "Permissions",
-        "TOKEN": "Token",
+        "TOKEN": "Secret",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
         "CREATETION": "Created time",
