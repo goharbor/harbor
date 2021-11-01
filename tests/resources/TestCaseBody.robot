@@ -459,3 +459,7 @@ Check Harbor Api Page
     ${Title}=  Get Title
     Should Be Equal  ${Title}  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+
+Prepare Image Package Test Files
+    [Arguments]  ${files_path}
+    ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}

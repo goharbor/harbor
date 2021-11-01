@@ -841,3 +841,20 @@ Test Case - WASM Push And Pull To Harbor
     Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
     Wait Unitl Command Success  docker logout ${ip}
     Retry file should exist  test.wasm
+
+Test Case - Carvel Imgpkg Push And Pull To Harbor
+    [Tags]  imgpkg_push_and_pull
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    ${out_path}=    Set Variable    /tmp/my-bundle
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Prepare Image Package Test Files  ${EXECDIR}/config
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  imgpkg push -b ${ip}/project${d}/my-bundle:v1.0.0 -f config/
+    Wait Unitl Command Success  imgpkg pull -b ${ip}/project${d}/my-bundle:v1.0.0 -o ${out_path}
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
+    Retry File Should Exist  ${out_path}/.imgpkg/images.yml
