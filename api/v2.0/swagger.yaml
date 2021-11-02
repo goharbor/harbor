@@ -2742,7 +2742,7 @@ paths:
               type: integer
             Link:
               description: Link to previous page and next page
-              type: string  
+              type: string
         '401':
           $ref: '#/responses/401'
         '403':
@@ -6773,10 +6773,6 @@ definitions:
     additionalProperties:
       type: integer
       format: int64
-    x-go-type:
-      type: ResourceList
-      import:
-        package: "github.com/goharbor/harbor/src/pkg/quota/types"
   ReplicationExecution:
     type: object
     description: The replication execution
@@ -7794,7 +7790,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'      
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.
@@ -7927,10 +7923,18 @@ definitions:
         format: date-time
   InternalConfigurationsResponse:
     type: object
-    x-go-type:
-      type: InternalCfg
-      import:
-        package: "github.com/goharbor/harbor/src/lib/config"
+    additionalProperties:
+      $ref: '#/definitions/InternalConfigurationValue'
+  InternalConfigurationValue:
+    type: object
+    properties:
+      value:
+        type: object
+        description: The value of current config item
+      editable:
+        type: boolean
+        x-omitempty: false
+        description: The configure item can be updated or not
   ConfigurationsResponse:
     type: object
     properties:
@@ -8105,280 +8109,280 @@ definitions:
             description: 'The parameters of the policy, the values are dependent on the type of the policy.'
   Configurations:
     type: object
-    properties: 
+    properties:
       auth_mode:
         type: string
-        description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth" 
+        description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
         x-omitempty: true
         x-isnullable: true
       email_from:
         type: string
-        description: The sender name for Email notification. 
+        description: The sender name for Email notification.
         x-omitempty: true
         x-isnullable: true
       email_host:
         type: string
-        description: The hostname of SMTP server that sends Email notification. 
+        description: The hostname of SMTP server that sends Email notification.
         x-omitempty: true
         x-isnullable: true
       email_identity:
         type: string
-        description: By default it's empty so the email_username is picked 
+        description: By default it's empty so the email_username is picked
         x-omitempty: true
         x-isnullable: true
       email_insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the email server. 
+        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
         x-omitempty: true
         x-isnullable: true
       email_password:
         type: string
-        description: Email password 
+        description: Email password
         x-omitempty: true
         x-isnullable: true
       email_port:
         type: integer
-        description: The port of SMTP server 
+        description: The port of SMTP server
         x-omitempty: true
         x-isnullable: true
       email_ssl:
         type: boolean
-        description: When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side. 
+        description: When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.
         x-omitempty: true
         x-isnullable: true
       email_username:
         type: string
-        description: The username for authenticate against SMTP server 
+        description: The username for authenticate against SMTP server
         x-omitempty: true
         x-isnullable: true
       ldap_base_dn:
         type: string
-        description: The Base DN for LDAP binding. 
+        description: The Base DN for LDAP binding.
         x-omitempty: true
         x-isnullable: true
       ldap_filter:
         type: string
-        description: The filter for LDAP search 
+        description: The filter for LDAP search
         x-omitempty: true
         x-isnullable: true
       ldap_group_base_dn:
         type: string
-        description: The base DN to search LDAP group. 
+        description: The base DN to search LDAP group.
         x-omitempty: true
         x-isnullable: true
       ldap_group_admin_dn:
         type: string
-        description: Specify the ldap group which have the same privilege with Harbor admin 
+        description: Specify the ldap group which have the same privilege with Harbor admin
         x-omitempty: true
         x-isnullable: true
       ldap_group_attribute_name:
         type: string
-        description: The attribute which is used as identity of the LDAP group, default is cn.' 
+        description: The attribute which is used as identity of the LDAP group, default is cn.'
         x-omitempty: true
         x-isnullable: true
       ldap_group_search_filter:
         type: string
-        description: The filter to search the ldap group 
+        description: The filter to search the ldap group
         x-omitempty: true
         x-isnullable: true
       ldap_group_search_scope:
         type: integer
-        description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'' 
+        description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
         x-omitempty: true
         x-isnullable: true
       ldap_scope:
         type: integer
-        description: The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE' 
+        description: The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
         x-omitempty: true
         x-isnullable: true
       ldap_search_dn:
         type: string
-        description: The DN of the user to do the search. 
+        description: The DN of the user to do the search.
         x-omitempty: true
         x-isnullable: true
       ldap_search_password:
         type: string
-        description: The password of the ldap search dn 
+        description: The password of the ldap search dn
         x-omitempty: true
         x-isnullable: true
       ldap_timeout:
         type: integer
-        description: Timeout in seconds for connection to LDAP server 
+        description: Timeout in seconds for connection to LDAP server
         x-omitempty: true
         x-isnullable: true
       ldap_uid:
         type: string
-        description: The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname" 
+        description: The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"
         x-omitempty: true
         x-isnullable: true
       ldap_url:
         type: string
-        description: The URL of LDAP server 
+        description: The URL of LDAP server
         x-omitempty: true
         x-isnullable: true
       ldap_verify_cert:
         type: boolean
-        description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate. 
+        description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
         x-omitempty: true
         x-isnullable: true
       ldap_group_membership_attribute:
         type: string
-        description: The user attribute to identify the group membership 
+        description: The user attribute to identify the group membership
         x-omitempty: true
         x-isnullable: true
       project_creation_restriction:
         type: string
-        description: Indicate who can create projects, it could be ''adminonly'' or ''everyone''. 
+        description: Indicate who can create projects, it could be ''adminonly'' or ''everyone''.
         x-omitempty: true
         x-isnullable: true
       read_only:
         type: boolean
-        description: The flag to indicate whether Harbor is in readonly mode. 
+        description: The flag to indicate whether Harbor is in readonly mode.
         x-omitempty: true
         x-isnullable: true
       self_registration:
         type: boolean
-        description: Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance. 
+        description: Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.
         x-omitempty: true
         x-isnullable: true
       token_expiration:
         type: integer
-        description: The expiration time of the token for internal Registry, in minutes. 
+        description: The expiration time of the token for internal Registry, in minutes.
         x-omitempty: true
         x-isnullable: true
       uaa_client_id:
         type: string
-        description: The client id of UAA 
+        description: The client id of UAA
         x-omitempty: true
         x-isnullable: true
       uaa_client_secret:
         type: string
-        description: The client secret of the UAA 
+        description: The client secret of the UAA
         x-omitempty: true
         x-isnullable: true
       uaa_endpoint:
         type: string
-        description: The endpoint of the UAA 
+        description: The endpoint of the UAA
         x-omitempty: true
         x-isnullable: true
       uaa_verify_cert:
         type: boolean
-        description: Verify the certificate in UAA server 
+        description: Verify the certificate in UAA server
         x-omitempty: true
         x-isnullable: true
       http_authproxy_endpoint:
         type: string
-        description: The endpoint of the HTTP auth 
+        description: The endpoint of the HTTP auth
         x-omitempty: true
         x-isnullable: true
       http_authproxy_tokenreview_endpoint:
         type: string
-        description: The token review endpoint 
+        description: The token review endpoint
         x-omitempty: true
         x-isnullable: true
       http_authproxy_admin_groups:
         type: string
-        description: The group which has the harbor admin privileges 
+        description: The group which has the harbor admin privileges
         x-omitempty: true
         x-isnullable: true
       http_authproxy_admin_usernames:
         type: string
-        description: The username which has the harbor admin privileges 
+        description: The username which has the harbor admin privileges
         x-omitempty: true
         x-isnullable: true
       http_authproxy_verify_cert:
         type: boolean
-        description: Verify the HTTP auth provider's certificate 
+        description: Verify the HTTP auth provider's certificate
         x-omitempty: true
         x-isnullable: true
       http_authproxy_skip_search:
         type: boolean
-        description: Search user before onboard 
+        description: Search user before onboard
         x-omitempty: true
         x-isnullable: true
       http_authproxy_server_certificate:
         type: string
-        description: The certificate of the HTTP auth provider 
+        description: The certificate of the HTTP auth provider
         x-omitempty: true
         x-isnullable: true
       oidc_name:
         type: string
-        description: The OIDC provider name 
+        description: The OIDC provider name
         x-omitempty: true
         x-isnullable: true
       oidc_endpoint:
         type: string
-        description: The endpoint of the OIDC provider 
+        description: The endpoint of the OIDC provider
         x-omitempty: true
         x-isnullable: true
       oidc_client_id:
         type: string
-        description: The client ID of the OIDC provider 
+        description: The client ID of the OIDC provider
         x-omitempty: true
         x-isnullable: true
       oidc_client_secret:
         type: string
-        description: The OIDC provider secret 
+        description: The OIDC provider secret
         x-omitempty: true
         x-isnullable: true
       oidc_groups_claim:
         type: string
-        description: The attribute claims the group name 
+        description: The attribute claims the group name
         x-omitempty: true
         x-isnullable: true
       oidc_admin_group:
         type: string
-        description: The OIDC group which has the harbor admin privileges 
+        description: The OIDC group which has the harbor admin privileges
         x-omitempty: true
         x-isnullable: true
       oidc_scope:
         type: string
-        description: The scope of the OIDC provider 
+        description: The scope of the OIDC provider
         x-omitempty: true
         x-isnullable: true
       oidc_user_claim:
         type: string
-        description: The attribute claims the username 
+        description: The attribute claims the username
         x-omitempty: true
         x-isnullable: true
       oidc_verify_cert:
         type: boolean
-        description: Verify the OIDC provider's certificate' 
+        description: Verify the OIDC provider's certificate'
         x-omitempty: true
         x-isnullable: true
       oidc_auto_onboard:
         type: boolean
-        description: Auto onboard the OIDC user 
+        description: Auto onboard the OIDC user
         x-omitempty: true
         x-isnullable: true
       oidc_extra_redirect_parms:
         type: string
-        description: Extra parameters to add when redirect request to OIDC provider 
+        description: Extra parameters to add when redirect request to OIDC provider
         x-omitempty: true
         x-isnullable: true
       robot_token_duration:
         type: integer
-        description: The robot account token duration in days 
+        description: The robot account token duration in days
         x-omitempty: true
         x-isnullable: true
       robot_name_prefix:
         type: string
-        description: The rebot account name prefix 
+        description: The rebot account name prefix
         x-omitempty: true
         x-isnullable: true
       notification_enable:
         type: boolean
-        description: Enable notification 
+        description: Enable notification
         x-omitempty: true
         x-isnullable: true
       quota_per_project_enable:
         type: boolean
-        description: Enable quota per project 
+        description: Enable quota per project
         x-omitempty: true
         x-isnullable: true
       storage_per_project:
         type: integer
-        description: The storage quota per project 
+        description: The storage quota per project
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:
