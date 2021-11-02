@@ -62,6 +62,9 @@ RUN pwd && mkdir /tool/binary && \
     DIND_COMMIT=3b5fac462d21ca164b3778647420016315289034 && \
     wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /tool/binary/dind \
     && chmod +x /tool/binary/dind && \
+    # Install  wasm-to-oci
+    WASM_TO_OCI_VERSION=0.1.2 && wget https://github.com/engineerd/wasm-to-oci/releases/download/v${WASM_TO_OCI_VERSION}/linux-amd64-wasm-to-oci && \
+    chmod +x linux-amd64-wasm-to-oci && mv linux-amd64-wasm-to-oci /tool/binary/wasm-to-oci && \
     pwd
 
 #ubuntu
