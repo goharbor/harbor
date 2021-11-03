@@ -1,11 +1,9 @@
 import { of, Subscription, forkJoin } from "rxjs";
-import { flatMap, catchError } from "rxjs/operators";
+import { flatMap, catchError, finalize, debounceTime, switchMap, filter } from "rxjs/operators";
 import { SessionService } from "../../../shared/services/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 import { AddGroupModalComponent } from "./add-group-modal/add-group-modal.component";
-import { UserGroup } from "./group";
-import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { throwError as observableThrowError } from "rxjs";
 import { AppConfigService } from '../../../services/app-config.service';
@@ -20,6 +18,11 @@ import {
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { ClrDatagridStateInterface } from "@clr/angular";
+import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { UsergroupService } from "../../../../../ng-swagger-gen/services/usergroup.service";
+import { UserGroup } from "../../../../../ng-swagger-gen/models/user-group";
+import { FilterComponent } from "../../../shared/components/filter/filter.component";
 
 @Component({
   selector: "app-group",
@@ -27,25 +30,26 @@ import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmati
   styleUrls: ["./group.component.scss"]
 })
 export class GroupComponent implements OnInit, OnDestroy {
-  searchTerm = "";
   loading = true;
   groups: UserGroup[] = [];
-  currentPage = 1;
-  totalCount = 0;
+  currentPage: number = 1;
+  totalCount: number = 0;
+  pageSize: number = DEFAULT_PAGE_SIZE;
   selectedGroups: UserGroup[] = [];
   currentTerm = "";
   delSub: Subscription;
   batchOps = 'idle';
-  batchInfos = new Map();
   isLdapMode: boolean;
 
   @ViewChild(AddGroupModalComponent) newGroupModal: AddGroupModalComponent;
-
+  searchSub: Subscription;
+  @ViewChild(FilterComponent, {static: true})
+  filterComponent: FilterComponent;
   constructor(
     private operationService: OperationService,
     private translate: TranslateService,
     private operateDialogService: ConfirmationDialogService,
-    private groupService: GroupService,
+    private groupService: UsergroupService,
     private msgHandler: MessageHandlerService,
     private session: SessionService,
     private translateService: TranslateService,
@@ -53,7 +57,6 @@ export class GroupComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.loadData();
     if (this.appConfigService.isLdapMode()) {
       this.isLdapMode = true;
     }
@@ -70,25 +73,87 @@ export class GroupComponent implements OnInit, OnDestroy {
         }
       }
     );
+    if (!this.searchSub) {
+      this.searchSub = this.filterComponent.filterTerms.pipe(
+          filter(groupName => !!groupName),
+          debounceTime(500),
+          switchMap(groupName => {
+            this.currentPage = 1;
+            this.selectedGroups = [];
+            this.loading = true;
+            return  this.groupService.searchUserGroupsResponse({
+              groupname: groupName,
+              pageSize: this.pageSize,
+              page: this.currentPage
+            })
+                .pipe(finalize(() => {
+                  this.loading = false;
+                }));
+          })).subscribe(response => {
+        this.totalCount = Number.parseInt(
+            response.headers.get('x-total-count'), 10
+        );
+        this.groups = response.body as UserGroup[];
+      }, error => {
+        this.msgHandler.handleError(error);
+      });
+    }
   }
   ngOnDestroy(): void {
     this.delSub.unsubscribe();
+    if (this.searchSub) {
+      this.searchSub.unsubscribe();
+      this.searchSub = null;
+    }
   }
 
   refresh(): void {
+    this.currentPage = 1;
+    this.selectedGroups = [];
+    this.currentTerm = '';
+    this.filterComponent.currentValue = '';
     this.loadData();
   }
 
-  loadData(): void {
+  loadData(state?: ClrDatagridStateInterface): void {
+    if (state && state.page) {
+      this.pageSize = state.page.size;
+    }
     this.loading = true;
-    this.groupService.getUserGroups().subscribe(groups => {
-      this.groups = groups.filter(group => {
-        if (!group.group_name) { group.group_name = ''; }
-        return group.group_name.includes(this.searchTerm);
-      }
-      );
-      this.loading = false;
-    });
+    if (this.currentTerm) {
+      this.groupService.searchUserGroupsResponse({
+        groupname: encodeURIComponent(this.currentTerm),
+        page: this.currentPage,
+        pageSize: this.pageSize
+      })
+          .pipe(finalize(() => this.loading = false))
+          .subscribe(
+              response => {
+                this.totalCount = Number.parseInt(
+                    response.headers.get('x-total-count'), 10
+                );
+                this.groups = response.body as UserGroup[];
+              },
+              err => {
+                this.msgHandler.error(err);
+              });
+    } else {
+      this.groupService.listUserGroupsResponse({
+        page: this.currentPage,
+        pageSize: this.pageSize
+      })
+          .pipe(finalize(() => this.loading = false))
+          .subscribe(
+              response => {
+                this.totalCount = Number.parseInt(
+                    response.headers.get('x-total-count'), 10
+                );
+                this.groups = response.body as UserGroup[];
+              },
+              err => {
+                this.msgHandler.error(err);
+              });
+    }
   }
 
   addGroup(): void {
@@ -130,7 +195,9 @@ export class GroupComponent implements OnInit, OnDestroy {
 
       this.operationService.publishInfo(operMessage);
       return this.groupService
-        .deleteGroup(group.id)
+        .deleteUserGroup({
+          groupId: group.id
+        })
         .pipe(flatMap(response => {
           return this.translate.get("BATCH.DELETED_SUCCESS").pipe(flatMap(res => {
             operateChanges(operMessage, OperationState.success);
@@ -169,8 +236,10 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   doFilter(groupName: string): void {
-    this.searchTerm = groupName;
-    this.loadData();
+    if (!groupName) {
+      this.currentTerm = groupName;
+      this.loadData();
+    }
   }
   get canAddGroup(): boolean {
     return this.session.currentUser.has_admin_role;
