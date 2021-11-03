@@ -1,16 +1,17 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GroupComponent } from './group.component';
-import { ClarityModule } from '@clr/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { FormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SessionService } from "../../../shared/services/session.service";
-import { GroupService } from "./group.service";
 import { of } from "rxjs";
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
+import { UsergroupService } from "../../../../../ng-swagger-gen/services/usergroup.service";
+import { SharedTestingModule } from "../../../shared/shared.module";
+import { HttpHeaders, HttpResponse } from "@angular/common/http";
+import { delay } from "rxjs/operators";
+import { UserGroup } from "../../../../../ng-swagger-gen/models/user-group";
 
 describe('GroupComponent', () => {
   let component: GroupComponent;
@@ -18,12 +19,16 @@ describe('GroupComponent', () => {
   let fakeMessageHandlerService = null;
   let fakeOperationService = null;
   let fakeGroupService = {
-    getUserGroups: function () {
-      return of([{
-        group_name: ''
-      }, {
-        group_name: 'abc'
-      }]);
+    listUserGroupsResponse: function () {
+      const res: HttpResponse<Array<UserGroup>> = new HttpResponse<Array<UserGroup>>({
+        headers: new HttpHeaders({'x-total-count': '3'}),
+        body: [{
+          group_name: ''
+        }, {
+          group_name: 'abc'
+        }]
+      });
+      return of(res).pipe(delay(0));
     }
   };
   let fakeConfirmationDialogService = {
@@ -47,18 +52,15 @@ describe('GroupComponent', () => {
     TestBed.configureTestingModule({
       declarations: [GroupComponent],
       imports: [
-        ClarityModule,
-        FormsModule,
-        TranslateModule.forRoot()
+       SharedTestingModule
       ],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
       providers: [
-        TranslateService,
         { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
         { provide: OperationService, useValue: fakeOperationService },
-        { provide: GroupService, useValue: fakeGroupService },
+        { provide: UsergroupService, useValue: fakeGroupService },
         { provide: ConfirmationDialogService, useValue: fakeConfirmationDialogService },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: AppConfigService, useValue: fakeAppConfigService }
