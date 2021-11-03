@@ -15,7 +15,7 @@
     <clr-dg-column [clrDgSortBy]="'creation_time'">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
         <clr-dg-cell>
-            <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
+            <a href="javascript:void(0)" [routerLink]="getLink(p.project_id)" (click)="clickLink(p.project_id)">{{p.name}}</a>
         </clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell>{{ roleInfo[p.current_user_role_id]? (roleInfo[p.current_user_role_id] | translate): "-"}}</clr-dg-cell>

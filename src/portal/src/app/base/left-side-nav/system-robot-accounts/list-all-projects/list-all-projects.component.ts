@@ -80,8 +80,8 @@ export class ListAllProjectsComponent implements OnInit {
     });
     return count;
   }
-  goToLink(proId: number): void {
-    this.router.navigate(["harbor", "projects", proId]);
+  getLink(proId: number): string {
+    return `/harbor/projects/${proId}`;
   }
   selectAllOrUnselectAll() {
     if (this.showSelectAll) {
