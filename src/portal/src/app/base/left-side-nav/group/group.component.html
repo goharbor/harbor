@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row relative">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <h2 class="custom-h2">{{'GROUP.GROUP' | translate}}</h2>
     <div class="action-panel-pos rightPos">
@@ -9,7 +9,7 @@
       </span>
     </div>
     <div>
-      <clr-datagrid [(clrDgSelected)]="selectedGroups" [clrDgLoading]="loading">
+      <clr-datagrid (clrDgRefresh)="loadData($event)" [(clrDgSelected)]="selectedGroups" [clrDgLoading]="loading">
         <clr-dg-action-bar >
             <button type="button" class="btn  btn-secondary" (click)="addGroup()" [disabled]="!canAddGroup">
               <clr-icon shape="plus" size="15"></clr-icon>&nbsp;{{'GROUP.ADD' | translate}}</button>
@@ -23,21 +23,22 @@
         <clr-dg-column>{{'GROUP.TYPE' | translate}}</clr-dg-column>
         <clr-dg-column *ngIf="isLdapMode">{{'GROUP.DN' | translate}}</clr-dg-column>
 
-        <clr-dg-row *clrDgItems="let group of groups" [clrDgItem]="group">
+        <clr-dg-row *ngFor="let group of groups" [clrDgItem]="group">
           <clr-dg-cell>{{group.group_name}}</clr-dg-cell>
           <clr-dg-cell>{{groupToSring(group.group_type) | translate}}</clr-dg-cell>
           <clr-dg-cell *ngIf="isLdapMode">{{group.ldap_group_dn}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
-          <clr-dg-pagination #pagination [clrDgPageSize]="15">
-            <span *ngIf="groups?.length">
+          <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
+            <clr-dg-page-size [clrPageSizeOptions]="[15,25,50]">{{"PAGINATION.PAGE_SIZE" | translate}}</clr-dg-page-size>
+            <span *ngIf="totalCount">
               {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'GROUP.OF' | translate}}
             </span>
-              {{groups?.length}} {{'GROUP.ITEMS' | translate}}
+              {{totalCount}} {{'GROUP.ITEMS' | translate}}
           </clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>
     </div>
-    <hbr-add-group-modal (dataChange)="loadData()"></hbr-add-group-modal>
+    <hbr-add-group-modal (dataChange)="refresh()"></hbr-add-group-modal>
   </div>
 </div>
