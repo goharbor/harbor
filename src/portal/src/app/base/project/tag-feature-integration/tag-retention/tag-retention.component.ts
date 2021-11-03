@@ -277,7 +277,6 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
             return item.status === RUNNING || item.status === PENDING;
         })) {
             this.executionTimeout = setTimeout(() => {
-                this.loadingExecutions = true;
                 this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
                   .pipe(finalize(() => this.loadingExecutions = false))
                   .subscribe(res => {
@@ -288,7 +287,17 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
                               this.totalCount = parseInt(xHeader, 0);
                           }
                       }
-                      this.executionList = res.body as Array<any>;
+                      // data grid will be re-rendered if reassign "this.executionList"
+                      // so only refresh the status property
+                      if (res?.body?.length) {
+                          res.body.forEach(item => {
+                              this.executionList.forEach(item2 => {
+                                  if (item2.id === item.id) {
+                                      item2.status = item.status;
+                                  }
+                              });
+                          });
+                      }
                       TagRetentionComponent.calculateDuration(this.executionList);
                       this.loopGettingExecutions();
                   });

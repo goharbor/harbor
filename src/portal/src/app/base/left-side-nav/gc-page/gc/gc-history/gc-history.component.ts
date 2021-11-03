@@ -9,8 +9,8 @@ import { finalize } from "rxjs/operators";
 import { GCHistory } from "../../../../../../../ng-swagger-gen/models/gchistory";
 
 const JOB_STATUS = {
-  PENDING: "pending",
-  RUNNING: "running"
+  PENDING: "Pending",
+  RUNNING: "Running"
 };
 const YES: string = 'TAG_RETENTION.YES';
 const NO: string = 'TAG_RETENTION.NO';
@@ -40,10 +40,10 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
   refresh() {
     this.page = 1;
     this.total = 0;
-    this.getJobs();
+    this.getJobs(true);
   }
 
-  getJobs(state?: ClrDatagridStateInterface) {
+  getJobs(withLoading: boolean, state?: ClrDatagridStateInterface) {
     if (state) {
       this.state = state;
     }
@@ -58,7 +58,9 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     if (state && state.sort && state.sort.by) {
       sort = getSortingString(state);
     }
-    this.loading = true;
+    if (withLoading) {
+      this.loading = true;
+    }
     this.gcService.getGCHistoryResponse({
       page: this.page,
       pageSize: this.pageSize,
@@ -87,7 +89,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
               }
             });
             if (count > 0) {
-              this.getJobs(this.state);
+              this.getJobs(false, this.state);
             } else {
               this.timerDelay.unsubscribe();
               this.timerDelay = null;
@@ -113,6 +115,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.timerDelay) {
       this.timerDelay.unsubscribe();
+      this.timerDelay = null;
     }
   }
 

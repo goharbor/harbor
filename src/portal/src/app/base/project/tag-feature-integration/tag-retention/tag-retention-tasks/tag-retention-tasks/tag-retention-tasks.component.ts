@@ -61,7 +61,6 @@ export class TagRetentionTasksComponent implements OnInit, OnDestroy {
         return item.status === RUNNING || item.status === PENDING;
       })) {
       this.tasksTimeout = setTimeout(() => {
-        this.loading = true;
         this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.page, this.pageSize)
           .pipe(finalize(() => this.loading = false))
           .subscribe(res => {
