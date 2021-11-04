@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -111,7 +112,13 @@ func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetI
 	if err != nil {
 		return c.SendError(ctx, err)
 	}
-	return configure.NewGetInternalconfigOK().WithPayload(resultCfg)
+
+	payload := make(models.InternalConfigurationsResponse, len(resultCfg))
+	for key, cfg := range resultCfg {
+		payload[key] = models.InternalConfigurationValue{Value: cfg.Val, Editable: cfg.Editable}
+	}
+
+	return configure.NewGetInternalconfigOK().WithPayload(payload)
 }
 
 func toResponseModel(cfg map[string]*cfgModels.Value) (*models.ConfigurationsResponse, error) {

@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	comModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
-	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -42,9 +41,6 @@ var (
 	managersMU        sync.RWMutex
 	managers          = make(map[string]Manager)
 )
-
-// InternalCfg internal configure response model
-type InternalCfg map[string]*models.Value
 
 // Manager defines the operation for config
 type Manager interface {
