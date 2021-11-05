@@ -6,17 +6,7 @@ set -x
 sudo gsutil version -l
 
 harbor_logs_bucket="harbor-ci-logs"
-# GC credentials
-#keyfile="/home/travis/harbor-ci-logs.key"
-#botofile="/home/travis/.boto"
-#echo -en $GS_PRIVATE_KEY > $keyfile
-#sudo chmod 400 $keyfile
-#echo "[Credentials]" >> $botofile
-#echo "gs_service_key_file = $keyfile" >> $botofile
-#echo "gs_service_client_id = $GS_CLIENT_EMAIL" >> $botofile
-#echo "[GSUtil]" >> $botofile
-#echo "content_language = en" >> $botofile
-#echo "default_project_id = $GS_PROJECT_ID" >> $botofile
+
 DIR="$(cd "$(dirname "$0")" && pwd)"
 E2E_IMAGE="goharbor/harbor-e2e-engine:4.1.0-api"
 
@@ -49,7 +39,8 @@ fi
 rc=$?
 ## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
 timestamp=$(date +%s)
-outfile="integration_logs_$timestamp$TRAVIS_COMMIT.tar.gz"
+GIT_COMMIT=$(git rev-parse --short "$GITHUB_SHA")
+outfile="integration_logs_$timestamp$GIT_COMMIT.tar.gz"
 sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
 if [ -f "$outfile" ]; then
    uploader $outfile $harbor_logs_bucket
