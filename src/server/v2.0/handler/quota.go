@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/quota"
@@ -102,11 +103,16 @@ func (qa *quotaAPI) UpdateQuota(ctx context.Context, params operation.UpdateQuot
 		return qa.SendError(ctx, err)
 	}
 
-	if err := quota.Validate(ctx, q.Reference, params.Hard.Hard); err != nil {
+	hard := make(types.ResourceList, len(params.Hard.Hard))
+	for name, value := range params.Hard.Hard {
+		hard[types.ResourceName(name)] = value
+	}
+
+	if err := quota.Validate(ctx, q.Reference, hard); err != nil {
 		return qa.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
 	}
 
-	q.SetHard(params.Hard.Hard)
+	q.SetHard(hard)
 
 	if err := qa.quotaCtl.Update(ctx, q); err != nil {
 		return qa.SendError(ctx, err)

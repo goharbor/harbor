@@ -13,6 +13,8 @@ path=os.getcwd() + "/tests/apitests/python/"
 sys.path.insert(0, path)
 print(sys.path)
 
+files_directory = os.getcwd() + "/tests/files/"
+
 import v2_swagger_client
 import swagger_client.models
 

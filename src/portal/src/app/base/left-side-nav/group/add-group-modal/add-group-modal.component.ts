@@ -1,14 +1,12 @@
-
 import { finalize } from 'rxjs/operators';
-import { Subscription } from "rxjs";
-import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef, OnDestroy, ViewChild } from "@angular/core";
+import { Component, OnInit, EventEmitter, Output, OnDestroy, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { GroupService } from "../group.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { SessionService } from "../../../../shared/services/session.service";
-import { UserGroup } from "../group";
 import { AppConfigService } from "../../../../services/app-config.service";
 import { GroupType } from "../../../../shared/entities/shared.const";
+import { UserGroup } from 'ng-swagger-gen/models/user-group';
+import { UsergroupService } from "../../../../../../ng-swagger-gen/services/usergroup.service";
 
 @Component({
   selector: "hbr-add-group-modal",
@@ -21,9 +19,6 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   dnTooltip = 'TOOLTIP.ITEM_REQUIRED';
 
   group: UserGroup;
-
-  formChangeSubscription: Subscription;
-
   @ViewChild('groupForm', { static: true })
   groupForm: NgForm;
 
@@ -38,8 +33,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
     private session: SessionService,
     private msgHandler: MessageHandlerService,
     private appConfigService: AppConfigService,
-    private groupService: GroupService,
-    private cdr: ChangeDetectorRef
+    private groupService: UsergroupService,
   ) { }
 
   ngOnInit() {
@@ -52,7 +46,9 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
     if (this.appConfigService.isOidcMode()) {
       this.isOidcMode = true;
     }
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
+    this.group = {
+      group_type: this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE
+    };
   }
 
 
@@ -88,8 +84,9 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   createGroup() {
     let groupCopy = Object.assign({}, this.group);
-    this.groupService
-      .createGroup(groupCopy).pipe(
+    this.groupService.createUserGroup({
+      usergroup: groupCopy
+    }).pipe(
         finalize(() => this.close()))
       .subscribe(
         res => {
@@ -103,7 +100,10 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   editGroup() {
     let groupCopy = Object.assign({}, this.group);
     this.groupService
-      .editGroup(groupCopy).pipe(
+      .updateUserGroup({
+        groupId: groupCopy.id,
+        usergroup: groupCopy
+      }).pipe(
         finalize(() => this.close()))
       .subscribe(
         res => {
@@ -115,7 +115,9 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   }
 
   resetGroup() {
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
+    this.group = {
+      group_type: this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE
+    };
     this.groupForm.reset();
   }
 }
