@@ -22,7 +22,7 @@
     <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let p of projects; let projectIndex = index;" [clrDgItem]="p">
         <clr-dg-cell>
-            <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
+            <a href="javascript:void(0)" [routerLink]="getLink(p.project_id)">{{p.name}}</a>
         </clr-dg-cell>
         <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
