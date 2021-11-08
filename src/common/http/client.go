@@ -226,6 +226,14 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		for _, link := range links {
 			if link.Rel == "next" {
 				endpoint = url.Scheme + "://" + url.Host + link.URL
+				url, err = url.Parse(endpoint)
+				if err != nil {
+					return err
+				}
+				// encode the query parameters to avoid bad request
+				// e.g. ?q=name={p1 p2 p3} need to be encoded to ?q=name%3D%7Bp1+p2+p3%7D
+				url.RawQuery = url.Query().Encode()
+				endpoint = url.String()
 				break
 			}
 		}

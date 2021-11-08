@@ -89,7 +89,16 @@ func TestPrepareForPush(t *testing.T) {
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 		},
-	})
+	},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/api/projects",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`[]`))
+			},
+		},
+	)
 	registry := &model.Registry{
 		URL: server.URL,
 	}
@@ -138,10 +147,11 @@ func TestPrepareForPush(t *testing.T) {
 
 	// project already exists
 	server = test.NewServer(&test.RequestHandlerMapping{
-		Method:  http.MethodPost,
+		Method:  http.MethodGet,
 		Pattern: "/api/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusConflict)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`[{"name": "library"}]`))
 		},
 	})
 	registry = &model.Registry{
