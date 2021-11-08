@@ -135,12 +135,6 @@ func ExecuteBatchSQL(sqls []string) {
 	}
 }
 
-// CleanUser - Clean this user information from DB, this is a shortcut for UT.
-func CleanUser(id int64) error {
-	_, err := GetOrmer().QueryTable(&models.User{}).Filter("UserID", id).Delete()
-	return err
-}
-
 // ArrayEqual ...
 func ArrayEqual(arrayA, arrayB []int) bool {
 	if len(arrayA) != len(arrayB) {

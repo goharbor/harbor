@@ -2,13 +2,13 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
-	"github.com/goharbor/harbor/src/pkg/user/models"
+	comModels "github.com/goharbor/harbor/src/common/models"
 	svrmodels "github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
 // User ...
 type User struct {
-	*models.User
+	*comModels.User
 }
 
 // ToSearchRespItem ...
