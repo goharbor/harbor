@@ -1,4 +1,15 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from "@angular/core";
 import { forkJoin, Observable, of, Subscription } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
@@ -94,7 +105,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
               private route: ActivatedRoute,
               private session: SessionService,
               private router: Router,
-              private event: EventService
+              private event: EventService,
+              private cd: ChangeDetectorRef
   ) {
     if (localStorage) {
       this.isCardView =  localStorage.getItem(CARD_VIEW_LOCALSTORAGE_KEY) === TRUE_STR;
@@ -426,6 +438,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       return;
     }
     this.isCardView = cardView;
+    // manually run change detecting to avoid ng-change-checking error
+    this.cd.detectChanges();
     if (localStorage) {
       if (this.isCardView) {
         localStorage.setItem(CARD_VIEW_LOCALSTORAGE_KEY, TRUE_STR);
