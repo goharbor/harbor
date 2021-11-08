@@ -457,4 +457,24 @@ export class NewRobotComponent implements OnInit, OnDestroy {
   shouldShowWarning(): boolean {
     return new Date() >= this.calculateExpiresAt();
   }
+
+  isSelectAll(permissions: FrontAccess[]): boolean {
+    if (permissions?.length) {
+      return permissions.filter(item => item.checked).length < permissions.length / 2;
+    }
+    return false;
+  }
+  selectAllOrUnselectAll(permissions: FrontAccess[]) {
+    if (permissions?.length) {
+      if (this.isSelectAll(permissions)) {
+        permissions.forEach(item => {
+          item.checked = true;
+        });
+      } else {
+        permissions.forEach(item => {
+          item.checked = false;
+        });
+      }
+    }
+  }
 }
