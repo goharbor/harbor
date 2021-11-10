@@ -50,82 +50,82 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
     {
         "resource": "repository",
         "action": "push",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "repository",
         "action": "pull",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "artifact",
         "action": "delete",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "helm-chart",
         "action": "read",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "helm-chart-version",
         "action": "create",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "helm-chart-version",
         "action": "delete",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "tag",
         "action": "create",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "tag",
         "action": "delete",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "artifact-label",
         "action": "create",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "artifact-label",
         "action": "delete",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "scan",
         "action": "create",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "scan",
         "action": "stop",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "artifact",
         "action": "list",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "repository",
         "action": "list",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "helm-chart-version-label",
         "action": "create",
-        "checked": true
+        "checked": false
     },
     {
         "resource": "helm-chart-version-label",
         "action": "delete",
-        "checked": true
+        "checked": false
     },
 ];
 
