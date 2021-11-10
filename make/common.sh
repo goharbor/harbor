@@ -83,18 +83,28 @@ function check_docker {
 	fi
 
 	# docker has been installed and check its version
-	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)[\.0-9]*) ]]
+	if [[ $(docker --version) =~ ([[:alpha:]]+)[[:space:]]version[[:space:]](([0-9]+)\.([0-9]+)[\.0-9]*) ]]
 	then
-		docker_version=${BASH_REMATCH[1]}
-		docker_version_major=${BASH_REMATCH[2]}
-		docker_version_minor=${BASH_REMATCH[3]}
+		docker_binary=${BASH_REMATCH[1]}
+		docker_version=${BASH_REMATCH[2]}
+		docker_version_major=${BASH_REMATCH[3]}
+		docker_version_minor=${BASH_REMATCH[4]}
 
-		note "docker version: $docker_version"
-		# the version of docker does not meet the requirement
-		if [ "$docker_version_major" -lt 17 ] || ([ "$docker_version_major" -eq 17 ] && [ "$docker_version_minor" -lt 6 ])
+		note "$docker_binary version: $docker_version"
+		if [ "$docker_binary" == "podman" ]
 		then
-			error "Need to upgrade docker package to 17.06.0+."
-			exit 1
+			if [ "$docker_version_major" -lt 3 ]
+			then
+				error "Need to upgrade podman package to 3.0.0+."
+				exit 1
+			fi
+		else
+			# the version of docker does not meet the requirement
+			if [ "$docker_version_major" -lt 17 ] || ([ "$docker_version_major" -eq 17 ] && [ "$docker_version_minor" -lt 6 ])
+			then
+				error "Need to upgrade docker package to 17.06.0+."
+				exit 1
+			fi
 		fi
 	else
 		error "Failed to parse docker version."
