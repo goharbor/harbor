@@ -181,7 +181,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
   trimText(event) {
     if (event.target.value) {
-      event.target.value = event.target.value.trim();
+      event.target.value = event.target.value.replace(/\s+/g, '');
     }
   }
   equals(c1: any, c2: any): boolean {
@@ -704,6 +704,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       this.selectedUnit = BandwidthUnit.KB;
       return realSpeed ? realSpeed : -1;
+    }
+  }
+  getLabel(labelName: string): Label {
+    if (this.supportedFilterLabels?.length) {
+      let label: Label;
+      this.supportedFilterLabels.forEach(item => {
+        if (item.name === labelName) {
+          label = item;
+        }
+      });
+      return label;
     }
   }
 }
