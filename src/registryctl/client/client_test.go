@@ -73,6 +73,21 @@ func (c *clientTestSuite) TestDeleteBlob() {
 	c.Require().Nil(err)
 }
 
+func (c *clientTestSuite) TestPurge() {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "POST",
+			Pattern: "/api/registry/purge",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusAccepted,
+			}),
+		})
+	defer server.Close()
+
+	err := NewClient(server.URL, &Config{}).Purge(30, true, true, false)
+	c.Require().Nil(err)
+}
+
 func TestClientTestSuite(t *testing.T) {
 	suite.Run(t, &clientTestSuite{})
 }

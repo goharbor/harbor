@@ -15,6 +15,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/registryctl/api/registry/purge"
 )
 
 // const definition
@@ -39,6 +42,8 @@ type Client interface {
 	DeleteBlob(reference string) (err error)
 	// DeleteManifest deletes the specified manifest. The "reference" can be "tag" or "digest"
 	DeleteManifest(repository, reference string) (err error)
+	// Purge remove the dirty data from _uploads
+	Purge(olderThan int64, dryRun, logOut, async bool) (err error)
 }
 
 type client struct {
@@ -104,6 +109,30 @@ func (c *client) DeleteManifest(repository, reference string) (err error) {
 	return nil
 }
 
+// Purge ...
+func (c *client) Purge(olderThan int64, dryRun, logOut, async bool) (err error) {
+	qr := purge.PurgeReq{
+		OlderThan: olderThan,
+		DryRun:    dryRun,
+		Async:     async,
+		LogOut:    logOut,
+	}
+	b, err := json.Marshal(qr)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPost, buildPurgeURL(c.baseURL), bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 func (c *client) do(req *http.Request) (*http.Response, error) {
 	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
 	resp, err := c.client.Do(req)
@@ -138,4 +167,8 @@ func buildManifestURL(endpoint, repository, reference string) string {
 
 func buildBlobURL(endpoint, reference string) string {
 	return fmt.Sprintf("%s/api/registry/blob/%s", endpoint, reference)
+}
+
+func buildPurgeURL(endpoint string) string {
+	return fmt.Sprintf("%s/api/registry/purge", endpoint)
 }

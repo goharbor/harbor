@@ -22,3 +22,8 @@ func (c *Mockclient) DeleteBlob(reference string) (err error) {
 func (c *Mockclient) DeleteManifest(repository, reference string) (err error) {
 	return nil
 }
+
+// Purge ...
+func (c *Mockclient) Purge(olderThan int64, dryRun, logOut, async bool) (err error) {
+	return nil
+}
