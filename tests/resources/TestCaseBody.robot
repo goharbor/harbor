@@ -477,3 +477,7 @@ Body Of Stop Scan And Stop Scan All
     Stop Scan All Artifact
     Check Scan All Artifact Job Status Is Stopped
     Close Browser
+
+Prepare Image Package Test Files
+    [Arguments]  ${files_path}
+    ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}
