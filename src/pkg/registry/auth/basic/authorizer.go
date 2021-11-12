@@ -35,6 +35,8 @@ type authorizer struct {
 func (a *authorizer) Modify(req *http.Request) error {
 	if len(a.username) > 0 {
 		req.SetBasicAuth(a.username, a.password)
+	} else if len(a.password) > 0 {
+		req.Header.Set("Authorization", "Harbor-Secret "+a.password)
 	}
 	return nil
 }
