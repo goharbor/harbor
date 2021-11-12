@@ -17,6 +17,7 @@ package project
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -105,6 +106,10 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 	}
 	name, ok := idOrName.(string)
 	if ok {
+		// check white space in project name
+		if strings.Contains(name, " ") {
+			return nil, errors.BadRequestError(nil).WithMessage("invalid project name: '%s'", name)
+		}
 		return m.dao.GetByName(ctx, name)
 	}
 	return nil, errors.Errorf("invalid parameter: %v, should be ID(int64) or name(string)", idOrName)

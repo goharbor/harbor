@@ -224,6 +224,8 @@ func (a *Adapter) ListProjects(filters []*model.Filter) ([]*Project, error) {
 		names, ok := util.IsSpecificPathComponent(projectPattern)
 		if ok {
 			for _, name := range names {
+				// trim white space in project name
+				name = strings.TrimSpace(name)
 				project, err := a.Client.GetProject(name)
 				if err != nil {
 					return nil, err
