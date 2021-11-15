@@ -73,10 +73,10 @@ Test Case - GC Schedule Job
     Log To Console  GC Schedule Job ${d}
     ${project_name}=  Set Variable  gc_schedule_proj${d}
     ${image}=  Set Variable  redis
-    ${tag}=  Set Variable  latest
+    ${sha256}=  Set Variable  e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  sha256=${sha256}
     Sleep  50
     Go Into Repo  ${project_name}/${image}
     Switch To Garbage Collection
@@ -113,10 +113,10 @@ Test Case - Scan Schedule Job
     Log To Console  ${d}
     ${project_name}=  Set Variable  scan_schedule_proj${d}
     ${image}=  Set Variable  redis
-    ${tag}=  Set Variable  latest
+    ${sha256}=  Set Variable  e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  sha256=${sha256}
     Sleep  50
     Go Into Repo  ${project_name}/${image}
     Retry Wait Until Page Contains Element  ${not_scanned_icon}
@@ -142,7 +142,7 @@ Test Case - Scan Schedule Job
     Sleep  500
     Go Into Project  ${project_name}
     Go Into Repo  ${project_name}/${image}
-    Scan Result Should Display In List Row  ${tag}
+    Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  High  Medium
 
 Test Case - Replication Schedule Job
