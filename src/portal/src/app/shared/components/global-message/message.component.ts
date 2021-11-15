@@ -19,9 +19,9 @@ import { Message } from './message';
 import { MessageService } from './message.service';
 import { CommonRoutes, dismissInterval, httpStatusCode } from "../../entities/shared.const";
 import { delUrlParam } from "../../units/utils";
-import { UN_LOGGED_PARAM } from "../../../account/sign-in/sign-in.service";
+import { UN_LOGGED_PARAM, YES } from "../../../account/sign-in/sign-in.service";
+import { SessionService } from "../../services/session.service";
 
-const YES: string = 'yes';
 @Component({
   selector: 'global-message',
   templateUrl: 'message.component.html',
@@ -44,7 +44,8 @@ export class MessageComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
-    private translate: TranslateService) { }
+    private translate: TranslateService,
+    private session: SessionService) { }
 
   ngOnInit(): void {
     // Only subscribe application level message
@@ -53,6 +54,7 @@ export class MessageComponent implements OnInit, OnDestroy {
         message => {
           this.globalMessageOpened = true;
           this.globalMessage = message;
+          this.checkLoginStatus();
           this.messageText = message.message;
 
           this.translateMessage(message);
@@ -64,6 +66,7 @@ export class MessageComponent implements OnInit, OnDestroy {
         message => {
           this.globalMessageOpened = true;
           this.globalMessage = message;
+          this.checkLoginStatus();
           this.messageText = message.message;
 
           this.translateMessage(message);
@@ -147,5 +150,19 @@ export class MessageComponent implements OnInit, OnDestroy {
   // if navigate from global search(un-logged users visit public project)
   isFromGlobalSearch(): boolean {
     return this.route.snapshot.queryParams[UN_LOGGED_PARAM] === YES;
+  }
+  checkLoginStatus() {
+    if (this.globalMessage.statusCode === httpStatusCode.Unauthorized) {
+      // User session timed out, then redirect to sign-in page
+      if (this.session.getCurrentUser() && !this.isSignInUrl() && this.route.snapshot.queryParams[UN_LOGGED_PARAM] !== YES) {
+        const url = delUrlParam(this.router.url, UN_LOGGED_PARAM);
+        this.session.clear(); // because of SignInGuard, must clear user session before navigating to sign-in page
+        this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ], {queryParams: {redirect_url: url}});
+      }
+    }
+  }
+  isSignInUrl(): boolean {
+    const url: string = this.router.url?.indexOf('?') === -1 ? this.router.url : this.router.url?.split('?')[0];
+    return url === CommonRoutes.EMBEDDED_SIGN_IN;
   }
 }

@@ -48,7 +48,7 @@ import { errorHandler } from "../../../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../../../global-confirmation-dialog/confirmation-state-message";
-import { UN_LOGGED_PARAM } from "../../../../../../../account/sign-in/sign-in.service";
+import { UN_LOGGED_PARAM, YES } from "../../../../../../../account/sign-in/sign-in.service";
 import { Label } from "../../../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
 import { EventService, HarborEvent } from "../../../../../../../services/event-service/event.service";
@@ -59,7 +59,6 @@ export interface LabelState {
   show: boolean;
 }
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
-const YES: string = 'yes';
 const PAGE_SIZE: number = 100;
 @Component({
   selector: 'artifact-list-tab',
