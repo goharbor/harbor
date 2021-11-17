@@ -77,12 +77,17 @@ Test Case - Push CNAB Bundle and Display
     [Tags]  push_cnab
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    ${index1_image1}=  Set Variable  busybox
+    ${index1_image2}=  Set Variable  alpine
+    ${index2_image1}=  Set Variable  hello-world
+    ${index2_image2}=  Set Variable  redis
+    ${user}=  Set Variable  user010
+    ${pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  test${d}
-
+    ${index1}  ${index2}=  Prepare Cnab Push Test Data  ${ip}  ${user}  ${pwd}  test${d}  ${index1_image1}  ${index1_image2}  ${index2_image1}  ${index2_image2}
     ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  ${user}  ${pwd}  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${ip}  test${d}  ${index1}  ${index2}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
