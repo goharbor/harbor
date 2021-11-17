@@ -54,6 +54,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/migration"
+	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
@@ -164,6 +165,9 @@ func main() {
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
 			log.Fatalf("failed to initialize cache: %v", err)
 		}
+		// when config/db init function is called, the cache is not ready,
+		// enable config cache explicitly when the cache is ready
+		dbCfg.EnableConfigCache()
 	}
 	beego.AddTemplateExt("htm")
 
