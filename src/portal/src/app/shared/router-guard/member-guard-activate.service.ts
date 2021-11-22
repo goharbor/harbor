@@ -23,6 +23,9 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ProjectService } from "../services";
 import { CommonRoutes } from "../entities/shared.const";
+import { HttpStatusCode } from '@angular/common/http';
+import { delUrlParam } from "../units/utils";
+import { UN_LOGGED_PARAM, YES } from 'src/app/account/sign-in/sign-in.service';
 
 @Injectable({
   providedIn: 'root',
@@ -39,12 +42,12 @@ export class MemberGuard implements CanActivate, CanActivateChild {
 
     const user = this.sessionService.getCurrentUser();
     if (user !== null) {
-      return this.hasProjectPerm(state.url, projectId);
+      return this.hasProjectPerm(state.url, projectId, route);
     }
 
     return this.sessionService.retrieveUser().pipe(
       () => {
-        return this.hasProjectPerm(state.url, projectId);
+        return this.hasProjectPerm(state.url, projectId, route);
       },
       catchError(err => {
         this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
@@ -57,14 +60,21 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     return this.canActivate(route, state);
   }
 
-  hasProjectPerm(url: string, projectId: number): Observable<boolean> {
+  hasProjectPerm(url: string, projectId: number, route: ActivatedRouteSnapshot): Observable<boolean> {
     // Note: current user will have the permission to visit the project when the user can get response from GET /projects/:id API.
     return this.projectService.getProject(projectId).pipe(
       map(() => {
         return true;
       }),
       catchError(err => {
-        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        // User session timed out, then redirect to sign-in page
+        if (err.status === HttpStatusCode.Unauthorized && route.queryParams[UN_LOGGED_PARAM] !== YES) {
+                  this.sessionService.clear(); // because of SignInGuard, must clear user session before navigating to sign-in page
+                  this.router.navigate([ CommonRoutes.EMBEDDED_SIGN_IN ],
+                      {queryParams: {redirect_url: delUrlParam(this.router.url, UN_LOGGED_PARAM)}});
+        } else {
+          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        }
         return of(false);
       })
     );
