@@ -807,7 +807,7 @@ Test Case - System Robot Account Cover All Projects
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${pro_name}
-    ${name}=  Create A New System Robot Account  is_cover_all=${true}
+    ${name}  ${secret}=  Create A New System Robot Account  is_cover_all=${true}
     Navigate To Projects
     Switch To Robot Account
     System Robot Account Exist  ${name}  all
@@ -821,7 +821,7 @@ Test Case - System Robot Account
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
-    ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
+    ${name}  ${secret}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
     System Robot Account Exist  ${name}  ${project_count}
     Close Browser
 
