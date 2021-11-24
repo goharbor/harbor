@@ -28,6 +28,9 @@ import { Tag } from "../../../../../../../../../ng-swagger-gen/models/tag";
 import { SharedTestingModule } from "../../../../../../../shared/shared.module";
 import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
 import { Registry } from "../../../../../../../../../ng-swagger-gen/models/registry";
+import { AppConfigService } from "../../../../../../../services/app-config.service";
+import { ArtifactListPageService } from '../../artifact-list-page.service';
+import { ClrLoadingState } from '@clr/angular';
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -290,6 +293,38 @@ describe("ArtifactListTabComponent (inline template)", () => {
       return of(res).pipe(delay(0));
     }
   };
+  const mockedAppConfigService = {
+    getConfig() {
+      return {};
+    }
+  };
+
+  const mockedArtifactListPageService = {
+    imageStickLabels: [],
+    imageFilterLabels: [],
+    resetClonedLabels() {
+    },
+    getScanBtnState(): ClrLoadingState {
+      return ClrLoadingState.DEFAULT;
+    },
+    hasEnabledScanner(): boolean {
+      return true;
+    },
+    hasAddLabelImagePermission(): boolean {
+      return true;
+    },
+    hasRetagImagePermission(): boolean {
+      return true;
+    },
+    hasDeleteImagePermission(): boolean {
+      return true;
+    },
+    hasScanImagePermission(): boolean {
+      return true;
+    },
+    init() {
+    }
+  };
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -306,7 +341,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
         CopyInputComponent
       ],
       providers: [
-        ArtifactDefaultService,
+        { provide: ArtifactListPageService, useValue: mockedArtifactListPageService },
+        { provide: ArtifactService, useClass: ArtifactDefaultService },
+        { provide: AppConfigService, useValue: mockedAppConfigService },
         { provide: Router, useValue: mockRouter },
         { provide: ArtifactService, useValue: mockNewArtifactService },
         { provide: ProjectService, useClass: ProjectDefaultService },
@@ -325,12 +362,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     comp = fixture.componentInstance;
     comp.projectId = 1;
     comp.repoName = "library/nginx";
-    comp.hasDeleteImagePermission = true;
-    comp.hasScanImagePermission = true;
-    comp.hasSignedIn = true;
     comp.registryUrl = "http://registry.testing.com";
-    comp.withNotary = false;
-    comp.withAdmiral = false;
     let labelService: LabelService;
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     let http: HttpClient;
@@ -359,7 +391,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     comp.artifactList = mockArtifacts;
     fixture.detectChanges();
     await fixture.whenStable();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual("sha256:4875cda3");
@@ -372,7 +404,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
@@ -386,7 +418,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');

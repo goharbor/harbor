@@ -43,10 +43,6 @@ export class ArtifactSummaryComponent implements OnInit {
   ) {
   }
 
-  get withAdmiral(): boolean {
-    return this.appConfigService.getConfig().with_admiral;
-  }
-
   goBack(): void {
     this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName]);
   }
@@ -61,7 +57,7 @@ export class ArtifactSummaryComponent implements OnInit {
   jumpDigest(index: number) {
     const arr: string[] = this.referArtifactNameArray.slice(0, index + 1 );
     if ( arr && arr.length) {
-      this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName, "depth", arr.join('-')]);
+      this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName, "artifacts-tab", "depth", arr.join('-')]);
     } else {
       this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName]);
     }
