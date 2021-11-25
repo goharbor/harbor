@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -158,6 +157,11 @@ func (p *tomlParser) parseGroup() tomlParserStateFn {
 	if err := p.tree.createSubTree(keys, startToken.Position); err != nil {
 		p.raiseError(key, "%s", err)
 	}
+	destTree := p.tree.GetPath(keys)
+	if target, ok := destTree.(*Tree); ok && target != nil && target.inline {
+		p.raiseError(key, "could not re-define exist inline table or its sub-table : %s",
+			strings.Join(keys, "."))
+	}
 	p.assume(tokenRightBracket)
 	p.currentTable = keys
 	return p.parseStart
@@ -201,6 +205,11 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 			strings.Join(tableKey, "."))
 	}
 
+	if targetNode.inline {
+		p.raiseError(key, "could not add key or sub-table to exist inline table or its sub-table : %s",
+			strings.Join(tableKey, "."))
+	}
+
 	// assign value to the found table
 	keyVal := parsedKey[len(parsedKey)-1]
 	localKey := []string{keyVal}
@@ -221,19 +230,38 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 	return p.parseStart
 }
 
-var numberUnderscoreInvalidRegexp *regexp.Regexp
-var hexNumberUnderscoreInvalidRegexp *regexp.Regexp
+var errInvalidUnderscore = errors.New("invalid use of _ in number")
 
 func numberContainsInvalidUnderscore(value string) error {
-	if numberUnderscoreInvalidRegexp.MatchString(value) {
-		return errors.New("invalid use of _ in number")
+	// For large numbers, you may use underscores between digits to enhance
+	// readability. Each underscore must be surrounded by at least one digit on
+	// each side.
+
+	hasBefore := false
+	for idx, r := range value {
+		if r == '_' {
+			if !hasBefore || idx+1 >= len(value) {
+				// can't end with an underscore
+				return errInvalidUnderscore
+			}
+		}
+		hasBefore = isDigit(r)
 	}
 	return nil
 }
 
+var errInvalidUnderscoreHex = errors.New("invalid use of _ in hex number")
+
 func hexNumberContainsInvalidUnderscore(value string) error {
-	if hexNumberUnderscoreInvalidRegexp.MatchString(value) {
-		return errors.New("invalid use of _ in hex number")
+	hasBefore := false
+	for idx, r := range value {
+		if r == '_' {
+			if !hasBefore || idx+1 >= len(value) {
+				// can't end with an underscore
+				return errInvalidUnderscoreHex
+			}
+		}
+		hasBefore = isHexDigit(r)
 	}
 	return nil
 }
@@ -312,42 +340,44 @@ func (p *tomlParser) parseRvalue() interface{} {
 			p.raiseError(tok, "%s", err)
 		}
 		return val
-	case tokenDate:
-		layout := time.RFC3339Nano
-		if !strings.Contains(tok.val, "T") {
-			layout = strings.Replace(layout, "T", " ", 1)
-		}
-		val, err := time.ParseInLocation(layout, tok.val, time.UTC)
+	case tokenLocalTime:
+		val, err := ParseLocalTime(tok.val)
 		if err != nil {
 			p.raiseError(tok, "%s", err)
 		}
 		return val
 	case tokenLocalDate:
-		v := strings.Replace(tok.val, " ", "T", -1)
-		isDateTime := false
-		isTime := false
-		for _, c := range v {
-			if c == 'T' || c == 't' {
-				isDateTime = true
-				break
+		// a local date may be followed by:
+		// * nothing: this is a local date
+		// * a local time: this is a local date-time
+
+		next := p.peek()
+		if next == nil || next.typ != tokenLocalTime {
+			val, err := ParseLocalDate(tok.val)
+			if err != nil {
+				p.raiseError(tok, "%s", err)
 			}
-			if c == ':' {
-				isTime = true
-				break
-			}
+			return val
 		}
 
-		var val interface{}
-		var err error
+		localDate := tok
+		localTime := p.getToken()
 
-		if isDateTime {
-			val, err = ParseLocalDateTime(v)
-		} else if isTime {
-			val, err = ParseLocalTime(v)
-		} else {
-			val, err = ParseLocalDate(v)
+		next = p.peek()
+		if next == nil || next.typ != tokenTimeOffset {
+			v := localDate.val + "T" + localTime.val
+			val, err := ParseLocalDateTime(v)
+			if err != nil {
+				p.raiseError(tok, "%s", err)
+			}
+			return val
 		}
 
+		offset := p.getToken()
+
+		layout := time.RFC3339Nano
+		v := localDate.val + "T" + localTime.val + offset.val
+		val, err := time.ParseInLocation(layout, v, time.UTC)
 		if err != nil {
 			p.raiseError(tok, "%s", err)
 		}
@@ -360,9 +390,9 @@ func (p *tomlParser) parseRvalue() interface{} {
 		p.raiseError(tok, "cannot have multiple equals for the same key")
 	case tokenError:
 		p.raiseError(tok, "%s", tok)
+	default:
+		panic(fmt.Errorf("unhandled token: %v", tok))
 	}
-
-	p.raiseError(tok, "never reached")
 
 	return nil
 }
@@ -411,12 +441,13 @@ Loop:
 	if tokenIsComma(previous) {
 		p.raiseError(previous, "trailing comma at the end of inline table")
 	}
+	tree.inline = true
 	return tree
 }
 
 func (p *tomlParser) parseArray() interface{} {
 	var array []interface{}
-	arrayType := reflect.TypeOf(nil)
+	arrayType := reflect.TypeOf(newTree())
 	for {
 		follow := p.peek()
 		if follow == nil || follow.typ == tokenEOF {
@@ -427,11 +458,8 @@ func (p *tomlParser) parseArray() interface{} {
 			break
 		}
 		val := p.parseRvalue()
-		if arrayType == nil {
-			arrayType = reflect.TypeOf(val)
-		}
 		if reflect.TypeOf(val) != arrayType {
-			p.raiseError(follow, "mixed types in array")
+			arrayType = nil
 		}
 		array = append(array, val)
 		follow = p.peek()
@@ -444,6 +472,12 @@ func (p *tomlParser) parseArray() interface{} {
 		if follow.typ == tokenComma {
 			p.getToken()
 		}
+	}
+
+	// if the array is a mixed-type array or its length is 0,
+	// don't convert it to a table array
+	if len(array) <= 0 {
+		arrayType = nil
 	}
 	// An array of Trees is actually an array of inline
 	// tables, which is a shorthand for a table array. If the
@@ -471,9 +505,4 @@ func parseToml(flow []token) *Tree {
 	}
 	parser.run()
 	return result
-}
-
-func init() {
-	numberUnderscoreInvalidRegexp = regexp.MustCompile(`([^\d]_|_[^\d])|_$|^_`)
-	hexNumberUnderscoreInvalidRegexp = regexp.MustCompile(`(^0x_)|([^\da-f]_|_[^\da-f])|_$|^_`)
 }

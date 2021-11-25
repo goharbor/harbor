@@ -159,10 +159,8 @@ func Pipe(p []int) (err error) {
 	}
 	var x [2]int32
 	err = pipe(&x)
-	if err == nil {
-		p[0] = int(x[0])
-		p[1] = int(x[1])
-	}
+	p[0] = int(x[0])
+	p[1] = int(x[1])
 	return
 }
 
@@ -432,25 +430,8 @@ func GetsockoptXucred(fd, level, opt int) (*Xucred, error) {
 	return x, err
 }
 
-func SysctlKinfoProc(name string, args ...int) (*KinfoProc, error) {
-	mib, err := sysctlmib(name, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	var kinfo KinfoProc
-	n := uintptr(SizeofKinfoProc)
-	if err := sysctl(mib, (*byte)(unsafe.Pointer(&kinfo)), &n, nil, 0); err != nil {
-		return nil, err
-	}
-	if n != SizeofKinfoProc {
-		return nil, EIO
-	}
-	return &kinfo, nil
-}
-
-func SysctlKinfoProcSlice(name string, args ...int) ([]KinfoProc, error) {
-	mib, err := sysctlmib(name, args...)
+func SysctlKinfoProcSlice(name string) ([]KinfoProc, error) {
+	mib, err := sysctlmib(name)
 	if err != nil {
 		return nil, err
 	}

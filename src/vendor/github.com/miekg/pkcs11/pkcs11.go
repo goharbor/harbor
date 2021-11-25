@@ -11,44 +11,73 @@ package pkcs11
 // * CK_ULONG never overflows an Go int
 
 /*
-#cgo windows LDFLAGS: -Wl,--no-as-needed -lltdl
-#cgo linux LDFLAGS: -Wl,--no-as-needed -lltdl -ldl
-#cgo darwin CFLAGS: -I/usr/local/share/libtool
-#cgo darwin LDFLAGS: -lltdl -L/usr/local/lib/ -I/usr/local/share/libtool
-#cgo openbsd CFLAGS: -I/usr/local/include/
-#cgo openbsd LDFLAGS: -lltdl -L/usr/local/lib/
-#cgo LDFLAGS: -lltdl
-#define CK_PTR *
-#define CK_DEFINE_FUNCTION(returnType, name) returnType name
-#define CK_DECLARE_FUNCTION(returnType, name) returnType name
-#define CK_DECLARE_FUNCTION_POINTER(returnType, name) returnType (* name)
-#define CK_CALLBACK_FUNCTION(returnType, name) returnType (* name)
+#cgo windows CFLAGS: -DPACKED_STRUCTURES
+#cgo linux LDFLAGS: -ldl
+#cgo darwin LDFLAGS: -ldl
+#cgo openbsd LDFLAGS: -ldl
+#cgo freebsd LDFLAGS: -ldl
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <ltdl.h>
+#include <string.h>
 #include <unistd.h>
-#include "pkcs11.h"
+
+#include "pkcs11go.h"
+
+#ifdef _WIN32
+#include <windows.h>
 
 struct ctx {
-	lt_dlhandle handle;
+	HMODULE handle;
 	CK_FUNCTION_LIST_PTR sym;
 };
 
 // New initializes a ctx and fills the symbol table.
 struct ctx *New(const char *module)
 {
-	if (lt_dlinit() != 0) {
-		return NULL;
-	}
 	CK_C_GetFunctionList list;
 	struct ctx *c = calloc(1, sizeof(struct ctx));
-	c->handle = lt_dlopen(module);
+	c->handle = LoadLibrary(module);
 	if (c->handle == NULL) {
 		free(c);
 		return NULL;
 	}
-	list = (CK_C_GetFunctionList) lt_dlsym(c->handle, "C_GetFunctionList");
+	list = (CK_C_GetFunctionList) GetProcAddress(c->handle, "C_GetFunctionList");
+	if (list == NULL) {
+		free(c);
+		return NULL;
+	}
+	list(&c->sym);
+	return c;
+}
+
+// Destroy cleans up a ctx.
+void Destroy(struct ctx *c)
+{
+	if (!c) {
+		return;
+	}
+	free(c);
+}
+#else
+#include <dlfcn.h>
+
+struct ctx {
+	void *handle;
+	CK_FUNCTION_LIST_PTR sym;
+};
+
+// New initializes a ctx and fills the symbol table.
+struct ctx *New(const char *module)
+{
+	CK_C_GetFunctionList list;
+	struct ctx *c = calloc(1, sizeof(struct ctx));
+	c->handle = dlopen(module, RTLD_LAZY);
+	if (c->handle == NULL) {
+		free(c);
+		return NULL;
+	}
+	list = (CK_C_GetFunctionList) dlsym(c->handle, "C_GetFunctionList");
 	if (list == NULL) {
 		free(c);
 		return NULL;
@@ -66,16 +95,19 @@ void Destroy(struct ctx *c)
 	if (c->handle == NULL) {
 		return;
 	}
-	if (lt_dlclose(c->handle) < 0) {
+	if (dlclose(c->handle) < 0) {
 		return;
 	}
-	lt_dlexit();
 	free(c);
 }
+#endif
 
-CK_RV Initialize(struct ctx * c, CK_VOID_PTR initArgs)
+CK_RV Initialize(struct ctx * c)
 {
-	return c->sym->C_Initialize(initArgs);
+	CK_C_INITIALIZE_ARGS args;
+	memset(&args, 0, sizeof(args));
+	args.flags = CKF_OS_LOCKING_OK;
+	return c->sym->C_Initialize(&args);
 }
 
 CK_RV Finalize(struct ctx * c)
@@ -83,9 +115,19 @@ CK_RV Finalize(struct ctx * c)
 	return c->sym->C_Finalize(NULL);
 }
 
-CK_RV GetInfo(struct ctx * c, CK_INFO_PTR info)
+CK_RV GetInfo(struct ctx * c, ckInfoPtr info)
 {
-	return c->sym->C_GetInfo(info);
+	CK_INFO p;
+	CK_RV e = c->sym->C_GetInfo(&p);
+	if (e != CKR_OK) {
+		return e;
+	}
+	info->cryptokiVersion = p.cryptokiVersion;
+	memcpy(info->manufacturerID, p.manufacturerID, sizeof(p.manufacturerID));
+	info->flags = p.flags;
+	memcpy(info->libraryDescription, p.libraryDescription, sizeof(p.libraryDescription));
+	info->libraryVersion = p.libraryVersion;
+	return e;
 }
 
 CK_RV GetSlotList(struct ctx * c, CK_BBOOL tokenPresent,
@@ -229,16 +271,14 @@ CK_RV CreateObject(struct ctx * c, CK_SESSION_HANDLE session,
 		   CK_ATTRIBUTE_PTR temp, CK_ULONG tempCount,
 		   CK_OBJECT_HANDLE_PTR obj)
 {
-	CK_RV e = c->sym->C_CreateObject(session, temp, tempCount, obj);
-	return e;
+	return c->sym->C_CreateObject(session, temp, tempCount, obj);
 }
 
 CK_RV CopyObject(struct ctx * c, CK_SESSION_HANDLE session, CK_OBJECT_HANDLE o,
 		 CK_ATTRIBUTE_PTR temp, CK_ULONG tempCount,
 		 CK_OBJECT_HANDLE_PTR obj)
 {
-	CK_RV e = c->sym->C_CopyObject(session, o, temp, tempCount, obj);
-	return e;
+	return c->sym->C_CopyObject(session, o, temp, tempCount, obj);
 }
 
 CK_RV DestroyObject(struct ctx * c, CK_SESSION_HANDLE session,
@@ -273,23 +313,20 @@ CK_RV GetAttributeValue(struct ctx * c, CK_SESSION_HANDLE session,
 		}
 		temp[i].pValue = calloc(temp[i].ulValueLen, sizeof(CK_BYTE));
 	}
-	e = c->sym->C_GetAttributeValue(session, object, temp, templen);
-	return e;
+	return c->sym->C_GetAttributeValue(session, object, temp, templen);
 }
 
 CK_RV SetAttributeValue(struct ctx * c, CK_SESSION_HANDLE session,
 			CK_OBJECT_HANDLE object, CK_ATTRIBUTE_PTR temp,
 			CK_ULONG templen)
 {
-	CK_RV e = c->sym->C_SetAttributeValue(session, object, temp, templen);
-	return e;
+	return c->sym->C_SetAttributeValue(session, object, temp, templen);
 }
 
 CK_RV FindObjectsInit(struct ctx * c, CK_SESSION_HANDLE session,
 		      CK_ATTRIBUTE_PTR temp, CK_ULONG tempCount)
 {
-	CK_RV e = c->sym->C_FindObjectsInit(session, temp, tempCount);
-	return e;
+	return c->sym->C_FindObjectsInit(session, temp, tempCount);
 }
 
 CK_RV FindObjects(struct ctx * c, CK_SESSION_HANDLE session,
@@ -310,8 +347,7 @@ CK_RV FindObjectsFinal(struct ctx * c, CK_SESSION_HANDLE session)
 CK_RV EncryptInit(struct ctx * c, CK_SESSION_HANDLE session,
 		  CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV e = c->sym->C_EncryptInit(session, mechanism, key);
-	return e;
+	return c->sym->C_EncryptInit(session, mechanism, key);
 }
 
 CK_RV Encrypt(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR message,
@@ -365,14 +401,13 @@ CK_RV EncryptFinal(struct ctx * c, CK_SESSION_HANDLE session,
 CK_RV DecryptInit(struct ctx * c, CK_SESSION_HANDLE session,
 		  CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV e = c->sym->C_DecryptInit(session, mechanism, key);
-	return e;
+	return c->sym->C_DecryptInit(session, mechanism, key);
 }
 
-CK_RV Decrypt(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR cypher,
+CK_RV Decrypt(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR cipher,
 	      CK_ULONG clen, CK_BYTE_PTR * plain, CK_ULONG_PTR plainlen)
 {
-	CK_RV e = c->sym->C_Decrypt(session, cypher, clen, NULL, plainlen);
+	CK_RV e = c->sym->C_Decrypt(session, cipher, clen, NULL, plainlen);
 	if (e != CKR_OK) {
 		return e;
 	}
@@ -380,7 +415,7 @@ CK_RV Decrypt(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR cypher,
 	if (*plain == NULL) {
 		return CKR_HOST_MEMORY;
 	}
-	e = c->sym->C_Decrypt(session, cypher, clen, *plain, plainlen);
+	e = c->sym->C_Decrypt(session, cipher, clen, *plain, plainlen);
 	return e;
 }
 
@@ -420,8 +455,7 @@ CK_RV DecryptFinal(struct ctx * c, CK_SESSION_HANDLE session,
 CK_RV DigestInit(struct ctx * c, CK_SESSION_HANDLE session,
 		 CK_MECHANISM_PTR mechanism)
 {
-	CK_RV e = c->sym->C_DigestInit(session, mechanism);
-	return e;
+	return c->sym->C_DigestInit(session, mechanism);
 }
 
 CK_RV Digest(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR message,
@@ -470,8 +504,7 @@ CK_RV DigestFinal(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR * hash,
 CK_RV SignInit(struct ctx * c, CK_SESSION_HANDLE session,
 	       CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV e = c->sym->C_SignInit(session, mechanism, key);
-	return e;
+	return c->sym->C_SignInit(session, mechanism, key);
 }
 
 CK_RV Sign(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR message,
@@ -512,10 +545,9 @@ CK_RV SignFinal(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR * sig,
 }
 
 CK_RV SignRecoverInit(struct ctx * c, CK_SESSION_HANDLE session,
-		      CK_MECHANISM_PTR mech, CK_OBJECT_HANDLE key)
+		      CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV rv = c->sym->C_SignRecoverInit(session, mech, key);
-	return rv;
+	return c->sym->C_SignRecoverInit(session, mechanism, key);
 }
 
 CK_RV SignRecover(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR data,
@@ -534,10 +566,9 @@ CK_RV SignRecover(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR data,
 }
 
 CK_RV VerifyInit(struct ctx * c, CK_SESSION_HANDLE session,
-		 CK_MECHANISM_PTR mech, CK_OBJECT_HANDLE key)
+		 CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV rv = c->sym->C_VerifyInit(session, mech, key);
-	return rv;
+	return c->sym->C_VerifyInit(session, mechanism, key);
 }
 
 CK_RV Verify(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR message,
@@ -562,10 +593,9 @@ CK_RV VerifyFinal(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR sig,
 }
 
 CK_RV VerifyRecoverInit(struct ctx * c, CK_SESSION_HANDLE session,
-			CK_MECHANISM_PTR mech, CK_OBJECT_HANDLE key)
+			CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE key)
 {
-	CK_RV rv = c->sym->C_VerifyRecoverInit(session, mech, key);
-	return rv;
+	return c->sym->C_VerifyRecoverInit(session, mechanism, key);
 }
 
 CK_RV VerifyRecover(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR sig,
@@ -660,9 +690,7 @@ CK_RV GenerateKey(struct ctx * c, CK_SESSION_HANDLE session,
 		  CK_MECHANISM_PTR mechanism, CK_ATTRIBUTE_PTR temp,
 		  CK_ULONG tempCount, CK_OBJECT_HANDLE_PTR key)
 {
-	CK_RV e =
-	    c->sym->C_GenerateKey(session, mechanism, temp, tempCount, key);
-	return e;
+	return c->sym->C_GenerateKey(session, mechanism, temp, tempCount, key);
 }
 
 CK_RV GenerateKeyPair(struct ctx * c, CK_SESSION_HANDLE session,
@@ -671,11 +699,8 @@ CK_RV GenerateKeyPair(struct ctx * c, CK_SESSION_HANDLE session,
 		      CK_ULONG privCount, CK_OBJECT_HANDLE_PTR pubkey,
 		      CK_OBJECT_HANDLE_PTR privkey)
 {
-	CK_RV e =
-	    c->sym->C_GenerateKeyPair(session, mechanism, pub, pubCount, priv,
-				      privCount,
-				      pubkey, privkey);
-	return e;
+	return c->sym->C_GenerateKeyPair(session, mechanism, pub, pubCount,
+		priv, privCount, pubkey, privkey);
 }
 
 CK_RV WrapKey(struct ctx * c, CK_SESSION_HANDLE session,
@@ -698,21 +723,19 @@ CK_RV WrapKey(struct ctx * c, CK_SESSION_HANDLE session,
 }
 
 CK_RV DeriveKey(struct ctx * c, CK_SESSION_HANDLE session,
-		CK_MECHANISM_PTR mech, CK_OBJECT_HANDLE basekey,
+		CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE basekey,
 		CK_ATTRIBUTE_PTR a, CK_ULONG alen, CK_OBJECT_HANDLE_PTR key)
 {
-	CK_RV e = c->sym->C_DeriveKey(session, mech, basekey, a, alen, key);
-	return e;
+	return c->sym->C_DeriveKey(session, mechanism, basekey, a, alen, key);
 }
 
 CK_RV UnwrapKey(struct ctx * c, CK_SESSION_HANDLE session,
-		CK_MECHANISM_PTR mech, CK_OBJECT_HANDLE unwrappingkey,
+		CK_MECHANISM_PTR mechanism, CK_OBJECT_HANDLE unwrappingkey,
 		CK_BYTE_PTR wrappedkey, CK_ULONG wrappedkeylen,
 		CK_ATTRIBUTE_PTR a, CK_ULONG alen, CK_OBJECT_HANDLE_PTR key)
 {
-	CK_RV e = c->sym->C_UnwrapKey(session, mech, unwrappingkey, wrappedkey,
+	return c->sym->C_UnwrapKey(session, mechanism, unwrappingkey, wrappedkey,
 				      wrappedkeylen, a, alen, key);
-	return e;
 }
 
 CK_RV SeedRandom(struct ctx * c, CK_SESSION_HANDLE session, CK_BYTE_PTR seed,
@@ -739,6 +762,12 @@ CK_RV WaitForSlotEvent(struct ctx * c, CK_FLAGS flags, CK_ULONG_PTR slot)
 	    c->sym->C_WaitForSlotEvent(flags, (CK_SLOT_ID_PTR) slot, NULL);
 	return e;
 }
+
+static inline CK_VOID_PTR getAttributePval(CK_ATTRIBUTE_PTR a)
+{
+	return a->pValue;
+}
+
 */
 import "C"
 import "strings"
@@ -752,11 +781,6 @@ type Ctx struct {
 
 // New creates a new context and initializes the module/library for use.
 func New(module string) *Ctx {
-	// libtool-ltdl will return an assertion error if passed an empty string, so
-	// we check for it explicitly.
-	if module == "" {
-		return nil
-	}
 	c := new(Ctx)
 	mod := C.CString(module)
 	defer C.free(unsafe.Pointer(mod))
@@ -776,14 +800,13 @@ func (c *Ctx) Destroy() {
 	c.ctx = nil
 }
 
-/* Initialize initializes the Cryptoki library. */
+// Initialize initializes the Cryptoki library.
 func (c *Ctx) Initialize() error {
-	args := &C.CK_C_INITIALIZE_ARGS{CreateMutex: nil, DestroyMutex: nil, LockMutex: nil, UnlockMutex: nil, flags: C.CKF_OS_LOCKING_OK, pReserved: nil}
-	e := C.Initialize(c.ctx, C.CK_VOID_PTR(args))
+	e := C.Initialize(c.ctx)
 	return toError(e)
 }
 
-/* Finalize indicates that an application is done with the Cryptoki library. */
+// Finalize indicates that an application is done with the Cryptoki library.
 func (c *Ctx) Finalize() error {
 	if c.ctx == nil {
 		return toError(CKR_CRYPTOKI_NOT_INITIALIZED)
@@ -792,10 +815,10 @@ func (c *Ctx) Finalize() error {
 	return toError(e)
 }
 
-/* GetInfo returns general information about Cryptoki. */
+// GetInfo returns general information about Cryptoki.
 func (c *Ctx) GetInfo() (Info, error) {
-	var p C.CK_INFO
-	e := C.GetInfo(c.ctx, C.CK_INFO_PTR(&p))
+	var p C.ckInfo
+	e := C.GetInfo(c.ctx, &p)
 	i := Info{
 		CryptokiVersion:    toVersion(p.cryptokiVersion),
 		ManufacturerID:     strings.TrimRight(string(C.GoBytes(unsafe.Pointer(&p.manufacturerID[0]), 32)), " "),
@@ -806,7 +829,7 @@ func (c *Ctx) GetInfo() (Info, error) {
 	return i, toError(e)
 }
 
-/* GetSlotList obtains a list of slots in the system. */
+// GetSlotList obtains a list of slots in the system.
 func (c *Ctx) GetSlotList(tokenPresent bool) ([]uint, error) {
 	var (
 		slotList C.CK_ULONG_PTR
@@ -820,7 +843,7 @@ func (c *Ctx) GetSlotList(tokenPresent bool) ([]uint, error) {
 	return l, nil
 }
 
-/* GetSlotInfo obtains information about a particular slot in the system. */
+// GetSlotInfo obtains information about a particular slot in the system.
 func (c *Ctx) GetSlotInfo(slotID uint) (SlotInfo, error) {
 	var csi C.CK_SLOT_INFO
 	e := C.GetSlotInfo(c.ctx, C.CK_ULONG(slotID), &csi)
@@ -862,7 +885,7 @@ func (c *Ctx) GetTokenInfo(slotID uint) (TokenInfo, error) {
 	return s, toError(e)
 }
 
-/* GetMechanismList obtains a list of mechanism types supported by a token. */
+// GetMechanismList obtains a list of mechanism types supported by a token.
 func (c *Ctx) GetMechanismList(slotID uint) ([]*Mechanism, error) {
 	var (
 		mech    C.CK_ULONG_PTR // in pkcs#11 we're all CK_ULONGs \o/
@@ -912,7 +935,7 @@ func (c *Ctx) InitToken(slotID uint, pin string, label string) error {
 	return toError(e)
 }
 
-/* InitPIN initializes the normal user's PIN. */
+// InitPIN initializes the normal user's PIN.
 func (c *Ctx) InitPIN(sh SessionHandle, pin string) error {
 	p := C.CString(pin)
 	defer C.free(unsafe.Pointer(p))
@@ -920,7 +943,7 @@ func (c *Ctx) InitPIN(sh SessionHandle, pin string) error {
 	return toError(e)
 }
 
-/* SetPIN modifies the PIN of the user who is logged in. */
+// SetPIN modifies the PIN of the user who is logged in.
 func (c *Ctx) SetPIN(sh SessionHandle, oldpin string, newpin string) error {
 	old := C.CString(oldpin)
 	defer C.free(unsafe.Pointer(old))
@@ -930,14 +953,14 @@ func (c *Ctx) SetPIN(sh SessionHandle, oldpin string, newpin string) error {
 	return toError(e)
 }
 
-/* OpenSession opens a session between an application and a token. */
+// OpenSession opens a session between an application and a token.
 func (c *Ctx) OpenSession(slotID uint, flags uint) (SessionHandle, error) {
 	var s C.CK_SESSION_HANDLE
 	e := C.OpenSession(c.ctx, C.CK_ULONG(slotID), C.CK_ULONG(flags), C.CK_SESSION_HANDLE_PTR(&s))
 	return SessionHandle(s), toError(e)
 }
 
-/* CloseSession closes a session between an application and a token. */
+// CloseSession closes a session between an application and a token.
 func (c *Ctx) CloseSession(sh SessionHandle) error {
 	if c.ctx == nil {
 		return toError(CKR_CRYPTOKI_NOT_INITIALIZED)
@@ -946,7 +969,7 @@ func (c *Ctx) CloseSession(sh SessionHandle) error {
 	return toError(e)
 }
 
-/* CloseAllSessions closes all sessions with a token. */
+// CloseAllSessions closes all sessions with a token.
 func (c *Ctx) CloseAllSessions(slotID uint) error {
 	if c.ctx == nil {
 		return toError(CKR_CRYPTOKI_NOT_INITIALIZED)
@@ -955,7 +978,7 @@ func (c *Ctx) CloseAllSessions(slotID uint) error {
 	return toError(e)
 }
 
-/* GetSessionInfo obtains information about the session. */
+// GetSessionInfo obtains information about the session.
 func (c *Ctx) GetSessionInfo(sh SessionHandle) (SessionInfo, error) {
 	var csi C.CK_SESSION_INFO
 	e := C.GetSessionInfo(c.ctx, C.CK_SESSION_HANDLE(sh), &csi)
@@ -967,29 +990,29 @@ func (c *Ctx) GetSessionInfo(sh SessionHandle) (SessionInfo, error) {
 	return s, toError(e)
 }
 
-/* GetOperationState obtains the state of the cryptographic operation in a session. */
+// GetOperationState obtains the state of the cryptographic operation in a session.
 func (c *Ctx) GetOperationState(sh SessionHandle) ([]byte, error) {
 	var (
 		state    C.CK_BYTE_PTR
 		statelen C.CK_ULONG
 	)
 	e := C.GetOperationState(c.ctx, C.CK_SESSION_HANDLE(sh), &state, &statelen)
+	defer C.free(unsafe.Pointer(state))
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
 	b := C.GoBytes(unsafe.Pointer(state), C.int(statelen))
-	C.free(unsafe.Pointer(state))
 	return b, nil
 }
 
-/* SetOperationState restores the state of the cryptographic operation in a session. */
+// SetOperationState restores the state of the cryptographic operation in a session.
 func (c *Ctx) SetOperationState(sh SessionHandle, state []byte, encryptKey, authKey ObjectHandle) error {
 	e := C.SetOperationState(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&state[0])),
 		C.CK_ULONG(len(state)), C.CK_OBJECT_HANDLE(encryptKey), C.CK_OBJECT_HANDLE(authKey))
 	return toError(e)
 }
 
-/* Login logs a user into a token. */
+// Login logs a user into a token.
 func (c *Ctx) Login(sh SessionHandle, userType uint, pin string) error {
 	p := C.CString(pin)
 	defer C.free(unsafe.Pointer(p))
@@ -997,7 +1020,7 @@ func (c *Ctx) Login(sh SessionHandle, userType uint, pin string) error {
 	return toError(e)
 }
 
-/* Logout logs a user out from a token. */
+// Logout logs a user out from a token.
 func (c *Ctx) Logout(sh SessionHandle) error {
 	if c.ctx == nil {
 		return toError(CKR_CRYPTOKI_NOT_INITIALIZED)
@@ -1006,7 +1029,7 @@ func (c *Ctx) Logout(sh SessionHandle) error {
 	return toError(e)
 }
 
-/* CreateObject creates a new object. */
+// CreateObject creates a new object.
 func (c *Ctx) CreateObject(sh SessionHandle, temp []*Attribute) (ObjectHandle, error) {
 	var obj C.CK_OBJECT_HANDLE
 	arena, t, tcount := cAttributeList(temp)
@@ -1019,7 +1042,7 @@ func (c *Ctx) CreateObject(sh SessionHandle, temp []*Attribute) (ObjectHandle, e
 	return 0, e1
 }
 
-/* CopyObject copies an object, creating a new object for the copy. */
+// CopyObject copies an object, creating a new object for the copy.
 func (c *Ctx) CopyObject(sh SessionHandle, o ObjectHandle, temp []*Attribute) (ObjectHandle, error) {
 	var obj C.CK_OBJECT_HANDLE
 	arena, t, tcount := cAttributeList(temp)
@@ -1033,20 +1056,20 @@ func (c *Ctx) CopyObject(sh SessionHandle, o ObjectHandle, temp []*Attribute) (O
 	return 0, e1
 }
 
-/* DestroyObject destroys an object. */
+// DestroyObject destroys an object.
 func (c *Ctx) DestroyObject(sh SessionHandle, oh ObjectHandle) error {
 	e := C.DestroyObject(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_OBJECT_HANDLE(oh))
 	return toError(e)
 }
 
-/* GetObjectSize gets the size of an object in bytes. */
+// GetObjectSize gets the size of an object in bytes.
 func (c *Ctx) GetObjectSize(sh SessionHandle, oh ObjectHandle) (uint, error) {
 	var size C.CK_ULONG
 	e := C.GetObjectSize(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_OBJECT_HANDLE(oh), &size)
 	return uint(size), toError(e)
 }
 
-/* GetAttributeValue obtains the value of one or more object attributes. */
+// GetAttributeValue obtains the value of one or more object attributes.
 func (c *Ctx) GetAttributeValue(sh SessionHandle, o ObjectHandle, a []*Attribute) ([]*Attribute, error) {
 	// copy the attribute list and make all the values nil, so that
 	// the C function can (allocate) fill them in
@@ -1054,24 +1077,25 @@ func (c *Ctx) GetAttributeValue(sh SessionHandle, o ObjectHandle, a []*Attribute
 	for i := 0; i < len(a); i++ {
 		pa[i]._type = C.CK_ATTRIBUTE_TYPE(a[i].Type)
 	}
-	e := C.GetAttributeValue(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_OBJECT_HANDLE(o), C.CK_ATTRIBUTE_PTR(&pa[0]), C.CK_ULONG(len(a)))
-	if toError(e) != nil {
-		return nil, toError(e)
+	e := C.GetAttributeValue(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_OBJECT_HANDLE(o), &pa[0], C.CK_ULONG(len(a)))
+	if err := toError(e); err != nil {
+		return nil, err
 	}
 	a1 := make([]*Attribute, len(a))
 	for i, c := range pa {
 		x := new(Attribute)
 		x.Type = uint(c._type)
 		if int(c.ulValueLen) != -1 {
-			x.Value = C.GoBytes(unsafe.Pointer(c.pValue), C.int(c.ulValueLen))
-			C.free(unsafe.Pointer(c.pValue))
+			buf := unsafe.Pointer(C.getAttributePval(&c))
+			x.Value = C.GoBytes(buf, C.int(c.ulValueLen))
+			C.free(buf)
 		}
 		a1[i] = x
 	}
 	return a1, nil
 }
 
-/* SetAttributeValue modifies the value of one or more object attributes */
+// SetAttributeValue modifies the value of one or more object attributes
 func (c *Ctx) SetAttributeValue(sh SessionHandle, o ObjectHandle, a []*Attribute) error {
 	arena, pa, palen := cAttributeList(a)
 	defer arena.Free()
@@ -1090,8 +1114,10 @@ func (c *Ctx) FindObjectsInit(sh SessionHandle, temp []*Attribute) error {
 
 // FindObjects continues a search for token and session
 // objects that match a template, obtaining additional object
-// handles. The returned boolean indicates if the list would
-// have been larger than max.
+// handles. Calling the function repeatedly may yield additional results until
+// an empty slice is returned.
+//
+// The returned boolean value is deprecated and should be ignored.
 func (c *Ctx) FindObjects(sh SessionHandle, max int) ([]ObjectHandle, bool, error) {
 	var (
 		objectList C.CK_OBJECT_HANDLE_PTR
@@ -1111,27 +1137,27 @@ func (c *Ctx) FindObjects(sh SessionHandle, max int) ([]ObjectHandle, bool, erro
 	return o, ulCount > C.CK_ULONG(max), nil
 }
 
-/* FindObjectsFinal finishes a search for token and session objects. */
+// FindObjectsFinal finishes a search for token and session objects.
 func (c *Ctx) FindObjectsFinal(sh SessionHandle) error {
 	e := C.FindObjectsFinal(c.ctx, C.CK_SESSION_HANDLE(sh))
 	return toError(e)
 }
 
-/* EncryptInit initializes an encryption operation. */
+// EncryptInit initializes an encryption operation.
 func (c *Ctx) EncryptInit(sh SessionHandle, m []*Mechanism, o ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.EncryptInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(o))
 	return toError(e)
 }
 
-/* Encrypt encrypts single-part data. */
+// Encrypt encrypts single-part data.
 func (c *Ctx) Encrypt(sh SessionHandle, message []byte) ([]byte, error) {
 	var (
 		enc    C.CK_BYTE_PTR
 		enclen C.CK_ULONG
 	)
-	e := C.Encrypt(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&message[0])), C.CK_ULONG(len(message)), &enc, &enclen)
+	e := C.Encrypt(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(message), C.CK_ULONG(len(message)), &enc, &enclen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1140,13 +1166,13 @@ func (c *Ctx) Encrypt(sh SessionHandle, message []byte) ([]byte, error) {
 	return s, nil
 }
 
-/* EncryptUpdate continues a multiple-part encryption operation. */
+// EncryptUpdate continues a multiple-part encryption operation.
 func (c *Ctx) EncryptUpdate(sh SessionHandle, plain []byte) ([]byte, error) {
 	var (
 		part    C.CK_BYTE_PTR
 		partlen C.CK_ULONG
 	)
-	e := C.EncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&plain[0])), C.CK_ULONG(len(plain)), &part, &partlen)
+	e := C.EncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(plain), C.CK_ULONG(len(plain)), &part, &partlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1170,21 +1196,21 @@ func (c *Ctx) EncryptFinal(sh SessionHandle) ([]byte, error) {
 	return h, nil
 }
 
-/* DecryptInit initializes a decryption operation. */
+// DecryptInit initializes a decryption operation.
 func (c *Ctx) DecryptInit(sh SessionHandle, m []*Mechanism, o ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.DecryptInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(o))
 	return toError(e)
 }
 
-/* Decrypt decrypts encrypted data in a single part. */
-func (c *Ctx) Decrypt(sh SessionHandle, cypher []byte) ([]byte, error) {
+// Decrypt decrypts encrypted data in a single part.
+func (c *Ctx) Decrypt(sh SessionHandle, cipher []byte) ([]byte, error) {
 	var (
 		plain    C.CK_BYTE_PTR
 		plainlen C.CK_ULONG
 	)
-	e := C.Decrypt(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&cypher[0])), C.CK_ULONG(len(cypher)), &plain, &plainlen)
+	e := C.Decrypt(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(cipher), C.CK_ULONG(len(cipher)), &plain, &plainlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1193,13 +1219,13 @@ func (c *Ctx) Decrypt(sh SessionHandle, cypher []byte) ([]byte, error) {
 	return s, nil
 }
 
-/* DecryptUpdate continues a multiple-part decryption operation. */
+// DecryptUpdate continues a multiple-part decryption operation.
 func (c *Ctx) DecryptUpdate(sh SessionHandle, cipher []byte) ([]byte, error) {
 	var (
 		part    C.CK_BYTE_PTR
 		partlen C.CK_ULONG
 	)
-	e := C.DecryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&cipher[0])), C.CK_ULONG(len(cipher)), &part, &partlen)
+	e := C.DecryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(cipher), C.CK_ULONG(len(cipher)), &part, &partlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1208,7 +1234,7 @@ func (c *Ctx) DecryptUpdate(sh SessionHandle, cipher []byte) ([]byte, error) {
 	return h, nil
 }
 
-/* DecryptFinal finishes a multiple-part decryption operation. */
+// DecryptFinal finishes a multiple-part decryption operation.
 func (c *Ctx) DecryptFinal(sh SessionHandle) ([]byte, error) {
 	var (
 		plain    C.CK_BYTE_PTR
@@ -1223,21 +1249,21 @@ func (c *Ctx) DecryptFinal(sh SessionHandle) ([]byte, error) {
 	return h, nil
 }
 
-/* DigestInit initializes a message-digesting operation. */
+// DigestInit initializes a message-digesting operation.
 func (c *Ctx) DigestInit(sh SessionHandle, m []*Mechanism) error {
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.DigestInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech)
 	return toError(e)
 }
 
-/* Digest digests message in a single part. */
+// Digest digests message in a single part.
 func (c *Ctx) Digest(sh SessionHandle, message []byte) ([]byte, error) {
 	var (
 		hash    C.CK_BYTE_PTR
 		hashlen C.CK_ULONG
 	)
-	e := C.Digest(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&message[0])), C.CK_ULONG(len(message)), &hash, &hashlen)
+	e := C.Digest(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(message), C.CK_ULONG(len(message)), &hash, &hashlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1246,9 +1272,9 @@ func (c *Ctx) Digest(sh SessionHandle, message []byte) ([]byte, error) {
 	return h, nil
 }
 
-/* DigestUpdate continues a multiple-part message-digesting operation. */
+// DigestUpdate continues a multiple-part message-digesting operation.
 func (c *Ctx) DigestUpdate(sh SessionHandle, message []byte) error {
-	e := C.DigestUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&message[0])), C.CK_ULONG(len(message)))
+	e := C.DigestUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(message), C.CK_ULONG(len(message)))
 	if toError(e) != nil {
 		return toError(e)
 	}
@@ -1266,7 +1292,7 @@ func (c *Ctx) DigestKey(sh SessionHandle, key ObjectHandle) error {
 	return nil
 }
 
-/* DigestFinal finishes a multiple-part message-digesting operation. */
+// DigestFinal finishes a multiple-part message-digesting operation.
 func (c *Ctx) DigestFinal(sh SessionHandle) ([]byte, error) {
 	var (
 		hash    C.CK_BYTE_PTR
@@ -1283,10 +1309,9 @@ func (c *Ctx) DigestFinal(sh SessionHandle) ([]byte, error) {
 
 // SignInit initializes a signature (private key encryption)
 // operation, where the signature is (will be) an appendix to
-// the data, and plaintext cannot be recovered from the
-// signature.
+// the data, and plaintext cannot be recovered from the signature.
 func (c *Ctx) SignInit(sh SessionHandle, m []*Mechanism, o ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m) // Only the first is used, but still use a list.
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.SignInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(o))
 	return toError(e)
@@ -1299,7 +1324,7 @@ func (c *Ctx) Sign(sh SessionHandle, message []byte) ([]byte, error) {
 		sig    C.CK_BYTE_PTR
 		siglen C.CK_ULONG
 	)
-	e := C.Sign(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&message[0])), C.CK_ULONG(len(message)), &sig, &siglen)
+	e := C.Sign(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(message), C.CK_ULONG(len(message)), &sig, &siglen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1312,11 +1337,11 @@ func (c *Ctx) Sign(sh SessionHandle, message []byte) ([]byte, error) {
 // where the signature is (will be) an appendix to the data,
 // and plaintext cannot be recovered from the signature.
 func (c *Ctx) SignUpdate(sh SessionHandle, message []byte) error {
-	e := C.SignUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&message[0])), C.CK_ULONG(len(message)))
+	e := C.SignUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(message), C.CK_ULONG(len(message)))
 	return toError(e)
 }
 
-/* SignFinal finishes a multiple-part signature operation returning the signature. */
+// SignFinal finishes a multiple-part signature operation returning the signature.
 func (c *Ctx) SignFinal(sh SessionHandle) ([]byte, error) {
 	var (
 		sig    C.CK_BYTE_PTR
@@ -1331,23 +1356,21 @@ func (c *Ctx) SignFinal(sh SessionHandle) ([]byte, error) {
 	return h, nil
 }
 
-// SignRecoverInit initializes a signature operation, where
-// the data can be recovered from the signature.
+// SignRecoverInit initializes a signature operation, where the data can be recovered from the signature.
 func (c *Ctx) SignRecoverInit(sh SessionHandle, m []*Mechanism, key ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.SignRecoverInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(key))
 	return toError(e)
 }
 
-// SignRecover signs data in a single operation, where the
-// data can be recovered from the signature.
+// SignRecover signs data in a single operation, where the data can be recovered from the signature.
 func (c *Ctx) SignRecover(sh SessionHandle, data []byte) ([]byte, error) {
 	var (
 		sig    C.CK_BYTE_PTR
 		siglen C.CK_ULONG
 	)
-	e := C.SignRecover(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&data[0])), C.CK_ULONG(len(data)), &sig, &siglen)
+	e := C.SignRecover(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(data), C.CK_ULONG(len(data)), &sig, &siglen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1360,7 +1383,7 @@ func (c *Ctx) SignRecover(sh SessionHandle, data []byte) ([]byte, error) {
 // signature is an appendix to the data, and plaintext cannot
 // be recovered from the signature (e.g. DSA).
 func (c *Ctx) VerifyInit(sh SessionHandle, m []*Mechanism, key ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m) // only use one here
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.VerifyInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(key))
 	return toError(e)
@@ -1370,7 +1393,7 @@ func (c *Ctx) VerifyInit(sh SessionHandle, m []*Mechanism, key ObjectHandle) err
 // where the signature is an appendix to the data, and plaintext
 // cannot be recovered from the signature.
 func (c *Ctx) Verify(sh SessionHandle, data []byte, signature []byte) error {
-	e := C.Verify(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&data[0])), C.CK_ULONG(len(data)), C.CK_BYTE_PTR(unsafe.Pointer(&signature[0])), C.CK_ULONG(len(signature)))
+	e := C.Verify(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(data), C.CK_ULONG(len(data)), cMessage(signature), C.CK_ULONG(len(signature)))
 	return toError(e)
 }
 
@@ -1378,21 +1401,21 @@ func (c *Ctx) Verify(sh SessionHandle, data []byte, signature []byte) error {
 // operation, where the signature is an appendix to the data,
 // and plaintext cannot be recovered from the signature.
 func (c *Ctx) VerifyUpdate(sh SessionHandle, part []byte) error {
-	e := C.VerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&part[0])), C.CK_ULONG(len(part)))
+	e := C.VerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(part), C.CK_ULONG(len(part)))
 	return toError(e)
 }
 
 // VerifyFinal finishes a multiple-part verification
 // operation, checking the signature.
 func (c *Ctx) VerifyFinal(sh SessionHandle, signature []byte) error {
-	e := C.VerifyFinal(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&signature[0])), C.CK_ULONG(len(signature)))
+	e := C.VerifyFinal(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(signature), C.CK_ULONG(len(signature)))
 	return toError(e)
 }
 
 // VerifyRecoverInit initializes a signature verification
 // operation, where the data is recovered from the signature.
 func (c *Ctx) VerifyRecoverInit(sh SessionHandle, m []*Mechanism, key ObjectHandle) error {
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.VerifyRecoverInit(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(key))
 	return toError(e)
@@ -1405,7 +1428,7 @@ func (c *Ctx) VerifyRecover(sh SessionHandle, signature []byte) ([]byte, error) 
 		data    C.CK_BYTE_PTR
 		datalen C.CK_ULONG
 	)
-	e := C.DecryptVerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&signature[0])), C.CK_ULONG(len(signature)), &data, &datalen)
+	e := C.DecryptVerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(signature), C.CK_ULONG(len(signature)), &data, &datalen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1414,14 +1437,13 @@ func (c *Ctx) VerifyRecover(sh SessionHandle, signature []byte) ([]byte, error) 
 	return h, nil
 }
 
-// DigestEncryptUpdate continues a multiple-part digesting
-// and encryption operation.
+// DigestEncryptUpdate continues a multiple-part digesting and encryption operation.
 func (c *Ctx) DigestEncryptUpdate(sh SessionHandle, part []byte) ([]byte, error) {
 	var (
 		enc    C.CK_BYTE_PTR
 		enclen C.CK_ULONG
 	)
-	e := C.DigestEncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&part[0])), C.CK_ULONG(len(part)), &enc, &enclen)
+	e := C.DigestEncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(part), C.CK_ULONG(len(part)), &enc, &enclen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1430,13 +1452,13 @@ func (c *Ctx) DigestEncryptUpdate(sh SessionHandle, part []byte) ([]byte, error)
 	return h, nil
 }
 
-/* DecryptDigestUpdate continues a multiple-part decryption and digesting operation. */
+// DecryptDigestUpdate continues a multiple-part decryption and digesting operation.
 func (c *Ctx) DecryptDigestUpdate(sh SessionHandle, cipher []byte) ([]byte, error) {
 	var (
 		part    C.CK_BYTE_PTR
 		partlen C.CK_ULONG
 	)
-	e := C.DecryptDigestUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&cipher[0])), C.CK_ULONG(len(cipher)), &part, &partlen)
+	e := C.DecryptDigestUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(cipher), C.CK_ULONG(len(cipher)), &part, &partlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1445,13 +1467,13 @@ func (c *Ctx) DecryptDigestUpdate(sh SessionHandle, cipher []byte) ([]byte, erro
 	return h, nil
 }
 
-/* SignEncryptUpdate continues a multiple-part signing and encryption operation. */
+// SignEncryptUpdate continues a multiple-part signing and encryption operation.
 func (c *Ctx) SignEncryptUpdate(sh SessionHandle, part []byte) ([]byte, error) {
 	var (
 		enc    C.CK_BYTE_PTR
 		enclen C.CK_ULONG
 	)
-	e := C.SignEncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&part[0])), C.CK_ULONG(len(part)), &enc, &enclen)
+	e := C.SignEncryptUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(part), C.CK_ULONG(len(part)), &enc, &enclen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1460,13 +1482,13 @@ func (c *Ctx) SignEncryptUpdate(sh SessionHandle, part []byte) ([]byte, error) {
 	return h, nil
 }
 
-/* DecryptVerifyUpdate continues a multiple-part decryption and verify operation. */
+// DecryptVerifyUpdate continues a multiple-part decryption and verify operation.
 func (c *Ctx) DecryptVerifyUpdate(sh SessionHandle, cipher []byte) ([]byte, error) {
 	var (
 		part    C.CK_BYTE_PTR
 		partlen C.CK_ULONG
 	)
-	e := C.DecryptVerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), C.CK_BYTE_PTR(unsafe.Pointer(&cipher[0])), C.CK_ULONG(len(cipher)), &part, &partlen)
+	e := C.DecryptVerifyUpdate(c.ctx, C.CK_SESSION_HANDLE(sh), cMessage(cipher), C.CK_ULONG(len(cipher)), &part, &partlen)
 	if toError(e) != nil {
 		return nil, toError(e)
 	}
@@ -1475,12 +1497,12 @@ func (c *Ctx) DecryptVerifyUpdate(sh SessionHandle, cipher []byte) ([]byte, erro
 	return h, nil
 }
 
-/* GenerateKey generates a secret key, creating a new key object. */
+// GenerateKey generates a secret key, creating a new key object.
 func (c *Ctx) GenerateKey(sh SessionHandle, m []*Mechanism, temp []*Attribute) (ObjectHandle, error) {
 	var key C.CK_OBJECT_HANDLE
 	attrarena, t, tcount := cAttributeList(temp)
 	defer attrarena.Free()
-	mecharena, mech, _ := cMechanismList(m)
+	mecharena, mech := cMechanism(m)
 	defer mecharena.Free()
 	e := C.GenerateKey(c.ctx, C.CK_SESSION_HANDLE(sh), mech, t, tcount, C.CK_OBJECT_HANDLE_PTR(&key))
 	e1 := toError(e)
@@ -1490,7 +1512,7 @@ func (c *Ctx) GenerateKey(sh SessionHandle, m []*Mechanism, temp []*Attribute) (
 	return 0, e1
 }
 
-/* GenerateKeyPair generates a public-key/private-key pair creating new key objects. */
+// GenerateKeyPair generates a public-key/private-key pair creating new key objects.
 func (c *Ctx) GenerateKeyPair(sh SessionHandle, m []*Mechanism, public, private []*Attribute) (ObjectHandle, ObjectHandle, error) {
 	var (
 		pubkey  C.CK_OBJECT_HANDLE
@@ -1500,7 +1522,7 @@ func (c *Ctx) GenerateKeyPair(sh SessionHandle, m []*Mechanism, public, private 
 	defer pubarena.Free()
 	privarena, priv, privcount := cAttributeList(private)
 	defer privarena.Free()
-	mecharena, mech, _ := cMechanismList(m)
+	mecharena, mech := cMechanism(m)
 	defer mecharena.Free()
 	e := C.GenerateKeyPair(c.ctx, C.CK_SESSION_HANDLE(sh), mech, pub, pubcount, priv, privcount, C.CK_OBJECT_HANDLE_PTR(&pubkey), C.CK_OBJECT_HANDLE_PTR(&privkey))
 	e1 := toError(e)
@@ -1510,13 +1532,13 @@ func (c *Ctx) GenerateKeyPair(sh SessionHandle, m []*Mechanism, public, private 
 	return 0, 0, e1
 }
 
-/* WrapKey wraps (i.e., encrypts) a key. */
+// WrapKey wraps (i.e., encrypts) a key.
 func (c *Ctx) WrapKey(sh SessionHandle, m []*Mechanism, wrappingkey, key ObjectHandle) ([]byte, error) {
 	var (
 		wrappedkey    C.CK_BYTE_PTR
 		wrappedkeylen C.CK_ULONG
 	)
-	arena, mech, _ := cMechanismList(m)
+	arena, mech := cMechanism(m)
 	defer arena.Free()
 	e := C.WrapKey(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(wrappingkey), C.CK_OBJECT_HANDLE(key), &wrappedkey, &wrappedkeylen)
 	if toError(e) != nil {
@@ -1527,12 +1549,12 @@ func (c *Ctx) WrapKey(sh SessionHandle, m []*Mechanism, wrappingkey, key ObjectH
 	return h, nil
 }
 
-/* UnwrapKey unwraps (decrypts) a wrapped key, creating a new key object. */
+// UnwrapKey unwraps (decrypts) a wrapped key, creating a new key object.
 func (c *Ctx) UnwrapKey(sh SessionHandle, m []*Mechanism, unwrappingkey ObjectHandle, wrappedkey []byte, a []*Attribute) (ObjectHandle, error) {
 	var key C.CK_OBJECT_HANDLE
 	attrarena, ac, aclen := cAttributeList(a)
 	defer attrarena.Free()
-	mecharena, mech, _ := cMechanismList(m)
+	mecharena, mech := cMechanism(m)
 	defer mecharena.Free()
 	e := C.UnwrapKey(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(unwrappingkey), C.CK_BYTE_PTR(unsafe.Pointer(&wrappedkey[0])), C.CK_ULONG(len(wrappedkey)), ac, aclen, &key)
 	return ObjectHandle(key), toError(e)
@@ -1543,7 +1565,7 @@ func (c *Ctx) DeriveKey(sh SessionHandle, m []*Mechanism, basekey ObjectHandle, 
 	var key C.CK_OBJECT_HANDLE
 	attrarena, ac, aclen := cAttributeList(a)
 	defer attrarena.Free()
-	mecharena, mech, _ := cMechanismList(m)
+	mecharena, mech := cMechanism(m)
 	defer mecharena.Free()
 	e := C.DeriveKey(c.ctx, C.CK_SESSION_HANDLE(sh), mech, C.CK_OBJECT_HANDLE(basekey), ac, aclen, &key)
 	return ObjectHandle(key), toError(e)
@@ -1556,7 +1578,7 @@ func (c *Ctx) SeedRandom(sh SessionHandle, seed []byte) error {
 	return toError(e)
 }
 
-/* GenerateRandom generates random data. */
+// GenerateRandom generates random data.
 func (c *Ctx) GenerateRandom(sh SessionHandle, length int) ([]byte, error) {
 	var rand C.CK_BYTE_PTR
 	e := C.GenerateRandom(c.ctx, C.CK_SESSION_HANDLE(sh), &rand, C.CK_ULONG(length))

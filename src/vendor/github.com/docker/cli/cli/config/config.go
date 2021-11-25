@@ -24,12 +24,12 @@ const (
 )
 
 var (
-	initConfigDir sync.Once
+	initConfigDir = new(sync.Once)
 	configDir     string
 	homeDir       string
 )
 
-// resetHomeDir is used in testing to resets the "homeDir" package variable to
+// resetHomeDir is used in testing to reset the "homeDir" package variable to
 // force re-lookup of the home directory between tests.
 func resetHomeDir() {
 	homeDir = ""
@@ -40,6 +40,13 @@ func getHomeDir() string {
 		homeDir = homedir.Get()
 	}
 	return homeDir
+}
+
+// resetConfigDir is used in testing to reset the "configDir" package variable
+// and its sync.Once to force re-lookup between tests.
+func resetConfigDir() {
+	configDir = ""
+	initConfigDir = new(sync.Once)
 }
 
 func setConfigDir() {
@@ -97,10 +104,15 @@ func LoadFromReader(configData io.Reader) (*configfile.ConfigFile, error) {
 	return &configFile, err
 }
 
+// TODO remove this temporary hack, which is used to warn about the deprecated ~/.dockercfg file
+var printLegacyFileWarning bool
+
 // Load reads the configuration files in the given directory, and sets up
 // the auth config information and returns values.
 // FIXME: use the internal golang config parser
 func Load(configDir string) (*configfile.ConfigFile, error) {
+	printLegacyFileWarning = false
+
 	if configDir == "" {
 		configDir = Dir()
 	}
@@ -125,6 +137,7 @@ func Load(configDir string) (*configfile.ConfigFile, error) {
 	// Can't find latest config file so check for the old one
 	filename = filepath.Join(getHomeDir(), oldConfigfile)
 	if file, err := os.Open(filename); err == nil {
+		printLegacyFileWarning = true
 		defer file.Close()
 		if err := configFile.LegacyLoadFromReader(file); err != nil {
 			return configFile, errors.Wrap(err, filename)
@@ -139,6 +152,9 @@ func LoadDefaultConfigFile(stderr io.Writer) *configfile.ConfigFile {
 	configFile, err := Load(Dir())
 	if err != nil {
 		fmt.Fprintf(stderr, "WARNING: Error loading config file: %v\n", err)
+	}
+	if printLegacyFileWarning {
+		_, _ = fmt.Fprintln(stderr, "WARNING: Support for the legacy ~/.dockercfg configuration file and file-format is deprecated and will be removed in an upcoming release")
 	}
 	if !configFile.ContainsAuth() {
 		configFile.CredentialsStore = credentials.DetectDefaultStore(configFile.CredentialsStore)

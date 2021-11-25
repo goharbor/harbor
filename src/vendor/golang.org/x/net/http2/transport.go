@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"net/textproto"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -130,11 +129,6 @@ type Transport struct {
 	// if a response to Ping is not received.
 	// Defaults to 15s.
 	PingTimeout time.Duration
-
-	// WriteByteTimeout is the timeout after which the connection will be
-	// closed no data can be written to it. The timeout begins when data is
-	// available to write, and is extended whenever any bytes are written.
-	WriteByteTimeout time.Duration
 
 	// CountError, if non-nil, is called on HTTP/2 transport errors.
 	// It's intended to increment a metric for monitoring, such
@@ -399,31 +393,17 @@ func (cs *clientStream) abortRequestBodyWrite() {
 }
 
 type stickyErrWriter struct {
-	conn    net.Conn
-	timeout time.Duration
-	err     *error
+	w   io.Writer
+	err *error
 }
 
 func (sew stickyErrWriter) Write(p []byte) (n int, err error) {
 	if *sew.err != nil {
 		return 0, *sew.err
 	}
-	for {
-		if sew.timeout != 0 {
-			sew.conn.SetWriteDeadline(time.Now().Add(sew.timeout))
-		}
-		nn, err := sew.conn.Write(p[n:])
-		n += nn
-		if n < len(p) && nn > 0 && errors.Is(err, os.ErrDeadlineExceeded) {
-			// Keep extending the deadline so long as we're making progress.
-			continue
-		}
-		if sew.timeout != 0 {
-			sew.conn.SetWriteDeadline(time.Time{})
-		}
-		*sew.err = err
-		return n, err
-	}
+	n, err = sew.w.Write(p)
+	*sew.err = err
+	return
 }
 
 // noCachedConnError is the concrete type of ErrNoCachedConn, which
@@ -678,11 +658,7 @@ func (t *Transport) newClientConn(c net.Conn, singleUse bool) (*ClientConn, erro
 
 	// TODO: adjust this writer size to account for frame size +
 	// MTU + crypto/tls record padding.
-	cc.bw = bufio.NewWriter(stickyErrWriter{
-		conn:    c,
-		timeout: t.WriteByteTimeout,
-		err:     &cc.werr,
-	})
+	cc.bw = bufio.NewWriter(stickyErrWriter{c, &cc.werr})
 	cc.br = bufio.NewReader(c)
 	cc.fr = NewFramer(cc.bw, cc.br)
 	if t.CountError != nil {
@@ -1124,49 +1100,36 @@ func (cc *ClientConn) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 	}
 
-	handleResponseHeaders := func() (*http.Response, error) {
-		res := cs.res
-		if res.StatusCode > 299 {
-			// On error or status code 3xx, 4xx, 5xx, etc abort any
-			// ongoing write, assuming that the server doesn't care
-			// about our request body. If the server replied with 1xx or
-			// 2xx, however, then assume the server DOES potentially
-			// want our body (e.g. full-duplex streaming:
-			// golang.org/issue/13444). If it turns out the server
-			// doesn't, they'll RST_STREAM us soon enough. This is a
-			// heuristic to avoid adding knobs to Transport. Hopefully
-			// we can keep it.
-			cs.abortRequestBodyWrite()
-		}
-		res.Request = req
-		res.TLS = cc.tlsState
-		if res.Body == noBody && actualContentLength(req) == 0 {
-			// If there isn't a request or response body still being
-			// written, then wait for the stream to be closed before
-			// RoundTrip returns.
-			if err := waitDone(); err != nil {
-				return nil, err
-			}
-		}
-		return res, nil
-	}
-
 	for {
 		select {
 		case <-cs.respHeaderRecv:
-			return handleResponseHeaders()
-		case <-cs.abort:
-			select {
-			case <-cs.respHeaderRecv:
-				// If both cs.respHeaderRecv and cs.abort are signaling,
-				// pick respHeaderRecv. The server probably wrote the
-				// response and immediately reset the stream.
-				// golang.org/issue/49645
-				return handleResponseHeaders()
-			default:
-				waitDone()
-				return nil, cs.abortErr
+			res := cs.res
+			if res.StatusCode > 299 {
+				// On error or status code 3xx, 4xx, 5xx, etc abort any
+				// ongoing write, assuming that the server doesn't care
+				// about our request body. If the server replied with 1xx or
+				// 2xx, however, then assume the server DOES potentially
+				// want our body (e.g. full-duplex streaming:
+				// golang.org/issue/13444). If it turns out the server
+				// doesn't, they'll RST_STREAM us soon enough. This is a
+				// heuristic to avoid adding knobs to Transport. Hopefully
+				// we can keep it.
+				cs.abortRequestBodyWrite()
 			}
+			res.Request = req
+			res.TLS = cc.tlsState
+			if res.Body == noBody && actualContentLength(req) == 0 {
+				// If there isn't a request or response body still being
+				// written, then wait for the stream to be closed before
+				// RoundTrip returns.
+				if err := waitDone(); err != nil {
+					return nil, err
+				}
+			}
+			return res, nil
+		case <-cs.abort:
+			waitDone()
+			return nil, cs.abortErr
 		case <-ctx.Done():
 			err := ctx.Err()
 			cs.abortStream(err)
@@ -1226,9 +1189,6 @@ func (cs *clientStream) writeRequest(req *http.Request) (err error) {
 		return err
 	}
 	cc.addStreamLocked(cs) // assigns stream ID
-	if isConnectionCloseRequest(req) {
-		cc.doNotReuse = true
-	}
 	cc.mu.Unlock()
 
 	// TODO(bradfitz): this is a copy of the logic in net/http. Unify somewhere?
@@ -1252,12 +1212,12 @@ func (cs *clientStream) writeRequest(req *http.Request) (err error) {
 	}
 
 	continueTimeout := cc.t.expectContinueTimeout()
-	if continueTimeout != 0 {
-		if !httpguts.HeaderValuesContainsToken(req.Header["Expect"], "100-continue") {
-			continueTimeout = 0
-		} else {
-			cs.on100 = make(chan struct{}, 1)
-		}
+	if continueTimeout != 0 &&
+		!httpguts.HeaderValuesContainsToken(
+			req.Header["Expect"],
+			"100-continue") {
+		continueTimeout = 0
+		cs.on100 = make(chan struct{}, 1)
 	}
 
 	// Past this point (where we send request headers), it is possible for
@@ -1326,7 +1286,6 @@ func (cs *clientStream) writeRequest(req *http.Request) (err error) {
 		case <-respHeaderTimer:
 			return errTimeout
 		case <-respHeaderRecv:
-			respHeaderRecv = nil
 			respHeaderTimer = nil // keep waiting for END_STREAM
 		case <-cs.abort:
 			return cs.abortErr
@@ -1436,6 +1395,7 @@ func (cs *clientStream) cleanupWriteRequest(err error) {
 	if cs.ID != 0 {
 		cc.forgetStreamID(cs.ID)
 	}
+	close(cs.donec)
 
 	cc.wmu.Lock()
 	werr := cc.werr
@@ -1443,8 +1403,6 @@ func (cs *clientStream) cleanupWriteRequest(err error) {
 	if werr != nil {
 		cc.Close()
 	}
-
-	close(cs.donec)
 }
 
 // awaitOpenSlotForStream waits until len(streams) < maxConcurrentStreams.
@@ -1580,19 +1538,11 @@ func (cs *clientStream) writeRequestBody(req *http.Request) (err error) {
 				return err
 			}
 		}
-		if err != nil {
-			cc.mu.Lock()
-			bodyClosed := cs.reqBodyClosed
-			cc.mu.Unlock()
-			switch {
-			case bodyClosed:
-				return errStopReqBodyWrite
-			case err == io.EOF:
-				sawEOF = true
-				err = nil
-			default:
-				return err
-			}
+		if err == io.EOF {
+			sawEOF = true
+			err = nil
+		} else if err != nil {
+			return err
 		}
 
 		remain := buf[:n]
@@ -2049,13 +1999,7 @@ func (rl *clientConnReadLoop) cleanup() {
 	}
 	cc.closed = true
 	for _, cs := range cc.streams {
-		select {
-		case <-cs.peerClosed:
-			// The server closed the stream before closing the conn,
-			// so no need to interrupt it.
-		default:
-			cs.abortStreamLocked(err)
-		}
+		cs.abortStreamLocked(err)
 	}
 	cc.cond.Broadcast()
 	cc.mu.Unlock()
@@ -2308,8 +2252,6 @@ func (rl *clientConnReadLoop) handleResponse(cs *clientStream, f *MetaHeadersFra
 	} else if len(clens) > 1 {
 		// TODO: care? unlike http/1, it won't mess up our framing, so it's
 		// more safe smuggling-wise to ignore.
-	} else if f.StreamEnded() && !cs.isHead {
-		res.ContentLength = 0
 	}
 
 	if cs.isHead {
@@ -2330,7 +2272,7 @@ func (rl *clientConnReadLoop) handleResponse(cs *clientStream, f *MetaHeadersFra
 	cs.bytesRemain = res.ContentLength
 	res.Body = transportResponseBody{cs}
 
-	if cs.requestedGzip && asciiEqualFold(res.Header.Get("Content-Encoding"), "gzip") {
+	if cs.requestedGzip && res.Header.Get("Content-Encoding") == "gzip" {
 		res.Header.Del("Content-Encoding")
 		res.Header.Del("Content-Length")
 		res.ContentLength = -1
@@ -2469,10 +2411,7 @@ func (b transportResponseBody) Close() error {
 	select {
 	case <-cs.donec:
 	case <-cs.ctx.Done():
-		// See golang/go#49366: The net/http package can cancel the
-		// request context after the response body is fully read.
-		// Don't treat this as an error.
-		return nil
+		return cs.ctx.Err()
 	case <-cs.reqCancel:
 		return errRequestCanceled
 	}
@@ -2596,12 +2535,6 @@ func (rl *clientConnReadLoop) endStream(cs *clientStream) {
 	// server.go's (*stream).endStream method.
 	if !cs.readClosed {
 		cs.readClosed = true
-		// Close cs.bufPipe and cs.peerClosed with cc.mu held to avoid a
-		// race condition: The caller can read io.EOF from Response.Body
-		// and close the body before we close cs.peerClosed, causing
-		// cleanupWriteRequest to send a RST_STREAM.
-		rl.cc.mu.Lock()
-		defer rl.cc.mu.Unlock()
 		cs.bufPipe.closeWithErrorAndCode(io.EOF, cs.copyTrailers)
 		close(cs.peerClosed)
 	}

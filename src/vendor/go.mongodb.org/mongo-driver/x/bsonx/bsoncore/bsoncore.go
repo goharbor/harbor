@@ -308,7 +308,7 @@ func BuildArrayElement(dst []byte, key string, values ...Value) []byte {
 
 // ReadArray will read an array from src. If there are not enough bytes it
 // will return false.
-func ReadArray(src []byte) (arr Document, rem []byte, ok bool) { return readLengthBytes(src) }
+func ReadArray(src []byte) (arr Array, rem []byte, ok bool) { return readLengthBytes(src) }
 
 // AppendBinary will append subtype and b to dst and return the extended buffer.
 func AppendBinary(dst []byte, subtype byte, b []byte) []byte {

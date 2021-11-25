@@ -17,12 +17,12 @@ package models
 import (
 	"context"
 	"fmt"
-	"github.com/astaxie/beego/orm"
-	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
-	"github.com/lib/pq"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/orm"
+	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
 
 const (
@@ -166,7 +166,7 @@ func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key stri
 		return qs
 	}
 
-	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = %s)", pq.QuoteLiteral(username)))
+	return qs.FilterRaw("owner_id", fmt.Sprintf("IN (SELECT user_id FROM harbor_user WHERE username = %s)", orm.QuoteLiteral(username)))
 }
 
 // FilterByMember returns orm.QuerySeter with member filter

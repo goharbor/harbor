@@ -1,3 +1,7 @@
+/* Fix retention_policy create_time, update_time for pgx driver */
+ALTER TABLE retention_policy ALTER COLUMN create_time TYPE TIMESTAMP WITHOUT TIME ZONE USING (current_date + create_time);
+ALTER TABLE retention_policy ALTER COLUMN update_time TYPE TIMESTAMP WITHOUT TIME ZONE USING (current_date + update_time);
+
 /* create table of accessory */
 CREATE TABLE IF NOT EXISTS artifact_accessory (
     id SERIAL PRIMARY KEY NOT NULL,

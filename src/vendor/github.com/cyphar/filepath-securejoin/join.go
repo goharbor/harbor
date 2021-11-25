@@ -12,20 +12,39 @@ package securejoin
 
 import (
 	"bytes"
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"github.com/pkg/errors"
 )
+
+// ErrSymlinkLoop is returned by SecureJoinVFS when too many symlinks have been
+// evaluated in attempting to securely join the two given paths.
+var ErrSymlinkLoop = errors.Wrap(syscall.ELOOP, "secure join")
 
 // IsNotExist tells you if err is an error that implies that either the path
 // accessed does not exist (or path components don't exist). This is
 // effectively a more broad version of os.IsNotExist.
 func IsNotExist(err error) bool {
+	// If it's a bone-fide ENOENT just bail.
+	if os.IsNotExist(errors.Cause(err)) {
+		return true
+	}
+
 	// Check that it's not actually an ENOTDIR, which in some cases is a more
 	// convoluted case of ENOENT (usually involving weird paths).
-	return errors.Is(err, os.ErrNotExist) || errors.Is(err, syscall.ENOTDIR) || errors.Is(err, syscall.ENOENT)
+	var errno error
+	switch err := errors.Cause(err).(type) {
+	case *os.PathError:
+		errno = err.Err
+	case *os.LinkError:
+		errno = err.Err
+	case *os.SyscallError:
+		errno = err.Err
+	}
+	return errno == syscall.ENOTDIR || errno == syscall.ENOENT
 }
 
 // SecureJoinVFS joins the two given path components (similar to Join) except
@@ -49,7 +68,7 @@ func SecureJoinVFS(root, unsafePath string, vfs VFS) (string, error) {
 	n := 0
 	for unsafePath != "" {
 		if n > 255 {
-			return "", &os.PathError{Op: "SecureJoin", Path: root + "/" + unsafePath, Err: syscall.ELOOP}
+			return "", ErrSymlinkLoop
 		}
 
 		// Next path component, p.

@@ -27,10 +27,11 @@ import (
 
 type MetaDaoTestSuite struct {
 	htesting.Suite
-	dao          MetaDAO
-	userID       int
-	username     string
-	deleteUserID int
+	dao            MetaDAO
+	userID         int
+	username       string
+	deleteUserID   int
+	deleteUsername string
 }
 
 func (suite *MetaDaoTestSuite) SetupSuite() {
@@ -38,10 +39,11 @@ func (suite *MetaDaoTestSuite) SetupSuite() {
 	suite.ClearSQLs = []string{}
 	suite.dao = NewMetaDao()
 	suite.userID = 1234
-	suite.deleteUserID = 2234
 	suite.username = "oidc_meta_testuser"
+	suite.deleteUserID = 2234
+	suite.deleteUsername = "2234"
 	suite.ExecSQL("INSERT INTO harbor_user (user_id, username,password,realname) VALUES(?,?,'test','test')", suite.userID, suite.username)
-	suite.ExecSQL("INSERT INTO harbor_user (user_id, username,password,realname) VALUES(?,?,'test','test')", suite.deleteUserID, suite.deleteUserID)
+	suite.ExecSQL("INSERT INTO harbor_user (user_id, username,password,realname) VALUES(?,?,'test','test')", suite.deleteUserID, suite.deleteUsername)
 	ctx := orm.Context()
 	_, err := suite.dao.Create(ctx, &models.OIDCUser{
 		UserID: suite.userID,
