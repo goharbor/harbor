@@ -186,4 +186,14 @@ const (
 	TraceOtelCompression = "trace_otel_compression"
 	TraceOtelInsecure    = "trace_otel_insecure"
 	TraceOtelTimeout     = "trace_otel_timeout"
+
+	//  These variables are temporary solution for issue: https://github.com/goharbor/harbor/issues/16039
+	//  When user disable the pull count/time/audit log, it will decrease the database access, especially in large concurrency pull scenarios.
+	// TODO: Once we have a complete solution, delete these variables.
+	// PullCountUpdateDisable indicate if pull count is disable for pull request.
+	PullCountUpdateDisable = "pull_count_update_disable"
+	// PullTimeUpdateDisable indicate if pull time is disable for pull request.
+	PullTimeUpdateDisable = "pull_time_update_disable"
+	// PullAuditLogDisable indicate if pull audit log is disable for pull request.
+	PullAuditLogDisable = "pull_audit_log_disable"
 )
