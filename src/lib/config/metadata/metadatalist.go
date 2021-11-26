@@ -162,5 +162,9 @@ var (
 
 		{Name: common.QuotaPerProjectEnable, Scope: UserScope, Group: QuotaGroup, EnvKey: "QUOTA_PER_PROJECT_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable quota per project`},
 		{Name: common.StoragePerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "STORAGE_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true, Description: `The storage quota per project`},
+
+		{Name: common.PullTimeUpdateDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_TIME_UPDATE_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull time is disable for pull request.`},
+		{Name: common.PullCountUpdateDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_COUNT_UPDATE_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull count is disable for pull request.`},
+		{Name: common.PullAuditLogDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_AUDIT_LOG_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull audit log is disable for pull request.`},
 	}
 )

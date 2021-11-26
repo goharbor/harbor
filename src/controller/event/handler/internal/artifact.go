@@ -16,6 +16,7 @@ package internal
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/config"
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -54,8 +55,12 @@ func (a *Handler) IsStateful() bool {
 }
 
 func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error {
-	go func() { a.updatePullTime(ctx, event) }()
-	go func() { a.addPullCount(ctx, event) }()
+	if !config.PullTimeUpdateDisable(ctx) {
+		go func() { a.updatePullTime(ctx, event) }()
+	}
+	if !config.PullCountUpdateDisable(ctx) {
+		go func() { a.addPullCount(ctx, event) }()
+	}
 	return nil
 }
 
