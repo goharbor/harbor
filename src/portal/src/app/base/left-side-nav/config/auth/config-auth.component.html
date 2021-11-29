@@ -443,9 +443,9 @@
 </form>
 <div>
     <button type="button" id="config_auth_save" class="btn btn-primary" (click)="save()"
-        [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
+        [disabled]="!isValid() || !hasChanges() || inProcess()">{{'BUTTON.SAVE' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()"
-        [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
+        [disabled]="!isValid() || !hasChanges() || inProcess()">{{'BUTTON.CANCEL' | translate}}</button>
     <button type="button" id="ping-test" class="btn btn-outline" (click)="pingTestServer()" *ngIf="showTestingServerBtn"
         [disabled]="!isConfigValidForTesting()">{{(showLdap?'BUTTON.TEST_LDAP':'BUTTON.TEST_OIDC') | translate}}</button>
     <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideTestingSpinner"></span>
