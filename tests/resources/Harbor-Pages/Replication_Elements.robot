@@ -62,11 +62,16 @@ ${provider_selector}  //*[@id='adapter']
 ${replication_mode_radio_push}  //clr-main-container//hbr-create-edit-rule//label[contains(.,'Push-based')]
 ${replication_mode_radio_pull}  //clr-main-container//hbr-create-edit-rule//label[contains(.,'Pull-based')]
 ${filter_name_id}  //input[@id='filter_name']
+${filter_tag_model_select}  //div[@class='filterSelect ng-star-inserted'][2]//select
 ${filter_tag_id}  //input[@id='filter_tag']
+${filter_label_button}  //div[@class='filterSelect ng-star-inserted'][3]//button
+${filter_label_model_select}  //div[@class='filterSelect ng-star-inserted'][3]//select
 ${rule_resource_selector}  //*[@id='select_resource']
 ${trigger_mode_selector}  //*[@id='ruleTrigger']
 ${dest_namespace_xpath}  //*[@id='dest_namespace']
 ${new_replication_rule_id}  //*[@id='new_replication_rule_id']
+${bandwidth_input}  //*[@id='speed']
+${bandwidth_unit_select}  //*[@id='speed_unit']
 
 ${registry_edit_btn}  //button[contains(.,'Edit')]
 ${registry_del_btn}   //button[contains(.,'Delete')]
