@@ -60,7 +60,11 @@ sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="incl
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env
 # TODO This is a temporary solution to core private_key
-sudo openssl rsa -in /data/secret/core/private_key.pem -out /data/secret/core/private_key.pem
+# sudo openssl rsa -in /data/secret/core/private_key.pem -out /data/secret/core/private_key.pem
+
+echo 'openssl version'
+openssl version
+
 sudo make start
 
 # waiting 5 minutes to start
