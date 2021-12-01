@@ -11,68 +11,60 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, SimpleChanges, OnChanges, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Subscription } from "rxjs";
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ConfigurationService } from '../../../../services/config.service';
-import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { SystemInfoService } from "../../../../shared/services";
-import { clone, isEmpty, getChanges as getChangesFunc } from "../../../../shared/units/utils";
+import { isEmpty, getChanges as getChangesFunc } from "../../../../shared/units/utils";
 import { CONFIG_AUTH_MODE } from "../../../../shared/entities/shared.const";
 import { errorHandler } from "../../../../shared/units/shared.utils";
 import { Configuration } from "../config";
 import { finalize } from "rxjs/operators";
-const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
+import { ConfigService } from "../config.service";
 
 @Component({
     selector: 'config-auth',
     templateUrl: 'config-auth.component.html',
     styleUrls: ['./config-auth.component.scss', '../config.component.scss']
 })
-export class ConfigurationAuthComponent implements OnChanges, OnInit {
-    changeSub: Subscription;
+export class ConfigurationAuthComponent implements  OnInit {
     testingOnGoing = false;
     onGoing = false;
     redirectUrl: string;
-    // tslint:disable-next-line:no-input-rename
-    @Input('allConfig') currentConfig: Configuration = new Configuration();
-    private originalConfig: Configuration;
     @ViewChild('authConfigFrom') authForm: NgForm;
-    @Output() refreshAllconfig = new EventEmitter<any>();
+
+    get currentConfig(): Configuration {
+        return this.conf.getConfig();
+    }
+
+    set currentConfig(c: Configuration) {
+        this.conf.setConfig(c);
+    }
 
     constructor(
         private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
         private appConfigService: AppConfigService,
-        private confirmMessageHandler: ConfirmMessageHandler,
+        private conf: ConfigService,
         private systemInfo: SystemInfoService,
-        private errorHandlerEntity: ErrorHandler,
     ) {
     }
     ngOnInit() {
+        this.conf.resetConfig();
         this.getSystemInfo();
     }
     getSystemInfo(): void {
         this.systemInfo.getSystemInfo()
             .subscribe(systemInfo => (this.redirectUrl = systemInfo.external_url)
-                , error => this.errorHandlerEntity.error(error));
+                , error => this.msgHandler.error(error));
     }
     get checkable() {
         return this.currentConfig &&
             this.currentConfig.self_registration &&
             this.currentConfig.self_registration.value === true;
     }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes && changes["currentConfig"]) {
-            this.originalConfig = clone(this.currentConfig);
-
-        }
-    }
-
     public get showLdap(): boolean {
         return this.currentConfig &&
             this.currentConfig.auth_mode &&
@@ -99,11 +91,15 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
         }
     }
 
-    public isValid(): boolean {
+    isValid(): boolean {
         return this.authForm && this.authForm.valid;
     }
 
-    public hasChanges(): boolean {
+    inProcess(): boolean {
+        return this.onGoing || this.conf.getLoadingConfigStatus();
+    }
+
+    hasChanges(): boolean {
         return !isEmpty(this.getChanges());
     }
 
@@ -168,7 +164,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
                     this.msgHandler.showSuccess('CONFIG.TEST_OIDC_SUCCESS');
                 }, error => {
                     this.testingOnGoing = false;
-                    this.errorHandlerEntity.error(error);
+                    this.msgHandler.error(error);
                 });
         }
     }
@@ -180,12 +176,15 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     }
 
     public isConfigValidForTesting(): boolean {
+        if (!this.authForm || !this.currentConfig) {
+            return true;
+        }
         return this.isValid() &&
-            !this.testingOnGoing;
+            !this.testingOnGoing && !this.inProcess();
     }
 
     public getChanges() {
-        let allChanges = getChangesFunc(this.originalConfig, this.currentConfig);
+        let allChanges = getChangesFunc(this.conf.getOriginalConfig(), this.currentConfig);
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')
@@ -235,7 +234,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
             this.configService.saveConfiguration(changes)
                 .subscribe(response => {
                     this.onGoing = false;
-                    this.refreshAllconfig.emit();
+                    this.conf.updateConfig();
                     // Reload bootstrap option
                     this.appConfigService.load().subscribe(() => { }
                         , error => console.error('Failed to reload bootstrap option with error: ', error));
@@ -259,7 +258,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     public cancel(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
-            this.confirmMessageHandler.confirmUnsavedChanges(changes);
+            this.conf.confirmUnsavedChanges(changes);
         } else {
             // Invalid situation, should not come here
             console.error('Nothing changed');

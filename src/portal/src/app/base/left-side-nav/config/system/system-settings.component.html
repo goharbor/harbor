@@ -1,6 +1,5 @@
 <form #systemConfigFrom="ngForm" class="clr-form clr-form-horizontal">
     <section>
-        <label class="subtitle" *ngIf="showSubTitle">{{'CONFIG.SYSTEM' | translate}}</label>
         <clr-select-container>
             <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}
                 <clr-tooltip>
@@ -11,8 +10,8 @@
                 </clr-tooltip>
             </label>
             <select clrSelect id="proCreation" name="proCreation"
-                [(ngModel)]="systemSettings.project_creation_restriction.value"
-                [disabled]="disabled(systemSettings.project_creation_restriction)">
+                [(ngModel)]="currentConfig.project_creation_restriction.value"
+                [disabled]="disabled(currentConfig.project_creation_restriction)">
                 <option value="everyone">{{'CONFIG.PRO_CREATION_EVERYONE' | translate }}</option>
                 <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
             </select>
@@ -42,7 +41,7 @@
                 </clr-tooltip>
             </label>
             <input clrInput name="robotNamePrefix" type="text"
-                   [(ngModel)]="systemSettings.robot_name_prefix.value"
+                   [(ngModel)]="currentConfig.robot_name_prefix.value"
                    required
                    autocomplete="off"
                    id="robotNamePrefix" size="20" [disabled]="!robotNamePrefixEditable()" />
@@ -73,7 +72,7 @@
             </clr-tooltip>
             <a rel='noopener noreferrer' #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
         </label>
-        <clr-checkbox-container *ngIf="!withAdmiral">
+        <clr-checkbox-container>
             <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -83,8 +82,8 @@
                 </clr-tooltip>
             </label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" [disabled]="!systemSettings.read_only.editable"  clrCheckbox name="repoReadOnly" id="repoReadOnly"
-                    [ngModel]="systemSettings.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
+                <input type="checkbox" [disabled]="!currentConfig.read_only.editable"  clrCheckbox name="repoReadOnly" id="repoReadOnly"
+                    [ngModel]="currentConfig.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
 
@@ -162,7 +161,7 @@
                 </div>
             </div>
         </div>
-        <clr-checkbox-container *ngIf="!withAdmiral">
+        <clr-checkbox-container>
             <label for="webhookNotificationEnabled">{{'CONFIG.WEBHOOK_NOTIFICATION_ENABLED' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -173,9 +172,9 @@
             </label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox name="webhookNotificationEnabled" id="webhookNotificationEnabled"
-                    [ngModel]="systemSettings.notification_enable.value"
+                    [ngModel]="currentConfig.notification_enable.value"
                     (ngModelChange)="setWebhookNotificationEnabledValue($event)"
-                    [disabled]="!systemSettings.notification_enable.editable" />
+                    [disabled]="!currentConfig.notification_enable.editable" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
@@ -188,4 +187,3 @@
         [disabled]="(!isValid() || !hasChanges()) && (!hasAllowlistChanged) || inProgress">{{'BUTTON.CANCEL'
         | translate}}</button>
 </div>
-<confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>

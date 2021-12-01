@@ -15,16 +15,35 @@
 import { NgModule } from "@angular/core";
 import { SharedModule } from "../../../shared/shared.module";
 import { ConfigurationComponent } from "./config.component";
-import { ConfirmMessageHandler } from "./config.msg.utils";
 import { ConfigurationAuthComponent } from "./auth/config-auth.component";
 import { ConfigurationEmailComponent } from "./email/config-email.component";
 import { SystemSettingsComponent } from "./system/system-settings.component";
 import { RouterModule, Routes } from "@angular/router";
+import { ConfigService } from "./config.service";
 
 const routes: Routes = [
     {
         path: '',
-        component: ConfigurationComponent
+        component: ConfigurationComponent,
+        children: [
+            {
+                path: 'auth',
+                component: ConfigurationAuthComponent
+            },
+            {
+                path: 'email',
+                component: ConfigurationEmailComponent
+            },
+            {
+                path: 'setting',
+                component: SystemSettingsComponent
+            },
+            {
+                path: '',
+                redirectTo: 'auth',
+                pathMatch: 'full'
+            }
+        ]
     }
 ];
 @NgModule({
@@ -39,7 +58,7 @@ const routes: Routes = [
         SystemSettingsComponent
     ],
     providers: [
-        ConfirmMessageHandler,
+        ConfigService,
     ]
 })
 export class ConfigurationModule {
