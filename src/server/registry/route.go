@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/cosign"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/server/middleware/blob"
@@ -75,6 +76,7 @@ func RegisterRoutes() {
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
+		Middleware(cosign.CosignSignatureMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// blob head
