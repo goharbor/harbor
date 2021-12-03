@@ -1,0 +1,179 @@
+From 66cc2635880193ffb1226e3c790b36eef24cfd8b Mon Sep 17 00:00:00 2001
+From: scnace <scbizu@gmail.com>
+Date: Mon, 3 May 2021 15:09:44 +0800
+Subject: [PATCH 1/2] pkg/chartmuseum/server: add tests for cover duplicate
+ index entry cases
+
+Signed-off-by: scnace <scbizu@gmail.com>
+---
+ pkg/chartmuseum/server/multitenant/api.go     |  9 +++++----
+ .../server/multitenant/server_test.go         | 19 +++++++++++++++++++
+ 2 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/pkg/chartmuseum/server/multitenant/api.go b/pkg/chartmuseum/server/multitenant/api.go
+index afc2ab5c..2b03d5e3 100644
+--- a/pkg/chartmuseum/server/multitenant/api.go
++++ b/pkg/chartmuseum/server/multitenant/api.go
+@@ -95,15 +95,15 @@ func (server *MultiTenantServer) deleteChartVersion(log cm_logger.LoggingFn, rep
+ 	return nil
+ }
+ 
+-func (server *MultiTenantServer) uploadChartPackage(log cm_logger.LoggingFn, repo string, content []byte, force bool) (string, *HTTPError ){
++func (server *MultiTenantServer) uploadChartPackage(log cm_logger.LoggingFn, repo string, content []byte, force bool) (string, *HTTPError) {
+ 	filename, err := cm_repo.ChartPackageFilenameFromContent(content)
+ 	if err != nil {
+-		return filename,&HTTPError{http.StatusInternalServerError, err.Error()}
++		return filename, &HTTPError{http.StatusInternalServerError, err.Error()}
+ 	}
+ 
+ 	if pathutil.Base(filename) != filename {
+ 		// Name wants to break out of current directory
+-		return filename,&HTTPError{http.StatusBadRequest, fmt.Sprintf("%s is improperly formatted", filename)}
++		return filename, &HTTPError{http.StatusBadRequest, fmt.Sprintf("%s is improperly formatted", filename)}
+ 	}
+ 
+ 	if !server.AllowOverwrite && (!server.AllowForceOverwrite || !force) {
+@@ -139,7 +139,8 @@ func (server *MultiTenantServer) uploadChartPackage(log cm_logger.LoggingFn, rep
+ 	)
+ 	err = server.StorageBackend.PutObject(pathutil.Join(repo, filename), content)
+ 	if err != nil {
+-		return filename, &HTTPError{http.StatusInternalServerError, err.Error()}	}
++		return filename, &HTTPError{http.StatusInternalServerError, err.Error()}
++	}
+ 	return filename, nil
+ }
+ 
+diff --git a/pkg/chartmuseum/server/multitenant/server_test.go b/pkg/chartmuseum/server/multitenant/server_test.go
+index 13050e25..138364f8 100644
+--- a/pkg/chartmuseum/server/multitenant/server_test.go
++++ b/pkg/chartmuseum/server/multitenant/server_test.go
+@@ -339,6 +339,7 @@ func (suite *MultiTenantServerTestSuite) SetupSuite() {
+ 		AllowOverwrite:         true,
+ 		ChartPostFormFieldName: "chart",
+ 		ProvPostFormFieldName:  "prov",
++		CacheInterval:          time.Duration(time.Second),
+ 	})
+ 	suite.NotNil(server)
+ 	suite.Nil(err, "no error creating new overwrite server")
+@@ -627,6 +628,14 @@ func (suite *MultiTenantServerTestSuite) TestDisabledDeleteServer() {
+ 	suite.Equal(404, res.Status(), "404 DELETE /api/charts/mychart/0.1.0")
+ }
+ 
++func (suite *MultiTenantServerTestSuite) extractRepoEntryFromInternalCache(repo string) *cacheEntry {
++	local, ok := suite.OverwriteServer.InternalCacheStore[repo]
++	if ok {
++		return local
++	}
++	return nil
++}
++
+ func (suite *MultiTenantServerTestSuite) TestOverwriteServer() {
+ 	// Check if files can be overwritten
+ 	content, err := ioutil.ReadFile(testTarballPath)
+@@ -638,6 +647,16 @@ func (suite *MultiTenantServerTestSuite) TestOverwriteServer() {
+ 	res = suite.doRequest("overwrite", "POST", "/api/charts", body, "")
+ 	suite.Equal(201, res.Status(), "201 POST /api/charts")
+ 
++	{
++		// waiting for the emit event
++		// the event is transferred via a channel , here do a simple wait for not changing the original structure
++		// only for testing purpose
++		time.Sleep(time.Second)
++		// depth: 0
++		e := suite.extractRepoEntryFromInternalCache("")
++		suite.Equal(1, len(e.RepoIndex.Entries), "overwrite entries validation")
++	}
++
+ 	content, err = ioutil.ReadFile(testProvfilePath)
+ 	suite.Nil(err, "no error opening test provenance file")
+ 	body = bytes.NewBuffer(content)
+
+From cd2e286da8148a7c114cb45867bf5c7b09e29467 Mon Sep 17 00:00:00 2001
+From: scnace <scbizu@gmail.com>
+Date: Mon, 3 May 2021 15:42:00 +0800
+Subject: [PATCH 2/2] pkg/chartmuseum/server/multitenant: fix the bad action
+ type when upload package when overwrite option is set ,index entry addChart
+ should be updateChart under the overwrite cases.
+
+Signed-off-by: scnace <scbizu@gmail.com>
+---
+ pkg/chartmuseum/server/multitenant/api.go      | 18 +++++++++++++++---
+ pkg/chartmuseum/server/multitenant/handlers.go | 18 +++++++++++++++---
+ 2 files changed, 30 insertions(+), 6 deletions(-)
+
+diff --git a/pkg/chartmuseum/server/multitenant/api.go b/pkg/chartmuseum/server/multitenant/api.go
+index 2b03d5e3..902ab7c6 100644
+--- a/pkg/chartmuseum/server/multitenant/api.go
++++ b/pkg/chartmuseum/server/multitenant/api.go
+@@ -106,11 +106,18 @@ func (server *MultiTenantServer) uploadChartPackage(log cm_logger.LoggingFn, rep
+ 		return filename, &HTTPError{http.StatusBadRequest, fmt.Sprintf("%s is improperly formatted", filename)}
+ 	}
+ 
+-	if !server.AllowOverwrite && (!server.AllowForceOverwrite || !force) {
+-		_, err = server.StorageBackend.GetObject(pathutil.Join(repo, filename))
+-		if err == nil {
++	// we should ensure that whether chart is existed even if the `overwrite` option is set
++	// For `overwrite` option , here will increase one `storage.GetObject` than before ; others should be equalvarant with the previous version.
++	var found bool
++	_, err = server.StorageBackend.GetObject(pathutil.Join(repo, filename))
++	// found
++	if err == nil {
++		found = true
++		// For those no-overwrite servers, return the Conflict error.
++		if !server.AllowOverwrite && (!server.AllowForceOverwrite || !force) {
+ 			return filename, &HTTPError{http.StatusConflict, "file already exists"}
+ 		}
++		// continue with the `overwrite` servers
+ 	}
+ 
+ 	if server.EnforceSemver2 {
+@@ -141,6 +148,11 @@ func (server *MultiTenantServer) uploadChartPackage(log cm_logger.LoggingFn, rep
+ 	if err != nil {
+ 		return filename, &HTTPError{http.StatusInternalServerError, err.Error()}
+ 	}
++	if found {
++		// here is a fake conflict error for outside call
++		// In order to not add another return `bool` check (API Compatibility)
++		return filename, &HTTPError{http.StatusConflict, ""}
++	}
+ 	return filename, nil
+ }
+ 
+diff --git a/pkg/chartmuseum/server/multitenant/handlers.go b/pkg/chartmuseum/server/multitenant/handlers.go
+index 3e1f0602..c6c31b01 100644
+--- a/pkg/chartmuseum/server/multitenant/handlers.go
++++ b/pkg/chartmuseum/server/multitenant/handlers.go
+@@ -242,10 +242,22 @@ func (server *MultiTenantServer) postPackageRequestHandler(c *gin.Context) {
+ 	}
+ 	log := server.Logger.ContextLoggingFn(c)
+ 	_, force := c.GetQuery("force")
++	action := addChart
+ 	filename, err := server.uploadChartPackage(log, repo, content, force)
+ 	if err != nil {
+-		c.JSON(err.Status, gin.H{"error": err.Message})
+-		return
++		// here should check both err.Status and err.Message
++		// The http.StatusConflict status means the chart is existed but overwrite is not sed OR chart is existed and overwrite is set
++		// err.Status == http.StatusConflict only denotes for chart is existed now.
++		if err.Status == http.StatusConflict {
++			if err.Message != "" {
++				c.JSON(err.Status, gin.H{"error": err.Message})
++				return
++			}
++			action = updateChart
++		} else {
++			c.JSON(err.Status, gin.H{"error": err.Message})
++			return
++		}
+ 	}
+ 
+ 	chart, chartErr := cm_repo.ChartVersionFromStorageObject(cm_storage.Object{
+@@ -255,7 +267,7 @@ func (server *MultiTenantServer) postPackageRequestHandler(c *gin.Context) {
+ 	if chartErr != nil {
+ 		log(cm_logger.ErrorLevel, "cannot get chart from content", zap.Error(chartErr), zap.Binary("content", content))
+ 	}
+-	server.emitEvent(c, repo, addChart, chart)
++	server.emitEvent(c, repo, action, chart)
+ 
+ 	c.JSON(201, objectSavedResponse)
+ }
