@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -138,6 +137,10 @@ type ManifestList struct {
 	ContentType string
 }
 
+// UseLocalManifest check if these manifest could be found in local registry,
+// the return error should be nil when it is not found in local and need to delegate to remote registry
+// the return error should be NotFoundError when it is not found in remote registry
+// the error will be captured by framework and return 404 to client
 func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error) {
 	a, err := c.local.GetManifest(ctx, art)
 	if err != nil {
@@ -161,24 +164,37 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	}
 
 	var content []byte
-	if c.cache != nil {
-		err = c.cache.Fetch(getManifestListKey(art.Repository, string(desc.Digest)), &content)
-		if err == nil {
-			log.Debugf("Get the manifest list with key=cache:%v", getManifestListKey(art.Repository, string(desc.Digest)))
-			return true, &ManifestList{content, string(desc.Digest), manifestlist.MediaTypeManifestList}, nil
-		}
+	var contentType string
+	if c.cache == nil {
+		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
+	}
+
+	err = c.cache.Fetch(manifestListKey(art.Repository, string(desc.Digest)), &content)
+	if err != nil {
 		if err == cache.ErrNotFound {
-			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", getManifestListKey(art.Repository, string(desc.Digest)))
+			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
 		} else {
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)
 		}
+		return a != nil && string(desc.Digest) == a.Digest, nil, nil
 	}
-	return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
+	err = c.cache.Fetch(manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
+	if err != nil {
+		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
+		return false, nil, nil
+	}
+	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
+	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
+
 }
 
-func getManifestListKey(repo, dig string) string {
+func manifestListKey(repo, dig string) string {
 	// actual redis key format is cache:manifestlist:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + dig
+}
+
+func manifestListContentTypeKey(rep, dig string) string {
+	return manifestListKey(rep, dig) + ":contenttype"
 }
 
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
@@ -279,7 +295,7 @@ func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string,
 			return
 		}
 	}
-	h.CacheContent(ctx, remoteRepo, man, art, r)
+	h.CacheContent(ctx, remoteRepo, man, art, r, contType)
 }
 
 // getRemoteRepo get the remote repository name, used in proxy cache
