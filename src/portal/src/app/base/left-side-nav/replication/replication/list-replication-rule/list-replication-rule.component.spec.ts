@@ -7,7 +7,6 @@ import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { ReplicationService } from '../../../../../shared/services';
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import { of } from 'rxjs';
-import { CURRENT_BASE_HREF } from "../../../../../shared/units/utils";
 import { delay } from "rxjs/operators";
 import {HttpHeaders, HttpResponse} from "@angular/common/http";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
@@ -26,7 +25,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
             "src_namespaces": ["name1", "name2"],
             "src_registry": {id: 3},
             "enabled": true,
-            "override": true
+            "override": true,
+            "speed": -1
         },
         {
             "id": 2,
@@ -39,7 +39,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
             "src_namespaces": ["name1", "name2"],
             "dest_registry": {id: 3},
             "enabled": true,
-            "override": true
+            "override": true,
+            "speed": -1
         },
     ];
 

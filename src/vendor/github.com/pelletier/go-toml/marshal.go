@@ -68,6 +68,9 @@ const (
 
 var timeType = reflect.TypeOf(time.Time{})
 var marshalerType = reflect.TypeOf(new(Marshaler)).Elem()
+var localDateType = reflect.TypeOf(LocalDate{})
+var localTimeType = reflect.TypeOf(LocalTime{})
+var localDateTimeType = reflect.TypeOf(LocalDateTime{})
 
 // Check if the given marshal type maps to a Tree primitive
 func isPrimitive(mtype reflect.Type) bool {
@@ -85,29 +88,31 @@ func isPrimitive(mtype reflect.Type) bool {
 	case reflect.String:
 		return true
 	case reflect.Struct:
-		return mtype == timeType || isCustomMarshaler(mtype)
+		return mtype == timeType || mtype == localDateType || mtype == localDateTimeType || mtype == localTimeType || isCustomMarshaler(mtype)
 	default:
 		return false
 	}
 }
 
-// Check if the given marshal type maps to a Tree slice
-func isTreeSlice(mtype reflect.Type) bool {
-	switch mtype.Kind() {
-	case reflect.Slice:
-		return !isOtherSlice(mtype)
-	default:
-		return false
-	}
-}
-
-// Check if the given marshal type maps to a non-Tree slice
-func isOtherSlice(mtype reflect.Type) bool {
+// Check if the given marshal type maps to a Tree slice or array
+func isTreeSequence(mtype reflect.Type) bool {
 	switch mtype.Kind() {
 	case reflect.Ptr:
-		return isOtherSlice(mtype.Elem())
-	case reflect.Slice:
-		return isPrimitive(mtype.Elem()) || isOtherSlice(mtype.Elem())
+		return isTreeSequence(mtype.Elem())
+	case reflect.Slice, reflect.Array:
+		return isTree(mtype.Elem())
+	default:
+		return false
+	}
+}
+
+// Check if the given marshal type maps to a non-Tree slice or array
+func isOtherSequence(mtype reflect.Type) bool {
+	switch mtype.Kind() {
+	case reflect.Ptr:
+		return isOtherSequence(mtype.Elem())
+	case reflect.Slice, reflect.Array:
+		return !isTreeSequence(mtype)
 	default:
 		return false
 	}
@@ -116,6 +121,8 @@ func isOtherSlice(mtype reflect.Type) bool {
 // Check if the given marshal type maps to a Tree
 func isTree(mtype reflect.Type) bool {
 	switch mtype.Kind() {
+	case reflect.Ptr:
+		return isTree(mtype.Elem())
 	case reflect.Map:
 		return true
 	case reflect.Struct:
@@ -170,7 +177,7 @@ Tree primitive types and corresponding marshal types:
   float64    float32, float64, pointers to same
   string     string, pointers to same
   bool       bool, pointers to same
-  time.Time  time.Time{}, pointers to same
+  time.LocalTime  time.LocalTime{}, pointers to same
 
 For additional flexibility, use the Encoder API.
 */
@@ -295,7 +302,7 @@ func (e *Encoder) marshal(v interface{}) ([]byte, error) {
 	}
 
 	var buf bytes.Buffer
-	_, err = t.writeToOrdered(&buf, "", "", 0, e.arraysOneElementPerLine, e.order)
+	_, err = t.writeToOrdered(&buf, "", "", 0, e.arraysOneElementPerLine, e.order, false)
 
 	return buf.Bytes(), err
 }
@@ -313,20 +320,25 @@ func (e *Encoder) valueToTree(mtype reflect.Type, mval reflect.Value) (*Tree, er
 	tval := e.nextTree()
 	switch mtype.Kind() {
 	case reflect.Struct:
-		for i := 0; i < mtype.NumField(); i++ {
-			mtypef, mvalf := mtype.Field(i), mval.Field(i)
-			opts := tomlOptions(mtypef, e.annotation)
-			if opts.include && (!opts.omitempty || !isZero(mvalf)) {
-				val, err := e.valueToToml(mtypef.Type, mvalf)
-				if err != nil {
-					return nil, err
-				}
+		switch mval.Interface().(type) {
+		case Tree:
+			reflect.ValueOf(tval).Elem().Set(mval)
+		default:
+			for i := 0; i < mtype.NumField(); i++ {
+				mtypef, mvalf := mtype.Field(i), mval.Field(i)
+				opts := tomlOptions(mtypef, e.annotation)
+				if opts.include && ((mtypef.Type.Kind() != reflect.Interface && !opts.omitempty) || !isZero(mvalf)) {
+					val, err := e.valueToToml(mtypef.Type, mvalf)
+					if err != nil {
+						return nil, err
+					}
 
-				tval.SetWithOptions(opts.name, SetOptions{
-					Comment:   opts.comment,
-					Commented: opts.commented,
-					Multiline: opts.multiline,
-				}, val)
+					tval.SetWithOptions(opts.name, SetOptions{
+						Comment:   opts.comment,
+						Commented: opts.commented,
+						Multiline: opts.multiline,
+					}, val)
+				}
 			}
 		}
 	case reflect.Map:
@@ -351,12 +363,15 @@ func (e *Encoder) valueToTree(mtype reflect.Type, mval reflect.Value) (*Tree, er
 		}
 		for _, key := range keys {
 			mvalf := mval.MapIndex(key)
+			if (mtype.Elem().Kind() == reflect.Ptr || mtype.Elem().Kind() == reflect.Interface) && mvalf.IsNil() {
+				continue
+			}
 			val, err := e.valueToToml(mtype.Elem(), mvalf)
 			if err != nil {
 				return nil, err
 			}
 			if e.quoteMapKeys {
-				keyStr, err := tomlValueStringRepresentation(key.String(), "", e.arraysOneElementPerLine)
+				keyStr, err := tomlValueStringRepresentation(key.String(), "", "", e.arraysOneElementPerLine)
 				if err != nil {
 					return nil, err
 				}
@@ -384,6 +399,9 @@ func (e *Encoder) valueToTreeSlice(mtype reflect.Type, mval reflect.Value) ([]*T
 
 // Convert given marshal slice to slice of toml values
 func (e *Encoder) valueToOtherSlice(mtype reflect.Type, mval reflect.Value) (interface{}, error) {
+	if mtype.Elem().Kind() == reflect.Interface {
+		return nil, fmt.Errorf("marshal can't handle []interface{}")
+	}
 	tval := make([]interface{}, mval.Len(), mval.Len())
 	for i := 0; i < mval.Len(); i++ {
 		val, err := e.valueToToml(mtype.Elem(), mval.Index(i))
@@ -401,14 +419,17 @@ func (e *Encoder) valueToToml(mtype reflect.Type, mval reflect.Value) (interface
 	if mtype.Kind() == reflect.Ptr {
 		return e.valueToToml(mtype.Elem(), mval.Elem())
 	}
+	if mtype.Kind() == reflect.Interface {
+		return e.valueToToml(mval.Elem().Type(), mval.Elem())
+	}
 	switch {
 	case isCustomMarshaler(mtype):
 		return callCustomMarshaler(mval)
 	case isTree(mtype):
 		return e.valueToTree(mtype, mval)
-	case isTreeSlice(mtype):
+	case isTreeSequence(mtype):
 		return e.valueToTreeSlice(mtype, mval)
-	case isOtherSlice(mtype):
+	case isOtherSequence(mtype):
 		return e.valueToOtherSlice(mtype, mval)
 	default:
 		switch mtype.Kind() {
@@ -426,7 +447,7 @@ func (e *Encoder) valueToToml(mtype reflect.Type, mval reflect.Value) (interface
 		case reflect.String:
 			return mval.String(), nil
 		case reflect.Struct:
-			return mval.Interface().(time.Time), nil
+			return mval.Interface(), nil
 		default:
 			return nil, fmt.Errorf("Marshal can't handle %v(%v)", mtype, mtype.Kind())
 		}
@@ -445,8 +466,11 @@ func (t *Tree) Unmarshal(v interface{}) error {
 // See Marshal() documentation for types mapping table.
 func (t *Tree) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
-	err := NewEncoder(&buf).Encode(t)
-	return buf.Bytes(), err
+	_, err := t.WriteTo(&buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 // Unmarshal parses the TOML-encoded data and stores the result in the value
@@ -526,7 +550,9 @@ func (d *Decoder) unmarshal(v interface{}) error {
 		return errors.New("only a pointer to struct or map can be unmarshaled from TOML")
 	}
 
-	sval, err := d.valueFromTree(elem, d.tval)
+	vv := reflect.ValueOf(v).Elem()
+
+	sval, err := d.valueFromTree(elem, d.tval, &vv)
 	if err != nil {
 		return err
 	}
@@ -534,20 +560,32 @@ func (d *Decoder) unmarshal(v interface{}) error {
 	return nil
 }
 
-// Convert toml tree to marshal struct or map, using marshal type
-func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, error) {
+// Convert toml tree to marshal struct or map, using marshal type. When mval1
+// is non-nil, merge fields into the given value instead of allocating a new one.
+func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree, mval1 *reflect.Value) (reflect.Value, error) {
 	if mtype.Kind() == reflect.Ptr {
-		return d.unwrapPointer(mtype, tval)
+		return d.unwrapPointer(mtype, tval, mval1)
 	}
 	var mval reflect.Value
 	switch mtype.Kind() {
 	case reflect.Struct:
-		mval = reflect.New(mtype).Elem()
-		for i := 0; i < mtype.NumField(); i++ {
-			mtypef := mtype.Field(i)
-			an := annotation{tag: d.tagName}
-			opts := tomlOptions(mtypef, an)
-			if opts.include {
+		if mval1 != nil {
+			mval = *mval1
+		} else {
+			mval = reflect.New(mtype).Elem()
+		}
+
+		switch mval.Interface().(type) {
+		case Tree:
+			mval.Set(reflect.ValueOf(tval).Elem())
+		default:
+			for i := 0; i < mtype.NumField(); i++ {
+				mtypef := mtype.Field(i)
+				an := annotation{tag: d.tagName}
+				opts := tomlOptions(mtypef, an)
+				if !opts.include {
+					continue
+				}
 				baseKey := opts.name
 				keysToTry := []string{
 					baseKey,
@@ -557,19 +595,22 @@ func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, 
 				}
 
 				found := false
-				for _, key := range keysToTry {
-					exists := tval.Has(key)
-					if !exists {
-						continue
+				if tval != nil {
+					for _, key := range keysToTry {
+						exists := tval.Has(key)
+						if !exists {
+							continue
+						}
+						val := tval.Get(key)
+						fval := mval.Field(i)
+						mvalf, err := d.valueFromToml(mtypef.Type, val, &fval)
+						if err != nil {
+							return mval, formatError(err, tval.GetPosition(key))
+						}
+						mval.Field(i).Set(mvalf)
+						found = true
+						break
 					}
-					val := tval.Get(key)
-					mvalf, err := d.valueFromToml(mtypef.Type, val)
-					if err != nil {
-						return mval, formatError(err, tval.GetPosition(key))
-					}
-					mval.Field(i).Set(mvalf)
-					found = true
-					break
 				}
 
 				if !found && opts.defaultValue != "" {
@@ -604,6 +645,19 @@ func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, 
 					}
 					mval.Field(i).Set(reflect.ValueOf(val))
 				}
+
+				// save the old behavior above and try to check structs
+				if !found && opts.defaultValue == "" && mtypef.Type.Kind() == reflect.Struct {
+					tmpTval := tval
+					if !mtypef.Anonymous {
+						tmpTval = nil
+					}
+					v, err := d.valueFromTree(mtypef.Type, tmpTval, nil)
+					if err != nil {
+						return v, err
+					}
+					mval.Field(i).Set(v)
+				}
 			}
 		}
 	case reflect.Map:
@@ -611,7 +665,7 @@ func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, 
 		for _, key := range tval.Keys() {
 			// TODO: path splits key
 			val := tval.GetPath([]string{key})
-			mvalf, err := d.valueFromToml(mtype.Elem(), val)
+			mvalf, err := d.valueFromToml(mtype.Elem(), val, nil)
 			if err != nil {
 				return mval, formatError(err, tval.GetPosition(key))
 			}
@@ -625,7 +679,7 @@ func (d *Decoder) valueFromTree(mtype reflect.Type, tval *Tree) (reflect.Value, 
 func (d *Decoder) valueFromTreeSlice(mtype reflect.Type, tval []*Tree) (reflect.Value, error) {
 	mval := reflect.MakeSlice(mtype, len(tval), len(tval))
 	for i := 0; i < len(tval); i++ {
-		val, err := d.valueFromTree(mtype.Elem(), tval[i])
+		val, err := d.valueFromTree(mtype.Elem(), tval[i], nil)
 		if err != nil {
 			return mval, err
 		}
@@ -638,7 +692,7 @@ func (d *Decoder) valueFromTreeSlice(mtype reflect.Type, tval []*Tree) (reflect.
 func (d *Decoder) valueFromOtherSlice(mtype reflect.Type, tval []interface{}) (reflect.Value, error) {
 	mval := reflect.MakeSlice(mtype, len(tval), len(tval))
 	for i := 0; i < len(tval); i++ {
-		val, err := d.valueFromToml(mtype.Elem(), tval[i])
+		val, err := d.valueFromToml(mtype.Elem(), tval[i], nil)
 		if err != nil {
 			return mval, err
 		}
@@ -647,33 +701,88 @@ func (d *Decoder) valueFromOtherSlice(mtype reflect.Type, tval []interface{}) (r
 	return mval, nil
 }
 
-// Convert toml value to marshal value, using marshal type
-func (d *Decoder) valueFromToml(mtype reflect.Type, tval interface{}) (reflect.Value, error) {
+// Convert toml value to marshal value, using marshal type. When mval1 is non-nil
+// and the given type is a struct value, merge fields into it.
+func (d *Decoder) valueFromToml(mtype reflect.Type, tval interface{}, mval1 *reflect.Value) (reflect.Value, error) {
 	if mtype.Kind() == reflect.Ptr {
-		return d.unwrapPointer(mtype, tval)
+		return d.unwrapPointer(mtype, tval, mval1)
 	}
 
 	switch t := tval.(type) {
 	case *Tree:
-		if isTree(mtype) {
-			return d.valueFromTree(mtype, t)
+		var mval11 *reflect.Value
+		if mtype.Kind() == reflect.Struct {
+			mval11 = mval1
 		}
+
+		if isTree(mtype) {
+			return d.valueFromTree(mtype, t, mval11)
+		}
+
+		if mtype.Kind() == reflect.Interface {
+			if mval1 == nil || mval1.IsNil() {
+				return d.valueFromTree(reflect.TypeOf(map[string]interface{}{}), t, nil)
+			} else {
+				return d.valueFromToml(mval1.Elem().Type(), t, nil)
+			}
+		}
+
 		return reflect.ValueOf(nil), fmt.Errorf("Can't convert %v(%T) to a tree", tval, tval)
 	case []*Tree:
-		if isTreeSlice(mtype) {
+		if isTreeSequence(mtype) {
 			return d.valueFromTreeSlice(mtype, t)
+		}
+		if mtype.Kind() == reflect.Interface {
+			if mval1 == nil || mval1.IsNil() {
+				return d.valueFromTreeSlice(reflect.TypeOf([]map[string]interface{}{}), t)
+			} else {
+				ival := mval1.Elem()
+				return d.valueFromToml(mval1.Elem().Type(), t, &ival)
+			}
 		}
 		return reflect.ValueOf(nil), fmt.Errorf("Can't convert %v(%T) to trees", tval, tval)
 	case []interface{}:
-		if isOtherSlice(mtype) {
+		if isOtherSequence(mtype) {
 			return d.valueFromOtherSlice(mtype, t)
+		}
+		if mtype.Kind() == reflect.Interface {
+			if mval1 == nil || mval1.IsNil() {
+				return d.valueFromOtherSlice(reflect.TypeOf([]interface{}{}), t)
+			} else {
+				ival := mval1.Elem()
+				return d.valueFromToml(mval1.Elem().Type(), t, &ival)
+			}
 		}
 		return reflect.ValueOf(nil), fmt.Errorf("Can't convert %v(%T) to a slice", tval, tval)
 	default:
 		switch mtype.Kind() {
 		case reflect.Bool, reflect.Struct:
 			val := reflect.ValueOf(tval)
-			// if this passes for when mtype is reflect.Struct, tval is a time.Time
+
+			switch val.Type() {
+			case localDateType:
+				localDate := val.Interface().(LocalDate)
+				switch mtype {
+				case timeType:
+					return reflect.ValueOf(time.Date(localDate.Year, localDate.Month, localDate.Day, 0, 0, 0, 0, time.Local)), nil
+				}
+			case localDateTimeType:
+				localDateTime := val.Interface().(LocalDateTime)
+				switch mtype {
+				case timeType:
+					return reflect.ValueOf(time.Date(
+						localDateTime.Date.Year,
+						localDateTime.Date.Month,
+						localDateTime.Date.Day,
+						localDateTime.Time.Hour,
+						localDateTime.Time.Minute,
+						localDateTime.Time.Second,
+						localDateTime.Time.Nanosecond,
+						time.Local)), nil
+				}
+			}
+
+			// if this passes for when mtype is reflect.Struct, tval is a time.LocalTime
 			if !val.Type().ConvertibleTo(mtype) {
 				return reflect.ValueOf(nil), fmt.Errorf("Can't convert %v(%T) to %v", tval, tval, mtype.String())
 			}
@@ -728,14 +837,28 @@ func (d *Decoder) valueFromToml(mtype reflect.Type, tval interface{}) (reflect.V
 			}
 
 			return val.Convert(mtype), nil
+		case reflect.Interface:
+			if mval1 == nil || mval1.IsNil() {
+				return reflect.ValueOf(tval), nil
+			} else {
+				ival := mval1.Elem()
+				return d.valueFromToml(mval1.Elem().Type(), t, &ival)
+			}
 		default:
 			return reflect.ValueOf(nil), fmt.Errorf("Can't convert %v(%T) to %v(%v)", tval, tval, mtype, mtype.Kind())
 		}
 	}
 }
 
-func (d *Decoder) unwrapPointer(mtype reflect.Type, tval interface{}) (reflect.Value, error) {
-	val, err := d.valueFromToml(mtype.Elem(), tval)
+func (d *Decoder) unwrapPointer(mtype reflect.Type, tval interface{}, mval1 *reflect.Value) (reflect.Value, error) {
+	var melem *reflect.Value
+
+	if mval1 != nil && !mval1.IsNil() && (mtype.Elem().Kind() == reflect.Struct || mtype.Elem().Kind() == reflect.Interface) {
+		elem := mval1.Elem()
+		melem = &elem
+	}
+
+	val, err := d.valueFromToml(mtype.Elem(), tval, melem)
 	if err != nil {
 		return reflect.ValueOf(nil), err
 	}

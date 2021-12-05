@@ -48,6 +48,7 @@
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPLICATION.DES_REPO_FLATTENING' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'speed'">{{'REPLICATION.BANDWIDTH' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *ngFor="let p of rules; let i=index" [clrDgItem]="p">
@@ -69,7 +70,7 @@
                 <clr-icon clrSignpostTrigger
                           class="color-red" shape="error-standard"></clr-icon>
                 <clr-signpost-content *clrIfOpen>
-                    <a href="https://helm.sh/blog/helm-hub-moving-to-artifact-hub"
+                    <a rel='noopener noreferrer' href="https://helm.sh/blog/helm-hub-moving-to-artifact-hub"
                        target="_blank">{{'DESTINATION.DEPRECATED' | translate}}</a>
                 </clr-signpost-content>
             </clr-signpost>
@@ -82,6 +83,7 @@
         </clr-dg-cell>
         <clr-dg-cell>{{(getFlattenLevelString(p.dest_namespace_replace_count)) | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
+        <clr-dg-cell>{{getBandwidthStr(p.speed) | translate}}</clr-dg-cell>
         <clr-dg-cell>
             {{p.description ? trancatedDescription(p.description) : '-'}}
             <clr-tooltip>

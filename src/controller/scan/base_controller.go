@@ -28,12 +28,12 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/retry"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -313,6 +313,24 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	return nil
 }
 
+// Stop scan job of a given artifact
+func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact) error {
+	if artifact == nil {
+		return errors.New("nil artifact to stop scan")
+	}
+	query := q.New(q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest})
+	executions, err := bc.execMgr.List(ctx, query)
+	if err != nil {
+		return err
+	}
+	if len(executions) == 0 {
+		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
+		return errors.BadRequestError(nil).WithMessage(message)
+	}
+	execution := executions[0]
+	return bc.execMgr.Stop(ctx, execution.ID)
+}
+
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
 	executionID, err := bc.execMgr.Create(ctx, VendorTypeScanAll, 0, trigger)
 	if err != nil {
@@ -322,7 +340,7 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 	if async {
 		go func(ctx context.Context) {
 			// if async, this is running in another goroutine ensure the execution exists in db
-			err := lib.RetryUntil(func() error {
+			err := retry.Retry(func() error {
 				_, err := bc.execMgr.Get(ctx, executionID)
 				return err
 			})
@@ -361,7 +379,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 			return bc.Scan(ctx, artifact, WithExecutionID(executionID))
 		}
 
-		if err := orm.WithTransaction(scan)(bc.makeCtx()); err != nil {
+		if err := orm.WithTransaction(scan)(orm.SetTransactionOpNameToContext(bc.makeCtx(), "tx-start-scanall")); err != nil {
 			// Just logged
 			log.Errorf("failed to scan artifact %s, error %v", artifact, err)
 
@@ -482,7 +500,7 @@ func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner
 			return nil
 		}
 
-		if err := orm.WithTransaction(create)(ctx); err != nil {
+		if err := orm.WithTransaction(create)(orm.SetTransactionOpNameToContext(ctx, "tx-make-report-placeholder")); err != nil {
 			return nil, err
 		}
 

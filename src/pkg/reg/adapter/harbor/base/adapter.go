@@ -15,7 +15,7 @@
 package base
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -24,6 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -40,7 +41,7 @@ func New(registry *model.Registry) (*Adapter, error) {
 			// core, so insecure transport is ok
 			// If using the secure one, as we'll replace the URL with 127.0.0.1 and this will
 			// cause error "x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs"
-			Transport: common_http.GetHTTPTransport(common_http.InsecureTransport),
+			Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
 		}, authorizer)
 		client, err := NewClient(registry.URL, httpClient)
 		if err != nil {
@@ -62,7 +63,7 @@ func New(registry *model.Registry) (*Adapter, error) {
 			registry.Credential.AccessSecret))
 	}
 	httpClient := common_http.NewClient(&http.Client{
-		Transport: common_http.GetHTTPTransportByInsecure(registry.Insecure),
+		Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 	}, authorizers...)
 	client, err := NewClient(registry.URL, httpClient)
 	if err != nil {
@@ -169,7 +170,32 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 			Metadata: metadata,
 		}
 	}
-	for _, project := range projects {
+
+	var ps []string
+	for p := range projects {
+		ps = append(ps, p)
+	}
+	q := fmt.Sprintf("name={%s}", strings.Join(ps, " "))
+	// get exist projects
+	queryProjects, err := a.Client.ListProjectsWithQuery(q, false)
+	if err != nil {
+		return errors.Wrapf(err, "list projects with query %s", q)
+	}
+
+	existProjects := make(map[string]*Project)
+	for _, p := range queryProjects {
+		existProjects[p.Name] = p
+	}
+
+	var notExistProjects []*Project
+	for _, p := range projects {
+		_, exist := existProjects[p.Name]
+		if !exist {
+			notExistProjects = append(notExistProjects, p)
+		}
+	}
+
+	for _, project := range notExistProjects {
 		if err := a.Client.CreateProject(project.Name, project.Metadata); err != nil {
 			if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
 				log.Debugf("got 409 when trying to create project %s", project.Name)
@@ -198,6 +224,8 @@ func (a *Adapter) ListProjects(filters []*model.Filter) ([]*Project, error) {
 		names, ok := util.IsSpecificPathComponent(projectPattern)
 		if ok {
 			for _, name := range names {
+				// trim white space in project name
+				name = strings.TrimSpace(name)
 				project, err := a.Client.GetProject(name)
 				if err != nil {
 					return nil, err

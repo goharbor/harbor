@@ -1,15 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
-import { BrowserModule } from '@angular/platform-browser';
 import { ValuesComponent } from "./values.component";
 import { AdditionsService } from "../additions.service";
 import { of } from "rxjs";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
-import { ErrorHandler } from "../../../../../../shared/units/error-handler";
+import { SharedTestingModule } from "../../../../../../shared/shared.module";
 
 
 describe('ValuesComponent', () => {
@@ -33,19 +29,14 @@ describe('ValuesComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        TranslateModule.forRoot(),
+        SharedTestingModule,
         MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
-        ClarityModule,
-        FormsModule,
-        BrowserModule
       ],
       declarations: [ValuesComponent],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
       providers: [
-        TranslateService,
-        ErrorHandler,
         {provide: AdditionsService, useValue: fakedAdditionsService},
         {provide: MarkedOptions, useValue: {}},
       ]

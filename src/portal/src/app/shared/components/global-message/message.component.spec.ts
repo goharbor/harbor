@@ -1,12 +1,9 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ElementRef } from '@angular/core';
-import { RouterTestingModule } from '@angular/router/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ClarityModule } from '@clr/angular';
 import { Message } from './message';
-import { MessageService } from './message.service';
 import { MessageComponent } from './message.component';
 import { AlertType } from "../../entities/shared.const";
+import { SharedTestingModule } from "../../shared.module";
 
 describe('MessageComponent', () => {
     let component: MessageComponent;
@@ -16,14 +13,10 @@ describe('MessageComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                ClarityModule,
-                RouterTestingModule,
-                TranslateModule.forRoot()
+                SharedTestingModule
             ],
             declarations: [MessageComponent],
             providers: [
-                MessageService,
-                TranslateService,
                 {provide: ElementRef, useValue: fakeElementRef}
             ]
         }).compileComponents();

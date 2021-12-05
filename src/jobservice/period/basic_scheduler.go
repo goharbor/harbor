@@ -16,6 +16,7 @@ package period
 
 import (
 	"context"
+	"math/rand"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
@@ -86,7 +87,7 @@ func (bs *basicScheduler) Schedule(p *Policy) (int64, error) {
 		return -1, err
 	}
 
-	pid := time.Now().Unix()
+	pid := time.Now().Unix() + rand.Int63n(10)
 
 	// Save to redis db
 	if _, err := conn.Do("ZADD", rds.KeyPeriodicPolicy(bs.namespace), pid, rawJSON); err != nil {

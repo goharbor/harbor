@@ -30,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 const (

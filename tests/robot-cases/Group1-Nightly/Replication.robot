@@ -188,6 +188,57 @@ Test Case - Replication Of Push Images from Self To Harbor
     Image Should Be Replicated To Project  project_dest${d}  busybox
     Close Browser
 
+Test Case - Replication Exclusion Mode And Set Bandwidth
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    # login source
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  alpine:3.10
+
+    # push mode
+    Switch To System Labels
+    Create New Labels  bad_${d}
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/busybox
+    Add Labels To Tag  latest  bad_${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule${d}  push  project${d}/*  image  e${d}  project_dest${d}  filter_tag=3.10  filter_tag_model=excluding  filter_label=bad_${d}  filter_label_model=excluding  bandwidth=100  bandwidth_unit=Kbps
+    # logout and login target
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project    project_dest${d}
+    # logout and login source
+    Logout Harbor
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule${d}
+    Retry Wait Until Page Contains  Succeeded
+    Logout Harbor
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
+    # make sure the excluded image is not replication
+    Retry Wait Until Page Contains  1 - 1 of 1 items
+
+    # pull mode
+    Create An New Project And Go Into Project  project${d}
+    Switch To System Labels
+    Create New Labels  bad_${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule${d}  pull  project${d}/*  image  e${d}  project${d}  filter_tag=3.10  filter_tag_model=excluding  filter_label=bad_${d}  filter_label_model=excluding  bandwidth=2  bandwidth_unit=Mbps
+    Select Rule And Replicate  rule${d}
+    Retry Wait Until Page Contains  Succeeded
+    Image Should Be Replicated To Project  project${d}  hello-world  period=0
+    # make sure the excluded image is not replication
+    Retry Wait Until Page Contains  1 - 1 of 1 items
+    Close Browser
+
 Test Case - Replication Of Push Chart from Self To Harbor
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -338,3 +389,40 @@ Test Case - Image Namespace Level Flattening
     &{image3_with_tag}=	 Create Dictionary  image=level_1/level_2/level_3/level_4/test_image_3  tag=tag.3  total_artifact_count=1  archive_count=0
     @{src_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'  '&{image3_with_tag}'
     Replication With Flattening  ${src_endpoint}  20  Flatten 3 Levels  level_1/level_2/  @{src_images}
+
+Test Case - Robot Account Do Replication
+    [tags]  robot_account_do_replication
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_dest${d}
+    # create system Robot Account
+    ${robot_account_name}  ${robot_account_secret}=  Create A New System Robot Account  is_cover_all=${true}
+    # logout and login source
+    Logout Harbor
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    # push mode
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Retry Wait Until Page Contains  Succeeded
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
+    Image Should Be Replicated To Project  project_dest${d}  busybox  period=0
+    # pull mode
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_dest${d}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project_dest${d}/*  image  e${d}  project_dest${d}
+    Select Rule And Replicate  rule_pull_${d}
+    Retry Wait Until Page Contains  Succeeded
+    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
+    Image Should Be Replicated To Project  project_dest${d}  busybox  period=0
+    Close Browser

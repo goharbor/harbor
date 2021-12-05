@@ -5,6 +5,12 @@ import base
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
 
+
+report_mime_types = [
+    'application/vnd.security.vulnerability.report; version=1.1',
+    'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0',
+]
+
 class Artifact(base.Base, object):
     def __init__(self):
         super(Artifact,self).__init__(api_type = "artifact")
@@ -20,6 +26,7 @@ class Artifact(base.Base, object):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
+            params["x_accept_vulnerabilities"] = ",".join(report_mime_types)
         if "with_immutable_status" in kwargs:
             params["with_immutable_status"] = kwargs["with_immutable_status"]
 
@@ -115,7 +122,12 @@ class Artifact(base.Base, object):
                 else:
                     raise Exception("Artifact should not be scanned {}.".format(artifact.scan_overview))
 
-            scan_status = artifact.scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
+            scan_status = ''
+            for mime_type in report_mime_types:
+                overview = artifact.scan_overview.get(mime_type)
+                if overview:
+                    scan_status = overview.scan_status
+
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))

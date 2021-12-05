@@ -253,7 +253,8 @@
         "PROXY_CACHE": "镜像代理",
         "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay 和 Google GCR 类型的仓库",
         "ENDPOINT": "地址",
-        "PROXY_CACHE_ENDPOINT": "镜像代理地址"
+        "PROXY_CACHE_ENDPOINT": "镜像代理地址",
+        "NO_PROJECT": "未发现任何项目"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
@@ -318,21 +319,24 @@
         "MEMBER_TYPE": "成员类型",
         "GROUP_TYPE": "组",
         "USER_TYPE": "用户",
-        "USERNAME_IS_REQUIRED": "用户名为必填项。",
-        "USERNAME_DOES_NOT_EXISTS": "用户名不存在。",
-        "USERNAME_ALREADY_EXISTS": "用户名已存在。",
-        "UNKNOWN_ERROR": "添加成员时发生未知错误。",
+        "USERNAME_IS_REQUIRED": "用户名为必填项",
+        "USERNAME_DOES_NOT_EXISTS": "用户名不存在",
+        "USERNAME_ALREADY_EXISTS": "该用户已存在于当前项目",
+        "UNKNOWN_ERROR": "添加成员时发生未知错误",
         "FILTER_PLACEHOLDER": "过滤成员",
         "DELETION_TITLE": "删除项目成员确认",
         "DELETION_SUMMARY": "你确认删除项目成员 {{param}}?",
-        "ADDED_SUCCESS": "成功新增成员。",
-        "DELETED_SUCCESS": "成功删除成员。",
-        "SWITCHED_SUCCESS": "切换角色成功。",
+        "ADDED_SUCCESS": "成功新增成员",
+        "DELETED_SUCCESS": "成功删除成员",
+        "SWITCHED_SUCCESS": "切换角色成功",
         "OF": "共计",
         "SWITCH_TITLE": "切换项目成员确认",
         "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??",
         "SET_ROLE": "设置角色",
-        "REMOVE": "移除成员"
+        "REMOVE": "移除成员",
+        "GROUP_NAME_REQUIRED": "组名称为必填项",
+        "NON_EXISTENT_GROUP": "组名称不存在",
+        "GROUP_ALREADY_ADDED": "该组已存在于当前项目"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "名称",
@@ -595,6 +599,7 @@
         "PLACEHOLDER": "未发现任何复制规则!",
         "JOB_PLACEHOLDER": "未发现任何复制任务!",
         "NO_ENDPOINT_INFO": "请先添加一个目标",
+        "NO_LABEL_INFO": "请先添加一个标签",
         "NO_PROJECT_INFO": "此项目不存在",
         "SOURCE_RESOURCE_FILTER": "源资源过滤器",
         "SCHEDULED": "定时",
@@ -647,7 +652,11 @@
         "FLATTEN_LEVEL_TIP_1": "'替换1级'(默认项): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
         "FLATTEN_LEVEL_TIP_2": "'替换2级': 'a/b/c/d/img' -> 'ns/c/d/img'",
         "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'",
-        "NOTE": "注意: Chartmuseum Charts 仅支持2层的仓库结构：如 'a/chart'"
+        "NOTE": "注意: Chartmuseum Charts 仅支持2层的仓库结构：如 'a/chart'",
+        "BANDWIDTH": "带宽",
+        "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
+        "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
+        "UNLIMITED": "无限制"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -902,7 +911,7 @@
             "REPO_TOOLTIP": "用户在此模式下无法对镜像执行任何操作。",
             "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描镜像或 chart 等特定操作时，启用 webhooks 以在指定端点接收回调",
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
-            "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
+            "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
             "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *"
         },
         "LDAP": {
@@ -958,6 +967,7 @@
             "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。"
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "停止扫描所有镜像任务成功!",
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
             "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}}",
             "TITLE": "缺陷扫描",
@@ -1028,7 +1038,8 @@
             "OTHER_STATUS": "未扫描",
             "QUEUED": "已入队列",
             "ERROR": "查看日志",
-            "SCANNING": "扫描中"
+            "SCANNING": "扫描中",
+            "STOPPED": "扫描中止"
         },
         "GRID": {
             "PLACEHOLDER": "没有扫描结果！",
@@ -1057,9 +1068,7 @@
             "HIGH": "严重",
             "MEDIUM": "中等",
             "LOW": "较低",
-            "NEGLIGIBLE": "可忽略",
-            "UNKNOWN": "未知",
-            "NONE": "无"
+            "NONE": "无评分"
         },
         "SINGULAR": "漏洞",
         "OVERALL_SEVERITY": "漏洞严重度:",
@@ -1071,7 +1080,9 @@
         "SCAN_NOW": "扫描",
         "SCAN_BY": "使用 {{scanner}} 进行扫描",
         "REPORTED_BY": "结果由 {{scanner}} 提供",
-        "NO_SCANNER": "无扫描器"
+        "NO_SCANNER": "无扫描器",
+        "TRIGGER_STOP_SUCCESS": "停止扫描成功",
+        "STOP_NOW": "停止扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
@@ -1320,13 +1331,13 @@
         "UNIT_COUNT": "个数",
         "NUMBER": "数量",
         "IN_REPOSITORIES": "应用到仓库",
-        "REP_SEPARATOR": "使用逗号分隔repos,repo*和**",
+        "REP_SEPARATOR": "使用逗号分隔 repos,repo* 和 **",
         "TAGS": "Tags",
         "INCLUDE_UNTAGGED": " 无 Tag 的 Artifacts",
         "UNTAGGED": " 无 Tag",
         "MATCHES_TAGS": "匹配 tags",
         "MATCHES_EXCEPT_TAGS": "排除 tags",
-        "TAG_SEPARATOR": "输入多个逗号分隔的 Tags, Tag*或**。可通过勾选将未加 Tag 的 artifacts 作为此策略的一部分。",
+        "TAG_SEPARATOR": "使用逗号分隔 Tags, Tag* 或 **。可通过勾选将未加 Tag 的 artifacts 作为此策略的一部分。",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
         "MATCHES_EXCEPT_LABELS": "排除标签",
@@ -1687,6 +1698,10 @@
         "FINAL_PROJECT_NAME_TIP": "项目级机器人的最终名称由前缀，项目名称，一个加号以及当前输入值组成",
         "FINAL_SYSTEM_NAME_TIP": "系统级机器人的最终名称由前缀和当前输入值组成",
         "PUSH_AND_PULL": "推送",
-        "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限"
+        "PUSH_PERMISSION_TOOLTIP": "推送权限无法单独工作，请在选择推送权限的时，确保已经勾选了拉取权限",
+        "STOP": "停止",
+        "LIST": "查询",
+        "REPOSITORY": "仓库",
+        "HELM_LABEL": "Helm Chart 标签"
     }
 }

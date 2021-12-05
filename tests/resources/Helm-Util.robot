@@ -34,10 +34,30 @@ Helm Repo Push
     ${current_dir}=  Run  pwd
     Run  cd ${current_dir}
     Run  wget ${harbor_chart_file_url}
-    Wait Unitl Command Success  ${helm_cmd} push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
+    Wait Unitl Command Success  ${helm_cmd} cm-push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
 
 Helm Chart Push
     [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/helm_push_chart.sh ${ip} ${user} ${pwd} ${chart_file} ${archive} ${project} ${repo_name} ${verion}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
+
+Helm3.7 Registry Login
+    [Arguments]  ${ip}  ${user}  ${password}
+    Wait Unitl Command Success  helm3.7 registry login ${ip} -u ${user} -p ${password}
+
+Helm3.7 Package
+    [Arguments]  ${file_path}
+    Wait Unitl Command Success  helm3.7 package ${file_path}
+
+Helm3.7 Push
+    [Arguments]  ${file_path}  ${ip}  ${repo_name}
+    Wait Unitl Command Success  helm3.7 push ${file_path} oci://${ip}/${repo_name}
+
+Helm3.7 Pull
+    [Arguments]  ${ip}  ${repo_name}  ${version}
+    Wait Unitl Command Success  helm3.7 pull oci://${ip}/${repo_name}/harbor --version ${version}
+
+Helm3.7 Registry Logout
+    [Arguments]  ${ip}
+    Wait Unitl Command Success  helm3.7 registry logout ${ip}

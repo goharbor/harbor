@@ -41,6 +41,7 @@ type Policy struct {
 	ReplicateDeletion         bool      `orm:"column(replicate_deletion)"`
 	CreationTime              time.Time `orm:"column(creation_time);auto_now_add" sort:"default:desc"`
 	UpdateTime                time.Time `orm:"column(update_time);auto_now"`
+	Speed                     int32     `orm:"column(speed_kb)"`
 }
 
 // TableName set table name for ORM

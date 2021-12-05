@@ -94,7 +94,7 @@
             <div class="form-group robot-token">
                 <label class="form-group-label-override">{{'ROBOT_ACCOUNT.TOKEN' |
                     translate}}</label>
-                <hbr-copy-input (onCopySuccess)="onCpSuccess($event)"
+                <hbr-copy-input #copyInputComponent (onCopySuccess)="onCpSuccess($event)"
                                 inputSize="50" headerTitle=""
                                 defaultValue="{{robot?.secret}}" class="copy-input"></hbr-copy-input>
             </div>

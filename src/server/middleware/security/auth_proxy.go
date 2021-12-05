@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
 )
@@ -51,7 +50,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		log.Errorf("user name %s doesn't meet the auth proxy name pattern", proxyUserName)
 		return nil
 	}
-	httpAuthProxyConf, err := config.HTTPAuthProxySetting(orm.Context())
+	httpAuthProxyConf, err := config.HTTPAuthProxySetting(req.Context())
 	if err != nil {
 		log.Errorf("failed to get auth proxy settings: %v", err)
 		return nil
@@ -68,7 +67,7 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 	user, err := pkguser.Mgr.GetByName(req.Context(), rawUserName)
 	if errors.IsNotFoundErr(err) {
 		// onboard user if it's not yet onboarded.
-		uid, err2 := auth.SearchAndOnBoardUser(rawUserName)
+		uid, err2 := auth.SearchAndOnBoardUser(req.Context(), rawUserName)
 		if err2 != nil {
 			log.Errorf("failed to search and onboard user %s: %v", rawUserName, err)
 			return nil

@@ -48,6 +48,24 @@ func (s *scanAPI) Prepare(ctx context.Context, operation string, params interfac
 	return nil
 }
 
+func (s *scanAPI) StopScanArtifact(ctx context.Context, params operation.StopScanArtifactParams) middleware.Responder {
+	if err := s.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionStop, rbac.ResourceScan); err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	// get the artifact
+	curArtifact, err := s.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	if err := s.scanCtl.Stop(ctx, curArtifact); err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	return operation.NewStopScanArtifactAccepted()
+}
+
 func (s *scanAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifactParams) middleware.Responder {
 	if err := s.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceScan); err != nil {
 		return s.SendError(ctx, err)

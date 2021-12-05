@@ -2,6 +2,7 @@
 #ubuntm based image
 FROM ubuntu:18.04
 ENV LANG C.UTF-8
+ENV HELM_EXPERIMENTAL_OCI=1
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
 RUN apt-get install libseccomp2
 RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -20,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tar \
     unzip \
     gzip \
+    jq \
     # certutil
     libnss3-tools \
     google-chrome-stable
@@ -33,8 +35,8 @@ RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
     requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \
     apt-get clean all
-
-RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
+# Because the old version of chromedriver can’t download files, upgrade it to version 93.0.4577.15, which can download files normally.
+RUN wget -N http://chromedriver.storage.googleapis.com/95.0.4638.54/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip && \
     chmod +x chromedriver && \
     mv -f chromedriver /usr/local/share/chromedriver && \

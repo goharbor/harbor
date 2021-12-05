@@ -265,5 +265,31 @@ clr-modal {
     width: 6rem;
 }
 .right-align {
+    min-width: 204px;
+    overflow-y: auto;
     transform: translateX(-4.3rem) translateY(1.25rem)!important;
 }
+.dropdown-item {
+    min-height: 26px;
+}
+.no-labels {
+    cursor: default;
+    padding: 0 0.5rem;
+}
+.unit {
+    width: 4.18rem !important;
+}
+.speed {
+    width: 14rem;
+    display: inline-block;
+    input {
+      width: 12rem;
+    }
+}
+.unit-select {
+    width: 3rem;
+}
+.ml-10px {
+    margin-left: 10px;
+}
+

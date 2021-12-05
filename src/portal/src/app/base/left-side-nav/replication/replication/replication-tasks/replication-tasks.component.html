@@ -90,7 +90,7 @@
         </span>
       </div>
     </div>
-    <clr-datagrid (clrDgRefresh)="clrLoadTasks($event)" [clrDgLoading]="loading">
+    <clr-datagrid (clrDgRefresh)="clrLoadTasks(true, $event)" [clrDgLoading]="loading">
       <clr-dg-column>{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
       <clr-dg-column class="resource-width">{{'REPLICATION.RESOURCE_TYPE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.SOURCE' | translate}}</clr-dg-column>
@@ -111,7 +111,7 @@
         <clr-dg-cell>{{t.start_time | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{t.end_time  | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <a target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
+          <a rel='noopener noreferrer' target="_blank" [href]="viewLog(t.id)" *ngIf="t.status !== 'Initialized'">
             <clr-icon shape="list"></clr-icon>
           </a>
         </clr-dg-cell>

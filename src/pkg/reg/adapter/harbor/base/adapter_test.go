@@ -89,7 +89,16 @@ func TestPrepareForPush(t *testing.T) {
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 		},
-	})
+	},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/api/projects",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`[]`))
+			},
+		},
+	)
 	registry := &model.Registry{
 		URL: server.URL,
 	}
@@ -138,10 +147,11 @@ func TestPrepareForPush(t *testing.T) {
 
 	// project already exists
 	server = test.NewServer(&test.RequestHandlerMapping{
-		Method:  http.MethodPost,
+		Method:  http.MethodGet,
 		Pattern: "/api/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusConflict)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`[{"name": "library"}]`))
 		},
 	})
 	registry = &model.Registry{
@@ -240,4 +250,48 @@ func TestAbstractPublicMetadata(t *testing.T) {
 	require.NotNil(t, meta)
 	require.Equal(t, 1, len(meta))
 	require.Equal(t, "true", meta["public"].(string))
+}
+
+func TestListProjects(t *testing.T) {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/api/projects",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`[{"name": "p1"}, {"name": "p2"}]`))
+			},
+		},
+	)
+
+	defer server.Close()
+
+	registry := &model.Registry{
+		URL: server.URL,
+	}
+	adapter, err := New(registry)
+	require.Nil(t, err)
+
+	validPattern := "{p1,p2}/**"
+	// has " " in the p2 project name
+	invalidPattern := "{p1, p2}/**"
+	filters := []*model.Filter{
+		{
+			Type:  "name",
+			Value: validPattern,
+		},
+	}
+	projects, err := adapter.ListProjects(filters)
+	require.Nil(t, err)
+	require.Len(t, projects, 2)
+	require.Equal(t, "p1", projects[0].Name)
+	require.Equal(t, "p2", projects[1].Name)
+
+	// invalid pattern, should also work with trim white space in project name.
+	filters[0].Value = invalidPattern
+	_, err = adapter.ListProjects(filters)
+	require.Nil(t, err)
+	require.Len(t, projects, 2)
+	require.Equal(t, "p1", projects[0].Name)
+	require.Equal(t, "p2", projects[1].Name)
 }

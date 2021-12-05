@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -40,6 +41,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/migration"
+	"github.com/goharbor/harbor/src/jobservice/period"
+	sync2 "github.com/goharbor/harbor/src/jobservice/sync"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -49,6 +52,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -59,7 +63,9 @@ const (
 )
 
 // JobService ...
-var JobService = &Bootstrap{}
+var JobService = &Bootstrap{
+	syncEnabled: true,
+}
 
 // workerPoolID
 var workerPoolID string
@@ -67,6 +73,7 @@ var workerPoolID string
 // Bootstrap is coordinating process to help load and start the other components to serve.
 type Bootstrap struct {
 	jobContextInitializer job.ContextInitializer
+	syncEnabled           bool
 }
 
 // SetJobContextInitializer set the job context initializer
@@ -103,6 +110,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	var (
 		backendWorker worker.Interface
 		manager       mgt.Manager
+		syncWorker    *sync2.Worker
 	)
 	if cfg.PoolConfig.Backend == config.JobServicePoolBackendRedis {
 		// Number of workers
@@ -175,6 +183,29 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		if err = lcmCtl.Serve(); err != nil {
 			return errors.Errorf("start life cycle controller error: %s", err)
 		}
+
+		// Initialize sync worker
+		if bs.syncEnabled {
+			syncWorker = sync2.New(3).
+				WithContext(rootContext).
+				UseManager(manager).
+				UseScheduler(period.NewScheduler(rootContext.SystemContext, namespace, redisPool, lcmCtl)).
+				WithCoreInternalAddr(strings.TrimSuffix(config.GetCoreURL(), "/")).
+				UseCoreScheduler(scheduler.Sched).
+				UseCoreExecutionManager(task.ExecMgr).
+				UseCoreTaskManager(task.Mgr).
+				WithPolicyLoader(func() ([]*period.Policy, error) {
+					conn := redisPool.Get()
+					defer conn.Close()
+
+					return period.Load(namespace, conn)
+				})
+			// Start sync worker
+			// Not block the regular process.
+			if err := syncWorker.Start(); err != nil {
+				logger.Error(err)
+			}
+		}
 	} else {
 		return errors.Errorf("worker backend '%s' is not supported", cfg.PoolConfig.Backend)
 	}
@@ -225,7 +256,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		sig <- os.Interrupt
 	}
 
-	// Wait everyone exit
+	// Wait everyone exits.
 	rootContext.WG.Wait()
 
 	return

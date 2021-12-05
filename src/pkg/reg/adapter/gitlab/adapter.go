@@ -90,10 +90,8 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
 			nameFilter = filter.Value.(string)
-			break
 		} else if filter.Type == model.FilterTypeTag {
 			tagFilter = filter.Value.(string)
-			break
 		}
 	}
 
@@ -142,7 +140,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 			tags := []string{}
 			for _, vTag := range vTags {
 				if len(tagFilter) > 0 {
-					if ok, _ := util.Match(strings.ToLower(vTag.Name), strings.ToLower(tagFilter)); !ok {
+					if ok, _ := util.Match(strings.ToLower(tagFilter), strings.ToLower(vTag.Name)); !ok {
 						continue
 					}
 				}

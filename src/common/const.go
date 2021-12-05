@@ -169,4 +169,31 @@ const (
 	MetricEnable = "metric_enable"
 	MetricPort   = "metric_port"
 	MetricPath   = "metric_path"
+
+	// Trace setting items
+	TraceEnabled         = "trace_enabled"
+	TraceServiceName     = "trace_service_name"
+	TraceSampleRate      = "trace_sample_rate"
+	TraceNamespace       = "trace_namespace"
+	TraceAttributes      = "trace_attribute"
+	TraceJaegerEndpoint  = "trace_jaeger_endpoint"
+	TraceJaegerUsername  = "trace_jaeger_username"
+	TraceJaegerPassword  = "trace_jaeger_password"
+	TraceJaegerAgentHost = "trace_jaeger_agent_host"
+	TraceJaegerAgentPort = "trace_jaeger_agent_port"
+	TraceOtelEndpoint    = "trace_otel_endpoint"
+	TraceOtelURLPath     = "trace_otel_url_path"
+	TraceOtelCompression = "trace_otel_compression"
+	TraceOtelInsecure    = "trace_otel_insecure"
+	TraceOtelTimeout     = "trace_otel_timeout"
+
+	//  These variables are temporary solution for issue: https://github.com/goharbor/harbor/issues/16039
+	//  When user disable the pull count/time/audit log, it will decrease the database access, especially in large concurrency pull scenarios.
+	// TODO: Once we have a complete solution, delete these variables.
+	// PullCountUpdateDisable indicate if pull count is disable for pull request.
+	PullCountUpdateDisable = "pull_count_update_disable"
+	// PullTimeUpdateDisable indicate if pull time is disable for pull request.
+	PullTimeUpdateDisable = "pull_time_update_disable"
+	// PullAuditLogDisable indicate if pull audit log is disable for pull request.
+	PullAuditLogDisable = "pull_audit_log_disable"
 )

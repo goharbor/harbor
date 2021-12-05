@@ -23,7 +23,7 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - List Helm Charts And Delete Chart Files
+Test Case - List Helm Charts And Download And Delete Chart Files
     Body Of List Helm Charts
 
 Test Case - Helm CLI Push
@@ -39,3 +39,10 @@ Test Case - Helm3 CLI Push
     ${pwd}=    Set Variable    Test1@34
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Helm3 CLI Push Without Sign In Harbor  ${user}  ${pwd}
+
+Test Case - Helm3.7 CLI Push And Pull In Harbor
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}

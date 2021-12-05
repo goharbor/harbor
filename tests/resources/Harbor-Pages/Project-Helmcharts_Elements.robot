@@ -5,6 +5,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${project_chart_tabpage}  xpath=//project-detail//a[contains(.,'Charts')]
 ${project_chart_list}  xpath=//hbr-helm-chart
 ${upload_chart_button}  //*[@id='helm-chart-upload']
+${download_chart_button}  //clr-dg-action-bar/button[contains(.,'Download')]
 ${chart_file_browse}  //*[@id='chart']
 ${chart_prov_browse}  //*[@id='prov']
 ${upload_action_button}  //*[@id='upload-chart']
@@ -15,6 +16,11 @@ ${harbor_chart_version}  0.2.0
 ${harbor_chart_prov_filename}  harbor-0.2.0.tgz.prov
 ${harbor_chart_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
 ${harbor_chart_prov_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz.prov
+
+${harbor_helm_name}  harbor-helm-1.7.3
+${harbor_helm_filename}  harbor-helm-1.7.3.tar.gz
+${harbor_helm_version}  1.7.3
+${harbor_helm_package}  harbor-1.7.3.tgz
 
 ${prometheus_chart_name}  prometheus
 ${prometheus_chart_filename}  prometheus-7.0.2.tgz

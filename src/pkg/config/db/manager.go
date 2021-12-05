@@ -44,3 +44,12 @@ func NewDBCfgManager() *config.CfgManager {
 	manager.LoadSystemConfigFromEnv()
 	return manager
 }
+
+// EnableConfigCache ...
+func EnableConfigCache() {
+	if cache.Default() == nil {
+		log.Error("failed to enable config cache, cache is not ready.")
+		return
+	}
+	libCfg.Register(common.DBCfgManager, NewDBCfgManager())
+}

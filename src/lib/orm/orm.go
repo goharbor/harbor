@@ -23,7 +23,9 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego/orm"
+
 	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
 
 // NewCondition alias function of orm.NewCondition
@@ -47,6 +49,11 @@ func RegisterModel(models ...interface{}) {
 }
 
 type ormKey struct{}
+
+const (
+	tracerName               = "goharbor/harbor/src/lib/orm"
+	defaultTranscationOpName = "start-transaction"
+)
 
 func init() {
 	if os.Getenv("ORM_DEBUG") == "true" {
@@ -81,30 +88,59 @@ func Clone(ctx context.Context) context.Context {
 	return NewContext(ctx, orm.NewOrm())
 }
 
+type operationNameKey struct{}
+
+// SetTransactionOpName sets the transaction operation name
+func SetTransactionOpNameToContext(ctx context.Context, name string) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	return context.WithValue(ctx, operationNameKey{}, name)
+}
+
+// GetTransactionOpNameFromContext returns the transaction operation name from context
+func GetTransactionOpNameFromContext(ctx context.Context) string {
+	opName, ok := ctx.Value(operationNameKey{}).(string)
+	if !ok {
+		return defaultTranscationOpName
+	}
+	if opName == "" {
+		return defaultTranscationOpName
+	}
+	return opName
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		cx, span := tracelib.StartTrace(ctx, tracerName, GetTransactionOpNameFromContext(ctx))
+		defer span.End()
 		o, err := FromContext(ctx)
 		if err != nil {
+			tracelib.RecordError(span, err, "get orm from ctx failed")
 			return err
 		}
 
 		tx := ormerTx{Ormer: o}
 		if err := tx.Begin(); err != nil {
+			tracelib.RecordError(span, err, "begin transaction failed")
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
 
-		if err := f(ctx); err != nil {
+		if err := f(cx); err != nil {
+			span.AddEvent("rollback transaction")
 			if e := tx.Rollback(); e != nil {
+				tracelib.RecordError(span, e, "rollback transaction failed")
 				log.Errorf("rollback transaction failed: %v", e)
 				return e
 			}
 
 			return err
 		}
-
+		span.AddEvent("commit transaction")
 		if err := tx.Commit(); err != nil {
+			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
 			return err
 		}

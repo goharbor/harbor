@@ -11,14 +11,16 @@
             <clr-dg-action-bar>
                 <div class="clr-row center">
                     <div class="ml-05">
-                        <button id="scan-btn" (click)="scanNow()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)">
-                            <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;
-                            <span>{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
+                        <button id="scan-btn" (click)="scanOrStop()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!canScan()">
+                            <clr-icon shape="shield-check" size="16" *ngIf="!isRunningState()"></clr-icon>&nbsp;
+                            <clr-icon shape="stop" size="16" *ngIf="isRunningState()"></clr-icon>&nbsp;
+                            <span *ngIf="!isRunningState()">{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
+                            <span *ngIf="isRunningState()">{{'VULNERABILITY.STOP_NOW' | translate}}</span>
                         </button>
                     </div>
                     <div class="ml-1">
                         <div [hidden]="!shouldShowBar()">
-                            <hbr-vulnerability-bar [summary]="handleScanOverview(artifact?.scan_overview)" [inputScanner]="scanner"
+                            <hbr-vulnerability-bar (submitStopFinish)="submitStopFinish($event)" [summary]="handleScanOverview(artifact?.scan_overview)" [inputScanner]="scanner"
                                                    (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                                                    [artifactDigest]="digest">
                             </hbr-vulnerability-bar>
@@ -43,13 +45,13 @@
             <clr-dg-row *clrDgItems="let res of scanningResults">
                 <clr-dg-cell>
                     <span *ngIf="!res.links || res.links.length === 0">{{res.id}}</span>
-                    <a *ngIf="res.links && res.links.length === 1" href="{{res.links[0]}}" target="_blank">{{res.id}}</a>
+                    <a rel='noopener noreferrer' *ngIf="res.links && res.links.length === 1" href="{{res.links[0]}}" target="_blank">{{res.id}}</a>
                     <span *ngIf="res.links && res.links.length > 1">
                         {{res.id}}
                         <clr-signpost>
                             <clr-signpost-content *clrIfOpen>
                                 <div class="mt-5px"  *ngFor="let link of res.links">
-                                    <a href="{{link}}" target="_blank">{{link}}</a>
+                                    <a rel='noopener noreferrer' href="{{link}}" target="_blank">{{link}}</a>
                                 </div>
                             </clr-signpost-content>
                         </clr-signpost>
@@ -60,8 +62,7 @@
                     <span *ngSwitchCase="'High'" class="label label-danger no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchCase="'Medium'" class="label label-medium no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchCase="'Low'" class="label label-low no-border">{{severityText(res.severity) | translate}}</span>
-                    <span *ngSwitchCase="'Negligible'" class="label label-negligible no-border">{{severityText(res.severity) | translate}}</span>
-                    <span *ngSwitchCase="'Unknown'" class="label label-unknown no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'None'" class="label label-none no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchDefault>{{severityText(res.severity) | translate}}</span>
                 </clr-dg-cell>
                 <clr-dg-cell>{{res.preferred_cvss?.score_v3}}</clr-dg-cell>

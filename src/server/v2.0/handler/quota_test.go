@@ -25,7 +25,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/quota"
-	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	quotatesting "github.com/goharbor/harbor/src/testing/controller/quota"
@@ -75,7 +74,7 @@ func (suite *QuotaTestSuite) TestAuthorization() {
 	}
 
 	quota := models.QuotaUpdateReq{
-		Hard: types.ResourceList{"storage": 1000},
+		Hard: models.ResourceList{"storage": 1000},
 	}
 
 	reqs := []struct {
@@ -214,7 +213,7 @@ func (suite *QuotaTestSuite) TestUpdateQuota() {
 	{
 		// update quota with empty hard
 		quota := models.QuotaUpdateReq{
-			Hard: types.ResourceList{},
+			Hard: models.ResourceList{},
 		}
 
 		res, err := suite.PutJSON("/quotas/1", quota)
@@ -227,7 +226,7 @@ func (suite *QuotaTestSuite) TestUpdateQuota() {
 		mock.OnAnything(suite.quotaCtl, "Get").Return(nil, errors.NotFoundError(nil)).Once()
 
 		quota := models.QuotaUpdateReq{
-			Hard: types.ResourceList{"storage": 1000},
+			Hard: models.ResourceList{"storage": 1000},
 		}
 
 		res, err := suite.PutJSON("/quotas/1", quota)
@@ -241,7 +240,7 @@ func (suite *QuotaTestSuite) TestUpdateQuota() {
 		mock.OnAnything(suite.quotaCtl, "Update").Return(nil).Once()
 
 		quota := models.QuotaUpdateReq{
-			Hard: types.ResourceList{"storage": 1000},
+			Hard: models.ResourceList{"storage": 1000},
 		}
 
 		res, err := suite.PutJSON("/quotas/1", quota)
@@ -255,7 +254,7 @@ func (suite *QuotaTestSuite) TestUpdateQuota() {
 		mock.OnAnything(suite.quotaCtl, "Update").Return(fmt.Errorf("failed to update the quota")).Once()
 
 		quota := models.QuotaUpdateReq{
-			Hard: types.ResourceList{"storage": 1000},
+			Hard: models.ResourceList{"storage": 1000},
 		}
 
 		res, err := suite.PutJSON("/quotas/1", quota)
@@ -269,7 +268,7 @@ func (suite *QuotaTestSuite) TestUpdateQuota() {
 		mock.OnAnything(suite.quotaCtl, "Update").Return(nil).Once()
 
 		quota := models.QuotaUpdateReq{
-			Hard: types.ResourceList{"size": 1000},
+			Hard: models.ResourceList{"size": 1000},
 		}
 
 		res, err := suite.PutJSON("/quotas/1", quota)

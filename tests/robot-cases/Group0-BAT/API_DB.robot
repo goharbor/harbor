@@ -97,6 +97,10 @@ Test Case - Push Chart By Helm3 Chart CLI
     [Tags]  push_chart
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 
+Test Case - Push Chart By Helm3.7 Chart CLI
+    [Tags]  push_chart_by_Helm3.7
+    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3.7_chart_cli.py
+
 Test Case - Push Cnab Bundle
     [Tags]  push_cnab
     Harbor API Test  ./tests/apitests/python/test_push_cnab_bundle.py
@@ -116,6 +120,14 @@ Test Case - Scan Image In Public Project
 Test Case - Scan All Images
     [Tags]  scan_all
     Harbor API Test  ./tests/apitests/python/test_system_level_scan_all.py
+
+Test Case - Stop Scan Image
+    [Tags]  stop_scan
+    Harbor API Test  ./tests/apitests/python/test_stop_scan_image_artifact.py
+
+Test Case - Stop Scan All Images
+    [Tags]  stop_scan_all
+    Harbor API Test  ./tests/apitests/python/test_system_level_stop_scan_all.py
 
 Test Case - Registry API
     [Tags]  reg_api

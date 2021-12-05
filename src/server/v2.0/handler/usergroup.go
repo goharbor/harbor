@@ -23,6 +23,7 @@ import (
 	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/usergroup"
@@ -105,22 +106,35 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
-	query := model.UserGroup{}
+	query, err := u.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
 	switch authMode {
 	case common.LDAPAuth:
-		query.GroupType = common.LDAPGroupType
+		query.Keywords["GroupType"] = common.LDAPGroupType
 		if params.LdapGroupDn != nil && len(*params.LdapGroupDn) > 0 {
-			query.LdapGroupDN = *params.LdapGroupDn
+			query.Keywords["LdapGroupDN"] = *params.LdapGroupDn
 		}
 	case common.HTTPAuth:
-		query.GroupType = common.HTTPGroupType
+		query.Keywords["GroupType"] = common.HTTPGroupType
 	}
 
+	total, err := u.ctl.Count(ctx, query)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	if total == 0 {
+		return operation.NewListUserGroupsOK().WithXTotalCount(0).WithPayload([]*models.UserGroup{})
+	}
 	ug, err := u.ctl.List(ctx, query)
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
-	return operation.NewListUserGroupsOK().WithPayload(getUserGroupResp(ug))
+	return operation.NewListUserGroupsOK().
+		WithXTotalCount(total).
+		WithPayload(getUserGroupResp(ug)).
+		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 func getUserGroupResp(ug []*model.UserGroup) []*models.UserGroup {
 	result := make([]*models.UserGroup, 0)
@@ -130,6 +144,18 @@ func getUserGroupResp(ug []*model.UserGroup) []*models.UserGroup {
 			GroupType:   int64(u.GroupType),
 			LdapGroupDn: u.LdapGroupDN,
 			ID:          int64(u.ID),
+		}
+		result = append(result, ug)
+	}
+	return result
+}
+func getUserGroupSearchItem(ug []*model.UserGroup) []*models.UserGroupSearchItem {
+	result := make([]*models.UserGroupSearchItem, 0)
+	for _, u := range ug {
+		ug := &models.UserGroupSearchItem{
+			GroupName: u.GroupName,
+			GroupType: int64(u.GroupType),
+			ID:        int64(u.ID),
 		}
 		result = append(result, ug)
 	}
@@ -150,4 +176,32 @@ func (u *userGroupAPI) UpdateUserGroup(ctx context.Context, params operation.Upd
 		return u.SendError(ctx, err)
 	}
 	return operation.NewUpdateUserGroupOK()
+}
+
+func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.SearchUserGroupsParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	query, err := u.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	if len(params.Groupname) == 0 {
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("need to provide groupname to search user group"))
+	}
+	query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: params.Groupname}
+	total, err := u.ctl.Count(ctx, query)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	if total == 0 {
+		return operation.NewSearchUserGroupsOK().WithXTotalCount(0).WithPayload([]*models.UserGroupSearchItem{})
+	}
+	ug, err := u.ctl.List(ctx, query)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	return operation.NewSearchUserGroupsOK().WithXTotalCount(total).
+		WithPayload(getUserGroupSearchItem(ug)).
+		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }

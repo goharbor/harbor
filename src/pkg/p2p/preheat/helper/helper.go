@@ -22,11 +22,7 @@ func (ir ImageRepository) Valid() bool {
 
 	nameAndTag := segments[1]
 	subSegments := strings.SplitN(nameAndTag, ":", 2)
-	if len(subSegments) != 2 {
-		return false
-	}
-
-	return true
+	return len(subSegments) == 2
 }
 
 // Name returns the name of the image repository

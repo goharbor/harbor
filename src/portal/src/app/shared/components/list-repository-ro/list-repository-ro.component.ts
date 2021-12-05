@@ -1,5 +1,3 @@
-
-import {filter} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,72 +11,37 @@ import {filter} from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { State } from '../../services/interface';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
-
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import {Subscription} from "rxjs";
 import { SessionService } from "../../services/session.service";
-import { UN_LOGGED_PARAM } from "../../../account/sign-in/sign-in.service";
-const YES: string = 'yes';
+import { UN_LOGGED_PARAM, YES } from "../../../account/sign-in/sign-in.service";
+
 @Component({
   selector: 'list-repository-ro',
   templateUrl: 'list-repository-ro.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListRepositoryROComponent implements OnInit, OnDestroy {
+export class ListRepositoryROComponent {
 
-  @Input() projectId: number;
   @Input() repositories: Repository[];
 
-  @Output() paginate = new EventEmitter<State>();
-
-  routerSubscription: Subscription;
-
   constructor(
-    private router: Router,
-    private searchTrigger: SearchTriggerService,
-    private ref: ChangeDetectorRef,
-    private sessionService: SessionService) {
-    this.router.routeReuseStrategy.shouldReuseRoute = function() {
-        return false;
-    };
-    this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd))
-        .subscribe((event) => {
-         // trick the Router into believing it's last link wasn't previously loaded
-         this.router.navigated = false;
-         // if you need to scroll back to top, here is the right place
-         window.scrollTo(0, 0);
-    });
+      private router: Router,
+      private searchTrigger: SearchTriggerService,
+      private sessionService: SessionService) {
   }
 
-  ngOnInit(): void {
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
-  }
-
-  ngOnDestroy(): void {
-    this.routerSubscription.unsubscribe();
-  }
-
-  refresh(state: State) {
-    if (this.repositories) {
-      this.paginate.emit(state);
-    }
-  }
-
-  public gotoLink(projectId: number, repoName: string): void {
-    this.searchTrigger.closeSearch(true);
+  getLink(projectId: number, repoName: string) {
     let projectName = repoName.split('/')[0];
     let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
-    let linkUrl = ['harbor', 'projects', projectId, 'repositories', repositorieName ];
-    if (this.sessionService.getCurrentUser()) {
-      this.router.navigate(linkUrl);
-    } else {// if not logged in and it's a public project, add param 'publicAndNotLogged'
-      this.router.navigate(linkUrl, {queryParams: {[UN_LOGGED_PARAM]: YES}});
-    }
+    return `/harbor/projects/${projectId}/repositories/${repositorieName}`;
   }
-
+  getQueryParams() {
+    if (this.sessionService.getCurrentUser()) {
+      return null;
+    }
+    return {[UN_LOGGED_PARAM]: YES};
+  }
 }

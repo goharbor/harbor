@@ -1,108 +1,43 @@
-<clr-modal [(clrModalOpen)]="opened" [clrModalSize]="'lg'" [clrModalStaticBackdrop]="'true'" [clrModalClosable]="false">
-    <h3 class="modal-title">{{'MEMBER.IMPORT_GROUP' | translate}}</h3>
+<clr-modal [(clrModalOpen)]="addGroupOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+    <h3 class="modal-title">{{'GROUP.NEW_MEMBER' | translate}}</h3>
     <div class="modal-body">
-        <label>{{ 'MEMBER.NEW_GROUP_INFO' | translate}}</label>
-        <div class="modeSelectradios">
-            <clr-radio-wrapper>
-                <input clrRadio type="radio" name="modeRadios" [value]="false" id="select_group" [(ngModel)]="createGroupMode">
-                <label for="select_group">{{'MEMBER.ADD_GROUP_SELECT' | translate}}</label>
-            </clr-radio-wrapper>
-            <clr-radio-wrapper>
-                <input clrRadio type="radio" name="modeRadios" [value]="true" id="create_group" [(ngModel)]="createGroupMode">
-                <label for="create_group">{{'MEMBER.CREATE_GROUP_SELECT' | translate}}</label>
-            </clr-radio-wrapper>
-        </div>
-        <div *ngIf="createGroupMode">
-            <form #groupForm="ngForm" class="clr-form clr-form-horizontal">
-                <div class="clr-form-control">
-                    <label class="required clr-control-label">{{ 'MEMBER.LDAP_SEARCH_DN' | translate}}</label>
-                    <div class="clr-control-container" [class.clr-error]="isDNInvalid">
-                        <div class="clr-input-wrapper">
-                            <input class="clr-input" type="text" name="ldap_group_dn" size="45"
-                                   required
-                                   [(ngModel)]="group.ldap_group_dn"
-                                   #groupDN="ngModel">
-                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+        <inline-alert class="modal-title"></inline-alert>
+        <label>{{ 'GROUP.NEW_USER_INFO' | translate}}</label>
+        <form #groupForm="ngForm" class="clr-form clr-form-horizontal">
+            <div class="clr-form-control">
+                <label class="required clr-control-label">{{'GROUP.GROUP' | translate}} {{'GROUP.NAME' | translate}}</label>
+                <div class="clr-control-container" [class.clr-error]="(groupName.invalid && (groupName.touched||groupName.dirty)) || !isGroupNameValid">
+                    <div class="clr-input-wrapper" (mouseleave)="leaveInput()">
+                        <input class="clr-input" type="text" id="group-name"   [(ngModel)]="memberGroup.group_name"
+                               name="groupName"
+                               #groupName="ngModel"
+                               required autocomplete="off" (keyup)="input()">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                        <div class="selectBox"  [style.display]="searchedGroups.length ? 'block' : 'none'" >
+                            <ul>
+                                <li *ngFor="let group of searchedGroups" (click)="selectGroup(group.group_name)">{{group.group_name}}</li>
+                            </ul>
                         </div>
-                        <clr-control-error *ngIf="isDNInvalid" class="tooltip-content">
-                            {{dnTooltip | translate}}
-                        </clr-control-error>
                     </div>
+                    <clr-control-error *ngIf="(groupName.invalid && (groupName.touched||groupName.dirty)) || !isGroupNameValid" class="tooltip-content">
+                        {{ groupTooltip | translate }}
+                    </clr-control-error>
                 </div>
+            </div>
                 <div class="clr-form-control">
-                    <label class="clr-control-label">{{'MEMBER.LDAP_SEARCH_NAME' | translate}}</label>
+                    <label class="clr-control-label">{{'GROUP.ROLE' | translate}}</label>
                     <div class="clr-control-container">
-                        <div class="clr-input-wrapper">
-                            <input class="clr-input" type="text" name="ldap_group_name" size="35" [(ngModel)]="group.group_name">
-                        </div>
+                        <clr-radio-wrapper  *ngFor="let projectRoot of projectRoots">
+                            <input clrRadio type="radio" name="member_role" id="{{'check_root_project_' + projectRoot.NAME}}" [value]="projectRoot.VALUE" [(ngModel)]="roleId">
+                            <label for="{{'check_root_project_' + projectRoot.NAME}}">{{ projectRoot.LABEL | translate}}</label>
+                        </clr-radio-wrapper>
                     </div>
                 </div>
-                <div class="clr-form-control">
-                    <label class="clr-control-label" for="member_role1">{{ 'MEMBER.ROLE' | translate}}</label>
-                    <div class="clr-select-wrapper">
-                        <select class="clr-select" id="member_role1" name="member_role" [(ngModel)]="selectedRole">
-                            <option *ngFor="let role of roles" [ngValue]="role.id"> {{role.value | translate}}</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div *ngIf="!createGroupMode">
-            <div>
-                <div class="row flex-items-xs-between">
-                    <div class="left">
-                    </div>
-                    <div class="right">
-                        <hbr-filter [withDivider]="true" filterPlaceholder='{{"MEMBER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)"
-                                    [currentValue]="currentTerm"></hbr-filter>
-                        <span class="refresh-btn" (click)="loadGroups()">
-                            <clr-icon shape="refresh"></clr-icon>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
-                    <label>{{'MEMBER.LDAP_GROUP' | translate}}</label>
-                </div>
-                <div class="class=col-lg-11 col-md-11 col-sm-11 col-xs-11">
-                    <clr-datagrid class="datagrid-compact" [(clrDgSelected)]="selectedGroups" [clrDgLoading]="onLoading">
-                        <clr-dg-column [clrDgField]="'group_name'">{{'MEMBER.LDAP_SEARCH_NAME' | translate}}</clr-dg-column>
-                        <clr-dg-column [clrDgField]="'ldap_group_dn'">{{'MEMBER.LDAP_SEARCH_DN' | translate}}</clr-dg-column>
-                        <clr-dg-column [clrDgField]="'property'">{{'MEMBER.LDAP_PROPERTY' | translate}}</clr-dg-column>
-
-                        <clr-dg-row *clrDgItems="let group of groups" [clrDgItem]="group">
-                            <clr-dg-cell>{{group.group_name}}</clr-dg-cell>
-                            <clr-dg-cell>{{group.ldap_group_dn}}</clr-dg-cell>
-                            <clr-dg-cell>{{group.property}}</clr-dg-cell>
-                        </clr-dg-row>
-
-                        <clr-dg-footer>
-                            <clr-dg-pagination #pagination [clrDgPageSize]="5" [clrDgTotalItems]="totalCount">
-                                <span *ngIf="groups?.length">
-                                        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'MEMBER.OF' | translate}}
-                                </span>
-                                {{groups?.length}} {{'MEMBER.ITEMS' | translate}}
-                            </clr-dg-pagination>
-                        </clr-dg-footer>
-                    </clr-datagrid>
-                </div>
-            </div>
-            <div class="clr-form clr-form-horizontal">
-                <div class="clr-form-control">
-                    <label class="clr-control-label" for="member_role1">{{ 'MEMBER.ROLE' | translate}}</label>
-                    <div class="clr-select-wrapper">
-                        <select class="clr-select" id="member_role2" [(ngModel)]="selectedRole">
-                            <option *ngFor="let role of roles" [ngValue]="role.id"> {{role.value | translate}}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid"  (click)="onSave()">{{'BUTTON.SAVE' | translate}}</button>
+        <button [clrLoading]="btnStatus" type="button" class="btn btn-primary" [disabled]="!isValid()" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
     </div>
-
 </clr-modal>

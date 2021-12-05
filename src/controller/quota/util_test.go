@@ -16,7 +16,6 @@ package quota
 
 import (
 	"context"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"math/rand"
 	"testing"
 	"time"
@@ -24,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -76,21 +76,21 @@ func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
 	rand.Seed(time.Now().UnixNano())
 
 	startProjectID := rand.Int63()
-	var firstPageProjects, secondPageProjects []*proModels.Project
+	var firstPageProjects, secondPageProjects []*models.Project
 	for i := 0; i < 50; i++ {
-		firstPageProjects = append(firstPageProjects, &proModels.Project{
+		firstPageProjects = append(firstPageProjects, &models.Project{
 			ProjectID: startProjectID + int64(i),
 		})
 	}
 
 	for i := 0; i < 10; i++ {
-		secondPageProjects = append(secondPageProjects, &proModels.Project{
+		secondPageProjects = append(secondPageProjects, &models.Project{
 			ProjectID: startProjectID + 50 + int64(i),
 		})
 	}
 
 	page := 1
-	mock.OnAnything(suite.projectCtl, "List").Return(func(context.Context, *q.Query, ...project.Option) []*proModels.Project {
+	mock.OnAnything(suite.projectCtl, "List").Return(func(context.Context, *q.Query, ...project.Option) []*models.Project {
 		defer func() {
 			page++
 		}()
@@ -109,7 +109,6 @@ func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
 	q.SetUsed(types.ResourceList{types.ResourceStorage: 0})
 
 	mock.OnAnything(suite.quotaMgr, "GetByRef").Return(q, nil)
-	mock.OnAnything(suite.quotaMgr, "GetByRefForUpdate").Return(q, nil)
 	mock.OnAnything(suite.quotaMgr, "Update").Return(nil)
 	mock.OnAnything(suite.driver, "CalculateUsage").Return(types.ResourceList{types.ResourceStorage: 1}, nil)
 

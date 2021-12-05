@@ -104,6 +104,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 	var cveIDs []interface{}
 	for _, v := range vulnReport.Vulnerabilities {
+		v.Severity = vuln.ParseSeverityVersion3(v.Severity.String())
 		cveIDs = append(cveIDs, v.ID)
 	}
 

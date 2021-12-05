@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.16.5
+#							golang:1.17.2
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -110,8 +110,8 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.7.1-patch-2819-2553-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.17.2
-TRIVYADAPTERVERSION=v0.19.0
+TRIVYVERSION=v0.20.1
+TRIVYADAPTERVERSION=v0.24.0
 
 # version of chartmuseum for pulling the source code
 CHARTMUSEUM_SRC_TAG=v0.13.1
@@ -156,7 +156,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.16.5
+GOBUILDIMAGE=golang:1.17.2
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -446,7 +446,7 @@ build_base_docker:
 	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
 		docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
 	else \
-		echo "No docker credentials provided, please make sure enough priviledges to access docker hub!" ; \
+		echo "No docker credentials provided, please make sure enough privileges to access docker hub!" ; \
 	fi
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \

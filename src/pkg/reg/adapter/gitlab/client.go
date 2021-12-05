@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	liberrors "github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"io"
 	"io/ioutil"
 	"net/http"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
 	"net/url"
 	"reflect"
+
+	liberrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/reg/util"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
 const (
@@ -48,7 +49,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		token:    registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(registry.Insecure),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 			}),
 	}
 	return client, nil

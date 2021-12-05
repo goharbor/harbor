@@ -146,7 +146,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	}
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
-	var transport = util.GetHTTPTransport(registry.Insecure)
+	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
 	var authorizer = bearer.NewAuthorizer(realm, service, credential, transport)
 
 	return &adapter{

@@ -16,11 +16,13 @@ package dao
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/goharbor/harbor/src/common/models"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -74,7 +76,7 @@ func NewPGSQL(host string, port string, usr string, pwd string, database string,
 
 // Register registers pgSQL to orm with the info wrapped by the instance.
 func (p *pgsql) Register(alias ...string) error {
-	if err := utils.TestTCPConn(fmt.Sprintf("%s:%s", p.host, p.port), 60, 2); err != nil {
+	if err := utils.TestTCPConn(net.JoinHostPort(p.host, p.port), 60, 2); err != nil {
 		return err
 	}
 
@@ -105,13 +107,13 @@ func (p *pgsql) Register(alias ...string) error {
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	port, err := strconv.ParseInt(p.port, 10, 64)
+	port, err := strconv.Atoi(p.port)
 	if err != nil {
 		return err
 	}
 	m, err := NewMigrator(&models.PostGreSQL{
 		Host:     p.host,
-		Port:     int(port),
+		Port:     port,
 		Username: p.usr,
 		Password: p.pwd,
 		Database: p.database,
@@ -142,7 +144,7 @@ func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
 	dbURL := url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(database.Username, database.Password),
-		Host:     fmt.Sprintf("%s:%d", database.Host, database.Port),
+		Host:     net.JoinHostPort(database.Host, strconv.Itoa(database.Port)),
 		Path:     database.Database,
 		RawQuery: fmt.Sprintf("sslmode=%s", database.SSLMode),
 	}

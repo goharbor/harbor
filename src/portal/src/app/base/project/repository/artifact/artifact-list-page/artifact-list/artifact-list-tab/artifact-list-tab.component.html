@@ -96,6 +96,12 @@
                     <span>{{'VULNERABILITY.SCAN_NOW' | translate}}</span>
                 </button>
 
+                <button id="stop-scan" [clrLoading]="stopBtnState" type="button" class="btn  btn-secondary scan-btn"
+                        [disabled]="!(canStopScan() && hasScanImagePermission )" (click)="stopNow()">
+                    <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
+                    <span>{{'VULNERABILITY.STOP_NOW' | translate}}</span>
+                </button>
+
                 <clr-dropdown class="btn  btn-link" *ngIf="!depth">
                     <span clrDropdownTrigger id="artifact-list-action" class="btn pl-0">
                         {{'BUTTON.ACTIONS' | translate}}
@@ -173,7 +179,7 @@
                             <div clrTooltipTrigger class="level-border">
                                 <div class="inner truncated">
                                     <a href="javascript:void(0)" (click)="goIntoIndexArtifact(artifact)">
-                                        <clr-icon class="icon-folder" shape="folder"></clr-icon>
+                                        <clr-icon size="24" class="icon-folder" shape="folder"></clr-icon>
                                     </a>
                                 </div>
                             </div>
@@ -257,7 +263,7 @@
                         <span *ngIf="!hasVul(artifact)">
                             {{'ARTIFACT.SCAN_UNSUPPORTED' | translate}}
                         </span>
-                        <hbr-vulnerability-bar (scanFinished)="scanFinished($event)"  *ngIf="hasVul(artifact)" [inputScanner]="handleScanOverview(artifact.scan_overview)?.scanner"
+                        <hbr-vulnerability-bar (submitStopFinish)="submitStopFinish($event)" (scanFinished)="scanFinished($event)"  *ngIf="hasVul(artifact)" [inputScanner]="handleScanOverview(artifact.scan_overview)?.scanner"
                             (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                             [artifactDigest]="artifact.digest" [summary]="handleScanOverview(artifact.scan_overview)">
                         </hbr-vulnerability-bar>

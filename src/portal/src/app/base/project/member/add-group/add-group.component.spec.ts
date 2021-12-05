@@ -1,41 +1,41 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ClarityModule } from '@clr/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { FormsModule } from '@angular/forms';
+import { of } from "rxjs";
+import { AppConfigService } from "../../../../services/app-config.service";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { SharedTestingModule } from "../../../../shared/shared.module";
 import { AddGroupComponent } from './add-group.component';
-import { GroupService } from "../../../left-side-nav/group/group.service";
-import { MemberService } from "../member.service";
-import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { OperationService } from "../../../../shared/components/operation/operation.service";
+import { MemberService } from 'ng-swagger-gen/services/member.service';
 
-describe('AddGroupComponent', () => {
+describe('AddHttpAuthGroupComponent', () => {
   let component: AddGroupComponent;
   let fixture: ComponentFixture<AddGroupComponent>;
-  let fakeMessageHandlerService = null;
-  let fakeOperationService = null;
-  let fakeGroupService = null;
-  let fakeMemberService = null;
+  let fakeAppConfigService = {
+    isLdapMode: function () {
+      return true;
+    }
+  };
+
+  let fakeMemberService = {listProjectMembers: function() {
+    return of(null);
+  }};
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AddGroupComponent],
-      imports: [
-        ClarityModule,
-        FormsModule,
-        TranslateModule.forRoot()
-      ],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
+      imports: [
+        SharedTestingModule
+      ],
       providers: [
         TranslateService,
-        { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-        { provide: OperationService, useValue: fakeOperationService },
-        { provide: GroupService, useValue: fakeGroupService },
+        { provide: AppConfigService, useValue: fakeAppConfigService },
         { provide: MemberService, useValue: fakeMemberService }
-      ]
-    }).compileComponents();
+      ],
+    })
+      .compileComponents();
   }));
 
   beforeEach(() => {

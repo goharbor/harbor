@@ -77,12 +77,17 @@ Test Case - Push CNAB Bundle and Display
     [Tags]  push_cnab
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    ${index1_image1}=  Set Variable  busybox
+    ${index1_image2}=  Set Variable  alpine
+    ${index2_image1}=  Set Variable  hello-world
+    ${index2_image2}=  Set Variable  redis
+    ${user}=  Set Variable  user010
+    ${pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  test${d}
-
+    ${index1}  ${index2}=  Prepare Cnab Push Test Data  ${ip}  ${user}  ${pwd}  test${d}  ${index1_image1}  ${index1_image2}  ${index2_image1}  ${index2_image2}
     ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  ${user}  ${pwd}  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${ip}  test${d}  ${index1}  ${index2}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
@@ -802,7 +807,7 @@ Test Case - System Robot Account Cover All Projects
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${pro_name}
-    ${name}=  Create A New System Robot Account  is_cover_all=${true}
+    ${name}  ${secret}=  Create A New System Robot Account  is_cover_all=${true}
     Navigate To Projects
     Switch To Robot Account
     System Robot Account Exist  ${name}  all
@@ -816,6 +821,45 @@ Test Case - System Robot Account
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
-    ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
+    ${name}  ${secret}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
     System Robot Account Exist  ${name}  ${project_count}
     Close Browser
+
+Test Case - Go To Harbor Api Page
+    [Tags]  go_to_harbor_api_page
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Keyword N Times When Error  4  Check Harbor Api Page 
+    Close Browser
+
+Test Case - WASM Push And Pull To Harbor
+    [Tags]  wasm_push_and_pull_to_harbor
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  wget https://github.com/engineerd/wasm-to-oci/blob/v0.1.2/testdata/hello.wasm
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  wasm-to-oci push hello.wasm ${ip}/project${d}/wasm-to-oci:v1
+    Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry file should exist  test.wasm
+
+Test Case - Carvel Imgpkg Push And Pull To Harbor
+    [Tags]  imgpkg_push_and_pull
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    ${out_path}=    Set Variable    /tmp/my-bundle
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Prepare Image Package Test Files  ${EXECDIR}/config
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  imgpkg push -b ${ip}/project${d}/my-bundle:v1.0.0 -f config/
+    Wait Unitl Command Success  imgpkg pull -b ${ip}/project${d}/my-bundle:v1.0.0 -o ${out_path}
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
+    Retry File Should Exist  ${out_path}/.imgpkg/images.yml

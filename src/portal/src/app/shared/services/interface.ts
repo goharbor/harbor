@@ -76,6 +76,7 @@ export interface ReplicationRule extends Base {
   dest_namespace_replace_count?: number;
   enabled: boolean;
   override: boolean;
+  speed: number;
 }
 
 export class Filter {

@@ -21,16 +21,22 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Create A Random Permission Item List
-    ${permission_item_all_list}=  Create List  Push Artifact
-    ...                                    Pull Artifact
+    ${permission_item_all_list}=  Create List  Push Repository
+    ...                                    Pull Repository
     ...                                    Delete Artifact
     ...                                    Read Helm Chart
     ...                                    Create Helm Chart Version
     ...                                    Delete Helm Chart Version
+    ...                                    Create Helm Chart label
+    ...                                    Delete Helm Chart label
     ...                                    Create Tag
     ...                                    Delete Tag
     ...                                    Create Artifact label
+    ...                                    Delete Artifact label
     ...                                    Create Scan
+    ...                                    Stop Scan
+    ...                                    List Artifact
+    ...                                    List Repository
 
 
     Set Suite Variable  ${permission_item_all_list}
@@ -68,7 +74,7 @@ Filter Project In Project Permisstion List
     Retry Text Input  ${save_sys_robot_project_filter_input}   ${name}
     Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_project_filter_close_btn}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_project_filter_input}
 
-Clear Global Permissions By JaveScript
+Clear Global Permissions By JavaScript
     Retry Element Click  //button[contains(., 'RESET PERMISSIONS')]
     FOR  ${i}  IN RANGE  0  10
         Execute JavaScript  document.getElementsByClassName('dropdown-item')[${i}].click();
@@ -94,7 +100,7 @@ Create A New System Robot Account
     ...  Retry Element Click  xpath=${sys_robot_account_expiration_type_select}//option[@value='${expiration_type}']
     Run Keyword If  '${description}' != '${null}'  Retry Text Input  ${sys_robot_account_description_textarea}  ${description}
     Run Keyword If  '${is_cover_all}' == '${true}'  Retry Double Keywords When Error  Retry Element Click  ${sys_robot_account_coverall_chb}   Retry Checkbox Should Be Selected  ${sys_robot_account_coverall_chb_input}
-    ...  ELSE  Clear Global Permissions By JaveScript
+    ...  ELSE  Clear Global Permissions By JavaScript
 
     # Select project
     FOR  ${project}  IN  @{project_permission_list}
@@ -113,9 +119,10 @@ Create A New System Robot Account
     END
     # Save it
     Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_account_btn}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_account_btn}
-    Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_project_paste_icon}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_project_paste_icon}
-
-    [Return]  ${name}
+    Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_export_to_file_btn}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_export_to_file_btn}
+    # Get Robot Account Info
+    ${id}  ${name}  ${secret}  ${creation_time}  ${expires_at}=  Get Robot Account Info By File  ${download_directory}/robot$${name}.json
+    [Return]  ${name}  ${secret}
 
 System Robot Account Exist
     [Arguments]  ${name}  ${project_count}
@@ -124,3 +131,13 @@ System Robot Account Exist
     ${projects}=  Set Variable If  '${project_count}' == 'all'  All projects with  ${project_count} PROJECT
     Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${projects}')]
 
+Get Robot Account Info By File
+    [Arguments]  ${file_path}
+    Retry File Should Exist  ${file_path}
+    ${json}=  Load Json From File  ${file_path}
+    ${id}=  Set Variable  ${json["id"]}
+    ${name}=  Set Variable  ${json["name"]}
+    ${secret}=  Set Variable  ${json["secret"]}
+    ${creation_time}=  Set Variable  ${json["creation_time"]}
+    ${expires_at}=  Set Variable  ${json["expires_at"]}
+    [Return]  ${id}  ${name}  ${secret}  ${creation_time}  ${expires_at}

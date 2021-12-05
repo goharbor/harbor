@@ -1,14 +1,15 @@
 package blob
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestDeletionBlob(t *testing.T) {

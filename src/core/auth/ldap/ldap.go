@@ -20,25 +20,21 @@ import (
 	"regexp"
 	"strings"
 
+	goldap "github.com/go-ldap/ldap/v3"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	ldapCtl "github.com/goharbor/harbor/src/controller/ldap"
+	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
+	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/ldap"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"github.com/goharbor/harbor/src/pkg/user"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
-
-	goldap "github.com/go-ldap/ldap/v3"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/utils"
-
-	"github.com/goharbor/harbor/src/common/models"
-	ldapCtl "github.com/goharbor/harbor/src/controller/ldap"
-	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
-	"github.com/goharbor/harbor/src/pkg/ldap"
-
-	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
@@ -50,8 +46,7 @@ type Auth struct {
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.
-func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	ctx := orm.Context()
+func (l *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	p := m.Principal
 	if len(strings.TrimSpace(p)) == 0 {
 		log.Debugf("LDAP authentication failed for empty user id.")
@@ -80,7 +75,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		log.Warningf("Found more than one entry.")
 		return nil, auth.NewErrAuth("Multiple entries found")
 	}
-	log.Debugf("Found ldap user %+v", ldapUsers[0])
+	log.Debugf("Found ldap user: %v", ldapUsers[0].Username)
 
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
@@ -135,7 +130,7 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		}
 		userGroups = append(userGroups, ugModel.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
-	u.GroupIDs, err = ugCtl.Ctl.Populate(orm.Context(), userGroups)
+	u.GroupIDs, err = ugCtl.Ctl.Populate(ctx, userGroups)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
 	}
@@ -155,7 +150,7 @@ func (l *Auth) syncUserInfoFromDB(ctx context.Context, u *models.User) {
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, return the user's profile.
-func (l *Auth) OnBoardUser(u *models.User) error {
+func (l *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
 	if u.Email == "" {
 		if strings.Contains(u.Username, "@") {
 			u.Email = u.Username
@@ -164,13 +159,13 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 	u.Password = "12345678AbC" // Password is not kept in local db
 	u.Comment = "from LDAP."   // Source is from LDAP
 
-	return l.userMgr.Onboard(orm.Context(), u)
+	return l.userMgr.Onboard(ctx, u)
 }
 
 // SearchUser -- Search user in ldap
-func (l *Auth) SearchUser(username string) (*models.User, error) {
+func (l *Auth) SearchUser(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	s, err := ldapCtl.Ctl.Session(orm.Context())
+	s, err := ldapCtl.Ctl.Session(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -194,18 +189,18 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 
 		log.Debugf("Found ldap user %v", user)
 	} else {
-		return nil, fmt.Errorf("no user found, %v", username)
+		return nil, errors.NotFoundError(nil).WithMessage("no user found: %v", username)
 	}
 
 	return &user, nil
 }
 
 // SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
-func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
+func (l *Auth) SearchGroup(ctx context.Context, groupKey string) (*ugModel.UserGroup, error) {
 	if _, err := goldap.ParseDN(groupKey); err != nil {
 		return nil, auth.ErrInvalidLDAPGroupDN
 	}
-	s, err := ldapCtl.Ctl.Session(orm.Context())
+	s, err := ldapCtl.Ctl.Session(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("can not load system ldap config: %v", err)
@@ -224,7 +219,7 @@ func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, fmt.Errorf("failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, errors.NotFoundError(nil).WithMessage("failed to searh ldap group with groupDN:%v", groupKey)
 	}
 	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,
@@ -234,8 +229,7 @@ func (l *Auth) SearchGroup(groupKey string) (*ugModel.UserGroup, error) {
 }
 
 // OnBoardGroup -- Create Group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
-	ctx := orm.Context()
+func (l *Auth) OnBoardGroup(ctx context.Context, u *ugModel.UserGroup, altGroupName string) error {
 	if _, err := goldap.ParseDN(u.LdapGroupDN); err != nil {
 		return auth.ErrInvalidLDAPGroupDN
 	}
@@ -244,7 +238,7 @@ func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
 	}
 	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
-	userGroupList, err := ugCtl.Ctl.List(ctx, ugModel.UserGroup{LdapGroupDN: u.LdapGroupDN})
+	userGroupList, err := ugCtl.Ctl.List(ctx, q.New(q.KeyWords{"LdapGroupDN": u.LdapGroupDN}))
 	if err != nil {
 		return err
 	}
@@ -255,9 +249,7 @@ func (l *Auth) OnBoardGroup(u *ugModel.UserGroup, altGroupName string) error {
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
-func (l *Auth) PostAuthenticate(u *models.User) error {
-
-	ctx := orm.Context()
+func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 	query := q.New(q.KeyWords{"Username": u.Username})
 	n, err := l.userMgr.Count(ctx, query)
 	if err != nil {
@@ -267,7 +259,7 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 	if n > 0 {
 		dbUser, err := l.userMgr.GetByName(ctx, u.Username)
 		if errors.IsNotFoundErr(err) {
-			fmt.Printf("User not found in DB %+v", u)
+			log.Debugf("User not found in DB:%v", u.Username)
 			return nil
 		} else if err != nil {
 			return err
@@ -288,7 +280,7 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 		return nil
 	}
 
-	err = auth.OnBoardUser(u)
+	err = auth.OnBoardUser(ctx, u)
 	if err != nil {
 		return err
 	}

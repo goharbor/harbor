@@ -213,7 +213,7 @@
     "ROLE": "角色",
     "PUBLIC_OR_PRIVATE": "訪問級別",
     "REPO_COUNT": "鏡像倉庫數",
-    "CHART_COUNT":"頭盔圖表數",
+    "CHART_COUNT":"Helm Chart 數",
     "CREATION_TIME": "創建時間",
     "ACCESS_LEVEL": "訪問級別",
     "PUBLIC": "公開",
@@ -251,7 +251,8 @@
     "PROXY_CACHE": "Proxy Cache",
     "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
     "ENDPOINT": "Endpoint",
-    "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+    "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+    "NO_PROJECT": "We couldn't find any projects"
   },
   "PROJECT_DETAIL":{
     "SUMMARY": "概要",
@@ -262,7 +263,7 @@
     "LABELS": "標籤",
     "PROJECTS": "項目",
     "CONFIG": "配置管理",
-    "HELMCHART":"頭盔圖表",
+    "HELMCHART":"Helm Chart",
     "ROBOT_ACCOUNTS": "機器人帳戶",
     "WEBHOOKS":"Webhooks",
     "IMMUTABLE_TAG": "不可變的Tag",
@@ -330,7 +331,10 @@
     "SWITCH_TITLE": "切換項目成員確認",
     "SWITCH_SUMMARY": "你確認切換項目成員{{param}}??",
     "SET_ROLE": "設置角色",
-    "REMOVE": "移除成員"
+    "REMOVE": "移除成員",
+    "GROUP_NAME_REQUIRED": "Group name is required",
+    "NON_EXISTENT_GROUP": "Group name does not exists",
+    "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
   },
   "ROBOT_ACCOUNT":{
     "NAME": "名稱",
@@ -352,7 +356,7 @@
     "DELETE": "刪除",
     "CREAT_ROBOT_ACCOUNT": "創建機器人帳戶",
     "PERMISSIONS_IMAGE": "鏡像",
-    "PERMISSIONS_HELMCHART":"頭盔圖表",
+    "PERMISSIONS_HELMCHART":"Helm Chart",
     "PUSH": "推送",
     "PULL":"拉取",
     "FILTER_PLACEHOLDER": "過濾機器人帳戶",
@@ -590,6 +594,7 @@
     "PLACEHOLDER": "未發現任何復制規則!",
     "JOB_PLACEHOLDER": "未發現任何復制任務!",
     "NO_ENDPOINT_INFO": "請先添加一個目標",
+    "NO_LABEL_INFO": "Please add a label first",
     "NO_PROJECT_INFO": "此項目不存在",
     "SOURCE_RESOURCE_FILTER": "源資源過濾器",
     "SCHEDULED": "定時",
@@ -642,7 +647,11 @@
     "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
     "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
     "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
-    "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'"
+    "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'",
+    "BANDWIDTH": "Bandwidth",
+    "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
+    "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+    "UNLIMITED": "Unlimited"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
@@ -807,7 +816,7 @@
   "SUMMARY":{
     "QUOTAS": "容量",
     "PROJECT_REPOSITORY": "鏡像倉庫",
-    "PROJECT_HELM_CHART":"頭盔圖表",
+    "PROJECT_HELM_CHART":"Helm Chart",
     "PROJECT_MEMBER": "成員",
     "PROJECT_QUOTAS": "容量",
     "ARTIFACT_COUNT":"工件數量",
@@ -896,9 +905,9 @@
       "VERIFY_CERT": "檢查來自LDAP服務端的證書",
       "REPO_TOOLTIP": "用戶在此模式下無法對鏡像執行任何操作。",
       "WEBHOOK_TOOLTIP": "當執行推送,拉動,刪除,掃描鏡像或chart 等特定操作時,啟用webhooks 以在指定端點接收回調",
-      "HOURLY_CRON": "每小時運行一次。相當於0 0 * * * *",
-      "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於0 0 * * * *",
-      "DAILY_CRON": "每天午夜運行一次。相當於0 0 * * * *"
+      "HOURLY_CRON": "每小時運行一次。相當於 0 0 * * * *",
+      "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於 0 0 0 * * 0",
+      "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *"
     },
     "LDAP":{
       "URL":"LDAP URL",
@@ -953,6 +962,7 @@
       "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
     },
     "SCANNING":{
+      "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
       "TRIGGER_SCAN_ALL_SUCCESS": "啟動掃描所有鏡像任務成功!",
       "TRIGGER_SCAN_ALL_FAIL": "啟動掃描所有鏡像任務失敗:{{error}}",
       "TITLE": "缺陷掃描",
@@ -1023,7 +1033,8 @@
       "OTHER_STATUS": "未掃描",
       "QUEUED": "已入隊列",
       "ERROR": "查看日誌",
-      "SCANNING": "掃描中"
+      "SCANNING": "掃描中",
+      "STOPPED": "Scan stopped"
     },
     "GRID":{
       "PLACEHOLDER": "沒有掃描結果！",
@@ -1052,8 +1063,6 @@
       "HIGH": "嚴重",
       "MEDIUM": "中等",
       "LOW": "較低",
-      "NEGLIGIBLE": "可忽略",
-      "UNKNOWN":"未知",
       "NONE":"無"
     },
     "SINGULAR": "漏洞",
@@ -1066,7 +1075,9 @@
     "SCAN_NOW":"掃描",
     "SCAN_BY": "SCAN BY {{scanner}}",
     "REPORTED_BY": "Reported by {{scanner}}",
-    "NO_SCANNER": "NO SCANNER"
+    "NO_SCANNER": "NO SCANNER",
+    "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+    "STOP_NOW": "Stop Scan"
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
@@ -1674,6 +1685,10 @@
     "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
     "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
     "PUSH_AND_PULL": "Push",
-    "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
+    "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
+    "STOP": "Stop",
+    "LIST": "List",
+    "REPOSITORY": "Repository",
+    "HELM_LABEL": "Helm Chart label"
   }
 }

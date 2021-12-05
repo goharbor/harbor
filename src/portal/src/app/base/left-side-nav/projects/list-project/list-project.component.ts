@@ -130,11 +130,11 @@ export class ListProjectComponent implements OnDestroy {
         this.addProject.emit();
     }
 
-    goToLink(proId: number): void {
+    clickLink(proId: number): void {
         this.searchTrigger.closeSearch(true);
-
-        let linkUrl = ["harbor", "projects", proId];
-        this.router.navigate(linkUrl);
+    }
+    getLink(proId: number) {
+        return `/harbor/projects/${proId}/repositories`;
     }
 
     clrLoad(state: ClrDatagridStateInterface) {

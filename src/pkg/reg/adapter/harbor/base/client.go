@@ -17,6 +17,7 @@ package base
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -109,6 +110,19 @@ func (c *Client) ListProjects(name string) ([]*Project, error) {
 	if err := c.C.GetAndIteratePagination(url, &projects); err != nil {
 		return nil, err
 	}
+	return projects, nil
+}
+
+// ListProjectsWithQuery lists projects with query
+func (c *Client) ListProjectsWithQuery(q string, with_detail bool) ([]*Project, error) {
+	projects := []*Project{}
+	// if old version does not support query, it will fallback to normal
+	// list(list all).
+	url := fmt.Sprintf("%s/projects?q=%s&with_detail=%t", c.BasePath(), url.QueryEscape(q), with_detail)
+	if err := c.C.GetAndIteratePagination(url, &projects); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 

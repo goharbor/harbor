@@ -86,14 +86,15 @@ Body Of Scan Image With Empty Vul
 Body Of Manual Scan All
     [Arguments]  @{vulnerability_levels}
     Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    ${sha256}=  Set Variable  e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis  sha256=${sha256}
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Trigger Scan Now And Wait Until The Result Appears
     Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
-    Scan Result Should Display In List Row  latest
+    Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
@@ -151,7 +152,7 @@ Body Of List Helm Charts
     Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
 
     Go Into Project  project${d}  has_image=${false}
-    Switch To Project Charts
+    Retry Keyword N Times When Error  4  Download Chart File  ${prometheus_chart_name}  ${prometheus_chart_filename}
     Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
@@ -237,6 +238,21 @@ Helm3 CLI Push Without Sign In Harbor
     Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}  helm_cmd=helm3
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
+
+Helm3.7 CLI Work Flow
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  rm -rf ./${harbor_helm_name}
+    Wait Unitl Command Success  tar zxf ${files_directory}/${harbor_helm_filename}
+    Helm3.7 Registry Login  ${ip}  ${sign_in_user}  ${sign_in_pwd}
+    Helm3.7 Package  ./${harbor_helm_name}
+    Helm3.7 Push  ${harbor_helm_package}  ${ip}  project${d}
+    Run  rm -rf ./${harbor_helm_package}
+    Retry File Should Not Exist  ./${harbor_helm_package}
+    Helm3.7 Pull  ${ip}  project${d}  ${harbor_helm_version}
+    Retry File Should Exist  ./${harbor_helm_package}
+    Helm3.7 Registry Logout  ${ip}
 
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
@@ -436,3 +452,33 @@ Replication With Flattening
     END
     Log All  ${target_images}
     Body Of Replication Of Pull Images from Registry To Self   harbor  https://${src_endpoint}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${src_project}/**  ${null}  N  ${flattening_type}  @{target_images}
+
+Check Harbor Api Page
+    Retry Link Click  //a[contains(.,'Harbor API V2.0')]
+    Sleep  3
+    Switch Window  locator=NEW
+    ${Title}=  Get Title
+    Should Be Equal  ${Title}  Harbor Swagger
+    Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+
+Body Of Stop Scan And Stop Scan All
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
+    ${tag}=    Set Variable    test-ui
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
+    # stop scan
+    Scan Artifact  project${d}  ${repo}
+    Stop Scan Artifact
+    Check Scan Artifact Job Status Is Stopped
+    # stop scan all
+    Scan All Artifact
+    Stop Scan All Artifact
+    Check Scan All Artifact Job Status Is Stopped
+    Close Browser
+
+Prepare Image Package Test Files
+    [Arguments]  ${files_path}
+    ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}

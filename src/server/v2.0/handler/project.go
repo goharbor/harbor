@@ -34,8 +34,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/retention"
-	robotCtr "github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/controller/scanner"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -50,7 +50,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/robot"
-	"github.com/goharbor/harbor/src/pkg/user"
+	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
@@ -63,7 +63,7 @@ func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
 		metadataMgr:   metadata.Mgr,
-		userMgr:       user.Mgr,
+		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
 		memberMgr:     member.Mgr,
@@ -79,7 +79,7 @@ type projectAPI struct {
 	BaseAPI
 	auditMgr      audit.Manager
 	metadataMgr   metadata.Manager
-	userMgr       user.Manager
+	userCtl       user.Controller
 	repositoryCtl repository.Controller
 	projectCtl    project.Controller
 	memberMgr     member.Manager
@@ -101,6 +101,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	secCtx, _ := security.FromContext(ctx)
+	if r, ok := secCtx.(*robotSec.SecurityContext); ok && !r.User().IsSysLevel() {
+		log.Errorf("Only system level robot can create project")
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system level robot can create project"))
+	}
 	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
 		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
@@ -155,14 +159,32 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	var ownerID int
+	// TODO: revise the ownerID in project model.
 	// set the owner as the system admin when the API being called by replication
 	// it's a solution to workaround the restriction of project creation API:
 	// only normal users can create projects
-	if secCtx.IsSolutionUser() {
-		ownerID = 1
+	// Remove the assumption of user id 1 is the system admin. And use the minimum system admin id as the owner ID,
+	// in most case, it's 1
+	if _, ok := secCtx.(*robotSec.SecurityContext); ok || secCtx.IsSolutionUser() {
+		q := &q.Query{
+			Keywords: map[string]interface{}{
+				"sysadmin_flag": true,
+			},
+			Sorts: []*q.Sort{
+				q.NewSort("user_id", false),
+			},
+		}
+		admins, err := a.userCtl.List(ctx, q, userModels.WithDefaultAdmin())
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if len(admins) == 0 {
+			return a.SendError(ctx, errors.New(nil).WithMessage("cannot create project as no system admin found"))
+		}
+		ownerID = admins[0].UserID
 	} else {
 		ownerName := secCtx.GetUsername()
-		user, err := a.userMgr.GetByName(ctx, ownerName)
+		user, err := a.userCtl.GetByName(ctx, ownerName)
 		if err != nil {
 			return a.SendError(ctx, err)
 		}
@@ -422,7 +444,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				var coverAll bool
 				var names []string
 				for _, p := range r.User().Permissions {
-					if p.Scope == robotCtr.SCOPEALLPROJECT {
+					if p.IsCoverAll() {
 						coverAll = true
 						break
 					}
@@ -726,10 +748,10 @@ func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *mo
 
 	summary.Quota = &models.ProjectSummaryQuota{}
 	if hard, err := q.GetHard(); err == nil {
-		summary.Quota.Hard = hard
+		summary.Quota.Hard = model.NewResourceList(hard).ToSwagger()
 	}
 	if used, err := q.GetUsed(); err == nil {
-		summary.Quota.Used = used
+		summary.Quota.Used = model.NewResourceList(used).ToSwagger()
 	}
 }
 

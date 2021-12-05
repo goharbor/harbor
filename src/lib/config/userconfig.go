@@ -226,3 +226,18 @@ func SplitAndTrim(s, sep string) []string {
 	}
 	return res
 }
+
+// PullCountUpdateDisable returns a bool to indicate if pull count is disable for pull request.
+func PullCountUpdateDisable(ctx context.Context) bool {
+	return defaultMgr().Get(ctx, common.PullCountUpdateDisable).GetBool()
+}
+
+// PullTimeUpdateDisable returns a bool to indicate if pull time is disable for pull request.
+func PullTimeUpdateDisable(ctx context.Context) bool {
+	return defaultMgr().Get(ctx, common.PullTimeUpdateDisable).GetBool()
+}
+
+// PullAuditLogDisable returns a bool to indicate if pull audit log is disable for pull request.
+func PullAuditLogDisable(ctx context.Context) bool {
+	return defaultMgr().Get(ctx, common.PullAuditLogDisable).GetBool()
+}

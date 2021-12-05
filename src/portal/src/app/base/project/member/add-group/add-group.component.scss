@@ -1,23 +1,27 @@
-clr-datagrid {
-    ::ng-deep .datagrid {
-        margin-top: 0;
-    }
+.form-group-label-override {
+  font-size: 14px;
+  font-weight: 400;
 }
 
-.row {
-    margin-top: 12px;
+.selectBox{
+  position: absolute;
+  width: 173px;
+  height: auto;
+  background-color: white;
+  border: 1px solid rgba(0,0,0,.15);
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  z-index: 100;
 }
-.flex-items-xs-between{
-    display: flex;
+.selectBox ul li{
+  list-style: none;
+  padding: 3px 20px;
+  cursor: pointer;
 }
-.modeSelectradios {
-    margin-top: 21px;
-}
-.left {
-    flex: 1;
-}
-.right {
-    position: relative;
-    z-index: 100;
-    right: 15px;
+.selectBox ul li:hover{
+  color: #262626;
+  background-image: linear-gradient(180deg,#f5f5f5 0,#e8e8e8);
+  background-repeat: repeat-x;
 }

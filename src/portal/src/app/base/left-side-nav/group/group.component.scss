@@ -39,7 +39,9 @@
 .rightPos {
     position: absolute;
     right: 20px;
-    margin-top: -7px;
-    height: 32px;
+    height:32px;
     z-index: 100;
+}
+.relative {
+    position: relative;
 }

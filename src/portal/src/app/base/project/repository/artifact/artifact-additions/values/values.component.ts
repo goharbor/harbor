@@ -35,7 +35,7 @@ export class ValuesComponent implements OnInit {
         .subscribe(
         res => {
           try {
-            this.format(yaml.safeLoad(res));
+            this.format(yaml.load(res));
             this.values = res;
           } catch (e) {
             this.errorHandler.error(e);

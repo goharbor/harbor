@@ -15,21 +15,22 @@
 package util
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"net/http"
-	"strings"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 )
 
 // GetHTTPTransport can be used to share the common HTTP transport
-func GetHTTPTransport(insecure bool) *http.Transport {
+func GetHTTPTransport(insecure bool) http.RoundTripper {
 	if insecure {
-		return commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+		return commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true))
 	}
-	return commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+	return commonhttp.GetHTTPTransport()
 }
 
 func Ping(registry *model.Registry) (string, string, error) {

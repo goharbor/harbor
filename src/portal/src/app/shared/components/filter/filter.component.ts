@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, OnInit, EventEmitter } from "@angular/core";
+import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from "@angular/core";
 import { Subject } from "rxjs";
 import { debounceTime } from 'rxjs/operators';
 
@@ -35,6 +35,11 @@ export class FilterComponent implements OnInit {
   }
   @Input() expandMode: boolean = false;
   @Input() withDivider: boolean = false;
+  @Input() width: number;
+  @ViewChild("inputElement")
+  inputElement: ElementRef;
+  constructor(private cd: ChangeDetectorRef) {
+  }
 
   ngOnInit(): void {
     this.filterTerms
@@ -59,6 +64,10 @@ export class FilterComponent implements OnInit {
       return;
     }
     this.isExpanded = !this.isExpanded;
+    if (this.isExpanded) {// Be focused when open search
+      this.cd.detectChanges();
+      this.inputElement.nativeElement.focus();
+    }
     this.openFlag.emit(this.isExpanded);
   }
 

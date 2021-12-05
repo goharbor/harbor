@@ -19,6 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 )
 
 func init() {
@@ -58,7 +60,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
-	authorizer := bearer.NewAuthorizer(realm, service, credential, util.GetHTTPTransport(registry.Insecure))
+	authorizer := bearer.NewAuthorizer(realm, service, credential, commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
 	return &adapter{
 		region:   region,
 		registry: registry,

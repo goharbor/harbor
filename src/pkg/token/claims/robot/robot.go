@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/goharbor/harbor/src/pkg/permission/types"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // Claim implements the interface of jwt.Claims

@@ -68,7 +68,7 @@
   height: 0;
 }
 
-:host >>> .datagrid-placeholder {
+:host::ng-deep .datagrid-placeholder {
   display: none;
 }
 
@@ -84,7 +84,7 @@
   margin-right: 6px;
 }
 
-:host >>> .datagrid clr-dg-column {
+:host ::ng-deep .datagrid clr-dg-column {
   min-width: 80px;
 }
 
@@ -150,15 +150,15 @@
   margin: 6px 0;
 }
 
-:host >>> .signpost-content {
+:host::ng-deep .signpost-content {
   min-width: 4rem;
 }
 
-:host >>> .signpost-content-body {
+:host::ng-deep .signpost-content-body {
   padding: 0 0.4rem;
 }
 
-:host >>> .signpost-content-header {
+:host::ng-deep .signpost-content-header {
   display: none;
 }
 

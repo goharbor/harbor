@@ -15,12 +15,11 @@
 package readonly
 
 import (
-	"github.com/goharbor/harbor/src/lib/config"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -34,7 +33,7 @@ var (
 	// DefaultConfig default readonly config
 	DefaultConfig = Config{
 		ReadOnly: func(r *http.Request) bool {
-			return config.ReadOnly(orm.Context())
+			return config.ReadOnly(r.Context())
 		},
 	}
 

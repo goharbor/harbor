@@ -77,7 +77,7 @@
           <button class="btn btn-link" (click)="goToRepos()">{{'SUMMARY.SEE_ALL' | translate}}</button>
        </div>
      </div>
-     <div class="card clickable" *ngIf="hasReadChartPermission">
+     <div class="card clickable" *ngIf="hasReadChartPermission && withHelmChart">
        <div class="card-header">
          <div>{{"PROJECT_DETAIL.HELMCHART" | translate}}</div>
          <div class="clr-row number">{{summaryInformation?.chart_count ? summaryInformation?.chart_count : 0}}</div>

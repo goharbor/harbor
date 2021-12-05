@@ -30,6 +30,7 @@ const (
 
 	ActionOperate     = Action("operate")
 	ActionScannerPull = Action("scanner-pull") // for robot account created by scanner to pull image, bypass the policy check
+	ActionStop        = Action("stop")         // for stop scan/scan-all execution
 )
 
 // const resource variables

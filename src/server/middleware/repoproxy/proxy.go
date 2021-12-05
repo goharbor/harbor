@@ -17,6 +17,10 @@ package repoproxy
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -30,9 +34,6 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"io"
-	"net/http"
-	"time"
 )
 
 const (
@@ -59,7 +60,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if err != nil {
 		return err
 	}
-	if !canProxy(p) || proxyCtl.UseLocalBlob(ctx, art) {
+	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
 	}
@@ -111,11 +112,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	if !canProxy(p) {
+	if !canProxy(r.Context(), p) {
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(p.RegistryID)
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID)
 	if err != nil {
 		return err
 	}
@@ -173,11 +174,11 @@ func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Cont
 	return nil
 }
 
-func canProxy(p *proModels.Project) bool {
+func canProxy(ctx context.Context, p *proModels.Project) bool {
 	if p.RegistryID < 1 {
 		return false
 	}
-	reg, err := registry.Ctl.Get(orm.Context(), p.RegistryID)
+	reg, err := registry.Ctl.Get(ctx, p.RegistryID)
 	if err != nil {
 		log.Errorf("failed to get registry, error:%v", err)
 		return false

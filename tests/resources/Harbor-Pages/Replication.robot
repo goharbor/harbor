@@ -49,6 +49,27 @@ Select Source Registry
     Retry Element Click    ${src_registry_dropdown_list}
     Retry Element Click    ${src_registry_dropdown_list}//option[contains(.,'${endpoint}')]
 
+Select Filter Tag Model
+    [Arguments]    ${type}
+    Retry Element Click  ${filter_tag_model_select}
+    Retry Element Click  ${filter_tag_model_select}//option[contains(.,'${type}')]
+
+Select Filter Label Model
+    [Arguments]    ${type}
+    Retry Element Click  ${filter_label_model_select}
+    Retry Element Click  ${filter_label_model_select}//option[contains(.,'${type}')]
+
+Select Filter Label
+    [Arguments]    ${label}
+    Retry Element Click  ${filter_label_button}
+    Retry Element Click  //div[@class='filterSelect ng-star-inserted'][3]//label[contains(text(), '${label}')]
+    Retry Element Click  ${filter_label_button}
+
+Select Bandwidth Unit
+    [Arguments]    ${unit}
+    Retry Element Click  ${bandwidth_unit_select}
+    Retry Element Click  ${bandwidth_unit_select}//option[contains(.,'${unit}')]
+
 Select flattening
     [Arguments]    ${type}
     Retry Element Click    ${flattening_select}
@@ -91,7 +112,8 @@ Create A New Endpoint
 
 Create A Rule With Existing Endpoint
     [Arguments]  ${name}  ${replication_mode}  ${filter_project_name}  ${resource_type}  ${endpoint}  ${dest_namespace}
-    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}  ${flattening}=Flatten 1 Level
+    ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}  ${filter_tag_model}=matching  ${filter_label}=${false}  ${filter_label_model}=matching
+    ...    ${flattening}=Flatten 1 Level  ${bandwidth}=-1  ${bandwidth_unit}=Kbps
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
@@ -101,7 +123,10 @@ Create A Rule With Existing Endpoint
 
     #set filter
     Retry Text Input    ${filter_name_id}    ${filter_project_name}
+    Run Keyword If  '${filter_tag_model}' != 'matching'  Select Filter Tag Model  ${filter_tag_model}
     Run Keyword If  '${filter_tag}' != '${false}'  Retry Text Input    ${filter_tag_id}    ${filter_tag}
+    Run Keyword If  '${filter_label_model}' != 'matching'  Select Filter Label Model  ${filter_label_model}
+    Run Keyword If  '${filter_label}' != '${false}'  Select Filter Label  ${filter_label}
     Run Keyword And Ignore Error    Select From List By Value    ${rule_resource_selector}    ${resource_type}
     Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
     Select flattening  ${flattening}
@@ -109,6 +134,10 @@ Create A Rule With Existing Endpoint
     Select Trigger  ${mode}
     Run Keyword If  '${mode}' == 'Scheduled'  Retry Text Input  ${targetCron_id}  ${cron}
     Run Keyword If  '${mode}' == 'Event Based' and '${del_remote}' == '${true}'  Retry Element Click  ${del_remote_checkbox}
+    #set bandwidth
+    Run Keyword If  '${bandwidth}' != '-1'  Retry Text Input  ${bandwidth_input}  ${bandwidth}
+    Run Keyword If  '${bandwidth_unit}' != 'Kbps'  Select Bandwidth Unit  ${bandwidth_unit}
+
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
     Sleep  2

@@ -49,6 +49,48 @@ func (r *scanEventTestSuite) TestResolveOfScanImageEventMetadata() {
 	r.Equal("library/hello-world", data.Artifact.Repository)
 }
 
+func (r *scanEventTestSuite) TestResolveOfStopScanImageEventMetadata() {
+	e := &event.Event{}
+	metadata := &ScanImageMetaData{
+		Artifact: &v1.Artifact{
+			NamespaceID: 0,
+			Repository:  "library/hello-world",
+			Tag:         "latest",
+			Digest:      "sha256:absdfd87123",
+			MimeType:    "docker.chart",
+		},
+		Status: job.StoppedStatus.String(),
+	}
+	err := metadata.Resolve(e)
+	r.Require().Nil(err)
+	r.Equal(event2.TopicScanningStopped, e.Topic)
+	r.Require().NotNil(e.Data)
+	data, ok := e.Data.(*event2.ScanImageEvent)
+	r.Require().True(ok)
+	r.Equal("library/hello-world", data.Artifact.Repository)
+}
+
+func (r *scanEventTestSuite) TestResolveOfFailedScanImageEventMetadata() {
+	e := &event.Event{}
+	metadata := &ScanImageMetaData{
+		Artifact: &v1.Artifact{
+			NamespaceID: 0,
+			Repository:  "library/hello-world",
+			Tag:         "latest",
+			Digest:      "sha256:absdfd87123",
+			MimeType:    "docker.chart",
+		},
+		Status: job.ErrorStatus.String(),
+	}
+	err := metadata.Resolve(e)
+	r.Require().Nil(err)
+	r.Equal(event2.TopicScanningFailed, e.Topic)
+	r.Require().NotNil(e.Data)
+	data, ok := e.Data.(*event2.ScanImageEvent)
+	r.Require().True(ok)
+	r.Equal("library/hello-world", data.Artifact.Repository)
+}
+
 func TestScanEventTestSuite(t *testing.T) {
 	suite.Run(t, &scanEventTestSuite{})
 }

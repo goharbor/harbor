@@ -108,7 +108,7 @@
                   <clr-dropdown class="width-tag-label">
                     <button type="button" class="width-100 dropdown-toggle btn btn-link statistic-data label-text" clrDropdownTrigger>
                       <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
-                        <span class="label" *ngIf="m<1"> {{label}} </span>
+                        <hbr-label-piece [hasIcon]="false" [label]="getLabel(label)" [labelWidth]="84"></hbr-label-piece>
                       </ng-template>
                       <span class="ellipsis color-white-dark" *ngIf="filter.value.value.length>1">···</span>
                       <div *ngFor="let label1 of filter.value.value;let k = index" hidden="true">
@@ -116,10 +116,14 @@
                           placeholder="select labels">
                       </div>
                     </button>
-                    <clr-dropdown-menu class="right-align"  clrPosition="bottom-left" *clrIfOpen>
+                    <clr-dropdown-menu [ngStyle]="{'max-height.px': 230}" class="right-align"  clrPosition="bottom-left" *clrIfOpen>
                       <button type="button" class="dropdown-item flex" *ngFor="let value of supportedFilterLabels" (click)="stickLabel(value,i)">
                         <clr-icon shape="check" [style.visibility]="value.select ? 'visible' : 'hidden'"></clr-icon>
                         <hbr-label-piece [label]="value" [labelWidth]="130"></hbr-label-piece>
+                      </button>
+                      <button type="button" class="dropdown-item  space-between no-labels" *ngIf="!supportedFilterLabels?.length">
+                        <span class="alert-label">{{"REPLICATION.NO_LABEL_INFO" | translate}}</span>
+                        <span class="alert-label go-link"  routerLink="/harbor/labels">{{'CONFIG.LABEL' | translate}}</span>
                       </button>
                     </clr-dropdown-menu>
                   </clr-dropdown>
@@ -238,6 +242,40 @@
             <input type="checkbox" class="clr-checkbox" [checked]="false" id="ruleDeletion" formControlName="deletion">
             <label for="ruleDeletion">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
           </div>
+        </div>
+      </div>
+      <!--speed-->
+      <div class="clr-form-control">
+        <label for="speed" class="required clr-control-label">{{'REPLICATION.BANDWIDTH' | translate}}
+        </label>
+        <div class="clr-control-container" [class.clr-error]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
+          <div class="clr-checkbox-wrapper speed">
+            <input type="text" id="speed" name="speed" class="clr-input"
+                   formControlName="speed" autocomplete="off" required pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" maxlength="5">
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <div class="clr-select-wrapper unit-select" [class.unit]="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))">
+            <select class="clr-select unit-select" [ngModelOptions]="{standalone: true}" id="speed_unit" name="speed_unit" [(ngModel)]="selectedUnit">
+              <option *ngFor="let unit of speedUnits" [value]="unit.UNIT">{{ unit.UNIT }}</option>
+            </select>
+            <clr-tooltip class="ml-10px">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                <span>{{'REPLICATION.BANDWIDTH_TOOLTIP' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </div>
+          <clr-control-error *ngIf="(ruleForm.controls.speed.invalid && (ruleForm.controls.speed.dirty || ruleForm.controls.speed.touched))"
+                             class="tooltip-content">
+            {{'REPLICATION.BANDWIDTH_ERROR_TIP' | translate}}
+          </clr-control-error>
+        </div>
+      </div>
+
+      <!--override  and enable-->
+      <div class="clr-form-control">
+        <label class="clr-control-label"></label>
+        <div class="clr-control-container">
           <div class="clr-checkbox-wrapper clr-form-control">
             <input type="checkbox" class="clr-checkbox" [checked]="true" id="overridePolicy" formControlName="override">
             <label for="overridePolicy">{{'REPLICATION.OVERRIDE_INFO' | translate}}
@@ -259,6 +297,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-    <button type="submit" id="ruleBtnOk" class="btn btn-primary" [clrLoading]="inProgress" (click)="onSubmit()" [disabled]="!isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
+    <button type="submit" id="ruleBtnOk" class="btn btn-primary" [clrLoading]="inProgress" (click)="onSubmit()" [disabled]="inProgress || !isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
   </div>
 </clr-modal>

@@ -154,6 +154,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     this.tags = null;
     this.labels = null;
     this.cron = null;
+    this.isNameExisting = false;
     if (this.providers && this.providers.length) {
       this.providers.forEach(item => {
         if (item.default) {

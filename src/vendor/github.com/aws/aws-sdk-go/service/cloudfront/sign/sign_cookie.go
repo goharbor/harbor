@@ -179,7 +179,7 @@ func cookieURLScheme(u string) (string, error) {
 //
 //    // Or get Signed cookies for a resource that will expire in 1 hour
 //    // and set path and domain of cookies
-//    cookies, err := s.Sign(policy, func(o *sign.CookieOptions) {
+//    cookies, err := s.SignWithPolicy(policy, func(o *sign.CookieOptions) {
 //        o.Path = "/"
 //        o.Domain = ".example.com"
 //    })

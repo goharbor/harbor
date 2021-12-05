@@ -19,13 +19,14 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"github.com/gocraft/work"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"io"
 	"net"
-	"net/url"
 	"os"
 	"strings"
+
+	"github.com/asaskevich/govalidator"
+	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // NodeIDContextKey is used to keep node ID in the system context
@@ -98,11 +99,7 @@ func IsValidURL(address string) bool {
 		return false
 	}
 
-	if _, err := url.Parse(address); err != nil {
-		return false
-	}
-
-	return true
+	return govalidator.IsURL(address)
 }
 
 // SerializeJob encodes work.Job to json data.

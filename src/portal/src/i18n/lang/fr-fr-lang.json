@@ -248,7 +248,8 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -325,7 +326,10 @@
         "SWITCHED_SUCCESS": "Rôle du membre changé avec succés.",
         "OF": "de",
         "SET_ROLE": "Set Role",
-        "REMOVE": "Remove"
+        "REMOVE": "Remove",
+        "GROUP_NAME_REQUIRED": "Group name is required",
+        "NON_EXISTENT_GROUP": "Group name does not exists",
+        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Nom",
@@ -583,6 +587,7 @@
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
         "SCHEDULED": "Scheduled",
@@ -635,7 +640,11 @@
         "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
         "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
         "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
-        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'"
+        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'",
+        "BANDWIDTH": "Bandwidth",
+        "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+        "UNLIMITED": "Unlimited"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Point Final",
@@ -930,6 +939,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
         },
         "SCANNING": {
+            "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
             "TRIGGER_SCAN_ALL_FAIL": "Echec du déclenchement d'analyse globale avec des erreurs : {{error}}",
             "TITLE": "Analyse de vulnérabilité",
@@ -1000,7 +1010,8 @@
             "OTHER_STATUS": "Non Analysé",
             "QUEUED": "En fil d'attente",
             "ERROR": "Voir le Log",
-            "SCANNING": "En cours d'analyse"
+            "SCANNING": "En cours d'analyse",
+            "STOPPED": "Scan stopped"
         },
         "GRID": {
             "PLACEHOLDER": "Nous n'avons pas trouvé de résultats d'analyse !",
@@ -1029,8 +1040,6 @@
             "HIGH": "Haut",
             "MEDIUM": "Moyen",
             "LOW": "Bas",
-            "NEGLIGIBLE": "Négligeable",
-            "UNKNOWN": "Inconnu",
             "NONE": "Aucune"
         },
         "SINGULAR": "vulnérabilitée",
@@ -1043,7 +1052,9 @@
         "SCAN_NOW": "Analyser",
         "SCAN_BY": "SCAN BY {{scanner}}",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "NO_SCANNER": "NO SCANNER"
+        "NO_SCANNER": "NO SCANNER",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
@@ -1657,6 +1668,10 @@
         "FINAL_PROJECT_NAME_TIP": "The final project robot name consists of the prefix,the project name,a plus mark and the current input value",
         "FINAL_SYSTEM_NAME_TIP": "The final system robot name consists of the prefix and the current input value",
         "PUSH_AND_PULL": "Push",
-        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission"
+        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
+        "STOP": "Stop",
+        "LIST": "List",
+        "REPOSITORY": "Repository",
+        "HELM_LABEL": "Helm Chart label"
     }
 }

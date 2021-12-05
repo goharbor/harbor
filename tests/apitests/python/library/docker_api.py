@@ -23,7 +23,6 @@ def docker_login_cmd(harbor_host, username, password, cfg_file = "./tests/apites
         print("[Warnig]: No docker credential was provided.")
         return
     command = ["docker", "login", harbor_host, "-u", username, "-p", password]
-    print( "Docker Login Command: ", command)
     base.run_command(command)
     if enable_manifest == True:
         try:
@@ -79,7 +78,6 @@ def list_repositories(harbor_host, username, password, n = None, last = None):
             command = ["curl", "-s", "-u", username+":"+password, "https://"+harbor_host+"/v2/_catalog"+"?n=%d"%n, "--insecure"]
     else:
         command = ["curl", "-s", "-u", username+":"+password, "https://"+harbor_host+"/v2/_catalog", "--insecure"]
-    print( "List Repositories Command: ", command)
     ret = base.run_command(command)
     repos = json.loads(ret).get("repositories","")
     return repos
@@ -91,7 +89,6 @@ def list_image_tags(harbor_host, repository, username, password, n = None, last 
         command = ["curl", "-s", "-u", username+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list"+"?n=%d"%n, "--insecure"]
     else:
         command = ["curl", "-s", "-u", username+":"+password, "https://"+harbor_host+"/v2/"+repository+"/tags/list", "--insecure"]
-    print( "List Image Tags Command: ", command)
     ret = base.run_command(command)
     tags = json.loads(ret).get("tags","")
     return tags
@@ -112,7 +109,6 @@ class DockerAPI(object):
         if registry == "docker":
             registry = None
         try:
-            print("Docker login: {}:{}:{}".format(registry,username,password))
             ret = self.DCLIENT.login(registry = registry, username=username, password=password)
         except Exception as err:
             print( "Docker image pull catch exception:", str(err))

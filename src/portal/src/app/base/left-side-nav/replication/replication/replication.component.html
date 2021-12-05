@@ -45,7 +45,7 @@
       </div>
     </div>
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)">
+      <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs(true, $event)">
         <clr-dg-action-bar>
           <div class="btn-group">
             <button type="button" class="btn  btn-secondary" *ngIf="isSystemAdmin"  [disabled]="!canStop() || !(jobs && jobs.length>0) || isStopOnGoing || !selectedRow.length"

@@ -8,5 +8,8 @@
 *   Add date here... Add signature here...
 -   Add your reason here...
 
+*   Sept 23 2021 <jiaoya@vmware.com>
+-   Refresh base image
+
 *   Jul 15 2021 <danfengl@vmware.com>
 -   Create this file to trigger build base action in buld-package workflow 

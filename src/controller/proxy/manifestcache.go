@@ -51,7 +51,7 @@ func NewCacheHandlerRegistry(local localInterface) map[string]ManifestCacheHandl
 // ManifestCacheHandler define how to cache manifest content
 type ManifestCacheHandler interface {
 	// CacheContent - cache the content of the manifest
-	CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface)
+	CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string)
 }
 
 // ManifestListCache handle Manifest list type and index type
@@ -61,14 +61,18 @@ type ManifestListCache struct {
 }
 
 // CacheContent ...
-func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface) {
+func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string) {
 	_, payload, err := man.Payload()
 	if err != nil {
 		log.Errorf("failed to get payload, error %v", err)
 		return
 	}
-	key := getManifestListKey(art.Repository, art.Digest)
+	key := manifestListKey(art.Repository, art.Digest)
 	log.Debugf("cache manifest list with key=cache:%v", key)
+	err = m.cache.Save(manifestListContentTypeKey(art.Repository, art.Digest), contentType, manifestListCacheInterval)
+	if err != nil {
+		log.Errorf("failed to cache content type, error %v", err)
+	}
 	err = m.cache.Save(key, payload, manifestListCacheInterval)
 	if err != nil {
 		log.Errorf("failed to cache payload, error %v", err)
@@ -164,7 +168,7 @@ type ManifestCache struct {
 }
 
 // CacheContent ...
-func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface) {
+func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string) {
 	var waitBlobs []distribution.Descriptor
 	for n := 0; n < maxManifestWait; n++ {
 		time.Sleep(sleepIntervalSec * time.Second)

@@ -85,6 +85,8 @@ func MergeScanStatus(s1, s2 string) string {
 
 	if j1 == job.RunningStatus || j2 == job.RunningStatus {
 		return job.RunningStatus.String()
+	} else if j1 == job.StoppedStatus || j2 == job.StoppedStatus {
+		return job.StoppedStatus.String()
 	} else if j1 == job.SuccessStatus || j2 == job.SuccessStatus {
 		// the scan status of the image index will be treated as a success when one of its children is success
 		return job.SuccessStatus.String()

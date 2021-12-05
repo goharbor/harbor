@@ -439,6 +439,31 @@ func (suite *ManagerTestSuite) TestUselessBlobs() {
 	suite.Require().Equal(0, len(blobs))
 }
 
+func (suite *ManagerTestSuite) GetBlobsByArtDigest() {
+	ctx := suite.Context()
+	afDigest := suite.DigestString()
+	blobs, err := Mgr.GetByArt(ctx, afDigest)
+	suite.Nil(err)
+	suite.Require().Equal(0, len(blobs))
+
+	Mgr.Create(ctx, suite.DigestString(), "media type", 100)
+	blobDigest1 := suite.DigestString()
+	blobDigest2 := suite.DigestString()
+	Mgr.Create(ctx, blobDigest1, "media type", 100)
+	Mgr.Create(ctx, blobDigest2, "media type", 100)
+
+	_, err = Mgr.AssociateWithArtifact(ctx, afDigest, afDigest)
+	suite.Nil(err)
+	_, err = Mgr.AssociateWithArtifact(ctx, afDigest, blobDigest1)
+	suite.Nil(err)
+	_, err = Mgr.AssociateWithArtifact(ctx, afDigest, blobDigest2)
+	suite.Nil(err)
+
+	blobs, err = Mgr.List(ctx, q.New(q.KeyWords{"artifactDigest": afDigest}))
+	suite.Nil(err)
+	suite.Require().Equal(3, len(blobs))
+}
+
 func TestManagerTestSuite(t *testing.T) {
 	suite.Run(t, &ManagerTestSuite{})
 }

@@ -99,7 +99,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
           let state: ClrDatagridStateInterface = {
             page: {}
           };
-          this.clrLoadTasks(state);
+          this.clrLoadTasks(false, state);
         } else {
           this.timerDelay.unsubscribe();
           this.timerDelay = null;
@@ -162,7 +162,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     }
   }
 
-  clrLoadTasks(state: ClrDatagridStateInterface): void {
+  clrLoadTasks(withLoading: boolean, state: ClrDatagridStateInterface): void {
       if (!state || !state.page || !this.executionId) {
         return;
       }
@@ -182,7 +182,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
           param[this.defaultFilter] = this.searchTask;
         }
       }
-      this.loading = true;
+      if (withLoading) {
+        this.loading = true;
+      }
       this.replicationService.listReplicationTasksResponse(param)
       .pipe(finalize(() => {
         this.loading = false;
@@ -218,7 +220,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     let state: ClrDatagridStateInterface = {
       page: {}
     };
-    this.clrLoadTasks(state);
+    this.clrLoadTasks(true, state);
   }
 
   public doSearch(value: string): void {
@@ -227,7 +229,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     let state: ClrDatagridStateInterface = {
       page: {}
     };
-    this.clrLoadTasks(state);
+    this.clrLoadTasks(true, state);
   }
 
   openFilter(isOpen: boolean): void {

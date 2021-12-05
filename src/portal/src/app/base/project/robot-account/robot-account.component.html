@@ -4,7 +4,7 @@
       <div class="flex-xs-middle option-left">
       </div>
       <div class="flex-xs-middle option-right">
-        <hbr-filter [withDivider]="true" filterPlaceholder='{{"SYSTEM_ROBOT.SEARCH_BY_NAME" | translate}}'></hbr-filter>
+        <hbr-filter [width]="240" [withDivider]="true" filterPlaceholder='{{"SYSTEM_ROBOT.SEARCH_BY_NAME" | translate}}'></hbr-filter>
         <span class="refresh-btn" (click)="refresh()">
           <clr-icon shape="refresh"></clr-icon>
         </span>
@@ -34,7 +34,7 @@
           </button>
           <button *ngIf="selectedRows && selectedRows.length === 1 && selectedRows[0].disable" type="button" class="btn  btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable)">
+                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && selectedRows[0].disable) || !selectedRows[0].editable">
             <clr-icon size="16" shape="success-standard"></clr-icon>&nbsp;
             <span id="distribution-enable">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</span>
           </button>
@@ -42,7 +42,7 @@
                   type="button"
                   class="btn btn-secondary"
                   (click)="disableOrEnable()"
-                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable)">
+                  [disabled]="!hasRobotUpdatePermission ||!(selectedRows && selectedRows.length === 1 && !selectedRows[0].disable) || !selectedRows[0].editable">
             <clr-icon size="16" shape="ban"></clr-icon>&nbsp;
             <span id="distribution-disable">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</span>
           </button>

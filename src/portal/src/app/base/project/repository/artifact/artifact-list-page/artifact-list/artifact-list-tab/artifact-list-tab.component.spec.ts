@@ -22,7 +22,6 @@ import { ConfirmationDialogComponent } from "../../../../../../../shared/compone
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
 import { ErrorHandler } from "../../../../../../../shared/units/error-handler";
-import { ChannelService } from "../../../../../../../shared/services/channel.service";
 import { OperationService } from "../../../../../../../shared/components/operation/operation.service";
 import { ArtifactService as NewArtifactService } from "../../../../../../../../../ng-swagger-gen/services/artifact.service";
 import { Tag } from "../../../../../../../../../ng-swagger-gen/models/tag";
@@ -307,8 +306,6 @@ describe("ArtifactListTabComponent (inline template)", () => {
         CopyInputComponent
       ],
       providers: [
-        ErrorHandler,
-        ChannelService,
         ArtifactDefaultService,
         { provide: Router, useValue: mockRouter },
         { provide: ArtifactService, useValue: mockNewArtifactService },

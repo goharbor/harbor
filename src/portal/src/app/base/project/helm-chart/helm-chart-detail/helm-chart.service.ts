@@ -169,16 +169,17 @@ export class HelmChartDefaultService extends HelmChartService {
     let chartFileRegexPattern = new RegExp('^http.*/chartrepo/(.*)');
     if (chartFileRegexPattern.test(filename)) {
       let match = filename.match('^http.*/chartrepo/(.*)');
-      url = `${V1_BASE_HREF + "/chartrepo"}/${match[1]}`;
+      url = `${DOWNLOAD_CHART_ENDPOINT}/${match[1]}`;
     } else {
-      url = `${V1_BASE_HREF + "/chartrepo"}/${projectName}/${filename}`;
+      url = `${DOWNLOAD_CHART_ENDPOINT}/${projectName}/${filename}`;
     }
     return this.http.get(url, {
       responseType: 'blob',
     })
     .pipe(map(response => {
+      let parts = filename.split('/')
       return {
-        filename: filename.split('/')[1],
+        filename: parts[parts.length-1],
         data: response
       };
     }))
@@ -209,3 +210,6 @@ export class HelmChartDefaultService extends HelmChartService {
     .pipe(catchError(this.handleErrorObservable));
   }
 }
+
+
+export const DOWNLOAD_CHART_ENDPOINT: string = "/chartrepo";

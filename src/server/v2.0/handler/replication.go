@@ -101,6 +101,12 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 			}
 		}
 	}
+	if params.Policy.Speed != nil {
+		if *params.Policy.Speed < 0 {
+			*params.Policy.Speed = 0
+		}
+		policy.Speed = *params.Policy.Speed
+	}
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -157,6 +163,12 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 				Cron: params.Policy.Trigger.TriggerSettings.Cron,
 			}
 		}
+	}
+	if params.Policy.Speed != nil {
+		if *params.Policy.Speed < 0 {
+			*params.Policy.Speed = 0
+		}
+		policy.Speed = *params.Policy.Speed
 	}
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
 		return r.SendError(ctx, err)
@@ -414,6 +426,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Name:                      policy.Name,
 		Override:                  policy.Override,
 		ReplicateDeletion:         policy.ReplicateDeletion,
+		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 	}
 	if policy.SrcRegistry != nil {

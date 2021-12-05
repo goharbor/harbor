@@ -25,6 +25,7 @@ import { Label } from "../../../../../../ng-swagger-gen/models/label";
 export class LabelPieceComponent implements OnInit, OnChanges {
     @Input() label: Label;
     @Input() labelWidth: number;
+    @Input() hasIcon: boolean = true;
     labelColor: {[key: string]: string};
 
     ngOnChanges(): void {

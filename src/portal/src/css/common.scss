@@ -275,3 +275,22 @@ app-tag-feature-integration {
     background-color: $radio-button-checked;
   }
 }
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px $input-autofill-bg-color inset;
+  -webkit-text-fill-color: $input-autofill-color !important;
+  caret-color: $input-autofill-color
+}
+
+hbr-copy-input {
+  .info-tips-icon {
+    color: $pull-command-icon-color;
+  }
+  .info-tips-icon:hover {
+    color: $pull-command-icon-hover-color;
+  }
+}
+
+.select-all-for-dropdown {
+  color: $select-all-for-dropdown-color !important;
+}

@@ -34,7 +34,7 @@ http {
             add_header Cache-Control "no-store, no-cache, must-revalidate";
         }
 
-        location ~ /(api|c)/* {
+        location ~ /(api|c|chartrepo)/* {
              proxy_pass  https://example.com;
         }
     }

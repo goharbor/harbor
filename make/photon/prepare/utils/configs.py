@@ -3,7 +3,7 @@ import os
 import yaml
 from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric
+from models import InternalTLS, Metric, Trace
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -76,6 +76,8 @@ def validate(conf: dict, **kwargs):
     # TODO:
     # If user enable trust cert dir, need check if the files in this dir is readable.
 
+    if conf.get('trace'):
+        conf['trace'].validate()
 
 def parse_versions():
     if not versions_file_path.is_file():
@@ -219,6 +221,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
     config_dict['trivy_insecure'] = trivy_configs.get("insecure") or False
+    config_dict['trivy_timeout'] = trivy_configs.get("timeout") or '5m0s'
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
@@ -326,6 +329,10 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['metric'] = Metric(metric_config['enabled'], metric_config['port'], metric_config['path'])
     else:
         config_dict['metric'] = Metric()
+
+    # trace configs
+    trace_config = configs.get('trace')
+    config_dict['trace'] = Trace(trace_config or {})
 
     if config_dict['internal_tls'].enabled:
         config_dict['portal_url'] = 'https://portal:8443'

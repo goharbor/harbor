@@ -3,9 +3,10 @@ import { SystemSettingsComponent } from "./system-settings.component";
 import { SystemInfoService } from "../../../../shared/services";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { of } from "rxjs";
-import { StringValueItem } from "../config";
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { Configuration, StringValueItem } from "../config";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { ConfigService } from "../config.service";
+import { AppConfigService } from "../../../../services/app-config.service";
 describe('SystemSettingsComponent', () => {
   let component: SystemSettingsComponent;
   let fixture: ComponentFixture<SystemSettingsComponent>;
@@ -33,13 +34,43 @@ describe('SystemSettingsComponent', () => {
       return null;
     }
   };
+  const fakeConfigService = {
+    config: new Configuration(),
+    getConfig() {
+      return this.config;
+    },
+    setConfig(c) {
+      this.config = c;
+    },
+    getOriginalConfig() {
+      return new Configuration();
+    },
+    getLoadingConfigStatus() {
+      return false;
+    },
+    confirmUnsavedChanges() {
+    },
+    updateConfig() {
+    },
+    resetConfig() {
+    }
+  };
+  const fakedAppConfigService = {
+    getConfig() {
+      return {};
+    },
+    load() {
+      return of(null);
+    }
+  };
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
           SharedTestingModule,
-          BrowserAnimationsModule
       ],
        providers: [
+           { provide: AppConfigService, useValue: fakedAppConfigService },
+           { provide: ConfigService, useValue: fakeConfigService },
            { provide: ErrorHandler, useValue: fakedErrorHandler },
            { provide: SystemInfoService, useValue: fakedSystemInfoService },
              // open auto detect
@@ -53,7 +84,7 @@ describe('SystemSettingsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SystemSettingsComponent);
     component = fixture.componentInstance;
-    component.config.auth_mode = new StringValueItem("db_auth",  false );
+    component.currentConfig.auth_mode = new StringValueItem("db_auth",  false );
     fixture.detectChanges();
   });
 
@@ -61,6 +92,7 @@ describe('SystemSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
   it('cancel button should works', () => {
+    const spy: jasmine.Spy = spyOn(fakeConfigService, 'confirmUnsavedChanges').and.returnValue(undefined);
     component.systemAllowlist.items.push({cve_id: 'CVE-2019-456'});
     const readOnly: HTMLElement = fixture.nativeElement.querySelector('#repoReadOnly');
     readOnly.click();
@@ -68,7 +100,7 @@ describe('SystemSettingsComponent', () => {
     const cancel: HTMLButtonElement = fixture.nativeElement.querySelector('#config_system_cancel');
     cancel.click();
     fixture.detectChanges();
-    expect(component.confirmationDlg.opened).toBeTruthy();
+    expect(spy.calls.count()).toEqual(1);
   });
   it('save button should works', () => {
     component.systemAllowlist.items[0].cve_id = 'CVE-2019-789';

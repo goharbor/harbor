@@ -2,11 +2,11 @@
 <a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">{{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
 <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']" class="backStyle"> {{'SEARCH.BACK' | translate}}</a>
 <div class="clr-row">
-    <div  class="clr-col-4">
+    <div  class="clr-col-5">
         <h1 class="custom-h2 center" sub-header-title>
             <clr-icon *ngIf="isProxyCacheProject" shape="cloud-traffic" size="30"></clr-icon>
             <clr-icon *ngIf="!isProxyCacheProject" shape="organization" size="30"></clr-icon>
-            <span class="ml-05">{{currentProject.name}}</span>
+            <span class="ml-05 project-name">{{currentProject.name}}</span>
             <div class="divider filter-divider" *ngIf="isMember"></div>
             <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span>
         </h1>
@@ -14,7 +14,7 @@
             <span class="proxy-cache">{{ 'PROJECT.PROXY_CACHE' | translate }}</span>
         </div>
     </div>
-    <div  class="clr-col-8 flex-end">
+    <div  class="clr-col-7 flex-end">
         <div class="card">
             <div class="card-block container">
                 <div class="head">{{'PROJECT.ACCESS_LEVEL' | translate}}</div>

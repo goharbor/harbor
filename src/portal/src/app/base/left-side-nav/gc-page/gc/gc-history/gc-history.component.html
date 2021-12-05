@@ -2,7 +2,7 @@
 <span class="refresh-btn" (click)="refresh()">
   <clr-icon shape="refresh"></clr-icon>
 </span>
-<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs($event)">
+<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs(true, $event)">
     <clr-dg-column [clrDgField]="'id'">{{'GC.JOB_ID' | translate}}</clr-dg-column>
     <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'TAG_RETENTION.DRY_RUN' | translate}}</clr-dg-column>
@@ -18,7 +18,7 @@
         <clr-dg-cell>{{job.creation_time | harborDatetime:'medium'}}</clr-dg-cell>
         <clr-dg-cell>{{job.update_time | harborDatetime:'medium'}}</clr-dg-cell>
         <clr-dg-cell>
-            <a *ngIf="job.job_status.toLowerCase() === 'success' || job.job_status.toLowerCase() === 'error'" target="_blank"
+            <a rel='noopener noreferrer' *ngIf="job.job_status.toLowerCase() === 'success' || job.job_status.toLowerCase() === 'error'" target="_blank"
                [href]="getLogLink(job.id)">
                 <clr-icon shape="list"></clr-icon>
             </a>

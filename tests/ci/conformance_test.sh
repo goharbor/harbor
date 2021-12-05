@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 echo "get the conformance testing code..."
