@@ -10,10 +10,11 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/log"
+	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/reg/util"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
 const (
@@ -31,10 +32,8 @@ type Client struct {
 // NewClient creates a new GitLab client.
 func NewClient(registry *model.Registry) (*Client, error) {
 
-	realm, _, err := ping(&http.Client{
-		Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
-	}, registry.URL)
-	if err != nil {
+	realm, _, err := util.Ping(registry)
+	if err != nil && !liberrors.IsChallengesUnsupportedErr(err) {
 		return nil, err
 	}
 	if realm == "" {
@@ -56,26 +55,6 @@ func NewClient(registry *model.Registry) (*Client, error) {
 	return client, nil
 }
 
-// ping returns the realm, service and error
-func ping(client *http.Client, endpoint string) (string, string, error) {
-	resp, err := client.Get(buildPingURL(endpoint))
-	if err != nil {
-		return "", "", err
-	}
-	defer resp.Body.Close()
-
-	challenges := challenge.ResponseChallenges(resp)
-	for _, challenge := range challenges {
-		if scheme == challenge.Scheme {
-			realm := challenge.Parameters["realm"]
-			service := challenge.Parameters["service"]
-			return realm, service, nil
-		}
-	}
-
-	log.Warningf("Schemas %v are unsupported", challenges)
-	return "", "", nil
-}
 func buildPingURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/", endpoint)
 }

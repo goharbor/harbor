@@ -17,6 +17,8 @@ const (
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
 	GeneralCode = "UNKNOWN"
+	// ChallengesUnsupportedCode ...
+	ChallengesUnsupportedCode = "ChallengesUnsupportedCode"
 	// DENIED it's used by middleware(readonly, vul and content trust) and returned to docker client to index the request is denied.
 	DENIED = "DENIED"
 	// PROJECTPOLICYVIOLATION ...
@@ -84,4 +86,8 @@ func IsNotFoundErr(err error) bool {
 // IsConflictErr checks whether the err chain contains conflict error
 func IsConflictErr(err error) bool {
 	return IsErr(err, ConflictCode)
+}
+
+func IsChallengesUnsupportedErr(err error) bool {
+	return IsErr(err, ChallengesUnsupportedCode)
 }
