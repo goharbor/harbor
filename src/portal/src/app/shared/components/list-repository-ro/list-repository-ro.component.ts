@@ -16,9 +16,7 @@ import { Router } from '@angular/router';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { SessionService } from "../../services/session.service";
-import { UN_LOGGED_PARAM } from "../../../account/sign-in/sign-in.service";
-
-const YES: string = 'yes';
+import { UN_LOGGED_PARAM, YES } from "../../../account/sign-in/sign-in.service";
 
 @Component({
   selector: 'list-repository-ro',

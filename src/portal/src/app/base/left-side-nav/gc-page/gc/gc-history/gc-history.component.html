@@ -2,7 +2,7 @@
 <span class="refresh-btn" (click)="refresh()">
   <clr-icon shape="refresh"></clr-icon>
 </span>
-<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs($event)">
+<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs(true, $event)">
     <clr-dg-column [clrDgField]="'id'">{{'GC.JOB_ID' | translate}}</clr-dg-column>
     <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'TAG_RETENTION.DRY_RUN' | translate}}</clr-dg-column>

@@ -6,6 +6,12 @@
                 <clr-icon shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu [style.height.px]="230" clrPosition="bottom-left" *clrIfOpen>
+                <div>
+                    <button class="btn btn-link btn-sm select-all-for-dropdown" (click)="selectAllPermissionOrUnselectAll(defaultAccesses);resetAccess(defaultAccesses)">
+                        <span *ngIf="isSelectAll(defaultAccesses)">{{"SYSTEM_ROBOT.SELECT_ALL" | translate}}</span>
+                        <span *ngIf="!isSelectAll(defaultAccesses)">{{"SYSTEM_ROBOT.UNSELECT_ALL" | translate}}</span>
+                    </button>
+                </div>
                 <div clrDropdownItem *ngFor="let item of defaultAccesses" (click)="chooseDefaultAccess(item)">
                     <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
                     <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>
@@ -22,7 +28,7 @@
     <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let p of projects; let projectIndex = index;" [clrDgItem]="p">
         <clr-dg-cell>
-            <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
+            <a href="javascript:void(0)" [routerLink]="getLink(p.project_id)">{{p.name}}</a>
         </clr-dg-cell>
         <clr-dg-cell>{{p.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
@@ -33,6 +39,12 @@
                         <clr-icon shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu [style.height.px]="140" clrPosition="bottom-left" *clrIfOpen>
+                        <div>
+                            <button class="btn btn-link btn-sm select-all-for-dropdown" (click)="selectAllPermissionOrUnselectAll(p.permissions[0].access)">
+                                <span *ngIf="isSelectAll(p.permissions[0].access)">{{"SYSTEM_ROBOT.SELECT_ALL" | translate}}</span>
+                                <span *ngIf="!isSelectAll(p.permissions[0].access)">{{"SYSTEM_ROBOT.UNSELECT_ALL" | translate}}</span>
+                            </button>
+                        </div>
                         <div clrDropdownItem *ngFor="let item of p.permissions[0].access" (click)="chooseAccess(item)">
                             <clr-icon class="check" shape="check" [style.visibility]="item.checked ? 'visible' : 'hidden'"></clr-icon>
                             <span>{{i18nMap[item.action] | translate}} {{i18nMap[item.resource] | translate}}</span>

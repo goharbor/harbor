@@ -206,7 +206,7 @@ github.com/cespare/xxhash/v2
 # github.com/containerd/cgroups v0.0.0-20200531161412-0dbf7f05ba59
 ## explicit; go 1.13
 github.com/containerd/cgroups/stats/v1
-# github.com/containerd/containerd v1.4.11
+# github.com/containerd/containerd v1.4.12
 ## explicit
 github.com/containerd/containerd/archive/compression
 github.com/containerd/containerd/content
@@ -631,7 +631,7 @@ github.com/olekukonko/tablewriter
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/opencontainers/image-spec v1.0.1
+# github.com/opencontainers/image-spec v1.0.2
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1

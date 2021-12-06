@@ -191,7 +191,7 @@ export class ChartVersionComponent implements OnInit {
       }))
       .subscribe(
         versions => {
-          this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
+          this.chartVersions = versions.filter(x => x?.version?.includes(this.lastFilteredVersionName));
           this.totalCount = versions.length;
         },
         err => {

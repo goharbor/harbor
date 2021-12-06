@@ -748,10 +748,10 @@ func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *mo
 
 	summary.Quota = &models.ProjectSummaryQuota{}
 	if hard, err := q.GetHard(); err == nil {
-		summary.Quota.Hard = hard
+		summary.Quota.Hard = model.NewResourceList(hard).ToSwagger()
 	}
 	if used, err := q.GetUsed(); err == nil {
-		summary.Quota.Used = used
+		summary.Quota.Used = model.NewResourceList(used).ToSwagger()
 	}
 }
 

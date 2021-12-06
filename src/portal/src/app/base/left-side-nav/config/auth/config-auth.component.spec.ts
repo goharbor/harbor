@@ -1,17 +1,16 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ConfigurationService } from '../../../../services/config.service';
 import { ConfigurationAuthComponent } from './config-auth.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
-import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { SystemInfoService } from "../../../../shared/services";
 import { clone } from '../../../../shared/units/utils';
 import { CONFIG_AUTH_MODE } from '../../../../shared/entities/shared.const';
+import { ConfigService } from "../config.service";
+import { Configuration } from '../config';
+import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('ConfigurationAuthComponent', () => {
     let component: ConfigurationAuthComponent;
@@ -27,7 +26,25 @@ describe('ConfigurationAuthComponent', () => {
     let fakeAppConfigService = {
         load: () => of(null)
     };
-    let fakeConfirmMessageService = null;
+    const fakeConfigService = {
+        config: new Configuration(),
+        getConfig() {
+            return this.config;
+        },
+        setConfig(c) {
+            this.config = c;
+        },
+        getOriginalConfig() {
+            return new Configuration();
+        },
+        getLoadingConfigStatus() {
+            return false;
+        },
+        updateConfig() {
+        },
+        resetConfig() {
+        }
+    };
     let fakeSystemInfoService = {
         getSystemInfo: function () {
             return of({
@@ -39,17 +56,14 @@ describe('ConfigurationAuthComponent', () => {
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                FormsModule
+                SharedTestingModule
             ],
             declarations: [ConfigurationAuthComponent],
             providers: [
-                ErrorHandler,
-                TranslateService,
                 { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
                 { provide: ConfigurationService, useValue: fakeConfigurationService },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
-                { provide: ConfirmMessageHandler, useValue: fakeConfirmMessageService },
+                { provide: ConfigService, useValue: fakeConfigService },
                 { provide: SystemInfoService, useValue: fakeSystemInfoService }
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -59,46 +73,10 @@ describe('ConfigurationAuthComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfigurationAuthComponent);
         component = fixture.componentInstance;
-        (component as any).originalConfig = clone(component.currentConfig);
-        fixture.autoDetectChanges();
+        fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
-    });
-
-    it('should save configuration', async () => {
-        const selfRegInput: HTMLInputElement = fixture.nativeElement.querySelector("#selfReg");
-        selfRegInput.dispatchEvent(new Event('click'));
-        component.currentConfig.self_registration.value = true;
-        await fixture.whenStable();
-        const configAuthSaveBtn: HTMLButtonElement = fixture.nativeElement.querySelector("#config_auth_save");
-        component.onGoing = true;
-        configAuthSaveBtn.dispatchEvent(new Event('click'));
-        await fixture.whenStable();
-        expect(component.onGoing).toBeFalsy();
-    });
-    it('should select ldap or uaa', () => {
-        component.handleOnChange({target: {value: 'ldap_auth'}});
-        expect(component.currentConfig.self_registration.value).toEqual(false);
-    });
-    it('should ping test server when ldap', async () => {
-        component.currentConfig.auth_mode.value = CONFIG_AUTH_MODE.LDAP_AUTH;
-        component.currentConfig.ldap_scope.value = 123456;
-        await fixture.whenStable();
-        const pingTestBtn = fixture.nativeElement.querySelector("#ping-test");
-        expect(pingTestBtn).toBeTruthy();
-        pingTestBtn.dispatchEvent(new Event('click'));
-        await fixture.whenStable();
-        expect(component.testingOnGoing).toBeFalsy();
-    });
-    it('should ping test server when oidc', async () => {
-        component.currentConfig.auth_mode.value = CONFIG_AUTH_MODE.OIDC_AUTH;
-        await fixture.whenStable();
-        const pingTestBtn = fixture.nativeElement.querySelector("#ping-test");
-        expect(pingTestBtn).toBeTruthy();
-        pingTestBtn.dispatchEvent(new Event('click'));
-        await fixture.whenStable();
-        expect(component.testingOnGoing).toBeFalsy();
     });
 });

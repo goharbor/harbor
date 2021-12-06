@@ -11,155 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Subscription } from "rxjs";
-import { SessionService } from '../../../shared/services/session.service';
-import { MessageHandlerService } from '../../../shared/services/message-handler.service';
-import { AppConfigService } from '../../../services/app-config.service';
-import { ConfigurationAuthComponent } from './auth/config-auth.component';
-import { ConfigurationEmailComponent } from './email/config-email.component';
-import { ConfigurationService } from '../../../services/config.service';
-import { Configuration, StringValueItem } from "./config";
-import { SystemSettingsComponent } from "./system/system-settings.component";
-import { clone, isEmpty } from "../../../shared/units/utils";
-import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
-import { ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
-
-const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
-const TabLinkContentMap = {
-    'config-auth': 'authentication',
-    'config-replication': 'replication',
-    'config-email': 'email',
-    'config-system': 'system_settings',
-    'config-label': 'system_label',
-};
+import { Component, OnInit } from '@angular/core';
+import { ConfigService } from "./config.service";
 
 @Component({
     selector: 'config',
     templateUrl: 'config.component.html',
     styleUrls: ['config.component.scss']
 })
-export class ConfigurationComponent implements OnInit, OnDestroy {
-    allConfig: Configuration = new Configuration();
-    onGoing = false;
-    currentTabId = 'config-auth'; // default tab
-    originalCopy: Configuration = new Configuration();
-    confirmSub: Subscription;
-
-    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
-    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
-    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
-
-    constructor(
-        private msgHandler: MessageHandlerService,
-        private configService: ConfigurationService,
-        private confirmService: ConfirmationDialogService,
-        private appConfigService: AppConfigService,
-        private session: SessionService) { }
-
-    public get hasAdminRole(): boolean {
-        return this.session.getCurrentUser() &&
-            this.session.getCurrentUser().has_admin_role;
+export class ConfigurationComponent implements OnInit {
+    get inProgress(): boolean {
+        return this.conf.getLoadingConfigStatus();
     }
 
-    public get hasCAFile(): boolean {
-        return this.appConfigService.getConfig().has_ca_root;
+    constructor(private conf: ConfigService) {
     }
 
-    public get withAdmiral(): boolean {
-        return this.appConfigService.getConfig().with_admiral;
-    }
-
-    refreshAllconfig() {
-        this.retrieveConfig();
-    }
     ngOnInit(): void {
         // First load
-        // Double confirm the current use has admin role
-        let currentUser = this.session.getCurrentUser();
-        if (currentUser && currentUser.has_admin_role) {
-            this.retrieveConfig();
-        }
-
-        this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
-            if (confirmation &&
-                confirmation.state === ConfirmationState.CONFIRMED) {
-                if (confirmation.source === ConfirmationTargets.CONFIG) {
-                    this.reset(confirmation.data);
-                } else if (confirmation.source === ConfirmationTargets.CONFIG_TAB) {
-                    this.reset(confirmation.data['changes']);
-                    this.currentTabId = confirmation.data['tabId'];
-                }
-            }
-        });
+        this.conf.initConfig();
     }
 
-    ngOnDestroy(): void {
-        if (this.confirmSub) {
-            this.confirmSub.unsubscribe();
-        }
-    }
-
-    public get inProgress(): boolean {
-        return this.onGoing;
-    }
-
-    handleReadyOnlyChange(event) {
-        this.msgHandler.handleReadOnly();
-        if (!event) {
-            this.msgHandler.clear();
-        }
-    }
-
-    handleAppConfig(event) {
-        // Reload bootstrap option
-        this.appConfigService.load().subscribe(() => {}
-        , error => console.error('Failed to reload bootstrap option with error: ', error));
-    }
-
-    retrieveConfig(): void {
-        this.onGoing = true;
-        this.configService.getConfiguration()
-            .subscribe((configurations: Configuration) => {
-                this.onGoing = false;
-
-                // Add two password fields
-                configurations.email_password = new StringValueItem(fakePass, true);
-                configurations.ldap_search_password = new StringValueItem(fakePass, true);
-                configurations.uaa_client_secret = new StringValueItem(fakePass, true);
-                configurations.oidc_client_secret = new StringValueItem(fakePass, true);
-                this.allConfig = configurations;
-                // Keep the original copy of the data
-                this.originalCopy = clone(configurations);
-            }, error => {
-                this.onGoing = false;
-                this.msgHandler.handleError(error);
-            });
-    }
-
-    /**
-     *
-     * Reset the configuration form
-     *
-     * @private
-     *  ** deprecated param {*} changes
-     *
-     * @memberOf ConfigurationComponent
-     */
-    reset(changes: any): void {
-        if (!isEmpty(changes)) {
-            for (let prop in changes) {
-                if (this.originalCopy[prop]) {
-                    this.allConfig[prop] = clone(this.originalCopy[prop]);
-                }
-            }
-        } else {
-            // force reset
-            this.retrieveConfig();
-        }
-    }
-
-    disabled(prop: any): boolean {
-        return !(prop && prop.editable);
-    }
 }

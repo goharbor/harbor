@@ -86,14 +86,15 @@ Body Of Scan Image With Empty Vul
 Body Of Manual Scan All
     [Arguments]  @{vulnerability_levels}
     Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    ${sha256}=  Set Variable  e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis  sha256=${sha256}
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Trigger Scan Now And Wait Until The Result Appears
     Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
-    Scan Result Should Display In List Row  latest
+    Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
@@ -459,3 +460,25 @@ Check Harbor Api Page
     ${Title}=  Get Title
     Should Be Equal  ${Title}  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+
+Body Of Stop Scan And Stop Scan All
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
+    ${tag}=    Set Variable    test-ui
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
+    # stop scan
+    Scan Artifact  project${d}  ${repo}
+    Stop Scan Artifact
+    Check Scan Artifact Job Status Is Stopped
+    # stop scan all
+    Scan All Artifact
+    Stop Scan All Artifact
+    Check Scan All Artifact Job Status Is Stopped
+    Close Browser
+
+Prepare Image Package Test Files
+    [Arguments]  ${files_path}
+    ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}
