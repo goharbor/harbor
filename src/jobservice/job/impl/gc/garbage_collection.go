@@ -309,8 +309,8 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 							return
 						}
 					}(blob, art, gc)
-					wg2.Wait()
 				}
+				wg2.Wait()
 			}
 
 			// delete all of blobs, which include config, layer and manifest
