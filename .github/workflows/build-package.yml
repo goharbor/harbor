@@ -5,7 +5,7 @@ env:
 on:
     push:
         branches:
-          - master
+          - main
           - release-*
         tags:
           - v*
@@ -70,7 +70,7 @@ jobs:
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
 
-          if [[ $target_branch == "master" ]]; then
+          if [[ $target_branch == "main" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
             harbor_target_bucket=$harbor_builds_bucket
           else
