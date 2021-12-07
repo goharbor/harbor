@@ -265,9 +265,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 					if err := ignoreNotFound(func() error {
 						return gc.markDeleteFailed(ctx, blob)
 					}); err != nil {
-						return err
+						gc.logger.Errorf("failed to call gc.markDeleteFailed() after v2DeleteManifest() error out: %s, %s, errMsg=%v",
+							art.RepositoryName, blob.Digest, err)
+						continue
 					}
-					return errors.Wrapf(err, "failed to delete manifest with v2 API: %s, %s", art.RepositoryName, blob.Digest)
+					continue
 				}
 				// for manifest, it has to delete the revisions folder of each repository
 				gc.logger.Infof("delete manifest from storage: %s", blob.Digest)
@@ -278,19 +280,23 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				}, retry.Callback(func(err error, sleep time.Duration) {
 					gc.logger.Infof("failed to exec DeleteManifest, error: %v, will retry again after: %s", err, sleep)
 				})); err != nil {
+					gc.logger.Errorf("failed to remove manifest from storage: %s, %s, errMsg=%v", art.RepositoryName, blob.Digest, err)
 					if err := ignoreNotFound(func() error {
 						return gc.markDeleteFailed(ctx, blob)
 					}); err != nil {
-						return err
+						gc.logger.Errorf("failed to call gc.markDeleteFailed() after gc.registryCtlClient.DeleteManifest() error out: %s, %s, %v",
+							art.RepositoryName, blob.Digest, err)
+						continue
 					}
-					return errors.Wrapf(err, "failed to remove manifest from storage: %s, %s", art.RepositoryName, blob.Digest)
+					continue
 				}
 
 				gc.logger.Infof("delete artifact trash record from database: %d, %s, %s", art.ID, art.RepositoryName, art.Digest)
 				if err := ignoreNotFound(func() error {
 					return gc.artrashMgr.Delete(ctx.SystemContext(), art.ID)
 				}); err != nil {
-					return err
+					gc.logger.Errorf("failed to call gc.artrashMgr.Delete(): %v, errMsg=%v", art.ID, err)
+					continue
 				}
 			}
 		}
@@ -306,12 +312,14 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 			}, retry.Callback(func(err error, sleep time.Duration) {
 				gc.logger.Infof("failed to exec DeleteBlob, error: %v, will retry again after: %s", err, sleep)
 			})); err != nil {
+				gc.logger.Errorf("failed to delete blob from storage: %s, %s, errMsg=%v", blob.Digest, blob.Status, err)
 				if err := ignoreNotFound(func() error {
 					return gc.markDeleteFailed(ctx, blob)
 				}); err != nil {
-					return err
+					gc.logger.Errorf("failed to call gc.markDeleteFailed() after gc.registryCtlClient.DeleteBlob() error out: %s, %v", blob.Digest, err)
+					continue
 				}
-				return errors.Wrapf(err, "failed to delete blob from storage: %s, %s", blob.Digest, blob.Status)
+				continue
 			}
 			sweepSize = sweepSize + blob.Size
 		}
@@ -323,9 +331,12 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 			if err := ignoreNotFound(func() error {
 				return gc.markDeleteFailed(ctx, blob)
 			}); err != nil {
-				return err
+				gc.logger.Errorf("failed to call gc.markDeleteFailed() after gc.blobMgr.Delete() error out, %d, %s %v", blob.ID, blob.Digest, err)
+				continue
 			}
-			return errors.Wrapf(err, "failed to delete blob from database: %s, %s", blob.Digest, blob.Status)
+
+			gc.logger.Errorf("failed to delete blob from database: %s, %s, errMsg=%v", blob.Digest, blob.Status, err)
+			continue
 		}
 	}
 	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
