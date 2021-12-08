@@ -38,7 +38,7 @@ export class ListRepositoryROComponent {
   getLink(projectId: number, repoName: string) {
     let projectName = repoName.split('/')[0];
     let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
-    return `/harbor/projects/${projectId}/repositories/${repositorieName}`;
+    return ['/harbor/projects', projectId, 'repositories', repositorieName];
   }
   getQueryParams() {
     if (this.sessionService.getCurrentUser()) {
