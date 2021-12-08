@@ -125,8 +125,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     return this.systemInfo && this.systemInfo.has_ca_root;
   }
 
-  getLink(repoEvt: NewRepository): string {
-    return `/harbor/projects/${repoEvt.project_id}/repositories/${repoEvt.name.substr(this.projectName.length + 1)}`;
+  getLink(repoEvt: NewRepository) {
+    return ['/harbor/projects', repoEvt.project_id, 'repositories', repoEvt.name.substr(this.projectName.length + 1)];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
