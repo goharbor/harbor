@@ -113,6 +113,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 
 	{
 		// report not found for the default X-Accept-Vulnerabilities
+		suite.onGetReport(v1.MimeTypeGenericVulnerabilityReport)
 		suite.onGetReport(v1.MimeTypeNativeReport)
 
 		var body map[string]interface{}
@@ -124,6 +125,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 
 	{
 		// report found for the default X-Accept-Vulnerabilities
+		suite.onGetReport(v1.MimeTypeGenericVulnerabilityReport)
 		suite.onGetReport(v1.MimeTypeNativeReport, suite.report1)
 
 		var body map[string]interface{}
