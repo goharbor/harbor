@@ -68,8 +68,7 @@ const routes: Routes = [
     SharedModule
   ],
   providers: [
-    ArtifactDefaultService,
-    {provide: ArtifactService, useClass: ArtifactDefaultService },
+    {provide: ArtifactService, useClass: ArtifactDefaultService }
   ]
 })
 export class ArtifactModule { }

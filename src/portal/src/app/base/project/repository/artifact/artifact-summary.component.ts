@@ -8,7 +8,7 @@ import { AppConfigService } from "../../../../services/app-config.service";
 import { Project } from "../../project";
 import { artifactDefault } from './artifact';
 import { SafeUrl } from '@angular/platform-browser';
-import { ArtifactDefaultService } from './artifact.service';
+import { ArtifactService } from './artifact.service';
 
 @Component({
   selector: "artifact-summary",
@@ -39,7 +39,7 @@ export class ArtifactSummaryComponent implements OnInit {
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
     private router: Router,
-    private frontEndArtifactService: ArtifactDefaultService,
+    private frontEndArtifactService: ArtifactService,
   ) {
   }
 
