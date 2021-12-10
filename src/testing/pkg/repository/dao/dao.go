@@ -17,13 +17,13 @@ type DAO struct {
 	mock.Mock
 }
 
-// AddPullCount provides a mock function with given fields: ctx, id
-func (_m *DAO) AddPullCount(ctx context.Context, id int64) error {
-	ret := _m.Called(ctx, id)
+// AddPullCount provides a mock function with given fields: ctx, id, count
+func (_m *DAO) AddPullCount(ctx context.Context, id int64, count uint64) error {
+	ret := _m.Called(ctx, id, count)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, uint64) error); ok {
+		r0 = rf(ctx, id, count)
 	} else {
 		r0 = ret.Error(0)
 	}
