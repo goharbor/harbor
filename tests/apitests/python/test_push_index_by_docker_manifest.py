@@ -15,6 +15,7 @@ from library.user import User
 from library.repository import Repository
 from library.artifact import Artifact
 from library.repository import push_self_build_image_to_project
+from library.repository import push_image_to_project
 from library.repository import pull_harbor_image
 from library.scan import Scan
 
@@ -85,8 +86,8 @@ class TestManifest(unittest.TestCase):
         TestManifest.project_id, TestManifest.project_name = TestManifest.project.create_project(metadata = {"public": "false"}, **TestManifest.USER_CLIENT)
 
         #3. Create 2 new repositorys(RA,RB) in project(PA) by user(UA);
-        repo_name_a, tag_a = push_self_build_image_to_project(TestManifest.project_name, harbor_server, 'admin', 'Harbor12345', TestManifest.image_a, "latest")
-        repo_name_b, tag_b = push_self_build_image_to_project(TestManifest.project_name, harbor_server, 'admin', 'Harbor12345', TestManifest.image_b, "latest")
+        repo_name_a, tag_a = push_image_to_project(TestManifest.project_name, harbor_server, 'admin', 'Harbor12345', TestManifest.image_a, "latest")
+        repo_name_b, tag_b = push_image_to_project(TestManifest.project_name, harbor_server, 'admin', 'Harbor12345', TestManifest.image_b, "latest")
 
         #4. Push an index(IA) to Harbor by docker manifest CLI successfully;
         manifests = [harbor_server+"/"+repo_name_a+":"+tag_a, harbor_server+"/"+repo_name_b+":"+tag_b]

@@ -21,7 +21,7 @@ class TestProjects(unittest.TestCase):
         self.artifact = Artifact()
         self.repo = Repository()
         self.repo_name = "busybox"
-        self.tag = "1.28"
+        self.tag = "1.33.1"
 
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):

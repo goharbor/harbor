@@ -5,6 +5,8 @@ ENV LANG C.UTF-8
 
 COPY --from=tool_builder /tool/tools.tar.gz /usr/local/bin
 
+COPY --from=tool_builder /usr/local/etc/singularity/singularity.conf /usr/local/etc/singularity/singularity.conf
+
 RUN tdnf install -y \
     wget \
     git \
