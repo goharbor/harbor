@@ -9,7 +9,6 @@ import { ArtifactDefaultService, ArtifactService } from "../../artifact.service"
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { RepositoryService as NewRepositoryService } from "../../../../../../../../ng-swagger-gen/services/repository.service";
 import { SharedTestingModule } from "../../../../../../shared/shared.module";
-import { HttpClientTestingModule } from "@angular/common/http/testing";
 
 describe('ArtifactListComponent (inline template)', () => {
 
@@ -57,7 +56,6 @@ describe('ArtifactListComponent (inline template)', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         SharedTestingModule,
       ],
       schemas: [

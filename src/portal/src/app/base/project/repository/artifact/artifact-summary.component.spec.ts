@@ -7,7 +7,7 @@ import { ProjectService } from "../../../../shared/services";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../../services/app-config.service";
 import { Project } from "../../project";
-import { ArtifactDefaultService } from './artifact.service';
+import { ArtifactService } from './artifact.service';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('ArtifactSummaryComponent', () => {
@@ -83,7 +83,7 @@ describe('ArtifactSummaryComponent', () => {
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: ProjectService, useValue: fakedProjectService },
-        { provide: ArtifactDefaultService, useValue: fakedArtifactDefaultService },
+        { provide: ArtifactService, useValue: fakedArtifactDefaultService },
       ]
     })
       .compileComponents();

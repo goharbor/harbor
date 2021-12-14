@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ArtifactListComponent } from "./artifact-list/artifact-list.component";
-import { ArtifactDefaultService } from "../artifact.service";
+import { ArtifactService } from "../artifact.service";
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { SessionService } from "../../../../../shared/services/session.service";
 import { Project } from "../../../project";
@@ -41,7 +41,7 @@ export class ArtifactListPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private artifactService: ArtifactDefaultService,
+    private artifactService: ArtifactService,
     private appConfigService: AppConfigService,
     private session: SessionService) {
     this.route.params.subscribe(params => {

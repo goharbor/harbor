@@ -1,8 +1,10 @@
 import { Injectable } from "@angular/core";
-import { Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
 import { IconService } from '../../../../../../ng-swagger-gen/services/icon.service';
+import { share } from "rxjs/operators";
+import { Icon } from "ng-swagger-gen/models/icon";
 
 
 /**
@@ -26,6 +28,7 @@ export class ArtifactDefaultService extends ArtifactService {
   triggerUploadArtifact = new Subject<string>();
   TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   private _iconMap: {[key: string]: SafeUrl} = {};
+  private _sharedIconObservableMap: {[key: string]: Observable<Icon>} = {};
   constructor(private iconService: IconService,
               private domSanitizer: DomSanitizer) {
     super();
@@ -42,11 +45,14 @@ export class ArtifactDefaultService extends ArtifactService {
     if (artifactList && artifactList.length) {
       artifactList.forEach(item => {
         if (item.icon && !this.getIcon(item.icon)) {
-          this.iconService.getIcon({digest: item.icon})
-            .subscribe(res => {
-              this.setIcon(item.icon, this.domSanitizer
-                .bypassSecurityTrustUrl(`data:${res['content-type']};charset=utf-8;base64,${res.content}`));
-            });
+          if (!this._sharedIconObservableMap[item.icon]) {
+            this._sharedIconObservableMap[item.icon] = this.iconService.getIcon({digest: item.icon}).pipe(share());
+          }
+          this._sharedIconObservableMap[item.icon]
+              .subscribe(res => {
+                this.setIcon(item.icon, this.domSanitizer
+                    .bypassSecurityTrustUrl(`data:${res['content-type']};charset=utf-8;base64,${res.content}`));
+              });
         }
       });
     }

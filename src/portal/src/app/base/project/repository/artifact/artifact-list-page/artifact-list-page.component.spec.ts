@@ -1,17 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ArtifactListPageComponent } from './artifact-list-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from "../../../../../shared/services/session.service";
 import { AppConfigService } from "../../../../../services/app-config.service";
-import { ArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
-import { ArtifactDefaultService } from "../artifact.service";
+import { ArtifactService  } from "../artifact.service";
+import { SharedTestingModule } from "../../../../../shared/shared.module";
 
 describe('ArtifactListPageComponent', () => {
     let component: ArtifactListPageComponent;
@@ -74,17 +69,10 @@ describe('ArtifactListPageComponent', () => {
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+               SharedTestingModule
             ],
             declarations: [ArtifactListPageComponent],
             providers: [
-                TranslateService,
-                ArtifactDefaultService,
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: AppConfigService, useValue: mockAppConfigService },
                 { provide: Router, useValue: mockRouter },
