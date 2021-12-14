@@ -18,7 +18,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${project_create_xpath}  //clr-dg-action-bar//button[contains(.,'New')]
 ${self_reg_xpath}  //input[@id='selfReg']
-${test_ldap_xpath}  //*[@id='authentication']/config-auth/div/button[3]
+${test_ldap_xpath}  //*[@id='ping-test']
 ${config_save_button_xpath}  //config//div/button[contains(.,'SAVE')]
 ${config_email_save_button_xpath}  //*[@id='config_email_save']
 ${config_auth_save_button_xpath}  //*[@id='config_auth_save']
