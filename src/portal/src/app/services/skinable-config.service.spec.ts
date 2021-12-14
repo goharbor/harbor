@@ -41,7 +41,7 @@ describe('SkinableConfig', () => {
       expect(res).toEqual(mockCustomSkinData);
     });
 
-    const req = httpMock.expectOne('setting.json');
+    const req = httpMock.expectOne('setting.json?buildTimeStamp=0');
     expect(req.request.method).toBe('GET');
     req.flush(mockCustomSkinData);
     expect(service.getSkinConfig()).toEqual(mockCustomSkinData);
