@@ -1000,7 +1000,13 @@ paths:
           default: false
         - name: with_immutable_status
           in: query
-          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_accessory
+          in: query
+          description: Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
           type: boolean
           required: false
           default: false
@@ -1091,6 +1097,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_accessory
+          in: query
+          description: Specify whether the accessories are included of the returning artifacts.
+          type: boolean
+          required: false
+          default: false
         # should be in tag level
         - name: with_signature
           in: query
@@ -1100,7 +1112,7 @@ paths:
           default: false
         - name: with_immutable_status
           in: query
-          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts.
           type: boolean
           required: false
           default: false
@@ -1325,6 +1337,46 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/accessories:
+    get:
+      summary: List accessories
+      description: List accessories of the specific artifact
+      tags:
+        - artifact
+      operationId: listAccessories
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of accessories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Accessory'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -5487,6 +5539,13 @@ parameters:
     required: true
     type: integer
     format: int64
+  accessoryId:
+    name: accessory_id
+    in: path
+    description: The ID of the accessory
+    required: true
+    type: integer
+    format: int64
 
 responses:
   '200':
@@ -5827,6 +5886,11 @@ definitions:
       scan_overview:
         $ref: '#/definitions/ScanOverview'
         description: The overview of the scan result.
+      accessories:
+        type: array
+        items:
+          $ref: '#/definitions/Accessory'
+          description: The accessory of the artifact.
   Tag:
     type: object
     properties:
@@ -8657,3 +8721,42 @@ definitions:
         format: int64
         description: The total storage consumption of blobs, only be seen by the system admin
         x-omitempty: false
+  Accessory:
+    type: object
+    description: 'The accessory of the artifact'
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the accessory
+      artifact_id:
+        type: integer
+        format: int64
+        description: The artifact id of the accessory
+        x-omitempty: false
+      subject_artifact_id:
+        type: integer
+        format: int64
+        description: The subject artifact id of the accessory
+        x-omitempty: false
+      size:
+        type: integer
+        format: int64
+        description: The artifact size of the accessory
+        x-omitempty: false
+      digest:
+        type: string
+        description: The artifact digest of the accessory
+        x-omitempty: false
+      type:
+        type: string
+        description: The artifact size of the accessory
+        x-omitempty: false
+      icon:
+        type: string
+        description: The icon of the accessory
+        x-omitempty: false
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the accessory

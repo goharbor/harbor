@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
@@ -46,6 +47,7 @@ import (
 
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
+		accMgr:  accessory.Mgr,
 		artCtl:  artifact.Ctl,
 		proCtl:  project.Ctl,
 		repoCtl: repository.Ctl,
@@ -56,6 +58,7 @@ func newArtifactAPI() *artifactAPI {
 
 type artifactAPI struct {
 	BaseAPI
+	accMgr  accessory.Manager
 	artCtl  artifact.Controller
 	proCtl  project.Controller
 	repoCtl repository.Controller
@@ -85,7 +88,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithSignature)
+		params.WithLabel, params.WithSignature, params.WithAccessory)
 
 	// get the total count of artifacts
 	total, err := a.artCtl.Count(ctx, query)
@@ -119,7 +122,7 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	}
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithSignature)
+		params.WithLabel, params.WithSignature, params.WithAccessory)
 
 	// get the artifact
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
@@ -333,6 +336,39 @@ func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsPar
 		WithPayload(ts)
 }
 
+func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.ListAccessoriesParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceAccessory); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// set query
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query.Keywords["SubjectArtifactID"] = artifact.ID
+
+	// list accessories according to the query
+	accs, err := a.accMgr.List(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	total := len(accs)
+
+	var res []*models.Accessory
+	for _, acc := range accs {
+		res = append(res, model.NewAccessory(acc.GetData()).ToSwagger())
+	}
+	return operation.NewListAccessoriesOK().
+		WithXTotalCount(int64(total)).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, int64(total), query.PageNumber, query.PageSize).String()).
+		WithPayload(res)
+}
+
 func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params operation.GetVulnerabilitiesAdditionParams) middleware.Responder {
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifactAddition); err != nil {
 		return a.SendError(ctx, err)
@@ -424,14 +460,19 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 	return operation.NewRemoveLabelOK()
 }
 
-func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artifact.Option {
+func option(withTag, withImmutableStatus, withLabel, withSignature, withAccessory *bool) *artifact.Option {
 	option := &artifact.Option{
-		WithTag:   true, // return the tag by default
-		WithLabel: lib.BoolValue(withLabel),
+		WithTag:       true, // return the tag by default
+		WithLabel:     lib.BoolValue(withLabel),
+		WithAccessory: true, // return the accessory by default
 	}
 
 	if withTag != nil {
 		option.WithTag = *(withTag)
+	}
+
+	if withAccessory != nil {
+		option.WithAccessory = *(withAccessory)
 	}
 
 	if option.WithTag {

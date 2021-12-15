@@ -40,6 +40,11 @@ func (a *Default) IsHard() bool {
 	return false
 }
 
+// Display ...
+func (a *Default) Display() bool {
+	return false
+}
+
 // GetData ...
 func (a *Default) GetData() model.AccessoryData {
 	return a.Data

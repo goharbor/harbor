@@ -15,6 +15,7 @@
 package accessory
 
 import (
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -90,8 +91,8 @@ func (m *managerTestSuite) TestCount() {
 }
 
 func (m *managerTestSuite) TestDeleteOfArtifact() {
-	mock.OnAnything(m.dao, "DeleteOfArtifact").Return(nil)
-	err := m.mgr.DeleteOfArtifact(nil, 1)
+	mock.OnAnything(m.dao, "DeleteAccessories").Return(int64(1), nil)
+	err := m.mgr.DeleteAccessories(nil, q.New(q.KeyWords{"ArtifactID": 1}))
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

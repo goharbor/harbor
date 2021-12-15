@@ -19,6 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 )
@@ -26,9 +27,10 @@ import (
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags          []*tag.Tag               `json:"tags"`           // the list of tags that attached to the artifact
-	AdditionLinks map[string]*AdditionLink `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
-	Labels        []*model.Label           `json:"labels"`
+	Tags          []*tag.Tag                 `json:"tags"`           // the list of tags that attached to the artifact
+	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Labels        []*model.Label             `json:"labels"`
+	Accessories   []accessoryModel.Accessory `json:"accessories"`
 }
 
 // SetAdditionLink set a addition link
@@ -53,7 +55,8 @@ type AdditionLink struct {
 
 // Option is used to specify the properties returned when listing/getting artifacts
 type Option struct {
-	WithTag   bool
-	TagOption *tag.Option // only works when WithTag is set to true
-	WithLabel bool
+	WithTag       bool
+	TagOption     *tag.Option // only works when WithTag is set to true
+	WithLabel     bool
+	WithAccessory bool
 }

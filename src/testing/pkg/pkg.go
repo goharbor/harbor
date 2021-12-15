@@ -55,3 +55,4 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/joblog/dao --name DAO --output ./joblog/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/accessory/model --name Accessory --output ./accessory/model --outpkg model
 //go:generate mockery --case snake --dir ../../pkg/accessory/dao --name DAO --output ./accessory/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/accessory --name Manager --output ./accessory --outpkg accessory
