@@ -15,7 +15,7 @@
 package logger
 
 import (
-	"log"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // jobServiceLogger is used to log for job service itself
@@ -33,7 +33,7 @@ func Debug(v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Debug(v...)
 	} else {
-		log.Println(v...)
+		log.Debug(v...)
 	}
 }
 
@@ -42,7 +42,7 @@ func Debugf(format string, v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Debugf(format, v...)
 	} else {
-		log.Printf(format, v...)
+		log.Debugf(format, v...)
 	}
 }
 
@@ -51,7 +51,7 @@ func Info(v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Info(v...)
 	} else {
-		log.Println(v...)
+		log.Info(v...)
 	}
 }
 
@@ -60,7 +60,7 @@ func Infof(format string, v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Infof(format, v...)
 	} else {
-		log.Printf(format, v...)
+		log.Infof(format, v...)
 	}
 }
 
@@ -69,7 +69,7 @@ func Warning(v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Warning(v...)
 	} else {
-		log.Println(v...)
+		log.Warning(v...)
 	}
 }
 
@@ -78,7 +78,7 @@ func Warningf(format string, v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Warningf(format, v...)
 	} else {
-		log.Printf(format, v...)
+		log.Warningf(format, v...)
 	}
 }
 
@@ -87,7 +87,7 @@ func Error(v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Error(v...)
 	} else {
-		log.Println(v...)
+		log.Error(v...)
 	}
 }
 
@@ -96,7 +96,7 @@ func Errorf(format string, v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Errorf(format, v...)
 	} else {
-		log.Printf(format, v...)
+		log.Errorf(format, v...)
 	}
 }
 
@@ -105,7 +105,7 @@ func Fatal(v ...interface{}) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Fatal(v...)
 	} else {
-		log.Fatalln(v...)
+		log.Fatal(v...)
 	}
 }
 
