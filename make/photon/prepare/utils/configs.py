@@ -3,7 +3,7 @@ import os
 import yaml
 from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric, Trace
+from models import InternalTLS, Metric, Trace, PurgeUpload
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -78,6 +78,9 @@ def validate(conf: dict, **kwargs):
 
     if conf.get('trace'):
         conf['trace'].validate()
+        
+    if conf.get('purge_upload'):
+        conf['purge_upload'].validate()
 
 def parse_versions():
     if not versions_file_path.is_file():
@@ -345,6 +348,10 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
         # config_dict['notary_url'] = 'http://notary-server:4443'
         config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
+
+    # purge upload configs
+    purge_upload_config = configs.get('upload_purging')
+    config_dict['purge_upload'] = PurgeUpload(purge_upload_config or {})
 
     return config_dict
 
