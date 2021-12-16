@@ -96,10 +96,10 @@
                             <clr-icon shape="caret down"></clr-icon>
                         </button>
                         <clr-dropdown-menu clrPosition="top-left" *clrIfOpen>
-                            <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)" [disabled]="!hasProjectAdminRole">
+                            <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item);$event.stopPropagation();$event.preventDefault()" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.ADDITIONAL_INFO' | translate}}
                             </button>
-                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasDeleteRepositoryPermission">
+                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item);$event.stopPropagation();$event.preventDefault()" [disabled]="!hasDeleteRepositoryPermission">
                                 {{'REPOSITORY.DELETE' | translate}}
                             </button>
                         </clr-dropdown-menu>
