@@ -7278,7 +7278,7 @@ definitions:
           type: string
           description: An operating system or software dependency package containing the vulnerability.
         fix_version:
-          type: integer
+          type: string
           description: The version of the package containing the fix if available.
         severity:
           type: string
