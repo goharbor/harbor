@@ -1354,7 +1354,8 @@ paths:
               description: The content type of the vulnerabilities addition
               type: string
           schema:
-            type: string
+            additionalProperties:
+              $ref: '#/definitions/Report'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -7249,7 +7250,83 @@ definitions:
         description: supported tag selectors
         items:
           $ref: '#/definitions/RetentionSelectorMetadata'
-
+  Report:
+    type: object
+    properties:
+      generated_at:
+        type: string
+        description: The number of the repositories under this project.
+      scanner:
+        description: Scanner of generating this report
+        $ref: "#/definitions/Scanner"
+        x-nullable: true
+      severity:
+        type: string
+        description: A standard scale for measuring the severity of a vulnerability.
+      vulnerabilities:
+        type: array
+        description: Vulnerability list
+        items:
+          $ref: "#/definitions/VulnerabilityItem"
+  VulnerabilityItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the vulnerability.
+        package:
+          type: string
+          description: An operating system or software dependency package containing the vulnerability.
+        fix_version:
+          type: integer
+          description: The version of the package containing the fix if available.
+        severity:
+          type: string
+          description: A standard scale for measuring the severity of a vulnerability.
+        description:
+          type: string
+          description: The descriptopm of the vulnerability.
+        links:
+          type: array
+          description: The list of link to the upstream database with the full description of the vulnerability.
+          items:
+            type: string
+        artifact_digests:
+          type: array
+          description: The artifact digests which the vulnerability belonged
+          items:
+            type: string
+        preferred_cvss:
+          description: The CVSS3 and CVSS2 based scores and attack vector for the vulnerability item
+          $ref: "#/definitions/CVSS"
+        cwe_ids:
+          type: array
+          description: A separated list of CWE Ids associated with this vulnerability
+          items:
+            type: string
+        vendor_attributes:
+          type: object
+          description: A collection of vendor specific attributes for the vulnerability item with each attribute represented as a key-value pair.
+          additionalProperties: true
+  CVSS:
+    type: object
+    properties:
+      score_v3:
+        type: number
+        format: double
+        description: The CVSS-3 score for the vulnerability/
+        x-nullable: true
+      score_v2:
+        type: number
+        format: double
+        description: The CVSS-2 score for the vulnerability
+        x-nullable: true
+      vector_v3:
+        type: string
+        description: The CVSS-3 attack vector.
+      vector_v2:
+        type: string
+        description: The CVSS-2 attack vector.
   RetentionRuleMetadata:
     type: object
     description: the tag retention rule metadata
