@@ -10,7 +10,8 @@ set +o noglob
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
 Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.yml bacause notary must run under https. 
 Please set --with-trivy if needs enable Trivy in Harbor
-Please set --with-chartmuseum if needs enable Chartmuseum in Harbor'
+Please set --with-chartmuseum if needs enable Chartmuseum in Harbor
+Please set --offline-installer-file /path/to/harbor-offline-installer-vX.X.X.tgz if not in the same directory as install.sh.'
 item=0
 
 # notary is not enabled by default
@@ -35,6 +36,8 @@ while [ $# -gt 0 ]; do
             with_trivy=true;;
             --with-chartmuseum)
             with_chartmuseum=true;;
+            --offline-installer-file)
+            INSTALLERFILE="$2" ; shift;;
             *)
             note "$usage"
             exit 1;;
@@ -57,11 +60,17 @@ check_docker
 h2 "[Step $item]: checking docker-compose is installed ..."; let item+=1
 check_dockercompose
 
-if [ -f harbor*.tar.gz ]
-then
-    h2 "[Step $item]: loading Harbor images ..."; let item+=1
-    docker load -i ./harbor*.tar.gz
+if [[ $INSTALLERFILE == "" ]]; then
+    _INSTALLERFILE="./harbor*.tar.gz"
+else
+    _INSTALLERFILE=$INSTALLERFILE
 fi
+
+if [ -f $_INSTALLERFILE ]; then
+    h2 "[Step $item]: loading Harbor images ..."; let item+=1
+    docker load -i $_INSTALLERFILE
+fi
+
 echo ""
 
 h2 "[Step $item]: preparing environment ...";  let item+=1
