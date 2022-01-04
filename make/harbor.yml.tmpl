@@ -228,3 +228,12 @@ proxy:
 #   #   compression: false
 #   #   insecure: true
 #   #   timeout: 10s
+
+# enable purge _upload directories
+upload_purging:
+  enabled: true
+  # remove files in _upload directories which exist for a period of time, default is one week.
+  age: 168h
+  # the interval of the purge operations
+  interval: 24h
+  dryrun: false
