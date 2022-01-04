@@ -23,6 +23,7 @@ const TARGET_BLANK = "_blank";
 export class ProjectPolicy {
     Public: boolean;
     ContentTrust: boolean;
+    ContentTrustCosign: boolean;
     PreventVulImg: boolean;
     PreventVulImgSeverity: string;
     ScanImgOnPush: boolean;
@@ -30,6 +31,7 @@ export class ProjectPolicy {
     constructor() {
         this.Public = false;
         this.ContentTrust = false;
+        this.ContentTrustCosign = false;
         this.PreventVulImg = false;
         this.PreventVulImgSeverity = LOW;
         this.ScanImgOnPush = false;
@@ -38,6 +40,7 @@ export class ProjectPolicy {
     initByProject(pro: Project) {
         this.Public = pro.metadata.public === 'true';
         this.ContentTrust = pro.metadata.enable_content_trust === 'true';
+        this.ContentTrustCosign = pro.metadata.enable_content_trust_cosign === 'true';
         this.PreventVulImg = pro.metadata.prevent_vul === 'true';
         if (pro.metadata.severity) {
             this.PreventVulImgSeverity = pro.metadata.severity;

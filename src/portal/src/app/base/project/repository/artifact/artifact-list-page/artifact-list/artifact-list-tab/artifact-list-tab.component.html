@@ -157,7 +157,7 @@
             </clr-dg-column>
             <clr-dg-column class="pull-command-column">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="depth">{{'REPOSITORY.PLATFORM' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'REPOSITORY.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column class="tag-column">{{'REPOSITORY.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column class="co-signed-column">{{'ACCESSORY.CO_SIGNED' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
             <clr-dg-column class="vul-column">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
@@ -166,7 +166,7 @@
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{'ARTIFACT.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-            <clr-dg-row *ngFor="let artifact of artifactList" [clrDgItem]="artifact" >
+            <clr-dg-row *ngFor="let artifact of artifactList;let i = index" [clrDgItem]="artifact" >
                 <clr-dg-cell class="flex-max-width truncated">
                     <div class="cell white-normal">
                         <div class="artifact-icon clr-display-inline-block" *ngIf="artifact.icon">
@@ -203,10 +203,8 @@
                         <clr-tooltip class="width-p-100">
                             <div clrTooltipTrigger class="center">
                                 <div class="center">
-                                    <span #tagName class="truncated">{{artifact?.tags[0]?.name}}</span>
-                                    <span class="eslip"
-                                          *ngIf="artifact?.tags?.length>1 && isOverflow()">...</span>
-                                    <span *ngIf="artifact?.tags?.length>1 || isOverflow()">({{artifact?.tagNumber}})</span>
+                                    <span class="truncated">{{tagsString(artifact?.tags)}}</span>
+                                    <span *ngIf="artifact?.tags?.length>1">({{artifact?.tagNumber}})</span>
                                 </div>
                             </div>
                             <clr-tooltip-content [clrPosition]="'top-right'" class="lg" [clrSize]="'lg'" *clrIfOpen>

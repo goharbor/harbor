@@ -1711,12 +1711,12 @@
         "DELETE_ACCESSORY": "删除附件",
         "DELETED_SUCCESS": "删除附件成功",
         "DELETED_FAILED": "删除附件失败",
-        "CO_SIGNED": "Co-sign 签名",
+        "CO_SIGNED": "Cosign 签名",
         "NOTARY_SIGNED": "Notary 签名",
         "ACCESSORY": "附件",
         "ACCESSORIES": "附件",
         "SUBJECT_ARTIFACT": "主体 Artifact",
-        "CO_SIGN": "Co-sign",
+        "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
         "PLACEHOLDER": "未发现任何附件！"
     }
