@@ -73,6 +73,9 @@
 }
 
 .truncated {
+  width: 100px;
+  line-height: 20px;
+  height: 20px;
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
@@ -104,8 +107,8 @@
   position: relative;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  line-height: 1;
-  height: 1.2rem;
+  line-height: 1.3rem;
+  height: 1.3rem;
 }
 
 .dropdown-menu input {
@@ -142,7 +145,7 @@
 .labelDiv {
   position: absolute;
   left: 34px;
-  top: 5px;
+  top: 0;
 }
 
 .trigger-item hbr-label-piece {
@@ -306,11 +309,10 @@ clr-datagrid {
 .white-normal {
   white-space: normal;
 }
-.max-width-100 {
+.digest {
   width: 128px;
-    // overflow: hidden;
-    // white-space: nowrap;
-    // text-overflow: ellipsis;
+  flex-grow:0;
+  flex-shrink:0;
 }
 .max-width-38 {
   max-width: 38px !important;
@@ -324,11 +326,12 @@ clr-datagrid {
 .artifact-icon {
   width: 0.8rem;
   height: 0.8rem;
+  vertical-align: top;
 }
 .width-p-100 {
   width: 100%;
   .lg {
-    width: 450px;
+    width: 550px;
   }
 }
 .w-rem-4 {
@@ -339,6 +342,7 @@ clr-datagrid {
 }
 .tag-body-color {
   color: #ccc;
+  max-width: 120px;
 }
 .table {
   .tag-tr {
@@ -413,4 +417,29 @@ clr-datagrid {
 }
 .margin-left-5 {
   margin-left: 5px;
+}
+.pull-command-column {
+  width: 6rem !important;
+}
+.co-signed-column {
+  width: 6rem !important;
+}
+.vul-column {
+  width: 11rem !important;
+}
+.annotations-column {
+  width: 5rem !important;
+}
+.signed {
+  color: #00d40f;
+}
+.mb-05 {
+  margin-bottom: 0.5rem;
+}
+.top-3-px {
+  top: 3px;
+}
+.center {
+  display: flex;
+  align-items: center;
 }

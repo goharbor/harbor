@@ -1,39 +1,13 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ArtifactListPageComponent } from './artifact-list-page.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SessionService } from "../../../../../shared/services/session.service";
-import { AppConfigService } from "../../../../../services/app-config.service";
-import { ArtifactService  } from "../artifact.service";
+import { ActivatedRoute } from '@angular/router';
 import { SharedTestingModule } from "../../../../../shared/shared.module";
+import { ArtifactListPageService } from './artifact-list-page.service';
 
 describe('ArtifactListPageComponent', () => {
     let component: ArtifactListPageComponent;
     let fixture: ComponentFixture<ArtifactListPageComponent>;
-    const mockSessionService = {
-        getCurrentUser: () => { }
-    };
-    const mockAppConfigService = {
-        getConfig: () => {
-            return {
-                project_creation_restriction: "",
-                with_chartmuseum: "",
-                with_notary: "",
-                with_trivy: "",
-                with_admiral: "",
-                registry_url: "",
-            };
-        }
-    };
-    const mockRouter = {
-        navigate: () => { }
-    };
-    const mockArtifactService = {
-        triggerUploadArtifact: {
-            next: () => {}
-        }
-    };
     const mockActivatedRoute = {
         RouterparamMap: of({ get: (key) => 'value' }),
         snapshot: {
@@ -65,19 +39,13 @@ describe('ArtifactListPageComponent', () => {
     };
     beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
             imports: [
                SharedTestingModule
             ],
             declarations: [ArtifactListPageComponent],
             providers: [
-                { provide: SessionService, useValue: mockSessionService },
-                { provide: AppConfigService, useValue: mockAppConfigService },
-                { provide: Router, useValue: mockRouter },
+                ArtifactListPageService,
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
-                { provide: ArtifactService, useValue: mockArtifactService },
             ]
         })
             .compileComponents();
@@ -91,5 +59,11 @@ describe('ArtifactListPageComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('should have two tabs', async () => {
+        await fixture.whenStable();
+        const tabs = fixture.nativeElement.querySelectorAll('.nav-item');
+        expect(tabs.length).toEqual(2);
     });
 });

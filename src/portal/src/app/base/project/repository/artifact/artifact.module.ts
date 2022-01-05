@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from "@angular/router";
 import { SharedModule } from "../../../../shared/shared.module";
 import { ArtifactListPageComponent } from "./artifact-list-page/artifact-list-page.component";
-import { ArtifactListComponent } from "./artifact-list-page/artifact-list/artifact-list.component";
 import { ArtifactListTabComponent } from "./artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component";
 import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { ArtifactTagComponent } from "./artifact-tag/artifact-tag.component";
@@ -19,25 +18,45 @@ import { ResultTipComponent } from "./vulnerability-scanning/result-tip.componen
 import { ResultBarChartComponent } from "./vulnerability-scanning/result-bar-chart.component";
 import { ResultTipHistogramComponent } from "./vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
 import { HistogramChartComponent } from "./vulnerability-scanning/histogram-chart/histogram-chart.component";
+import { ArtifactInfoComponent } from "./artifact-list-page/artifact-list/artifact-info/artifact-info.component";
+import { SubAccessoriesComponent } from "./artifact-list-page/artifact-list/artifact-list-tab/sub-accessories/sub-accessories.component";
+import { ArtifactListPageService } from "./artifact-list-page/artifact-list-page.service";
 
 const routes: Routes = [
   {
     path: ':repo',
     component: ArtifactListPageComponent,
+    children: [
+      {
+        path: 'info-tab',
+        component: ArtifactInfoComponent,
+      },
+      {
+        path: 'artifacts-tab',
+        component: ArtifactListTabComponent
+      },
+      { path: '', redirectTo: 'artifacts-tab', pathMatch: 'full' },
+    ]
   },
   {
-    path: ':repo/depth/:depth',
+    path: ':repo',
     component: ArtifactListPageComponent,
+    children: [
+      {
+        path: 'artifacts-tab/depth/:depth',
+        component: ArtifactListTabComponent
+      }
+    ]
   },
   {
-    path: ':repo/artifacts/:digest',
+    path: ':repo/artifacts-tab/artifacts/:digest',
     component: ArtifactSummaryComponent,
     resolve: {
       artifactResolver: ArtifactDetailRoutingResolverService
     }
   },
   {
-    path: ':repo/depth/:depth/artifacts/:digest',
+    path: ':repo/artifacts-tab/depth/:depth/artifacts/:digest',
     component: ArtifactSummaryComponent,
     resolve: {
       artifactResolver: ArtifactDetailRoutingResolverService
@@ -47,7 +66,6 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     ArtifactListPageComponent,
-    ArtifactListComponent,
     ArtifactListTabComponent,
     ArtifactSummaryComponent,
     ArtifactTagComponent,
@@ -61,14 +79,17 @@ const routes: Routes = [
     ResultTipComponent,
     ResultBarChartComponent,
     ResultTipHistogramComponent,
-    HistogramChartComponent
+    HistogramChartComponent,
+    ArtifactInfoComponent,
+    SubAccessoriesComponent
   ],
   imports: [
     RouterModule.forChild(routes),
     SharedModule
   ],
   providers: [
-    {provide: ArtifactService, useClass: ArtifactDefaultService }
+    ArtifactListPageService,
+    {provide: ArtifactService, useClass: ArtifactDefaultService },
   ]
 })
 export class ArtifactModule { }
