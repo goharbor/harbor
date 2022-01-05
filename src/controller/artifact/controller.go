@@ -492,10 +492,7 @@ tags:
 }
 
 func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {
-	if err := c.artMgr.Update(ctx, &artifact.Artifact{
-		ID:       artifactID,
-		PullTime: time,
-	}, "PullTime"); err != nil {
+	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
 		return err
 	}
 	tg, err := c.tagCtl.Get(ctx, tagID, nil)

@@ -143,8 +143,8 @@ func (c *controllerTestSuite) TestUpdate() {
 }
 
 func (c *controllerTestSuite) TestAddPullCount() {
-	c.repoMgr.On("AddPullCount", mock.Anything, mock.Anything).Return(nil)
-	err := c.ctl.AddPullCount(nil, 1)
+	c.repoMgr.On("AddPullCount", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := c.ctl.AddPullCount(nil, 1, 1)
 	c.Require().Nil(err)
 }
 

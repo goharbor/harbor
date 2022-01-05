@@ -39,8 +39,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, repository *model.RepoRecord, props ...string) (err error)
-	// AddPullCount increase one pull count for the specified repository
-	AddPullCount(ctx context.Context, id int64) error
+	// AddPullCount increase pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64, count uint64) error
 	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
 	NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error)
 }
@@ -132,14 +132,14 @@ func (d *dao) Update(ctx context.Context, repository *model.RepoRecord, props ..
 	return nil
 }
 
-func (d *dao) AddPullCount(ctx context.Context, id int64) error {
+func (d *dao) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
 	num, err := ormer.QueryTable(new(model.RepoRecord)).Filter("RepositoryID", id).Update(
 		o.Params{
-			"pull_count":  o.ColValue(o.ColAdd, 1),
+			"pull_count":  o.ColValue(o.ColAdd, count),
 			"update_time": time.Now(),
 		})
 	if err != nil {
