@@ -6450,6 +6450,10 @@ definitions:
         type: string
         description: 'Whether content trust is enabled or not. If it is enabled, user can''t pull unsigned images from this project. The valid values are "true", "false".'
         x-nullable: true
+      enable_content_trust_cosign:
+        type: string
+        description: 'Whether cosign content trust is enabled or not. If it is enabled, user can''t pull images without cosign signature from this project. The valid values are "true", "false".'
+        x-nullable: true
       prevent_vul:
         type: string
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'

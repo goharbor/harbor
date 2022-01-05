@@ -104,7 +104,7 @@ func (suite *MiddlewareTestSuite) TestGetArtifactFailed() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusInternalServerError)
 }
 
@@ -115,7 +115,7 @@ func (suite *MiddlewareTestSuite) TestGetProjectFailed() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusInternalServerError)
 }
 
@@ -127,7 +127,7 @@ func (suite *MiddlewareTestSuite) TestContentTrustDisabled() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
@@ -135,7 +135,7 @@ func (suite *MiddlewareTestSuite) TestNoneArtifact() {
 	req := httptest.NewRequest("GET", "/v1/library/photon/manifests/nonexist", nil)
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusNotFound)
 }
 
@@ -151,7 +151,7 @@ func (suite *MiddlewareTestSuite) TestAuthenticatedUserPulling() {
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 
@@ -167,7 +167,7 @@ func (suite *MiddlewareTestSuite) TestScannerPulling() {
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
@@ -183,7 +183,7 @@ func (suite *MiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Middleware()(suite.next).ServeHTTP(rr, req)
+	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 

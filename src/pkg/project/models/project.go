@@ -104,6 +104,15 @@ func (p *Project) ContentTrustEnabled() bool {
 }
 
 // VulPrevented ...
+func (p *Project) ContentTrustCosignEnabled() bool {
+	enabled, exist := p.GetMetadata(ProMetaEnableContentTrustCosign)
+	if !exist {
+		return false
+	}
+	return isTrue(enabled)
+}
+
+// VulPrevented ...
 func (p *Project) VulPrevented() bool {
 	prevent, exist := p.GetMetadata(ProMetaPreventVul)
 	if !exist {

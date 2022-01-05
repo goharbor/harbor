@@ -28,8 +28,8 @@ var (
 	}
 )
 
-// Middleware handle docker pull content trust check
-func Middleware() func(http.Handler) http.Handler {
+// Notary handle docker pull content trust check
+func Notary() func(http.Handler) http.Handler {
 	return middleware.BeforeRequest(func(r *http.Request) error {
 		ctx := r.Context()
 
@@ -52,7 +52,7 @@ func Middleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		if util.SkipPolicyChecking(ctx, pro.ProjectID) {
+		if util.SkipPolicyChecking(r, pro.ProjectID) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", af.Repository, af.Digest)
 			return nil
