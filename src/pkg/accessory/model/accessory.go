@@ -76,6 +76,8 @@ type AccessoryData struct {
 type Accessory interface {
 	RefProvider
 	RefIdentifier
+	// Define whether shows in the artifact list response.
+	Display() bool
 	GetData() AccessoryData
 }
 

@@ -42,8 +42,8 @@ type Manager interface {
 	Create(ctx context.Context, accessory model.AccessoryData) (id int64, err error)
 	// Delete the tag specified by ID
 	Delete(ctx context.Context, id int64) (err error)
-	// DeleteOfArtifact deletes all tags attached to the artifact
-	DeleteOfArtifact(ctx context.Context, artifactID int64) (err error)
+	// DeleteAccessories deletes accessories according to the query
+	DeleteAccessories(ctx context.Context, q *q.Query) (err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -116,6 +116,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
 
-func (m *manager) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
-	return m.dao.DeleteOfArtifact(ctx, artifactID)
+func (m *manager) DeleteAccessories(ctx context.Context, q *q.Query) error {
+	_, err := m.dao.DeleteAccessories(ctx, q)
+	return err
 }

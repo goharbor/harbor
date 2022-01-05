@@ -16,10 +16,13 @@ package artifact
 
 import (
 	"context"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"testing"
 
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/pkg/accessory"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -29,6 +32,7 @@ type IteratorTestSuite struct {
 	suite.Suite
 
 	artMgr *artifacttesting.Manager
+	accMgr *accessory.Manager
 
 	ctl         *controller
 	originalCtl Controller
@@ -36,9 +40,13 @@ type IteratorTestSuite struct {
 
 func (suite *IteratorTestSuite) SetupSuite() {
 	suite.artMgr = &artifacttesting.Manager{}
+	suite.accMgr = &accessorytesting.Manager{}
 
 	suite.originalCtl = Ctl
-	suite.ctl = &controller{artMgr: suite.artMgr}
+	suite.ctl = &controller{
+		artMgr:       suite.artMgr,
+		accessoryMgr: suite.accMgr,
+	}
 	Ctl = suite.ctl
 }
 
@@ -47,6 +55,7 @@ func (suite *IteratorTestSuite) TeardownSuite() {
 }
 
 func (suite *IteratorTestSuite) TestIterator() {
+	suite.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	q1 := &q.Query{PageNumber: 1, PageSize: 5, Keywords: map[string]interface{}{}}
 	suite.artMgr.On("List", mock.Anything, q1).Return([]*artifact.Artifact{
 		{ID: 1},

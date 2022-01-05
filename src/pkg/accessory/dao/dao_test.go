@@ -246,7 +246,11 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Nil(err)
 	d.Require().Len(accs, 2)
 
-	err = d.dao.DeleteOfArtifact(d.ctx, subArtID)
+	_, err = d.dao.DeleteAccessories(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"SubjectArtifactID": subArtID,
+		},
+	})
 	d.Require().Nil(err)
 
 	accs, err = d.dao.List(d.ctx, &q.Query{

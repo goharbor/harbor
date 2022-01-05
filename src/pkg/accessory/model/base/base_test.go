@@ -11,10 +11,12 @@ type BaseTestSuite struct {
 	htesting.Suite
 	accessory model.Accessory
 	digest    string
+	subDigest string
 }
 
 func (suite *BaseTestSuite) SetupSuite() {
 	suite.digest = suite.DigestString()
+	suite.subDigest = suite.DigestString()
 	suite.accessory, _ = model.New(model.TypeNone,
 		model.AccessoryData{
 			ArtifactID:    1,
@@ -58,6 +60,10 @@ func (suite *BaseTestSuite) TestIsSoft() {
 
 func (suite *BaseTestSuite) TestIsHard() {
 	suite.False(suite.accessory.IsHard())
+}
+
+func (suite *BaseTestSuite) TestDisplay() {
+	suite.False(suite.accessory.Display())
 }
 
 func TestCacheTestSuite(t *testing.T) {

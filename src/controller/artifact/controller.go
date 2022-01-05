@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -121,6 +122,7 @@ func NewController() Controller {
 		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
+		accessoryMgr: accessory.Mgr,
 	}
 }
 
@@ -135,6 +137,7 @@ type controller struct {
 	immutableMtr match.ImmutableTagMatcher
 	regCli       registry.Client
 	abstractor   Abstractor
+	accessoryMgr accessory.Manager
 }
 
 func (c *controller) Ensure(ctx context.Context, repository, digest string, tags ...string) (bool, int64, error) {
@@ -229,11 +232,18 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 		return nil, err
 	}
 
-	var artifacts []*Artifact
+	var res []*Artifact
+	// Only the displayed accessory will in the artifact list
 	for _, art := range arts {
-		artifacts = append(artifacts, c.assembleArtifact(ctx, art, option))
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "digest": art.Digest}))
+		if err != nil {
+			return nil, err
+		}
+		if len(accs) == 0 || (len(accs) > 0 && accs[0].Display()) {
+			res = append(res, c.assembleArtifact(ctx, art, option))
+		}
 	}
-	return artifacts, nil
+	return res, nil
 }
 
 func (c *controller) Get(ctx context.Context, id int64, option *Option) (*Artifact, error) {
@@ -283,19 +293,30 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	return c.deleteDeeply(ctx, id, true)
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": id}))
+	if err != nil {
+		return err
+	}
+	return c.deleteDeeply(ctx, id, true, len(accs) > 0)
 }
 
 // "isRoot" is used to specify whether the artifact is the root parent artifact
 // the error handling logic for the root parent artifact and others is different
-func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) error {
-	art, err := c.Get(ctx, id, &Option{WithTag: true})
+// "isAccessory" is used to specify whether the artifact is an accessory.
+func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAccessory bool) error {
+	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true})
 	if err != nil {
 		// return nil if the nonexistent artifact isn't the root parent
 		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
 			return nil
 		}
 		return err
+	}
+
+	if isAccessory {
+		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
+			return err
+		}
 	}
 
 	// the child artifact is referenced by some tags, skip
@@ -319,6 +340,17 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		// the child artifact is referenced by other artifacts, skip
 		return nil
 	}
+
+	// delete accessories if contains any
+	for _, acc := range art.Accessories {
+		// only hard ref accessory should be removed
+		if acc.IsHard() {
+			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, true, true); err != nil {
+				return err
+			}
+		}
+	}
+
 	// delete child artifacts if contains any
 	for _, reference := range art.References {
 		// delete reference
@@ -326,7 +358,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
-		if err = c.deleteDeeply(ctx, reference.ChildID, false); err != nil {
+		if err = c.deleteDeeply(ctx, reference.ChildID, false, false); err != nil {
 			return err
 		}
 	}
@@ -582,6 +614,9 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	if option.WithLabel {
 		c.populateLabels(ctx, artifact)
 	}
+	if option.WithAccessory {
+		c.populateAccessories(ctx, artifact)
+	}
 	return artifact
 }
 
@@ -625,4 +660,13 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 			artifact.SetAdditionLink(strings.ToLower(t), version)
 		}
 	}
+}
+
+func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
+	if err != nil {
+		log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
+		return
+	}
+	art.Accessories = accs
 }
