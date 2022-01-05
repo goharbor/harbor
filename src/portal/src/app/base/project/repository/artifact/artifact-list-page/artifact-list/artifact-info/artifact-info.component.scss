@@ -1,28 +1,3 @@
-.option-right {
-  padding-right: 16px;
-  margin-bottom: 12px;
-}
-
-.arrow-back {
-  cursor: pointer;
-}
-
-.arrow-block {	
-  border-right: 2px solid #cccccc;	
-  margin-right: 6px;	
-  display: inline-flex;	
-  padding: 6px 6px 6px 12px;	
-}	
-	
-.title-block {	
-  display: inline-block;	
-}	
-
-.tag-name {
-  font-weight: 300;
-  font-size: 32px;
-}
-
 .no-info-div {
   background: white;
   border: 1px;
@@ -35,7 +10,17 @@
   border: 1px;
   border-style: solid;
   border-color: #CCCCCC;
-  padding: 0px 12px 24px 12px;
+  padding: 0 12px 24px 12px;
+}
+
+.loading {
+  height: 3rem;
+  border: 1px;
+  border-style: solid;
+  border-color: #CCCCCC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .info-pre {
@@ -56,13 +41,4 @@
     top: 6px;
     fill: gray;
   }
-}
-
-#images-container {
-  margin-top: 12px;
-}
-
-harbor-tag {
-  position: relative;
-  top: 24px;
 }

@@ -1705,5 +1705,21 @@
         "LIST": "List",
         "REPOSITORY": "Repository",
         "HELM_LABEL": "Helm Chart Label"
+    },
+    "ACCESSORY": {
+        "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
+        "DELETION_SUMMARY_ACCESSORY": "Do you want to delete all the accessories of the artifact {{param}}?",
+        "DELETION_SUMMARY_ONE_ACCESSORY": "Do you want to delete the accessory(s) {{param}}?",
+        "DELETE_ACCESSORY": "Delete Accessory",
+        "DELETED_SUCCESS": "Accessory deleted successfully",
+        "DELETED_FAILED": "Deleting accessory failed",
+        "CO_SIGNED": "Co-signed",
+        "NOTARY_SIGNED": "Notary signed",
+        "ACCESSORY": "Accessory",
+        "ACCESSORIES": "Accessories",
+        "SUBJECT_ARTIFACT": "Subject Artifact",
+        "CO_SIGN": "Co-sign",
+        "NOTARY": "Notary",
+        "PLACEHOLDER": "We couldn't find any accessories!"
     }
 }

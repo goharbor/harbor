@@ -17,7 +17,6 @@ import { Icon } from "ng-swagger-gen/models/icon";
 export abstract class ArtifactService {
   reference: string[];
   triggerUploadArtifact = new Subject<string>();
-  TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   abstract getIcon(digest: string): SafeUrl;
   abstract setIcon(digest: string, url: SafeUrl);
   abstract getIconsFromBackEnd(artifactList: Artifact[]);
@@ -26,7 +25,6 @@ export abstract class ArtifactService {
 export class ArtifactDefaultService extends ArtifactService {
 
   triggerUploadArtifact = new Subject<string>();
-  TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   private _iconMap: {[key: string]: SafeUrl} = {};
   private _sharedIconObservableMap: {[key: string]: Observable<Icon>} = {};
   constructor(private iconService: IconService,

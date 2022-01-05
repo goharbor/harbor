@@ -42,7 +42,7 @@
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'TAG.NAME' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="hasPullCommand()">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-    <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="withNotary">{{'ACCESSORY.NOTARY_SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'pull_time'">{{'TAG.PULL_TIME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'push_time'">{{'TAG.PUSH_TIME' | translate}}</clr-dg-column>
 
