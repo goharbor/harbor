@@ -32,15 +32,17 @@ var (
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
+	// Ensure ...
+	Ensure(ctx context.Context, subArtID, artifactID, size int64, digest, accType string) error
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (accessory model.Accessory, err error)
-	// Count returns the total count of tags according to the query.
+	// Count returns the total count of accessory according to the query.
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
-	// List tags according to the query
+	// List accessory according to the query
 	List(ctx context.Context, query *q.Query) (accs []model.Accessory, err error)
-	// Create the tag and returns the ID
+	// Create the accessory and returns the ID
 	Create(ctx context.Context, accessory model.AccessoryData) (id int64, err error)
-	// Delete the tag specified by ID
+	// Delete the accessory specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// DeleteAccessories deletes accessories according to the query
 	DeleteAccessories(ctx context.Context, q *q.Query) (err error)
@@ -57,6 +59,26 @@ var _ Manager = &manager{}
 
 type manager struct {
 	dao dao.DAO
+}
+
+func (m *manager) Ensure(ctx context.Context, subArtID, artifactID, size int64, digest, accType string) error {
+	accs, err := m.dao.List(ctx, q.New(q.KeyWords{"ArtifactID": artifactID, "Digest": digest}))
+	if err != nil {
+		return err
+	}
+	if len(accs) > 0 {
+		return nil
+	}
+
+	acc := model.AccessoryData{
+		ArtifactID:    artifactID,
+		SubArtifactID: subArtID,
+		Digest:        digest,
+		Size:          size,
+		Type:          accType,
+	}
+	_, err = m.Create(ctx, acc)
+	return err
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (model.Accessory, error) {

@@ -125,7 +125,9 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		tags = append(tags, reference)
 	}
 
-	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, tags...)
+	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, &artifact.ArtOption{
+		Tags: tags,
+	})
 	if err != nil {
 		lib_http.SendError(w, err)
 		return

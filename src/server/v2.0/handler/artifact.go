@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"strings"
 	"time"
@@ -168,6 +169,18 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 	srcPro, _ := utils.ParseRepository(srcRepo)
 	if err = a.RequireProjectAccess(ctx, srcPro, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
+	}
+
+	srcArt, err := a.artCtl.GetByReference(ctx, srcRepo, ref, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	accs, err := a.accMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": srcArt.ID, "Digest": srcArt.Digest}))
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if len(accs) >= 1 && accs[0].IsHard() {
+		return a.SendError(ctx, errors.New(nil).WithCode(errors.DENIED).WithMessage("the operation isn't supported for an artifact accessory"))
 	}
 
 	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
