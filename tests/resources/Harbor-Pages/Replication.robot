@@ -274,7 +274,7 @@ Image Should Be Replicated To Project
         Log To Console  Return value is ${out[0]}
         Continue For Loop If  '${out[0]}'=='FAIL'
         Go Into Repo  ${project}/${image}
-        ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
+        ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[5]/div
         Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
         ${index_out}  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  return_immediately=${true}
         Log All  index_out: ${index_out}
