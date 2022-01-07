@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ListProjectROComponent } from './list-project-ro.component';
 import { SharedTestingModule } from "../../shared.module";
 import { Project } from "../../../../../ng-swagger-gen/models/project";
@@ -33,15 +33,15 @@ describe('ListProjectROComponent', () => {
             repo_count: 1
         }
     ];
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
             declarations: [ListProjectROComponent,
                 TestHostComponent],
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(TestHostComponent);

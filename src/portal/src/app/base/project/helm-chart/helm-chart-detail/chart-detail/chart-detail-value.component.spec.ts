@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailValueComponent } from './chart-detail-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
@@ -11,8 +11,8 @@ describe('ChartDetailValueComponent', () => {
     let component: ChartDetailValueComponent;
     let fixture: ComponentFixture<ChartDetailValueComponent>;
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async ()=> {
+        await TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
                 ClarityModule,
@@ -29,7 +29,7 @@ describe('ChartDetailValueComponent', () => {
                 { provide: MarkedOptions, useValue: {} },
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailValueComponent);

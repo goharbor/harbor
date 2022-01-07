@@ -9,7 +9,7 @@
  * conditions of the subcomponent's license, as noted in the LICENSE file.
  */
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GridViewComponent } from './grid-view.component';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 
@@ -17,7 +17,7 @@ import { SharedTestingModule } from "../../../../shared/shared.module";
 describe('GridViewComponent', () => {
   let component: GridViewComponent;
   let fixture: ComponentFixture<GridViewComponent>;
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -26,7 +26,7 @@ describe('GridViewComponent', () => {
         GridViewComponent,
       ],
       }).compileComponents();
-    }));
+    });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(GridViewComponent);

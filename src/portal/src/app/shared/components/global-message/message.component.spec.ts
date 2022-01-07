@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ElementRef } from '@angular/core';
 import { Message } from './message';
 import { MessageComponent } from './message.component';
@@ -10,8 +10,8 @@ describe('MessageComponent', () => {
     let fixture: ComponentFixture<MessageComponent>;
     let fakeElementRef = null;
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -20,7 +20,7 @@ describe('MessageComponent', () => {
                 {provide: ElementRef, useValue: fakeElementRef}
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(MessageComponent);

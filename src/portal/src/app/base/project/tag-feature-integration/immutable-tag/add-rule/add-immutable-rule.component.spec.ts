@@ -1,15 +1,11 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, EventEmitter } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { ImmutableTagService } from '../immutable-tag.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { ImmutableRetentionRule } from "../../tag-retention/retention";
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
 import { AddImmutableRuleComponent } from "./add-immutable-rule.component";
+import { SharedTestingModule } from '../../../../../shared/shared.module';
 
 describe('AddRuleComponent', () => {
   let component: AddImmutableRuleComponent;
@@ -41,18 +37,14 @@ describe('AddRuleComponent', () => {
   const mockErrorHandler = {
     handleErrorPopupUnauthorized: () => {}
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [AddImmutableRuleComponent, InlineAlertComponent],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
       imports: [
-        ClarityModule,
-        FormsModule,
-        NoopAnimationsModule,
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
+        SharedTestingModule
       ],
       providers: [
         ImmutableTagService,
@@ -61,9 +53,8 @@ describe('AddRuleComponent', () => {
           provide: ErrorHandler, useValue: mockErrorHandler
         }
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddImmutableRuleComponent);
@@ -83,12 +74,10 @@ describe('AddRuleComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  it("should rightly display default repositories and tag", waitForAsync(() => {
+  it("should rightly display default repositories and tag", () => {
     fixture.detectChanges();
-
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-
       let elRep: HTMLInputElement = fixture.nativeElement.querySelector("#scope-input");
       expect(elRep).toBeTruthy();
       expect(elRep.value.trim()).toEqual("**");
@@ -96,8 +85,8 @@ describe('AddRuleComponent', () => {
       expect(elTag).toBeTruthy();
       expect(elTag.value.trim()).toEqual("**");
     });
-  }));
-  it("should rightly close", waitForAsync(() => {
+  });
+  it("should rightly close", () => {
     fixture.detectChanges();
     let elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
     elRep.dispatchEvent(new Event('click'));
@@ -106,8 +95,8 @@ describe('AddRuleComponent', () => {
       fixture.detectChanges();
         expect(component.addRuleOpened).toEqual(false);
     });
-  }));
-  it("should be validating repeat rule ", waitForAsync(() => {
+  });
+  it("should be validating repeat rule ", () => {
     fixture.detectChanges();
     component.rules = [mockRule];
     const elRep: HTMLButtonElement = fixture.nativeElement.querySelector("#add-edit-btn");
@@ -118,5 +107,5 @@ describe('AddRuleComponent', () => {
       const elRep1: HTMLSpanElement = fixture.nativeElement.querySelector(".alert-text");
       expect(elRep1).toBeTruthy();
     });
-  }));
+  });
 });

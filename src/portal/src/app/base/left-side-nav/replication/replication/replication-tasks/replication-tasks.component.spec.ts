@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ReplicationExecution } from "../../../../../../../ng-swagger-gen/models/replication-execution";
 import { ReplicationTasksComponent } from "./replication-tasks.component";
@@ -66,8 +66,8 @@ describe('ReplicationTasksComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA,
                 NO_ERRORS_SCHEMA],
             imports: [
@@ -81,8 +81,8 @@ describe('ReplicationTasksComponent', () => {
                 {provide: ReplicationService, useValue: fakedReplicationService},
                 {provide: ActivatedRoute, useValue: fakedActivatedRoute}
             ]
-        });
-    }));
+        }).compileComponents();
+    });
     beforeEach(() => {
         fixture = TestBed.createComponent(ReplicationTasksComponent);
         comp = fixture.componentInstance;

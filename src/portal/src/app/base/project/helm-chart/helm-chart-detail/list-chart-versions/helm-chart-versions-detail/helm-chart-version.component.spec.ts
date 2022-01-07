@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChartVersionComponent } from './helm-chart-version.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HelmChartService } from "../../helm-chart.service";
@@ -77,8 +77,8 @@ describe('ChartVersionComponent', () => {
             ).pipe(delay(0));
         }
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
@@ -94,9 +94,8 @@ describe('ChartVersionComponent', () => {
                 { provide: HelmChartService, useValue: mockHelmChartService },
                 { provide: OperationService, useValue: mockOperationService },
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartVersionComponent);

@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { StatisticsPanelComponent } from './statistics-panel.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
@@ -46,7 +46,7 @@ describe('StatisticsPanelComponent', () => {
   const mockStatisticHandler = {
     refreshChan$: of(null)
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
@@ -63,7 +63,7 @@ describe('StatisticsPanelComponent', () => {
         {provide: MessageHandlerService, useValue: mockMessageHandlerService}
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(StatisticsPanelComponent);

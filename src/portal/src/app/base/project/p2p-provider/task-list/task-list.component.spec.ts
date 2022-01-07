@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { P2pProviderService } from '../p2p-provider.service';
@@ -82,7 +82,7 @@ describe('TaskListComponent', () => {
       return of(true).pipe(delay(0));
     }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA,
@@ -101,9 +101,8 @@ describe('TaskListComponent', () => {
         { provide: MessageHandlerService, useValue: mockMessageHandlerService },
         { provide: UserPermissionService, useValue: mockUserPermissionService },
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TaskListComponent);

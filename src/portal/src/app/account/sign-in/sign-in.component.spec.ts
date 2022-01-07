@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SignInComponent } from './sign-in.component';
 import { AppConfigService } from '../../services/app-config.service';
 import { SessionService } from '../../shared/services/session.service';
@@ -26,8 +26,8 @@ describe('SignInComponent', () => {
         clearPermissionCache() {
         }
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -69,7 +69,7 @@ describe('SignInComponent', () => {
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(SignInComponent);

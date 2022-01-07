@@ -16,7 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 import { SessionService } from '../../../shared/services/session.service';
 import { AppConfigService } from "../../../services/app-config.service";
-import { forkJoin, Subject, Subscription } from "rxjs";
+import { forkJoin, Observable, Subject, Subscription } from "rxjs";
 import { UserPermissionService, USERSTATICPERMISSION } from "../../../shared/services";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import { debounceTime } from 'rxjs/operators';
@@ -196,7 +196,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
   getPermissionsList(projectId: number): void {
-    let permissionsList = [];
+    let permissionsList: Array<Observable<boolean>> = [];
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.PROJECT.KEY, USERSTATICPERMISSION.PROJECT.VALUE.READ));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
@@ -226,7 +226,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
     permissionsList.push(this.userPermissionService.getPermission(projectId,
        USERSTATICPERMISSION.QUOTA.KEY, USERSTATICPERMISSION.QUOTA.VALUE.READ));
 
-    forkJoin(...permissionsList).subscribe(Rules => {
+    forkJoin(permissionsList).subscribe(Rules => {
       [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission, this.hasTagRetentionPermission, this.hasWebhookListPermission,

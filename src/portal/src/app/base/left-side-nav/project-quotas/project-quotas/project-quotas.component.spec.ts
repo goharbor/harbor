@@ -1,8 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectQuotasComponent } from './project-quotas.component';
 import { Router } from '@angular/router';
 import {
-  Quota, RequestQueryParams
+  Quota
 } from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { Observable, of } from 'rxjs';
@@ -12,9 +12,7 @@ import { SharedTestingModule } from "../../../../shared/shared.module";
 import { EditProjectQuotasComponent } from "./edit-project-quotas/edit-project-quotas.component";
 import { QuotaService } from "../../../../../../ng-swagger-gen/services/quota.service";
 import { ProjectService } from "../../../../../../ng-swagger-gen/services/project.service";
-import { StrictHttpResponse } from "../../../../../../ng-swagger-gen/strict-http-response";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import { Registry } from "../../../../../../ng-swagger-gen/models/registry";
 
 
 describe('ProjectQuotasComponent', () => {
@@ -62,8 +60,8 @@ describe('ProjectQuotasComponent', () => {
       return of([]);
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
       ],
@@ -77,12 +75,10 @@ describe('ProjectQuotasComponent', () => {
         { provide: APP_BASE_HREF, useValue : '/' },
         { provide: Router, useValue: fakedRouter }
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
-  beforeEach(waitForAsync(() => {
-
+  beforeEach(() => {
     fixture = TestBed.createComponent(ProjectQuotasComponent);
     component = fixture.componentInstance;
     component.quotaHardLimitValue = {
@@ -102,7 +98,7 @@ describe('ProjectQuotasComponent', () => {
     spyUpdate = spyOn(quotaService, 'updateQuota').and.returnValue(of(null));
     spyRoute = spyOn(fixture.debugElement.injector.get(Router), 'navigate').and.returnValue(Promise.resolve(true));
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

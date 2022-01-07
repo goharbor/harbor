@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectQuotasContainerComponent } from './project-quotas-container.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -38,8 +38,8 @@ describe('ProjectQuotasContainerComponent', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule
       ],
@@ -52,9 +52,8 @@ describe('ProjectQuotasContainerComponent', () => {
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectQuotasContainerComponent);

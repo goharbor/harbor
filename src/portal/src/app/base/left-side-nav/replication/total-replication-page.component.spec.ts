@@ -1,5 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TotalReplicationPageComponent } from './total-replication-page.component';
 import {Router, ActivatedRoute} from "@angular/router";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -28,8 +27,8 @@ describe('TotalReplicationPageComponent', () => {
         }
     };
     const mockActivatedRoute = null;
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
@@ -44,9 +43,8 @@ describe('TotalReplicationPageComponent', () => {
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
 
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(TotalReplicationPageComponent);

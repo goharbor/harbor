@@ -7,7 +7,7 @@ import { ConfigService } from "./config.service";
 
 describe('ConfigService', () => {
   const fakedConfigureService = {
-    getConfigurations() {
+    getConfigurations(): any {
       return of(null);
     }
   };

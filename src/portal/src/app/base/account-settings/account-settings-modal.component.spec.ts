@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AccountSettingsModalComponent } from './account-settings-modal.component';
 import { SessionService } from "../../shared/services/session.service";
@@ -66,8 +66,8 @@ describe('AccountSettingsModalComponent', () => {
         navigate: () => { }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [AccountSettingsModalComponent, InlineAlertComponent, ConfirmationDialogComponent],
             imports: [
                 RouterTestingModule,
@@ -90,8 +90,8 @@ describe('AccountSettingsModalComponent', () => {
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
-        });
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AccountSettingsModalComponent);
@@ -108,7 +108,7 @@ describe('AccountSettingsModalComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should input right email', waitForAsync(async () => {
+    it('should input right email', async () => {
         await fixture.whenStable();
         // Update the title input
         userExisting = true;
@@ -126,7 +126,7 @@ describe('AccountSettingsModalComponent', () => {
         emailInput.value = '123@qq.com';
         emailInput.dispatchEvent(new Event('blur'));
         expect(emailInput.value).toEqual('123@qq.com');
-    }));
+    });
 
     it('should update settings', async () => {
         await fixture.whenStable();
@@ -218,6 +218,5 @@ describe('AccountSettingsModalComponent', () => {
         component.confirmGenerate(null);
         await fixture.whenStable();
         expect(component.showGenerateCli).toEqual(false);
-
     });
 });

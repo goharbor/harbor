@@ -1,5 +1,5 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslateModule,  } from '@ngx-translate/core';
 import { ClarityModule } from '@clr/angular';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -96,8 +96,8 @@ describe('DistributionInstanceComponent', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         ClarityModule,
         TranslateModule,
@@ -113,7 +113,7 @@ describe('DistributionInstanceComponent', () => {
         DistributionSetupModalComponent
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DistributionInstancesComponent);

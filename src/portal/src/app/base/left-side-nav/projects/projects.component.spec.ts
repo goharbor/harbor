@@ -1,11 +1,5 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ConfigurationService } from '../../../services/config.service';
 import { SessionService } from "../../../shared/services/session.service";
 import { of } from 'rxjs';
@@ -14,6 +8,7 @@ import { ProjectService } from '../../../shared/services';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { FilterComponent } from '../../../shared/components/filter/filter.component';
 import { ProjectsComponent } from "./projects.component";
+import { SharedTestingModule } from '../../../shared/shared.module';
 describe('ProjectComponent', () => {
     let component: ProjectsComponent;
     let fixture: ComponentFixture<ProjectsComponent>;
@@ -227,35 +222,27 @@ describe('ProjectComponent', () => {
         showSuccess() {
         },
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [
                 ProjectsComponent,
                 FilterComponent
             ],
             providers: [
-                TranslateService,
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: ConfigurationService, useValue: mockConfigurationService },
                 { provide: ProjectService, useValue: mockProjectService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
 
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ProjectsComponent);

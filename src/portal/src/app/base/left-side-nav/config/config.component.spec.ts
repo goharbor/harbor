@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ConfigurationComponent } from './config.component';
 import { SharedTestingModule } from "../../../shared/shared.module";
@@ -24,7 +24,7 @@ describe('ConfigurationComponent', () => {
         }
     };
     let initSpy: jasmine.Spy;
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
@@ -35,7 +35,7 @@ describe('ConfigurationComponent', () => {
                 { provide: ConfigService, useValue: fakeConfigService },
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         initSpy = spyOn(fakeConfigService, "initConfig").and.returnValue(undefined);

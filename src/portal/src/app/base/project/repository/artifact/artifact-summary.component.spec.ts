@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { of } from "rxjs";
 import { NO_ERRORS_SCHEMA } from "@angular/core";
@@ -67,7 +67,7 @@ describe('ArtifactSummaryComponent', () => {
   const mockRouter = {
     navigate: () => { }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -85,9 +85,8 @@ describe('ArtifactSummaryComponent', () => {
         { provide: ProjectService, useValue: fakedProjectService },
         { provide: ArtifactService, useValue: fakedArtifactDefaultService },
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactSummaryComponent);

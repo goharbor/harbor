@@ -13,15 +13,13 @@
 // limitations under the License.
 /* tslint:disable:no-unused-variable */
 
-import { TestBed, waitForAsync, ComponentFixture } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Title } from '@angular/platform-browser';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'ngx-cookie';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SessionService } from './shared/services/session.service';
 import { AppConfigService } from './services/app-config.service';
 import { AppComponent } from './app.component';
-import { ClarityModule } from "@clr/angular";
 import { APP_BASE_HREF } from "@angular/common";
 import { SharedTestingModule } from "./shared/shared.module";
 import { SkinableConfig } from "./services/skinable-config.service";
@@ -94,9 +92,9 @@ describe('AppComponent', () => {
         fixture.destroy();
     });
 
-    it('should create the app', waitForAsync(() => {
+    it('should create the app', () => {
         expect(compiled).toBeTruthy();
-    }));
+    });
 
 
 });

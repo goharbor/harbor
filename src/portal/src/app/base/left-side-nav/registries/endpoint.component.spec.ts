@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { EndpointComponent } from "./endpoint.component";
 import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
@@ -361,7 +361,7 @@ describe("EndpointComponent (inline template)", () => {
       return of(res).pipe(delay(0));
     }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SharedTestingModule],
       declarations: [
@@ -380,7 +380,7 @@ describe("EndpointComponent (inline template)", () => {
           NO_ERRORS_SCHEMA
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(EndpointComponent);

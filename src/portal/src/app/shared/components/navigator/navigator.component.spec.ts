@@ -1,19 +1,18 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SessionService } from '../../services/session.service';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { PlatformLocation } from '@angular/common';
 import { NavigatorComponent } from './navigator.component';
-import { RouterTestingModule } from '@angular/router/testing';
 import { CookieService } from 'ngx-cookie';
 import { AppConfigService } from '../../../services/app-config.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SharedTestingModule } from '../../shared.module';
 
 describe('NavigatorComponent', () => {
-    let component: NavigatorComponent;
-    let fixture: ComponentFixture<NavigatorComponent>;
+    let component: TestComponentWrapperComponent;
+    let fixture: ComponentFixture<TestComponentWrapperComponent>;
     let fakeSessionService = {
         getCurrentUser: function () {
             return {
@@ -39,22 +38,27 @@ describe('NavigatorComponent', () => {
         }
     };
     let fakeMessageHandlerService = null;
-    let fakeSearchTriggerService = null;
     let fakeSkinableConfig = {
         getSkinConfig: function () {
             return { projects: "abc" };
         }
     };
-
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    let fakeSearchTriggerService = {
+        searchClearChan$: {
+            subscribe: function () {
+            }
+        },
+        triggerSearch() {
+            return undefined;
+        }
+    };
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                RouterTestingModule
+                SharedTestingModule
             ],
-            declarations: [NavigatorComponent],
+            declarations: [NavigatorComponent, TestComponentWrapperComponent],
             providers: [
-                TranslateService,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: PlatformLocation, useValue: fakePlatformLocation },
                 { provide: CookieService, useValue: fakeCookieService },
@@ -63,12 +67,12 @@ describe('NavigatorComponent', () => {
                 { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
                 { provide: SkinableConfig, useValue: fakeSkinableConfig }
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(NavigatorComponent);
+        fixture = TestBed.createComponent(TestComponentWrapperComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -77,3 +81,11 @@ describe('NavigatorComponent', () => {
         expect(component).toBeTruthy();
     });
 });
+
+// clr-header should only be used inside of a clr-main-container
+@Component({
+    selector: 'test-component-wrapper',
+    template: '<clr-main-container><navigator></navigator></clr-main-container>'
+})
+class TestComponentWrapperComponent {
+}

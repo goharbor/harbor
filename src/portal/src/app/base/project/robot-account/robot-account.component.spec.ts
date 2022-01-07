@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Subscription } from 'rxjs';
 import { ActivatedRoute, RouterModule } from "@angular/router";
@@ -106,8 +106,8 @@ describe('RobotAccountComponent', () => {
     error() {
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       schemas: [
         NO_ERRORS_SCHEMA
       ],
@@ -141,7 +141,7 @@ describe('RobotAccountComponent', () => {
       ],
       declarations: [RobotAccountComponent, HarborDatetimePipe]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(RobotAccountComponent);

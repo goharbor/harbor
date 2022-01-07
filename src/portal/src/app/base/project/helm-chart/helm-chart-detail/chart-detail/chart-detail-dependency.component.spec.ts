@@ -1,22 +1,19 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChartDetailDependencyComponent } from './chart-detail-dependency.component';
+import { SharedTestingModule } from '../../../../../shared/shared.module';
 
 describe('ChartDetailDependencyComponent', () => {
     let component: ChartDetailDependencyComponent;
     let fixture: ComponentFixture<ChartDetailDependencyComponent>;
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot()
+               SharedTestingModule
             ],
             declarations: [ChartDetailDependencyComponent],
-            providers: [
-                TranslateService
-            ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailDependencyComponent);

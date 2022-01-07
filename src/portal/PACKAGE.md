@@ -46,24 +46,24 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "~12.2.11",
-    "@angular/common": "~12.2.11",
-    "@angular/compiler": "~12.2.11",
-    "@angular/core": "~12.2.11",
-    "@angular/forms": "~12.2.11",
-    "@angular/localize": "~12.2.11",
-    "@angular/platform-browser": "~12.2.11",
-    "@angular/platform-browser-dynamic": "~12.2.11",
-    "@angular/router": "~12.2.11",
-    "rxjs": "^6.6.7",
+    "@angular/animations": "~13.1.1",
+    "@angular/common": "~13.1.1",
+    "@angular/compiler": "~13.1.1",
+    "@angular/core": "~13.1.1",
+    "@angular/forms": "~13.1.1",
+    "@angular/localize": "~13.1.1",
+    "@angular/platform-browser": "~13.1.1",
+    "@angular/platform-browser-dynamic": "~13.1.1",
+    "@angular/router": "~13.1.1",
+    "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
     
     // Clarity UI. Required
-    "@cds/core": "~5.5.8",
-    "@clr/angular": "~12.0.6",
-    "@clr/icons": "~12.0.6",
-    "@clr/ui": "~12.0.6",
+    "@cds/core": "next",
+    "@clr/angular": "next",
+    "@clr/icons": "next",
+    "@clr/ui": "next",
     
     // For Harbor i18n functionality. Required
     "@ngx-translate/core": "^13.0.0",
@@ -79,10 +79,10 @@
     "ngx-cookie": "^5.0.2",
     
     // To render markdown data. Required
-    "ngx-markdown": "~12.0.1",
+    "ngx-markdown": "~13.0.0",
     
     // For swagger API center. Required
-    "swagger-ui": "^3.52.5",
+    "swagger-ui": "^4.1.3",
     "buffer": "^6.0.3",
     
     // To convert yaml to json. Required
@@ -90,21 +90,21 @@
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "~12.2.11",
-    "@angular/cli": "~12.2.11",
-    "@angular/compiler-cli": "~12.2.11",
+    "@angular-devkit/build-angular": "~13.2.0-next.2",
+    "@angular/cli": "~13.1.1",
+    "@angular/compiler-cli": "~13.1.1",
     "@types/jasmine": "~3.10.1",
     "@types/node": "^16.11.6",
-    "typescript": "~4.3.5",
+    "typescript": "~4.5.4",
     
     // For unit test. Required
-    "jasmine-core": "^3.7.1",
+    "jasmine-core": "^4.0.0",
     "jasmine-spec-reporter": "~7.0.0",
     "karma": "^6.3.3",
     "karma-chrome-launcher": "~3.1.0",
-    "karma-coverage": "^2.0.3",
-    "karma-jasmine": "~4.0.0",
-    "karma-jasmine-html-reporter": "^1.5.0",
+    "karma-coverage": "^2.1.0",
+    "karma-jasmine": "~4.0.1",
+    "karma-jasmine-html-reporter": "^1.7.0",
    
     // To run a local mocked API server. Required
     "@types/express": "^4.17.12",

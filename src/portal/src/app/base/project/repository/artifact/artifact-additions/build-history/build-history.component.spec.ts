@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { AdditionsService } from "../additions.service";
 import { of } from "rxjs";
@@ -31,8 +31,8 @@ describe('BuildHistoryComponent', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule
       ],
@@ -44,9 +44,8 @@ describe('BuildHistoryComponent', () => {
       schemas: [
         NO_ERRORS_SCHEMA
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(BuildHistoryComponent);

@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ForgotPasswordComponent } from './forgot-password.component';
 import { ClarityModule } from "@clr/angular";
@@ -17,8 +17,8 @@ describe('ForgotPasswordComponent', () => {
         sendResetPasswordMail: () => of(null)
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [ForgotPasswordComponent, InlineAlertComponent],
             imports: [
                 FormsModule,
@@ -33,7 +33,7 @@ describe('ForgotPasswordComponent', () => {
                 { provide: PasswordSettingService, useValue: fakePasswordSettingService }
             ]
         }).compileComponents();
-    }));
+    });
     let el;
     beforeEach(() => {
         fixture = TestBed.createComponent(ForgotPasswordComponent);

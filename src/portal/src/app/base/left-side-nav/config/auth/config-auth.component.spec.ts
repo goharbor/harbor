@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ConfigurationService } from '../../../../services/config.service';
@@ -6,8 +6,6 @@ import { ConfigurationAuthComponent } from './config-auth.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { SystemInfoService } from "../../../../shared/services";
-import { clone } from '../../../../shared/units/utils';
-import { CONFIG_AUTH_MODE } from '../../../../shared/entities/shared.const';
 import { ConfigService } from "../config.service";
 import { Configuration } from '../config';
 import { SharedTestingModule } from "../../../../shared/shared.module";
@@ -53,8 +51,8 @@ describe('ConfigurationAuthComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -68,7 +66,7 @@ describe('ConfigurationAuthComponent', () => {
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfigurationAuthComponent);

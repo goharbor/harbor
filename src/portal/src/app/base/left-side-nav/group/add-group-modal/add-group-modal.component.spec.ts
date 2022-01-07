@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { SessionService } from "../../../../shared/services/session.service";
@@ -29,8 +29,8 @@ describe('AddGroupModalComponent', () => {
   };
   let fakeMessageHandlerService = null;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [AddGroupModalComponent],
       imports: [
         SharedTestingModule
@@ -44,9 +44,8 @@ describe('AddGroupModalComponent', () => {
         { provide: AppConfigService, useValue: fakeAppConfigService },
         { provide: UsergroupService, useValue: fakeGroupService },
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddGroupModalComponent);
