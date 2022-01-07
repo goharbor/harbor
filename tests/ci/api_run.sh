@@ -33,6 +33,9 @@ pip -V
 
 E2E_IMAGE="goharbor/harbor-e2e-engine:1.9"
 
+docker login $2 -u admin -p Harbor12345
+tail -n 500 /var/log/harbor/core.log
+
 # run db auth api cases
 if [ "$1" = 'DB' ]; then
     docker run -i --privileged -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE robot -v DOCKER_USER:${DOCKER_USER} -v DOCKER_PWD:${DOCKER_PWD} -v ip:$2  -v ip1: -v HARBOR_PASSWORD:Harbor12345 /drone/tests/robot-cases/Group1-Nightly/Setup.robot /drone/tests/robot-cases/Group0-BAT/API_DB.robot
