@@ -1709,12 +1709,12 @@
         "DELETE_ACCESSORY": "Delete Accessory",
         "DELETED_SUCCESS": "Accessory deleted successfully",
         "DELETED_FAILED": "Deleting accessory failed",
-        "CO_SIGNED": "Co-signed",
-        "NOTARY_SIGNED": "Notary signed",
+        "CO_SIGNED": "Signed by Cosign",
+        "NOTARY_SIGNED": "Signed by Notary",
         "ACCESSORY": "Accessory",
         "ACCESSORIES": "Accessories",
         "SUBJECT_ARTIFACT": "Subject Artifact",
-        "CO_SIGN": "Co-sign",
+        "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
         "PLACEHOLDER": "We couldn't find any accessories!"
     }

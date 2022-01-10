@@ -115,6 +115,7 @@ export class ProjectDefaultService extends ProjectService {
           metadata: {
               public: projectPolicy.Public ? "true" : "false",
               enable_content_trust: projectPolicy.ContentTrust ? "true" : "false",
+              enable_content_trust_cosign: projectPolicy.ContentTrustCosign ? "true" : "false",
               prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
               severity: projectPolicy.PreventVulImgSeverity,
               auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false",

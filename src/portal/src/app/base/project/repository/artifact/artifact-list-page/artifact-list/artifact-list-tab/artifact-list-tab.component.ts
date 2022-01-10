@@ -16,7 +16,6 @@ import { forkJoin, Observable, of, Subject, Subscription } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { ClrDatagridComparatorInterface, ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
-
 import { ActivatedRoute, Router } from "@angular/router";
 import { Comparator, } from "../../../../../../../shared/services";
 import {
@@ -62,6 +61,7 @@ import { AppConfigService } from "src/app/services/app-config.service";
 import { ArtifactListPageService } from "../../artifact-list-page.service";
 import { ACCESSORY_PAGE_SIZE } from "./sub-accessories/sub-accessories.component";
 import { Accessory } from "ng-swagger-gen/models/accessory";
+import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 
 export interface LabelState {
     iconsShow: boolean;
@@ -176,8 +176,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onScanArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     updateArtifactSub: Subscription;
-    @ViewChild('tagName') nameSpan: ElementRef;
-
     constructor(
         private errorHandlerService: ErrorHandler,
         private artifactService: ArtifactService,
@@ -1200,11 +1198,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             });
         }
     }
-    isOverflow(): boolean {
-        if (!this.nameSpan) {
-            return false;
+    tagsString(tags: Tag[]): string {
+        if (tags?.length) {
+            const arr: string[] = [];
+            tags.forEach(item => {
+               arr.push(item.name);
+            });
+            return arr.join(', ');
         }
-        return !(this.nameSpan?.nativeElement?.clientWidth >= this.nameSpan?.nativeElement?.scrollWidth);
+        return null;
     }
     deleteAccessory(a: Accessory) {
         let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;

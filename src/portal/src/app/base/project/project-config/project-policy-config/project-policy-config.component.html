@@ -4,27 +4,32 @@
             <label>{{ 'PROJECT_CONFIG.REGISTRY' | translate }}</label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" id="clr-checkbox-wrapper-public" clrCheckbox [(ngModel)]="projectPolicy.Public"
-                    name="public" [disabled]="!hasChangeConfigRole" />
+                       name="public" [disabled]="!hasChangeConfigRole" />
                 <label>{{ 'PROJECT_CONFIG.PUBLIC_TOGGLE' | translate }}</label>
             </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="withNotary && !isProxyCacheProject">
-            <label><span *ngIf="withNotary && !isProxyCacheProject">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
-            <clr-checkbox-wrapper *ngIf="withNotary && !isProxyCacheProject">
-                <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust"
-                    [disabled]="!hasChangeConfigRole" />
-                <label>{{ 'PROJECT_CONFIG.CONTENT_TRUST_TOGGLE' | translate }}</label>
+        <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
+            <label><span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
+            <clr-checkbox-wrapper>
+                <input id="content-trust-cosign" type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrustCosign" name="content-trust-cosign"
+                       [disabled]="!hasChangeConfigRole" />
+                <label for="content-trust-cosign">{{ 'ACCESSORY.CO_SIGN' | translate }}</label>
+            </clr-checkbox-wrapper>
+            <clr-checkbox-wrapper *ngIf="withNotary">
+                <input id="content-trust" type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust"
+                       [disabled]="!hasChangeConfigRole" />
+                <label for="content-trust">{{ 'ACCESSORY.NOTARY' | translate }}</label>
             </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.CONTENT_TRUST_POLCIY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
         <clr-checkbox-container id="prevent-vulenrability-image" class="margin-top-05">
-            <label><span *ngIf="!(withNotary && !isProxyCacheProject)">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
+            <label><span *ngIf="!(!isProxyCacheProject)">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.PreventVulImg"
-                    name="prevent-vulenrability-image-input" [disabled]="!hasChangeConfigRole" />
+                       name="prevent-vulenrability-image-input" [disabled]="!hasChangeConfigRole" />
                 <label>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_TOGGLE' | translate }}</label>
             </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext">
@@ -34,8 +39,8 @@
                             <div>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_1' | translate }}</div>
                             <div class="clr-select-wrapper">
                                 <select id="severity" name="severity" class="clr-select"
-                                    [(ngModel)]="projectPolicy.PreventVulImgSeverity"
-                                    [disabled]="!projectPolicy.PreventVulImg">
+                                        [(ngModel)]="projectPolicy.PreventVulImgSeverity"
+                                        [disabled]="!projectPolicy.PreventVulImg">
                                     <option *ngFor='let s of severityOptions' [ngValue]="s.severity">
                                         {{ s.severityLevel | translate }}</option>
                                 </select>
@@ -50,14 +55,14 @@
             <label>{{ 'PROJECT_CONFIG.SCAN' | translate }}</label>
             <clr-checkbox-wrapper id="scan-image-on-push-wrapper">
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ScanImgOnPush"
-                    [disabled]="!hasChangeConfigRole" name="scan-image-on-push" />
+                       [disabled]="!hasChangeConfigRole" name="scan-image-on-push" />
                 <label>{{ 'PROJECT_CONFIG.AUTOSCAN_TOGGLE' | translate }}</label>
             </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
         <div *ngIf="systemInfo" class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole">
-            <label for="systemAllowlist" class="clr-control-label">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</label>
+            <label class="clr-control-label">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</label>
             <div class="w-100 clr-control-container">
                 <div class="config-subtext">
                     <div>
@@ -71,22 +76,22 @@
                     </div>
                     <div *ngIf="hasExpired">
                         <span *ngIf="isUseSystemAllowlist()"
-                            class="label label-warning">{{'CVE_ALLOWLIST.WARNING_SYS'|translate}}</span>
+                              class="label label-warning">{{'CVE_ALLOWLIST.WARNING_SYS'|translate}}</span>
                         <span *ngIf="!isUseSystemAllowlist()"
-                            class="label label-warning">{{'CVE_ALLOWLIST.WARNING_PRO'|translate}}</span>
+                              class="label label-warning">{{'CVE_ALLOWLIST.WARNING_PRO'|translate}}</span>
                     </div>
                 </div>
                 <clr-radio-container clrInline>
                     <clr-radio-wrapper>
                         <input id="use-system" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
-                            name="systemAllowlistOrProjectAllowlist" required value="true"
-                            [(ngModel)]="systemAllowlistOrProjectAllowlist" />
+                               name="systemAllowlistOrProjectAllowlist" required value="true"
+                               [(ngModel)]="systemAllowlistOrProjectAllowlist" />
                         <label>{{'CVE_ALLOWLIST.SYS_ALLOWLIST'|translate}}</label>
                     </clr-radio-wrapper>
                     <clr-radio-wrapper>
                         <input id="use-project" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
-                            name="systemAllowlistOrProjectAllowlist" required value="false"
-                            [(ngModel)]="systemAllowlistOrProjectAllowlist" />
+                               name="systemAllowlistOrProjectAllowlist" required value="false"
+                               [(ngModel)]="systemAllowlistOrProjectAllowlist" />
                         <label>{{'CVE_ALLOWLIST.PRO_ALLOWLIST'|translate}}</label>
                     </clr-radio-wrapper>
                 </clr-radio-container>
@@ -94,27 +99,27 @@
                     <div class="clr-col position-relative col-flex-grow-0 ">
                         <div>
                             <button id="show-add-modal" [disabled]="isUseSystemAllowlist() || !hasChangeConfigRole"
-                                (click)="showAddModal=!showAddModal"
-                                class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
+                                    (click)="showAddModal=!showAddModal"
+                                    class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
                             <button id="add-system" [disabled]="isUseSystemAllowlist() || !hasChangeConfigRole"
-                                (click)="addSystem()"
-                                class="btn btn-link ml-1">{{'CVE_ALLOWLIST.ADD_SYSTEM'|translate}}</button>
+                                    (click)="addSystem()"
+                                    class="btn btn-link ml-1">{{'CVE_ALLOWLIST.ADD_SYSTEM'|translate}}</button>
                         </div>
                         <div class="add-modal add-modal-dark" *ngIf="showAddModal && !isUseSystemAllowlist()">
                             <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4"
-                                shape="window-close"></clr-icon>
+                                      shape="window-close"></clr-icon>
                             <div>
                                 <clr-textarea-container class="flex-direction-column">
                                     <label>{{'CVE_ALLOWLIST.ENTER'|translate}}</label>
                                     <textarea id="allowlist-textarea" class="w-100" clrTextarea [(ngModel)]="cveIds"
-                                        name="cveIds"></textarea>
+                                              name="cveIds"></textarea>
                                     <clr-control-helper>{{'CVE_ALLOWLIST.HELP'|translate}}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
                             <div>
                                 <button id="add-to-allowlist" [disabled]="isDisabled()"
-                                    (click)="addToProjectAllowlist()"
-                                    class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
+                                        (click)="addToProjectAllowlist()"
+                                        class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
                             </div>
                         </div>
                         <ul class="allowlist-window" *ngIf="isUseSystemAllowlist()">
@@ -137,24 +142,23 @@
                     </div>
                     <div class="clr-col padding-top-16 pl-2">
                         <div class="clr-row expire-data">
-                            <label for="expires"
-                                class="bottom-line bottom-line-project-config clr-col-3">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
+                            <label class="bottom-line bottom-line-project-config clr-col-3">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
                             <div class="underline">
                                 <input #dateSystemInput readonly type="date" [(clrDate)]="systemExpiresDate">
                                 <input [disabled]="!hasChangeConfigRole" *ngIf="!isUseSystemAllowlist()" #dateInput
-                                    placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly type="date"
-                                    [(clrDate)]="expiresDate" newFormLayout="true">
+                                       placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly type="date"
+                                       [(clrDate)]="expiresDate" newFormLayout="true">
                                 <input clrInput [disabled]="!hasChangeConfigRole" *ngIf="isUseSystemAllowlist()"
-                                    placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly type="text"
-                                    value="{{systemExpiresDateString}}">
+                                       placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly type="text"
+                                       value="{{systemExpiresDateString}}">
                             </div>
                         </div>
                         <div class="clr-row">
-                            <label for="expires" class="clr-col-3"></label>
+                            <label for="neverExpires" class="clr-col-3"></label>
                             <clr-checkbox-wrapper>
                                 <input [disabled]="isUseSystemAllowlist() || !hasChangeConfigRole"
-                                    [checked]="neverExpires" [(ngModel)]="neverExpires" type="checkbox" clrCheckbox
-                                    name="neverExpires" id="neverExpires" />
+                                       [checked]="neverExpires" [(ngModel)]="neverExpires" type="checkbox" clrCheckbox
+                                       name="neverExpires" id="neverExpires" />
                                 <label>
                                     {{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}
                                 </label>
@@ -165,10 +169,10 @@
             </div>
         </div>
         <button type="button" class="btn btn-primary" (click)="save()"
-            [disabled]="((!isValid() || !hasChanges()) && !hasAllowlistChanged) || !hasChangeConfigRole">{{'BUTTON.SAVE'
+                [disabled]="((!isValid() || !hasChanges()) && !hasAllowlistChanged) || !hasChangeConfigRole">{{'BUTTON.SAVE'
             | translate}}</button>
         <button type="button" class="btn btn-outline" (click)="cancel()"
-            [disabled]="((!isValid() || !hasChanges()) && !hasAllowlistChanged) || !hasChangeConfigRole">{{'BUTTON.CANCEL'
+                [disabled]="((!isValid() || !hasChanges()) && !hasAllowlistChanged) || !hasChangeConfigRole">{{'BUTTON.CANCEL'
             | translate}}</button>
         <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>
     </section>
