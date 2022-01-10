@@ -16,6 +16,7 @@ type Policy struct {
 	Name         string        `orm:"column(name)" json:"name"`
 	Description  string        `orm:"column(description)" json:"description"`
 	ProjectID    int64         `orm:"column(project_id)" json:"project_id"`
+	Repository   string        `orm:"column(repository)" json:"repository"`
 	TargetsDB    string        `orm:"column(targets)" json:"-"`
 	Targets      []EventTarget `orm:"-" json:"targets"`
 	EventTypesDB string        `orm:"column(event_types)" json:"-"`

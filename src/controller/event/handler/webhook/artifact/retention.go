@@ -56,7 +56,11 @@ func (r *RetentionHandler) Handle(ctx context.Context, value interface{}) error 
 		return nil
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, project, trEvent.EventType)
+	repos := make([]string, 0)
+	for _, t := range trEvent.Deleted {
+		repos = append(repos, fmt.Sprintf("%s/%s", t.Target.Namespace, t.Target.Repository))
+	}
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, project, repos, trEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", trEvent.EventType, err)
 		return err

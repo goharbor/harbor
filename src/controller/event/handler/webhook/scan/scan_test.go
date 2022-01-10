@@ -113,7 +113,7 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	suite.om = notification.PolicyMgr
 	mp := &notificationtesting.Manager{}
 	notification.PolicyMgr = mp
-	mp.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+	mp.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
 		{
 			ID: 1,
 		},

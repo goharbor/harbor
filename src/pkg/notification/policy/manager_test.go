@@ -94,6 +94,7 @@ func (m *managerTestSuite) TestGetRelatedPolices() {
 			ID:           1,
 			Name:         "policy",
 			ProjectID:    1,
+			Repository:   "{library/repo*}",
 			Enabled:      true,
 			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
 		},
@@ -101,11 +102,12 @@ func (m *managerTestSuite) TestGetRelatedPolices() {
 			ID:           2,
 			Name:         "policy",
 			ProjectID:    1,
+			Repository:   "{library/*123}",
 			Enabled:      true,
 			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
 		},
 	}, nil)
-	rpers, err := m.mgr.GetRelatedPolices(context.Background(), 1, "PULL_IMAGE")
+	rpers, err := m.mgr.GetRelatedPolices(context.Background(), 1, []string{"library/repo123"}, "PULL_IMAGE")
 	m.Nil(err)
 	m.Equal(2, len(rpers))
 	m.dao.AssertExpectations(m.T())

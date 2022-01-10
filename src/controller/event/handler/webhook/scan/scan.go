@@ -53,7 +53,7 @@ func (si *Handler) Handle(ctx context.Context, value interface{}) error {
 		return errors.New("invalid scan artifact event type")
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, e.Artifact.NamespaceID, e.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, e.Artifact.NamespaceID, []string{e.Artifact.Repository}, e.EventType)
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}

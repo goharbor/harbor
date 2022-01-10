@@ -118,13 +118,13 @@ func (_m *Manager) GetByNameAndProjectID(ctx context.Context, name string, proje
 	return r0, r1
 }
 
-// GetRelatedPolices provides a mock function with given fields: ctx, projectID, eventType
-func (_m *Manager) GetRelatedPolices(ctx context.Context, projectID int64, eventType string) ([]*model.Policy, error) {
-	ret := _m.Called(ctx, projectID, eventType)
+// GetRelatedPolices provides a mock function with given fields: ctx, projectID, repositories, eventType
+func (_m *Manager) GetRelatedPolices(ctx context.Context, projectID int64, repositories []string, eventType string) ([]*model.Policy, error) {
+	ret := _m.Called(ctx, projectID, repositories, eventType)
 
 	var r0 []*model.Policy
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string) []*model.Policy); ok {
-		r0 = rf(ctx, projectID, eventType)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, []string, string) []*model.Policy); ok {
+		r0 = rf(ctx, projectID, repositories, eventType)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.Policy)
@@ -132,8 +132,8 @@ func (_m *Manager) GetRelatedPolices(ctx context.Context, projectID int64, event
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64, string) error); ok {
-		r1 = rf(ctx, projectID, eventType)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, []string, string) error); ok {
+		r1 = rf(ctx, projectID, repositories, eventType)
 	} else {
 		r1 = ret.Error(1)
 	}
