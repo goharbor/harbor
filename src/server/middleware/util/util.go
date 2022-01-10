@@ -15,7 +15,6 @@
 package util
 
 import (
-	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/rbac/project"
 	"net/http"
@@ -57,13 +56,17 @@ func ParseProjectName(r *http.Request) string {
 }
 
 // SkipPolicyChecking ...
-func SkipPolicyChecking(ctx context.Context, projectID int64) bool {
-	secCtx, ok := security.FromContext(ctx)
+func SkipPolicyChecking(r *http.Request, projectID int64) bool {
+	secCtx, ok := security.FromContext(r.Context())
 
-	// only scanner pull access can bypass.
-	if ok && secCtx.Name() == "v2token" &&
-		secCtx.Can(ctx, rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) {
-		return true
+	// 1, scanner pull access can bypass.
+	// 2, cosign pull can bypass, it needs to pull the manifest before pushing the signature.
+	if ok && secCtx.Name() == "v2token" {
+		if secCtx.Can(r.Context(), rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) ||
+			(secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) &&
+				strings.Contains(r.UserAgent(), "cosign")) {
+			return true
+		}
 	}
 
 	return false

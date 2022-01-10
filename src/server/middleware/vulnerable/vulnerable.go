@@ -69,7 +69,7 @@ func Middleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		if util.SkipPolicyChecking(ctx, proj.ProjectID) {
+		if util.SkipPolicyChecking(r, proj.ProjectID) {
 			// the artifact is pulling by the scanner, skip the checking
 			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", art.RepositoryName, art.Digest)
 			return nil
