@@ -55,7 +55,7 @@ func TestRetentionHandler_Handle(t *testing.T) {
 		StartTime: time.Now(),
 		EndTime:   time.Now(),
 	}, nil)
-	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
 		{
 			ID: 0,
 		},

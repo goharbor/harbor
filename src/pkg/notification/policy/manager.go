@@ -10,9 +10,12 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/dao"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
+	"strings"
 )
 
 var (
@@ -39,7 +42,7 @@ type Manager interface {
 	// Test the specified policy
 	Test(policy *model.Policy) error
 	// GetRelatedPolices get event type related policies in project
-	GetRelatedPolices(ctx context.Context, projectID int64, eventType string) ([]*model.Policy, error)
+	GetRelatedPolices(ctx context.Context, projectID int64, repositories []string, eventType string) ([]*model.Policy, error)
 }
 
 var _ Manager = &manager{}
@@ -174,7 +177,7 @@ func (m *manager) policyHTTPTest(address string, skipCertVerify bool) error {
 }
 
 // GetRelatedPolices get policies including event type in project
-func (m *manager) GetRelatedPolices(ctx context.Context, projectID int64, eventType string) ([]*model.Policy, error) {
+func (m *manager) GetRelatedPolices(ctx context.Context, projectID int64, repositories []string, eventType string) ([]*model.Policy, error) {
 	policies, err := m.List(ctx, q.New(q.KeyWords{"project_id": projectID}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get notification policies with projectID %d: %v", projectID, err)
@@ -186,6 +189,27 @@ func (m *manager) GetRelatedPolices(ctx context.Context, projectID int64, eventT
 		if !ply.Enabled {
 			continue
 		}
+
+		// do repo filter
+		if ply.Repository != "" && len(repositories) > 0 {
+			repoSelector := doublestar.New(doublestar.RepoMatches, ply.Repository, "")
+			candidates := make([]*selector.Candidate, 0)
+			for _, repo := range repositories {
+				candidates = append(candidates, &selector.Candidate{
+					Repository: repo,
+				})
+			}
+			selected, err := repoSelector.Select(candidates)
+			if err != nil {
+				log.Errorf("failed to select repo[%s] by pattern[%s]: %v", strings.Join(repositories, ","),
+					ply.Repository, err)
+				continue
+			}
+			if len(selected) == 0 {
+				continue
+			}
+		}
+
 		for _, t := range ply.EventTypes {
 			if t != eventType {
 				continue

@@ -7913,6 +7913,9 @@ definitions:
       project_id:
         type: integer
         description: The project ID of webhook policy.
+      repository:
+        type: string
+        description: The repository selector of event.
       targets:
         type: array
         items:

@@ -54,7 +54,8 @@ func (cph *Handler) Handle(ctx context.Context, value interface{}) error {
 		log.Errorf("failed to find project[%s] for chart event: %v", chartEvent.ProjectName, err)
 		return err
 	}
-	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, chartEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, []string{fmt.Sprintf("%s/%s", chartEvent.ProjectName, chartEvent.ChartName)},
+		chartEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", chartEvent.EventType, err)
 		return err

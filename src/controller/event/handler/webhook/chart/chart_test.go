@@ -70,7 +70,7 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 		}
 	}, nil)
 	projectCtl.On("Get")
-	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*model.Policy{
+	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*model.Policy{
 		{
 			ID: 1,
 			EventTypes: []string{

@@ -61,7 +61,7 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	mockRepCtl.On("GetPolicy", mock.Anything, mock.Anything).Return(&repctlmodel.Policy{ID: 1}, nil)
 	mockRepCtl.On("GetTask", mock.Anything, mock.Anything).Return(&repctl.Task{}, nil)
 	mockRepCtl.On("GetExecution", mock.Anything, mock.Anything).Return(&repctl.Execution{}, nil)
-	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
+	policyMgrMock.On("GetRelatedPolices", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*policy_model.Policy{
 		{
 			ID: 0,
 		},

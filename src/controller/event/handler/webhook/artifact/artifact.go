@@ -67,7 +67,8 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, event.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, []string{event.Artifact.RepositoryName},
+		event.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", event.EventType, err)
 		return err

@@ -20,3 +20,5 @@ CREATE TABLE IF NOT EXISTS artifact_accessory (
     FOREIGN KEY (subject_artifact_id) REFERENCES artifact(id),
     CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_id)
 );
+
+ALTER TABLE notification_policy ADD COLUMN IF NOT EXISTS repository varchar(256);

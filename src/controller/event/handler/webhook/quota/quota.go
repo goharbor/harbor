@@ -55,7 +55,7 @@ func (qp *Handler) Handle(ctx context.Context, value interface{}) error {
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, quotaEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, prj.ProjectID, []string{quotaEvent.RepoName}, quotaEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", quotaEvent.EventType, err)
 		return err

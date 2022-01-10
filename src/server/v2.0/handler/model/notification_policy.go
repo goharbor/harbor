@@ -23,6 +23,7 @@ func (n *NotifiactionPolicy) ToSwagger() *models.WebhookPolicy {
 		EventTypes:   n.EventTypes,
 		Name:         n.Name,
 		ProjectID:    n.ProjectID,
+		Repository:   n.Repository,
 		Targets:      n.ToTargets(),
 	}
 }
