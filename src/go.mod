@@ -163,7 +163,7 @@ require (
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/ncw/swift v1.0.49 // indirect
-	github.com/opencontainers/runc v1.0.0-rc95 // indirect
+	github.com/opencontainers/runc v1.0.3 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -182,6 +182,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
+	github.com/willf/bitset v1.1.11 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
