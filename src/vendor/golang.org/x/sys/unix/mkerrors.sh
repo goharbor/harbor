@@ -54,7 +54,7 @@ includes_AIX='
 
 includes_Darwin='
 #define _DARWIN_C_SOURCE
-#define KERNEL
+#define KERNEL 1
 #define _DARWIN_USE_64_BIT_INODE
 #define __APPLE_USE_RFC_3542
 #include <stdint.h>
@@ -75,6 +75,7 @@ includes_Darwin='
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <sys/xattr.h>
+#include <sys/vsock.h>
 #include <net/bpf.h>
 #include <net/if.h>
 #include <net/if_types.h>
@@ -82,6 +83,9 @@ includes_Darwin='
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <termios.h>
+
+// for backwards compatibility because moved TIOCREMOTE to Kernel.framework after MacOSX12.0.sdk.
+#define TIOCREMOTE 0x80047469
 '
 
 includes_DragonFly='
@@ -235,6 +239,7 @@ struct ltchars {
 #include <linux/magic.h>
 #include <linux/memfd.h>
 #include <linux/module.h>
+#include <linux/mount.h>
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netlink.h>
 #include <linux/net_namespace.h>
@@ -256,6 +261,7 @@ struct ltchars {
 #include <linux/vm_sockets.h>
 #include <linux/wait.h>
 #include <linux/watchdog.h>
+#include <linux/wireguard.h>
 
 #include <mtd/ubi-user.h>
 #include <mtd/mtd-user.h>
@@ -466,7 +472,6 @@ ccflags="$@"
 		$2 !~ /^EQUIV_/ &&
 		$2 !~ /^EXPR_/ &&
 		$2 !~ /^EVIOC/ &&
-		$2 !~ /^EV_/ &&
 		$2 ~ /^E[A-Z0-9_]+$/ ||
 		$2 ~ /^B[0-9_]+$/ ||
 		$2 ~ /^(OLD|NEW)DEV$/ ||
@@ -517,7 +522,7 @@ ccflags="$@"
 		$2 ~ /^HW_MACHINE$/ ||
 		$2 ~ /^SYSCTL_VERS/ ||
 		$2 !~ "MNT_BITS" &&
-		$2 ~ /^(MS|MNT|UMOUNT)_/ ||
+		$2 ~ /^(MS|MNT|MOUNT|UMOUNT)_/ ||
 		$2 ~ /^NS_GET_/ ||
 		$2 ~ /^TUN(SET|GET|ATTACH|DETACH)/ ||
 		$2 ~ /^(O|F|[ES]?FD|NAME|S|PTRACE|PT|TFD)_/ ||
@@ -602,6 +607,7 @@ ccflags="$@"
 		$2 ~ /^MTD/ ||
 		$2 ~ /^OTP/ ||
 		$2 ~ /^MEM/ ||
+		$2 ~ /^WG/ ||
 		$2 ~ /^BLK[A-Z]*(GET$|SET$|BUF$|PART$|SIZE)/ {printf("\t%s = C.%s\n", $2, $2)}
 		$2 ~ /^__WCOREFLAG$/ {next}
 		$2 ~ /^__W[A-Z0-9]+$/ {printf("\t%s = C.%s\n", substr($2,3), $2)}
