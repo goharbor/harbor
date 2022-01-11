@@ -7091,6 +7091,12 @@ definitions:
   GeneralInfo:
     type: object
     properties:
+      current_time:
+        type: string
+        format: date-time
+        x-nullable: true
+        x-omitempty: true
+        description: The current time of the server.
       with_notary:
         type: boolean
         x-nullable: true
