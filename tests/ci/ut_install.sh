@@ -19,6 +19,7 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
+sudo make build_base_images -e BASEIMAGETAG=dev
 sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e REGISTRYVERSION=${REG_VERSION} -e BASEIMAGETAG=dev
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
