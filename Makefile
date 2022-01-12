@@ -92,6 +92,8 @@ VERSIONTAG=dev
 BASEIMAGETAG=dev
 # for harbor package name
 PKGVERSIONTAG=dev
+# input true/false only
+PULL_BASE_FROM_DOCKERHUB=true
 
 PREPARE_VERSION_NAME=versions
 
@@ -316,12 +318,16 @@ prepare: update_prepare_version
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
+# PUSHBASEIMAGE should not be true if BUILD_BASE is not true
+	@if [ "$(PULL_BASE_FROM_DOCKERHUB)" != "true" ] && [ "$(PULL_BASE_FROM_DOCKERHUB)" != "false" ] ; then \
+		echo set PULL_BASE_FROM_DOCKERHUB to true or false.; exit 1; \
+	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRADAPTERVERSION=$(CLAIRADAPTERVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
-	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG)
+	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB)
 
 build_base_docker:
 	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
@@ -335,6 +341,13 @@ build_base_docker:
 		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) goharbor/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1 ; \
 	done
 	@echo build_base_docker done
+
+build_base_images:
+	@echo build_base_images start
+	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t goharbor/harbor-$$name-base:$(BASEIMAGETAG) .; \
+	done
+	@echo build_base_images done
 
 install: compile build prepare start
 
