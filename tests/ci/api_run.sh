@@ -20,6 +20,7 @@ harbor_logs_bucket="harbor-ci-logs"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 E2E_IMAGE="goharbor/harbor-e2e-engine:3.0.2-api"
 
+
 # GS util
 function uploader {
    sudo gsutil cp $1 gs://$2/$1
