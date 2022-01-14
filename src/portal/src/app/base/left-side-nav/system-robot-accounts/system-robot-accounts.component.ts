@@ -28,6 +28,7 @@ import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
 import { RobotPermission } from "../../../../../ng-swagger-gen/models/robot-permission";
+import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
 
 const FIRST_PROJECTS_PAGE_SIZE: number = 100;
 @Component({
@@ -56,6 +57,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
   searchSub: Subscription;
   searchKey: string;
   subscription: Subscription;
+  deltaTime: number; // the different between server time and local time
   constructor(private robotService: RobotService,
               private projectService: ProjectService,
               private msgHandler: MessageHandlerService,
@@ -63,8 +65,10 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
               private operationService: OperationService,
               private sanitizer: DomSanitizer,
               private translate: TranslateService,
+              private systemInfoService: SysteminfoService
   ) {}
   ngOnInit() {
+    this.getCurrenTime();
     this.loadDataFromBackend();
     if (!this.searchSub) {
       this.searchSub = this.filterComponent.filterTerms.pipe(
@@ -123,6 +127,15 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
       this.subscription.unsubscribe();
       this.subscription = null;
     }
+  }
+  getCurrenTime() {
+    this.systemInfoService.getSystemInfo().subscribe(
+        res => {
+          if (res?.current_time) {
+            this.deltaTime = new Date().getTime() - new Date(res?.current_time).getTime();
+          }
+        }
+    );
   }
   loadDataFromBackend() {
     this.loadingData = true;

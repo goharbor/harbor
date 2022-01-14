@@ -31,6 +31,7 @@ import { Registry } from "../../../../../../../../../ng-swagger-gen/models/regis
 import { AppConfigService } from "../../../../../../../services/app-config.service";
 import { ArtifactListPageService } from '../../artifact-list-page.service';
 import { ClrLoadingState } from '@clr/angular';
+import { Accessory } from "ng-swagger-gen/models/accessory";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -262,6 +263,16 @@ describe("ArtifactListTabComponent (inline template)", () => {
       subscribe: (fn) => {
 
       }
+    },
+    listAccessoriesResponse() {
+      const res: HttpResponse<Array<Accessory>> = new HttpResponse<Array<Accessory>>({
+        headers: new HttpHeaders({'x-total-count': '0'}),
+        body: []
+      });
+      return of(res).pipe(delay(0));
+    },
+    listAccessories() {
+      return of(null).pipe(delay(0));
     },
     listArtifactsResponse: () => {
       if (filtereName === 'sha256:3e33e3e3') {

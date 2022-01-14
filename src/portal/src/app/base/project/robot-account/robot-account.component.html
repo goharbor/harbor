@@ -59,7 +59,7 @@
       <clr-dg-column>{{'ROBOT_ACCOUNT.ENABLED_STATE' | translate}}</clr-dg-column>
       <clr-dg-column>{{"SYSTEM_ROBOT.PERMISSION_COLUMN" | translate}}</clr-dg-column>
       <clr-dg-column [clrDgSortBy]="'creation_time'">{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
-      <clr-dg-column>{{'SYSTEM_ROBOT.EXPIRES_AT' | translate}}</clr-dg-column>
+      <clr-dg-column>{{'SYSTEM_ROBOT.EXPIRES_IN' | translate}}</clr-dg-column>
       <clr-dg-column>{{'ROBOT_ACCOUNT.DESCRIPTION' | translate}}</clr-dg-column>
       <clr-dg-placeholder>{{
         'SYSTEM_ROBOT.NOT_FOUND' | translate
@@ -89,7 +89,7 @@
           </div>
         </clr-dg-cell>
         <clr-dg-cell>{{r.creation_time | harborDatetime: 'short'}}</clr-dg-cell>
-        <clr-dg-cell>{{r.expires_at === -1?("ROBOT_ACCOUNT.NEVER_EXPIRED" | translate):(r.expires_at * 1000 | harborDatetime: 'short')}}</clr-dg-cell>
+        <clr-dg-cell><app-remaining-time [deadline]="r?.expires_at" [timeDiff]="deltaTime"></app-remaining-time></clr-dg-cell>
         <clr-dg-cell>{{r.description}}</clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>

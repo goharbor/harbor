@@ -1702,7 +1702,9 @@
         "STOP": "停止",
         "LIST": "查询",
         "REPOSITORY": "仓库",
-        "HELM_LABEL": "Helm Chart 标签"
+        "HELM_LABEL": "Helm Chart 标签",
+        "EXPIRES_IN": "有效期剩余",
+        "EXPIRED": "已过期"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "删除附件确认",

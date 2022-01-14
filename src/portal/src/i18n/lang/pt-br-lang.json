@@ -1700,7 +1700,9 @@
         "STOP": "Parar",
         "LIST": "Listar",
         "REPOSITORY": "Repositório",
-        "HELM_LABEL": "Marcador do Helm Chart"
+        "HELM_LABEL": "Marcador do Helm Chart",
+        "EXPIRES_IN": "Expires in",
+        "EXPIRED": "Expired"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",

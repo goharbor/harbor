@@ -1,7 +1,7 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Subscription } from 'rxjs';
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, RouterModule } from "@angular/router";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { RobotAccountComponent } from './robot-account.component';
 import { UserPermissionService } from "../../../shared/services";
@@ -12,7 +12,13 @@ import { Robot } from "../../../../../ng-swagger-gen/models/robot";
 import { delay } from "rxjs/operators";
 import { Action, PermissionsKinds, Resource } from "../../left-side-nav/system-robot-accounts/system-robot-util";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
-import { SharedTestingModule } from "../../../shared/shared.module";
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { ClarityModule } from '@clr/angular';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HarborDatetimePipe } from '../../../shared/pipes/harbor-datetime.pipe';
 
 describe('RobotAccountComponent', () => {
   let component: RobotAccountComponent;
@@ -106,9 +112,15 @@ describe('RobotAccountComponent', () => {
         NO_ERRORS_SCHEMA
       ],
       imports: [
-        SharedTestingModule,
+        TranslateModule.forRoot(),
+        CommonModule,
+        ClarityModule,
+        HttpClientTestingModule,
+        RouterTestingModule,
+        BrowserAnimationsModule,
       ],
       providers: [
+        TranslateService,
         {
           provide: ActivatedRoute, useValue: {
             snapshot: {
@@ -127,7 +139,7 @@ describe('RobotAccountComponent', () => {
         { provide: UserPermissionService, useValue: mockUserPermissionService },
         { provide: RobotService, useValue: fakedRobotService},
       ],
-      declarations: [RobotAccountComponent]
+      declarations: [RobotAccountComponent, HarborDatetimePipe]
     }).compileComponents();
   }));
 

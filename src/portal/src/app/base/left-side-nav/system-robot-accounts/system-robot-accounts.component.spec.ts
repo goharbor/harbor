@@ -12,7 +12,13 @@ import { ProjectService } from "../../../../../ng-swagger-gen/services/project.s
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
-import { SharedTestingModule } from "../../../shared/shared.module";
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { ClarityModule } from '@clr/angular';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HarborDatetimePipe } from '../../../shared/pipes/harbor-datetime.pipe';
 
 describe('SystemRobotAccountsComponent', () => {
   let component: SystemRobotAccountsComponent;
@@ -119,10 +125,16 @@ describe('SystemRobotAccountsComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
-        SharedTestingModule
+        TranslateModule.forRoot(),
+        CommonModule,
+        ClarityModule,
+        HttpClientTestingModule,
+        RouterTestingModule,
+        BrowserAnimationsModule,
       ],
-      declarations: [ SystemRobotAccountsComponent ],
+      declarations: [ SystemRobotAccountsComponent, HarborDatetimePipe],
       providers: [
+        TranslateService,
         { provide: MessageHandlerService, useValue: fakedMessageHandlerService },
         ConfirmationDialogService,
         OperationService,

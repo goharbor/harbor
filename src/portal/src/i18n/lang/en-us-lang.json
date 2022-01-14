@@ -1704,7 +1704,9 @@
         "STOP": "Stop",
         "LIST": "List",
         "REPOSITORY": "Repository",
-        "HELM_LABEL": "Helm Chart label"
+        "HELM_LABEL": "Helm Chart label",
+        "EXPIRES_IN": "Expires in",
+        "EXPIRED": "Expired"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
