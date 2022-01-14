@@ -172,3 +172,9 @@ export function onlyHasPushPermission(access: Access[]): boolean {
     }
     return false;
 }
+
+export enum RobotTimeRemainColor {
+    GREEN = 'green',
+    WARNING = 'yellow',
+    EXPIRED = 'red'
+}

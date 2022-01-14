@@ -78,6 +78,7 @@ import localeFr from '@angular/common/locales/fr';
 import localePt from '@angular/common/locales/pt-PT';
 import localeTr from '@angular/common/locales/tr';
 import localeDe from '@angular/common/locales/de';
+import { RemainingTimeComponent } from './components/remaining-time/remaining-time.component';
 // add locale data for supported languages  ['en-us', 'zh-cn', 'zh-tw', 'es-es', 'fr-fr', 'pt-br', 'tr-tr', 'de-de'];
 // en-us defaulted supported
 registerLocaleData(zh_cn, 'zh-cn');
@@ -153,7 +154,8 @@ ClarityIcons.add({"robot-head": `
     ListChartVersionRoComponent,
     DatePickerComponent,
     ImageNameInputComponent,
-    HarborDatetimePipe
+    HarborDatetimePipe,
+    RemainingTimeComponent
   ],
   exports: [
     TranslateModule,
@@ -191,7 +193,8 @@ ClarityIcons.add({"robot-head": `
     ListChartVersionRoComponent,
     DatePickerComponent,
     ImageNameInputComponent,
-    HarborDatetimePipe
+    HarborDatetimePipe,
+    RemainingTimeComponent
   ],
   providers: [
     {provide: EndpointService, useClass: EndpointDefaultService },
