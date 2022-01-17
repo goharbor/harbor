@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync, } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from "rxjs";
 import { ArtifactInfoComponent } from './artifact-info.component';
 import { SharedTestingModule } from 'src/app/shared/shared.module';
@@ -12,8 +12,8 @@ describe('ArtifactInfoComponent', () => {
     updateRepository: () => of(null),
     getRepository: () => of({description: ''})
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
       ],
@@ -23,8 +23,8 @@ describe('ArtifactInfoComponent', () => {
       providers: [
         { provide: RepositoryService, useValue: FakedRepositoryService},
       ]
-    });
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactInfoComponent);

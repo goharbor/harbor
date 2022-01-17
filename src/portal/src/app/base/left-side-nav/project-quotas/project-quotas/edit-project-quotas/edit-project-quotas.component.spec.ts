@@ -1,8 +1,6 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditProjectQuotasComponent } from './edit-project-quotas.component';
 import { EditQuotaQuotaInterface } from '../../../../../shared/services';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { SharedTestingModule } from "../../../../../shared/shared.module";
 
 describe('EditProjectQuotasComponent', () => {
@@ -15,7 +13,7 @@ describe('EditProjectQuotasComponent', () => {
     quotaHardLimitValue: {storageLimit: -1, storageUnit: "Byte"},
     isSystemDefaultQuota: true
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -23,9 +21,8 @@ describe('EditProjectQuotasComponent', () => {
       declarations: [
         EditProjectQuotasComponent
       ]
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(EditProjectQuotasComponent);

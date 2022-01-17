@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { ArtifactListTabComponent } from "./artifact-list-tab.component";
 import { of } from "rxjs";
@@ -336,8 +336,8 @@ describe("ArtifactListTabComponent (inline template)", () => {
     init() {
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
       ],
@@ -366,7 +366,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         { provide: NewArtifactService, useValue: mockNewArtifactService },
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactListTabComponent);

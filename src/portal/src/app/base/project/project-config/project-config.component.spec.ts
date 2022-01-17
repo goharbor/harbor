@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
 import { SessionService } from '../../../shared/services/session.service';
@@ -16,7 +16,7 @@ describe('ProjectConfigComponent', () => {
   };
   let fakeRouter = null;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ProjectConfigComponent],
       schemas: [
@@ -47,7 +47,7 @@ describe('ProjectConfigComponent', () => {
         { provide: SessionService, useValue: fakeSessionService },
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectConfigComponent);

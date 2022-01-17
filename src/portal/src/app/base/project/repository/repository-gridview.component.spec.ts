@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from "rxjs";
 import { RepositoryService as NewRepositoryService } from "../../../../../ng-swagger-gen/services/repository.service";
 import { RepositoryGridviewComponent } from "./repository-gridview.component";
@@ -90,7 +90,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
       }
     }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     let store = {};
     spyOn(localStorage, 'getItem').and.callFake( key => {
       return store[key];
@@ -117,8 +117,8 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: SystemInfoService, useValue: fakedSystemInfoService },
         { provide: UserPermissionService, useValue: fakedUserPermissionService },
       ]
-    });
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(async () => {
     fixtureRepo = TestBed.createComponent(RepositoryGridviewComponent);
@@ -138,9 +138,9 @@ describe('RepositoryComponentGridview (inline template)', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
 
-  it('should create', waitForAsync(() => {
+  it('should create', () => {
     expect(compRepo).toBeTruthy();
-  }));
+  });
   it('should be card view', async () => {
     const cardViewButton = fixtureRepo.nativeElement.querySelector('.card-btn');
     cardViewButton.click();

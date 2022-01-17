@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed, getTestBed, waitForAsync } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed, getTestBed } from '@angular/core/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { DevCenterComponent } from './dev-center.component';
 import { CookieService } from 'ngx-cookie';
+import { SharedTestingModule } from '../shared/shared.module';
 
 describe('DevCenterComponent', () => {
   let component: DevCenterComponent;
@@ -15,15 +15,13 @@ describe('DevCenterComponent', () => {
   let cookie = "fdsa|ds";
   let injector: TestBed;
   let httpMock: HttpTestingController;
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [DevCenterComponent],
       imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
+       SharedTestingModule
       ],
       providers: [
-        TranslateService,
         {
           provide: CookieService, useValue: mockCookieService
         }
@@ -31,8 +29,8 @@ describe('DevCenterComponent', () => {
     })
       .compileComponents();
     injector = getTestBed();
-    httpMock = injector.get(HttpTestingController);
-  }));
+    httpMock = injector.inject(HttpTestingController);
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DevCenterComponent);

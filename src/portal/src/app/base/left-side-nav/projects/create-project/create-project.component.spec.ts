@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateProjectComponent } from './create-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
@@ -27,8 +27,8 @@ describe('CreateProjectComponent', () => {
         showSuccess: function() {
         }
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -41,7 +41,7 @@ describe('CreateProjectComponent', () => {
                 {provide: MessageHandlerService, useValue: mockMessageHandlerService},
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(CreateProjectComponent);

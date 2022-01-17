@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
 import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { ValuesComponent } from "./values.component";
@@ -26,8 +26,8 @@ describe('ValuesComponent', () => {
     absolute: false,
     href: '/test'
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
         MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
@@ -41,7 +41,7 @@ describe('ValuesComponent', () => {
         {provide: MarkedOptions, useValue: {}},
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ValuesComponent);

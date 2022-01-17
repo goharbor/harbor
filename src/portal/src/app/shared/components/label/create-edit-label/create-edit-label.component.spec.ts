@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { FilterComponent } from "../../filter/filter.component";
 import { InlineAlertComponent } from "../../inline-alert/inline-alert.component";
@@ -7,7 +7,6 @@ import { Label } from "../../../services";
 import { CreateEditLabelComponent } from "./create-edit-label.component";
 import { LabelDefaultService, LabelService } from "../../../services";
 import { of } from "rxjs";
-import { CURRENT_BASE_HREF } from "../../../units/utils";
 import { SharedTestingModule } from "../../../shared.module";
 
 describe("CreateEditLabelComponent (inline template)", () => {
@@ -29,8 +28,8 @@ describe("CreateEditLabelComponent (inline template)", () => {
   let spy: jasmine.Spy;
   let spyOne: jasmine.Spy;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [SharedTestingModule, NoopAnimationsModule],
       declarations: [
         FilterComponent,
@@ -41,8 +40,8 @@ describe("CreateEditLabelComponent (inline template)", () => {
         ErrorHandler,
         { provide: LabelService, useClass: LabelDefaultService }
       ]
-    });
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CreateEditLabelComponent);
@@ -68,11 +67,11 @@ describe("CreateEditLabelComponent (inline template)", () => {
     expect(comp).toBeTruthy();
   });
 
-  it("should get label and open modal", waitForAsync(() => {
+  it("should get label and open modal", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(comp.labelModel.name).toEqual("");
     });
-  }));
+  });
 });

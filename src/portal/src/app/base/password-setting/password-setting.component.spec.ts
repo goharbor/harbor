@@ -1,16 +1,12 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/services/session.service';
 import { MessageHandlerService } from '../../shared/services/message-handler.service';
 import { PasswordSettingComponent } from './password-setting.component';
-import { ClarityModule } from "@clr/angular";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { ErrorHandler } from '../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { SharedTestingModule } from '../../shared/shared.module';
 
 describe('PasswordSettingComponent', () => {
     let component: PasswordSettingComponent;
@@ -25,25 +21,20 @@ describe('PasswordSettingComponent', () => {
         showSuccess: () => { }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                BrowserAnimationsModule
+                SharedTestingModule
             ],
             declarations: [PasswordSettingComponent, InlineAlertComponent],
             providers: [
-                TranslateService,
                 { provide: PasswordSettingService, useValue: fakePasswordSettingService },
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(PasswordSettingComponent);

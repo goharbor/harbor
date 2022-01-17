@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -11,8 +11,8 @@ describe('ChangePasswordComponent', () => {
     let fixture: ComponentFixture<ChangePasswordComponent>;
     let fakeUserService = null;
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [ChangePasswordComponent],
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -26,7 +26,7 @@ describe('ChangePasswordComponent', () => {
                 { provide: UserService, useValue: fakeUserService }
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChangePasswordComponent);

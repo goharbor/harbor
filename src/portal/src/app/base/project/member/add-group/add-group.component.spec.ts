@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from "rxjs";
 import { AppConfigService } from "../../../../services/app-config.service";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -20,8 +20,8 @@ describe('AddHttpAuthGroupComponent', () => {
     return of(null);
   }};
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [AddGroupComponent],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
@@ -34,9 +34,8 @@ describe('AddHttpAuthGroupComponent', () => {
         { provide: AppConfigService, useValue: fakeAppConfigService },
         { provide: MemberService, useValue: fakeMemberService }
       ],
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddGroupComponent);

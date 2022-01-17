@@ -1,11 +1,9 @@
-import { waitForAsync, ComponentFixture, fakeAsync, getTestBed, TestBed, tick } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { GlobalSearchComponent } from './global-search.component';
 import { SearchTriggerService } from './search-trigger.service';
-import { FormsModule } from '@angular/forms';
 import { AppConfigService } from '../../../services/app-config.service';
 import { SkinableConfig } from "../../../services/skinable-config.service";
-import { RouterTestingModule } from '@angular/router/testing';
+import { SharedTestingModule } from '../../shared.module';
 
 describe('GlobalSearchComponent', () => {
     let component: GlobalSearchComponent;
@@ -42,22 +40,19 @@ describe('GlobalSearchComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule
+                SharedTestingModule
             ],
             declarations: [GlobalSearchComponent],
             providers: [
-                TranslateService,
                 { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
                 { provide: SkinableConfig, useValue: fakeSkinableConfig }
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(GlobalSearchComponent);

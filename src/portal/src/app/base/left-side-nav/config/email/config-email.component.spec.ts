@@ -1,9 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { ConfigurationService } from '../../../../services/config.service';
 import { ConfigurationEmailComponent } from './config-email.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { clone } from '../../../../shared/units/utils';
 import { of } from 'rxjs';
 import { ConfigService } from "../config.service";
 import { SharedTestingModule } from "../../../../shared/shared.module";
@@ -38,8 +37,8 @@ describe('ConfigurationEmailComponent', () => {
         resetConfig() {
         }
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -51,7 +50,7 @@ describe('ConfigurationEmailComponent', () => {
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfigurationEmailComponent);

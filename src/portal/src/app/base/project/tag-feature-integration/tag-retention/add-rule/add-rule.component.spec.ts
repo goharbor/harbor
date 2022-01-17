@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddRuleComponent } from './add-rule.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -15,7 +15,7 @@ describe('AddRuleComponent', () => {
     let fixture: ComponentFixture<AddRuleComponent>;
     const mockTagRetentionService = { };
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -35,9 +35,8 @@ describe('AddRuleComponent', () => {
                 ErrorHandler,
                 { provide: TagRetentionService, useValue: mockTagRetentionService },
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AddRuleComponent);

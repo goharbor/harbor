@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GcComponent } from './gc.component';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
@@ -23,7 +23,7 @@ describe('GcComponent', () => {
   };
   let spySchedule: jasmine.Spy;
   let spyGcNow: jasmine.Spy;
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule
@@ -32,9 +32,8 @@ describe('GcComponent', () => {
       providers: [
         { provide: ErrorHandler, useValue: fakedErrorHandler },
       ]
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(GcComponent);

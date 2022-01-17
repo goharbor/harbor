@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { RecentLogComponent } from './recent-log.component';
 import { ErrorHandler } from '../../../shared/units/error-handler';
@@ -68,8 +68,8 @@ describe('RecentLogComponent (inline template)', () => {
       }
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule
       ],
@@ -78,9 +78,8 @@ describe('RecentLogComponent (inline template)', () => {
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: AuditlogService, useValue: fakedAuditlogService },
       ]
-    });
-
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(RecentLogComponent);
@@ -92,7 +91,7 @@ describe('RecentLogComponent (inline template)', () => {
   it('should be created', () => {
     expect(component).toBeTruthy();
   });
-  it('should get data from AccessLogService', waitForAsync(() => {
+  it('should get data from AccessLogService', () => {
     expect(auditlogService).toBeTruthy();
     fixture.detectChanges();
     fixture.whenStable().then(() => { // wait for async getRecentLogs
@@ -100,20 +99,19 @@ describe('RecentLogComponent (inline template)', () => {
       expect(component.recentLogs).toBeTruthy();
       expect(component.recentLogs.length).toEqual(15);
     });
-  }));
+  });
 
-  it('should render data to view', waitForAsync(() => {
+  it('should render data to view', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-
       let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
       expect(el.textContent.trim()).toEqual('user910');
     });
-  }));
+  });
   it('should support pagination', async () => {
     fixture.autoDetectChanges(true);
     await fixture.whenStable();
@@ -126,7 +124,7 @@ describe('RecentLogComponent (inline template)', () => {
     expect(component.recentLogs.length).toEqual(3);
   });
 
-  it('should support filtering list by keywords', waitForAsync(() => {
+  it('should support filtering list by keywords', () => {
     fixture.detectChanges();
     let el: HTMLElement = fixture.nativeElement.querySelector('.search-btn');
     expect(el).toBeTruthy("Not found search icon");
@@ -145,9 +143,9 @@ describe('RecentLogComponent (inline template)', () => {
         expect(component.recentLogs.length).toEqual(1);
       });
     });
-  }));
+  });
 
-  it('should support refreshing', waitForAsync(() => {
+  it('should support refreshing', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -168,10 +166,8 @@ describe('RecentLogComponent (inline template)', () => {
           expect(component.recentLogs).toBeTruthy();
           expect(component.recentLogs.length).toEqual(15);
         });
-
       });
     });
-
-  }));
+  });
 
 });

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactAdditionsComponent } from './artifact-additions.component';
 import { AdditionLinks } from "../../../../../../../ng-swagger-gen/models/addition-links";
 import { CURRENT_BASE_HREF } from "../../../../../shared/units/utils";
@@ -16,8 +16,8 @@ describe('ArtifactAdditionsComponent', () => {
   let component: ArtifactAdditionsComponent;
   let fixture: ComponentFixture<ArtifactAdditionsComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule
       ],
@@ -29,7 +29,7 @@ describe('ArtifactAdditionsComponent', () => {
       ],
     })
     .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactAdditionsComponent);

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -59,7 +59,7 @@ describe('ScannerComponent', () => {
       }
     }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -74,7 +74,7 @@ describe('ScannerComponent', () => {
       ]
     })
     .compileComponents();
-  }));
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ScannerComponent);
     component = fixture.componentInstance;

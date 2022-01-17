@@ -1,6 +1,6 @@
 import {
   ComponentFixture,
-  TestBed, waitForAsync,
+  TestBed,
 } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { FilterComponent } from "../../../../shared/components/filter/filter.component";
@@ -266,8 +266,8 @@ describe("CreateEditEndpointComponent (inline template)", () => {
       };
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [SharedTestingModule, NoopAnimationsModule],
       declarations: [
         FilterComponent,
@@ -280,8 +280,8 @@ describe("CreateEditEndpointComponent (inline template)", () => {
         { provide: HttpClient, useValue: fakedHttp },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
-    });
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CreateEditEndpointComponent);
@@ -305,26 +305,26 @@ describe("CreateEditEndpointComponent (inline template)", () => {
     expect(comp).toBeTruthy();
   });
 
-  it("should get endpoint be called", waitForAsync(() => {
+  it("should get endpoint be called", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(spy.calls.any()).toBeTruthy();
     });
-  }));
-  it("should get adapterInfo", waitForAsync(() => {
+  });
+  it("should get adapterInfo", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(comp.adapterInfo).toBeTruthy();
     });
-  }));
+  });
 
-  it("should get endpoint and open modal", waitForAsync(() => {
+  it("should get endpoint and open modal", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(comp.target.name).toEqual("target_01");
     });
-  }));
+  });
 });

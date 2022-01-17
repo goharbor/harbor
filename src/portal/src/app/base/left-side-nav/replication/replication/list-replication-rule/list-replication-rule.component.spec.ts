@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../../shared/components/confirmation-dialog';
 import { ListReplicationRuleComponent } from './list-replication-rule.component';
 import { ReplicationRule } from '../../../../../shared/services';
@@ -74,11 +73,10 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
-                NoopAnimationsModule
             ],
             declarations: [
                 ListReplicationRuleComponent,
@@ -89,8 +87,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
                 {provide: ReplicationService, useValue: fakedReplicationService},
                 {provide: OperationService, useValue: fakedOperationService}
             ]
-        });
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ListReplicationRuleComponent);

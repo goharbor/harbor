@@ -37,7 +37,7 @@ export abstract class UserPermissionService {
      *  @abstract
      *  returns
      */
-    abstract getPermission(projectId, resource, action);
+    abstract getPermission(projectId, resource, action): Observable<boolean>;
     abstract clearPermissionCache();
     abstract hasProjectPermission(projectId: any, permission: Permission): Observable<boolean>;
     abstract hasProjectPermissions(projectId: any, permissions: Array<Permission>): Observable<Array<boolean>>;

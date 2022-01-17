@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GroupComponent } from './group.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SessionService } from "../../../shared/services/session.service";
@@ -48,8 +48,8 @@ describe('GroupComponent', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+   await TestBed.configureTestingModule({
       declarations: [GroupComponent],
       imports: [
        SharedTestingModule
@@ -65,9 +65,8 @@ describe('GroupComponent', () => {
         { provide: SessionService, useValue: fakeSessionService },
         { provide: AppConfigService, useValue: fakeAppConfigService }
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(GroupComponent);

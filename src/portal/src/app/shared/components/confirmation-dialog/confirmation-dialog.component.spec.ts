@@ -1,10 +1,9 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmationTargets } from '../../entities/shared.const';
 import { ConfirmationMessage } from '../../../base/global-confirmation-dialog/confirmation-message';
 import { BatchInfo } from '../../../base/global-confirmation-dialog/confirmation-batch-message';
-import { CURRENT_BASE_HREF } from "../../units/utils";
 import { SharedTestingModule } from "../../shared.module";
 
 
@@ -20,14 +19,14 @@ describe('ConfirmationDialogComponent', () => {
         ConfirmationTargets.CONFIG
     );
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
                 BrowserAnimationsModule
             ],
-        });
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfirmationDialogComponent);

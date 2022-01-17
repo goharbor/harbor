@@ -1,5 +1,4 @@
-import {ComponentFixture, fakeAsync, TestBed, tick, waitForAsync} from "@angular/core/testing";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { ComponentFixture, fakeAsync, TestBed, tick } from "@angular/core/testing";
 import { ConfirmationDialogComponent } from "../../../../../shared/components/confirmation-dialog";
 import { CronTooltipComponent } from "../../../../../shared/components/cron-schedule";
 import { CreateEditRuleComponent } from "./create-edit-rule.component";
@@ -16,7 +15,6 @@ import {
   ReplicationService,
 } from "../../../../../shared/services";
 import {LabelPieceComponent} from "../../../../../shared/components/label/label-piece/label-piece.component";
-import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
 import {HttpHeaders, HttpResponse} from "@angular/common/http";
 import {delay} from "rxjs/operators";
@@ -228,9 +226,9 @@ describe("CreateEditRuleComponent (inline template)", () => {
       return of(mockEndpoints).pipe(delay(0));
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [SharedTestingModule, NoopAnimationsModule, RouterTestingModule],
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ SharedTestingModule ],
       declarations: [
         CreateEditRuleComponent,
         CronTooltipComponent,
@@ -245,8 +243,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
         { provide: ReplicationService, useValue: fakedReplicationService },
         { provide: RegistryService, useValue: fakedEndpointService },
       ]
-    });
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CreateEditRuleComponent);

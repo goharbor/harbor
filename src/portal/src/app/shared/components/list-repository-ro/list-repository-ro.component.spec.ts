@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListRepositoryROComponent } from './list-repository-ro.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -16,7 +16,7 @@ describe('ListRepositoryRoComponent', () => {
     const mockSearchTriggerService = {
         closeSearch: () => { }
     };
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -38,7 +38,7 @@ describe('ListRepositoryRoComponent', () => {
 
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ListRepositoryROComponent);

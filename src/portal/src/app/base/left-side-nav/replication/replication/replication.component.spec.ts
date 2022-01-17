@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
@@ -143,7 +143,7 @@ describe('Replication Component (inline template)', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       schemas: [ CUSTOM_ELEMENTS_SCHEMA ,
       NO_ERRORS_SCHEMA],
@@ -164,7 +164,7 @@ describe('Replication Component (inline template)', () => {
         { provide: OperationService }
       ]
     });
-  }));
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ReplicationComponent);
     comp = fixture.componentInstance;

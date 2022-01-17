@@ -1,14 +1,7 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PageNotFoundComponent } from './not-found.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { Router } from '@angular/router';
+import { SharedTestingModule } from '../shared/shared.module';
 
 describe('PageNotFoundComponent', () => {
     let component: PageNotFoundComponent;
@@ -16,27 +9,17 @@ describe('PageNotFoundComponent', () => {
     const mockRouter = {
         navigate: () => {}
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
             imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
+                SharedTestingModule
             ],
             declarations: [PageNotFoundComponent],
-            providers: [
-                TranslateService
-            ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(PageNotFoundComponent);

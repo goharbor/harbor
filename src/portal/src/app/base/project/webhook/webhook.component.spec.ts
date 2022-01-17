@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WebhookComponent } from './webhook.component';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectWebhookService } from './webhook.service';
@@ -104,7 +104,7 @@ describe('WebhookComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -128,7 +128,7 @@ describe('WebhookComponent', () => {
             ]
         })
             .compileComponents();
-    }));
+    });
 
     beforeEach(async () => {
         fixture = TestBed.createComponent(WebhookComponent);

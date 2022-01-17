@@ -1,11 +1,7 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClarityModule } from '@clr/angular';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddRobotComponent } from './add-robot.component';
-import { FormsModule } from '@angular/forms';
 import { of } from "rxjs";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
-import { TranslateModule } from '@ngx-translate/core';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { delay } from "rxjs/operators";
 import { RobotService } from "../../../../../../ng-swagger-gen/services/robot.service";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
@@ -26,14 +22,10 @@ describe('AddRobotComponent', () => {
     error() {
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach( async () => {
+    await TestBed.configureTestingModule({
       declarations: [AddRobotComponent],
       imports: [
-        BrowserAnimationsModule,
-        ClarityModule,
-        TranslateModule.forRoot(),
-        FormsModule,
         SharedTestingModule
       ],
       providers: [
@@ -45,7 +37,7 @@ describe('AddRobotComponent', () => {
         NO_ERRORS_SCHEMA
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddRobotComponent);

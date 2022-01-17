@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { ClarityModule } from '@clr/angular';
 import { SharedTestingModule } from '../../../../shared/shared.module';
@@ -32,8 +32,8 @@ describe('DistributionSetupModalComponent', () => {
     }
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         ClarityModule,
         TranslateModule,
@@ -44,7 +44,7 @@ describe('DistributionSetupModalComponent', () => {
       providers: [ { provide: PreheatService, useValue: fakedPreheatService }],
       declarations: [DistributionSetupModalComponent]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DistributionSetupModalComponent);

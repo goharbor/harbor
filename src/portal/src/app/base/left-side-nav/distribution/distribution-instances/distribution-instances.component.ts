@@ -131,7 +131,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
       .subscribe(
       response => {
         this.totalCount = Number.parseInt(
-          response.headers.get('x-total-count')
+          response.headers.get('x-total-count'), 10
         );
         this.instances = response.body as Instance[];
         this.pingInstances();

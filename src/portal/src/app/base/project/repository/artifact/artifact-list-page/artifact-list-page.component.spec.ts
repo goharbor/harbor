@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactListPageComponent } from './artifact-list-page.component';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -37,8 +37,8 @@ describe('ArtifactListPageComponent', () => {
             }
         }
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                SharedTestingModule
             ],
@@ -47,9 +47,8 @@ describe('ArtifactListPageComponent', () => {
                 ArtifactListPageService,
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ArtifactListPageComponent);

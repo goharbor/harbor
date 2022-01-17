@@ -1,5 +1,5 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import {  NO_ERRORS_SCHEMA } from "@angular/core";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { SystemRobotAccountsComponent } from './system-robot-accounts.component';
 import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
@@ -122,8 +122,8 @@ describe('SystemRobotAccountsComponent', () => {
     error() {
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot(),
         CommonModule,
@@ -144,9 +144,8 @@ describe('SystemRobotAccountsComponent', () => {
       schemas: [
         NO_ERRORS_SCHEMA
       ],
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SystemRobotAccountsComponent);

@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed, ComponentFixtureAutoDetect } from '@angular/core/testing';
+import { ComponentFixture, TestBed, ComponentFixtureAutoDetect } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { ListProjectComponent } from './list-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
@@ -59,7 +59,7 @@ describe('ListProjectComponent', () => {
     const mockOperationService = {
         publishInfo$: () => {}
     };
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -82,9 +82,8 @@ describe('ListProjectComponent', () => {
                 { provide: ComponentFixtureAutoDetect, useValue: true }
 
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ListProjectComponent);

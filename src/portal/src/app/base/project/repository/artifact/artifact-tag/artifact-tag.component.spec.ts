@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactTagComponent } from './artifact-tag.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -50,7 +50,7 @@ describe('ArtifactTagComponent', () => {
     { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.CREATE },
   ];
   let mockHasDeleteImagePermission: boolean = true;
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -69,9 +69,8 @@ describe('ArtifactTagComponent', () => {
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService },
       ]
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactTagComponent);
