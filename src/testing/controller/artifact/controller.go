@@ -91,34 +91,27 @@ func (_m *Controller) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
-// Ensure provides a mock function with given fields: ctx, repository, digest, tags
-func (_m *Controller) Ensure(ctx context.Context, repository string, digest string, tags ...string) (bool, int64, error) {
-	_va := make([]interface{}, len(tags))
-	for _i := range tags {
-		_va[_i] = tags[_i]
-	}
-	var _ca []interface{}
-	_ca = append(_ca, ctx, repository, digest)
-	_ca = append(_ca, _va...)
-	ret := _m.Called(_ca...)
+// Ensure provides a mock function with given fields: ctx, repository, digest, option
+func (_m *Controller) Ensure(ctx context.Context, repository string, digest string, option *artifact.ArtOption) (bool, int64, error) {
+	ret := _m.Called(ctx, repository, digest, option)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...string) bool); ok {
-		r0 = rf(ctx, repository, digest, tags...)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, *artifact.ArtOption) bool); ok {
+		r0 = rf(ctx, repository, digest, option)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 int64
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...string) int64); ok {
-		r1 = rf(ctx, repository, digest, tags...)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, *artifact.ArtOption) int64); ok {
+		r1 = rf(ctx, repository, digest, option)
 	} else {
 		r1 = ret.Get(1).(int64)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, string, string, ...string) error); ok {
-		r2 = rf(ctx, repository, digest, tags...)
+	if rf, ok := ret.Get(2).(func(context.Context, string, string, *artifact.ArtOption) error); ok {
+		r2 = rf(ctx, repository, digest, option)
 	} else {
 		r2 = ret.Error(2)
 	}

@@ -250,7 +250,10 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
-	_, id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, "latest")
+	c.accMgr.On("Ensure").Return(nil)
+	_, id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, &ArtOption{
+		Tags: []string{"latest"},
+	})
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
@@ -540,6 +543,17 @@ func (c *controllerTestSuite) TestCopy() {
 			},
 		},
 	}, nil)
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    2,
+			SubArtifactID: 1,
+			Type:          accessorymodel.TypeCosignSignature,
+		},
+	}
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
+		acc,
+	}, nil)
 	c.tagCtl.On("Update").Return(nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
 		RepositoryID: 1,
@@ -549,6 +563,7 @@ func (c *controllerTestSuite) TestCopy() {
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	c.regCli.On("Copy").Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
+	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)
 }
