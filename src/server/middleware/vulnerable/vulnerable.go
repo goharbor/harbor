@@ -49,17 +49,9 @@ func Middleware() func(http.Handler) http.Handler {
 			return errors.New("artifactinfo middleware required before this middleware").WithCode(errors.NotFoundCode)
 		}
 
-		art, err := artifactController.GetByReference(ctx, info.Repository, info.Reference, nil)
+		proj, err := projectController.Get(ctx, info.ProjectName, project.WithEffectCVEAllowlist())
 		if err != nil {
-			if !errors.IsNotFoundErr(err) {
-				logger.Errorf("get artifact failed, error %v", err)
-			}
-			return err
-		}
-
-		proj, err := projectController.Get(ctx, art.ProjectID, project.WithEffectCVEAllowlist())
-		if err != nil {
-			logger.Errorf("get the project %d failed, error: %v", art.ProjectID, err)
+			logger.Errorf("get the project %s failed, error: %v", info.ProjectName, err)
 			return err
 		}
 
@@ -71,12 +63,19 @@ func Middleware() func(http.Handler) http.Handler {
 
 		if util.SkipPolicyChecking(r, proj.ProjectID) {
 			// the artifact is pulling by the scanner, skip the checking
-			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", art.RepositoryName, art.Digest)
+			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", info.Repository, info.Reference)
 			return nil
 		}
 
-		checker := scanChecker()
+		art, err := artifactController.GetByReference(ctx, info.Repository, info.Reference, nil)
+		if err != nil {
+			if !errors.IsNotFoundErr(err) {
+				logger.Errorf("get artifact failed, error %v", err)
+			}
+			return err
+		}
 
+		checker := scanChecker()
 		scannable, err := checker.IsScannable(ctx, art)
 		if err != nil {
 			logger.Errorf("check the scannable status of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
