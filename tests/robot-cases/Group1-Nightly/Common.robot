@@ -863,3 +863,30 @@ Test Case - Carvel Imgpkg Push And Pull To Harbor
     Wait Unitl Command Success  docker logout ${ip}
     Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
     Retry File Should Exist  ${out_path}/.imgpkg/images.yml
+
+Test Case - Cosign And Cosign Deployment Security Policy
+    [Tags]  cosign
+    Init Chrome Driver
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
+    Go Into Project  project${d}
+    Retry Double Keywords When Error  Go Into Repo  project${d}/${image}  Should Not Be Signed By Cosign  ${tag}
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
+    
+    Cosign Generate Key Pair
+    Cosign Sign  ${ip}/project${d}/${image}:${tag}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
+
+    Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
