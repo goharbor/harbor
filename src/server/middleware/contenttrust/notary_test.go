@@ -100,6 +100,7 @@ func (suite *MiddlewareTestSuite) makeRequest() *http.Request {
 
 func (suite *MiddlewareTestSuite) TestGetArtifactFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(nil, fmt.Errorf("error"))
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()

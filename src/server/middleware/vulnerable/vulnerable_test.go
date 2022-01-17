@@ -132,6 +132,7 @@ func (suite *MiddlewareTestSuite) TestNoArtifactInfo() {
 
 func (suite *MiddlewareTestSuite) TestGetArtifactFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(nil, fmt.Errorf("error"))
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
