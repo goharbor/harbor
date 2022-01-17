@@ -785,7 +785,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.operationService.publishInfo(opeMessage);
             const params: NewArtifactService.DeleteArtifactParams = {
                 projectName: this.projectName,
-                repositoryName: this.repoName,
+                repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: message.data.digest,
             };
             this.newArtifactService.deleteArtifact(params)
