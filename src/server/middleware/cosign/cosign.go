@@ -1,12 +1,14 @@
 package cosign
 
 import (
+	"context"
 	"fmt"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -104,16 +106,20 @@ func CosignSignatureMiddleware() func(http.Handler) http.Handler {
 				return err
 			}
 
-			_, err = accessory.Mgr.Create(ctx, model.AccessoryData{
-				ArtifactID:    art.ID,
-				SubArtifactID: subjectArt.ID,
-				Size:          desc.Size,
-				Digest:        desc.Digest.String(),
-				Type:          model.TypeCosignSignature,
-			})
-			if err != nil {
-				logger.Errorf("failed to get cosign signature artifact: %s, error: %v", desc.Digest.String(), err)
+			if err := orm.WithTransaction(func(ctx context.Context) error {
+				_, err := accessory.Mgr.Create(ctx, model.AccessoryData{
+					ArtifactID:    art.ID,
+					SubArtifactID: subjectArt.ID,
+					Size:          desc.Size,
+					Digest:        desc.Digest.String(),
+					Type:          model.TypeCosignSignature,
+				})
 				return err
+			})(orm.SetTransactionOpNameToContext(ctx, "tx-create-cosign-accessory")); err != nil {
+				if !errors.IsConflictErr(err) {
+					logger.Errorf("failed to create cosign signature artifact: %s, error: %v", desc.Digest.String(), err)
+					return err
+				}
 			}
 		}
 
