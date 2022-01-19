@@ -176,3 +176,7 @@ Test Case - Project Level Policy Content Trust
 Test Case - Webhook CRUD
     [Tags]  webhook
     Harbor API Test  ./tests/apitests/python/test_webhook_crud.py
+
+Test Case - Cosign Sign Artifact
+    [Tags]  cosign
+    Harbor API Test  ./tests/apitests/python/test_cosign_sign_artifact.py
