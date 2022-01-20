@@ -16,7 +16,10 @@ class Artifact(base.Base, object):
         super(Artifact,self).__init__(api_type = "artifact")
 
     def list_artifacts(self, project_name, repo_name, **kwargs):
-        return self._get_client(**kwargs).list_artifacts(project_name, repo_name)
+        params = {}
+        if "with_accessory" in kwargs:
+            params["with_accessory"] = kwargs["with_accessory"]
+        return self._get_client(**kwargs).list_artifacts(project_name, repo_name, **params)
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
         params = {}
@@ -29,6 +32,8 @@ class Artifact(base.Base, object):
             params["x_accept_vulnerabilities"] = ",".join(report_mime_types)
         if "with_immutable_status" in kwargs:
             params["with_immutable_status"] = kwargs["with_immutable_status"]
+        if "with_accessory" in kwargs:
+            params["with_accessory"] = kwargs["with_accessory"]
 
         try:
             data, status_code, _ = self._get_client(**kwargs).get_artifact_with_http_info(project_name, repo_name, reference, **params)
@@ -103,6 +108,9 @@ class Artifact(base.Base, object):
         else:
             base._assert_status_code(expect_status_code, status_code)
             base._assert_status_code(200, status_code)
+
+    def list_accessories(self, project_name, repo_name, reference, **kwargs):
+        return self._get_client(**kwargs).list_accessories(project_name, repo_name, reference)
 
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
         timeout_count = 30
