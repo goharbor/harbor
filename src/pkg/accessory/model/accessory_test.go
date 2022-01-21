@@ -50,6 +50,12 @@ func (suite *AccessoryTestSuite) TestNew() {
 	}
 }
 
+func (suite *AccessoryTestSuite) TestToAccessory() {
+	data := []byte(`{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:1234","icon":"","id":4,"size":501,"subject_artifact_id":8,"type":"signature.cosign"}`)
+	_, err := ToAccessory(data)
+	suite.NotNil(err)
+}
+
 func TestAccessoryTestSuite(t *testing.T) {
 	suite.Run(t, new(AccessoryTestSuite))
 }

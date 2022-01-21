@@ -15,7 +15,9 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"sync"
 	"time"
 )
@@ -35,6 +37,8 @@ type RefProvider interface {
 }
 
 /*
+RefIdentifier
+
 Soft reference: The accessory is not tied to the subject manifest.
 Hard reference: The accessory is tied to the subject manifest.
 
@@ -55,7 +59,7 @@ type RefIdentifier interface {
 }
 
 const (
-	// TypeNone
+	// TypeNone ...
 	TypeNone = "base"
 	// TypeCosignSignature ...
 	TypeCosignSignature = "signature.cosign"
@@ -63,20 +67,20 @@ const (
 
 // AccessoryData ...
 type AccessoryData struct {
-	ID            int64
-	ArtifactID    int64
-	SubArtifactID int64
-	Type          string
-	Size          int64
-	Digest        string
-	CreatTime     time.Time
+	ID            int64     `json:"id"`
+	ArtifactID    int64     `json:"artifact_id"`
+	SubArtifactID int64     `json:"subject_artifact_id"`
+	Type          string    `json:"type"`
+	Size          int64     `json:"size"`
+	Digest        string    `json:"digest"`
+	CreatTime     time.Time `json:"creation_time"`
 }
 
-// Accessory: Independent, but linked to an existing subject artifact, which enabling the extendibility of an OCI artifact.
+// Accessory Independent, but linked to an existing subject artifact, which enabling the extensibility of an OCI artifact
 type Accessory interface {
 	RefProvider
 	RefIdentifier
-	// Define whether shows in the artifact list response.
+	// Display Define whether shows in the artifact list response.
 	Display() bool
 	GetData() AccessoryData
 }
@@ -89,7 +93,7 @@ var (
 	lock      sync.RWMutex
 )
 
-// Register register accessory factory for type
+// Register accessory factory for type
 func Register(typ string, factory NewAccessoryFunc) {
 	lock.Lock()
 	defer lock.Unlock()
@@ -108,5 +112,18 @@ func New(typ string, data AccessoryData) (Accessory, error) {
 	}
 
 	data.Type = typ
+	return factory(data), nil
+}
+
+// ToAccessory converts json object to Accessory
+func ToAccessory(acc []byte) (Accessory, error) {
+	var data AccessoryData
+	if err := json.Unmarshal(acc, &data); err != nil {
+		return nil, err
+	}
+	factory, ok := factories[data.Type]
+	if !ok {
+		return nil, errors.Errorf("accessory type %s not support", data.Type)
+	}
 	return factory(data), nil
 }

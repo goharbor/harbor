@@ -16,13 +16,13 @@ package v2
 
 import (
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
+	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 type client struct {
@@ -48,7 +48,7 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 	project, repo := utils.ParseRepository(repo)
 	repo = repository.Encode(repo)
-	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true",
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true&with_accessory=true",
 		c.BasePath(), project, repo)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
@@ -67,8 +67,38 @@ func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 			art.Tags = append(art.Tags, tag.Name)
 		}
 		arts = append(arts, art)
+
+		// For Harbor v2 clients, it has to append the accessory objects behind the subject artifact it has.
+		for _, acc := range artifact.Accessories {
+			art := &model.Artifact{
+				Type:   artifact.Type,
+				Digest: acc.GetData().Digest,
+			}
+			tags, err := c.listTags(project, repo, acc.GetData().Digest)
+			if err != nil {
+				return nil, err
+			}
+			for _, tag := range tags {
+				art.Tags = append(art.Tags, tag)
+			}
+			arts = append(arts, art)
+		}
 	}
 	return arts, nil
+}
+
+func (c *client) listTags(project, repo, digest string) ([]string, error) {
+	tags := []*tagmodel.Tag{}
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags",
+		c.BasePath(), project, repo, digest)
+	if err := c.C.GetAndIteratePagination(url, &tags); err != nil {
+		return nil, err
+	}
+	var tagNames []string
+	for _, tag := range tags {
+		tagNames = append(tagNames, tag.Name)
+	}
+	return tagNames, nil
 }
 
 func (c *client) deleteTag(repo, tag string) error {
