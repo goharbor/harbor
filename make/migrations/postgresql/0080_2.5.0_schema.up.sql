@@ -21,4 +21,3 @@ CREATE TABLE IF NOT EXISTS artifact_accessory (
     CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_id)
 );
 
-DELETE FROM scan_report WHERE mime_type='application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' AND registration_uuid IN (SELECT uuid FROM scanner_registration WHERE name='Trivy' AND immutable='true');
