@@ -518,6 +518,36 @@ Test Case - Copy A Image
     Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
+Test Case - Copy A Image And Accessory
+    [Tags]  copy_image_and_accessory
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${source_project}=  Set Variable  source_project${d}
+    ${target_project}=  Set Variable  target_project${d}
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${image}=  Set Variable  redis
+    ${tag}=  Set Variable  latest
+
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  ${target_project}
+    Create An New Project And Go Into Project  ${source_project}
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Sign  ${ip}/${source_project}/${image}:${tag}
+    Docker Logout  ${ip}
+    Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
+    
+    Copy Image  ${tag}  ${target_project}  ${image}
+    Retry Wait Until Page Contains  Copy artifact successfully
+
+    Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
+    Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed By Cosign  ${tag}
+    Close Browser
+
 Test Case - Create An New Project With Quotas Set
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
