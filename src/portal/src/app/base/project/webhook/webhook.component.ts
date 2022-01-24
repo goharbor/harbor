@@ -250,7 +250,14 @@ export class WebhookComponent implements OnInit {
       this.addWebhookComponent.isEdit = true;
       this.addWebhookComponent.addWebhookFormComponent.isModify = true;
       this.addWebhookComponent.addWebhookFormComponent.webhook = clone(this.selectedRow[0]);
-      this.addWebhookComponent.addWebhookFormComponent.originValue = clone(this.selectedRow[0]);
+      if (this.addWebhookComponent.addWebhookFormComponent.webhook.repository) {
+        if (/^{\S+}$/.test(this.addWebhookComponent.addWebhookFormComponent.webhook.repository)) {
+          this.addWebhookComponent.addWebhookFormComponent.webhook.repository =
+              this.addWebhookComponent.addWebhookFormComponent.webhook.repository
+                  .slice(1, this.addWebhookComponent.addWebhookFormComponent.webhook.repository.length - 1);
+        }
+      }
+      this.addWebhookComponent.addWebhookFormComponent.originValue = clone(this.addWebhookComponent.addWebhookFormComponent.webhook);
       this.addWebhookComponent.addWebhookFormComponent.webhook.event_types = clone(this.selectedRow[0].event_types);
     }
   }
@@ -267,6 +274,7 @@ export class WebhookComponent implements OnInit {
       this.addWebhookComponent.addWebhookFormComponent.webhook = {
         enabled: true,
         event_types: [],
+        repository: '',
         targets: [{
           type: 'http',
           address: '',

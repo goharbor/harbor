@@ -419,7 +419,8 @@
         "NAME_REQUIRED": "Name is required",
         "NOTIFY_TYPE": "Notify Type",
         "EVENT_TYPE": "Event Type",
-        "EVENT_TYPE_REQUIRED": "Require at least one event type"
+        "EVENT_TYPE_REQUIRED": "Require at least one event type",
+        "SCOPE": "Scope"
     },
     "GROUP": {
         "Group": "Group",

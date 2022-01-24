@@ -427,7 +427,8 @@
         "NAME_REQUIRED": "Name ist erforderlich",
         "NOTIFY_TYPE": "Benachrichtigungstyp",
         "EVENT_TYPE": "Event Typ",
-        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich"
+        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich",
+        "SCOPE": "Scope"
     },
     "GROUP": {
         "GROUP": "Gruppe",

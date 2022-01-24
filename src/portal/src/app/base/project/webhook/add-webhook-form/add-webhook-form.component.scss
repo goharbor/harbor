@@ -7,12 +7,24 @@
 .bottom-btn {
   text-align: right;
 }
-.width-238 {
-  width: 238px;
-}
 .width-8rem {
   width: 8rem;
 }
 .clr-control-label {
   width: 10rem !important;
+}
+.sub-label {
+  display: inline-block;
+  width: 90px;
+  font-size: .541667rem;
+  font-weight: 400;
+}
+.input-width {
+ width: 360px;
+}
+.textarea-width {
+ width: 366px;
+}
+.sub-input-width {
+ width: 269px;
 }

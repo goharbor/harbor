@@ -62,7 +62,7 @@
             <div class="clr-control-container" [class.clr-error]="repo.errors && repo.errors.required && (repo.dirty || repo.touched)">
               <div class="clr-input-wrapper">
                 <label class="sub-label required">{{'P2P_PROVIDER.REPOS' | translate}}</label>
-                <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="repo" [(ngModel)]="repos"
+                <input (keyup)="keyup($event)" placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="repo" [(ngModel)]="repos"
                        size="30" name="repo" #repo="ngModel" required>
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
               </div>
@@ -78,7 +78,7 @@
             <div class="clr-control-container" [class.clr-error]="tag.errors && tag.errors.required && (tag.dirty || tag.touched)">
               <div class="clr-input-wrapper">
                 <label class="sub-label required">{{'P2P_PROVIDER.TAGS' | translate}}</label>
-                <input placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="tag" [(ngModel)]="tags"
+                <input (keyup)="keyup($event)" placeholder="**" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="tag" [(ngModel)]="tags"
                        size="30" name="tag" #tag="ngModel" required>
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
               </div>
@@ -93,7 +93,7 @@
             <div class="clr-control-container">
               <div class="clr-input-wrapper">
                 <label class="sub-label">{{'P2P_PROVIDER.LABELS' | translate}}</label>
-                <input [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="labels" [(ngModel)]="labels"
+                <input (keyup)="keyup($event)" [disabled]="loading" autocomplete="off"  class="clr-input width-290" type="text" id="labels" [(ngModel)]="labels"
                        size="30" name="label">
                 <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
               </div>

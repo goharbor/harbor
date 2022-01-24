@@ -7,7 +7,7 @@
         <label for="edit_endpoint_url" class="clr-control-label required">{{'WEBHOOK.NAME' | translate}}</label>
         <div class="clr-control-container" [class.clr-error]="(name.errors && name.errors.required && (name.dirty || name.touched)) || isNameExisting">
           <div class="clr-input-wrapper">
-            <input (input)="inputName()" autocomplete="off"  class="clr-input" type="text" id="name" [disabled]="checking" [(ngModel)]="webhook.name"
+            <input (input)="inputName()" autocomplete="off"  class="clr-input input-width" type="text" id="name" [disabled]="checking" [(ngModel)]="webhook.name"
                    size="30" name="notify-type" #name="ngModel" required>
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
@@ -22,18 +22,30 @@
       <div class="clr-form-control">
         <label for="edit_endpoint_url" class="clr-control-label">{{'WEBHOOK.DESCRIPTION' | translate}}</label>
         <div class="clr-control-container">
-          <textarea autocomplete="off" class="clr-textarea width-238" type="text" id="description" [disabled]="checking" [(ngModel)]="webhook.description"
+          <textarea autocomplete="off" class="clr-textarea textarea-width" type="text" id="description" [disabled]="checking" [(ngModel)]="webhook.description"
                       name="description"></textarea>
+        </div>
+      </div>
+      <!-- filters-repo -->
+      <div class="clr-form-control">
+        <label for="repo" class="clr-control-label width-6rem">{{'WEBHOOK.SCOPE' | translate}}</label>
+        <div class="clr-control-container" [class.clr-error]="repo.errors && repo.errors.required && (repo.dirty || repo.touched)">
+          <div class="clr-input-wrapper">
+            <label class="sub-label">{{'P2P_PROVIDER.REPOS' | translate}}</label>
+            <input (keyup)="inputRepos()"  placeholder="**" autocomplete="off"  class="clr-input sub-input-width" type="text" id="repo" [(ngModel)]="webhook.repository"
+                   name="repo" #repo="ngModel">
+            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <clr-control-helper class="margin-left-90px opacity-08">{{'TAG_RETENTION.REP_SEPARATOR' | translate}}</clr-control-helper>
         </div>
       </div>
       <!-- notify type -->
       <clr-select-container>
         <label class="required">{{'WEBHOOK.NOTIFY_TYPE' | translate}}</label>
-        <select class="width-238" clrSelect name="notifyType" id="notify_type"  [(ngModel)]="webhook.targets[0].type" [disabled]="checking">
+        <select class="input-width" clrSelect name="notifyType" id="notify_type"  [(ngModel)]="webhook.targets[0].type" [disabled]="checking">
           <option *ngFor="let type of metadata?.notify_type" value="{{type}}">{{type}}</option>
         </select>
       </clr-select-container>
-
       <div class="clr-form-control">
         <label class="clr-control-label required">{{'WEBHOOK.EVENT_TYPE' | translate}}</label>
         <div class="clr-control-container clr-control-inline" [class.clr-error]="!hasEventType()">
@@ -53,7 +65,7 @@
         <label for="edit_endpoint_url" class="clr-control-label required">{{'WEBHOOK.ENDPOINT_URL' | translate}}</label>
         <div class="clr-control-container" [class.clr-error]="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)">
           <div class="clr-input-wrapper">
-            <input autocomplete="off"  class="clr-input" type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhook.targets[0].address"
+            <input autocomplete="off"  class="clr-input input-width" type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhook.targets[0].address"
                    size="30" name="edit_endpoint_url" #enpointURL="ngModel" required [placeholder]="webhook.targets[0].type ==='http'?'http(s)://192.168.1.1':''">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
           </div>
@@ -68,8 +80,8 @@
                 translate }}</label>
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
-            <input autocomplete="off"  class="clr-input" type="text" id="auth_header" [disabled]="checking"
-                   [(ngModel)]="webhook.targets[0].auth_header" size="30" name="auth_header">
+            <input autocomplete="off"  class="clr-input input-width" type="text" id="auth_header" [disabled]="checking"
+                   [(ngModel)]="webhook.targets[0].auth_header"  name="auth_header">
           </div>
         </div>
       </div>

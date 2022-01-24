@@ -346,21 +346,21 @@ export class PolicyComponent implements OnInit, OnDestroy {
           if (item.type === FILTER_TYPE.REPOS && item.value) {
             let str: string = item.value;
             if (/^{\S+}$/.test(str)) {
-              return str.slice(1, str.length - 1);
+              str = str.slice(1, str.length - 1);
             }
             this.addP2pPolicyComponent.repos = str;
           }
           if (item.type === FILTER_TYPE.TAG && item.value) {
             let str: string = item.value;
             if (/^{\S+}$/.test(str)) {
-              return str.slice(1, str.length - 1);
+              str = str.slice(1, str.length - 1);
             }
             this.addP2pPolicyComponent.tags = str;
           }
           if (item.type === FILTER_TYPE.LABEL && item.value) {
             let str: string = item.value;
             if (/^{\S+}$/.test(str)) {
-              return str.slice(1, str.length - 1);
+              str = str.slice(1, str.length - 1);
             }
             this.addP2pPolicyComponent.labels = str;
           }

@@ -426,7 +426,8 @@
         "NAME_REQUIRED": "名称为必填项",
         "NOTIFY_TYPE": "通知类型",
         "EVENT_TYPE": "事件类型",
-        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型"
+        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
+        "SCOPE": "范围"
     },
     "GROUP": {
         "GROUP": "组",

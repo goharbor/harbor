@@ -7,6 +7,7 @@ import { InlineAlertComponent } from "../../../../shared/components/inline-alert
 import { WebhookService } from "../../../../../../ng-swagger-gen/services/webhook.service";
 import { WebhookPolicy } from "../../../../../../ng-swagger-gen/models/webhook-policy";
 import { Subject, Subscription } from "rxjs";
+import { FILTER_TYPE } from '../../p2p-provider/p2p-provider.service';
 
 @Component({
   selector: 'add-webhook-form',
@@ -21,6 +22,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
   webhook: WebhookPolicy = {
     enabled: true,
     event_types: [],
+    repository: '',
     targets: [{
       type: 'http',
       address: '',
@@ -98,6 +100,13 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
 
   add() {
     this.submitting = true;
+    if (this.webhook.repository) {
+      if (this.webhook.repository.indexOf(",") !== -1
+          && this.webhook.repository.indexOf('{') === -1
+          && this.webhook.repository.indexOf('}') === -1) {
+        this.webhook.repository = `{${this.webhook.repository}}`;
+      }
+    }
     this.webhookService.CreateWebhookPolicyOfProject({
       projectNameOrId: this.projectId.toString(),
       policy: this.webhook
@@ -171,5 +180,14 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
   }
   eventTypeToText(eventType: string): string {
     return this.projectWebhookService.eventTypeToText(eventType);
+  }
+  inputRepos() {
+    if (this.webhook.repository) {
+      if (/^{\S+}$/.test(this.webhook.repository)) {
+        this.webhook.repository =
+            this.webhook.repository
+                .slice(1, this.webhook.repository.length - 1);
+      }
+    }
   }
 }

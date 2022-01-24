@@ -360,4 +360,13 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
   showExplainForEventBased(): boolean {
     return this.triggerType === TRIGGER.EVENT_BASED;
   }
+  keyup(e: any) {
+    if (e?.target?.value) {
+      if (/^{\S+}$/.test(e.target.value)) {
+        e.target.value =
+            e?.target?.value
+                .slice(1, e?.target?.value.length - 1);
+      }
+    }
+  }
 }
