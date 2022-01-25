@@ -170,6 +170,33 @@ func TestPrepareForPush(t *testing.T) {
 			},
 		})
 	require.Nil(t, err)
+
+	// project already exists and the type is proxy cache
+	server = test.NewServer(&test.RequestHandlerMapping{
+		Method:  http.MethodGet,
+		Pattern: "/api/projects",
+		Handler: func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`[{"name": "library", "registry_id": 1}]`))
+		},
+	})
+	registry = &model.Registry{
+		URL: server.URL,
+	}
+	adapter, err = New(registry)
+	require.Nil(t, err)
+	resources := []*model.Resource{
+		{
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "library/hello-world",
+				},
+			},
+		},
+	}
+	err = adapter.PrepareForPush(resources)
+	require.Nil(t, err)
+	require.True(t, resources[0].Skip)
 }
 
 func TestParsePublic(t *testing.T) {
