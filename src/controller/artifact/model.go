@@ -15,6 +15,7 @@
 package artifact
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -30,7 +31,38 @@ type Artifact struct {
 	Tags          []*tag.Tag                 `json:"tags"`           // the list of tags that attached to the artifact
 	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
 	Labels        []*model.Label             `json:"labels"`
-	Accessories   []accessoryModel.Accessory `json:"accessories"`
+	Accessories   []accessoryModel.Accessory `json:"-"`
+}
+
+// UnmarshalJSON to customize the accessories unmarshal
+func (artifact *Artifact) UnmarshalJSON(data []byte) error {
+	type Alias Artifact
+	ali := &struct {
+		*Alias
+		AccessoryItems []interface{} `json:"accessories,omitempty"`
+	}{
+		Alias: (*Alias)(artifact),
+	}
+
+	if err := json.Unmarshal(data, &ali); err != nil {
+		return err
+	}
+
+	if len(ali.AccessoryItems) > 0 {
+		for _, item := range ali.AccessoryItems {
+			data, err := json.Marshal(item)
+			if err != nil {
+				return err
+			}
+			acc, err := accessoryModel.ToAccessory(data)
+			if err != nil {
+				return err
+			}
+			artifact.Accessories = append(artifact.Accessories, acc)
+		}
+	}
+
+	return nil
 }
 
 // SetAdditionLink set a addition link
