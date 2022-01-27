@@ -444,18 +444,20 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 
 func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo string) (int64, error) {
 	dstAccs := make([]accessorymodel.AccessoryData, 0)
-	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true, &dstAccs)
+	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true, false, &dstAccs)
 }
 
 // as we call the docker registry APIs in the registry client directly,
 // this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
 // these logic must be covered explicitly here.
 // "copyDeeply" iterates the child artifacts and copy them first
-func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot bool, dstAccs *[]accessorymodel.AccessoryData) (int64, error) {
+func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]accessorymodel.AccessoryData) (int64, error) {
 	var option *Option
 	// only get the tags of the root parent
 	if isRoot {
 		option = &Option{WithTag: true, WithAccessory: true}
+	} else if isAcc {
+		option = &Option{WithTag: true}
 	}
 
 	srcArt, err := c.GetByReference(ctx, srcRepo, reference, option)
@@ -481,7 +483,7 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 
 	// copy accessory if contains any
 	for _, acc := range srcArt.Accessories {
-		id, err := c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, false, dstAccs)
+		id, err := c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, false, true, dstAccs)
 		if err != nil {
 			return 0, err
 		}
@@ -497,7 +499,7 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	// the artifact doesn't exist under the destination repository, continue to copy
 	// copy child artifacts if contains any
 	for _, reference := range srcArt.References {
-		if _, err = c.copyDeeply(ctx, srcRepo, reference.ChildDigest, dstRepo, false, dstAccs); err != nil {
+		if _, err = c.copyDeeply(ctx, srcRepo, reference.ChildDigest, dstRepo, false, false, dstAccs); err != nil {
 			return 0, err
 		}
 	}
