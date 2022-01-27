@@ -55,7 +55,7 @@ type DefaultValueDecoders struct{}
 //
 // There is no support for decoding map[string]interface{} becuase there is no decoder for
 // interface{}, so users must either register this decoder themselves or use the
-// EmptyInterfaceDecoder avaialble in the bson package.
+// EmptyInterfaceDecoder available in the bson package.
 func (dvd DefaultValueDecoders) RegisterDefaultDecoders(rb *RegistryBuilder) {
 	if rb == nil {
 		panic(errors.New("argument to RegisterDefaultDecoders must not be nil"))

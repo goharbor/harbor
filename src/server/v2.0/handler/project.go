@@ -493,10 +493,9 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		wg.Add(1)
 		go func(p *project.Project) {
 			defer wg.Done()
-			// due to the issue https://github.com/lib/pq/issues/81 of lib/pg or postgres,
-			// simultaneous queries in transaction may failed, so clone a ctx with new ormer here
+			// simultaneous queries in transaction will fail, so clone a ctx with new ormer here
 			if err := a.populateProperties(orm.Clone(ctx), p); err != nil {
-				log.G(ctx).Errorf("failed to populate propertites for project %s, error: %v", p.Name, err)
+				log.G(ctx).Errorf("failed to populate properties for project %s, error: %v", p.Name, err)
 			}
 		}(p)
 	}

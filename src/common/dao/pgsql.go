@@ -22,15 +22,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/models"
-
 	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	migrate "github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres" // import pgsql driver for migrator
-	_ "github.com/golang-migrate/migrate/v4/source/file"       // import local file driver for migrator
-	_ "github.com/lib/pq"                                      // register pgsql driver
+	_ "github.com/golang-migrate/migrate/v4/database/pgx" // import pgx driver for migrator
+	_ "github.com/golang-migrate/migrate/v4/source/file"  // import local file driver for migrator
+	_ "github.com/jackc/pgx/v4/stdlib"                    // registry pgx driver
 )
 
 const defaultMigrationPath = "migrations/postgresql/"
@@ -80,7 +79,7 @@ func (p *pgsql) Register(alias ...string) error {
 		return err
 	}
 
-	if err := orm.RegisterDriver("postgres", orm.DRPostgres); err != nil {
+	if err := orm.RegisterDriver("pgx", orm.DRPostgres); err != nil {
 		return err
 	}
 
@@ -91,7 +90,7 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s timezone=UTC",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	if err := orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns); err != nil {
+	if err := orm.RegisterDataBase(an, "pgx", info, p.maxIdleConns, p.maxOpenConns); err != nil {
 		return err
 	}
 
@@ -142,7 +141,7 @@ func (p *pgsql) UpgradeSchema() error {
 // NewMigrator creates a migrator base on the information
 func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
 	dbURL := url.URL{
-		Scheme:   "postgres",
+		Scheme:   "pgx",
 		User:     url.UserPassword(database.Username, database.Password),
 		Host:     net.JoinHostPort(database.Host, strconv.Itoa(database.Port)),
 		Path:     database.Database,

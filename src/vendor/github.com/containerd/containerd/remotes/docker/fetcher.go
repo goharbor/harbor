@@ -45,7 +45,7 @@ func (r dockerFetcher) Fetch(ctx context.Context, desc ocispec.Descriptor) (io.R
 		return nil, errors.Wrap(errdefs.ErrNotFound, "no pull hosts")
 	}
 
-	ctx, err := contextWithRepositoryScope(ctx, r.refspec, false)
+	ctx, err := ContextWithRepositoryScope(ctx, r.refspec, false)
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +58,6 @@ func (r dockerFetcher) Fetch(ctx context.Context, desc ocispec.Descriptor) (io.R
 			u, err := url.Parse(us)
 			if err != nil {
 				log.G(ctx).WithError(err).Debug("failed to parse")
-				continue
-			}
-			if u.Scheme != "http" && u.Scheme != "https" {
-				log.G(ctx).Debug("non-http(s) alternative url is unsupported")
 				continue
 			}
 			log.G(ctx).Debug("trying alternative url")

@@ -24,15 +24,19 @@ const (
 )
 
 const (
-	CKG_MGF1_SHA1         uint = 0x00000001
-	CKG_MGF1_SHA224       uint = 0x00000005
-	CKG_MGF1_SHA256       uint = 0x00000002
-	CKG_MGF1_SHA384       uint = 0x00000003
-	CKG_MGF1_SHA512       uint = 0x00000004
+	CKG_MGF1_SHA1     uint = 0x00000001
+	CKG_MGF1_SHA224   uint = 0x00000005
+	CKG_MGF1_SHA256   uint = 0x00000002
+	CKG_MGF1_SHA384   uint = 0x00000003
+	CKG_MGF1_SHA512   uint = 0x00000004
+	CKG_MGF1_SHA3_224 uint = 0x00000006
+	CKG_MGF1_SHA3_256 uint = 0x00000007
+	CKG_MGF1_SHA3_384 uint = 0x00000008
+	CKG_MGF1_SHA3_512 uint = 0x00000009
 )
 
 const (
-	CKZ_DATA_SPECIFIED    uint = 0x00000001
+	CKZ_DATA_SPECIFIED uint = 0x00000001
 )
 
 // Generated with: awk '/#define CK[AFKMRC]/{ print $2 " = " $3 }' pkcs11t.h | sed -e 's/UL$//g' -e 's/UL)$/)/g'
@@ -98,15 +102,19 @@ const (
 	CKK_SHA512_224_HMAC                  = 0x00000027
 	CKK_SHA512_256_HMAC                  = 0x00000028
 	CKK_SHA512_T_HMAC                    = 0x00000029
-	CKK_SHA_1_HMAC                       = 0x00000040
-	CKK_SHA224_HMAC                      = 0x00000041
-	CKK_SHA256_HMAC                      = 0x00000042
-	CKK_SHA384_HMAC                      = 0x00000043
-	CKK_SHA512_HMAC                      = 0x00000044
-	CKK_SEED                             = 0x00000050
-	CKK_GOSTR3410                        = 0x00000060
-	CKK_GOSTR3411                        = 0x00000061
-	CKK_GOST28147                        = 0x00000062
+	CKK_SHA_1_HMAC                       = 0x00000028
+	CKK_SHA224_HMAC                      = 0x0000002E
+	CKK_SHA256_HMAC                      = 0x0000002B
+	CKK_SHA384_HMAC                      = 0x0000002C
+	CKK_SHA512_HMAC                      = 0x0000002D
+	CKK_SEED                             = 0x0000002F
+	CKK_GOSTR3410                        = 0x00000030
+	CKK_GOSTR3411                        = 0x00000031
+	CKK_GOST28147                        = 0x00000032
+	CKK_SHA3_224_HMAC                    = 0x00000033
+	CKK_SHA3_256_HMAC                    = 0x00000034
+	CKK_SHA3_384_HMAC                    = 0x00000035
+	CKK_SHA3_512_HMAC                    = 0x00000036
 	CKK_VENDOR_DEFINED                   = 0x80000000
 	CKC_X_509                            = 0x00000000
 	CKC_X_509_ATTR_CERT                  = 0x00000001
@@ -182,8 +190,8 @@ const (
 	CKA_AUTH_PIN_FLAGS                   = 0x00000201
 	CKA_ALWAYS_AUTHENTICATE              = 0x00000202
 	CKA_WRAP_WITH_TRUSTED                = 0x00000210
-	CKA_WRAP_TEMPLATE                    = (CKF_ARRAY_ATTRIBUTE | 0x00000211)
-	CKA_UNWRAP_TEMPLATE                  = (CKF_ARRAY_ATTRIBUTE | 0x00000212)
+	CKA_WRAP_TEMPLATE                    = CKF_ARRAY_ATTRIBUTE | 0x00000211
+	CKA_UNWRAP_TEMPLATE                  = CKF_ARRAY_ATTRIBUTE | 0x00000212
 	CKA_OTP_FORMAT                       = 0x00000220
 	CKA_OTP_LENGTH                       = 0x00000221
 	CKA_OTP_TIME_INTERVAL                = 0x00000222
@@ -218,7 +226,7 @@ const (
 	CKA_REQUIRED_CMS_ATTRIBUTES          = 0x00000501
 	CKA_DEFAULT_CMS_ATTRIBUTES           = 0x00000502
 	CKA_SUPPORTED_CMS_ATTRIBUTES         = 0x00000503
-	CKA_ALLOWED_MECHANISMS               = (CKF_ARRAY_ATTRIBUTE | 0x00000600)
+	CKA_ALLOWED_MECHANISMS               = CKF_ARRAY_ATTRIBUTE | 0x00000600
 	CKA_VENDOR_DEFINED                   = 0x80000000
 	CKM_RSA_PKCS_KEY_PAIR_GEN            = 0x00000000
 	CKM_RSA_PKCS                         = 0x00000001
@@ -243,6 +251,10 @@ const (
 	CKM_DSA_SHA256                       = 0x00000015
 	CKM_DSA_SHA384                       = 0x00000016
 	CKM_DSA_SHA512                       = 0x00000017
+	CKM_DSA_SHA3_224                     = 0x00000018
+	CKM_DSA_SHA3_256                     = 0x00000019
+	CKM_DSA_SHA3_384                     = 0x0000001A
+	CKM_DSA_SHA3_512                     = 0x0000001B
 	CKM_DH_PKCS_KEY_PAIR_GEN             = 0x00000020
 	CKM_DH_PKCS_DERIVE                   = 0x00000021
 	CKM_X9_42_DH_KEY_PAIR_GEN            = 0x00000030
@@ -269,6 +281,14 @@ const (
 	CKM_SHA512_T_HMAC                    = 0x00000051
 	CKM_SHA512_T_HMAC_GENERAL            = 0x00000052
 	CKM_SHA512_T_KEY_DERIVATION          = 0x00000053
+	CKM_SHA3_256_RSA_PKCS                = 0x00000060
+	CKM_SHA3_384_RSA_PKCS                = 0x00000061
+	CKM_SHA3_512_RSA_PKCS                = 0x00000062
+	CKM_SHA3_256_RSA_PKCS_PSS            = 0x00000063
+	CKM_SHA3_384_RSA_PKCS_PSS            = 0x00000064
+	CKM_SHA3_512_RSA_PKCS_PSS            = 0x00000065
+	CKM_SHA3_224_RSA_PKCS                = 0x00000066
+	CKM_SHA3_224_RSA_PKCS_PSS            = 0x00000067
 	CKM_RC2_KEY_GEN                      = 0x00000100
 	CKM_RC2_ECB                          = 0x00000101
 	CKM_RC2_CBC                          = 0x00000102
@@ -335,6 +355,22 @@ const (
 	CKM_HOTP                             = 0x00000291
 	CKM_ACTI                             = 0x000002A0
 	CKM_ACTI_KEY_GEN                     = 0x000002A1
+	CKM_SHA3_256                         = 0x000002B0
+	CKM_SHA3_256_HMAC                    = 0x000002B1
+	CKM_SHA3_256_HMAC_GENERAL            = 0x000002B2
+	CKM_SHA3_256_KEY_GEN                 = 0x000002B3
+	CKM_SHA3_224                         = 0x000002B5
+	CKM_SHA3_224_HMAC                    = 0x000002B6
+	CKM_SHA3_224_HMAC_GENERAL            = 0x000002B7
+	CKM_SHA3_224_KEY_GEN                 = 0x000002B8
+	CKM_SHA3_384                         = 0x000002C0
+	CKM_SHA3_384_HMAC                    = 0x000002C1
+	CKM_SHA3_384_HMAC_GENERAL            = 0x000002C2
+	CKM_SHA3_384_KEY_GEN                 = 0x000002C3
+	CKM_SHA3_512                         = 0x000002D0
+	CKM_SHA3_512_HMAC                    = 0x000002D1
+	CKM_SHA3_512_HMAC_GENERAL            = 0x000002D2
+	CKM_SHA3_512_KEY_GEN                 = 0x000002D3
 	CKM_CAST_KEY_GEN                     = 0x00000300
 	CKM_CAST_ECB                         = 0x00000301
 	CKM_CAST_CBC                         = 0x00000302
@@ -395,6 +431,12 @@ const (
 	CKM_SHA384_KEY_DERIVATION            = 0x00000394
 	CKM_SHA512_KEY_DERIVATION            = 0x00000395
 	CKM_SHA224_KEY_DERIVATION            = 0x00000396
+	CKM_SHA3_256_KEY_DERIVE              = 0x00000397
+	CKM_SHA3_224_KEY_DERIVE              = 0x00000398
+	CKM_SHA3_384_KEY_DERIVE              = 0x00000399
+	CKM_SHA3_512_KEY_DERIVE              = 0x0000039A
+	CKM_SHAKE_128_KEY_DERIVE             = 0x0000039B
+	CKM_SHAKE_256_KEY_DERIVE             = 0x0000039C
 	CKM_PBE_MD2_DES_CBC                  = 0x000003A0
 	CKM_PBE_MD5_DES_CBC                  = 0x000003A1
 	CKM_PBE_MD5_CAST_CBC                 = 0x000003A2
@@ -484,6 +526,10 @@ const (
 	CKM_EC_KEY_PAIR_GEN                  = 0x00001040
 	CKM_ECDSA                            = 0x00001041
 	CKM_ECDSA_SHA1                       = 0x00001042
+	CKM_ECDSA_SHA224                     = 0x00001043
+	CKM_ECDSA_SHA256                     = 0x00001044
+	CKM_ECDSA_SHA384                     = 0x00001045
+	CKM_ECDSA_SHA512                     = 0x00001046
 	CKM_ECDH1_DERIVE                     = 0x00001050
 	CKM_ECDH1_COFACTOR_DERIVE            = 0x00001051
 	CKM_ECMQV_DERIVE                     = 0x00001052
@@ -674,4 +720,17 @@ const (
 	CKF_EXCLUDE_CHALLENGE                = 0x00000008
 	CKF_EXCLUDE_PIN                      = 0x00000010
 	CKF_USER_FRIENDLY_OTP                = 0x00000020
+	CKD_NULL                             = 0x00000001
+	CKD_SHA1_KDF                         = 0x00000002
+)
+
+// Special return values defined in PKCS#11 v2.40 section 3.2.
+const (
+	// CK_EFFECTIVELY_INFINITE may be returned in the CK_TOKEN_INFO fields ulMaxSessionCount and ulMaxRwSessionCount.
+	// It indicates there is no practical limit on the number of sessions.
+	CK_EFFECTIVELY_INFINITE = 0
+
+	// CK_UNAVAILABLE_INFORMATION may be returned for several fields within CK_TOKEN_INFO. It indicates
+	// the token is unable or unwilling to provide the requested information.
+	CK_UNAVAILABLE_INFORMATION = ^uint(0)
 )
