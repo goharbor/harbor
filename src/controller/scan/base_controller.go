@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
+	"github.com/goharbor/harbor/src/pkg/accessory"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -94,6 +95,8 @@ type basicController struct {
 	manager report.Manager
 	// Artifact controller
 	ar ar.Controller
+	// Accessory manager
+	acc accessory.Manager
 	// Scanner controller
 	sc sc.Controller
 	// Robot account controller
@@ -121,6 +124,8 @@ func NewController() Controller {
 		manager: report.NewManager(),
 		// Refer to the default artifact controller
 		ar: ar.Ctl,
+		// Refer to the default accessory manager
+		acc: accessory.Mgr,
 		// Refer to the default scanner controller
 		sc: sc.DefaultController,
 		// Refer to the default robot account controller
@@ -171,6 +176,14 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 	)
 
 	walkFn := func(a *ar.Artifact) error {
+		ok, err := bc.isAccessory(ctx, a)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		}
+
 		supported := hasCapability(r, a)
 
 		if !supported && a.IsImageIndex() {
@@ -1047,6 +1060,17 @@ func (bc *basicController) getLatestTagOfArtifact(ctx context.Context, artifactI
 	}
 
 	return tags[0].Name, nil
+}
+
+func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (bool, error) {
+	ac, err := bc.acc.List(ctx, q.New(q.KeyWords{"ArtifactID": art.Artifact.ID, "digest": art.Artifact.Digest}))
+	if err != nil {
+		return false, err
+	}
+	if len(ac) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 func getArtifactID(extraAttrs map[string]interface{}) int64 {
