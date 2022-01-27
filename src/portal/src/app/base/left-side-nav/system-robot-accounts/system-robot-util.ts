@@ -58,6 +58,11 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         "checked": true
     },
     {
+        "resource": "repository",
+        "action": "delete",
+        "checked": true
+    },
+    {
         "resource": "artifact",
         "action": "delete",
         "checked": true
