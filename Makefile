@@ -75,7 +75,7 @@ CHECKENVCMD=checkenv.sh
 
 # parameters
 # default is true
-BUILD_PG96=true
+BUILD_PG96=false
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
