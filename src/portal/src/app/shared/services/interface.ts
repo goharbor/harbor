@@ -250,6 +250,9 @@ export interface VulnerabilityItem extends VulnerabilityBase {
   layer?: string;
   description?: string;
   preferred_cvss?: {[key: string]: string | number};
+  vendor_attributes?: {
+    CVSS?: {[key: string]: any};
+  };
 }
 
 export interface VulnerabilitySummary {

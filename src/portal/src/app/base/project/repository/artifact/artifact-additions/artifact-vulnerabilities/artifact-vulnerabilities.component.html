@@ -65,7 +65,11 @@
                     <span *ngSwitchCase="'None'" class="label label-none no-border">{{severityText(res.severity) | translate}}</span>
                     <span *ngSwitchDefault>{{severityText(res.severity) | translate}}</span>
                 </clr-dg-cell>
-                <clr-dg-cell>{{res.preferred_cvss?.score_v3}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="clr-row mr-1" *ngFor="let item of res?.vendor_attributes?.CVSS | keyvalue">
+                        <div class="clr-col">{{item?.key}}:</div><div class="clr-col">{{item?.value?.V3Score}}</div>
+                    </div>
+                </clr-dg-cell>
                 <clr-dg-cell>{{res.package}}</clr-dg-cell>
                 <clr-dg-cell>{{res.version}}</clr-dg-cell>
                 <clr-dg-cell>
