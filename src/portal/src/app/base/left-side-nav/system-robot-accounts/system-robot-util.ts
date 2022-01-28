@@ -84,6 +84,11 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
     },
     {
         "resource": "tag",
+        "action": "list",
+        "checked": true
+    },
+    {
+        "resource": "tag",
         "action": "create",
         "checked": true
     },

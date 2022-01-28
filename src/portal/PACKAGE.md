@@ -82,7 +82,7 @@
     "ngx-markdown": "~13.0.0",
     
     // For swagger API center. Required
-    "swagger-ui": "^4.1.3",
+    "swagger-ui": "^4.4.0",
     "buffer": "^6.0.3",
     
     // To convert yaml to json. Required
