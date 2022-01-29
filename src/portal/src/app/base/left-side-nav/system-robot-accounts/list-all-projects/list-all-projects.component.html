@@ -40,7 +40,7 @@
                     </button>
                     <clr-dropdown-menu [style.height.px]="140" clrPosition="bottom-left" *clrIfOpen>
                         <div>
-                            <button class="btn btn-link btn-sm select-all-for-dropdown" (click)="selectAllPermissionOrUnselectAll(p.permissions[0].access)">
+                            <button class="btn btn-link btn-sm select-all-for-dropdown ml-20px" (click)="selectAllPermissionOrUnselectAll(p.permissions[0].access)">
                                 <span *ngIf="isSelectAll(p.permissions[0].access)">{{"SYSTEM_ROBOT.SELECT_ALL" | translate}}</span>
                                 <span *ngIf="!isSelectAll(p.permissions[0].access)">{{"SYSTEM_ROBOT.UNSELECT_ALL" | translate}}</span>
                             </button>
