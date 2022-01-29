@@ -394,6 +394,10 @@ Test Case - Robot Account Do Replication
     [tags]  robot_account_do_replication
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_dest${d}
     # create system Robot Account
@@ -403,8 +407,13 @@ Test Case - Robot Account Do Replication
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     # push mode
     Create An New Project And Go Into Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
     Switch To Replication Manage
@@ -413,8 +422,10 @@ Test Case - Robot Account Do Replication
     Retry Wait Until Page Contains  Succeeded
     Logout Harbor
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
-    Image Should Be Replicated To Project  project_dest${d}  busybox  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
+    Should Be Signed By Cosign  ${tag1}
+    Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
+    Should Be Signed By Cosign  ${tag2}
     # pull mode
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -423,6 +434,8 @@ Test Case - Robot Account Do Replication
     Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project_dest${d}/*  image  e${d}  project_dest${d}
     Select Rule And Replicate  rule_pull_${d}
     Retry Wait Until Page Contains  Succeeded
-    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
-    Image Should Be Replicated To Project  project_dest${d}  busybox  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
+    Should Be Signed By Cosign  ${tag1}
+    Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
+    Should Be Signed By Cosign  ${tag2}
     Close Browser

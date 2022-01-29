@@ -23,6 +23,7 @@ Resource  ../../resources/Util.robot
 Create A Random Permission Item List
     ${permission_item_all_list}=  Create List  Push Repository
     ...                                    Pull Repository
+    ...                                    Delete Repository
     ...                                    Delete Artifact
     ...                                    Read Helm Chart
     ...                                    Create Helm Chart Version
@@ -31,6 +32,7 @@ Create A Random Permission Item List
     ...                                    Delete Helm Chart label
     ...                                    Create Tag
     ...                                    Delete Tag
+    ...                                    List Tag
     ...                                    Create Artifact label
     ...                                    Delete Artifact label
     ...                                    Create Scan
