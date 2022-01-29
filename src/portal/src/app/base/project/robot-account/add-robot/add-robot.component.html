@@ -97,7 +97,7 @@
                             </button>
                             <clr-dropdown-menu class="overflow-y-scroll" [style.height.px]="230" clrPosition="bottom-left" *clrIfOpen>
                                 <div>
-                                    <button class="btn btn-link btn-sm select-all-for-dropdown" (click)="selectAllOrUnselectAll(defaultAccesses)">
+                                    <button class="btn btn-link btn-sm select-all-for-dropdown ml-20px" (click)="selectAllOrUnselectAll(defaultAccesses)">
                                         <span *ngIf="isSelectAll(defaultAccesses)">{{"SYSTEM_ROBOT.SELECT_ALL" | translate}}</span>
                                         <span *ngIf="!isSelectAll(defaultAccesses)">{{"SYSTEM_ROBOT.UNSELECT_ALL" | translate}}</span>
                                     </button>

@@ -22,7 +22,7 @@ const SEC: number = 1000;
 const MIN: number = 60 * 1000;
 const DAY: number = 1000 * 60 * 60 * 24;
 const HOUR: number = 1000 * 60 * 60;
-const WARNING_DAYS = 30;
+const WARNING_DAYS = 7;
 @Component({
     selector: 'app-remaining-time',
     templateUrl: 'remaining-time.component.html',
@@ -79,5 +79,14 @@ export class RemainingTimeComponent implements  OnInit, OnDestroy, OnChanges {
                 this.timeRemain = 'SYSTEM_ROBOT.EXPIRED';
             }
         }
+    }
+    isError(): boolean {
+        return this.color === RobotTimeRemainColor.EXPIRED;
+    }
+    isWarning(): boolean {
+        return this.color === RobotTimeRemainColor.WARNING;
+    }
+    isSuccess(): boolean {
+        return this.color === RobotTimeRemainColor.GREEN;
     }
 }

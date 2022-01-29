@@ -34,10 +34,9 @@ describe('RemainingTimeComponent', () => {
     });
     it('should show yellow color', () => {
         component.deltaTime = 0;
-        component.expires_at = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 29).getTime() / 1000;
+        component.expires_at = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 5).getTime() / 1000;
         fixture.detectChanges();
         expect(component?.remainingTimeComponent.color).toEqual(RobotTimeRemainColor.WARNING);
-        expect(component?.remainingTimeComponent.timeRemain).toEqual('29d 0h 0m');
     });
     it('should show red color', () => {
         component.deltaTime = 0;
