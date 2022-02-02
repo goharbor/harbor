@@ -34,6 +34,12 @@ cd $TEMP
 wget https://github.com/distribution/distribution/pull/3370.patch
 git apply 3370.patch
 
+# add patch 2815
+echo 'add patch https://github.com/distribution/distribution/pull/2815 ...'
+cd $TEMP
+wget https://github.com/distribution/distribution/pull/2815.patch
+git apply 2815.patch
+
 # add patch redis
 git apply $cur/redis.patch
 cd $cur
