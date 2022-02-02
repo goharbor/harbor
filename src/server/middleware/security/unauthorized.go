@@ -25,6 +25,6 @@ import (
 type unauthorized struct{}
 
 func (u *unauthorized) Generate(req *http.Request) security.Context {
-	log.G(req.Context()).Debugf("an unauthorized security context generated for request %s %s", req.Method, req.URL.Path)
+	//log.G(req.Context()).Debugf("an unauthorized security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(nil)
 }
