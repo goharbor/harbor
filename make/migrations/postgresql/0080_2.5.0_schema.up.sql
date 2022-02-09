@@ -25,3 +25,8 @@ CREATE TABLE IF NOT EXISTS artifact_accessory (
     CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_id)
 );
 
+/* Change vulnerability_record.id and report_vulnerability_record.id to BIGINT */
+ALTER TABLE vulnerability_record ALTER COLUMN id TYPE BIGINT;
+ALTER SEQUENCE vulnerability_record_id_seq AS BIGINT;
+ALTER TABLE report_vulnerability_record ALTER COLUMN id TYPE BIGINT;
+ALTER SEQUENCE report_vulnerability_record_id_seq AS BIGINT;
