@@ -379,8 +379,9 @@ def get_redis_url(db, redis=None):
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
     kwargs['password_part'] = kwargs.get('password', None) and (':%s@' % kwargs['password']) or ''
+    kwargs['username_part'] = kwargs.get('username', None) or ''
 
-    return "{scheme}://{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
+    return "{scheme}://{username_part}{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
 
 
 def get_redis_url_param(redis=None):
