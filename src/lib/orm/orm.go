@@ -21,6 +21,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 
@@ -49,6 +50,14 @@ func RegisterModel(models ...interface{}) {
 }
 
 type ormKey struct{}
+
+// valueOnlyContext aims to only copy value from parent context, but no other
+// linkage of parent like cancelation.
+type valueOnlyContext struct{ context.Context }
+
+func (valueOnlyContext) Deadline() (time.Time, bool) { return time.Time{}, false }
+func (valueOnlyContext) Done() <-chan struct{}       { return nil }
+func (valueOnlyContext) Err() error                  { return nil }
 
 const (
 	tracerName               = "goharbor/harbor/src/lib/orm"
@@ -86,6 +95,12 @@ func Context() context.Context {
 // Clone returns new context with orm for ctx
 func Clone(ctx context.Context) context.Context {
 	return NewContext(ctx, orm.NewOrm())
+}
+
+// Copy returns new context with orm and value from parent context but no
+// linkage of parent.
+func Copy(ctx context.Context) context.Context {
+	return NewContext(valueOnlyContext{ctx}, orm.NewOrm())
 }
 
 type operationNameKey struct{}

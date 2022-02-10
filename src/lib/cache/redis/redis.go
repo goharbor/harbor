@@ -15,42 +15,41 @@
 package redis
 
 import (
-	"crypto/sha256"
-	"fmt"
+	"context"
+	"net/url"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/goharbor/harbor/src/lib/cache"
-	libredis "github.com/goharbor/harbor/src/lib/redis"
-	"github.com/gomodule/redigo/redis"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 var _ cache.Cache = (*Cache)(nil)
 
 // Cache redis cache
 type Cache struct {
+	*redis.Client
 	opts *cache.Options
-	pool *redis.Pool
 }
 
 // Contains returns true if key exists
-func (c *Cache) Contains(key string) bool {
-	reply, err := redis.Int(c.do("EXISTS", c.opts.Key(key)))
+func (c *Cache) Contains(ctx context.Context, key string) bool {
+	val, err := c.Client.Exists(ctx, c.opts.Key(key)).Result()
 	if err != nil {
 		return false
 	}
 
-	return reply == 1
+	return val == 1
 }
 
 // Delete delete item from cache by key
-func (c *Cache) Delete(key string) error {
-	_, err := c.do("DEL", c.opts.Key(key))
-	return err
+func (c *Cache) Delete(ctx context.Context, key string) error {
+	return c.Client.Del(ctx, c.opts.Key(key)).Err()
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(key string, value interface{}) error {
-	data, err := redis.Bytes(c.do("GET", c.opts.Key(key)))
+func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
+	data, err := c.Client.Get(ctx, c.opts.Key(key)).Bytes()
 	if err != nil {
 		// convert internal or Timeout error to be ErrNotFound
 		// so that the caller can continue working without breaking
@@ -58,26 +57,23 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 	}
 
 	if err := c.opts.Codec.Decode(data, value); err != nil {
-		return fmt.Errorf("failed to decode cached value to dest, key %s, error: %v", key, err)
+		return errors.Errorf("failed to decode cached value to dest, key %s, error: %v", key, err)
 	}
 
 	return nil
 }
 
 // Ping ping the cache
-func (c *Cache) Ping() error {
-	_, err := c.do("PING")
-	return err
+func (c *Cache) Ping(ctx context.Context) error {
+	return c.Client.Ping(ctx).Err()
 }
 
 // Save cache the value by key
-func (c *Cache) Save(key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
-		return fmt.Errorf("failed to encode value, key %s, error: %v", key, err)
+		return errors.Errorf("failed to encode value, key %s, error: %v", key, err)
 	}
-
-	args := []interface{}{c.opts.Key(key), data}
 
 	var exp time.Duration
 	if len(expiration) > 0 {
@@ -86,19 +82,7 @@ func (c *Cache) Save(key string, value interface{}, expiration ...time.Duration)
 		exp = c.opts.Expiration
 	}
 
-	if exp > 0 {
-		args = append(args, "EX", int64(exp/time.Second))
-	}
-
-	_, err = c.do("SET", args...)
-	return err
-}
-
-func (c *Cache) do(commandName string, args ...interface{}) (reply interface{}, err error) {
-	conn := c.pool.Get()
-	defer conn.Close()
-
-	return conn.Do(commandName, args...)
+	return c.Client.Set(ctx, c.opts.Key(key), data, exp).Err()
 }
 
 // New returns redis cache
@@ -107,23 +91,63 @@ func New(opts cache.Options) (cache.Cache, error) {
 		opts.Address = "redis://localhost:6379/0"
 	}
 
-	name := fmt.Sprintf("%x", sha256.Sum256([]byte(opts.Address)))
-
-	param := &libredis.PoolParam{
-		PoolMaxIdle:           100,
-		PoolMaxActive:         1000,
-		PoolIdleTimeout:       10 * time.Minute,
-		DialConnectionTimeout: time.Second,
-		DialReadTimeout:       time.Second * 2,
-		DialWriteTimeout:      time.Second * 5,
-	}
-
-	pool, err := libredis.GetRedisPool(name, opts.Address, param)
+	u, err := url.Parse(opts.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cache{opts: &opts, pool: pool}, nil
+	// For compatibility, should convert idle_timeout_seconds to idle_timeout.
+	values, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	if t := values.Get("idle_timeout_seconds"); t != "" {
+		values.Del("idle_timeout_seconds")
+		values.Set("idle_timeout", t)
+		u.RawQuery = values.Encode()
+	}
+
+	var client *redis.Client
+
+	// default options in go-redis, also support change by provide parameters
+	// from redis url.
+	// DEFAULT VALUES
+	/*
+		OPTION  	       |  		QUERY		  |	  DEFAULT
+		----------------------------------------------------------------------
+		DialTimeout        | dial_timeout         | 5 * time.Second
+		PoolSize           | pool_size            | 10 * runtime.GOMAXPROCS(0)
+		ReadTimeout        | read_timeout         | 3 * time.Second
+		WriteTimeout       | write_timeout        | ReadTimeout
+		PoolTimeout        | pool_timeout         | ReadTimeout + time.Second
+		IdleTimeout        | idle_timeout         | 5 * time.Minute
+		IdleCheckFrequency | idle_check_frequency | time.Minute
+		MaxRetries         | max_retries          | 3
+		MinRetryBackoff    | min_retry_backoff    | 8 * time.Millisecond
+		MaxRetryBackoff    | max_retry_backoff    | 512 * time.Millisecond
+	*/
+
+	switch u.Scheme {
+	case cache.Redis:
+		rdbOpts, err := redis.ParseURL(u.String())
+		if err != nil {
+			return nil, err
+		}
+
+		client = redis.NewClient(rdbOpts)
+	case cache.RedisSentinel:
+		failoverOpts, err := ParseSentinelURL(u.String())
+		if err != nil {
+			return nil, err
+		}
+
+		client = redis.NewFailoverClient(failoverOpts)
+	default:
+		return nil, errors.Errorf("redis: invalid URL scheme: %s", u.Scheme)
+	}
+
+	return &Cache{opts: &opts, Client: client}, nil
 }
 
 func init() {
