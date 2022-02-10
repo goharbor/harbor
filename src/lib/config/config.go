@@ -62,9 +62,6 @@ func Register(name string, mgr Manager) {
 	if mgr == nil {
 		log.Error("Register manager is nil")
 	}
-	if _, dup := managers[name]; dup {
-		log.Errorf("Register called twice for manager " + name)
-	}
 	managers[name] = mgr
 }
 
