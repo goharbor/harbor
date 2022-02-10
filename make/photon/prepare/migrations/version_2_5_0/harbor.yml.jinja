@@ -164,12 +164,6 @@ trivy:
   skip_update: false
   {% endif %}
   #
-  # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
-  # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
-  # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
-  # exist in the local repositories. It means a number of detected vulnerabilities might be fewer in offline mode.
-  # It would work if all the dependencies are in local.
-  # This option doesn’t affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
   {% if trivy.offline_scan is defined %}
   offline_scan: {{ trivy.offline_scan | lower }}
   {% else %}
@@ -207,6 +201,14 @@ trivy:
 #   # If the flag is enabled you have to download the `trivy-offline.tar.gz` archive manually, extract `trivy.db` and
 #   # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
 #   skip_update: false
+#   #
+#   #The offline_scan option prevents Trivy from sending API requests to identify dependencies.
+#   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
+#   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
+#   # exist in the local repositories. It means a number of detected vulnerabilities might be fewer in offline mode.
+#   # It would work if all the dependencies are in local.
+#   # This option doesn’t affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
+#   offline_scan: false
 #   #
 #   # insecure The flag to skip verifying registry certificate
 #   insecure: false
@@ -370,9 +372,11 @@ external_redis:
   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
   host: {{ external_redis.host }}
   password: {{ external_redis.password }}
-  #   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
-  #   # implicit username is "default", provide compatibility with past version of old AUTH <password> form
+  {% if external_redis.username is defined %}
+  username: {{ external_redis.username }}
+  {% else %}
   # username:
+  {% endif %}
   # sentinel_master_set must be set to support redis+sentinel
   #sentinel_master_set:
   # db_index 0 is for core, it's unchangeable
@@ -538,6 +542,13 @@ trace:
 {% endif %}
 
 # enable purge _upload directories
+{% if upload_purging is defined %}
+upload_purging:
+  enabled: {{ trace.enabled | lower}}
+  age: {{ trace.age }}
+  interval: {{ trace.interval }}
+  dryrun: {{ trace.dryrun | lower}}
+{% else %}
 upload_purging:
   enabled: true
   # remove files in _upload directories which exist for a period of time, default is one week.
@@ -545,3 +556,4 @@ upload_purging:
   # the interval of the purge operations
   interval: 24h
   dryrun: false
+{% endif %}
