@@ -15,6 +15,7 @@
 package redis
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
@@ -36,7 +37,7 @@ type Script struct {
 // SendHash methods.
 func NewScript(keyCount int, src string) *Script {
 	h := sha1.New()
-	io.WriteString(h, src)
+	io.WriteString(h, src) // nolint: errcheck
 	return &Script{keyCount, src, hex.EncodeToString(h.Sum(nil))}
 }
 
@@ -58,6 +59,18 @@ func (s *Script) args(spec string, keysAndArgs []interface{}) []interface{} {
 // Hash returns the script hash.
 func (s *Script) Hash() string {
 	return s.hash
+}
+
+func (s *Script) DoContext(ctx context.Context, c Conn, keysAndArgs ...interface{}) (interface{}, error) {
+	cwt, ok := c.(ConnWithContext)
+	if !ok {
+		return nil, errContextNotSupported
+	}
+	v, err := cwt.DoContext(ctx, "EVALSHA", s.args(s.hash, keysAndArgs)...)
+	if e, ok := err.(Error); ok && strings.HasPrefix(string(e), "NOSCRIPT ") {
+		v, err = cwt.DoContext(ctx, "EVAL", s.args(s.src, keysAndArgs)...)
+	}
+	return v, err
 }
 
 // Do evaluates the script. Under the covers, Do optimistically evaluates the
