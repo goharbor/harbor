@@ -78,7 +78,7 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			if authErr == nil {
 				authErr = errors.Errorf("unauthorized: %s", err)
 			}
-			logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
+			logger.Errorf("Serve http request '%q %q' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
 			w.WriteHeader(http.StatusUnauthorized)
 			writeDate(w, []byte(authErr.Error()))
 			return

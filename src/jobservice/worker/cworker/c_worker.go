@@ -360,7 +360,7 @@ func (w *basicWorker) StopJob(jobID string) error {
 		// We need to delete the scheduled job in the queue if it is not running yet
 		if err := w.client.DeleteScheduledJob(t.Job().Info.RunAt, jobID); err != nil {
 			// Job is already running?
-			logger.Warningf("scheduled job %s (run at = %d) is not found in the queue, is it running?", jobID, t.Job().Info.RunAt)
+			logger.Warningf("scheduled job %q (run at = %d) is not found in the queue, is it running?", jobID, t.Job().Info.RunAt)
 		}
 	}
 

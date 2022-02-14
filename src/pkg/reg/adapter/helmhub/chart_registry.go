@@ -16,11 +16,12 @@ package helmhub
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -138,7 +139,7 @@ func (a *adapter) download(version *chartVersion) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("failed to download the chart %s: %d %s", req.URL.String(), resp.StatusCode, string(body))
+		return nil, errors.Errorf("failed to download the chart %q: %d %s", req.URL.String(), resp.StatusCode, string(body))
 	}
 	return resp.Body, nil
 }
