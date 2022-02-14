@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/filter"
@@ -183,7 +184,7 @@ func (a *adapter) DownloadChart(name, version, contentURL string) (rc io.ReadClo
 		if err != nil {
 			return
 		}
-		err = fmt.Errorf("[tencent-tcr.DownloadChart.failed] chart=%s, status=%d, body=%s", req.URL.String(), resp.StatusCode, string(body))
+		err = errors.Errorf("[tencent-tcr.DownloadChart.failed] chart=%q, status=%d, body=%s", req.URL.String(), resp.StatusCode, string(body))
 
 		return
 	}
