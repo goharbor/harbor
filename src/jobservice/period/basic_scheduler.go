@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/lib"
 
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
@@ -119,10 +120,10 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	// Failure errors will be only logged here
 	eKey := rds.KeyUpstreamJobAndExecutions(bs.namespace, policyID)
 	if eIDs, err := getPeriodicExecutions(conn, eKey); err != nil {
-		logger.Errorf("Get executions for periodic job %q error: %s", policyID, err)
+		logger.Errorf("Get executions for periodic job %s error: %s", lib.TrimLineBreaks(policyID), err)
 	} else {
 		if len(eIDs) == 0 {
-			logger.Debugf("no stopped executions: %q", policyID)
+			logger.Debugf("no stopped executions: %s", lib.TrimLineBreaks(policyID))
 		}
 
 		for _, eID := range eIDs {
@@ -164,7 +165,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	if removed == 0 {
-		logger.Warningf("No periodic job with ID=%q and numeric ID=%d removed from the periodic job policy set", policyID, numericID)
+		logger.Warningf("No periodic job with ID=%s and numeric ID=%d removed from the periodic job policy set", lib.TrimLineBreaks(policyID), numericID)
 	}
 
 	return nil
@@ -199,7 +200,7 @@ func (bs *basicScheduler) locatePolicy(policyID string, conn redis.Conn) (int64,
 	// Switch the job stats to stopped if the job stats existing
 	// Should not block the next clear action
 	if err := tracker.Stop(); err != nil {
-		logger.Errorf("Stop periodic job %q failed with error: %s", policyID, err)
+		logger.Errorf("Stop periodic job %s failed with error: %s", lib.TrimLineBreaks(policyID), err)
 	}
 
 	return tracker.NumericID()
