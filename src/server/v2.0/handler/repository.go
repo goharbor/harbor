@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/security/robot"
 	robotCtr "github.com/goharbor/harbor/src/controller/robot"
 	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -198,7 +199,7 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 }
 
 func (r *repositoryAPI) GetRepository(ctx context.Context, params operation.GetRepositoryParams) middleware.Responder {
-	if err := r.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceRepository); err != nil {
+	if err := r.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceRepository); err != nil {
 		return r.SendError(ctx, err)
 	}
 	repository, err := r.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))

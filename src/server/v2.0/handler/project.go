@@ -580,7 +580,7 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 	}
 
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
-	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceScanner); err != nil {
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceScanner); err != nil {
 		return a.SendError(ctx, err)
 	}
 
