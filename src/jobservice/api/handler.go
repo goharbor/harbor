@@ -24,6 +24,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"fmt"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/core"
@@ -31,7 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"strconv"
 )
 
 const (
