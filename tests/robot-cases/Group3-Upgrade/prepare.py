@@ -507,7 +507,6 @@ class HarborAPI:
                 ],
                 "enabled":webhook["enabled"]
             }
-            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         elif kwargs["branch"] == 2:
@@ -536,7 +535,6 @@ class HarborAPI:
                 "enabled":webhook["enabled"],
                 "name":webhook["name"]
             }
-            print(payload)
             body=dict(body=payload)
             request(url+"projects/"+projectid+"/webhook/policies", 'post', **body)
         else:
