@@ -1,6 +1,9 @@
 package rule
 
 import (
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -9,8 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 )
 
 // MatchTestSuite ...
@@ -128,6 +129,19 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(orm.Context(), 1, c4)
+	s.require.Equal(isMatch, false)
+	s.require.Nil(err)
+
+	// untagged case
+	c5 := selector.Candidate{
+		NamespaceID: 1,
+		Namespace:   "library",
+		Repository:  "redis",
+		// no tags
+		Tags: []string{},
+		Kind: selector.Image,
+	}
+	isMatch, err = match.Match(orm.Context(), 1, c5)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 }
