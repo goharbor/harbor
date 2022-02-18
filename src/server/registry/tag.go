@@ -17,6 +17,10 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"sort"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -24,9 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"github.com/goharbor/harbor/src/server/router"
-	"net/http"
-	"sort"
-	"strconv"
 )
 
 func newTagHandler() http.Handler {
@@ -37,9 +38,8 @@ func newTagHandler() http.Handler {
 }
 
 type tagHandler struct {
-	repoCtl        repository.Controller
-	tagCtl         tag.Controller
-	repositoryName string
+	repoCtl repository.Controller
+	tagCtl  tag.Controller
 }
 
 // get return the list of tags
@@ -72,8 +72,8 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	tagNames := make([]string, 0)
 
-	t.repositoryName = router.Param(req.Context(), ":splat")
-	repository, err := t.repoCtl.GetByName(req.Context(), t.repositoryName)
+	repositoryName := router.Param(req.Context(), ":splat")
+	repository, err := t.repoCtl.GetByName(req.Context(), repositoryName)
 	if err != nil {
 		lib_http.SendError(w, err)
 		return
@@ -147,10 +147,12 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 // sendResponse ...
 func (t *tagHandler) sendResponse(w http.ResponseWriter, req *http.Request, tagNames []string) {
+	repositoryName := router.Param(req.Context(), ":splat")
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(tagsAPIResponse{
-		Name: t.repositoryName,
+		Name: repositoryName,
 		Tags: tagNames,
 	}); err != nil {
 		lib_http.SendError(w, err)
