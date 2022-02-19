@@ -161,6 +161,29 @@ func (_m *mockAdapter) Info() (*model.RegistryInfo, error) {
 	return r0, r1
 }
 
+// ListTags provides a mock function with given fields: repository
+func (_m *mockAdapter) ListTags(repository string) ([]string, error) {
+	ret := _m.Called(repository)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(string) []string); ok {
+		r0 = rf(repository)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(repository)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ManifestExist provides a mock function with given fields: repository, reference
 func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool, *distribution.Descriptor, error) {
 	ret := _m.Called(repository, reference)
