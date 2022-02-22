@@ -2,6 +2,7 @@ package rule
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
@@ -54,8 +55,9 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 			continue
 		}
 		tagSelector := r.TagSelectors[0]
+		// for immutable policy, should not keep untagged artifacts by default.
 		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
-			tagSelector.Pattern, "")
+			tagSelector.Pattern, "{\"untagged\": false}")
 		if err != nil {
 			return false, err
 		}
