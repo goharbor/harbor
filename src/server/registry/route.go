@@ -15,11 +15,11 @@
 package registry
 
 import (
-	"github.com/goharbor/harbor/src/server/middleware/cosign"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
+	"github.com/goharbor/harbor/src/server/middleware/cosign"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/metric"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
@@ -45,6 +45,7 @@ func RegisterRoutes() {
 		Method(http.MethodGet).
 		Path("/*/tags/list").
 		Middleware(metric.InjectOpIDMiddleware(metric.ListTagOperationID)).
+		Middleware(repoproxy.TagsListMiddleware()).
 		Handler(newTagHandler())
 	// manifest
 	root.NewRoute().
