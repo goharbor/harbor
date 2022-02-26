@@ -232,13 +232,14 @@ func (bt *basicTracker) CheckIn(message string) error {
 
 	bt.refresh(current, message)
 	err := bt.fireHookEvent(current, message)
-	err = bt.Update(
+	if err != nil {
+		return err
+	}
+	return bt.Update(
 		// skip checkin data here
 		"check_in_at", now,
 		"update_time", now,
 	)
-
-	return err
 }
 
 // Run job
