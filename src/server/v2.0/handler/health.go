@@ -46,5 +46,9 @@ func (r *healthAPI) GetHealth(ctx context.Context, params operations.GetHealthPa
 			Status: c.Status,
 		})
 	}
-	return operations.NewGetHealthOK().WithPayload(s)
+
+	if s.Status == "healthy" {
+		return operations.NewGetHealthOK().WithPayload(s)
+	}
+	return operations.NewGetHealthServiceUnavailable().WithPayload(s)
 }

@@ -35,6 +35,10 @@ paths:
             $ref: '#/definitions/OverallHealthStatus'
         '500':
           $ref: '#/responses/500'
+        '503':
+          description: The unhealth status of Harbor components
+          schema:
+            $ref: '#/definitions/OverallHealthStatus'
   /search:
     get:
       summary: 'Search for projects, repositories and helm charts'
@@ -5641,6 +5645,12 @@ responses:
         type: string
     schema:
       $ref: '#/definitions/Errors'
+  '503':
+    description: Service Unavailable
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
 definitions:
   Errors:
     description: The error array that describe the errors got during the handling of request
