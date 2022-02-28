@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.1
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/dghubble/sling v1.1.0
-	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-asn1-ber/asn1-ber v1.5.1
