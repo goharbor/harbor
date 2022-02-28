@@ -42,7 +42,7 @@ var _ adp.ChartRegistry = &adapter{}
 
 func (a *adapter) FetchCharts(filters []*model.Filter) (resources []*model.Resource, err error) {
 	log.Debugf("[tencent-tcr.FetchCharts]filters: %#v", filters)
-	// 1. list namespaces
+	// 1. list namespaces via TCR Special API
 	var nsPattern, _, _ = filterToPatterns(filters)
 	var nms []string
 	nms, err = a.listCandidateNamespaces(nsPattern)
@@ -50,8 +50,12 @@ func (a *adapter) FetchCharts(filters []*model.Filter) (resources []*model.Resou
 		return
 	}
 
-	// 2. list repositories
-	for _, ns := range nms {
+	return a.fetchCharts(nms, filters)
+}
+
+func (a *adapter) fetchCharts(namespaces []string, filters []*model.Filter) (resources []*model.Resource, err error) {
+	// 1. list repositories
+	for _, ns := range namespaces {
 		var url = fmt.Sprintf(chartListURL, a.registry.URL, ns)
 		var repositories = []*model.Repository{}
 		err = a.client.Get(url, &repositories)
@@ -70,7 +74,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) (resources []*model.Resou
 			return
 		}
 
-		// 3. list versions
+		// 2. list versions
 		for _, repository := range repositories {
 			var name = strings.SplitN(repository.Name, "/", 2)[1]
 			var url = fmt.Sprintf(chartVersionURL, a.registry.URL, ns, name)
