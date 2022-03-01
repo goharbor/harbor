@@ -36,7 +36,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return nil
 	}
-	if !strings.HasPrefix(req.URL.Path, "/api") {
+	if !strings.HasPrefix(req.URL.Path, "/api") && req.URL.Path != "/service/token" {
 		return nil
 	}
 	token := bearerToken(req)
