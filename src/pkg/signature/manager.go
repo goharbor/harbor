@@ -15,8 +15,10 @@
 package signature
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
@@ -58,7 +60,11 @@ type mgr struct {
 
 // GetCheckerByRepo ...
 func (m *mgr) GetCheckerByRepo(ctx context.Context, repo string) (*Checker, error) {
-	if !config.WithNotary() { // return a checker that always return false
+	cfgMgr, ok := config.FromContext(ctx)
+	if !ok {
+		return nil, errors.Errorf("failed to get config manager")
+	}
+	if !cfgMgr.Get(context.Background(), common.WithNotary).GetBool() { // return a checker that always return false
 		return &Checker{}, nil
 	}
 	s := make(map[string]string)

@@ -15,6 +15,7 @@
 package tag
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -37,6 +38,7 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl          *controller
+	ctx          context.Context
 	repoMgr      *repository.Manager
 	artMgr       *artifact.Manager
 	tagMgr       *tagtesting.FakeManager
@@ -54,10 +56,8 @@ func (c *controllerTestSuite) SetupTest() {
 		immutableMtr: c.immutableMtr,
 	}
 
-	var tagCtlTestConfig = map[string]interface{}{
-		common.WithNotary: false,
-	}
-	config.InitWithSettings(tagCtlTestConfig)
+	cfgMgr, _ := config.GetManager(common.InMemoryCfgManager)
+	c.ctx = config.NewContext(context.Background(), cfgMgr)
 }
 
 func (c *controllerTestSuite) TestEnsureTag() {
@@ -158,7 +158,7 @@ func (c *controllerTestSuite) TestDelete() {
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
 	c.tagMgr.On("Delete").Return(nil)
-	err := c.ctl.Delete(nil, 1)
+	err := c.ctl.Delete(c.ctx, 1)
 	c.Require().Nil(err)
 }
 
@@ -172,7 +172,7 @@ func (c *controllerTestSuite) TestDeleteImmutable() {
 	}, nil)
 	c.immutableMtr.On("Match").Return(true, nil)
 	c.tagMgr.On("Delete").Return(nil)
-	err := c.ctl.Delete(nil, 1)
+	err := c.ctl.Delete(c.ctx, 1)
 	c.Require().NotNil(err)
 	c.True(errors.IsErr(err, errors.PreconditionCode))
 }
@@ -199,7 +199,7 @@ func (c *controllerTestSuite) TestDeleteTags() {
 	c.immutableMtr.On("Match").Return(false, nil)
 	c.tagMgr.On("Delete").Return(nil)
 	ids := []int64{1, 2, 3, 4}
-	err := c.ctl.DeleteTags(nil, ids)
+	err := c.ctl.DeleteTags(c.ctx, ids)
 	c.Require().Nil(err)
 }
 

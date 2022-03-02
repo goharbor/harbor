@@ -94,8 +94,9 @@ func TestGetCheckerByRepo(t *testing.T) {
 			},
 		},
 	}
+	cfgMgr, _ := config.GetManager(common.InMemoryCfgManager)
 	for _, c := range cases {
-		checker, err := m.GetCheckerByRepo(context.Background(), c.input.repo)
+		checker, err := m.GetCheckerByRepo(config.NewContext(context.Background(), cfgMgr), c.input.repo)
 		assert.Nil(t, err)
 		assert.Equal(t, c.expect.tagSigned, checker.IsTagSigned(c.input.tag, c.input.digest),
 			"Unexpected tagSigned value for input: %#v", c.input)
