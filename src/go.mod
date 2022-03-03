@@ -114,6 +114,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/garyburd/redigo v1.6.3 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/analysis v0.19.10 // indirect
@@ -226,6 +227,7 @@ require (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
+	github.com/docker/distribution => github.com/distribution/distribution v2.8.0+incompatible
 	github.com/goharbor/harbor => ../
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )
