@@ -9,8 +9,6 @@ import * as SwaggerUI from 'swagger-ui';
 import { mergeDeep } from "../shared/units/utils";
 import { DevCenterBaseDirective } from "./dev-center-base";
 import { SAFE_METHODS } from "../services/intercept-http.service";
-// @ts-ignore
-window.Buffer = window.Buffer || require('buffer').Buffer; // this is for swagger UI
 
 enum SwaggerJsonUrls {
   SWAGGER1 = '/swagger.json',

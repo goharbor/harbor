@@ -52,7 +52,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   endTimeComparator: ClrDatagridComparatorInterface<ReplicationTask> = new CustomComparator<
     ReplicationJob
   >("end_time", "date");
-
+  tasksTimeout: any;
   constructor(
     private translate: TranslateService,
     private router: Router,
@@ -90,16 +90,8 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   clrLoadPage(): void {
     if (!this.timerDelay) {
       this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
-        let count: number = 0;
         if (this.execution['status'] === executionStatus) {
-          count++;
-        }
-        if (count > 0) {
           this.getExecutionDetail();
-          let state: ClrDatagridStateInterface = {
-            page: {}
-          };
-          this.clrLoadTasks(false, state);
         } else {
           this.timerDelay.unsubscribe();
           this.timerDelay = null;
@@ -160,6 +152,10 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     if (this.timerDelay) {
       this.timerDelay.unsubscribe();
     }
+    if (this.tasksTimeout) {
+      clearTimeout(this.tasksTimeout);
+      this.tasksTimeout = null;
+    }
   }
 
   clrLoadTasks(withLoading: boolean, state: ClrDatagridStateInterface): void {
@@ -200,6 +196,23 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
         // Do customising filtering and sorting
         this.tasks = doFiltering<ReplicationTask>(this.tasks, state);
         this.tasks = doSorting<ReplicationTask>(this.tasks, state);
+        let count: number = 0;
+        if (this.tasks?.length) {
+          this.tasks.forEach(item => {
+            if (item.status === executionStatus) {
+              count++;
+            }
+          });
+        }
+        if (count > 0 || this.execution?.status === executionStatus) {
+          if (!this.tasksTimeout) {
+            this.tasksTimeout = setTimeout(() => {
+              this.clrLoadTasks(false, {
+                page: {}
+              });
+            }, REFRESH_TIME_DIFFERENCE);
+          }
+        }
       },
       error => {
         this.errorHandler.error(error);
