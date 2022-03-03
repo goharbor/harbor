@@ -16,6 +16,7 @@ package security
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -25,6 +26,36 @@ import (
 )
 
 type basicAuth struct{}
+
+func trueClientIPHeaderName() string {
+	// because the true client IP header varies based on the foreground proxy/lb settings,
+	// make it configurable by env
+	name := os.Getenv("TRUE_CLIENT_IP_HEADER")
+	if len(name) == 0 {
+		name = "x-forwarded-for"
+	}
+	return name
+}
+
+// GetClientIP get client ip from request
+func GetClientIP(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	ip := r.Header.Get(trueClientIPHeaderName())
+	if len(ip) > 0 {
+		return ip
+	}
+	return r.RemoteAddr
+}
+
+// GetUserAgent get the user agent of current request
+func GetUserAgent(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	return r.Header.Get("user-agent")
+}
 
 func (b *basicAuth) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
@@ -36,8 +67,9 @@ func (b *basicAuth) Generate(req *http.Request) security.Context {
 		Principal: username,
 		Password:  password,
 	})
+
 	if err != nil {
-		log.Errorf("failed to authenticate %s: %v", username, err)
+		log.WithField("client IP", GetClientIP(req)).WithField("user agent", GetUserAgent(req)).Errorf("failed to authenticate user:%s, error:%v", username, err)
 		return nil
 	}
 	if user == nil {
