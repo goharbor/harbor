@@ -34,6 +34,9 @@ import (
 )
 
 func main() {
+	cfgLib.DefaultCfgManager = common.RestCfgManager
+	cfgLib.DefaultMgr().Load(context.Background())
+
 	// Get parameters
 	configPath := flag.String("c", "", "Specify the yaml config file path")
 	flag.Parse()
@@ -69,11 +72,8 @@ func main() {
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-		cfgMgr, err := cfgLib.GetManager(common.RestCfgManager)
-		if err != nil {
-			return nil, err
-		}
-		jobCtx := impl.NewContext(ctx, cfgMgr)
+
+		jobCtx := impl.NewContext(ctx, cfgLib.DefaultMgr())
 
 		if err := jobCtx.Init(); err != nil {
 			return nil, err
