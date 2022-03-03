@@ -74,7 +74,8 @@ func GetManager(name string) (Manager, error) {
 	return mgr, nil
 }
 
-func defaultMgr() Manager {
+// DefaultMgr get default config manager
+func DefaultMgr() Manager {
 	manager, err := GetManager(DefaultCfgManager)
 	if err != nil {
 		log.Error("failed to get config manager")
@@ -100,7 +101,7 @@ func Init() {
 func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
 	Init()
 	DefaultCfgManager = common.InMemoryCfgManager
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	mgr.UpdateConfig(backgroundCtx, cfgs)
 	if len(kp) > 0 {
 		keyProvider = kp[0]
@@ -109,15 +110,15 @@ func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
 
 // GetCfgManager return the current config manager
 func GetCfgManager(ctx context.Context) Manager {
-	return defaultMgr()
+	return DefaultMgr()
 }
 
 // Load configurations
 func Load(ctx context.Context) error {
-	return defaultMgr().Load(ctx)
+	return DefaultMgr().Load(ctx)
 }
 
 // Upload save all configurations, used by testing
 func Upload(cfg map[string]interface{}) error {
-	return defaultMgr().UpdateConfig(orm.Context(), cfg)
+	return DefaultMgr().UpdateConfig(orm.Context(), cfg)
 }
