@@ -1,4 +1,4 @@
-<clr-alert [(clrAlertClosed)]="alertClose" [clrAlertType]="inlineAlertType" [clrAlertClosable]="inlineAlertClosable"  [clrAlertAppLevel]="useAppLevelStyle">
+<clr-alert *ngIf="!alertClose" [(clrAlertClosed)]="alertClose" [clrAlertType]="inlineAlertType" [clrAlertClosable]="inlineAlertClosable"  [clrAlertAppLevel]="useAppLevelStyle">
     <div class="alert-item" *ngIf="!alertClose">
         <span class="alert-text" [class.alert-text-blink]="blinking">
             {{errorMessage}}
