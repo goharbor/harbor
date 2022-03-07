@@ -108,6 +108,12 @@ type Configuration struct {
 			// A file may contain multiple CA certificates encoded as PEM
 			ClientCAs []string `yaml:"clientcas,omitempty"`
 
+			// Specifies the lowest TLS version allowed
+			MinimumTLS string `yaml:"minimumtls,omitempty"`
+
+			// Specifies a list of cipher suites allowed
+			CipherSuites []string `yaml:"ciphersuites,omitempty"`
+
 			// LetsEncrypt is used to configuration setting up TLS through
 			// Let's Encrypt instead of manually specifying certificate and
 			// key. If a TLS certificate is specified, the Let's Encrypt
@@ -388,7 +394,7 @@ func (loglevel *Loglevel) UnmarshalYAML(unmarshal func(interface{}) error) error
 	switch loglevelString {
 	case "error", "warn", "info", "debug":
 	default:
-		return fmt.Errorf("Invalid loglevel %s Must be one of [error, warn, info, debug]", loglevelString)
+		return fmt.Errorf("invalid loglevel %s Must be one of [error, warn, info, debug]", loglevelString)
 	}
 
 	*loglevel = Loglevel(loglevelString)
@@ -463,7 +469,7 @@ func (storage *Storage) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 
 			if len(types) > 1 {
-				return fmt.Errorf("Must provide exactly one storage type. Provided: %v", types)
+				return fmt.Errorf("must provide exactly one storage type. Provided: %v", types)
 			}
 		}
 		*storage = storageMap
@@ -665,11 +671,11 @@ func Parse(rd io.Reader) (*Configuration, error) {
 						v0_1.Loglevel = Loglevel("")
 					}
 					if v0_1.Storage.Type() == "" {
-						return nil, errors.New("No storage configuration provided")
+						return nil, errors.New("no storage configuration provided")
 					}
 					return (*Configuration)(v0_1), nil
 				}
-				return nil, fmt.Errorf("Expected *v0_1Configuration, received %#v", c)
+				return nil, fmt.Errorf("expected *v0_1Configuration, received %#v", c)
 			},
 		},
 	})

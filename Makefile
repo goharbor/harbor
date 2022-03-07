@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.17.6
+#							golang:1.17.7
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -108,20 +108,20 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.7.1-patch-2819-2553-redis
+REGISTRYVERSION=v2.8.0-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
 TRIVYVERSION=v0.22.0
 TRIVYADAPTERVERSION=v0.25.0
 
 # version of chartmuseum for pulling the source code
-CHARTMUSEUM_SRC_TAG=v0.13.1
+CHARTMUSEUM_SRC_TAG=v0.14.0
 
 # version of chartmuseum
 CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.7.1
+REGISTRY_SRC_TAG=v2.8.0
 
 # dependency binaries
 CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
@@ -157,7 +157,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.17.6
+GOBUILDIMAGE=golang:1.17.7
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build

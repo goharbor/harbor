@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.1
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/dghubble/sling v1.1.0
-	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-asn1-ber/asn1-ber v1.5.1
@@ -99,7 +99,7 @@ require (
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
-	github.com/containerd/containerd v1.5.9 // indirect
+	github.com/containerd/containerd v1.5.10 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
@@ -114,6 +114,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/garyburd/redigo v1.6.3 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/analysis v0.19.10 // indirect
@@ -226,6 +227,7 @@ require (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
+	github.com/docker/distribution => github.com/distribution/distribution v2.8.0+incompatible
 	github.com/goharbor/harbor => ../
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )

@@ -136,7 +136,7 @@ func (c *CfgManager) Save(ctx context.Context) error {
 func (c *CfgManager) Get(ctx context.Context, key string) *metadata.ConfigureValue {
 	configValue, err := c.Store.Get(key)
 	if err != nil {
-		log.Debugf("failed to get key %v, error: %v", key, err)
+		log.Debugf("failed to get key %v, error: %v, maybe default value not defined before get", key, err)
 		configValue = &metadata.ConfigureValue{}
 	}
 	return configValue

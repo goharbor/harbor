@@ -89,5 +89,7 @@ export const artifactPullCommands = [
 ];
 export const artifactDefault = "images/artifact-default.svg";
 
-
+export enum AccessoryQueryParams {
+  ACCESSORY_TYPE = 'accessoryType'
+}
 

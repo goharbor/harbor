@@ -8,7 +8,7 @@ import { ErrorHandler } from "../../../../../../../../shared/units/error-handler
 import { finalize } from "rxjs/operators";
 import { SafeUrl } from '@angular/platform-browser';
 import { ArtifactService } from "../../../../artifact.service";
-import { artifactDefault } from '../../../../artifact';
+import { AccessoryQueryParams, artifactDefault } from '../../../../artifact';
 
 export const ACCESSORY_PAGE_SIZE: number = 5;
 
@@ -64,9 +64,17 @@ export class SubAccessoriesComponent implements OnInit {
     goIntoArtifactSummaryPage(accessory: Accessory): void {
         const relativeRouterLink: string[] = ['artifacts', accessory.digest];
         if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
-            this.router.navigate(relativeRouterLink, {relativeTo: this.activatedRoute, queryParams: {[UN_LOGGED_PARAM]: YES}});
+            this.router.navigate(relativeRouterLink, {
+                relativeTo: this.activatedRoute, queryParams: {
+                    [UN_LOGGED_PARAM]: YES, [AccessoryQueryParams.ACCESSORY_TYPE]: accessory.type
+                }
+            });
         } else {
-            this.router.navigate(relativeRouterLink, {relativeTo: this.activatedRoute});
+            this.router.navigate(relativeRouterLink, {
+                relativeTo: this.activatedRoute, queryParams: {
+                    [AccessoryQueryParams.ACCESSORY_TYPE]: accessory.type
+                }
+            });
         }
     }
 

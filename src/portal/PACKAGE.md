@@ -46,24 +46,24 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "~13.1.1",
-    "@angular/common": "~13.1.1",
-    "@angular/compiler": "~13.1.1",
-    "@angular/core": "~13.1.1",
-    "@angular/forms": "~13.1.1",
-    "@angular/localize": "~13.1.1",
-    "@angular/platform-browser": "~13.1.1",
-    "@angular/platform-browser-dynamic": "~13.1.1",
-    "@angular/router": "~13.1.1",
+   "@angular/animations": "~13.2.2",
+    "@angular/common": "~13.2.2",
+    "@angular/compiler": "~13.2.2",
+    "@angular/core": "~13.2.2",
+    "@angular/forms": "~13.2.2",
+    "@angular/localize": "~13.2.2",
+    "@angular/platform-browser": "~13.2.2",
+    "@angular/platform-browser-dynamic": "~13.2.2",
+    "@angular/router": "~13.2.2",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
     
     // Clarity UI. Required
-    "@cds/core": "next",
-    "@clr/angular": "next",
-    "@clr/icons": "next",
-    "@clr/ui": "next",
+    "@clr/angular": "13.0.2",
+    "@cds/core": "5.6.4",
+    "@clr/icons": "13.0.2",
+    "@clr/ui": "13.0.2",
     
     // For Harbor i18n functionality. Required
     "@ngx-translate/core": "^13.0.0",
@@ -82,17 +82,18 @@
     "ngx-markdown": "~13.0.0",
     
     // For swagger API center. Required
-    "swagger-ui": "^4.4.0",
+    "swagger-ui": "^4.6.0",
     "buffer": "^6.0.3",
+    "stream-browserify": "^3.0.0",
     
     // To convert yaml to json. Required
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "~13.2.0-next.2",
-    "@angular/cli": "~13.1.1",
-    "@angular/compiler-cli": "~13.1.1",
+    "@angular-devkit/build-angular": "~13.2.3",
+    "@angular/cli": "~13.2.3",
+    "@angular/compiler-cli": "~13.2.2",
     "@types/jasmine": "~3.10.1",
     "@types/node": "^16.11.6",
     "typescript": "~4.5.4",
@@ -100,9 +101,9 @@
     // For unit test. Required
     "jasmine-core": "^4.0.0",
     "jasmine-spec-reporter": "~7.0.0",
-    "karma": "^6.3.3",
+    "karma": "^6.3.16",
     "karma-chrome-launcher": "~3.1.0",
-    "karma-coverage": "^2.1.0",
+    "karma-coverage": "^2.2.0",
     "karma-jasmine": "~4.0.1",
     "karma-jasmine-html-reporter": "^1.7.0",
    

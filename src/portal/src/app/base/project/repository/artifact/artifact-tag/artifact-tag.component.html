@@ -45,7 +45,9 @@
     <clr-dg-column *ngIf="withNotary">{{'ACCESSORY.NOTARY_SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'pull_time'">{{'TAG.PULL_TIME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'push_time'">{{'TAG.PUSH_TIME' | translate}}</clr-dg-column>
-
+    <clr-dg-placeholder>
+        <span>{{'TAG.PLACEHOLDER' | translate}}</span>
+    </clr-dg-placeholder>
     <clr-dg-row *ngFor="let tag of currentTags" [clrDgItem]="tag">
         <clr-dg-cell>
             <div class="cell white-normal" [class.immutable]="tag.immutable">
@@ -53,7 +55,7 @@
                 <span *ngIf="tag.immutable" class="label label-info ml-8">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
             </div>
         </clr-dg-cell>
-        <clr-dg-cell>
+        <clr-dg-cell *ngIf="hasPullCommand()">
             <hbr-copy-input [title]="getPullCommand(tag)"  *ngIf="getPullCommand(tag)"  [iconMode]="true" [defaultValue]="getPullCommand(tag)"></hbr-copy-input>
         </clr-dg-cell>
         <clr-dg-cell  *ngIf="withNotary" [ngSwitch]="tag.signed">

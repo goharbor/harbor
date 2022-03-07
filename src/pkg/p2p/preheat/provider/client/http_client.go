@@ -3,13 +3,13 @@ package client
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
@@ -128,7 +128,7 @@ func (hc *HTTPClient) get(url string, cred *auth.Credential, parmas map[string]s
 
 	if (res.StatusCode / 100) != 2 {
 		// Return the server error content in the error.
-		return nil, fmt.Errorf("%s '%s' error: %s %s", http.MethodGet, res.Request.URL.String(), res.Status, bytes)
+		return nil, errors.Errorf("%s %q error: %s %s", http.MethodGet, res.Request.URL.String(), res.Status, bytes)
 	}
 
 	return bytes, nil
@@ -194,7 +194,7 @@ func (hc *HTTPClient) post(url string, cred *auth.Credential, body interface{}, 
 
 	if (res.StatusCode / 100) != 2 {
 		// Return the server error content in the error.
-		return nil, fmt.Errorf("%s '%s' error: %s %s", http.MethodPost, res.Request.URL.String(), res.Status, bytes)
+		return nil, errors.Errorf("%s %q error: %s %s", http.MethodPost, res.Request.URL.String(), res.Status, bytes)
 	} else if res.StatusCode == http.StatusAlreadyReported {
 		// Currently because if image was already preheated at least once, Dragonfly will return StatusAlreadyReported.
 		// And we should preserve http status code info to process this case later.

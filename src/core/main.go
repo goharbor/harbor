@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"net/url"
 	"os"
@@ -114,6 +115,9 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 }
 
 func main() {
+	runMode := flag.String("mode", "normal", "The harbor-core container run mode, it could be normal, migrate or skip-migrate, default is normal")
+	flag.Parse()
+
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
@@ -202,9 +206,22 @@ func main() {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
-	if err = migration.Migrate(database); err != nil {
-		log.Fatalf("failed to migrate: %v", err)
+	if strings.EqualFold(*runMode, "migrate") {
+		// Used by Harbor helm preinstall, preupgrade hook container
+		if err = migration.Migrate(database); err != nil {
+			log.Fatalf("failed to migrate the database, error: %v", err)
+		}
+		log.Info("the database migrate success")
+		os.Exit(0)
+	} else if strings.EqualFold(*runMode, "skip-migrate") {
+		log.Info("skip the database migrate")
+	} else {
+		// Run migrator as normal
+		if err = migration.Migrate(database); err != nil {
+			log.Fatalf("failed to migrate the database, error: %v", err)
+		}
 	}
+
 	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)

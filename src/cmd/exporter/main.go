@@ -64,7 +64,7 @@ func main() {
 		CacheCleanInterval:     viper.GetInt64("exporter.cache_clean_interval"),
 	}
 	harborExporter := exporter.NewExporter(exporterOpt)
-	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v cache_time=%v clean_internal=%v",
+	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v cache_time=%v clean_interval=%v",
 		exporterOpt.Port,
 		exporterOpt.MetricsPath,
 		exporterOpt.ExporterMetricsEnabled,

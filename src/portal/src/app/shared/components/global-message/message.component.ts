@@ -31,7 +31,7 @@ export class MessageComponent implements OnInit, OnDestroy {
 
   @Input() isAppLevel: boolean;
   globalMessage: Message = new Message();
-  globalMessageOpened: boolean;
+  globalMessageOpened: boolean = false;
   messageText: string = "";
   timer: any = null;
 
