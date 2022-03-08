@@ -49,7 +49,7 @@ export const NAMESPACE_ALL_PROJECTS: string = '*';
 export const INITIAL_ACCESSES: FrontAccess[] = [
     {
         "resource": "repository",
-        "action": "push",
+        "action": "list",
         "checked": true
     },
     {
@@ -59,12 +59,62 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
     },
     {
         "resource": "repository",
+        "action": "push",
+        "checked": true
+    },
+    {
+        "resource": "repository",
         "action": "delete",
         "checked": true
     },
     {
         "resource": "artifact",
+        "action": "read",
+        "checked": true
+    },
+    {
+        "resource": "artifact",
+        "action": "list",
+        "checked": true
+    },
+    {
+        "resource": "artifact",
         "action": "delete",
+        "checked": true
+    },
+    {
+        "resource": "artifact-label",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "artifact-label",
+        "action": "delete",
+        "checked": true
+    },
+    {
+        "resource": "tag",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "tag",
+        "action": "delete",
+        "checked": true
+    },
+    {
+        "resource": "tag",
+        "action": "list",
+        "checked": true
+    },
+    {
+        "resource": "scan",
+        "action": "create",
+        "checked": true
+    },
+    {
+        "resource": "scan",
+        "action": "stop",
         "checked": true
     },
     {
@@ -80,51 +130,6 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
     {
         "resource": "helm-chart-version",
         "action": "delete",
-        "checked": true
-    },
-    {
-        "resource": "tag",
-        "action": "list",
-        "checked": true
-    },
-    {
-        "resource": "tag",
-        "action": "create",
-        "checked": true
-    },
-    {
-        "resource": "tag",
-        "action": "delete",
-        "checked": true
-    },
-    {
-        "resource": "artifact-label",
-        "action": "create",
-        "checked": true
-    },
-    {
-        "resource": "artifact-label",
-        "action": "delete",
-        "checked": true
-    },
-    {
-        "resource": "scan",
-        "action": "create",
-        "checked": true
-    },
-    {
-        "resource": "scan",
-        "action": "stop",
-        "checked": true
-    },
-    {
-        "resource": "artifact",
-        "action": "list",
-        "checked": true
-    },
-    {
-        "resource": "repository",
-        "action": "list",
         "checked": true
     },
     {
