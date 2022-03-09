@@ -143,7 +143,7 @@ Test Case - Scan Schedule Job
     Go Into Project  ${project_name}
     Go Into Repo  ${project_name}/${image}
     Scan Result Should Display In List Row  ${sha256}
-    View Repo Scan Details  High  Medium
+    View Repo Scan Details  Critical  High
 
 Test Case - Replication Schedule Job
     [tags]  Replication_schedule

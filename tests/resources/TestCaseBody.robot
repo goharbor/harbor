@@ -116,13 +116,14 @@ Body Of View Scan Results
 Body Of Scan Image On Push
     [Arguments]  @{vulnerability_levels}
     Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
+    Create An New Project And Go Into Project  project${d}
     Goto Project Config
     Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
     Navigate To Projects
-    Go Into Project  library
+    Go Into Project  project${d}
     Go Into Repo  memcached
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
@@ -260,9 +261,7 @@ Body Of Verfiy System Level CVE Allowlist
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    ${image_argument}
-    # ${image}=    Set Variable    goharbor/harbor-portal
     ${sha256}=  Set Variable  ${sha256_argument}
-    # ${sha256}=  Set Variable  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -280,13 +279,13 @@ Body Of Verfiy System Level CVE Allowlist
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
     Switch To Configure
     Switch To Configuration System Setting
-    # Add Items To System CVE Allowlist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
+    # Add Items To System CVE Allowlist    CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528
     Add Items To System CVE Allowlist    ${most_cve_list}
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
-    # Add Items To System CVE Allowlist    CVE-2019-18276
+    # Add Items To System CVE Allowlist    CVE-2021-43519
     Add Items To System CVE Allowlist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Allowlist  count=16
+    Delete Top Item In System CVE Allowlist  count=9
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
 
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}
