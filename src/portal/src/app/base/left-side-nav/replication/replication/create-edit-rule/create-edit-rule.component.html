@@ -108,7 +108,7 @@
                   <clr-dropdown class="width-tag-label">
                     <button type="button" class="width-100 dropdown-toggle btn btn-link statistic-data label-text" clrDropdownTrigger>
                       <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
-                        <hbr-label-piece [hasIcon]="false" [label]="getLabel(label)" [labelWidth]="84"></hbr-label-piece>
+                        <hbr-label-piece *ngIf="m < 1" [hasIcon]="false" [label]="getLabel(label)" [labelWidth]="84"></hbr-label-piece>
                       </ng-template>
                       <span class="ellipsis color-white-dark" *ngIf="filter.value.value.length>1">···</span>
                       <div *ngFor="let label1 of filter.value.value;let k = index" hidden="true">
