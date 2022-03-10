@@ -75,7 +75,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                 if (this.isEditMode && this.originalRobotForEdit && this.originalRobotForEdit.name === name) {
                   return false;
                 }
-                return  name.length > 0;
+                return  name?.length > 0;
               }),
               switchMap((name) => {
                 this.isNameExisting = false;

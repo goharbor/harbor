@@ -28,7 +28,7 @@
                                    pattern='^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
                                    maxLengthExt="255"
                                    autocomplete="off"
-                                   size="30" name="name" #name="ngModel"  (input)="inputName()">
+                                   size="30" name="name" #name="ngModel"  (keyup)="inputName()">
                             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                             <span class="spinner spinner-inline" [hidden]="!checkNameOnGoing"></span>
                         </div>
