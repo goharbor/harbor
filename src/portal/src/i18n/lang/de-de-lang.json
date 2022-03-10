@@ -636,7 +636,7 @@
         "ENABLE_FAILED": "Aktivieren der Regel fehlgeschlagen",
         "DISABLE_SUCCESS": "Deaktivieren der Regel erfolgreich",
         "DISABLE_FAILED": "Deaktivieren der Regel fehlgeschlagen",
-        "DES_REPO_FLATTENING": "Destination Repository Flattening",
+        "DES_REPO_FLATTENING": "Ziel-Repository Ebenen-Reduzierung",
         "NAMESPACE": "Namespace",
         "REPO_FLATTENING": "Reduzierung",
         "NO_FLATTING": "Keine Reduzierung",
@@ -893,7 +893,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
-            "VERIFY_REMOTE_CERT": "Festlegen, ob die Image-Replikation das Zertifikat der Gegenstelle überprüfen soll. Deaktiviere die Box, wenn der E-Mail-Server ein selbstsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.", 
+            "VERIFY_REMOTE_CERT": "Festlegen, ob die Image-Replikation das Zertifikat der Gegenstelle überprüfen soll. Deaktiviere die Box, wenn der E-Mail-Server ein selbstsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.",
             "AUTH_MODE": "Der Standard Authentifizierungsmodus ist Datenbank, die Zugriffsdaten werden hierbei in einer lokalen Datenbank gespeichert. Wähle einen alternativen Authentifizierungsmodus, um die Nutzer gegen den konfigurierten Dienst zu verifizieren.",
             "LDAP_SEARCH_DN": "DN eines Nutzers, der die Berechtigungen auf dem LDAP/AD Server hat. Falls der LDAP/AD server anonyme Suche nicht unterstützt, muss der DN und das ldap_search_pwd konfiguriert werden.",
             "LDAP_BASE_DN": "Der Base DN unterhalb dem nach Nutzern im LDAP/AD gesucht wird.",
@@ -924,14 +924,14 @@
             "LDAP_GROUP_BASE_DN": "LDAP Gruppen Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "Der Base DN von dem Gruppen im LDAP/AD gesucht werden. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_FILTER": "LDAP Gruppen Filter",
-            "LDAP_GROUP_FILTER_INFO": "The filter to search for LDAP/AD groups. For OpenLDAP: objectclass=groupOfNames. For Active Directory: objectclass=group. This field cannot be empty if you need the LDAP group-related feature.",
+            "LDAP_GROUP_FILTER_INFO": "Der Filter für die Suche nach LDAP/AD Gruppen. Für OpenLDAP: objectclass=groupOfNames. Für Active Directory: objectclass=group. Dieses Feld darf nicht leer sein, wenn die Gruppenbezogenen LDAP-Features benötigt werden.",
             "LDAP_GROUP_GID": "LDAP Gruppen GID",
             "LDAP_GROUP_GID_INFO": "Das Attribut, das in der Suche für die Zuordnung einer Gruppe verwendet wird. Kann uid, cn, email, sAMAccountName oder ein anderes Attribut abhängig vom LDAP/AD sein. Die Gruppe in Harbor wird per Default nach dem Inhalt des Attributes benannt. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Gruppen Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Legt LDAP Group DN fest. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "LDAP_GROUP_MEMBERSHIP": "LDAP Gruppenmitgliedschaft",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. This field cannot be empty if you need to enable the LDAP group related feature.",
-            "GROUP_SCOPE": "LDAP Group Search Scope",
+            "GROUP_SCOPE": "LDAP Gruppen Search Scope",
             "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
 
         },
@@ -946,7 +946,7 @@
             "TOKEN_REVIEW": "Token Review Endpunkt",
             "SKIP_SEARCH": "Suche überspringen",
             "VERIFY_CERT": "Zertifikate überprüfen",
-            "ADMIN_GROUPS": "Admin Groups"
+            "ADMIN_GROUPS": "Admin Gruppen"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Provider Name",
@@ -957,7 +957,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "Zertifikat überprüfen",
             "OIDC_AUTOONBOARD": "Automatisches Onboarding",
-            "USER_CLAIM": "Username Claim",    
+            "USER_CLAIM": "Username Claim",
             "OIDC_SETNAME": "Setze OIDC Nutzername",
             "OIDC_SETNAMECONTENT": "Es muss ein Harbor Nutzername bei der ersten Anmeldung über thirdParty (OIDC) gesetzt werden. Dieser wird in Harbor für die assoziation mit Projekten, Rollen, etc. verwendet.",
             "OIDC_USERNAME": "Nutzername",
@@ -1026,7 +1026,7 @@
         "INDEX_TOTAL": "GESAMT",
         "STORAGE": "SPEICHER",
         "LIMIT": "Limit",
-        "STORAGE_USED": "genutzter Speicher"
+        "STORAGE_USED": "Genutzter Speicher"
     },
     "SEARCH": {
         "IN_PROGRESS": "Suche...",
@@ -1694,34 +1694,34 @@
         "ENABLE_NEW_SECRET": "Aktiviere diese Option um das neue Secret selbst zu definieren",
         "DELETE": "Löschen",
         "ARTIFACT_LABEL": "Artefakt Label",
-        "SCAN": "Scannen",
+        "SCAN": "Scans",
         "SCANNER_PULL": "Scanner Pull",
         "SEARCH_BY_NAME": "Robot-Account mittels Namen suchen (ohne Prefix)",
         "FINAL_PROJECT_NAME_TIP": "Der zusammengesetzte Robot-Account-Name besteht aus dem Prefix, dem Projektnamen, einem plus und dem Inhalt des Eingabefeldes.",
         "FINAL_SYSTEM_NAME_TIP": "Der zusammengesetzte systemweite Robot-Account-Name besteht aus dem Prefix und dem Inhalt des Eingabefeldes.",
         "PUSH_AND_PULL": "Push",
         "PUSH_PERMISSION_TOOLTIP": "Die Push Berechtigung benötigt die Pull Berechtigung.",
-        "STOP": "Stop",
-        "LIST": "List",
+        "STOP": "Stoppen",
+        "LIST": "Auflisten",
         "REPOSITORY": "Repository",
         "HELM_LABEL": "Helm Chart Label",
-        "EXPIRES_IN": "Expires in",
-        "EXPIRED": "Expired"
+        "EXPIRES_IN": "Läuft ab in",
+        "EXPIRED": "Abgelaufen"
     },
     "ACCESSORY": {
-        "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
-        "DELETION_SUMMARY_ACCESSORY": "Do you want to delete all the accessories of the artifact {{param}}?",
-        "DELETION_SUMMARY_ONE_ACCESSORY": "Do you want to delete the accessory(s) {{param}}?",
-        "DELETE_ACCESSORY": "Delete Accessory",
-        "DELETED_SUCCESS": "Accessory deleted successfully",
-        "DELETED_FAILED": "Deleting accessory failed",
-        "CO_SIGNED": "Signed by Cosign",
-        "NOTARY_SIGNED": "Signed by Notary",
-        "ACCESSORY": "Accessory",
-        "ACCESSORIES": "Accessories",
-        "SUBJECT_ARTIFACT": "Subject Artifact",
+        "DELETION_TITLE_ACCESSORY": "Bestätige die Löschung des Anhangs",
+        "DELETION_SUMMARY_ACCESSORY": "Sollen alle Anhänge des Artefakts {{param}} gelöscht werden?",
+        "DELETION_SUMMARY_ONE_ACCESSORY": "Soll der Anhang/die Anhänge {{param}} gelöscht werden?",
+        "DELETE_ACCESSORY": "Anhang löschen",
+        "DELETED_SUCCESS": "Anhang erfolgreich gelöscht",
+        "DELETED_FAILED": "Löschen des Anhangs fehlgeschlagen",
+        "CO_SIGNED": "Signiert mit Cosign",
+        "NOTARY_SIGNED": "Signiert mit Notary",
+        "ACCESSORY": "Anhang",
+        "ACCESSORIES": "Anhänge",
+        "SUBJECT_ARTIFACT": "Subjekt Artefakt",
         "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
-        "PLACEHOLDER": "We couldn't find any accessories!"
+        "PLACEHOLDER": "Es konnten keine Anhänge gefunden werden!"
     }
 }
