@@ -16,8 +16,8 @@
 
 </br> </br>
 
-**Note**: The `master` branch may be in an *unstable or even broken state* during development.
-Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get a stable set of binaries.
+**Note**: The `main` branch may be in an *unstable or even broken state* during development.
+Please use [releases](https://github.com/vmware/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
 
 <img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
