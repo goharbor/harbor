@@ -396,8 +396,14 @@ Test Case - Robot Account Do Replication
     ${d}=  Get Current Date  result_format=%m%s
     ${image1}=  Set Variable  hello-world
     ${tag1}=  Set Variable  latest
+    ${image1sha256}=  Set Variable  sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a
+    ${image1_short_sha256}=  Get Substring  ${image1sha256}  0  15
     ${image2}=  Set Variable  busybox
     ${tag2}=  Set Variable  latest
+    ${image2sha256}=  Set Variable  sha256:34efe68cca33507682b1673c851700ec66839ecf94d19b928176e20d20e02413
+    ${image2_short_sha256}=  Get Substring  ${image2sha256}  0  15
+    ${index}=  Set Variable  index
+    ${index_tag}=  Set Variable  index_tag
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_dest${d}
     # create system Robot Account
@@ -409,10 +415,13 @@ Test Case - Robot Account Do Replication
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    Docker Push Index  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${ip}/project${d}/${index}:${index_tag}  ${ip}/project${d}/${image1}:${tag1}  ${ip}/project${d}/${image2}:${tag2}
     Cosign Generate Key Pair
     Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
     Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Cosign Sign  ${ip}/project${d}/${index}:${index_tag}
+    Cosign Sign  ${ip}/project${d}/${index}@${image1sha256}
     Docker Logout  ${ip}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
@@ -426,6 +435,14 @@ Test Case - Robot Account Do Replication
     Should Be Signed By Cosign  ${tag1}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
     Should Be Signed By Cosign  ${tag2}
+    Back Project Home  project_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
+    Back Project Home  project_dest${d}
+    Go Into Repo  project_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Back Project Home  project_dest${d}
+    Go Into Repo  project_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     # pull mode
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -438,6 +455,14 @@ Test Case - Robot Account Do Replication
     Should Be Signed By Cosign  ${tag1}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
     Should Be Signed By Cosign  ${tag2}
+    Back Project Home  project_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
+    Back Project Home  project_dest${d}
+    Go Into Repo  project_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Back Project Home  project_dest${d}
+    Go Into Repo  project_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     Close Browser
 
 Test Case - Replication Triggered By Events
