@@ -311,7 +311,9 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	return c.deleteDeeply(ctx, id, true, len(accs) > 0)
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return c.deleteDeeply(ctx, id, true, len(accs) > 0)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-delete"))
 }
 
 // "isRoot" is used to specify whether the artifact is the root parent artifact
