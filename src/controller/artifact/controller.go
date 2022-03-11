@@ -283,7 +283,9 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	return c.deleteDeeply(ctx, id, true)
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return c.deleteDeeply(ctx, id, true)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-delete"))
 }
 
 // "isRoot" is used to specify whether the artifact is the root parent artifact
