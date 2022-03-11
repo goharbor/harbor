@@ -598,6 +598,15 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 	c.Require().NotNil(err)
 	c.tagCtl.AssertExpectations(c.T())
 
+	// if no tag, should not update tag
+	c.SetupTest()
+	c.tagCtl.On("Update").Return(nil)
+	c.artMgr.On("UpdatePullTime", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = c.ctl.UpdatePullTime(nil, 1, 0, time.Now())
+	c.Require().Nil(err)
+	c.artMgr.AssertExpectations(c.T())
+	// should not call tag Update
+	c.tagCtl.AssertNotCalled(c.T(), "Update")
 }
 
 func (c *controllerTestSuite) TestGetAddition() {
