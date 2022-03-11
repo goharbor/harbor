@@ -2,7 +2,7 @@ package errors
 
 const (
 	// NotFoundCode is code for the error of no object found
-	NotFoundCode = "NOT_FOUND"
+	NotFoundCode = "MANIFEST_UNKNOWN"
 	// ConflictCode ...
 	ConflictCode = "CONFLICT"
 	// UnAuthorizedCode ...

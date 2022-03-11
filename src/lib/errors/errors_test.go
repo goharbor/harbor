@@ -278,6 +278,9 @@ func (suite *ErrorTestSuite) TestErrors() {
 
 	err = New(nil).WithCode(GeneralCode).WithMessage("internal server error")
 	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`, NewErrs(err).Error())
+
+	err = New(nil).WithCode(NotFoundCode).WithMessage("manifest unknown")
+	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"manifest unknown"}]}`, NewErrs(err).Error())
 }
 
 func TestErrorTestSuite(t *testing.T) {
