@@ -15,6 +15,7 @@
 package health
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,10 +27,10 @@ import (
 	"github.com/docker/distribution/health"
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/redis"
 )
 
 // HTTPStatusCodeHealthChecker implements a Checker to check that the HTTP status code
@@ -179,9 +180,7 @@ func databaseHealthChecker() health.Checker {
 func redisHealthChecker() health.Checker {
 	period := 10 * time.Second
 	checker := health.CheckFunc(func() error {
-		conn := redis.DefaultPool().Get()
-		defer conn.Close()
-		return nil
+		return cache.Default().Ping(context.TODO())
 	})
 	return PeriodicHealthChecker(checker, period)
 }

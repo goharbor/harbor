@@ -98,7 +98,7 @@ func ControllerInstance() Controller {
 func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error {
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
-	err := c.cache.Fetch(TrimmedManifestlist+art.Digest, &trimmedDigest)
+	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
 	if err == cache.ErrNotFound {
 		// skip to update digest, continue
 	} else if err != nil {
@@ -169,7 +169,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
 
-	err = c.cache.Fetch(manifestListKey(art.Repository, string(desc.Digest)), &content)
+	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, string(desc.Digest)), &content)
 	if err != nil {
 		if err == cache.ErrNotFound {
 			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
@@ -178,7 +178,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		}
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil
 	}
-	err = c.cache.Fetch(manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
+	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
 	if err != nil {
 		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
 		return false, nil, nil
@@ -217,7 +217,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 
 	// Push manifest in background
 	go func(operator string) {
-		bCtx := orm.Context()
+		bCtx := orm.Copy(ctx)
 		a, err := c.local.GetManifest(bCtx, art)
 		if err != nil {
 			log.Errorf("failed to get manifest, error %v", err)
@@ -228,12 +228,12 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 			if len(artInfo.Digest) == 0 {
 				artInfo.Digest = dig
 			}
-			c.waitAndPushManifest(ctx, remoteRepo, man, artInfo, ct, remote)
+			c.waitAndPushManifest(bCtx, remoteRepo, man, artInfo, ct, remote)
 		}
 
 		// Query artifact after push
 		if a == nil {
-			a, err = c.local.GetManifest(ctx, art)
+			a, err = c.local.GetManifest(bCtx, art)
 			if err != nil {
 				log.Errorf("failed to get manifest, error %v", err)
 			}

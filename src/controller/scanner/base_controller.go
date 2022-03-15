@@ -289,7 +289,7 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 	)
 
 	if registration.ID > 0 {
-		meta, err = bc.getScannerAdapterMetadataWithCache(registration)
+		meta, err = bc.getScannerAdapterMetadataWithCache(ctx, registration)
 	} else {
 		meta, err = bc.getScannerAdapterMetadata(registration)
 	}
@@ -334,11 +334,11 @@ func (bc *basicController) getScannerAdapterMetadata(registration *scanner.Regis
 	return client.GetMetadata()
 }
 
-func (bc *basicController) getScannerAdapterMetadataWithCache(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Context, registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
 	key := fmt.Sprintf("reg:%d:metadata", registration.ID)
 
 	var result MetadataResult
-	err := cache.FetchOrSave(bc.Cache(), key, &result, func() (interface{}, error) {
+	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (interface{}, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
 			return &MetadataResult{Error: err.Error()}, nil

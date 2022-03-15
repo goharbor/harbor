@@ -50,7 +50,7 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 			size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
 			if err != nil || size == 0 {
-				size, err = blobController.GetAcceptedBlobSize(distribution.ParseSessionID(r.URL.Path))
+				size, err = blobController.GetAcceptedBlobSize(ctx, distribution.ParseSessionID(r.URL.Path))
 			}
 			if err != nil {
 				logger.Errorf("get blob size failed, error: %v", err)

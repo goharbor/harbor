@@ -15,6 +15,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -42,19 +43,19 @@ var (
 // Cache cache interface
 type Cache interface {
 	// Contains returns true if key exists
-	Contains(key string) bool
+	Contains(ctx context.Context, key string) bool
 
 	// Delete delete item from cache by key
-	Delete(key string) error
+	Delete(ctx context.Context, key string) error
 
 	// Fetch retrieve the cached key value
-	Fetch(key string, value interface{}) error
+	Fetch(ctx context.Context, key string, value interface{}) error
 
 	// Ping ping the cache
-	Ping() error
+	Ping(ctx context.Context) error
 
 	// Save cache the value by key
-	Save(key string, value interface{}, expiration ...time.Duration) error
+	Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error
 }
 
 var (
@@ -111,7 +112,7 @@ func Initialize(typ, addr string) error {
 		}),
 	}
 
-	if err := retry.Retry(c.Ping, options...); err != nil {
+	if err := retry.Retry(func() error { return c.Ping(context.TODO()) }, options...); err != nil {
 		return err
 	}
 

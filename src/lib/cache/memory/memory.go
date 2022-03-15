@@ -15,6 +15,7 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"sync"
@@ -41,14 +42,14 @@ type Cache struct {
 }
 
 // Contains returns true if key exists
-func (c *Cache) Contains(key string) bool {
+func (c *Cache) Contains(ctx context.Context, key string) bool {
 	e, ok := c.storage.Load(c.opts.Key(key))
 	if !ok {
 		return false
 	}
 
 	if e.(*entry).isExpirated() {
-		c.Delete(c.opts.Key(key))
+		c.Delete(ctx, c.opts.Key(key))
 		return false
 	}
 
@@ -56,13 +57,13 @@ func (c *Cache) Contains(key string) bool {
 }
 
 // Delete delete item from cache by key
-func (c *Cache) Delete(key string) error {
+func (c *Cache) Delete(ctx context.Context, key string) error {
 	c.storage.Delete(c.opts.Key(key))
 	return nil
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(key string, value interface{}) error {
+func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
 	v, ok := c.storage.Load(c.opts.Key(key))
 	if !ok {
 		return cache.ErrNotFound
@@ -70,7 +71,7 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		c.Delete(c.opts.Key(key))
+		c.Delete(ctx, c.opts.Key(key))
 		return cache.ErrNotFound
 	}
 
@@ -82,12 +83,12 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 }
 
 // Ping ping the cache
-func (c *Cache) Ping() error {
+func (c *Cache) Ping(ctx context.Context) error {
 	return nil
 }
 
 // Save cache the value by key
-func (c *Cache) Save(key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return fmt.Errorf("failed to encode value, key %s, error: %v", key, err)

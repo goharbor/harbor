@@ -270,16 +270,17 @@ func (suite *ControllerTestSuite) TestSync() {
 }
 
 func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
+	ctx := context.TODO()
 	{
 		sessionID := uuid.New().String()
 
-		size, err := Ctl.GetAcceptedBlobSize(sessionID)
+		size, err := Ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(0), size)
 
-		suite.Nil(Ctl.SetAcceptedBlobSize(sessionID, 100))
+		suite.Nil(Ctl.SetAcceptedBlobSize(ctx, sessionID, 100))
 
-		size, err = Ctl.GetAcceptedBlobSize(sessionID)
+		size, err = Ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(100), size)
 	}
@@ -290,19 +291,19 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 
 		sessionID := uuid.New().String()
 
-		size, err := ctl.GetAcceptedBlobSize(sessionID)
+		size, err := ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(0), size)
 
-		suite.Nil(ctl.SetAcceptedBlobSize(sessionID, 100))
+		suite.Nil(ctl.SetAcceptedBlobSize(ctx, sessionID, 100))
 
-		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(100), size)
 
 		time.Sleep(time.Second * 10)
 
-		size, err = ctl.GetAcceptedBlobSize(sessionID)
+		size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(0), size)
 	}

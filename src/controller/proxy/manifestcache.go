@@ -17,6 +17,9 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema2"
@@ -26,8 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"strings"
-	"time"
 )
 
 const defaultHandler = "default"
@@ -69,11 +70,11 @@ func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string,
 	}
 	key := manifestListKey(art.Repository, art.Digest)
 	log.Debugf("cache manifest list with key=cache:%v", key)
-	err = m.cache.Save(manifestListContentTypeKey(art.Repository, art.Digest), contentType, manifestListCacheInterval)
+	err = m.cache.Save(ctx, manifestListContentTypeKey(art.Repository, art.Digest), contentType, manifestListCacheInterval)
 	if err != nil {
 		log.Errorf("failed to cache content type, error %v", err)
 	}
-	err = m.cache.Save(key, payload, manifestListCacheInterval)
+	err = m.cache.Save(ctx, key, payload, manifestListCacheInterval)
 	if err != nil {
 		log.Errorf("failed to cache payload, error %v", err)
 	}
@@ -90,7 +91,7 @@ func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig strin
 	}
 	art := lib.GetArtifactInfo(ctx)
 	key := TrimmedManifestlist + string(art.Digest)
-	err := m.cache.Save(key, newDig)
+	err := m.cache.Save(ctx, key, newDig)
 	if err != nil {
 		log.Warningf("failed to cache the trimmed manifest, err %v", err)
 		return

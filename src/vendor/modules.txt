@@ -170,7 +170,7 @@ github.com/casbin/casbin/util
 # github.com/cenkalti/backoff/v4 v4.1.1
 ## explicit; go 1.13
 github.com/cenkalti/backoff/v4
-# github.com/cespare/xxhash/v2 v2.1.1
+# github.com/cespare/xxhash/v2 v2.1.2
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
 # github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
@@ -210,6 +210,9 @@ github.com/denverdino/aliyungo/util
 # github.com/dghubble/sling v1.1.0
 ## explicit
 github.com/dghubble/sling
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+## explicit
+github.com/dgryski/go-rendezvous
 # github.com/docker/cli v20.10.7+incompatible
 ## explicit
 github.com/docker/cli/cli/config
@@ -374,6 +377,16 @@ github.com/go-redis/redis/internal/pool
 github.com/go-redis/redis/internal/proto
 github.com/go-redis/redis/internal/singleflight
 github.com/go-redis/redis/internal/util
+# github.com/go-redis/redis/v8 v8.11.4
+## explicit; go 1.13
+github.com/go-redis/redis/v8
+github.com/go-redis/redis/v8/internal
+github.com/go-redis/redis/v8/internal/hashtag
+github.com/go-redis/redis/v8/internal/hscan
+github.com/go-redis/redis/v8/internal/pool
+github.com/go-redis/redis/v8/internal/proto
+github.com/go-redis/redis/v8/internal/rand
+github.com/go-redis/redis/v8/internal/util
 # github.com/go-sql-driver/mysql v1.5.0
 ## explicit; go 1.10
 github.com/go-sql-driver/mysql
