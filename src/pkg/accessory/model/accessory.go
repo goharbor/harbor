@@ -74,6 +74,7 @@ type AccessoryData struct {
 	Size          int64     `json:"size"`
 	Digest        string    `json:"digest"`
 	CreatTime     time.Time `json:"creation_time"`
+	Icon          string    `json:"icon"`
 }
 
 // Accessory Independent, but linked to an existing subject artifact, which enabling the extensibility of an OCI artifact
