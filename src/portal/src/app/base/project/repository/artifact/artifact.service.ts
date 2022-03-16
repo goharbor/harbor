@@ -5,6 +5,7 @@ import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
 import { IconService } from '../../../../../../ng-swagger-gen/services/icon.service';
 import { share } from "rxjs/operators";
 import { Icon } from "ng-swagger-gen/models/icon";
+import { Accessory } from '../../../../../../ng-swagger-gen/models/accessory';
 
 
 /**
@@ -19,7 +20,7 @@ export abstract class ArtifactService {
   triggerUploadArtifact = new Subject<string>();
   abstract getIcon(digest: string): SafeUrl;
   abstract setIcon(digest: string, url: SafeUrl);
-  abstract getIconsFromBackEnd(artifactList: Artifact[]);
+  abstract getIconsFromBackEnd(artifactList: Artifact[] | Accessory[]);
 }
 @Injectable()
 export class ArtifactDefaultService extends ArtifactService {
