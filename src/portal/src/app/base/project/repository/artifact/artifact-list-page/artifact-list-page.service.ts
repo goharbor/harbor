@@ -80,6 +80,7 @@ export class ArtifactListPageService {
 
     private _getAllLabels(projectId: number): void {
         // get all project labels
+        this._allLabels = []; // reset
         this.labelService.ListLabelsResponse({
             pageSize: PAGE_SIZE,
             page: 1,
