@@ -104,6 +104,16 @@ func (m *managerTestSuite) TestDeleteOfArtifact() {
 	m.dao.AssertExpectations(m.T())
 }
 
+func (m *managerTestSuite) TestGetIcon() {
+	var icon string
+	icon = m.mgr.GetIcon("")
+	m.Require().Empty(icon, "empty icon")
+	icon = m.mgr.GetIcon("signature.cosign")
+	m.Require().Equal("sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882", icon)
+	icon = m.mgr.GetIcon("unknown")
+	m.Require().Empty(icon, "empty icon")
+}
+
 func TestManager(t *testing.T) {
 	suite.Run(t, &managerTestSuite{})
 }

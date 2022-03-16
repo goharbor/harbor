@@ -20,7 +20,7 @@ func (a *Accessory) ToSwagger() *models.Accessory {
 		Size:              a.Size,
 		Digest:            a.Digest,
 		Type:              a.Type,
-		Icon:              "",
+		Icon:              a.Icon,
 		CreationTime:      strfmt.DateTime(a.CreatTime),
 	}
 }
