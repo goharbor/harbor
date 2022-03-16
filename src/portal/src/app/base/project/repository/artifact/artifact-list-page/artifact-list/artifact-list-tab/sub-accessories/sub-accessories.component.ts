@@ -85,6 +85,7 @@ export class SubAccessoriesComponent implements OnInit {
     clrLoad() {
         if (this.currentPage === 1) {
             this.displayedAccessories = clone(this.accessories);
+            this.getIconFromBackend();
             return;
         }
         this.loading = true;
@@ -100,10 +101,16 @@ export class SubAccessoriesComponent implements OnInit {
             .subscribe(
                 res => {
                     this.displayedAccessories = res;
+                    this.getIconFromBackend();
                 },
                 error => {
                     this.errorHandlerService.error(error);
                 }
             );
+    }
+    getIconFromBackend() {
+        if (this.displayedAccessories?.length) {
+            this.artifactService.getIconsFromBackEnd(this.displayedAccessories);
+        }
     }
 }
