@@ -16,24 +16,20 @@ package main
 
 import (
 	"context"
-	"encoding/gob"
 	"flag"
 	"fmt"
 	"net/url"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/astaxie/beego"
-	_ "github.com/astaxie/beego/session/redis"
-	_ "github.com/astaxie/beego/session/redis_sentinel"
+	"github.com/goharbor/harbor/src/core/session"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	configCtl "github.com/goharbor/harbor/src/controller/config"
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
@@ -125,57 +121,11 @@ func main() {
 	if len(redisURL) > 0 {
 		u, err := url.Parse(redisURL)
 		if err != nil {
-			panic("bad _REDIS_URL:" + redisURL)
+			panic("bad _REDIS_URL")
 		}
-		gob.Register(commonmodels.User{})
-		if u.Scheme == "redis+sentinel" {
-			ps := strings.Split(u.Path, "/")
-			if len(ps) < 2 {
-				panic("bad redis sentinel url: no master name")
-			}
-			ss := make([]string, 5)
-			ss[0] = strings.Join(strings.Split(u.Host, ","), ";") // host
-			ss[1] = "100"                                         // pool
-			if u.User != nil {
-				password, isSet := u.User.Password()
-				if isSet {
-					ss[2] = password
-				}
-			}
-			if len(ps) > 2 {
-				db, err := strconv.Atoi(ps[2])
-				if err != nil {
-					panic("bad redis sentinel url: bad db")
-				}
-				if db != 0 {
-					ss[3] = ps[2]
-				}
-			}
-			ss[4] = ps[1] // monitor name
 
-			beego.BConfig.WebConfig.Session.SessionProvider = "redis_sentinel"
-			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
-		} else {
-			ss := make([]string, 5)
-			ss[0] = u.Host // host
-			ss[1] = "100"  // pool
-			if u.User != nil {
-				password, isSet := u.User.Password()
-				if isSet {
-					ss[2] = password
-				}
-			}
-			if len(u.Path) > 1 {
-				if _, err := strconv.Atoi(u.Path[1:]); err != nil {
-					panic("bad redis url: bad db")
-				}
-				ss[3] = u.Path[1:]
-			}
-			ss[4] = u.Query().Get("idle_timeout_seconds")
-
-			beego.BConfig.WebConfig.Session.SessionProvider = "redis"
-			beego.BConfig.WebConfig.Session.SessionProviderConfig = strings.Join(ss, ",")
-		}
+		beego.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
+		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 
 		log.Info("initializing cache ...")
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
