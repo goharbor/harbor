@@ -9,5 +9,5 @@ const (
 
 	// ToDo add the accessories images
 	DigestOfIconAccDefault = ""
-	DigestOfIconAccCosign  = ""
+	DigestOfIconAccCosign  = "sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882"
 )

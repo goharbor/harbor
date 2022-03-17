@@ -17,6 +17,7 @@ package accessory
 import (
 	"context"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
@@ -28,6 +29,11 @@ import (
 var (
 	// Mgr is a global artifact manager instance
 	Mgr = NewManager()
+
+	// icon digests for each known type
+	defaultIcons = map[string]string{
+		model.TypeCosignSignature: icon.DigestOfIconAccCosign,
+	}
 )
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
@@ -93,6 +99,7 @@ func (m *manager) Get(ctx context.Context, id int64) (model.Accessory, error) {
 		Size:          acc.Size,
 		Digest:        acc.Digest,
 		CreatTime:     acc.CreationTime,
+		Icon:          m.GetIcon(acc.Type),
 	})
 }
 
@@ -114,6 +121,7 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 			Size:          accD.Size,
 			Digest:        accD.Digest,
 			CreatTime:     accD.CreationTime,
+			Icon:          m.GetIcon(accD.Type),
 		})
 		if err != nil {
 			return nil, errors.New(err).WithCode(errors.BadRequestCode)
@@ -141,4 +149,12 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 func (m *manager) DeleteAccessories(ctx context.Context, q *q.Query) error {
 	_, err := m.dao.DeleteAccessories(ctx, q)
 	return err
+}
+
+func (m *manager) GetIcon(accType string) string {
+	accIcon := ""
+	if i, ok := defaultIcons[accType]; ok {
+		accIcon = i
+	}
+	return accIcon
 }
