@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
@@ -56,7 +57,11 @@ func (dd *DragonflyDriver) GetHealth() (*DriverStatus, error) {
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(dd.instance.Endpoint, "/"), healthCheckEndpoint)
-	_, err := client.GetHTTPClient(dd.instance.Insecure).Get(url, dd.getCred(), nil, nil)
+	url, err := lib.ValidateHTTPURL(url)
+	if err != nil {
+		return nil, err
+	}
+	_, err = client.GetHTTPClient(dd.instance.Insecure).Get(url, dd.getCred(), nil, nil)
 	if err != nil {
 		// Unhealthy
 		return nil, err
