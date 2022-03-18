@@ -190,8 +190,8 @@
                         </clr-tooltip>
                     </div>
                 </clr-dg-cell>
-                <clr-dg-cell title="{{artifact.pullCommand}}">
-                    <hbr-copy-input *ngIf="artifact.pullCommand" #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="{{artifact.pullCommand}}"></hbr-copy-input>
+                <clr-dg-cell >
+                    <hbr-copy-input [title]="getPullCommand(artifact)"  *ngIf="getPullCommand(artifact)"  [iconMode]="true" [defaultValue]="getPullCommand(artifact)"></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
                     <div class="cell">

@@ -8,7 +8,7 @@ import { OperationService } from "../../../../../shared/components/operation/ope
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../shared/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../shared/components/operation/operate";
-import { AccessoryQueryParams, AccessoryType, ArtifactFront as Artifact, artifactImages, artifactPullCommands } from '../artifact';
+import { AccessoryQueryParams, AccessoryType, ArtifactFront as Artifact, ArtifactType, getPullCommandByTag } from '../artifact';
 import { ArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../../ng-swagger-gen/models/tag';
 import { SystemInfo, SystemInfoService, UserPermissionService, USERSTATICPERMISSION } from "../../../../../shared/services";
@@ -143,7 +143,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       if (res.headers) {
         let xHeader: string = res.headers.get("x-total-count");
         if (xHeader) {
-          this.totalCount = Number.parseInt(xHeader);
+          this.totalCount = Number.parseInt(xHeader, 10);
         }
       }
       this.currentTags = res.body;
@@ -340,20 +340,17 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   }
   hasPullCommand(): boolean {
     return this.artifactDetails
-      && (this.artifactDetails.type ===  artifactImages[0]
-        || this.artifactDetails.type ===  artifactImages[1]
-        || this.artifactDetails.type ===  artifactImages[2])
+      && (this.artifactDetails.type ===  ArtifactType.IMAGE
+        || this.artifactDetails.type ===  ArtifactType.CHART
+        || this.artifactDetails.type ===  ArtifactType.CNAB)
         && this.accessoryType !== AccessoryType.COSIGN;
   }
   getPullCommand(tag: Tag): string {
     let pullCommand: string = '';
     if (tag && tag.name && this.artifactDetails ) {
-      artifactPullCommands.forEach(artifactPullCommand => {
-        if (artifactPullCommand.type === this.artifactDetails.type) {
-          pullCommand = `${artifactPullCommand.pullCommand} ${this.registryUrl}/${this.projectName}/${this.repositoryName}:${tag.name}`;
-        }
-      });
+      pullCommand = getPullCommandByTag(this.artifactDetails?.type,
+          `${this.registryUrl}/${this.projectName}/${this.repositoryName}`, tag.name);
     }
-   return pullCommand;
+    return pullCommand;
   }
 }
