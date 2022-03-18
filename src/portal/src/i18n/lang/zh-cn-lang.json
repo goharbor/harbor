@@ -1089,7 +1089,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "在项目中标记 chart",
+        "TAG_COMMAND_CHART": "在项目中打包 chart",
         "PUSH_COMMAND_CHART": "推送 chart 到当前项目",
         "PUSH_COMMAND_CNAB": "推送 CNAB 到当前项目",
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",

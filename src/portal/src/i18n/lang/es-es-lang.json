@@ -1089,7 +1089,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "TAG_COMMAND_CHART": "Package a chart for this project:",
         "PUSH_COMMAND_CHART": "Push a chart to this project:",
         "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
         "TOOLTIP": "Command references for pushing an artifact to this project.",

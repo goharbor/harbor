@@ -31,7 +31,6 @@ import {
     VULNERABILITY_SCAN_STATUS
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
-import { CopyInputComponent } from "../../../../../../../shared/components/push-image/copy-input.component";
 import { ErrorHandler } from "../../../../../../../shared/units/error-handler";
 import { ArtifactService } from "../../../artifact.service";
 import { OperationService } from "../../../../../../../shared/components/operation/operation.service";
@@ -42,7 +41,7 @@ import {
     artifactDefault,
     ArtifactFront as Artifact,
     ArtifactFront,
-    artifactPullCommands,
+    ArtifactType, getPullCommandByDigest, getPullCommandByTag,
     mutipleFilter
 } from '../../../artifact';
 import { Project } from "../../../../../project";
@@ -130,8 +129,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     imageNameInput: ImageNameInputComponent;
 
     @ViewChild("digestTarget") textInput: ElementRef;
-    @ViewChild("copyInput") copyInput: CopyInputComponent;
-
     pageSize: number = DEFAULT_PAGE_SIZE;
     currentPage = 1;
     totalCount = 0;
@@ -408,7 +405,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                         this.artifactList.forEach((artifact, index) => {
                             artifact.platform = clone(platFormAttr[index].platform);
                         });
-                        this.getPullCommand(this.artifactList);
                         this.getArtifactTagsAsync(this.artifactList);
                         this.getAccessoriesAsync(this.artifactList);
                         this.checkCosignAsync(this.artifactList);
@@ -442,7 +438,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                         }
                     }
                     this.artifactList = res.body;
-                    this.getPullCommand(this.artifactList);
                     this.getArtifactTagsAsync(this.artifactList);
                     this.getAccessoriesAsync(this.artifactList);
                     this.checkCosignAsync(this.artifactList);
@@ -466,17 +461,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         this.clrLoad(st);
     }
 
-    getPullCommand(artifactList: Artifact[]) {
-        artifactList.forEach(artifact => {
-            artifact.pullCommand = '';
-            artifactPullCommands.forEach(artifactPullCommand => {
-                if (artifactPullCommand.type === artifact.type) {
-                    artifact.pullCommand =
-                        `${artifactPullCommand.pullCommand} ${this.registryUrl ?
-                            this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}@${artifact.digest}`;
-                }
-            });
-        });
+    getPullCommand(artifact: Artifact): string {
+        let pullCommand: string = '';
+        if (artifact.type === ArtifactType.CHART && artifact.tags && artifact.tags[0]) {
+            pullCommand = getPullCommandByTag(artifact.type, `${this.registryUrl ?
+                this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}`, artifact.tags[0]?.name);
+        } else {
+            pullCommand = getPullCommandByDigest(artifact.type, `${this.registryUrl ?
+                this.registryUrl : location.hostname}/${this.projectName}/${this.repoName}`, artifact.digest);
+        }
+        return pullCommand;
     }
     labelSelectedChange(artifact?: Artifact[]): void {
         this.artifactListPageService.imageStickLabels.forEach(data => {
@@ -979,11 +973,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.scanStoppedArtifactLength === this.onStopScanArtifactsLength) {
             this.onSendingScanCommand = e;
         }
-    }
-
-    // pull command
-    onCpError($event: any): void {
-        this.copyInput.setPullCommendShow();
     }
     handleScanOverview(scanOverview: any): any {
         if (scanOverview) {

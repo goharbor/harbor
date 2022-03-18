@@ -66,30 +66,45 @@ export enum AccessoryType {
   COSIGN = 'signature.cosign'
 }
 
-export const artifactImages = [
-  'IMAGE', 'CHART', 'CNAB', 'OPENPOLICYAGENT'
-];
-export const artifactPullCommands = [
-  {
-    type: artifactImages[0],
-    pullCommand: 'docker pull'
-  },
-  {
-    type: AccessoryType.COSIGN,
-    pullCommand: 'docker pull'
-  },
-  {
-    type: artifactImages[1],
-    pullCommand: 'helm chart pull'
-  },
-  {
-    type: artifactImages[2],
-    pullCommand: 'cnab-to-oci pull'
-  }
-];
+export enum ArtifactType {
+  IMAGE = 'IMAGE',
+  CHART = 'CHART',
+  CNAB = 'CNAB',
+  OPENPOLICYAGENT = 'OPENPOLICYAGENT'
+}
+
 export const artifactDefault = "images/artifact-default.svg";
 
 export enum AccessoryQueryParams {
   ACCESSORY_TYPE = 'accessoryType'
+}
+
+export function getPullCommandByDigest(artifactType: string, url: string, digest: string): string {
+  let pullCommand: string = '';
+  if (artifactType && url && digest) {
+    if (artifactType === ArtifactType.IMAGE) {
+      pullCommand = `docker pull ${url}@${digest}`;
+    }
+    if (artifactType === ArtifactType.CNAB) {
+      pullCommand = `cnab-to-oci pull ${url}@${digest}`;
+    }
+  }
+  return pullCommand;
+}
+
+export function getPullCommandByTag(artifactType: string, url: string, tag: string): string {
+  let pullCommand: string = '';
+  if (artifactType && url && tag) {
+    if (artifactType === ArtifactType.IMAGE) {
+      pullCommand = `docker pull ${url}:${tag}`;
+    }
+    if (artifactType === ArtifactType.CNAB) {
+      pullCommand = `cnab-to-oci pull ${url}:${tag}`;
+    }
+    if (artifactType === ArtifactType.CHART) {
+      pullCommand = `helm pull oci://${url} --version ${tag}`;
+    }
+  }
+  return pullCommand;
 }
 
