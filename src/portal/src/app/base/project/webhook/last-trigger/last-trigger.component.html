@@ -5,12 +5,12 @@
     <clr-dg-column>{{'WEBHOOK.LAST_TRIGGERED' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let item of lastTriggers">
         <clr-dg-cell>{{eventTypeToText(item.event_type)}}</clr-dg-cell>
-        <clr-dg-cell [ngSwitch]="item.enabled">
-            <div *ngSwitchCase="true" class="icon-wrap">
+        <clr-dg-cell>
+            <div *ngIf="item?.enabled" class="icon-wrap">
                 <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
                 <span>{{'WEBHOOK.ENABLED' | translate}}</span>
             </div>
-            <div *ngSwitchCase="false" class="icon-wrap">
+            <div *ngIf="!item?.enabled" class="icon-wrap">
                 <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
                 <span>{{'WEBHOOK.DISABLED' | translate}}</span>
             </div>
