@@ -1081,6 +1081,12 @@
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
+    "DOCKER": "Docker",
+    "HELM": "Helm",
+    "CNAB": "CNAB",
+    "TAG_COMMAND_CHART": "Package a chart for this project:",
+    "PUSH_COMMAND_CHART": "Push a chart to this project:",
+    "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
     "TOOLTIP": "推送一個鏡像到當前項目的參考命令。",
     "TAG_COMMAND": "在項目中標記鏡像：",
     "PUSH_COMMAND": "推送鏡像到當前項目：",
