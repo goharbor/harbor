@@ -30,13 +30,11 @@ export class PushImageButtonComponent {
     return `docker push ${this.registryUrl}/${this.projectName}/REPOSITORY[:TAG]`;
   }
   public get tagCommandChart(): string {
-    return `helm chart save CHART_PATH ${this.registryUrl}/${
-      this.projectName
-    }/REPOSITORY[:TAG]`;
+    return `helm package CHART_PATH`;
   }
 
   public get pushCommandChart(): string {
-    return `helm chart push ${this.registryUrl}/${this.projectName}/REPOSITORY[:TAG]`;
+    return `helm push CHART_PACKAGE oci://${this.registryUrl}/${this.projectName}`;
   }
 
   public get pushCommandCnab(): string {

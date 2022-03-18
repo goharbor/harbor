@@ -1088,7 +1088,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag ein Chart für dieses Projekt:",
+        "TAG_COMMAND_CHART": "Package ein Chart für dieses Projekt:",
         "PUSH_COMMAND_CHART": "Push ein Chart für dieses Projekt:",
         "PUSH_COMMAND_CNAB": "Push ein CNAB für dieses Projekt:",
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
