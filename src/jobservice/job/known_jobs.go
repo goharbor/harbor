@@ -34,4 +34,6 @@ const (
 	Retention = "RETENTION"
 	// P2PPreheat : the name of the P2P preheat job
 	P2PPreheat = "P2P_PREHEAT"
+	// SystemArtifactCleanup : the name of the SystemArtifact cleanup job
+	SystemArtifactCleanup = "SYSTEM_ARTIFACT_CLEANUP"
 )

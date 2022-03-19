@@ -19,6 +19,10 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/systemartifact"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"net/url"
 	"os"
 	"os/signal"
@@ -274,6 +278,7 @@ func main() {
 
 	log.Info("Fix empty subiss for meta info data.")
 	oidc.FixEmptySubIss(orm.Context())
+	scheduleSystemArtifactCleanJob(ctx)
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
@@ -320,4 +325,38 @@ func getDefaultScannerName() string {
 		return trivyScanner
 	}
 	return ""
+}
+
+func scheduleSystemArtifactCleanJob(ctx context.Context) {
+	cronType := "Daily"
+	cron := "0 0 0 * * *"
+
+	schedule, err := getSystemArtifactCleanupSchedule(ctx)
+	if err != nil {
+		return
+	}
+	if schedule != nil {
+		logger.Infof(" Export data cleanup job already scheduled with ID : %v.", schedule.ID)
+		return
+	}
+
+	scheduleId, err := scheduler.Sched.Schedule(ctx, systemartifact.VendorTypeSystemArtifactCleanup, 0, cronType, cron, systemartifact.SystemArtifactCleanupCallback, nil, nil)
+	if err != nil {
+		log.Fatalf("Encountered error when scheduling scan data export cleanup job : %v", err)
+	}
+	log.Infof("Scheduled scan data export cleanup job with ID : %v", scheduleId)
+}
+
+func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule, error) {
+	query := q.Query{Keywords: map[string]interface{}{"vendor_type": systemartifact.VendorTypeSystemArtifactCleanup}}
+	schedules, err := scheduler.Sched.ListSchedules(ctx, &query)
+	if err != nil {
+		logger.Errorf("Unable to check if export data cleanup job is already scheduled : %v", err)
+		return nil, err
+	}
+	if len(schedules) > 0 {
+		logger.Infof("Found export data cleanup job with schedule id : %v", schedules[0].ID)
+		return schedules[0], nil
+	}
+	return nil, nil
 }

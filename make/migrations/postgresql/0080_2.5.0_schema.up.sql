@@ -32,3 +32,21 @@ ALTER TABLE report_vulnerability_record ALTER COLUMN id TYPE BIGINT;
 ALTER SEQUENCE report_vulnerability_record_id_seq AS BIGINT;
 
 CREATE INDEX IF NOT EXISTS idx_task_job_id ON task (job_id);
+
+
+/*
+System Artifact Manager
+Github proposal link : https://github.com/goharbor/community/pull/181
+*/
+
+ CREATE TABLE IF NOT EXISTS "system_artifact" (
+        "id" serial NOT NULL PRIMARY KEY,
+        "repository" text NOT NULL DEFAULT '' ,
+        "digest" text NOT NULL DEFAULT '' ,
+        "size" bigint NOT NULL DEFAULT 0 ,
+        "vendor" text NOT NULL DEFAULT '' ,
+        "type" text NOT NULL DEFAULT '' ,
+        "create_time" timestamp with time zone NOT NULL,
+        "extra_attrs" text NOT NULL DEFAULT '' ,
+        UNIQUE ("repository", "digest")
+);
