@@ -32,3 +32,23 @@ def
 	actual := TrimLineBreaks(s)
 	assert.Equal(expect, actual, "should trim line breaks")
 }
+
+func TestTitle(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"upper case", args{"MANUAL"}, "Manual"},
+		{"lower case", args{"manual"}, "Manual"},
+		{"empty", args{""}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, Title(tt.args.s), "Title(%v)", tt.args.s)
+		})
+	}
+}

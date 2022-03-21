@@ -64,6 +64,7 @@ func New() http.Handler {
 		HealthAPI:             newHealthAPI(),
 		StatisticAPI:          newStatisticAPI(),
 		ProjectMetadataAPI:    newProjectMetadaAPI(),
+		PurgeAPI:              newPurgeAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

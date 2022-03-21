@@ -308,8 +308,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJob:           (*scan.Job)(nil),
-			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
 			job.PurgeAudit:             (*purge.Job)(nil),
+			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),

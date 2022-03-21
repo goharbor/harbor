@@ -29,3 +29,4 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/user --name Controller --output ./user --outpkg user
 //go:generate mockery --case snake --dir ../../controller/repository --name Controller --output ./repository --outpkg repository
 //go:generate mockery --case snake --dir ../../controller/purge --name Controller --output ./purge --outpkg purge
+//go:generate mockery --case snake --dir ../../controller/jobservice --name SchedulerController --output ./jobservice --outpkg jobservice
