@@ -90,6 +90,7 @@ export class ViewTokenComponent implements OnInit {
         this.copyToken = true;
         this.createSuccess = 'SYSTEM_ROBOT.REFRESH_SECRET_SUCCESS';
         // export to token file
+        robot.secret = res.secret;
         const downLoadUrl = `data:text/json;charset=utf-8, ${encodeURIComponent(JSON.stringify(robot))}`;
         this.downLoadHref = this.sanitizer.bypassSecurityTrustUrl(downLoadUrl);
         this.downLoadFileName = `${robot.name}.json`;
