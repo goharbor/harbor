@@ -63,14 +63,19 @@ func (a HarborAPI) SearchGet(q string) (Search, error) {
 	}
 
 	req, err := _sling.Request()
-
+	if err != nil {
+		return Search{}, err
+	}
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
+	if err != nil {
+		return Search{}, err
+	}
 	defer httpResponse.Body.Close()
 
 	body, err := ioutil.ReadAll(httpResponse.Body)
 	if err != nil {
-		// handle error
+		return Search{}, err
 	}
 
 	var successPayload = new(Search)
@@ -104,13 +109,19 @@ func (a HarborAPI) ProjectsPost(prjUsr UsrInfo, project Project) (int, error) {
 	_sling = _sling.BodyJSON(project)
 
 	req, err := _sling.Request()
+	if err != nil {
+		return 0, err
+	}
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
 
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
 	defer httpResponse.Body.Close()
 
-	return httpResponse.StatusCode, err
+	return httpResponse.StatusCode, nil
 }
 
 // Delete a repository or a tag in a repository.
@@ -142,17 +153,20 @@ func (a HarborAPI) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag strin
 	}
 
 	req, err := _sling.Request()
+	if err != nil {
+		return 0, err
+	}
 	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
 	// fmt.Printf("request %+v", req)
 
 	client := &http.Client{}
 	httpResponse, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
 	defer httpResponse.Body.Close()
 
-	if err != nil {
-		// handle error
-	}
-	return httpResponse.StatusCode, err
+	return httpResponse.StatusCode, nil
 }
 
 // Return projects created by Harbor

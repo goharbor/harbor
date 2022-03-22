@@ -6,10 +6,11 @@ import (
 )
 
 func (a HarborAPI) HarborLogout() (int, error) {
-
 	response, err := http.Get(a.basePath + "/logout")
-
+	if err != nil {
+		return 0, err
+	}
 	defer response.Body.Close()
 
-	return response.StatusCode, err
+	return response.StatusCode, nil
 }

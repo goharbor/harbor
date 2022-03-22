@@ -18,11 +18,16 @@ func (a HarborAPI) HarborLogin(user UsrInfo) (int, error) {
 
 	client := &http.Client{}
 	reqest, err := http.NewRequest("POST", a.basePath+"/login", body)
-
+	if err != nil {
+		return 0, err
+	}
 	reqest.Header.Set("Content-Type", "application/x-www-form-urlencoded;param=value") // setting post head
 
 	resp, err := client.Do(reqest)
+	if err != nil {
+		return 0, err
+	}
 	defer resp.Body.Close() // close resp.Body
 
-	return resp.StatusCode, err
+	return resp.StatusCode, nil
 }
