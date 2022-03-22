@@ -57,7 +57,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		if !proj.VulPrevented() {
 			// vulnerability prevention disabled, skip the checking
-			logger.Debugf("project %s vulnerability prevention disabled, skip the checking", proj.Name)
+			logger.Debugf("project %s vulnerability prevention deactivated, skip the checking", proj.Name)
 			return nil
 		}
 
