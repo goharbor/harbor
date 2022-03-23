@@ -226,7 +226,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is disabled", r.Name)
+		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is deactivated", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -451,7 +451,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		message := fmt.Sprintf("%d artifact(s) found", summary.TotalCount)
 
 		if summary.PreconditionCount > 0 {
-			message = fmt.Sprintf("%s, scanner not found or disabled for %d of them", message, summary.PreconditionCount)
+			message = fmt.Sprintf("%s, scanner not found or deactivated for %d of them", message, summary.PreconditionCount)
 		}
 
 		if summary.UnknowCount > 0 {

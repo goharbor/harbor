@@ -59,7 +59,7 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	if robot.Disabled {
-		log.Errorf("failed to authenticate disabled robot account: %s", name)
+		log.Errorf("failed to authenticate deactivated robot account: %s", name)
 		return nil
 	}
 	now := time.Now().Unix()

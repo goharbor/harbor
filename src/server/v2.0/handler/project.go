@@ -735,7 +735,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable(ctx) {
-		log.Debug("Quota per project disabled")
+		log.Debug("Quota per project deactivated")
 		return
 	}
 
