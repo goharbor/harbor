@@ -99,7 +99,7 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
 	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
-	if err == cache.ErrNotFound {
+	if errors.Is(err, cache.ErrNotFound) {
 		// skip to update digest, continue
 	} else if err != nil {
 		// for other error, return
@@ -171,7 +171,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 
 	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, string(desc.Digest)), &content)
 	if err != nil {
-		if err == cache.ErrNotFound {
+		if errors.Is(err, cache.ErrNotFound) {
 			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
 		} else {
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)

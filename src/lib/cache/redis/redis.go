@@ -16,6 +16,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -53,7 +54,8 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 	if err != nil {
 		// convert internal or Timeout error to be ErrNotFound
 		// so that the caller can continue working without breaking
-		return cache.ErrNotFound
+		// return cache.ErrNotFound
+		return fmt.Errorf("%w:%v", cache.ErrNotFound, err)
 	}
 
 	if err := c.opts.Codec.Decode(data, value); err != nil {
@@ -89,6 +91,10 @@ func (c *Cache) Save(ctx context.Context, key string, value interface{}, expirat
 func New(opts cache.Options) (cache.Cache, error) {
 	if opts.Address == "" {
 		opts.Address = "redis://localhost:6379/0"
+	}
+
+	if opts.Codec == nil {
+		opts.Codec = cache.DefaultCodec()
 	}
 
 	u, err := url.Parse(opts.Address)
