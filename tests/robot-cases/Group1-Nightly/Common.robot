@@ -627,7 +627,7 @@ Test Case - Webhook CRUD
     Create A New Webhook   webhook${d}   https://test.com
     Create A New Webhook   webhook2${d}   https://test2.com
     Update A Webhook    webhook${d}  newWebhook${d}   https://new-test.com
-    Enable/Disable State of Same Webhook   newWebhook${d}
+    Enable/Deactivate State of Same Webhook   newWebhook${d}
     Delete A Webhook  newWebhook${d}
     Close Browser
 
