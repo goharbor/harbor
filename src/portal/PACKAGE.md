@@ -46,14 +46,14 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-   "@angular/animations": "~13.2.2",
-    "@angular/common": "~13.2.2",
-    "@angular/compiler": "~13.2.2",
-    "@angular/core": "~13.2.2",
-    "@angular/forms": "~13.2.2",
-    "@angular/localize": "~13.2.2",
-    "@angular/platform-browser": "~13.2.2",
-    "@angular/platform-browser-dynamic": "~13.2.2",
+    "@angular/animations": "~13.3.0",
+    "@angular/common": "~13.3.0",
+    "@angular/compiler": "~13.3.0",
+    "@angular/core": "~13.3.0",
+    "@angular/forms": "~13.3.0",
+    "@angular/localize": "~13.3.0",
+    "@angular/platform-browser": "~13.3.0",
+    "@angular/platform-browser-dynamic": "~13.3.0",
     "@angular/router": "~13.2.2",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
@@ -82,7 +82,7 @@
     "ngx-markdown": "~13.0.0",
     
     // For swagger API center. Required
-    "swagger-ui": "^4.6.0",
+    "swagger-ui": "~4.9.0",
     "buffer": "^6.0.3",
     "stream-browserify": "^3.0.0",
     
@@ -91,9 +91,9 @@
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "~13.2.3",
-    "@angular/cli": "~13.2.3",
-    "@angular/compiler-cli": "~13.2.2",
+    "@angular-devkit/build-angular": "~13.3.0",
+    "@angular/cli": "~13.3.0",
+    "@angular/compiler-cli": "~13.3.0",
     "@types/jasmine": "~3.10.1",
     "@types/node": "^16.11.6",
     "typescript": "~4.5.4",
@@ -101,7 +101,7 @@
     // For unit test. Required
     "jasmine-core": "^4.0.0",
     "jasmine-spec-reporter": "~7.0.0",
-    "karma": "^6.3.16",
+    "karma": "^6.3.17",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "^2.2.0",
     "karma-jasmine": "~4.0.1",

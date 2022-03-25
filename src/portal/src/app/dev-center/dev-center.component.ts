@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from "ngx-cookie";
-import * as SwaggerUI from 'swagger-ui';
+import SwaggerUI from 'swagger-ui';
 import { mergeDeep } from "../shared/units/utils";
 import { DevCenterBaseDirective } from "./dev-center-base";
 import { SAFE_METHODS } from "../services/intercept-http.service";
