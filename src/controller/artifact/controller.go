@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
@@ -116,7 +117,7 @@ func NewController() Controller {
 	return &controller{
 		tagCtl:       tag.Ctl,
 		repoMgr:      repository.Mgr,
-		artMgr:       artifact.Mgr,
+		artMgr:       pkg.ArtifactMgr,
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,
 		sigMgr:       signature.GetManager(),

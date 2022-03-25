@@ -1,10 +1,12 @@
 package exporter
 
 import (
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/stretchr/testify/suite"
 
@@ -93,7 +95,7 @@ func setupTest(t *testing.T) {
 	art1.ProjectID = testPro1.ProjectID
 	art1.RepositoryID = repo1ID
 	art1.PushTime = time.Now()
-	_, err = artifact.Mgr.Create(ctx, &art1)
+	_, err = pkg.ArtifactMgr.Create(ctx, &art1)
 	if err != nil {
 		t.Errorf("add repo error %v", err)
 	}
@@ -101,7 +103,7 @@ func setupTest(t *testing.T) {
 	art2.ProjectID = testPro2.ProjectID
 	art2.RepositoryID = repo2ID
 	art2.PushTime = time.Now()
-	_, err = artifact.Mgr.Create(ctx, &art2)
+	_, err = pkg.ArtifactMgr.Create(ctx, &art2)
 	if err != nil {
 		t.Errorf("add repo error %v", err)
 	}

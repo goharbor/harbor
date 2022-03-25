@@ -87,6 +87,30 @@ func (c *Cache) Save(ctx context.Context, key string, value interface{}, expirat
 	return c.Client.Set(ctx, c.opts.Key(key), data, exp).Err()
 }
 
+// Keys returns the key matched by prefixes.
+func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
+	patterns := make([]string, 0, len(prefixes))
+	if len(prefixes) == 0 {
+		patterns = append(patterns, "*")
+	} else {
+		for _, p := range prefixes {
+			patterns = append(patterns, c.opts.Key(p)+"*")
+		}
+	}
+
+	keys := make([]string, 0)
+	for _, pattern := range patterns {
+		cmd := c.Client.Keys(ctx, pattern)
+		if err := cmd.Err(); err != nil {
+			return nil, err
+		}
+
+		keys = append(keys, cmd.Val()...)
+	}
+
+	return keys, nil
+}
+
 // New returns redis cache
 func New(opts cache.Options) (cache.Cache, error) {
 	if opts.Address == "" {

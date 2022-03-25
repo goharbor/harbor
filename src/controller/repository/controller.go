@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -61,7 +62,7 @@ func NewController() Controller {
 	return &controller{
 		proMgr:  project.Mgr,
 		repoMgr: repository.Mgr,
-		artMgr:  art.Mgr,
+		artMgr:  pkg.ArtifactMgr,
 		artCtl:  artifact.Ctl,
 	}
 }

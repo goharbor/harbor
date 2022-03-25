@@ -18,7 +18,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
@@ -40,7 +42,7 @@ type Abstractor interface {
 // NewAbstractor creates a new abstractor
 func NewAbstractor() Abstractor {
 	return &abstractor{
-		artMgr:  artifact.Mgr,
+		artMgr:  pkg.ArtifactMgr,
 		blobMgr: blob.Mgr,
 		regCli:  registry.Cli,
 	}

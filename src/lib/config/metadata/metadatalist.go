@@ -183,5 +183,8 @@ var (
 		{Name: common.PullTimeUpdateDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_TIME_UPDATE_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull time is disable for pull request.`},
 		{Name: common.PullCountUpdateDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_COUNT_UPDATE_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull count is disable for pull request.`},
 		{Name: common.PullAuditLogDisable, Scope: UserScope, Group: BasicGroup, EnvKey: "PULL_AUDIT_LOG_DISABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate if pull audit log is disable for pull request.`},
+
+		{Name: common.CacheEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_ENABLED", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Enable cache`},
+		{Name: common.CacheExpireHours, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_EXPIRE_HOURS", DefaultValue: "24", ItemType: &IntType{}, Editable: false, Description: `The expire hours for cache`},
 	}
 )

@@ -3,15 +3,17 @@ package immutable
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/immutable"
-	"github.com/goharbor/harbor/src/pkg/project"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/project"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib"
@@ -92,7 +94,7 @@ func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, 
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	afid, err := artifact.Mgr.Create(ctx, af)
+	afid, err := pkg.ArtifactMgr.Create(ctx, af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 	return afid
 }
@@ -162,7 +164,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 
 	defer func() {
 		project.Mgr.Delete(ctx, projectID)
-		artifact.Mgr.Delete(ctx, afID)
+		pkg.ArtifactMgr.Delete(ctx, afID)
 		repository.Mgr.Delete(ctx, repoID)
 		tag.Mgr.Delete(ctx, tagID)
 		immutable.Ctr.DeleteImmutableRule(internal_orm.Context(), immuRuleID)

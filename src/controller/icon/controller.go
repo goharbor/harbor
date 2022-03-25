@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/base64"
 	"image"
+
 	// import the gif format
 	_ "image/gif"
 	// import the jpeg format
@@ -31,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/nfnt/resize"
@@ -83,7 +85,7 @@ type Controller interface {
 // NewController creates a new instance of the icon controller
 func NewController() Controller {
 	return &controller{
-		artMgr: artifact.Mgr,
+		artMgr: pkg.ArtifactMgr,
 		regCli: registry.Cli,
 		cache:  sync.Map{},
 	}
