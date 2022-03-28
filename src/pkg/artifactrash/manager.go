@@ -18,6 +18,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/dao"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
@@ -43,9 +44,14 @@ type Manager interface {
 
 // NewManager returns an instance of the default manager
 func NewManager() Manager {
-	return &manager{
-		dao.New(),
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
 	}
+
+	return &manager{dao: dao.New()}
 }
 
 var _ Manager = &manager{}

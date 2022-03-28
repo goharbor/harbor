@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/utils"
 	"reflect"
 	"testing"
 	"time"
@@ -39,7 +40,7 @@ type daoTestSuite struct {
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 	artifactID, err := d.dao.Create(d.ctx, &model.AuditLog{
 		Operation:    "Create",
@@ -176,6 +177,9 @@ func (d *daoTestSuite) TestPurge() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &daoTestSuite{})
 }
 

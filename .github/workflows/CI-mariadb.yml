@@ -1,0 +1,91 @@
+name: CI-mariadb
+env:
+   DATABASE_TYPE: mariadb
+   DB_HOST: localhost
+   DB_PORT: 3306
+   DB_USERNAME: root
+   DB_PASSWORD: root123
+   DB_DATABASE: registry
+   DB_COLLATION: utf8mb4_general_ci
+   DOCKER_COMPOSE_VERSION: 1.23.0
+   HARBOR_ADMIN: admin
+   HARBOR_ADMIN_PASSWD: Harbor12345
+   CORE_SECRET: tempString
+   KEY_PATH: "/data/secret/keys/secretkey"
+   REDIS_HOST: localhost
+   REG_VERSION: v2.7.1-patch-2819-2553
+   UI_BUILDER_VERSION: 1.6.0
+
+on:
+  pull_request:
+  push:
+    paths-ignore:
+    - 'docs/**'
+
+jobs:
+  UTTEST4MARIADB:
+    env:
+      UTTEST: true
+    runs-on:
+      #- self-hosted
+      - ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Set up Go 1.19
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.19.3
+        id: go
+      - name: setup Docker
+        uses: docker-practice/actions-setup-docker@1.0.11
+        with:
+          docker_version: 20.04
+          docker_channel: stable
+      - uses: actions/checkout@v3
+        with:
+          path: src/github.com/goharbor/harbor
+      - name: setup env
+        run: |
+          cd src/github.com/goharbor/harbor
+          pwd
+          go env
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+        shell: bash
+      - name: before_install
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          pwd
+          env
+          #sudo apt install -y xvfb
+          #xvfb-run ls
+          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+          IP=`hostname -I | awk '{print $1}'`
+          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
+          echo "IP=$IP" >> $GITHUB_ENV
+          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          sudo service docker restart
+      - name: install
+        run: |
+          cd src/github.com/goharbor/harbor
+          env
+          df -h
+          bash ./tests/showtime.sh ./tests/ci/ut_install.sh
+      - name: script
+        run: |
+          echo IP: $IP
+          df -h
+          cd src/github.com/goharbor/harbor
+          bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
+          df -h
+      - name: Codecov For BackEnd
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./src/github.com/goharbor/harbor/profile.cov
+          flags: unittests
+

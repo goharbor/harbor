@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
@@ -32,8 +33,11 @@ type DaoTestSuite struct {
 }
 
 func (suite *DaoTestSuite) SetupSuite() {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Suite.SetupSuite()
-	suite.Suite.ClearTables = []string{"blob", "artifact_blob", "project_blob"}
+	suite.Suite.ClearTables = []string{`blob`, "artifact_blob", "project_blob"}
 	suite.dao = New()
 }
 
@@ -485,5 +489,8 @@ func (suite *DaoTestSuite) GetBlobsByArtDigest() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

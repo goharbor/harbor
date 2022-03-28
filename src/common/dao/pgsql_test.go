@@ -20,9 +20,14 @@ import (
 	"testing"
 
 	"github.com/beego/beego/orm"
+
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
-func TestMaxOpenConns(t *testing.T) {
+func TestPgsqlMaxOpenConns(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	var wg sync.WaitGroup
 
 	queryNum := 200

@@ -7,33 +7,31 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger/getter"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func TestMain(m *testing.M) {
+	database := os.Getenv("DATABASE_TYPE")
+	log.Infof("run test cases for database: %s", database)
 
-	// databases := []string{"mysql", "sqlite"}
-	databases := []string{"postgresql"}
-	for _, database := range databases {
-		log.Infof("run test cases for database: %s", database)
-
-		result := 1
-		switch database {
-		case "postgresql":
-			dao.PrepareTestForPostgresSQL()
-		default:
-			log.Fatalf("invalid database: %s", database)
-		}
-
-		result = m.Run()
-
-		if result != 0 {
-			os.Exit(result)
-		}
+	result := 1
+	switch {
+	case utils.IsDBPostgresql():
+		dao.PrepareTestForPostgresSQL()
+	case utils.IsDBMysql():
+		dao.PrepareTestForMySQL()
+	default:
+		log.Fatalf("invalid database: %s", database)
 	}
 
+	result = m.Run()
+
+	if result != 0 {
+		os.Exit(result)
+	}
 }
 
 // Test DB logger

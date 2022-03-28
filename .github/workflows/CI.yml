@@ -1,10 +1,11 @@
 name: CI
 env:
-   POSTGRESQL_HOST: localhost
-   POSTGRESQL_PORT: 5432
-   POSTGRESQL_USR: postgres
-   POSTGRESQL_PWD: root123
-   POSTGRESQL_DATABASE: registry
+   DATABASE_TYPE: postgresql
+   DB_HOST: localhost
+   DB_PORT: 5432
+   DB_USERNAME: postgres
+   DB_PASSWORD: root123
+   DB_DATABASE: registry
    DOCKER_COMPOSE_VERSION: 1.23.0
    HARBOR_ADMIN: admin
    HARBOR_ADMIN_PASSWD: Harbor12345

@@ -18,10 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"time"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -60,6 +62,22 @@ type Manager interface {
 
 // NewManager creates an instance of the default task manager
 func NewManager() Manager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{
+			dao:      dao.NewTaskDAO(),
+			execDAO:  dao.NewExecutionDAO(),
+			jsClient: cjob.GlobalClient,
+			coreURL:  config.GetCoreURL(),
+		}
+	case utils.IsDBMysql():
+		return &manager{
+			dao:      dao.NewTaskMysqlDAO(),
+			execDAO:  dao.NewExecutionMysqlDAO(),
+			jsClient: cjob.GlobalClient,
+			coreURL:  config.GetCoreURL(),
+		}
+	}
 	return &manager{
 		dao:      dao.NewTaskDAO(),
 		execDAO:  dao.NewExecutionDAO(),

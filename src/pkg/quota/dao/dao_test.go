@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"github.com/goharbor/harbor/src/common/utils"
 	"testing"
 
 	"github.com/google/uuid"
@@ -229,5 +230,8 @@ func (suite *DaoTestSuite) TestList() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

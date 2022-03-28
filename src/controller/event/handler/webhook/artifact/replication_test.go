@@ -41,7 +41,7 @@ import (
 )
 
 func TestReplicationHandler_Handle(t *testing.T) {
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	config.Init()
 
 	PolicyMgr := notification.PolicyMgr

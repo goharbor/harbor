@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification/job/dao"
 	"github.com/goharbor/harbor/src/pkg/notification/job/model"
@@ -39,9 +40,14 @@ type manager struct {
 
 // NewManager ...
 func NewManager() Manager {
-	return &manager{
-		dao: dao.New(),
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
 	}
+
+	return &manager{dao: dao.New()}
 }
 
 // Create ...

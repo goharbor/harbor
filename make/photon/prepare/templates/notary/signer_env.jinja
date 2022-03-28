@@ -1,3 +1,10 @@
 NOTARY_SIGNER_DEFAULTALIAS={{alias}}
+{% if ( notary_signer_db_type == "mysql" or notary_signer_db_type == "mariadb" ) %}
+MIGRATIONS_PATH=migrations/signer/mysql
+CONFIG_FILE=/etc/notary/signer-config.mysql.json
+DB_URL=mysql://{{notary_server_db_username}}:{{notary_server_db_password}}@tcp({{notary_server_db_host}}:{{notary_server_db_port}})/{{notary_server_db_name}}
+{% else %}
 MIGRATIONS_PATH=migrations/signer/postgresql
+CONFIG_FILE=/etc/notary/signer-config.postgres.json
 DB_URL=postgres://{{notary_signer_db_username}}:{{notary_signer_db_password}}@{{notary_signer_db_host}}:{{notary_signer_db_port}}/{{notary_signer_db_name}}?sslmode={{notary_signer_db_sslmode}}
+{% endif %}

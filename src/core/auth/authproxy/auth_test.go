@@ -58,12 +58,12 @@ func TestMain(m *testing.M) {
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
 		common.HTTPAuthProxyVerifyCert:          false,
-		common.PostGreSQLSSLMode:                cfgMap[common.PostGreSQLSSLMode],
-		common.PostGreSQLUsername:               cfgMap[common.PostGreSQLUsername],
-		common.PostGreSQLPort:                   cfgMap[common.PostGreSQLPort],
-		common.PostGreSQLHOST:                   cfgMap[common.PostGreSQLHOST],
-		common.PostGreSQLPassword:               cfgMap[common.PostGreSQLPassword],
-		common.PostGreSQLDatabase:               cfgMap[common.PostGreSQLDatabase],
+		common.DBSSLMode:                        cfgMap[common.DBSSLMode],
+		common.DBUsername:                       cfgMap[common.DBUsername],
+		common.DBPort:                           cfgMap[common.DBPort],
+		common.DBHOST:                           cfgMap[common.DBHOST],
+		common.DBPassword:                       cfgMap[common.DBPassword],
+		common.DBDatabase:                       cfgMap[common.DBDatabase],
 	}
 
 	config.InitWithSettings(conf)

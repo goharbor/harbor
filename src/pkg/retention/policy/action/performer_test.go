@@ -69,7 +69,7 @@ func (suite *TestPerformerSuite) SetupSuite() {
 
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 }
 
 // TearDownSuite ...

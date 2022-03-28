@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -185,5 +186,8 @@ func (suite *DaoTestSuite) TestGetLastTriggerJobsGroupByEventType() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

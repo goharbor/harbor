@@ -26,7 +26,7 @@ func (suite *defaultCleanupCriteriaTestSuite) SetupSuite() {
 	suite.Suite.SetupSuite()
 	suite.dao = dao.NewSystemArtifactDao()
 	suite.cleanupCriteria = DefaultSelector
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	suite.ctx = orm.Context()
 	sa := model.SystemArtifact{}
 	suite.ClearTables = append(suite.ClearTables, sa.TableName())

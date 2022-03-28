@@ -145,12 +145,16 @@ _version: 2.6.0
 # Uncomment external_database if using external database.
 # external_database:
 #   harbor:
+#     # database type, default is postgresql, options include postgresql, mariadb and mysql
+#     type: harbor_db_type
 #     host: harbor_db_host
 #     port: harbor_db_port
 #     db_name: harbor_db_name
 #     username: harbor_db_username
 #     password: harbor_db_password
 #     ssl_mode: disable
+#     # collation setting for mariadb and mysql
+#     collation: utf8mb4_general_ci
 #     max_idle_conns: 2
 #     max_open_conns: 0
 #   notary_signer:

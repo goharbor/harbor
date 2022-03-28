@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/dao"
@@ -163,5 +164,12 @@ func (m *manager) CalculateTotalSize(ctx context.Context, excludeForeignLayer bo
 
 // NewManager returns blob manager
 func NewManager() Manager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
+	}
+
 	return &manager{dao: dao.New()}
 }

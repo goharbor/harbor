@@ -17,5 +17,5 @@ docker ps
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 go test -race -i ./src/core ./src/jobservice
-sudo -E env "PATH=$PATH" "POSTGRES_MIGRATION_SCRIPTS_PATH=$DIR/../../make/migrations/postgresql/" ./tests/coverage4gotest.sh
+sudo -E env "PATH=$PATH" "POSTGRES_MIGRATION_SCRIPTS_PATH=$DIR/../../make/migrations/postgresql/" "MYSQL_MIGRATION_SCRIPTS_PATH=$DIR/../../make/migrations/mysql/" ./tests/coverage4gotest.sh
 #goveralls -coverprofile=profile.cov -service=github || true

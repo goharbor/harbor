@@ -23,6 +23,7 @@ import (
 	"github.com/beego/beego/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	userModels "github.com/goharbor/harbor/src/pkg/user/models"
@@ -74,8 +75,8 @@ func InitDatabase(database *models.Database) error {
 }
 
 func getDatabase(database *models.Database) (db Database, err error) {
-	switch database.Type {
-	case "", "postgresql":
+	switch {
+	case utils.IsDBPostgresql(database.Type):
 		db = NewPGSQL(
 			database.PostGreSQL.Host,
 			strconv.Itoa(database.PostGreSQL.Port),
@@ -85,6 +86,17 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.SSLMode,
 			database.PostGreSQL.MaxIdleConns,
 			database.PostGreSQL.MaxOpenConns,
+		)
+	case utils.IsDBMysql(database.Type):
+		db = NewMySQL(
+			database.MySQL.Host,
+			strconv.Itoa(database.MySQL.Port),
+			database.MySQL.Username,
+			database.MySQL.Password,
+			database.MySQL.Database,
+			database.MySQL.Collation,
+			database.MySQL.MaxIdleConns,
+			database.MySQL.MaxOpenConns,
 		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)
@@ -120,6 +132,9 @@ func ClearTable(table string) error {
 	}
 	if table == "project_metadata" { // make sure library is public
 		sql = fmt.Sprintf("delete from %s where id > 1", table)
+	}
+	if table == "blob" && o.Driver().Type() == orm.DRMySQL {
+		sql = fmt.Sprintf("delete from `%s` where 1=1", table)
 	}
 	_, err := o.Raw(sql).Exec()
 	return err

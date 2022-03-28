@@ -44,7 +44,7 @@ func TestDaoTestSuite(t *testing.T) {
 
 // SetupSuite setups testing env.
 func (d *daoTestSuite) SetupSuite() {
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.dao = New()
 	d.ctx = orm.NewContext(nil, beego_orm.NewOrm())
 	d.defaultPolicy = &policy.Schema{

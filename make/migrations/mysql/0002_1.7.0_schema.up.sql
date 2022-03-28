@@ -4,7 +4,7 @@ DELETE FROM properties where k='scan_all_policy';
 create table job_log (
  log_id SERIAL NOT NULL,
  job_uuid varchar (64) NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
  content text,
  primary key (log_id)
 );

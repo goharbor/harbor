@@ -16,7 +16,7 @@ import (
 )
 
 func TestSlackHandler_Handle(t *testing.T) {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	hookMgr := notification.HookManager
 	defer func() {
 		notification.HookManager = hookMgr

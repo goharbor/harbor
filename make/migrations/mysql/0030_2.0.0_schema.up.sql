@@ -9,8 +9,8 @@ table artifact:
   repository_name varchar(255) NOT NULL,
   digest        varchar(255) NOT NULL,
   size          bigint,
-  push_time     timestamp default CURRENT_TIMESTAMP,
-  pull_time     timestamp,
+  push_time     timestamp(6) default CURRENT_TIMESTAMP(6),
+  pull_time     timestamp(6),
   extra_attrs   text,
   annotations   jsonb,
   CONSTRAINT unique_artifact UNIQUE (repository_id, digest)
@@ -67,8 +67,8 @@ CREATE TABLE tag
   repository_id int NOT NULL,
   artifact_id   bigint unsigned NOT NULL,
   name          varchar(255) NOT NULL,
-  push_time     timestamp default CURRENT_TIMESTAMP,
-  pull_time     timestamp,
+  push_time     timestamp(6) default CURRENT_TIMESTAMP(6),
+  pull_time     timestamp(6),
   FOREIGN KEY (artifact_id) REFERENCES artifact(id),
   CONSTRAINT unique_tag UNIQUE (repository_id, name)
 );
@@ -92,6 +92,7 @@ JOIN (
 ) AS ordered_art ON art.repository_name=ordered_art.repository_name AND art.digest=ordered_art.digest
 WHERE ordered_art.seq=1;
 
+ALTER TABLE artifact DROP INDEX unique_artifact;
 ALTER TABLE artifact DROP COLUMN tag;
 
 /*remove the duplicate artifact rows*/
@@ -102,7 +103,6 @@ WHERE id NOT IN (
 );
 
 SET sql_mode = '';
-ALTER TABLE artifact DROP INDEX unique_artifact;
 ALTER TABLE artifact ADD CONSTRAINT unique_artifact UNIQUE (repository_id, digest);
 
 /*set artifact size*/
@@ -127,7 +127,8 @@ CREATE TABLE artifact_reference
   annotations json,
   FOREIGN KEY (parent_id) REFERENCES artifact(id),
   FOREIGN KEY (child_id) REFERENCES artifact(id),
-  CONSTRAINT  unique_reference UNIQUE (parent_id, child_id)
+  CONSTRAINT  unique_reference UNIQUE (parent_id, child_id),
+  CHECK (annotations is null or JSON_VALID (annotations))
 );
 
 /* artifact_trash records deleted artifact */
@@ -138,7 +139,7 @@ CREATE TABLE artifact_trash
   manifest_media_type varchar(255) NOT NULL,
   repository_name     varchar(255) NOT NULL,
   digest              varchar(255) NOT NULL,
-  creation_time       timestamp default CURRENT_TIMESTAMP,
+  creation_time       timestamp(6) default CURRENT_TIMESTAMP(6),
   CONSTRAINT      unique_artifact_trash UNIQUE (repository_name, digest)
 );
 
@@ -147,8 +148,8 @@ CREATE TABLE label_reference (
  id SERIAL PRIMARY KEY NOT NULL,
  label_id bigint unsigned NOT NULL,
  artifact_id bigint unsigned NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6),
  FOREIGN KEY (label_id) REFERENCES harbor_label(id),
  FOREIGN KEY (artifact_id) REFERENCES artifact(id),
  CONSTRAINT unique_label_reference UNIQUE (label_id,artifact_id)
@@ -179,7 +180,7 @@ CREATE TABLE audit_log
  resource_type  varchar(255) NOT NULL,
  resource       varchar(1024) NOT NULL,
  username       varchar(255) NOT NULL,
- op_time        timestamp default CURRENT_TIMESTAMP
+ op_time        timestamp(6) default CURRENT_TIMESTAMP(6)
 );
 
 /*migrate access log to audit log*/

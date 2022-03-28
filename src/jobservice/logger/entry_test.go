@@ -9,6 +9,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -18,24 +19,23 @@ import (
 func TestMain(m *testing.M) {
 	config.DefaultCfgManager = common.InMemoryCfgManager
 
-	// databases := []string{"mysql", "sqlite"}
-	databases := []string{"postgresql"}
-	for _, database := range databases {
-		log.Infof("run test cases for database: %s", database)
+	database := os.Getenv("DATABASE_TYPE")
+	log.Infof("run test cases for database: %s", database)
 
-		result := 1
-		switch database {
-		case "postgresql":
-			dao.PrepareTestForPostgresSQL()
-		default:
-			log.Fatalf("invalid database: %s", database)
-		}
+	result := 1
+	switch {
+	case utils.IsDBPostgresql():
+		dao.PrepareTestForPostgresSQL()
+	case utils.IsDBMysql():
+		dao.PrepareTestForMySQL()
+	default:
+		log.Fatalf("invalid database: %s", database)
+	}
 
-		result = m.Run()
+	result = m.Run()
 
-		if result != 0 {
-			os.Exit(result)
-		}
+	if result != 0 {
+		os.Exit(result)
 	}
 }
 

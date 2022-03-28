@@ -15,6 +15,7 @@
 package report
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -41,7 +42,7 @@ func TestManager(t *testing.T) {
 
 // SetupSuite prepares test env for suite TestManagerSuite.
 func (suite *TestManagerSuite) SetupSuite() {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 
 	suite.m = NewManager()
 }
@@ -92,7 +93,7 @@ func (suite *TestManagerSuite) TestManagerUpdateReportData() {
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(l))
 
-	suite.Equal("{\"a\":1000}", l[0].Report)
+	suite.Equal("{\"a\":1000}", strings.ReplaceAll(l[0].Report, " ", ""))
 }
 
 // TestManagerDeleteByDigests ...

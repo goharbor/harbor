@@ -51,7 +51,7 @@ func TestQuotaPreprocessHandler(t *testing.T) {
 
 // SetupSuite prepares env for test suite.
 func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	cfg := map[string]interface{}{
 		common.NotificationEnable: true,
 	}

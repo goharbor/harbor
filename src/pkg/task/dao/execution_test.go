@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -37,7 +38,7 @@ type executionDAOTestSuite struct {
 }
 
 func (e *executionDAOTestSuite) SetupSuite() {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	e.ctx = orm.Context()
 	e.taskDao = &taskDAO{}
 	e.executionDAO = &executionDAO{
@@ -328,6 +329,9 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 }
 
 func TestExecutionDAOSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &executionDAOTestSuite{})
 }
 

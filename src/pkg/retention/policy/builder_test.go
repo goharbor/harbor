@@ -54,7 +54,7 @@ func TestBuilder(t *testing.T) {
 
 // SetupSuite prepares the testing content if needed
 func (suite *TestBuilderSuite) SetupSuite() {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	suite.all = []*selector.Candidate{
 		{
 			NamespaceID: 1,

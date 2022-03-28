@@ -84,6 +84,11 @@ func castQuantity(field string) string {
 	return fmt.Sprintf("CAST( (CASE WHEN (%[1]s) IS NULL THEN '0' WHEN (%[1]s) = '-1' THEN '9223372036854775807' ELSE (%[1]s) END) AS BIGINT )", field)
 }
 
+func castQuantityFormysql(field string) string {
+	// cast -1 to max int64 when order by field
+	return fmt.Sprintf("CAST( (CASE WHEN %[1]s IS NULL THEN '0' WHEN %[1]s = '-1' THEN '9223372036854775807' ELSE %[1]s END) AS UNSIGNED )", field)
+}
+
 func listOrderBy(query *q.Query) string {
 	orderBy := "b.creation_time DESC"
 
@@ -106,6 +111,38 @@ func listOrderBy(query *q.Query) string {
 					if types.IsValidResource(types.ResourceName(resource)) {
 						field := fmt.Sprintf("%s->>%s", strings.TrimSuffix(prefix, "."), orm.QuoteLiteral(resource))
 						orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
+						break
+					}
+				}
+			}
+		}
+	}
+
+	return orderBy
+}
+
+func listOrderByForMysql(query *q.Query) string {
+	orderBy := "b.creation_time DESC"
+
+	if query != nil && query.Sorting != "" {
+		if val, ok := quotaOrderMap[query.Sorting]; ok {
+			orderBy = val
+		} else {
+			sort := query.Sorting
+
+			order := "ASC"
+			if sort[0] == '-' {
+				order = "DESC"
+				sort = sort[1:]
+			}
+
+			prefixes := []string{"hard.", "used."}
+			for _, prefix := range prefixes {
+				if strings.HasPrefix(sort, prefix) {
+					resource := strings.TrimPrefix(sort, prefix)
+					if types.IsValidResource(types.ResourceName(resource)) {
+						field := fmt.Sprintf("json_extract(%s, '$.%s')", strings.TrimSuffix(prefix, "."), resource)
+						orderBy = fmt.Sprintf("(%s) %s", castQuantityFormysql(field), order)
 						break
 					}
 				}

@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -31,13 +32,14 @@ import (
 )
 
 var TestDBConfig = map[string]interface{}{
-	"postgresql_host":     "localhost",
-	"postgresql_database": "registry",
-	"postgresql_password": "root123",
-	"postgresql_username": "postgres",
-	"postgresql_sslmode":  "disable",
-	"email_host":          "127.0.0.1",
-	"scan_all_policy":     `{"parameter":{"daily_time":0},"type":"daily"}`,
+	"database_type":   "postgresql",
+	"db_host":         "localhost",
+	"db_database":     "registry",
+	"db_password":     "root123",
+	"db_username":     "postgres",
+	"db_sslmode":      "disable",
+	"email_host":      "127.0.0.1",
+	"scan_all_policy": `{"parameter":{"daily_time":0},"type":"daily"}`,
 }
 
 var configManager *cfgPkg.CfgManager
@@ -102,26 +104,52 @@ func TestCfgManger_loadSystemValues(t *testing.T) {
 	configManager.LoadDefault()
 	configManager.LoadSystemConfigFromEnv()
 	configManager.UpdateConfig(testCtx, map[string]interface{}{
-		"postgresql_host": "127.0.0.1",
+		"db_host": "127.0.0.1",
 	})
-	if configManager.Get(testCtx, "postgresql_host").GetString() != "127.0.0.1" {
-		t.Errorf("Failed to set system value postgresql_host, expected %v, actual %v", "127.0.0.1", configManager.Get(nil, "postgresql_host").GetString())
+	if configManager.Get(testCtx, "db_host").GetString() != "127.0.0.1" {
+		t.Errorf("Failed to set system value db_host, expected %v, actual %v", "127.0.0.1", configManager.Get(nil, "db_host").GetString())
 	}
 }
 func TestCfgManager_GetDatabaseCfg(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	configManager.UpdateConfig(testCtx, map[string]interface{}{
-		"postgresql_host":     "localhost",
-		"postgresql_database": "registry",
-		"postgresql_password": "root123",
-		"postgresql_username": "postgres",
-		"postgresql_sslmode":  "disable",
+		"database_type": "postgresql",
+		"db_host":       "localhost",
+		"db_database":   "registry",
+		"db_password":   "root123",
+		"db_username":   "postgres",
+		"db_sslmode":    "disable",
 	})
 	dbCfg := configManager.GetDatabaseCfg()
+	assert.Equal(t, "postgresql", dbCfg.Type)
 	assert.Equal(t, "localhost", dbCfg.PostGreSQL.Host)
 	assert.Equal(t, "registry", dbCfg.PostGreSQL.Database)
 	assert.Equal(t, "root123", dbCfg.PostGreSQL.Password)
 	assert.Equal(t, "postgres", dbCfg.PostGreSQL.Username)
 	assert.Equal(t, "disable", dbCfg.PostGreSQL.SSLMode)
+}
+
+func TestCfgManager_GetDatabaseCfg_Mysql(t *testing.T) {
+	if !utils.IsDBMysql() {
+		return
+	}
+	configManager.UpdateConfig(testCtx, map[string]interface{}{
+		"database_type": "mysql",
+		"db_host":       "localhost",
+		"db_database":   "registry",
+		"db_password":   "root123",
+		"db_username":   "root",
+		"db_port":       3306,
+	})
+	dbCfg := configManager.GetDatabaseCfg()
+	assert.Equal(t, "mysql", dbCfg.Type)
+	assert.Equal(t, "localhost", dbCfg.MySQL.Host)
+	assert.Equal(t, "registry", dbCfg.MySQL.Database)
+	assert.Equal(t, "root123", dbCfg.MySQL.Password)
+	assert.Equal(t, "root", dbCfg.MySQL.Username)
+	assert.Equal(t, 3306, dbCfg.MySQL.Port)
 }
 
 func TestConfigStore_Save(t *testing.T) {

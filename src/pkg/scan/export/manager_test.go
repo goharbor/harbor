@@ -204,6 +204,7 @@ func (suite *ExportManagerSuite) cleanUpAdditionalData(reportID string, scannerI
 }
 
 func (suite *ExportManagerSuite) setupTestData() {
+	timeNow := time.Now()
 	// create repositories
 	repoRecord := &model.RepoRecord{
 		Name:         "library/ubuntu",
@@ -211,8 +212,8 @@ func (suite *ExportManagerSuite) setupTestData() {
 		Description:  "",
 		PullCount:    1,
 		StarCount:    0,
-		CreationTime: time.Time{},
-		UpdateTime:   time.Time{},
+		CreationTime: timeNow,
+		UpdateTime:   timeNow,
 	}
 	repoId, err := suite.repositoryDao.Create(suite.Context(), repoRecord)
 	suite.NoError(err)
@@ -230,8 +231,8 @@ func (suite *ExportManagerSuite) setupTestData() {
 		Digest:            "sha256:e3d7ff9efd8431d9ef39a144c45992df5502c995b9ba3c53ff70c5b52a848d9c",
 		Size:              28573056,
 		Icon:              "",
-		PushTime:          time.Time{},
-		PullTime:          time.Time{}.Add(-10 * time.Minute),
+		PushTime:          timeNow,
+		PullTime:          timeNow.Add(-10 * time.Minute),
 		ExtraAttrs:        `{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/bin/bash"]},"created":"2021-03-04T02:24:42.927713926Z","os":"linux"}`,
 		Annotations:       "",
 	}
@@ -244,8 +245,8 @@ func (suite *ExportManagerSuite) setupTestData() {
 		RepositoryID: repoId,
 		ArtifactID:   artId,
 		Name:         "latest",
-		PushTime:     time.Time{},
-		PullTime:     time.Time{},
+		PushTime:     timeNow,
+		PullTime:     timeNow,
 	}
 	tagId, err := suite.tagDao.Create(suite.Context(), t)
 	suite.NoError(err)
@@ -272,8 +273,8 @@ func (suite *ExportManagerSuite) setupTestData() {
 		Level:        "",
 		Scope:        "",
 		ProjectID:    1,
-		CreationTime: time.Time{},
-		UpdateTime:   time.Time{},
+		CreationTime: timeNow,
+		UpdateTime:   timeNow,
 		Deleted:      false,
 	}
 	labelId, err := suite.labelDao.Create(suite.Context(), &l)
@@ -284,8 +285,8 @@ func (suite *ExportManagerSuite) setupTestData() {
 		ID:           0,
 		LabelID:      labelId,
 		ArtifactID:   artId,
-		CreationTime: time.Time{},
-		UpdateTime:   time.Time{},
+		CreationTime: timeNow,
+		UpdateTime:   timeNow,
 	}
 	lRefId, err := suite.labelDao.CreateReference(suite.Context(), &lRef)
 	suite.NoError(err)

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -32,6 +33,19 @@ var (
 
 // NewHookHandler creates a hook handler instance
 func NewHookHandler() *HookHandler {
+	switch {
+	case utils.IsDBPostgresql():
+		return &HookHandler{
+			taskDAO:      dao.NewTaskDAO(),
+			executionDAO: dao.NewExecutionDAO(),
+		}
+	case utils.IsDBMysql():
+		return &HookHandler{
+			taskDAO:      dao.NewTaskMysqlDAO(),
+			executionDAO: dao.NewExecutionMysqlDAO(),
+		}
+	}
+
 	return &HookHandler{
 		taskDAO:      dao.NewTaskDAO(),
 		executionDAO: dao.NewExecutionDAO(),

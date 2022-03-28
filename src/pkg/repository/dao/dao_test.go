@@ -51,7 +51,7 @@ func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
 	d.tagDao = tag_dao.New()
 	d.afDao = af_dao.New()
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 }
 

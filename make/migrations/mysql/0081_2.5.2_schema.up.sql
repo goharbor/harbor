@@ -1,0 +1,1 @@
+CALL PROC_CREATE_INDEX_IF_NOT_EXISTS('artifact', 'repository_name', 'idx_artifact_repository_name');

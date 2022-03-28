@@ -44,7 +44,7 @@ type BootStrapTestSuite struct {
 
 // SetupSuite prepares test suite
 func (suite *BootStrapTestSuite) SetupSuite() {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 
 	libcfg.DefaultCfgManager = common.InMemoryCfgManager
 

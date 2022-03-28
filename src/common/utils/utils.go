@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -299,4 +300,40 @@ func NextSchedule(cron string, curTime time.Time) time.Time {
 // CronParser returns the parser of cron string with format of "* * * * * *"
 func CronParser() cronlib.Parser {
 	return cronlib.NewParser(cronlib.Second | cronlib.Minute | cronlib.Hour | cronlib.Dom | cronlib.Month | cronlib.Dow)
+}
+
+// IsDBMysql returns is harbor start with mysql. If parameters are passed, the first non-null parameter will be used as the database type.
+func IsDBMysql(dbTypeOptions ...string) bool {
+	dbType := os.Getenv("DATABASE_TYPE")
+	for _, db := range dbTypeOptions {
+		if db != "" {
+			dbType = db
+			break
+		}
+	}
+	return dbType == "mysql" || dbType == "mariadb"
+}
+
+// IsDBMariaDB returns is harbor start with MariaDB. If parameters are passed, the first non-null parameter will be used as the database type.
+func IsDBMariaDB(dbTypeOptions ...string) bool {
+	dbType := os.Getenv("DATABASE_TYPE")
+	for _, db := range dbTypeOptions {
+		if db != "" {
+			dbType = db
+			break
+		}
+	}
+	return dbType == "mariadb"
+}
+
+// IsDBPostgresql returns is harbor start with postgresql. If parameters are passed, the first non-null parameter will be used as the database type.
+func IsDBPostgresql(dbTypeOptions ...string) bool {
+	dbType := os.Getenv("DATABASE_TYPE")
+	for _, db := range dbTypeOptions {
+		if db != "" {
+			dbType = db
+			break
+		}
+	}
+	return dbType == "" || dbType == "postgresql"
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/beego/beego/orm"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -23,7 +24,8 @@ var (
 	INNER JOIN quota ON project.project_id = CAST(quota.reference_id AS Integer)
 	INNER JOIN quota_usage ON project.project_id = CAST(quota_usage.reference_id AS Integer)
 	WHERE quota.reference='project' AND quota_usage.reference='project' AND project.deleted=FALSE AND project_metadata.name='public';`
-	projectMemberSQL = `SELECT project.project_id, COUNT(project.project_id) AS member_total
+	projectBasicMySQL = "SELECT project.project_id, project.name, project_metadata.value AS public, quota.hard AS quota, quota_usage.used AS `usage` FROM project INNER JOIN project_metadata ON (project.project_id = project_metadata.project_id) INNER JOIN quota ON project.project_id = CAST(quota.reference_id AS SIGNED) INNER JOIN quota_usage ON project.project_id = CAST(quota_usage.reference_id AS SIGNED) WHERE quota.reference='project' AND quota_usage.reference='project' AND project.deleted=FALSE AND project_metadata.name='public';"
+	projectMemberSQL  = `SELECT project.project_id, COUNT(project.project_id) AS member_total
 	FROM project INNER JOIN project_member ON project.project_id=project_member.project_id
 	WHERE project.deleted=FALSE AND project_member.entity_type='u'
 	GROUP BY project.project_id, project_member.entity_type;`
@@ -35,6 +37,10 @@ var (
 	FROM project INNER JOIN artifact ON project.project_id=artifact.project_id
 	WHERE project.deleted=FALSE
 	GROUP BY artifact.project_id, type;`
+	projectArtifactsMySQL = `SELECT artifact.project_id, artifact.type AS artifact_type, COUNT(artifact.type) AS artifact_total
+	FROM project INNER JOIN artifact ON project.project_id=artifact.project_id
+	WHERE project.deleted=FALSE
+	GROUP BY artifact.project_id, type, BINARY type;`
 )
 var (
 	projectTotal = typedDesc{
@@ -186,13 +192,22 @@ func getProjectInfo() *projectOverviewInfo {
 }
 
 func updateProjectBasicInfo(projectMap map[int64]*projectInfo) {
+	sql := getProjectBasicSQL()
 	pList := make([]*projectInfo, 0)
-	_, err := dao.GetOrmer().Raw(projectBasicSQL).QueryRows(&pList)
+	_, err := dao.GetOrmer().Raw(sql).QueryRows(&pList)
 	checkErr(err, "get project from DB failure")
 	for _, p := range pList {
 		p.Artifact = make(map[string]artifactInfo)
 		projectMap[p.ProjectID] = p
 	}
+}
+
+func getProjectBasicSQL() string {
+	sql := projectBasicSQL
+	if dao.GetOrmer().Driver().Type() == orm.DRMySQL {
+		sql = projectBasicMySQL
+	}
+	return sql
 }
 
 func updateProjectMemberInfo(projectMap map[int64]*projectInfo) {
@@ -226,7 +241,8 @@ func updateProjectRepoInfo(projectMap map[int64]*projectInfo) {
 
 func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 	aList := make([]artifactInfo, 0)
-	_, err := dao.GetOrmer().Raw(projectArtifactsSQL).QueryRows(&aList)
+	sql := getProjectArtifactsSQL()
+	_, err := dao.GetOrmer().Raw(sql).QueryRows(&aList)
 	checkErr(err, "get data from DB failure")
 	for _, a := range aList {
 		if _, ok := projectMap[a.ProjectID]; ok {
@@ -235,4 +251,12 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 			log.Errorf("%v, ID %d", errProjectNotFound, a.ProjectID)
 		}
 	}
+}
+
+func getProjectArtifactsSQL() string {
+	sql := projectArtifactsSQL
+	if dao.GetOrmer().Driver().Type() == orm.DRMySQL {
+		sql = projectArtifactsMySQL
+	}
+	return sql
 }

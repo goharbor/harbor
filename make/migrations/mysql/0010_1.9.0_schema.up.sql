@@ -3,8 +3,8 @@ CREATE TABLE cve_whitelist
 (
   id            SERIAL PRIMARY KEY NOT NULL,
   project_id    int,
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  update_time   timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+  update_time   timestamp(6) default CURRENT_TIMESTAMP(6),
   expires_at    bigint,
   items         text               NOT NULL,
   UNIQUE (project_id)
@@ -19,7 +19,7 @@ CREATE TABLE `blob`
   digest        varchar(255)        NOT NULL,
   content_type  varchar(1024)       NOT NULL,
   size          bigint              NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
   UNIQUE (digest)
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE project_blob (
  id SERIAL PRIMARY KEY NOT NULL,
  project_id int NOT NULL,
  blob_id int NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
  CONSTRAINT unique_project_blob UNIQUE (project_id, blob_id)
 );
 
@@ -47,9 +47,9 @@ CREATE TABLE artifact
      kind of artifact, image, chart, etc..
   */
   kind          varchar(255)       NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  pull_time     timestamp,
-  push_time     timestamp,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+  pull_time     timestamp(6),
+  push_time     timestamp(6),
   CONSTRAINT unique_artifact UNIQUE (project_id, repo, tag)
 );
 
@@ -59,7 +59,7 @@ CREATE TABLE artifact_blob
   id            SERIAL PRIMARY KEY NOT NULL,
   digest_af     varchar(255)       NOT NULL,
   digest_blob   varchar(255)       NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
   CONSTRAINT unique_artifact_blob UNIQUE (digest_af, digest_blob)
 );
 
@@ -70,8 +70,8 @@ CREATE TABLE quota
   reference     VARCHAR(255)       NOT NULL,
   reference_id  VARCHAR(255)       NOT NULL,
   hard          JSON               NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  update_time   timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+  update_time   timestamp(6) default CURRENT_TIMESTAMP(6),
   UNIQUE (reference, reference_id)
 );
 
@@ -82,8 +82,8 @@ CREATE TABLE quota_usage
   reference     VARCHAR(255)       NOT NULL,
   reference_id  VARCHAR(255)       NOT NULL,
   used          JSON               NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  update_time   timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+  update_time   timestamp(6) default CURRENT_TIMESTAMP(6),
   UNIQUE (reference, reference_id)
 );
 
@@ -123,7 +123,7 @@ create table retention_execution
   policy_id  integer,
   dry_run    boolean,
   `trigger`    varchar(20),
-  start_time timestamp
+  start_time timestamp(6)
 );
 
 create table retention_task
@@ -135,8 +135,8 @@ create table retention_task
   status       varchar(32),
   status_code  integer,
   status_revision integer,
-  start_time   timestamp default CURRENT_TIMESTAMP,
-  end_time     timestamp default CURRENT_TIMESTAMP,
+  start_time   timestamp(6) default CURRENT_TIMESTAMP(6),
+  end_time     timestamp(6) default CURRENT_TIMESTAMP(6),
   total        integer,
   retained     integer,
   PRIMARY KEY (id)
@@ -147,8 +147,8 @@ create table schedule
   id            SERIAL NOT NULL,
   job_id        varchar(64),
   status        varchar(64),
-  creation_time timestamp default CURRENT_TIMESTAMP,
-  update_time   timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+  update_time   timestamp(6) default CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id)
 );
 
@@ -162,8 +162,8 @@ create table notification_policy (
  targets text,
  event_types text,
  creator varchar(256),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id),
  CONSTRAINT unique_project_id UNIQUE (project_id)
  );
@@ -179,8 +179,8 @@ create table notification_policy (
  notify_type varchar(256),
  job_detail text,
  job_uuid varchar(64),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 

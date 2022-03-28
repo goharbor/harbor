@@ -17,6 +17,7 @@ package audit
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/dao"
@@ -44,9 +45,13 @@ type Manager interface {
 
 // New returns a default implementation of Manager
 func New() Manager {
-	return &manager{
-		dao: dao.New(),
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
 	}
+	return &manager{dao: dao.New()}
 }
 
 type manager struct {

@@ -9,6 +9,7 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
@@ -189,5 +190,8 @@ func (d *daoTestSuite) TestFlush() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &daoTestSuite{})
 }

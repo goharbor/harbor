@@ -49,7 +49,7 @@ func TestWorker(t *testing.T) {
 func (suite *WorkerTestSuite) SetupSuite() {
 	sysContext := context.TODO()
 
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 
 	getPolicies := func() ([]*period.Policy, error) {
 		return []*period.Policy{

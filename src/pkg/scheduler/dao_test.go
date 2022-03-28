@@ -16,6 +16,7 @@ package scheduler
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -35,7 +36,7 @@ type daoTestSuite struct {
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = &dao{}
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.ctx = orm.Context()
 }
 
@@ -94,7 +95,7 @@ func (d *daoTestSuite) TestGet() {
 	schedule, err = d.dao.Get(d.ctx, d.id)
 	d.Require().Nil(err)
 	d.Equal(d.id, schedule.ID)
-	d.Equal("{\"key\":\"value\"}", schedule.ExtraAttrs)
+	d.Equal("{\"key\":\"value\"}", strings.ReplaceAll(schedule.ExtraAttrs, " ", ""))
 }
 
 func (d *daoTestSuite) TestDelete() {

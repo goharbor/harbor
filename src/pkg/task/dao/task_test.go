@@ -21,6 +21,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -37,6 +39,7 @@ type taskDAOTestSuite struct {
 }
 
 func (t *taskDAOTestSuite) SetupSuite() {
+	dao.PrepareTestForDB()
 	t.ctx = orm.Context()
 	t.taskDAO = &taskDAO{}
 	t.executionDAO = &executionDAO{}
@@ -229,5 +232,8 @@ func (t *taskDAOTestSuite) TestGetMaxEndTime() {
 }
 
 func TestTaskDAOSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &taskDAOTestSuite{})
 }

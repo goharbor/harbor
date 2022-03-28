@@ -38,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -273,17 +274,33 @@ func CacheExpireHours() int {
 func Database() (*models.Database, error) {
 	database := &models.Database{}
 	database.Type = DefaultMgr().Get(backgroundCtx, common.DatabaseType).GetString()
-	postgresql := &models.PostGreSQL{
-		Host:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
-		Port:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
-		Username:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
-		Password:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
-		Database:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
-		SSLMode:      DefaultMgr().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
-		MaxIdleConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
-		MaxOpenConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
+
+	switch {
+	case utils.IsDBPostgresql(database.Type):
+		postgresql := &models.PostGreSQL{
+			Host:         DefaultMgr().Get(backgroundCtx, common.DBHOST).GetString(),
+			Port:         DefaultMgr().Get(backgroundCtx, common.DBPort).GetInt(),
+			Username:     DefaultMgr().Get(backgroundCtx, common.DBUsername).GetString(),
+			Password:     DefaultMgr().Get(backgroundCtx, common.DBPassword).GetPassword(),
+			Database:     DefaultMgr().Get(backgroundCtx, common.DBDatabase).GetString(),
+			SSLMode:      DefaultMgr().Get(backgroundCtx, common.DBSSLMode).GetString(),
+			MaxIdleConns: DefaultMgr().Get(backgroundCtx, common.DBMaxIdleConns).GetInt(),
+			MaxOpenConns: DefaultMgr().Get(backgroundCtx, common.DBMaxOpenConns).GetInt(),
+		}
+		database.PostGreSQL = postgresql
+	case utils.IsDBMysql(database.Type):
+		mysql := &models.MySQL{
+			Host:         DefaultMgr().Get(backgroundCtx, common.DBHOST).GetString(),
+			Port:         DefaultMgr().Get(backgroundCtx, common.DBPort).GetInt(),
+			Username:     DefaultMgr().Get(backgroundCtx, common.DBUsername).GetString(),
+			Password:     DefaultMgr().Get(backgroundCtx, common.DBPassword).GetString(),
+			Database:     DefaultMgr().Get(backgroundCtx, common.DBDatabase).GetString(),
+			Collation:    DefaultMgr().Get(backgroundCtx, common.DBCollation).GetString(),
+			MaxIdleConns: DefaultMgr().Get(backgroundCtx, common.DBMaxIdleConns).GetInt(),
+			MaxOpenConns: DefaultMgr().Get(backgroundCtx, common.DBMaxOpenConns).GetInt(),
+		}
+		database.MySQL = mysql
 	}
-	database.PostGreSQL = postgresql
 
 	return database, nil
 }

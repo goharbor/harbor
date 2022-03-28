@@ -7,6 +7,8 @@ from .misc import mark_file, prepare_dir
 notary_template_dir = os.path.join(templates_dir, "notary")
 notary_signer_pg_template = os.path.join(notary_template_dir, "signer-config.postgres.json.jinja")
 notary_server_pg_template = os.path.join(notary_template_dir, "server-config.postgres.json.jinja")
+notary_signer_mysql_template = os.path.join(notary_template_dir, "signer-config.mysql.json.jinja")
+notary_server_mysql_template = os.path.join(notary_template_dir, "server-config.mysql.json.jinja")
 notary_server_nginx_config_template = os.path.join(templates_dir, "nginx", "notary.server.conf.jinja")
 notary_signer_env_template = os.path.join(notary_template_dir, "signer_env.jinja")
 notary_server_env_template = os.path.join(notary_template_dir, "server_env.jinja")
@@ -14,6 +16,8 @@ notary_server_env_template = os.path.join(notary_template_dir, "server_env.jinja
 notary_config_dir = os.path.join(config_dir, 'notary')
 notary_signer_pg_config = os.path.join(notary_config_dir, "signer-config.postgres.json")
 notary_server_pg_config = os.path.join(notary_config_dir, "server-config.postgres.json")
+notary_signer_mysql_config = os.path.join(notary_config_dir, "signer-config.mysql.json")
+notary_server_mysql_config = os.path.join(notary_config_dir, "server-config.mysql.json")
 notary_server_config_path = os.path.join(notary_config_dir, 'notary.server.conf')
 notary_signer_env_path = os.path.join(notary_config_dir, "signer_env")
 notary_server_env_path = os.path.join(notary_config_dir, "server_env")
@@ -53,7 +57,7 @@ def prepare_env_notary(nginx_config_dir):
         signer_key_secret_path.exists() and
         signer_ca_cert_secret_path.exists()
         ):
-        # If the certs are exist in old localtion, move them to new location
+        # If the certs are exist in old location, move them to new location
         if old_signer_ca_cert_secret_path.exists() and old_signer_cert_secret_path.exists() and old_signer_key_secret_path.exists():
             print("Copying certs for notary signer")
             shutil.copy2(old_signer_ca_cert_secret_path, signer_ca_cert_secret_path)
@@ -122,6 +126,14 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
         **config_dict)
 
     render_jinja(
+            notary_server_mysql_template,
+            notary_server_mysql_config,
+            uid=DEFAULT_UID,
+            gid=DEFAULT_GID,
+            token_endpoint=config_dict['public_url'],
+            **config_dict)
+
+    render_jinja(
         notary_server_env_template,
         notary_server_env_path,
         **config_dict
@@ -138,6 +150,14 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
     render_jinja(
         notary_signer_pg_template,
         notary_signer_pg_config,
+        uid=DEFAULT_UID,
+        gid=DEFAULT_GID,
+        alias=default_alias,
+        **config_dict)
+
+    render_jinja(
+        notary_signer_mysql_template,
+        notary_signer_mysql_config,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         alias=default_alias,

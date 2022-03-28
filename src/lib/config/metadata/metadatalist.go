@@ -22,7 +22,7 @@ type Item struct {
 	Scope string `json:"scope,omitempty"`
 	// email, ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group
 	Group string `json:"group,omitempty"`
-	// environment key to retrieves this value when initialize, for example: POSTGRESQL_HOST, only used for system settings, for user settings no EnvKey
+	// environment key to retrieves this value when initialize, for example: DB_HOST, only used for system settings, for user settings no EnvKey
 	EnvKey string `json:"environment_key,omitempty"`
 	// The default string value for this key
 	DefaultValue string `json:"default_value,omitempty"`
@@ -106,14 +106,15 @@ var (
 		{Name: common.NotaryURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "NOTARY_URL", DefaultValue: "http://notary-server:4443", ItemType: &StringType{}, Editable: false},
 		{Name: common.ScanAllPolicy, Scope: UserScope, Group: BasicGroup, EnvKey: "", DefaultValue: "", ItemType: &MapType{}, Editable: false, Description: `The policy to scan images`},
 
-		{Name: common.PostGreSQLDatabase, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_DATABASE", DefaultValue: "registry", ItemType: &StringType{}, Editable: false},
-		{Name: common.PostGreSQLHOST, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_HOST", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
-		{Name: common.PostGreSQLPassword, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_PASSWORD", DefaultValue: "root123", ItemType: &PasswordType{}, Editable: false},
-		{Name: common.PostGreSQLPort, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_PORT", DefaultValue: "5432", ItemType: &PortType{}, Editable: false},
-		{Name: common.PostGreSQLSSLMode, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_SSLMODE", DefaultValue: "disable", ItemType: &StringType{}, Editable: false},
-		{Name: common.PostGreSQLUsername, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
-		{Name: common.PostGreSQLMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
-		{Name: common.PostGreSQLMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
+		{Name: common.DBDatabase, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_DATABASE", DefaultValue: "registry", ItemType: &StringType{}, Editable: false},
+		{Name: common.DBHOST, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_HOST", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
+		{Name: common.DBPassword, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_PASSWORD", DefaultValue: "root123", ItemType: &PasswordType{}, Editable: false},
+		{Name: common.DBPort, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_PORT", DefaultValue: "5432", ItemType: &PortType{}, Editable: false},
+		{Name: common.DBSSLMode, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_SSLMODE", DefaultValue: "disable", ItemType: &StringType{}, Editable: false},
+		{Name: common.DBCollation, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_COLLATION", DefaultValue: "utf8mb4_general_ci", ItemType: &StringType{}, Editable: false},
+		{Name: common.DBUsername, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
+		{Name: common.DBMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
+		{Name: common.DBMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "DB_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
 
 		{Name: common.ProjectCreationRestriction, Scope: UserScope, Group: BasicGroup, EnvKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, ItemType: &ProjectCreationRestrictionType{}, Editable: false, Description: `Indicate who can create projects, it could be ''adminonly'' or ''everyone''.`},
 		{Name: common.ReadOnly, Scope: UserScope, Group: BasicGroup, EnvKey: "READ_ONLY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate whether Harbor is in readonly mode.`},

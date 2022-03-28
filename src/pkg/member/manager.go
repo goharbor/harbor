@@ -17,6 +17,7 @@ package member
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member/dao"
@@ -104,5 +105,12 @@ func (m *manager) DeleteMemberByUserID(ctx context.Context, uid int) error {
 
 // NewManager ...
 func NewManager() Manager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
+	}
+
 	return &manager{dao: dao.New()}
 }

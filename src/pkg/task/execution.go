@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -79,6 +80,25 @@ type ExecutionManager interface {
 
 // NewExecutionManager return an instance of the default execution manager
 func NewExecutionManager() ExecutionManager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &executionManager{
+			executionDAO: dao.NewExecutionDAO(),
+			taskMgr:      Mgr,
+			taskDAO:      dao.NewTaskDAO(),
+			ormCreator:   orm.Crt,
+			wp:           lib.NewWorkerPool(10),
+		}
+	case utils.IsDBMysql():
+		return &executionManager{
+			executionDAO: dao.NewExecutionMysqlDAO(),
+			taskMgr:      Mgr,
+			taskDAO:      dao.NewTaskMysqlDAO(),
+			ormCreator:   orm.Crt,
+			wp:           lib.NewWorkerPool(10),
+		}
+	}
+
 	return &executionManager{
 		executionDAO: dao.NewExecutionDAO(),
 		taskMgr:      Mgr,

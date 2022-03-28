@@ -12,6 +12,7 @@ default_db_max_idle_conns = 2
 default_db_max_open_conns = 0
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
+default_db_collation = 'utf8mb4_general_ci'
 
 REGISTRY_USER_NAME = 'harbor_registry_user'
 
@@ -280,6 +281,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     if external_db_configs:
         config_dict['external_database'] = True
         # harbor db
+        config_dict['harbor_db_type'] = external_db_configs['harbor']['type']
         config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
         config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
         config_dict['harbor_db_name'] = external_db_configs['harbor']['db_name']
@@ -288,9 +290,11 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_collation'] = external_db_configs['harbor'].get("collation") or default_db_collation
 
         if with_notary:
             # notary signer
+            config_dict['notary_signer_db_type'] = external_db_configs['notary_signer']['type']
             config_dict['notary_signer_db_host'] = external_db_configs['notary_signer']['host']
             config_dict['notary_signer_db_port'] = external_db_configs['notary_signer']['port']
             config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
@@ -298,6 +302,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
             config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
             # notary server
+            config_dict['notary_server_db_type'] = external_db_configs['notary_server']['type']
             config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
             config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
             config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']

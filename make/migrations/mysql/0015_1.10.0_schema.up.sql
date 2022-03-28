@@ -13,8 +13,8 @@ CREATE TABLE scanner_registration
     use_internal_addr BOOLEAN NOT NULL DEFAULT FALSE,
     immutable BOOLEAN NOT NULL DEFAULT FALSE,
     skip_cert_verify BOOLEAN NOT NULL DEFAULT FALSE,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    create_time TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    update_time TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)
 );
 
 /*Table for keeping the scan report. The report details are stored as JSON*/
@@ -32,9 +32,10 @@ CREATE TABLE scan_report
     status_code INTEGER DEFAULT 0,
     status_rev BIGINT DEFAULT 0,
     report JSON,
-    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(digest, registration_uuid, mime_type)
+    start_time TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    end_time TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    UNIQUE(digest, registration_uuid, mime_type),
+    CHECK (report is null or JSON_VALID (report))
 );
 
 /** Add table for immutable tag  **/
@@ -44,7 +45,7 @@ CREATE TABLE immutable_tag_rule
   project_id int NOT NULL,
   tag_filter text,
   disabled BOOLEAN NOT NULL DEFAULT FALSE,
-  creation_time timestamp default CURRENT_TIMESTAMP,
+  creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
   UNIQUE(project_id, tag_filter(255))
 );
 
@@ -55,7 +56,7 @@ DROP INDEX idx_status ON img_scan_job;
 DROP INDEX idx_digest ON img_scan_job;
 DROP INDEX idx_uuid ON img_scan_job;
 DROP INDEX idx_repository_tag ON img_scan_job;
-ALTER TABLE img_scan_job MODIFY COLUMN update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE img_scan_job MODIFY COLUMN update_time timestamp(6) default CURRENT_TIMESTAMP(6);
 DROP TABLE IF EXISTS img_scan_job;
 
 DROP TABLE IF EXISTS img_scan_overview;

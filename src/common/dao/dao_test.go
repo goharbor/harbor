@@ -22,6 +22,7 @@ import (
 	"github.com/beego/beego/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/user"
@@ -99,22 +100,22 @@ const password string = "Abc12345"
 const projectName string = "test_project"
 
 func TestMain(m *testing.M) {
-	databases := []string{"postgresql"}
-	for _, database := range databases {
-		log.Infof("run test cases for database: %s", database)
-		result := 1
-		switch database {
-		case "postgresql":
-			PrepareTestForPostgresSQL()
-		default:
-			log.Fatalf("invalid database: %s", database)
-		}
-		testCtx = libOrm.Context()
-		result = testForAll(m)
+	database := os.Getenv("DATABASE_TYPE")
+	log.Infof("run test cases for database: %s", database)
+	result := 1
+	switch {
+	case utils.IsDBPostgresql():
+		PrepareTestForPostgresSQL()
+	case utils.IsDBMysql():
+		PrepareTestForMySQL()
+	default:
+		log.Fatalf("invalid database: %s", database)
+	}
+	testCtx = libOrm.Context()
+	result = testForAll(m)
 
-		if result != 0 {
-			os.Exit(result)
-		}
+	if result != 0 {
+		os.Exit(result)
 	}
 }
 

@@ -6,8 +6,8 @@ CREATE TABLE robot (
  project_id int,
  expiresat bigint,
  disabled boolean DEFAULT false NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  CONSTRAINT unique_robot UNIQUE (name, project_id)
 );
 
@@ -29,8 +29,8 @@ CREATE TABLE oidc_user (
  Encoded token
   */
  token text,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id),
  FOREIGN KEY (user_id) REFERENCES harbor_user(user_id),
  UNIQUE (subiss)
@@ -48,7 +48,7 @@ DELETE p FROM replication_policy AS p
 WHERE p.deleted = TRUE;
 
 /*upgrade the replication_target to registry*/
-ALTER TABLE replication_target MODIFY COLUMN update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE replication_target MODIFY COLUMN update_time timestamp(6) default CURRENT_TIMESTAMP(6);
 ALTER TABLE replication_target RENAME registry;
 ALTER TABLE registry MODIFY COLUMN url varchar(256);
 ALTER TABLE registry ADD COLUMN credential_type varchar(16);
@@ -78,7 +78,7 @@ UPDATE replication_policy SET override=TRUE;
 ALTER TABLE replication_policy DROP COLUMN project_id;
 ALTER TABLE replication_policy CHANGE COLUMN cron_str `trigger` varchar(256) DEFAULT NULL;
 
-ALTER TABLE replication_immediate_trigger MODIFY COLUMN update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE replication_immediate_trigger MODIFY COLUMN update_time timestamp(6) default CURRENT_TIMESTAMP(6);
 DROP TABLE replication_immediate_trigger;
 
 create table replication_execution (
@@ -93,8 +93,8 @@ create table replication_execution (
  in_progress int NOT NULL DEFAULT 0,
  stopped int NOT NULL DEFAULT 0,
  `trigger` varchar(64),
- start_time timestamp default CURRENT_TIMESTAMP,
- end_time timestamp NULL,
+ start_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ end_time timestamp(6) NULL,
  PRIMARY KEY (id)
  );
 CREATE INDEX execution_policy ON replication_execution (policy_id);
@@ -108,8 +108,8 @@ create table replication_task (
  operation varchar(32),
  job_id varchar(64),
  status varchar(32),
- start_time timestamp default CURRENT_TIMESTAMP,
- end_time timestamp NULL,
+ start_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ end_time timestamp(6) NULL,
  PRIMARY KEY (id)
 );
 CREATE INDEX task_execution ON replication_task (execution_id);
@@ -166,7 +166,7 @@ ALTER TABLE replication_job DROP COLUMN op_uuid;
 DROP INDEX policy ON replication_job;
 DROP INDEX poid_uptime ON replication_job;
 DROP INDEX poid_status ON replication_job;
-ALTER TABLE replication_job MODIFY COLUMN update_time timestamp default CURRENT_TIMESTAMP;
+ALTER TABLE replication_job MODIFY COLUMN update_time timestamp(6) default CURRENT_TIMESTAMP(6);
 ALTER TABLE replication_job RENAME TO replication_schedule_job;
 
 /*

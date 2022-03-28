@@ -156,19 +156,37 @@ func (c *CfgManager) Set(ctx context.Context, key string, value interface{}) {
 // GetDatabaseCfg - Get database configurations
 func (c *CfgManager) GetDatabaseCfg() *models.Database {
 	ctx := context.Background()
-	return &models.Database{
-		Type: c.Get(ctx, common.DatabaseType).GetString(),
-		PostGreSQL: &models.PostGreSQL{
-			Host:         c.Get(ctx, common.PostGreSQLHOST).GetString(),
-			Port:         c.Get(ctx, common.PostGreSQLPort).GetInt(),
-			Username:     c.Get(ctx, common.PostGreSQLUsername).GetString(),
-			Password:     c.Get(ctx, common.PostGreSQLPassword).GetString(),
-			Database:     c.Get(ctx, common.PostGreSQLDatabase).GetString(),
-			SSLMode:      c.Get(ctx, common.PostGreSQLSSLMode).GetString(),
-			MaxIdleConns: c.Get(ctx, common.PostGreSQLMaxIdleConns).GetInt(),
-			MaxOpenConns: c.Get(ctx, common.PostGreSQLMaxOpenConns).GetInt(),
-		},
+	database := &models.Database{}
+	database.Type = c.Get(ctx, common.DatabaseType).GetString()
+
+	switch {
+	case utils.IsDBPostgresql(database.Type):
+		postgresql := &models.PostGreSQL{
+			Host:         c.Get(ctx, common.DBHOST).GetString(),
+			Port:         c.Get(ctx, common.DBPort).GetInt(),
+			Username:     c.Get(ctx, common.DBUsername).GetString(),
+			Password:     c.Get(ctx, common.DBPassword).GetString(),
+			Database:     c.Get(ctx, common.DBDatabase).GetString(),
+			SSLMode:      c.Get(ctx, common.DBSSLMode).GetString(),
+			MaxIdleConns: c.Get(ctx, common.DBMaxIdleConns).GetInt(),
+			MaxOpenConns: c.Get(ctx, common.DBMaxOpenConns).GetInt(),
+		}
+		database.PostGreSQL = postgresql
+	case utils.IsDBMysql(database.Type):
+		mysql := &models.MySQL{
+			Host:         c.Get(ctx, common.DBHOST).GetString(),
+			Port:         c.Get(ctx, common.DBPort).GetInt(),
+			Username:     c.Get(ctx, common.DBUsername).GetString(),
+			Password:     c.Get(ctx, common.DBPassword).GetString(),
+			Database:     c.Get(ctx, common.DBDatabase).GetString(),
+			Collation:    c.Get(ctx, common.DBCollation).GetString(),
+			MaxIdleConns: c.Get(ctx, common.DBMaxIdleConns).GetInt(),
+			MaxOpenConns: c.Get(ctx, common.DBMaxOpenConns).GetInt(),
+		}
+		database.MySQL = mysql
 	}
+
+	return database
 }
 
 // UpdateConfig - Update config Store with a specified configuration and also save updated configure.

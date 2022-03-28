@@ -39,8 +39,8 @@ create table harbor_user (
  reset_uuid varchar(40) DEFAULT NULL,
  salt varchar(40) DEFAULT NULL,
  sysadmin_flag boolean DEFAULT false NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  UNIQUE (username),
  UNIQUE (email)
 );
@@ -57,16 +57,17 @@ create table project (
  and 11 is reserved for marking the deleted project.
  */
  name varchar (255) NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp  default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6)  default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  deleted boolean DEFAULT false NOT NULL,
  FOREIGN KEY (owner_id) REFERENCES harbor_user(user_id),
  UNIQUE (name)
 );
 
 
-insert into project (owner_id, name, creation_time, update_time) values
-(1, 'library', NOW(), NOW());
+
+insert into project (owner_id, name, creation_time, update_time)
+select user_id , 'library', NOW(), NOW() from harbor_user where username = 'admin';
 
 create table project_member (
  id SERIAL NOT NULL,
@@ -78,8 +79,8 @@ create table project_member (
  */
  entity_type char(1) NOT NULL,
  role int NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id),
  CONSTRAINT unique_project_entity_type UNIQUE (project_id, entity_id, entity_type)
 );
@@ -92,8 +93,8 @@ create table project_metadata (
  project_id bigint unsigned NOT NULL,
  name varchar(255) NOT NULL,
  value varchar(255),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  deleted boolean DEFAULT false NOT NULL,
  PRIMARY KEY (id),
  CONSTRAINT unique_project_id_and_name UNIQUE (project_id,name),
@@ -108,8 +109,8 @@ create table user_group (
  group_name varchar(255) NOT NULL,
  group_type smallint default 0,
  ldap_group_dn varchar(512) NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
 );
 
@@ -121,7 +122,7 @@ create table access_log (
  repo_tag varchar (128),
  GUID varchar(64),
  operation varchar(20) NOT NULL,
- op_time timestamp default CURRENT_TIMESTAMP,
+ op_time timestamp(6) default CURRENT_TIMESTAMP(6),
  primary key (log_id)
 );
 
@@ -134,8 +135,8 @@ create table repository (
  description text,
  pull_count int DEFAULT 0 NOT NULL,
  star_count int DEFAULT 0 NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  primary key (repository_id),
  UNIQUE (name)
 );
@@ -151,9 +152,9 @@ create table replication_policy (
  cron_str varchar(256),
  filters varchar(1024),
  replicate_deletion boolean DEFAULT false NOT NULL,
- start_time timestamp NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ start_time timestamp(6) NULL,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 
@@ -170,8 +171,8 @@ create table replication_target (
  */
  target_type SMALLINT NOT NULL DEFAULT 0,
  insecure boolean NOT NULL DEFAULT false,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 
@@ -186,8 +187,8 @@ create table replication_job (
 New job service only records uuid, for compatibility in this table both IDs are stored.
  */
  job_uuid varchar(64),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 
@@ -201,8 +202,8 @@ create table replication_immediate_trigger (
  namespace varchar(256) NOT NULL,
  on_push boolean NOT NULL DEFAULT false,
  on_deletion boolean NOT NULL DEFAULT false,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 
@@ -216,8 +217,8 @@ create table replication_immediate_trigger (
 New job service only records uuid, for compatibility in this table both IDs are stored.
 */
  job_uuid varchar(64),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY (id)
  );
 
@@ -236,8 +237,8 @@ create table img_scan_overview (
  components_overview varchar(2048),
  /* primary key for querying details, in clair it should be the name of the "top layer" */
  details_key varchar(128),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY(id),
  UNIQUE(image_digest)
  );
@@ -245,7 +246,7 @@ create table img_scan_overview (
 create table clair_vuln_timestamp (
 id SERIAL NOT NULL,
 namespace varchar(128) NOT NULL,
-last_update timestamp NOT NULL,
+last_update timestamp(6) NOT NULL,
 PRIMARY KEY(id),
 UNIQUE(namespace)
 );
@@ -274,8 +275,8 @@ create table harbor_label (
 */
  scope char(1) NOT NULL,
  project_id int,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  deleted boolean DEFAULT false NOT NULL,
  PRIMARY KEY(id),
  CONSTRAINT unique_label UNIQUE (name,scope, project_id)
@@ -299,8 +300,8 @@ the resource_name is the name of image when the resource_type is i
  'i' for image
 */
  resource_type char(1) NOT NULL,
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  PRIMARY KEY(id),
  CONSTRAINT unique_label_resource UNIQUE (label_id,resource_id, resource_name, resource_type)
  );
@@ -312,11 +313,12 @@ create table admin_job (
  cron_str varchar(256),
  status varchar(64) NOT NULL,
  job_uuid varchar(64),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+ update_time timestamp(6) default CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
  deleted boolean DEFAULT false NOT NULL,
  PRIMARY KEY(id)
 );
+
 
 CREATE INDEX admin_job_status ON admin_job (status);
 CREATE INDEX admin_job_uuid ON admin_job (job_uuid);

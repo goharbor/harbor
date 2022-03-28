@@ -37,7 +37,7 @@ type daoTestSuite struct {
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = NewDAO()
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 }
 

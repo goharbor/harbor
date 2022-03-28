@@ -50,3 +50,34 @@ func Test_listOrderBy(t *testing.T) {
 		})
 	}
 }
+
+func Test_listOrderByForMysql(t *testing.T) {
+	query := func(sort string) *q.Query {
+		return &q.Query{
+			Sorting: sort,
+		}
+	}
+
+	type args struct {
+		query *q.Query
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"no query", args{nil}, "b.creation_time DESC"},
+		{"order by unsupported field", args{query("unknown")}, "b.creation_time DESC"},
+		{"order by storage of hard", args{query("hard.storage")}, "(CAST( (CASE WHEN json_extract(hard, '$.storage') IS NULL THEN '0' WHEN json_extract(hard, '$.storage') = '-1' THEN '9223372036854775807' ELSE json_extract(hard, '$.storage') END) AS UNSIGNED )) ASC"},
+		{"order by unsupported hard resource", args{query("hard.unknown")}, "b.creation_time DESC"},
+		{"order by storage of used", args{query("used.storage")}, "(CAST( (CASE WHEN json_extract(used, '$.storage') IS NULL THEN '0' WHEN json_extract(used, '$.storage') = '-1' THEN '9223372036854775807' ELSE json_extract(used, '$.storage') END) AS UNSIGNED )) ASC"},
+		{"order by unsupported used resource", args{query("used.unknown")}, "b.creation_time DESC"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := listOrderByForMysql(tt.args.query); got != tt.want {
+				t.Errorf("listOrderBy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

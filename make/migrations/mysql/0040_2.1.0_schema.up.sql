@@ -1,4 +1,19 @@
-ALTER TABLE project ADD COLUMN registry_id int;
+CREATE PROCEDURE PROC_ADD_COLUMN_IF_NOT_EXISTS (in TB_NAME varchar(64), in CL_NAME varchar(64), in CL_TYPE varchar(64)) BEGIN
+SELECT count(*) INTO @EXIST_CL
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = database()
+  AND TABLE_NAME = TB_NAME
+  AND COLUMN_NAME = CL_NAME LIMIT 1;
+
+SET @sql_cl = IF (@EXIST_CL <= 0, CONCAT('ALTER TABLE `', TB_NAME, '` ADD COLUMN `',CL_NAME, '` ', CL_TYPE),
+    'select \' COLUMN EXISTS\' status');
+PREPARE stmt_cl FROM @sql_cl;
+EXECUTE stmt_cl;
+DEALLOCATE PREPARE stmt_cl;
+END;
+
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('project', 'registry_id', 'int');
+
 ALTER TABLE cve_whitelist RENAME TO cve_allowlist;
 UPDATE role SET name='maintainer' WHERE name='master';
 UPDATE project_metadata SET name='reuse_sys_cve_allowlist' WHERE name='reuse_sys_cve_whitelist';
@@ -11,10 +26,11 @@ CREATE TABLE IF NOT EXISTS execution (
     status_message text,
     `trigger` varchar(16) NOT NULL,
     extra_attrs JSON,
-    start_time timestamp DEFAULT CURRENT_TIMESTAMP,
-    end_time timestamp,
+    start_time timestamp(6) DEFAULT CURRENT_TIMESTAMP(6),
+    end_time timestamp(6) NULL DEFAULT NULL,
     revision int,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CHECK (extra_attrs is null or JSON_VALID (extra_attrs))
 );
 
 CREATE TABLE IF NOT EXISTS task (
@@ -27,20 +43,36 @@ CREATE TABLE IF NOT EXISTS task (
     status_message text,
     run_count int,
     extra_attrs JSON,
-    creation_time timestamp DEFAULT CURRENT_TIMESTAMP,
-    start_time timestamp,
-    update_time timestamp,
-    end_time timestamp,
-    FOREIGN KEY (execution_id) REFERENCES execution(id)
+    creation_time timestamp(6) DEFAULT CURRENT_TIMESTAMP(6),
+    start_time timestamp(6),
+    update_time timestamp(6),
+    end_time timestamp(6) NULL DEFAULT NULL,
+    FOREIGN KEY (execution_id) REFERENCES execution(id),
+    CHECK (extra_attrs is null or JSON_VALID (extra_attrs))
 );
 
-ALTER TABLE `blob` ADD COLUMN update_time timestamp default CURRENT_TIMESTAMP;
-ALTER TABLE `blob` ADD COLUMN status varchar(255) default 'none';
-ALTER TABLE `blob` ADD COLUMN version BIGINT default 0;
-CREATE INDEX idx_status ON `blob` (status);
-CREATE INDEX idx_version ON `blob` (version);
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('blob', 'update_time', 'timestamp(6) default CURRENT_TIMESTAMP(6)');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('blob', 'status', 'varchar(255) default \'none\'');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('blob', 'version', 'BIGINT default 0');
 
-CREATE TABLE p2p_preheat_instance (
+CREATE PROCEDURE PROC_CREATE_INDEX_IF_NOT_EXISTS (in TB_NAME varchar(64), in CL_NAME varchar(64), in IND_NAME varchar(64)) BEGIN
+SELECT count(*) INTO @EXIST_IND
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = database()
+  AND TABLE_NAME = TB_NAME
+  AND INDEX_NAME = IND_NAME LIMIT 1;
+
+SET @sql_ind = IF (@EXIST_IND <= 0, CONCAT('CREATE INDEX `', IND_NAME, '` ON `', TB_NAME, '` (', CL_NAME, ')'),
+    'select \' INDEX EXISTS\' status');
+PREPARE stmt_ind FROM @sql_ind;
+EXECUTE stmt_ind;
+DEALLOCATE PREPARE stmt_ind;
+END;
+
+CALL PROC_CREATE_INDEX_IF_NOT_EXISTS('blob', 'status', 'idx_status');
+CALL PROC_CREATE_INDEX_IF_NOT_EXISTS('blob', 'version', 'idx_version');
+
+CREATE TABLE IF NOT EXISTS p2p_preheat_instance (
   id          SERIAL PRIMARY KEY NOT NULL,
   name        varchar(255) NOT NULL,
   description varchar(255),
@@ -64,26 +96,27 @@ CREATE TABLE IF NOT EXISTS p2p_preheat_policy (
     filters varchar(1024),
     `trigger` varchar(255),
     enabled boolean,
-    creation_time timestamp,
-    update_time timestamp,
+    creation_time timestamp(6),
+    update_time timestamp(6),
     UNIQUE (name, project_id)
 );
 
-ALTER TABLE schedule ADD COLUMN vendor_type varchar(16);
-ALTER TABLE schedule ADD COLUMN vendor_id int;
-ALTER TABLE schedule ADD COLUMN cron varchar(64);
-ALTER TABLE schedule ADD COLUMN callback_func_name varchar(128);
-ALTER TABLE schedule ADD COLUMN callback_func_param text;
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('schedule', 'vendor_type', 'varchar(16)');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('schedule', 'vendor_id', 'int');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('schedule', 'cron', 'varchar(64)');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('schedule', 'callback_func_name', 'varchar(128)');
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('schedule', 'callback_func_param', 'text');
 
 /*abstract the cron, callback function parameters from table retention_policy*/
 UPDATE schedule, (
-    SELECT id, data->>'$.trigger.references.job_id' AS schedule_id,
-        data->>'$.trigger.settings.cron' AS cron
+    SELECT id, replace(json_extract(data,'$.trigger.references.job_id'),'"','') AS schedule_id,
+        replace(json_extract(data,'$.trigger.settings.cron'),'"','') AS cron
         FROM retention_policy
     ) AS retention
 SET vendor_type= 'RETENTION', vendor_id=retention.id, schedule.cron = retention.cron,
     callback_func_name = 'RETENTION', callback_func_param=concat('{"PolicyID":', retention.id, ',"Trigger":"Schedule"}')
 WHERE schedule.id=retention.schedule_id;
+
 
 /*create new execution and task record for each schedule*/
 CREATE PROCEDURE PROC_UPDATE_EXECUTION_TASK ( ) BEGIN
@@ -125,8 +158,7 @@ ALTER TABLE schedule DROP COLUMN status;
 
 UPDATE registry SET type = 'quay' WHERE type = 'quay-io';
 
-
-ALTER TABLE artifact ADD COLUMN icon varchar(255);
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('artifact', 'icon', 'varchar(255)');
 
 /*remove the constraint for name in table 'notification_policy'*/
 /*ALTER TABLE notification_policy DROP CONSTRAINT notification_policy_name_key;*/
@@ -136,8 +168,8 @@ ALTER TABLE notification_policy ADD UNIQUE(name,project_id);
 CREATE TABLE IF NOT EXISTS data_migrations (
     id SERIAL PRIMARY KEY NOT NULL,
     version int,
-    creation_time timestamp default CURRENT_TIMESTAMP,
-    update_time timestamp default CURRENT_TIMESTAMP
+    creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
+    update_time timestamp(6) default CURRENT_TIMESTAMP(6)
 );
 INSERT INTO data_migrations (version) VALUES (
     CASE

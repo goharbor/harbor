@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 )
@@ -36,8 +37,17 @@ const (
 
 // MigrateDB upgrades DB schema and do necessary transformation of the data in DB
 func MigrateDB(database *models.Database) error {
+	var migrator *migrate.Migrate
+	var err error
+
 	// check the database schema version
-	migrator, err := dao.NewMigrator(database.PostGreSQL)
+	switch {
+	case utils.IsDBPostgresql(database.Type):
+		migrator, err = dao.NewMigrator(database.PostGreSQL)
+	case utils.IsDBMysql(database.Type):
+		migrator, err = dao.NewMysqlMigrator(database.MySQL)
+	}
+
 	if err != nil {
 		return err
 	}

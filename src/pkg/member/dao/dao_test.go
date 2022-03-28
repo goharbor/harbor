@@ -21,8 +21,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
-	testDao "github.com/goharbor/harbor/src/common/dao"
 	_ "github.com/goharbor/harbor/src/common/dao"
+	testDao "github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member/models"
@@ -43,6 +44,9 @@ type DaoTestSuite struct {
 }
 
 func (s *DaoTestSuite) SetupSuite() {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	s.Suite.SetupSuite()
 	s.Suite.ClearTables = []string{"project_member"}
 	s.dao = New()
@@ -295,5 +299,8 @@ func (s *DaoTestSuite) TestDeleteProjectMemberByUserId() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

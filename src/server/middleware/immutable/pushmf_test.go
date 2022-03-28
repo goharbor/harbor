@@ -177,7 +177,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 }
 
 func TestMain(m *testing.M) {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 
 	if result := m.Run(); result != 0 {
 		os.Exit(result)

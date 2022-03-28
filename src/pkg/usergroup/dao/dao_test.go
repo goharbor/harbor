@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 )
@@ -29,6 +30,9 @@ type DaoTestSuite struct {
 }
 
 func (s *DaoTestSuite) SetupSuite() {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	s.Suite.SetupSuite()
 	s.Suite.ClearTables = []string{"user_group"}
 	s.dao = New()
@@ -65,5 +69,8 @@ func (s *DaoTestSuite) TestCRUDUsergroup() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if !utils.IsDBPostgresql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

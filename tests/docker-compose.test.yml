@@ -27,3 +27,30 @@ services:
       - /data/redis:/var/lib/redis
     ports:
       - 6379:6379
+  mariadb:
+    image: mariadb:10.5.9
+    command: [
+        '--collation-server=utf8mb4_general_ci',
+    ]
+    restart: always
+    volumes:
+      - /data/mariadb/database:/var/lib/mysql:z
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: registry
+    ports:
+      - 3306:3306
+  mysql:
+    image: mysql:8.0
+    command: [
+        '--default-authentication-plugin=mysql_native_password',
+        '--collation-server=utf8mb4_general_ci',
+    ]
+    restart: always
+    volumes:
+      - /data/mysql/database:/var/lib/mysql:z
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: registry
+    ports:
+      - 3308:3306

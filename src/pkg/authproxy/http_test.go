@@ -15,7 +15,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)

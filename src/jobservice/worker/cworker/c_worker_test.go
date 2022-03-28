@@ -54,7 +54,7 @@ type CWorkerTestSuite struct {
 func (suite *CWorkerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
 	suite.pool = tests.GiveMeRedisPool()
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 
 	// Append node ID
 	vCtx := context.WithValue(context.Background(), utils.NodeID, utils.GenerateNodeID())

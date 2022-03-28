@@ -39,14 +39,14 @@ import (
 )
 
 var ldapTestConfig = map[string]interface{}{
-	common.ExtEndpoint:        "host01.com",
-	common.AUTHMode:           "ldap_auth",
-	common.DatabaseType:       "postgresql",
-	common.PostGreSQLHOST:     "127.0.0.1",
-	common.PostGreSQLPort:     5432,
-	common.PostGreSQLUsername: "postgres",
-	common.PostGreSQLPassword: "root123",
-	common.PostGreSQLDatabase: "registry",
+	common.ExtEndpoint:  "host01.com",
+	common.AUTHMode:     "ldap_auth",
+	common.DatabaseType: "postgresql",
+	common.DBHOST:       "127.0.0.1",
+	common.DBPort:       5432,
+	common.DBUsername:   "postgres",
+	common.DBPassword:   "root123",
+	common.DBDatabase:   "registry",
 	// config.SelfRegistration: true,
 	common.LDAPURL:                "ldap://127.0.0.1",
 	common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",

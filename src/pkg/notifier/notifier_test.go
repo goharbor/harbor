@@ -119,7 +119,7 @@ func TestSubscribeAndUnSubscribe(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {
@@ -161,7 +161,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestConcurrentPublish(t *testing.T) {
-	dao.PrepareTestForPostgresSQL()
+	dao.PrepareTestForDB()
 	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {

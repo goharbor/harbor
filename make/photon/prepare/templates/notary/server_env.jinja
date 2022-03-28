@@ -1,2 +1,9 @@
+{% if ( notary_server_db_type == "mysql" or notary_server_db_type == "mariadb" ) %}
+MIGRATIONS_PATH=migrations/server/mysql
+CONFIG_FILE=/etc/notary/server-config.mysql.json
+DB_URL=mysql://{{notary_server_db_username}}:{{notary_server_db_password}}@tcp({{notary_server_db_host}}:{{notary_server_db_port}})/{{notary_server_db_name}}
+{% else %}
 MIGRATIONS_PATH=migrations/server/postgresql
+CONFIG_FILE=/etc/notary/server-config.postgres.json
 DB_URL=postgres://{{notary_server_db_username}}:{{notary_server_db_password}}@{{notary_server_db_host}}:{{notary_server_db_port}}/{{notary_server_db_name}}?sslmode={{notary_server_db_sslmode}}
+{% endif %}

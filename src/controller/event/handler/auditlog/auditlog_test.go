@@ -67,7 +67,7 @@ type AuditLogHandlerTestSuite struct {
 }
 
 func (suite *AuditLogHandlerTestSuite) SetupSuite() {
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	suite.logMgr = &MockAuditLogManager{}
 	suite.auditLogHandler = &Handler{}
 }

@@ -10,4 +10,4 @@ COPY ./make/photon/notary/binary/migrations/ /migrations/
 RUN chmod +x /bin/notary-signer /migrations/migrate.sh /bin/migrate /bin/migrate-patch
 ENV SERVICE_NAME=notary_signer
 USER notary
-CMD migrate-patch -database=${DB_URL} && /migrations/migrate.sh && /bin/notary-signer -config=/etc/notary/signer-config.postgres.json -logf=logfmt
+CMD migrate-patch -database=${DB_URL} && /migrations/migrate.sh && /bin/notary-signer -config=${CONFIG_FILE} -logf=logfmt

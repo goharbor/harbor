@@ -41,7 +41,7 @@ type daoTestSuite struct {
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
 	d.artDAO = artdao.New()
 	artifactID, err := d.artDAO.Create(d.ctx, &artdao.Artifact{

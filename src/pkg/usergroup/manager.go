@@ -58,6 +58,13 @@ type manager struct {
 }
 
 func newManager() Manager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
+	}
+
 	return &manager{dao: dao.New()}
 }
 

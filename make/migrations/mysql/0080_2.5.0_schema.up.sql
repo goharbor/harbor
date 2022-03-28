@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS artifact_accessory (
     type varchar(256),
     size bigint,
     digest varchar(1024),
-    creation_time timestamp default CURRENT_TIMESTAMP,
+    creation_time timestamp(6) default CURRENT_TIMESTAMP(6),
     FOREIGN KEY (artifact_id) REFERENCES artifact(id),
     FOREIGN KEY (subject_artifact_id) REFERENCES artifact(id),
     CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_id)

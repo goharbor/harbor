@@ -17,6 +17,7 @@ package quota
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/dao"
@@ -109,5 +110,12 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]*Quota, error) {
 
 // NewManager returns quota manager
 func NewManager() Manager {
+	switch {
+	case utils.IsDBPostgresql():
+		return &manager{dao: dao.New()}
+	case utils.IsDBMysql():
+		return &manager{dao: dao.NewMysqlDao()}
+	}
+
 	return &manager{dao: dao.New()}
 }

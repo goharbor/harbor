@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	proctl "github.com/goharbor/harbor/src/controller/project"
 	quotactl "github.com/goharbor/harbor/src/controller/quota"
@@ -142,12 +144,17 @@ type PorjectCollectorTestSuite struct {
 }
 
 func (c *PorjectCollectorTestSuite) TestProjectCollector() {
+	if utils.IsDBMariaDB() {
+		return
+	}
 	pMap := make(map[int64]*projectInfo)
 	updateProjectBasicInfo(pMap)
 	updateProjectMemberInfo(pMap)
 	updateProjectRepoInfo(pMap)
 	updateProjectArtifactInfo(pMap)
 
+	fmt.Printf("pMap1: %+v\n", pMap[testPro1.ProjectID])
+	fmt.Printf("pMap2: %+v\n", pMap[testPro2.ProjectID])
 	c.Equalf(testPro1.ProjectID, pMap[testPro1.ProjectID].ProjectID, "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].ProjectID, testPro1.ProjectID, "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].Name, testPro1.Name, "pMap %v", pMap)
@@ -168,6 +175,42 @@ func (c *PorjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 
+}
+
+func (c *PorjectCollectorTestSuite) TestProjectCollectorForMariaDB() {
+	if !utils.IsDBMariaDB() {
+		return
+	}
+	pMap := make(map[int64]*projectInfo)
+	updateProjectBasicInfo(pMap)
+	updateProjectMemberInfo(pMap)
+	updateProjectRepoInfo(pMap)
+
+	fmt.Printf("pMap1: %+v\n", pMap[testPro1.ProjectID])
+	fmt.Printf("pMap2: %+v\n", pMap[testPro2.ProjectID])
+	updateProjectArtifactInfo(pMap)
+
+	fmt.Printf("pMap1: %+v\n", pMap[testPro1.ProjectID])
+	fmt.Printf("pMap2: %+v\n", pMap[testPro2.ProjectID])
+	c.Equalf(testPro1.ProjectID, pMap[testPro1.ProjectID].ProjectID, "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].ProjectID, testPro1.ProjectID, "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].Name, testPro1.Name, "pMap %v", pMap)
+	c.Equalf(strconv.FormatBool(pMap[testPro1.ProjectID].Public), testPro1.Metadata["public"], "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].Quota, "{\"storage\":100}", "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].Usage, "{\"storage\":0}", "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].MemberTotal, float64(2), "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactType, "IMAGE", "pMap %v", pMap)
+
+	c.Equalf(pMap[testPro2.ProjectID].ProjectID, testPro2.ProjectID, "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].Name, testPro2.Name, "pMap %v", pMap)
+	c.Equalf(strconv.FormatBool(pMap[testPro2.ProjectID].Public), testPro2.Metadata["public"], "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].Quota, "{\"storage\":200}", "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].Usage, "{\"storage\":0}", "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].MemberTotal, float64(3), "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 }
 
 func TestPorjectCollectorTestSuite(t *testing.T) {

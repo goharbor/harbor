@@ -394,5 +394,8 @@ func (suite *DaoTestSuite) TestListRoles() {
 }
 
 func TestDaoTestSuite(t *testing.T) {
+	if utils.IsDBMysql() {
+		return
+	}
 	suite.Run(t, &DaoTestSuite{})
 }

@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
@@ -28,42 +29,61 @@ import (
 
 // InitDatabaseFromEnv is used to initialize database for testing
 func InitDatabaseFromEnv() {
-	dbHost := os.Getenv("POSTGRESQL_HOST")
+	dbHost := os.Getenv("DB_HOST")
 	if len(dbHost) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_HOST is not set")
+		log.Fatalf("environment variable DB_HOST is not set")
 	}
-	dbUser := os.Getenv("POSTGRESQL_USR")
+	dbUser := os.Getenv("DB_USERNAME")
 	if len(dbUser) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_USR is not set")
+		log.Fatalf("environment variable DB_USERNAME is not set")
 	}
-	dbPortStr := os.Getenv("POSTGRESQL_PORT")
+	dbPortStr := os.Getenv("DB_PORT")
 	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_PORT is not set")
+		log.Fatalf("environment variable DB_PORT is not set")
 	}
 	dbPort, err := strconv.Atoi(dbPortStr)
 	if err != nil {
-		log.Fatalf("invalid POSTGRESQL_PORT: %v", err)
+		log.Fatalf("invalid DB_PORT: %v", err)
 	}
 
-	dbPassword := os.Getenv("POSTGRESQL_PWD")
-	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbDatabase := os.Getenv("DB_DATABASE")
+	dbCollation := os.Getenv("DB_COLLATION")
 	adminPwd := os.Getenv("HARBOR_ADMIN_PASSWD")
 	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
+		log.Fatalf("environment variable DB_DATABASE is not set")
 	}
 
-	database := &models.Database{
-		Type: "postgresql",
-		PostGreSQL: &models.PostGreSQL{
-			Host:     dbHost,
-			Port:     dbPort,
-			Username: dbUser,
-			Password: dbPassword,
-			Database: dbDatabase,
-		},
+	database := &models.Database{}
+	switch {
+	case utils.IsDBPostgresql():
+		database = &models.Database{
+			Type: "postgresql",
+			PostGreSQL: &models.PostGreSQL{
+				Host:     dbHost,
+				Port:     dbPort,
+				Username: dbUser,
+				Password: dbPassword,
+				Database: dbDatabase,
+			},
+		}
+	case utils.IsDBMysql():
+		database = &models.Database{
+			Type: "mysql",
+			MySQL: &models.MySQL{
+				Host:      dbHost,
+				Port:      dbPort,
+				Username:  dbUser,
+				Password:  dbPassword,
+				Database:  dbDatabase,
+				Collation: dbCollation,
+			},
+		}
+	default:
+		log.Fatalf("invalid db type %s", os.Getenv("DATABASE_TYPE"))
 	}
 
-	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("DB_HOST: %s, DB_USERNAME: %s, DB_PORT: %d, DB_PASSWORD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to init database : %v", err)

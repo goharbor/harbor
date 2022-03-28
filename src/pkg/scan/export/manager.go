@@ -8,6 +8,7 @@ import (
 
 	beego_orm "github.com/beego/beego/orm"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/orm"
 	q2 "github.com/goharbor/harbor/src/lib/q"
 )
@@ -52,6 +53,41 @@ group by
     vulnerability_record.package_version,
     vulnerability_record.fixed_version,
     to_jsonb(vulnerability_record.vendor_attributes),
+    scanner_registration.id
+	`
+	VulnScanReportQueryTemplateMysql = `
+select
+    artifact.digest as artifact_digest,
+    artifact.repository_id,
+    artifact.repository_name,
+    vulnerability_record.cve_id,
+    vulnerability_record.package,
+    vulnerability_record.severity,
+    vulnerability_record.cwe_ids,
+    vulnerability_record.package_version,
+    vulnerability_record.fixed_version,
+    json_extract(vulnerability_record.vendor_attributes, '$')  as vendor_attributes,
+    scanner_registration.name as scanner_name
+from
+    report_vulnerability_record
+    inner join scan_report on report_vulnerability_record.report_uuid = scan_report.uuid
+    inner join artifact on scan_report.digest = artifact.digest
+    left outer join artifact_reference on artifact.id = artifact_reference.child_id
+    inner join vulnerability_record on report_vulnerability_record.vuln_record_id = vulnerability_record.id
+    inner join scanner_registration on scan_report.registration_uuid = scanner_registration.uuid
+and artifact.id in (%s)
+
+group by
+    package,
+    vulnerability_record.severity,
+    vulnerability_record.cve_id,
+    artifact.digest,
+    artifact.repository_id,
+    artifact.repository_name,
+    vulnerability_record.cwe_ids,
+    vulnerability_record.package_version,
+    vulnerability_record.fixed_version,
+    json_extract(vulnerability_record.vendor_attributes, '$'),
     scanner_registration.id
 	`
 	JobModeExport = "export"
@@ -134,7 +170,7 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		}
 	}
 
-	sql := fmt.Sprintf(VulnScanReportQueryTemplate, artIDs)
+	sql := getVulnScanReportQueryTemplate(artIDs)
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -152,4 +188,12 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 	query, pageLimits := orm.PaginationOnRawSQL(q, sql, paginationParams)
 	// user can open ORM_DEBUG for log the sql
 	return ormer.Raw(query, pageLimits), nil
+}
+
+func getVulnScanReportQueryTemplate(artIDs string) string {
+	sql := fmt.Sprintf(VulnScanReportQueryTemplate, artIDs)
+	if utils.IsDBMysql() {
+		sql = fmt.Sprintf(VulnScanReportQueryTemplateMysql, artIDs)
+	}
+	return sql
 }

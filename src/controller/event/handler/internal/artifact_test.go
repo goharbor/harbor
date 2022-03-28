@@ -49,7 +49,7 @@ func TestArtifactHandler(t *testing.T) {
 
 // SetupSuite prepares for running ArtifactHandlerTestSuite.
 func (suite *ArtifactHandlerTestSuite) SetupSuite() {
-	common_dao.PrepareTestForPostgresSQL()
+	common_dao.PrepareTestForDB()
 	config.Init()
 	suite.handler = &Handler{}
 	suite.ctx = orm.NewContext(context.TODO(), beegoorm.NewOrm())
@@ -135,7 +135,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 		art, err = pkg.ArtifactMgr.Get(suite.ctx, 1)
 		suite.Nil(err)
 		return art.PullTime.After(lastPullTime)
-	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_time async update")
+	}, 4*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_time async update")
 
 	suite.Eventually(func() bool {
 		repository, err = pkg.RepositoryMgr.Get(suite.ctx, 1)

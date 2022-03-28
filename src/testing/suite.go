@@ -55,7 +55,7 @@ type Suite struct {
 func (suite *Suite) SetupSuite() {
 	once.Do(func() {
 		config.Init()
-		dao.PrepareTestForPostgresSQL()
+		dao.PrepareTestForDB()
 	})
 }
 

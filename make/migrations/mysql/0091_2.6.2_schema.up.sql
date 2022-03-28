@@ -1,0 +1,1 @@
+CALL PROC_ADD_COLUMN_IF_NOT_EXISTS('replication_policy', 'copy_by_chunk', 'boolean');
