@@ -147,6 +147,13 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
+	// validate metadata.public value, should only be "true" or "false"
+	if p := req.Metadata.Public; p != "" {
+		if p != "true" && p != "false" {
+			return a.SendError(ctx, errors.Errorf("metadata.public should only be 'true' or 'false', but got: '%s'", p))
+		}
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
