@@ -2768,7 +2768,7 @@ paths:
   /usergroups:
     get:
       summary: Get all user groups information
-      description: Get all user groups information
+      description: Get all user groups information, it is open for system admin
       operationId: listUserGroups
       tags:
         - usergroup
@@ -2781,6 +2781,11 @@ paths:
           type: string
           required: false
           description: search with ldap group DN
+        - name: group_name
+          in: query
+          type: string
+          required: false
+          description: group name need to search, fuzzy matches
       responses:
         '200':
           description: Get user group successfully.
