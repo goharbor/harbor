@@ -32,3 +32,6 @@ ALTER TABLE report_vulnerability_record ALTER COLUMN id TYPE BIGINT;
 ALTER SEQUENCE report_vulnerability_record_id_seq AS BIGINT;
 
 CREATE INDEX IF NOT EXISTS idx_task_job_id ON task (job_id);
+
+/* Correct project_metadata.public value, should only be true or false, other invaild value will be rewrite to false */
+UPDATE project_metadata SET value='false' WHERE name='public' AND value NOT IN('true', 'false');
