@@ -96,6 +96,12 @@ fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
-docker-compose up -d
+if ! [ -z ${HARBOR_BUNDLE_DIR} ]; then
+  pushd ${HARBOR_BUNDLE_DIR}
+  docker-compose up -d
+  popd
+else
+  docker-compose up -d
+fi
 
 success $"----Harbor has been installed and started successfully.----"
