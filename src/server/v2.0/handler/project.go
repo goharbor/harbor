@@ -150,7 +150,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// validate metadata.public value, should only be "true" or "false"
 	if p := req.Metadata.Public; p != "" {
 		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.Errorf("metadata.public should only be 'true' or 'false', but got: '%s'", p))
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
 		}
 	}
 
