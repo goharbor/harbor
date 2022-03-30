@@ -81,8 +81,8 @@ export class GroupComponent implements OnInit, OnDestroy {
             this.currentPage = 1;
             this.selectedGroups = [];
             this.loading = true;
-            return  this.groupService.searchUserGroupsResponse({
-              groupname: groupName,
+            return  this.groupService.listUserGroupsResponse({
+              groupName: groupName,
               pageSize: this.pageSize,
               page: this.currentPage
             })
