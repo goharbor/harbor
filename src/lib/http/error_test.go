@@ -45,7 +45,7 @@ func TestSendError(t *testing.T) {
 	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("object not found")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"object not found"}]}`+"\n", rw.Body.String())
+	assert.Equal(t, `{"errors":[{"code":"MANIFEST_UNKNOWN","message":"object not found"}]}`+"\n", rw.Body.String())
 }
 
 func TestAPIError(t *testing.T) {
@@ -71,7 +71,7 @@ func TestAPIError(t *testing.T) {
 	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
-	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)
+	assert.Equal(t, `{"errors":[{"code":"MANIFEST_UNKNOWN","message":"resource not found"}]}`, payload)
 	assert.Contains(t, stacktrace, `http.TestAPIError`)
 
 	// common error, common error has no stacktrace
