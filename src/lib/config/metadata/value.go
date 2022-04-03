@@ -16,6 +16,7 @@ package metadata
 
 import (
 	"errors"
+	"time"
 
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -142,6 +143,22 @@ func (c *ConfigureValue) GetStringToStringMap() map[string]string {
 	}
 	log.Errorf("GetStringToStringMap failed, current value's metadata is not defined, %+v", c)
 	return result
+}
+
+// GetDuration - return the time.Duration value of current value
+func (c *ConfigureValue) GetDuration() time.Duration {
+	if item, ok := Instance().GetByName(c.Name); ok {
+		val, err := item.ItemType.get(c.Value)
+		if err != nil {
+			log.Errorf("GetDuration failed, error: %+v", err)
+			return 0
+		}
+		if durationValue, suc := val.(time.Duration); suc {
+			return durationValue
+		}
+	}
+	log.Errorf("GetDuration failed, the current value's metadata is not defined, %+v", c)
+	return 0
 }
 
 // GetAnyType get the interface{} of current value

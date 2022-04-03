@@ -274,14 +274,16 @@ func Database() (*models.Database, error) {
 	database := &models.Database{}
 	database.Type = DefaultMgr().Get(backgroundCtx, common.DatabaseType).GetString()
 	postgresql := &models.PostGreSQL{
-		Host:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
-		Port:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
-		Username:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
-		Password:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
-		Database:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
-		SSLMode:      DefaultMgr().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
-		MaxIdleConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
-		MaxOpenConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
+		Host:            DefaultMgr().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
+		Port:            DefaultMgr().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
+		Username:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
+		Password:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
+		Database:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
+		SSLMode:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
+		MaxIdleConns:    DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
+		MaxOpenConns:    DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
+		ConnMaxLifetime: DefaultMgr().Get(backgroundCtx, common.PostGreSQLConnMaxLifetime).GetDuration(),
+		ConnMaxIdleTime: DefaultMgr().Get(backgroundCtx, common.PostGreSQLConnMaxIdleTime).GetDuration(),
 	}
 	database.PostGreSQL = postgresql
 

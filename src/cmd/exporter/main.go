@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,17 +22,29 @@ func main() {
 	viper.SetEnvPrefix("harbor")
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	connMaxLifetime, err := time.ParseDuration(viper.GetString("database.conn_max_lifetime"))
+	if err != nil {
+		log.Errorf("Failed to parse database.conn_max_lifetime: %v", err)
+		connMaxLifetime = 5 * time.Minute
+	}
+	connMaxIdleTime, err := time.ParseDuration(viper.GetString("database.conn_max_idle_time"))
+	if err != nil {
+		log.Errorf("Failed to parse database.conn_max_idle_time: %v", err)
+		connMaxIdleTime = 0
+	}
 	dbCfg := &models.Database{
 		Type: "postgresql",
 		PostGreSQL: &models.PostGreSQL{
-			Host:         viper.GetString("database.host"),
-			Port:         viper.GetInt("database.port"),
-			Username:     viper.GetString("database.username"),
-			Password:     viper.GetString("database.password"),
-			Database:     viper.GetString("database.dbname"),
-			SSLMode:      viper.GetString("database.sslmode"),
-			MaxIdleConns: viper.GetInt("database.max_idle_conns"),
-			MaxOpenConns: viper.GetInt("database.max_open_conns"),
+			Host:            viper.GetString("database.host"),
+			Port:            viper.GetInt("database.port"),
+			Username:        viper.GetString("database.username"),
+			Password:        viper.GetString("database.password"),
+			Database:        viper.GetString("database.dbname"),
+			SSLMode:         viper.GetString("database.sslmode"),
+			MaxIdleConns:    viper.GetInt("database.max_idle_conns"),
+			MaxOpenConns:    viper.GetInt("database.max_open_conns"),
+			ConnMaxLifetime: connMaxLifetime,
+			ConnMaxIdleTime: connMaxIdleTime,
 		},
 	}
 	if err := dao.InitDatabase(dbCfg); err != nil {

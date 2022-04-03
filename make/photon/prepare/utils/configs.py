@@ -158,6 +158,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = 'disable'
         config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = db_configs.get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = db_configs.get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
@@ -288,6 +290,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = external_db_configs['harbor'].get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = external_db_configs['harbor'].get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
