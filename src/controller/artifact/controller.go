@@ -19,6 +19,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -77,7 +79,7 @@ type Controller interface {
 	// creates it if it doesn't exist. If tags are provided, ensure they exist
 	// and are attached to the artifact. If the tags don't exist, create them first.
 	// The "created" will be set as true when the artifact is created
-	Ensure(ctx context.Context, repository, digest string, tags ...string) (created bool, id int64, err error)
+	Ensure(ctx context.Context, repository, digest string, option *ArtOption) (created bool, id int64, err error)
 	// Count returns the total count of artifacts according to the query.
 	// The artifacts that referenced by others and without tags are not counted
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
@@ -121,6 +123,7 @@ func NewController() Controller {
 		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
+		accessoryMgr: accessory.Mgr,
 	}
 }
 
@@ -135,16 +138,29 @@ type controller struct {
 	immutableMtr match.ImmutableTagMatcher
 	regCli       registry.Client
 	abstractor   Abstractor
+	accessoryMgr accessory.Manager
 }
 
-func (c *controller) Ensure(ctx context.Context, repository, digest string, tags ...string) (bool, int64, error) {
+type ArtOption struct {
+	Tags []string
+	Accs []accessorymodel.AccessoryData
+}
+
+func (c *controller) Ensure(ctx context.Context, repository, digest string, option *ArtOption) (bool, int64, error) {
 	created, artifact, err := c.ensureArtifact(ctx, repository, digest)
 	if err != nil {
 		return false, 0, err
 	}
-	for _, tag := range tags {
-		if err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
-			return false, 0, err
+	if option != nil {
+		for _, tag := range option.Tags {
+			if err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
+				return false, 0, err
+			}
+		}
+		for _, acc := range option.Accs {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+				return false, 0, err
+			}
 		}
 	}
 	// fire event
@@ -152,8 +168,9 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, tags
 		Ctx:      ctx,
 		Artifact: artifact,
 	}
-	if len(tags) > 0 {
-		e.Tag = tags[0]
+
+	if option != nil && len(option.Tags) > 0 {
+		e.Tag = option.Tags[0]
 	}
 	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
@@ -229,11 +246,18 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 		return nil, err
 	}
 
-	var artifacts []*Artifact
+	var res []*Artifact
+	// Only the displayed accessory will in the artifact list
 	for _, art := range arts {
-		artifacts = append(artifacts, c.assembleArtifact(ctx, art, option))
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "digest": art.Digest}))
+		if err != nil {
+			return nil, err
+		}
+		if len(accs) == 0 || (len(accs) > 0 && accs[0].Display()) {
+			res = append(res, c.assembleArtifact(ctx, art, option))
+		}
 	}
-	return artifacts, nil
+	return res, nil
 }
 
 func (c *controller) Get(ctx context.Context, id int64, option *Option) (*Artifact, error) {
@@ -283,19 +307,32 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	return c.deleteDeeply(ctx, id, true)
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": id}))
+	if err != nil {
+		return err
+	}
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return c.deleteDeeply(ctx, id, true, len(accs) > 0)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-delete"))
 }
 
 // "isRoot" is used to specify whether the artifact is the root parent artifact
 // the error handling logic for the root parent artifact and others is different
-func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) error {
-	art, err := c.Get(ctx, id, &Option{WithTag: true})
+// "isAccessory" is used to specify whether the artifact is an accessory.
+func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAccessory bool) error {
+	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true})
 	if err != nil {
 		// return nil if the nonexistent artifact isn't the root parent
 		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
 			return nil
 		}
 		return err
+	}
+
+	if isAccessory {
+		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
+			return err
+		}
 	}
 
 	// the child artifact is referenced by some tags, skip
@@ -319,6 +356,17 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		// the child artifact is referenced by other artifacts, skip
 		return nil
 	}
+
+	// delete accessories if contains any
+	for _, acc := range art.Accessories {
+		// only hard ref accessory should be removed
+		if acc.IsHard() {
+			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, true, true); err != nil {
+				return err
+			}
+		}
+	}
+
 	// delete child artifacts if contains any
 	for _, reference := range art.References {
 		// delete reference
@@ -326,7 +374,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
-		if err = c.deleteDeeply(ctx, reference.ChildID, false); err != nil {
+		if err = c.deleteDeeply(ctx, reference.ChildID, false, false); err != nil {
 			return err
 		}
 	}
@@ -397,17 +445,18 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 }
 
 func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo string) (int64, error) {
-	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true)
+	dstAccs := make([]accessorymodel.AccessoryData, 0)
+	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true, false, &dstAccs)
 }
 
 // as we call the docker registry APIs in the registry client directly,
 // this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
 // these logic must be covered explicitly here.
 // "copyDeeply" iterates the child artifacts and copy them first
-func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot bool) (int64, error) {
+func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]accessorymodel.AccessoryData) (int64, error) {
 	var option *Option
-	// only get the tags of the root parent
-	if isRoot {
+	option = &Option{WithTag: true, WithAccessory: true}
+	if isAcc {
 		option = &Option{WithTag: true}
 	}
 
@@ -425,8 +474,8 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 		if !isRoot {
 			return dstArt.ID, nil
 		}
-		// the root parent already exists, goto next step to copy tags
-		goto tags
+		// the root parent already exists, goto next step to ensure artifact: create artifact & references, copy tags & accessories.
+		goto ensureArt
 	}
 	if !errors.IsErr(err, errors.NotFoundCode) {
 		return 0, err
@@ -435,9 +484,24 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	// the artifact doesn't exist under the destination repository, continue to copy
 	// copy child artifacts if contains any
 	for _, reference := range srcArt.References {
-		if _, err = c.copyDeeply(ctx, srcRepo, reference.ChildDigest, dstRepo, false); err != nil {
+		if _, err = c.copyDeeply(ctx, srcRepo, reference.ChildDigest, dstRepo, false, false, dstAccs); err != nil {
 			return 0, err
 		}
+	}
+
+	// copy accessory if contains any
+	for _, acc := range srcArt.Accessories {
+		id, err := c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, false, true, dstAccs)
+		if err != nil {
+			return 0, err
+		}
+		dstAcc := accessorymodel.AccessoryData{
+			ArtifactID: id,
+			Digest:     acc.GetData().Digest,
+			Type:       acc.GetData().Type,
+			Size:       acc.GetData().Size,
+		}
+		*dstAccs = append(*dstAccs, dstAcc)
 	}
 
 	// copy the parent artifact into the backend docker registry
@@ -445,14 +509,18 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 		return 0, err
 	}
 
-tags:
+ensureArt:
 	// only copy the tags of outermost artifact
 	var tags []string
 	for _, tag := range srcArt.Tags {
 		tags = append(tags, tag.Name)
 	}
 	// ensure the parent artifact exist in the database
-	_, id, err := c.Ensure(ctx, dstRepo, digest, tags...)
+	artopt := &ArtOption{
+		Tags: tags,
+		Accs: *dstAccs,
+	}
+	_, id, err := c.Ensure(ctx, dstRepo, digest, artopt)
 	if err != nil {
 		return 0, err
 	}
@@ -460,10 +528,7 @@ tags:
 }
 
 func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {
-	if err := c.artMgr.Update(ctx, &artifact.Artifact{
-		ID:       artifactID,
-		PullTime: time,
-	}, "PullTime"); err != nil {
+	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
 		return err
 	}
 	tg, err := c.tagCtl.Get(ctx, tagID, nil)
@@ -557,6 +622,24 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 				}
 			}
 		}
+
+		if len(artifact.Accessories) > 0 {
+			var ids []int64
+			for _, acc := range artifact.Accessories {
+				ids = append(ids, acc.GetData().ArtifactID)
+			}
+
+			children, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids, "base": "*"}), option)
+			if err != nil {
+				return err
+			}
+
+			for _, child := range children {
+				if !walked[child.Digest] {
+					queue.PushBack(child)
+				}
+			}
+		}
 	}
 
 	return nil
@@ -581,6 +664,9 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	}
 	if option.WithLabel {
 		c.populateLabels(ctx, artifact)
+	}
+	if option.WithAccessory {
+		c.populateAccessories(ctx, artifact)
 	}
 	return artifact
 }
@@ -625,4 +711,13 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 			artifact.SetAdditionLink(strings.ToLower(t), version)
 		}
 	}
+}
+
+func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
+	if err != nil {
+		log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
+		return
+	}
+	art.Accessories = accs
 }

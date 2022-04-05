@@ -147,6 +147,12 @@ trivy:
   {% else %}
   ignore_unfixed: false
   {% endif %}
+  # timeout The duration to wait for scan completion
+  {% if trivy.timeout is defined %}
+  timeout: {{ trivy.timeout }}
+  {% else %}
+  timeout: 5m0s
+  {% endif %}
   # skipUpdate The flag to enable or disable Trivy DB downloads from GitHub
   #
   # You might want to enable this flag in test or CI/CD environments to avoid GitHub rate limiting issues.

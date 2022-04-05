@@ -23,7 +23,7 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - Project Level Policy Content Trust
+Test Case - Project Level Policy Notary Deployment security
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -31,11 +31,11 @@ Test Case - Project Level Policy Content Trust
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Go Into Project  project${d}
     Goto Project Config
-    Click Content Trust
+    Click Notary Deployment Security
     Save Project Config
     # Verify
     # Unsigned image can not be pulled
-    Content Trust Should Be Selected
+    Content Notary Deployment security Be Selected
     Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest  err_msg=The image is not signed in Notary
     # Signed image can be pulled
     Body Of Admin Push Signed Image  project${d}  redis  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

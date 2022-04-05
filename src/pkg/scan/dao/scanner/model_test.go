@@ -70,7 +70,7 @@ func (suite *ModelTestSuite) TestValidate() {
 
 	r.URL = "a.b.c"
 	err = r.Validate(true)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 
 	r.URL = "http://a.b.c"
 	err = r.Validate(true)

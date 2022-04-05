@@ -15,10 +15,12 @@
 package artifact
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 )
@@ -26,9 +28,41 @@ import (
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags          []*tag.Tag               `json:"tags"`           // the list of tags that attached to the artifact
-	AdditionLinks map[string]*AdditionLink `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
-	Labels        []*model.Label           `json:"labels"`
+	Tags          []*tag.Tag                 `json:"tags"`           // the list of tags that attached to the artifact
+	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Labels        []*model.Label             `json:"labels"`
+	Accessories   []accessoryModel.Accessory `json:"-"`
+}
+
+// UnmarshalJSON to customize the accessories unmarshal
+func (artifact *Artifact) UnmarshalJSON(data []byte) error {
+	type Alias Artifact
+	ali := &struct {
+		*Alias
+		AccessoryItems []interface{} `json:"accessories,omitempty"`
+	}{
+		Alias: (*Alias)(artifact),
+	}
+
+	if err := json.Unmarshal(data, &ali); err != nil {
+		return err
+	}
+
+	if len(ali.AccessoryItems) > 0 {
+		for _, item := range ali.AccessoryItems {
+			data, err := json.Marshal(item)
+			if err != nil {
+				return err
+			}
+			acc, err := accessoryModel.ToAccessory(data)
+			if err != nil {
+				return err
+			}
+			artifact.Accessories = append(artifact.Accessories, acc)
+		}
+	}
+
+	return nil
 }
 
 // SetAdditionLink set a addition link
@@ -53,7 +87,8 @@ type AdditionLink struct {
 
 // Option is used to specify the properties returned when listing/getting artifacts
 type Option struct {
-	WithTag   bool
-	TagOption *tag.Option // only works when WithTag is set to true
-	WithLabel bool
+	WithTag       bool
+	TagOption     *tag.Option // only works when WithTag is set to true
+	WithLabel     bool
+	WithAccessory bool
 }

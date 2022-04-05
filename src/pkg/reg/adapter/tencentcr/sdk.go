@@ -131,10 +131,18 @@ func (a *adapter) isNamespaceExist(namespace string) (exist bool, err error) {
 	}
 
 	log.Warningf("[tencent-tcr.PrepareForPush.isNamespaceExist] namespace=%s, total=%d", namespace, *resp.Response.TotalCount)
-	if int(*resp.Response.TotalCount) != 1 {
-		return
+	exist = isTcrNsExist(namespace, resp.Response.NamespaceList)
+
+	return
+}
+
+func isTcrNsExist(name string, list []*tcr.TcrNamespaceInfo) (exist bool) {
+	for _, ns := range list {
+		if *ns.Name == name {
+			exist = true
+			return
+		}
 	}
-	exist = true
 	return
 }
 

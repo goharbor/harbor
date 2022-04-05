@@ -17,6 +17,11 @@ ${harbor_chart_prov_filename}  harbor-0.2.0.tgz.prov
 ${harbor_chart_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
 ${harbor_chart_prov_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz.prov
 
+${harbor_helm_name}  harbor-helm-1.7.3
+${harbor_helm_filename}  harbor-helm-1.7.3.tar.gz
+${harbor_helm_version}  1.7.3
+${harbor_helm_package}  harbor-1.7.3.tgz
+
 ${prometheus_chart_name}  prometheus
 ${prometheus_chart_filename}  prometheus-7.0.2.tgz
 ${prometheus_chart_version}  7.0.2

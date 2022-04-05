@@ -78,6 +78,14 @@ trivy:
   # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
   skip_update: false
   #
+  # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
+  # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
+  # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
+  # exist in the local repositories. It means a number of detected vulnerabilities might be fewer in offline mode.
+  # It would work if all the dependencies are in local.
+  # This option doesn’t affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
+  offline_scan: false
+  #
   # insecure The flag to skip verifying registry certificate
   insecure: false
   # github_token The GitHub access token to download Trivy DB
@@ -129,7 +137,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.4.0
+_version: 2.5.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -164,7 +172,7 @@ _version: 2.4.0
 #   # host for redis+sentinel:
 #   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
 #   host: redis:6379
-#   password:
+#   password: 
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable
@@ -214,15 +222,26 @@ proxy:
 #   # # attributes is a key value dict contains user defined attributes used to initialize trace provider
 #   # attributes:
 #   #   application: harbor
+#   # # jaeger should be 1.26 or newer.
 #   # jaeger:
 #   #   endpoint: http://hostname:14268/api/traces
 #   #   username:
 #   #   password:
 #   #   agent_host: hostname
-#   #   agent_port: 6832
+#   #   # export trace data by jaeger.thrift in compact mode
+#   #   agent_port: 6831
 #   # otel:
 #   #   endpoint: hostname:4318
 #   #   url_path: /v1/traces
 #   #   compression: false
 #   #   insecure: true
 #   #   timeout: 10s
+
+# enable purge _upload directories
+upload_purging:
+  enabled: true
+  # remove files in _upload directories which exist for a period of time, default is one week.
+  age: 168h
+  # the interval of the purge operations
+  interval: 24h
+  dryrun: false

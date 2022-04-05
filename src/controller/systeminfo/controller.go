@@ -17,14 +17,15 @@ package systeminfo
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/config/models"
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/systeminfo"
@@ -50,6 +51,7 @@ type Data struct {
 }
 
 type protectedData struct {
+	CurrentTime                 time.Time
 	WithNotary                  bool
 	RegistryURL                 string
 	ExtURL                      string
@@ -115,6 +117,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	_, caStatErr := os.Stat(defaultRootCert)
 	enableCADownload := caStatErr == nil && strings.HasPrefix(extURL, "https://")
 	res.Protected = &protectedData{
+		CurrentTime:                 time.Now(),
 		WithNotary:                  config.WithNotary(),
 		WithChartMuseum:             config.WithChartMuseum(),
 		ReadOnly:                    config.ReadOnly(ctx),

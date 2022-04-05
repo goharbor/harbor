@@ -1,13 +1,12 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { ConfirmMessageHandler } from '../config.msg.utils';
 import { ConfigurationService } from '../../../../services/config.service';
 import { ConfigurationEmailComponent } from './config-email.component';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { clone } from '../../../../shared/units/utils';
 import { of } from 'rxjs';
+import { ConfigService } from "../config.service";
+import { SharedTestingModule } from "../../../../shared/shared.module";
+import { Configuration } from "../config";
 
 describe('ConfigurationEmailComponent', () => {
     let component: ConfigurationEmailComponent;
@@ -19,27 +18,43 @@ describe('ConfigurationEmailComponent', () => {
     let fakeMessageHandlerService = {
         showSuccess: () => null
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    const fakeConfigService = {
+        config: new Configuration(),
+        getConfig() {
+            return this.config;
+        },
+        setConfig(c) {
+            this.config = c;
+        },
+        getOriginalConfig() {
+            return new Configuration();
+        },
+        getLoadingConfigStatus() {
+            return false;
+        },
+        updateConfig() {
+        },
+        resetConfig() {
+        }
+    };
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
-                TranslateModule.forRoot(),
-                FormsModule
+                SharedTestingModule
             ],
             declarations: [ConfigurationEmailComponent],
             providers: [
                 { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-                TranslateService,
-                { provide: ConfirmMessageHandler, useValue: null },
+                { provide: ConfigService, useValue: fakeConfigService },
                 { provide: ConfigurationService, useValue: fakeConfigurationService }
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfigurationEmailComponent);
         component = fixture.componentInstance;
-        (component as any).originalConfig = clone(component.currentConfig);
         fixture.detectChanges();
     });
 

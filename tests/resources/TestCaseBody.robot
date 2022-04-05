@@ -86,14 +86,15 @@ Body Of Scan Image With Empty Vul
 Body Of Manual Scan All
     [Arguments]  @{vulnerability_levels}
     Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    ${sha256}=  Set Variable  e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis  sha256=${sha256}
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Trigger Scan Now And Wait Until The Result Appears
     Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
-    Scan Result Should Display In List Row  latest
+    Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
@@ -115,13 +116,14 @@ Body Of View Scan Results
 Body Of Scan Image On Push
     [Arguments]  @{vulnerability_levels}
     Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
+    Create An New Project And Go Into Project  project${d}
     Goto Project Config
     Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
     Navigate To Projects
-    Go Into Project  library
+    Go Into Project  project${d}
     Go Into Repo  memcached
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
@@ -238,15 +240,28 @@ Helm3 CLI Push Without Sign In Harbor
     Switch To Project Charts
     Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
 
+Helm3.7 CLI Work Flow
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  rm -rf ./${harbor_helm_name}
+    Wait Unitl Command Success  tar zxf ${files_directory}/${harbor_helm_filename}
+    Helm3.7 Registry Login  ${ip}  ${sign_in_user}  ${sign_in_pwd}
+    Helm3.7 Package  ./${harbor_helm_name}
+    Helm3.7 Push  ${harbor_helm_package}  ${ip}  project${d}
+    Run  rm -rf ./${harbor_helm_package}
+    Retry File Should Not Exist  ./${harbor_helm_package}
+    Helm3.7 Pull  ${ip}  project${d}  ${harbor_helm_version}
+    Retry File Should Exist  ./${harbor_helm_package}
+    Helm3.7 Registry Logout  ${ip}
+
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    ${image_argument}
-    # ${image}=    Set Variable    goharbor/harbor-portal
     ${sha256}=  Set Variable  ${sha256_argument}
-    # ${sha256}=  Set Variable  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -264,13 +279,13 @@ Body Of Verfiy System Level CVE Allowlist
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
     Switch To Configure
     Switch To Configuration System Setting
-    # Add Items To System CVE Allowlist    CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645
+    # Add Items To System CVE Allowlist    CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528
     Add Items To System CVE Allowlist    ${most_cve_list}
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
-    # Add Items To System CVE Allowlist    CVE-2019-18276
+    # Add Items To System CVE Allowlist    CVE-2021-43519
     Add Items To System CVE Allowlist    ${single_cve}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Allowlist  count=16
+    Delete Top Item In System CVE Allowlist  count=9
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
 
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}
@@ -444,3 +459,25 @@ Check Harbor Api Page
     ${Title}=  Get Title
     Should Be Equal  ${Title}  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+
+Body Of Stop Scan And Stop Scan All
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
+    ${tag}=    Set Variable    test-ui
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
+    # stop scan
+    Scan Artifact  project${d}  ${repo}
+    Stop Scan Artifact
+    Check Scan Artifact Job Status Is Stopped
+    # stop scan all
+    Scan All Artifact
+    Stop Scan All Artifact
+    Check Scan All Artifact Job Status Is Stopped
+    Close Browser
+
+Prepare Image Package Test Files
+    [Arguments]  ${files_path}
+    ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}

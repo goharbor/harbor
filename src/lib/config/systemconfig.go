@@ -143,23 +143,23 @@ func GetGCTimeWindow() int64 {
 
 // WithNotary returns a bool value to indicate if Harbor's deployed with Notary
 func WithNotary() bool {
-	return defaultMgr().Get(backgroundCtx, common.WithNotary).GetBool()
+	return DefaultMgr().Get(backgroundCtx, common.WithNotary).GetBool()
 }
 
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
-	return defaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
+	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
 }
 
 // WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
 func WithChartMuseum() bool {
-	return defaultMgr().Get(backgroundCtx, common.WithChartMuseum).GetBool()
+	return DefaultMgr().Get(backgroundCtx, common.WithChartMuseum).GetBool()
 }
 
 // GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
 // otherwise an non nil error is returned
 func GetChartMuseumEndpoint() (string, error) {
-	chartEndpoint := strings.TrimSpace(defaultMgr().Get(backgroundCtx, common.ChartRepoURL).GetString())
+	chartEndpoint := strings.TrimSpace(DefaultMgr().Get(backgroundCtx, common.ChartRepoURL).GetString())
 	if len(chartEndpoint) == 0 {
 		return "", errors.New("empty chartmuseum endpoint")
 	}
@@ -168,7 +168,7 @@ func GetChartMuseumEndpoint() (string, error) {
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
-	return defaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
+	return DefaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
 }
 
 // ExtURL returns the external URL: host:port
@@ -206,12 +206,12 @@ func initSecretStore() {
 
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
-	return strings.TrimSuffix(defaultMgr().Get(backgroundCtx, common.CoreURL).GetString(), "/")
+	return strings.TrimSuffix(DefaultMgr().Get(backgroundCtx, common.CoreURL).GetString(), "/")
 }
 
 // LocalCoreURL returns the local harbor core url
 func LocalCoreURL() string {
-	return defaultMgr().Get(backgroundCtx, common.CoreLocalURL).GetString()
+	return DefaultMgr().Get(backgroundCtx, common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -222,41 +222,41 @@ func InternalTokenServiceEndpoint() string {
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
 // This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
 func InternalNotaryEndpoint() string {
-	return defaultMgr().Get(backgroundCtx, common.NotaryURL).GetString()
+	return DefaultMgr().Get(backgroundCtx, common.NotaryURL).GetString()
 }
 
 // TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.
 func TrivyAdapterURL() string {
-	return defaultMgr().Get(backgroundCtx, common.TrivyAdapterURL).GetString()
+	return DefaultMgr().Get(backgroundCtx, common.TrivyAdapterURL).GetString()
 }
 
 // Metric returns the overall metric settings
 func Metric() *models.Metric {
 	return &models.Metric{
-		Enabled: defaultMgr().Get(backgroundCtx, common.MetricEnable).GetBool(),
-		Port:    defaultMgr().Get(backgroundCtx, common.MetricPort).GetInt(),
-		Path:    defaultMgr().Get(backgroundCtx, common.MetricPath).GetString(),
+		Enabled: DefaultMgr().Get(backgroundCtx, common.MetricEnable).GetBool(),
+		Port:    DefaultMgr().Get(backgroundCtx, common.MetricPort).GetInt(),
+		Path:    DefaultMgr().Get(backgroundCtx, common.MetricPath).GetString(),
 	}
 }
 
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
-	return defaultMgr().Get(backgroundCtx, common.AdminInitialPassword).GetString(), nil
+	return DefaultMgr().Get(backgroundCtx, common.AdminInitialPassword).GetString(), nil
 }
 
 // Database returns database settings
 func Database() (*models.Database, error) {
 	database := &models.Database{}
-	database.Type = defaultMgr().Get(backgroundCtx, common.DatabaseType).GetString()
+	database.Type = DefaultMgr().Get(backgroundCtx, common.DatabaseType).GetString()
 	postgresql := &models.PostGreSQL{
-		Host:         defaultMgr().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
-		Port:         defaultMgr().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
-		Username:     defaultMgr().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
-		Password:     defaultMgr().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
-		Database:     defaultMgr().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
-		SSLMode:      defaultMgr().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
-		MaxIdleConns: defaultMgr().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
-		MaxOpenConns: defaultMgr().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
+		Host:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLHOST).GetString(),
+		Port:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLPort).GetInt(),
+		Username:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLUsername).GetString(),
+		Password:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLPassword).GetPassword(),
+		Database:     DefaultMgr().Get(backgroundCtx, common.PostGreSQLDatabase).GetString(),
+		SSLMode:      DefaultMgr().Get(backgroundCtx, common.PostGreSQLSSLMode).GetString(),
+		MaxIdleConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxIdleConns).GetInt(),
+		MaxOpenConns: DefaultMgr().Get(backgroundCtx, common.PostGreSQLMaxOpenConns).GetInt(),
 	}
 	database.PostGreSQL = postgresql
 

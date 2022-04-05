@@ -55,17 +55,17 @@ func (factory *azureDriverFactory) Create(parameters map[string]interface{}) (st
 func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 	accountName, ok := parameters[paramAccountName]
 	if !ok || fmt.Sprint(accountName) == "" {
-		return nil, fmt.Errorf("No %s parameter provided", paramAccountName)
+		return nil, fmt.Errorf("no %s parameter provided", paramAccountName)
 	}
 
 	accountKey, ok := parameters[paramAccountKey]
 	if !ok || fmt.Sprint(accountKey) == "" {
-		return nil, fmt.Errorf("No %s parameter provided", paramAccountKey)
+		return nil, fmt.Errorf("no %s parameter provided", paramAccountKey)
 	}
 
 	container, ok := parameters[paramContainer]
 	if !ok || fmt.Sprint(container) == "" {
-		return nil, fmt.Errorf("No %s parameter provided", paramContainer)
+		return nil, fmt.Errorf("no %s parameter provided", paramContainer)
 	}
 
 	realm, ok := parameters[paramRealm]

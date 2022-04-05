@@ -15,7 +15,7 @@
 package base
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -24,6 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -169,7 +170,36 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 			Metadata: metadata,
 		}
 	}
-	for _, project := range projects {
+
+	var ps []string
+	for p := range projects {
+		ps = append(ps, p)
+	}
+	q := fmt.Sprintf("name={%s}", strings.Join(ps, " "))
+	// get exist projects
+	queryProjects, err := a.Client.ListProjectsWithQuery(q, false)
+	if err != nil {
+		return errors.Wrapf(err, "list projects with query %s", q)
+	}
+
+	proxyCacheProjects := make(map[string]bool)
+	existProjects := make(map[string]bool)
+	for _, p := range queryProjects {
+		existProjects[p.Name] = true
+		// if project with registry_id, that means this is a proxy cache project.
+		if p.RegistryID > 0 {
+			proxyCacheProjects[p.Name] = true
+		}
+	}
+
+	var notExistProjects []*Project
+	for _, p := range projects {
+		if !existProjects[p.Name] {
+			notExistProjects = append(notExistProjects, p)
+		}
+	}
+
+	for _, project := range notExistProjects {
 		if err := a.Client.CreateProject(project.Name, project.Metadata); err != nil {
 			if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
 				log.Debugf("got 409 when trying to create project %s", project.Name)
@@ -179,6 +209,17 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 		log.Debugf("project %s created", project.Name)
 	}
+
+	// do filter for proxy cache projects.
+	for _, res := range resources {
+		paths := strings.Split(res.Metadata.Repository.Name, "/")
+		projectName := paths[0]
+		if proxyCacheProjects[projectName] {
+			// set resource skip flag to true if it's a proxy cache project.
+			res.Skip = true
+		}
+	}
+
 	return nil
 }
 
@@ -198,6 +239,8 @@ func (a *Adapter) ListProjects(filters []*model.Filter) ([]*Project, error) {
 		names, ok := util.IsSpecificPathComponent(projectPattern)
 		if ok {
 			for _, name := range names {
+				// trim white space in project name
+				name = strings.TrimSpace(name)
 				project, err := a.Client.GetProject(name)
 				if err != nil {
 					return nil, err
@@ -267,9 +310,10 @@ func parsePublic(metadata map[string]interface{}) bool {
 
 // Project model
 type Project struct {
-	ID       int64                  `json:"project_id"`
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
+	ID         int64                  `json:"project_id"`
+	Name       string                 `json:"name"`
+	Metadata   map[string]interface{} `json:"metadata"`
+	RegistryID int64                  `json:"registry_id"`
 }
 
 func isLocalHarbor(url string) bool {

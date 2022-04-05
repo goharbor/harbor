@@ -19,6 +19,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	"testing"
 	"time"
 
@@ -58,6 +60,7 @@ type ControllerTestSuite struct {
 	suite.Suite
 
 	artifactCtl         *artifacttesting.Controller
+	accessoryMgr        *accessorytesting.Manager
 	originalArtifactCtl artifact.Controller
 
 	tagCtl *tagtesting.FakeController
@@ -257,6 +260,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	params[sca.JobParameterRobot] = robotJSON
 
 	suite.ar = &artifacttesting.Controller{}
+	suite.accessoryMgr = &accessorytesting.Manager{}
 
 	suite.tagCtl = &tagtesting.FakeController{}
 	suite.tagCtl.On("List", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil)
@@ -270,6 +274,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		ar:      suite.ar,
 		sc:      sc,
 		rc:      rc,
+		acc:     suite.accessoryMgr,
 		tagCtl:  suite.tagCtl,
 		uuid: func() (string, error) {
 			return "the-uuid-123", nil
@@ -307,6 +312,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	}
 
 	{
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 		// success
 		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 			walkFn := args.Get(2).(func(*artifact.Artifact) error)
@@ -328,6 +334,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	}
 
 	{
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 		// delete old report failed
 		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 			walkFn := args.Get(2).(func(*artifact.Artifact) error)
@@ -344,6 +351,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	}
 
 	{
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 		// a previous scan process is ongoing
 		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 			walkFn := args.Get(2).(func(*artifact.Artifact) error)
@@ -415,6 +423,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetReport() {
 
 // TestScanControllerGetSummary ...
 func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
+	mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 		walkFn := args.Get(2).(func(*artifact.Artifact) error)
 		walkFn(suite.artifact)
@@ -514,6 +523,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
+
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
 
 		suite.taskMgr.On("Count", ctx, q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
@@ -535,6 +546,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		suite.execMgr.On(
 			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
+
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{suite.artifact}, nil).Once()
 		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {

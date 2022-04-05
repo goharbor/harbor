@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuditLogComponent } from './audit-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -73,8 +73,8 @@ describe('AuditLogComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
@@ -90,7 +90,7 @@ describe('AuditLogComponent', () => {
 
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AuditLogComponent);
@@ -101,16 +101,16 @@ describe('AuditLogComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should get data from AccessLogService', waitForAsync(() => {
+    it('should get data from AccessLogService', () => {
         fixture.detectChanges();
         fixture.whenStable().then(() => { // wait for async getRecentLogs
             fixture.detectChanges();
             expect(component.auditLogs).toBeTruthy();
             expect(component.auditLogs.length).toEqual(15);
         });
-    }));
+    });
 
-    it('should render data to view', waitForAsync(() => {
+    it('should render data to view', () => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -121,7 +121,7 @@ describe('AuditLogComponent', () => {
             expect(el).toBeTruthy();
             expect(el.textContent.trim()).toEqual('user910');
         });
-    }));
+    });
     it('should support pagination', async () => {
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
@@ -134,7 +134,7 @@ describe('AuditLogComponent', () => {
         expect(component.auditLogs.length).toEqual(3);
     });
 
-    it('should support filtering list by keywords', waitForAsync(() => {
+    it('should support filtering list by keywords', () => {
         fixture.detectChanges();
         let el: HTMLElement = fixture.nativeElement.querySelector('.search-btn');
         expect(el).toBeTruthy("Not found search icon");
@@ -153,5 +153,5 @@ describe('AuditLogComponent', () => {
                 expect(component.auditLogs.length).toEqual(1);
             });
         });
-    }));
+    });
 });

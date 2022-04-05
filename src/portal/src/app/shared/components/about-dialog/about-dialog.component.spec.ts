@@ -1,9 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppConfigService } from '../../../services/app-config.service';
 import { SkinableConfig } from "../../../services/skinable-config.service";
 import { AboutDialogComponent } from './about-dialog.component';
-import { ClarityModule } from "@clr/angular";
+import { SharedTestingModule } from '../../shared.module';
 
 describe('AboutDialogComponent', () => {
     let component: AboutDialogComponent;
@@ -33,20 +32,18 @@ describe('AboutDialogComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [AboutDialogComponent],
             imports: [
-                TranslateModule.forRoot(),
-                ClarityModule
+                SharedTestingModule
             ],
             providers: [
-                TranslateService,
                 { provide: AppConfigService, useValue: fakeAppConfigService },
                 { provide: SkinableConfig, useValue: fakeSkinableConfig }
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AboutDialogComponent);

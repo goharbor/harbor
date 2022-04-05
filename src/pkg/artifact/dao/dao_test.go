@@ -16,6 +16,9 @@ package dao
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -25,8 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type daoTestSuite struct {
@@ -394,6 +395,32 @@ func (d *daoTestSuite) TestUpdate() {
 	})
 	d.Require().NotNil(err)
 	d.True(errors.IsErr(err, errors.NotFoundCode))
+}
+
+func (d *daoTestSuite) TestUpdatePullTime() {
+	artifact, err := d.dao.Get(d.ctx, d.parentArtID)
+	d.Require().Nil(err)
+	d.Require().NotNil(artifact)
+	oldPullTime := artifact.PullTime
+	// case for pull_time before db pull_time.
+	before := oldPullTime.AddDate(0, 0, -1)
+	err = d.dao.UpdatePullTime(d.ctx, d.parentArtID, before)
+	d.Require().Nil(err)
+
+	artifact, err = d.dao.Get(d.ctx, d.parentArtID)
+	d.Require().Nil(err)
+	d.Require().NotNil(artifact)
+	d.Equal(oldPullTime.Unix(), artifact.PullTime.Unix())
+
+	// case for pull_time after db pull_time.
+	after := oldPullTime.AddDate(0, 0, 1)
+	err = d.dao.UpdatePullTime(d.ctx, d.parentArtID, after)
+	d.Require().Nil(err)
+
+	artifact, err = d.dao.Get(d.ctx, d.parentArtID)
+	d.Require().Nil(err)
+	d.Require().NotNil(artifact)
+	d.Equal(after.Unix(), artifact.PullTime.Unix())
 }
 
 func (d *daoTestSuite) TestCreateReference() {

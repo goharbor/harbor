@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { TagRetentionComponent } from './tag-retention.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
@@ -86,8 +86,8 @@ describe('TagRetentionComponent', () => {
       }
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
@@ -99,9 +99,8 @@ describe('TagRetentionComponent', () => {
         {provide: TagRetentionService, useValue: mockTagRetentionService},
         {provide: ActivatedRoute, useValue: mockActivatedRoute},
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TagRetentionComponent);

@@ -204,3 +204,33 @@ class Trace:
             self.jaeger.validate()
         elif self.otel.enabled:
             self.otel.validate()
+
+class PurgeUpload:
+    def __init__(self, config: dict):
+        if not config:
+            self.enabled = False
+        self.enabled = config.get('enabled')
+        self.age = config.get('age') or '168h'
+        self.interval = config.get('interval') or '24h'
+        self.dryrun = config.get('dryrun') or False
+        return
+
+    def validate(self):
+        if not self.enabled:
+            return
+        # age should end with h
+        if not isinstance(self.age, str) or not self.age.endswith('h'):
+            raise Exception('purge upload age should set with with nh, n is the number of hour')
+        # interval should larger than 2h
+        age = self.age[:-1]
+        if not age.isnumeric() or int(age) < 2 :
+            raise Exception('purge upload age should set with with nh, n is the number of hour and n should not be less than 2')
+        
+        # interval should end with h
+        if not isinstance(self.interval, str) or not self.interval.endswith('h'):
+            raise Exception('purge upload interval should set with with nh, n is the number of hour')
+        # interval should larger than 2h
+        interval = self.interval[:-1]
+        if not interval.isnumeric() or int(interval) < 2 :
+            raise Exception('purge upload interval should set with with nh, n is the number of hour and n should not beless than 2')
+        return

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { of } from "rxjs";
 import { NO_ERRORS_SCHEMA } from "@angular/core";
@@ -7,7 +7,7 @@ import { ProjectService } from "../../../../shared/services";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AppConfigService } from "../../../../services/app-config.service";
 import { Project } from "../../project";
-import { ArtifactDefaultService } from './artifact.service';
+import { ArtifactService } from './artifact.service';
 import { SharedTestingModule } from "../../../../shared/shared.module";
 
 describe('ArtifactSummaryComponent', () => {
@@ -67,7 +67,7 @@ describe('ArtifactSummaryComponent', () => {
   const mockRouter = {
     navigate: () => { }
   };
-  beforeEach(waitForAsync(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
@@ -83,11 +83,10 @@ describe('ArtifactSummaryComponent', () => {
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: ProjectService, useValue: fakedProjectService },
-        { provide: ArtifactDefaultService, useValue: fakedArtifactDefaultService },
+        { provide: ArtifactService, useValue: fakedArtifactDefaultService },
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactSummaryComponent);

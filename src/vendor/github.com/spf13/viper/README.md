@@ -1,11 +1,18 @@
+> ## Viper v2 feedback
+> Viper is heading towards v2 and we would love to hear what _**you**_ would like to see in it. Share your thoughts here: https://forms.gle/R6faU74qPRPAzchZ9
+>
+> **Thank you!**
+
 ![Viper](.github/logo.png?raw=true)
 
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/avelino/awesome-go#configuration)
+[![run on repl.it](https://repl.it/badge/github/sagikazarmark/Viper-example)](https://repl.it/@sagikazarmark/Viper-example#main.go)
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/spf13/viper/CI?style=flat-square)](https://github.com/spf13/viper/actions?query=workflow%3ACI)
 [![Join the chat at https://gitter.im/spf13/viper](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/spf13/viper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spf13/viper?style=flat-square)](https://goreportcard.com/report/github.com/spf13/viper)
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/mod/github.com/spf13/viper)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.14-61CFDD.svg?style=flat-square)
+[![PkgGoDev](https://pkg.go.dev/badge/mod/github.com/spf13/viper)](https://pkg.go.dev/mod/github.com/spf13/viper)
 
 **Go configuration with fangs!**
 
@@ -24,9 +31,11 @@ Many Go projects are built using Viper including:
 
 ## Install
 
-```console
+```shell
 go get github.com/spf13/viper
 ```
+
+**Note:** Viper uses [Go Modules](https://github.com/golang/go/wiki/Modules) to manage dependencies.
 
 
 ## What is Viper?
@@ -110,7 +119,7 @@ viper.AddConfigPath("$HOME/.appname")  // call multiple times to add many search
 viper.AddConfigPath(".")               // optionally look for config in the working directory
 err := viper.ReadInConfig() // Find and read the config file
 if err != nil { // Handle errors reading the config file
-	panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	panic(fmt.Errorf("Fatal error config file: %w \n", err))
 }
 ```
 
@@ -245,9 +254,10 @@ using `SetEnvPrefix`, you can tell Viper to use a prefix while reading from
 the environment variables. Both `BindEnv` and `AutomaticEnv` will use this
 prefix.
 
-`BindEnv` takes one or two parameters. The first parameter is the key name, the
-second is the name of the environment variable. The name of the environment
-variable is case sensitive. If the ENV variable name is not provided, then
+`BindEnv` takes one or more parameters. The first parameter is the key name, the
+rest are the name of the environment variables to bind to this key. If more than
+one are provided, they will take precedence in the specified order. The name of
+the environment variable is case sensitive. If the ENV variable name is not provided, then
 Viper will automatically assume that the ENV variable matches the following format: prefix + "_" + the key name in ALL CAPS. When you explicitly provide the ENV variable name (the second parameter),
 it **does not** automatically add the prefix. For example if the second parameter is "id",
 Viper will look for the ENV variable "ID".
@@ -259,7 +269,7 @@ the `BindEnv` is called.
 `AutomaticEnv` is a powerful helper especially when combined with
 `SetEnvPrefix`. When called, Viper will check for an environment variable any
 time a `viper.Get` request is made. It will apply the following rules. It will
-check for a environment variable with a name matching the key uppercased and
+check for an environment variable with a name matching the key uppercased and
 prefixed with the `EnvPrefix` if set.
 
 `SetEnvKeyReplacer` allows you to use a `strings.Replacer` object to rewrite Env
@@ -582,6 +592,33 @@ the `Set()` method, …) with an immediate value, then all sub-keys of
 `datastore.metric` become undefined, they are “shadowed” by the higher-priority
 configuration level.
 
+Viper can access array indices by using numbers in the path. For example:
+
+```json
+{
+    "host": {
+        "address": "localhost",
+        "ports": [
+            5799,
+            6029
+        ]
+    },
+    "datastore": {
+        "metric": {
+            "host": "127.0.0.1",
+            "port": 3099
+        },
+        "warehouse": {
+            "host": "198.0.0.1",
+            "port": 2112
+        }
+    }
+}
+
+GetInt("host.ports.1") // returns 6029
+
+```
+
 Lastly, if there exists a key that matches the delimited key path, its value
 will be returned instead. E.g.
 
@@ -607,14 +644,15 @@ will be returned instead. E.g.
 GetString("datastore.metric.host") // returns "0.0.0.0"
 ```
 
-### Extract sub-tree
+### Extracting a sub-tree
 
-Extract sub-tree from Viper.
+When developing reusable modules, it's often useful to extract a subset of the configuration
+and pass it to a module. This way the module can be instantiated more than once, with different configurations.
 
-For example, `viper` represents:
+For example, an application might use multiple different cache stores for different purposes:
 
-```json
-app:
+```yaml
+cache:
   cache1:
     max-items: 100
     item-size: 64
@@ -623,35 +661,36 @@ app:
     item-size: 80
 ```
 
-After executing:
+We could pass the cache name to a module (eg. `NewCache("cache1")`),
+but it would require weird concatenation for accessing config keys and would be less separated from the global config.
+
+So instead of doing that let's pass a Viper instance to the constructor that represents a subset of the configuration:
 
 ```go
-subv := viper.Sub("app.cache1")
+cache1Config := viper.Sub("cache.cache1")
+if cache1Config == nil { // Sub returns nil if the key cannot be found
+    panic("cache configuration not found")
+}
+
+cache1 := NewCache(cache1Config)
 ```
 
-`subv` represents:
+**Note:** Always check the return value of `Sub`. It returns `nil` if a key cannot be found.
 
-```json
-max-items: 100
-item-size: 64
-```
-
-Suppose we have:
+Internally, the `NewCache` function can address `max-items` and `item-size` keys directly:
 
 ```go
-func NewCache(cfg *Viper) *Cache {...}
+func NewCache(v *Viper) *Cache {
+    return &Cache{
+        MaxItems: v.GetInt("max-items"),
+        ItemSize: v.GetInt("item-size"),
+    }
+}
 ```
 
-which creates a cache based on config information formatted as `subv`.
-Now it’s easy to create these 2 caches separately as:
+The resulting code is easy to test, since it's decoupled from the main config structure,
+and easier to reuse (for the same reason).
 
-```go
-cfg1 := viper.Sub("app.cache1")
-cache1 := NewCache(cfg1)
-
-cfg2 := viper.Sub("app.cache2")
-cache2 := NewCache(cfg2)
-```
 
 ### Unmarshaling
 
@@ -792,15 +831,35 @@ y.SetDefault("ContentDir", "foobar")
 When working with multiple vipers, it is up to the user to keep track of the
 different vipers.
 
+
 ## Q & A
 
-Q: Why is it called “Viper”?
+### Why is it called “Viper”?
 
 A: Viper is designed to be a [companion](http://en.wikipedia.org/wiki/Viper_(G.I._Joe))
 to [Cobra](https://github.com/spf13/cobra). While both can operate completely
 independently, together they make a powerful pair to handle much of your
 application foundation needs.
 
-Q: Why is it called “Cobra”?
+### Why is it called “Cobra”?
 
-A: Is there a better name for a [commander](http://en.wikipedia.org/wiki/Cobra_Commander)?
+Is there a better name for a [commander](http://en.wikipedia.org/wiki/Cobra_Commander)?
+
+### Does Viper support case sensitive keys?
+
+**tl;dr:** No.
+
+Viper merges configuration from various sources, many of which are either case insensitive or uses different casing than the rest of the sources (eg. env vars).
+In order to provide the best experience when using multiple sources, the decision has been made to make all keys case insensitive.
+
+There has been several attempts to implement case sensitivity, but unfortunately it's not that trivial. We might take a stab at implementing it in [Viper v2](https://github.com/spf13/viper/issues/772), but despite the initial noise, it does not seem to be requested that much.
+
+You can vote for case sensitivity by filling out this feedback form: https://forms.gle/R6faU74qPRPAzchZ9
+
+### Is it safe to concurrently read and write to a viper?
+
+No, you will need to synchronize access to the viper yourself (for example by using the `sync` package). Concurrent reads and writes can cause a panic.
+
+## Troubleshooting
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

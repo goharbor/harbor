@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	beegoorm "github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -42,6 +43,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the artifact. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, artifact *Artifact, props ...string) (err error)
+	// UpdatePullTime updates artifact pull time by ID.
+	UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) (err error)
 	// CreateReference creates the artifact reference
 	CreateReference(ctx context.Context, reference *ArtifactReference) (id int64, err error)
 	// ListReferences lists the artifact references according to the query
@@ -180,6 +183,7 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 	if err != nil {
 		return err
 	}
+
 	n, err := ormer.Update(artifact, props...)
 	if err != nil {
 		return err
@@ -189,6 +193,27 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 	}
 	return nil
 }
+
+func (d *dao) UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	// can only be retained to the second if not format
+	formatPullTime := pullTime.Format("2006-01-02 15:04:05.999999")
+	// update db only if pull_time is null or pull_time < (in-coming)pullTime
+	sql := "UPDATE artifact SET pull_time = ? WHERE id = ? AND (pull_time IS NULL OR pull_time < ?)"
+	args := []interface{}{formatPullTime, id, formatPullTime}
+
+	_, err = ormer.Raw(sql, args...).Exec()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {

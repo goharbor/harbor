@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { ChartDetailSummaryComponent } from './chart-detail-summary.component';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
@@ -16,7 +16,7 @@ describe('ChartDetailSummaryComponent', () => {
         }
     };
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
@@ -33,7 +33,7 @@ describe('ChartDetailSummaryComponent', () => {
                 { provide: HelmChartService, useValue: mockHelmChartService },
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailSummaryComponent);

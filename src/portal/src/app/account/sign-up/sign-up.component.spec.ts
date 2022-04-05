@@ -1,16 +1,12 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClarityModule } from "@clr/angular";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SignUpComponent } from './sign-up.component';
 import { SessionService } from '../../shared/services/session.service';
 import { UserService } from '../../base/left-side-nav/user/user.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NewUserFormComponent } from '../../shared/components/new-user-form/new-user-form.component';
-import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { ErrorHandler } from '../../shared/units/error-handler';
 import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { SharedTestingModule } from '../../shared/shared.module';
 
 describe('SignUpComponent', () => {
     let component: SignUpComponent;
@@ -36,24 +32,19 @@ describe('SignUpComponent', () => {
         creation_time: 'string',
         update_time: 'string',
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [SignUpComponent, NewUserFormComponent, InlineAlertComponent],
             imports: [
-                FormsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                BrowserAnimationsModule
+                SharedTestingModule
             ],
             providers: [
-                TranslateService,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: UserService, useValue: fakeUserService },
-                ErrorHandler
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(SignUpComponent);

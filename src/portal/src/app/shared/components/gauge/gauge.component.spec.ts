@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { GaugeComponent } from './gauge.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -6,13 +6,12 @@ import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 describe('GaugeComponent', () => {
     let component: GaugeComponent;
     let fixture: ComponentFixture<GaugeComponent>;
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -31,7 +30,7 @@ describe('GaugeComponent', () => {
                 TranslateService
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(GaugeComponent);

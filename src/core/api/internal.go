@@ -72,7 +72,7 @@ func (ia *InternalAPI) RenameAdmin() {
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	if !config.QuotaPerProjectEnable(orm.Context()) {
-		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is disabled"))
+		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is deactivated"))
 		return
 	}
 	ctx := orm.Context()

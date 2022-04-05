@@ -457,6 +457,31 @@ func (suite *DaoTestSuite) TestGetBlobsNotRefedByProjectBlob() {
 	suite.Require().Equal(0, len(blobs))
 }
 
+func (suite *DaoTestSuite) GetBlobsByArtDigest() {
+	ctx := suite.Context()
+	afDigest := suite.DigestString()
+	blobs, err := suite.dao.GetBlobsByArtDigest(ctx, afDigest)
+	suite.Nil(err)
+	suite.Require().Equal(0, len(blobs))
+
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: afDigest})
+	blobDigest1 := suite.DigestString()
+	blobDigest2 := suite.DigestString()
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: blobDigest1})
+	suite.dao.CreateBlob(ctx, &models.Blob{Digest: blobDigest2})
+
+	_, err = suite.dao.CreateArtifactAndBlob(ctx, afDigest, afDigest)
+	suite.Nil(err)
+	_, err = suite.dao.CreateArtifactAndBlob(ctx, afDigest, blobDigest1)
+	suite.Nil(err)
+	_, err = suite.dao.CreateArtifactAndBlob(ctx, afDigest, blobDigest2)
+	suite.Nil(err)
+
+	blobs, err = suite.dao.GetBlobsByArtDigest(ctx, afDigest)
+	suite.Nil(err)
+	suite.Require().Equal(3, len(blobs))
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }

@@ -118,7 +118,6 @@ class Robot(base.Base, object):
             robot_desc = base._random_name("robot_desc")
 
         robotAccountCreate = v2_swagger_client.RobotCreate(name=robot_name, description=robot_desc, duration=duration, level="system", disable = False, permissions = permission_list)
-        print("robotAccountCreate:", robotAccountCreate)
         data = []
         data, status_code, header = self._get_client(**kwargs).create_robot_with_http_info(robotAccountCreate)
         base._assert_status_code(expect_status_code, status_code)

@@ -1,6 +1,6 @@
 import { Label } from "../../services";
 import { LabelComponent } from "./label.component";
-import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FilterComponent } from "../filter/filter.component";
 import { ConfirmationDialogComponent } from "../confirmation-dialog";
 import { CreateEditLabelComponent } from "./create-edit-label/create-edit-label.component";
@@ -56,8 +56,8 @@ describe('LabelComponent (inline template)', () => {
 
     let labelService: LabelService;
     let spy: jasmine.Spy;
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule,
             ],
@@ -72,8 +72,8 @@ describe('LabelComponent (inline template)', () => {
             providers: [
                 {provide: OperationService}
             ]
-        });
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(LabelComponent);
@@ -93,7 +93,7 @@ describe('LabelComponent (inline template)', () => {
         expect(spy.calls.any()).toBeTruthy();
     });
 
-    it('should open create label modal', waitForAsync(() => {
+    it('should open create label modal', () => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -101,5 +101,5 @@ describe('LabelComponent (inline template)', () => {
             fixture.detectChanges();
             expect(comp.targets[0].name).toEqual('label0-g');
         });
-    }));
+    });
 });

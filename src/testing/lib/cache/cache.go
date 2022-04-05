@@ -3,6 +3,7 @@
 package cache
 
 import (
+	context "context"
 	time "time"
 
 	mock "github.com/stretchr/testify/mock"
@@ -13,13 +14,13 @@ type Cache struct {
 	mock.Mock
 }
 
-// Contains provides a mock function with given fields: key
-func (_m *Cache) Contains(key string) bool {
-	ret := _m.Called(key)
+// Contains provides a mock function with given fields: ctx, key
+func (_m *Cache) Contains(ctx context.Context, key string) bool {
+	ret := _m.Called(ctx, key)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(string) bool); ok {
-		r0 = rf(key)
+	if rf, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = rf(ctx, key)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -27,13 +28,13 @@ func (_m *Cache) Contains(key string) bool {
 	return r0
 }
 
-// Delete provides a mock function with given fields: key
-func (_m *Cache) Delete(key string) error {
-	ret := _m.Called(key)
+// Delete provides a mock function with given fields: ctx, key
+func (_m *Cache) Delete(ctx context.Context, key string) error {
+	ret := _m.Called(ctx, key)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(key)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, key)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -41,13 +42,13 @@ func (_m *Cache) Delete(key string) error {
 	return r0
 }
 
-// Fetch provides a mock function with given fields: key, value
-func (_m *Cache) Fetch(key string, value interface{}) error {
-	ret := _m.Called(key, value)
+// Fetch provides a mock function with given fields: ctx, key, value
+func (_m *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
+	ret := _m.Called(ctx, key, value)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, interface{}) error); ok {
-		r0 = rf(key, value)
+	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}) error); ok {
+		r0 = rf(ctx, key, value)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -55,13 +56,13 @@ func (_m *Cache) Fetch(key string, value interface{}) error {
 	return r0
 }
 
-// Ping provides a mock function with given fields:
-func (_m *Cache) Ping() error {
-	ret := _m.Called()
+// Ping provides a mock function with given fields: ctx
+func (_m *Cache) Ping(ctx context.Context) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -69,20 +70,20 @@ func (_m *Cache) Ping() error {
 	return r0
 }
 
-// Save provides a mock function with given fields: key, value, expiration
-func (_m *Cache) Save(key string, value interface{}, expiration ...time.Duration) error {
+// Save provides a mock function with given fields: ctx, key, value, expiration
+func (_m *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
 	_va := make([]interface{}, len(expiration))
 	for _i := range expiration {
 		_va[_i] = expiration[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, key, value)
+	_ca = append(_ca, ctx, key, value)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, interface{}, ...time.Duration) error); ok {
-		r0 = rf(key, value, expiration...)
+	if rf, ok := ret.Get(0).(func(context.Context, string, interface{}, ...time.Duration) error); ok {
+		r0 = rf(ctx, key, value, expiration...)
 	} else {
 		r0 = ret.Error(0)
 	}

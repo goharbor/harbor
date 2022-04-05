@@ -67,7 +67,7 @@ func redirectForOIDC(ctx context.Context, username string) bool {
 	}
 	us, err := user.Ctl.Get(ctx, u.UserID, &user.Option{WithOIDCInfo: true})
 	if err != nil {
-		log.Warningf("Failed to get OIDC user info for user, id: %d, error: %v", u.UserID, err)
+		log.Debugf("Failed to get OIDC user info for user, id: %d, error: %v", u.UserID, err)
 	}
 	if us != nil && us.OIDCUserMeta != nil {
 		return true
@@ -125,7 +125,7 @@ func (cc *CommonController) UserExists() {
 	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
-		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration deactivated, only sysadmin can check user existence")
 	}
 
 	target := cc.GetString("target")

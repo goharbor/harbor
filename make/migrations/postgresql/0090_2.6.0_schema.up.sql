@@ -1,0 +1,2 @@
+/* Correct project_metadata.public value, should only be true or false, other invaild value will be rewrite to false */
+UPDATE project_metadata SET value='false' WHERE name='public' AND value NOT IN('true', 'false');

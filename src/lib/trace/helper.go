@@ -16,6 +16,7 @@ package trace
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -34,7 +35,7 @@ func StartSpan(ctx context.Context, name string) (context.Context, oteltrace.Spa
 	return otel.Tracer("goharbor/harbor/src/lib/trace").Start(ctx, name)
 }
 
-// SpanFromContext returns the span from the context.
+// SpanFromHTTPRequest returns the span from the context.
 func SpanFromHTTPRequest(req *http.Request) oteltrace.Span {
 	ctx := req.Context()
 	return oteltrace.SpanFromContext(ctx)
@@ -49,16 +50,39 @@ func RecordError(span oteltrace.Span, err error, description string) {
 	span.SetStatus(codes.Error, description)
 }
 
-// NewHandler returns a handler that wraps the given handler with tracing.
-func NewHandler(h http.Handler, operation string) http.Handler {
-	httpOptions := []otelhttp.Option{
-		otelhttp.WithTracerProvider(otel.GetTracerProvider()),
-		otelhttp.WithPropagators(otel.GetTextMapPropagator()),
+// HarborSpanNameFormatter common span name formatter in Harbor
+func HarborSpanNameFormatter(operation string, r *http.Request) string {
+	schema := "http"
+	if r.URL != nil && len(r.URL.Scheme) != 0 {
+		schema = r.URL.Scheme
 	}
-	return otelhttp.NewHandler(h, operation, httpOptions...)
+	host := "host_unknown"
+	if len(r.Host) != 0 {
+		host = r.Host
+	}
+	path := ""
+	if r.URL != nil && len(r.URL.Path) != 0 {
+		path = r.URL.Path
+	}
+	if len(path) != 0 {
+		return fmt.Sprintf("%s %s://%s%s", r.Method, schema, host, path)
+	}
+	return operation
 }
 
-// StarTrace returns a new span with the given name.
+// HarborHTTPTraceOptions common trace options
+var HarborHTTPTraceOptions = []otelhttp.Option{
+	otelhttp.WithTracerProvider(otel.GetTracerProvider()),
+	otelhttp.WithPropagators(otel.GetTextMapPropagator()),
+	otelhttp.WithSpanNameFormatter(HarborSpanNameFormatter),
+}
+
+// NewHandler returns a handler that wraps the given handler with tracing.
+func NewHandler(h http.Handler, operation string) http.Handler {
+	return otelhttp.NewHandler(h, operation, HarborHTTPTraceOptions...)
+}
+
+// StartTrace returns a new span with the given name.
 func StartTrace(ctx context.Context, tracerName string, spanName string, opts ...oteltrace.SpanStartOption) (context.Context, oteltrace.Span) {
 	return otel.Tracer(tracerName).Start(ctx, spanName, opts...)
 }

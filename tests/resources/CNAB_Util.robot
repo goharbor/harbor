@@ -19,8 +19,31 @@ Library  Process
 
 *** Keywords ***
 CNAB Push Bundle
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${target}  ${bundle_file}  ${docker_user}  ${docker_pwd}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file} ${docker_user} ${docker_pwd}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${target}  ${bundle_file}  ${registry}  ${namespace}  ${index1}  ${index2}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file} ${registry} ${namespace} ${index1} ${index2}
     Log To Console  ${output}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
+
+Prepare Cnab Push Test Data
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${index1_image1}  ${index1_image2}  ${index2_image1}  ${index2_image2}  ${image_tag}=latest
+    ${index1} =  Set Variable  index1
+    ${index2} =  Set Variable  index2
+    ${index1_tag} =  Set Variable  latest
+    ${index2_tag} =  Set Variable  latest
+    Push image  ${ip}  ${user}  ${pwd}  ${project}  ${index1_image1}
+    Push image  ${ip}  ${user}  ${pwd}  ${project}  ${index1_image2}
+    Push image  ${ip}  ${user}  ${pwd}  ${project}  ${index2_image1}
+    Push image  ${ip}  ${user}  ${pwd}  ${project}  ${index2_image2}
+    Go Into Project  ${project}
+    Wait Until Page Contains  ${project}/${index1_image1}
+    Wait Until Page Contains  ${project}/${index1_image2}
+    Wait Until Page Contains  ${project}/${index2_image1}
+    Wait Until Page Contains  ${project}/${index2_image2}
+
+    Docker Push Index  ${ip}  ${user}  ${pwd}  ${ip}/${project}/${index1}:${index1_tag}  ${ip}/${project}/${index1_image1}:${image_tag}  ${ip}/${project}/${index1_image2}:${image_tag}
+    Docker Push Index  ${ip}  ${user}  ${pwd}  ${ip}/${project}/${index2}:${index2_tag}  ${ip}/${project}/${index2_image1}:${image_tag}  ${ip}/${project}/${index2_image2}:${image_tag}
+    Go Into Project  ${project}
+    Wait Until Page Contains  ${index1}
+    Wait Until Page Contains  ${index2}
+    [Return]  ${index1}:${index1_tag}  ${index2}:${index2_tag}

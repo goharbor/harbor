@@ -6,7 +6,6 @@ import docker_api
 
 def ctr_images_pull(username, password, oci):
     command = ["ctr", "images", "pull","--snapshotter", "native", "-u", username+":"+password, oci]
-    print("Command: ", command)
     ret = base.run_command(command)
     print("Command return: ", ret)
 

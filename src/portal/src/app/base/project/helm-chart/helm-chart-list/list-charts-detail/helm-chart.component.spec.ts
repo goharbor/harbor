@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HelmChartComponent } from './helm-chart.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -72,8 +72,8 @@ describe('HelmChartComponent', () => {
             return of([]);
         },
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
             ],
@@ -92,9 +92,8 @@ describe('HelmChartComponent', () => {
                 { provide: OperationService, useValue: mockOperationService },
 
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(HelmChartComponent);

@@ -42,9 +42,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   currentFilteredType: number = 0; // all projects
   projectName: string = "";
-
-  loading: boolean = true;
-
   get selecteType(): string {
     return this.currentFilteredType + "";
   }
@@ -82,7 +79,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
               this.listProject.currentPage = 1;
               this.listProject.searchKeyword = projectName;
               this.listProject.selectedRow = [];
-              this.loading = true;
+              this.listProject.loading = true;
               let passInFilteredType: number = undefined;
               if (this.listProject.filteredType > 0) {
                   passInFilteredType = this.listProject.filteredType - 1;
@@ -90,7 +87,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             return this.proService.listProjects( this.listProject.searchKeyword,
                 passInFilteredType,  this.listProject.currentPage, this.listProject.pageSize, getSortingString(this.listProject.state))
                 .pipe(finalize(() => {
-                  this.loading = false;
+                  this.listProject.loading = false;
                 }));
           })).subscribe(response => {
                 // Get total count

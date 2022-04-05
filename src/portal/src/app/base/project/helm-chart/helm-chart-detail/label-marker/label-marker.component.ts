@@ -87,7 +87,7 @@ export class LabelMarkerComponent implements OnInit {
                 () => {
                     this.markedMap.set(label.id, true);
                     this.refresh();
-                    this.labelChangeDebouncer.next();
+                    this.labelChangeDebouncer.next(null);
                     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
                     setTimeout(() => clearInterval(hnd), 5000);
                 },
@@ -114,7 +114,7 @@ export class LabelMarkerComponent implements OnInit {
                 () => {
                     this.markedMap.set(label.id, false);
                     this.refresh();
-                    this.labelChangeDebouncer.next();
+                    this.labelChangeDebouncer.next(null);
                     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
                     setTimeout(() => clearInterval(hnd), 5000);
                 },

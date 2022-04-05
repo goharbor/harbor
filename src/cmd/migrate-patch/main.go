@@ -3,10 +3,11 @@ package main
 import (
 	"database/sql"
 	"flag"
-	_ "github.com/lib/pq"
 	"log"
 	"strings"
 	"time"
+
+	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
 )
 
 var dbURL string
@@ -28,7 +29,7 @@ func main() {
 	if !strings.HasPrefix(dbURL, "postgres://") {
 		log.Fatalf("Invalid URL: '%s'\n", dbURL)
 	}
-	db, err := sql.Open("postgres", dbURL)
+	db, err := sql.Open("pgx", dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to Database, error: %v\n", err)
 	}

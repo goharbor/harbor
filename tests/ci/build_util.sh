@@ -11,9 +11,9 @@ function uploader {
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
-    # for master, will use 'dev' as the tag name
+    # for main, will use 'dev' as the tag name
     # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
-    if [[ $1 == "master" ]]; then
+    if [[ $1 == "main" ]]; then
       image_tag=dev
     fi
     if [[ $1 == "release-"* ]]; then

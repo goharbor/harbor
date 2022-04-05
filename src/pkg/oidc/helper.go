@@ -355,7 +355,10 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		}
 
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
-			res.autoOnboardUsername = username
+			// res.Username and autoOnboardUsername both need to be set to create a fallback when mergeUserInfo has not been successfully called.
+			// This can for example occur when remote fails and only a local token is available for onboarding.
+			// Otherwise the onboard flow only has a fallback when "name" is set in the token, which is not always the case as a custom Username Claim could be configured.
+			res.autoOnboardUsername, res.Username = username, username
 		} else {
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}

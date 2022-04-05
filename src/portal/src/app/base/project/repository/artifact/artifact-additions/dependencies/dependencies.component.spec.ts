@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DependenciesComponent } from "./dependencies.component";
 import { AdditionsService } from '../additions.service';
@@ -34,7 +34,7 @@ describe('DependenciesComponent', () => {
         absolute: false,
         href: '/test'
     };
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
@@ -49,7 +49,7 @@ describe('DependenciesComponent', () => {
                 { provide: AdditionsService, useValue: mockAdditionsService },
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(DependenciesComponent);

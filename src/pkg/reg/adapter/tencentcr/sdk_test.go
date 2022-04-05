@@ -3,6 +3,9 @@ package tencentcr
 import (
 	"reflect"
 	"testing"
+
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
 func Test_adapter_createPrivateNamespace(t *testing.T) {
@@ -127,6 +130,45 @@ func Test_adapter_getImages(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotImages, tt.wantImages) {
 				t.Errorf("adapter.getImages() = %v, want %v", gotImages, tt.wantImages)
+			}
+		})
+	}
+}
+
+func Test_isTcrNsExist(t *testing.T) {
+	tests := []struct {
+		name      string
+		list      []*tcr.TcrNamespaceInfo
+		wantExist bool
+	}{
+		{
+			name: "not_found_any_ns", list: []*tcr.TcrNamespaceInfo{}, wantExist: false,
+		},
+		{
+			name: "found_one_ns", list: []*tcr.TcrNamespaceInfo{
+				{Name: common.StringPtr("found_one_ns")},
+			},
+			wantExist: true,
+		},
+		{
+			name: "found_multi_ns", list: []*tcr.TcrNamespaceInfo{
+				{Name: common.StringPtr("found_multi_ns")},
+				{Name: common.StringPtr("found_multi_ns_2")},
+			},
+			wantExist: true,
+		},
+		{
+			name: "found_but_not_exist", list: []*tcr.TcrNamespaceInfo{
+				{Name: common.StringPtr("found_multi_ns_2")},
+				{Name: common.StringPtr("found_multi_ns_3")},
+			},
+			wantExist: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotExist := isTcrNsExist(tt.name, tt.list); gotExist != tt.wantExist {
+				t.Errorf("isTcrNsExist() = %v, want %v", gotExist, tt.wantExist)
 			}
 		})
 	}

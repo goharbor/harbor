@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { ArtifactListTabComponent } from "./artifact-list-tab.component";
 import { of } from "rxjs";
@@ -28,6 +28,10 @@ import { Tag } from "../../../../../../../../../ng-swagger-gen/models/tag";
 import { SharedTestingModule } from "../../../../../../../shared/shared.module";
 import { LabelService } from "../../../../../../../../../ng-swagger-gen/services/label.service";
 import { Registry } from "../../../../../../../../../ng-swagger-gen/models/registry";
+import { AppConfigService } from "../../../../../../../services/app-config.service";
+import { ArtifactListPageService } from '../../artifact-list-page.service';
+import { ClrLoadingState } from '@clr/angular';
+import { Accessory } from "ng-swagger-gen/models/accessory";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
@@ -260,6 +264,16 @@ describe("ArtifactListTabComponent (inline template)", () => {
 
       }
     },
+    listAccessoriesResponse() {
+      const res: HttpResponse<Array<Accessory>> = new HttpResponse<Array<Accessory>>({
+        headers: new HttpHeaders({'x-total-count': '0'}),
+        body: []
+      });
+      return of(res).pipe(delay(0));
+    },
+    listAccessories() {
+      return of(null).pipe(delay(0));
+    },
     listArtifactsResponse: () => {
       if (filtereName === 'sha256:3e33e3e3') {
         return of(
@@ -290,8 +304,40 @@ describe("ArtifactListTabComponent (inline template)", () => {
       return of(res).pipe(delay(0));
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  const mockedAppConfigService = {
+    getConfig() {
+      return {};
+    }
+  };
+
+  const mockedArtifactListPageService = {
+    imageStickLabels: [],
+    imageFilterLabels: [],
+    resetClonedLabels() {
+    },
+    getScanBtnState(): ClrLoadingState {
+      return ClrLoadingState.DEFAULT;
+    },
+    hasEnabledScanner(): boolean {
+      return true;
+    },
+    hasAddLabelImagePermission(): boolean {
+      return true;
+    },
+    hasRetagImagePermission(): boolean {
+      return true;
+    },
+    hasDeleteImagePermission(): boolean {
+      return true;
+    },
+    hasScanImagePermission(): boolean {
+      return true;
+    },
+    init() {
+    }
+  };
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         SharedTestingModule,
       ],
@@ -306,7 +352,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
         CopyInputComponent
       ],
       providers: [
-        ArtifactDefaultService,
+        { provide: ArtifactListPageService, useValue: mockedArtifactListPageService },
+        { provide: ArtifactService, useClass: ArtifactDefaultService },
+        { provide: AppConfigService, useValue: mockedAppConfigService },
         { provide: Router, useValue: mockRouter },
         { provide: ArtifactService, useValue: mockNewArtifactService },
         { provide: ProjectService, useClass: ProjectDefaultService },
@@ -318,19 +366,14 @@ describe("ArtifactListTabComponent (inline template)", () => {
         { provide: NewArtifactService, useValue: mockNewArtifactService },
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactListTabComponent);
     comp = fixture.componentInstance;
     comp.projectId = 1;
     comp.repoName = "library/nginx";
-    comp.hasDeleteImagePermission = true;
-    comp.hasScanImagePermission = true;
-    comp.hasSignedIn = true;
     comp.registryUrl = "http://registry.testing.com";
-    comp.withNotary = false;
-    comp.withAdmiral = false;
     let labelService: LabelService;
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     let http: HttpClient;
@@ -359,7 +402,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     comp.artifactList = mockArtifacts;
     fixture.detectChanges();
     await fixture.whenStable();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual("sha256:4875cda3");
@@ -372,7 +415,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
@@ -386,7 +429,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('a.max-width-100');
+    const el: HTMLAnchorElement = fixture.nativeElement.querySelector('.digest');
     expect(el).toBeTruthy();
     expect(el.textContent).toBeTruthy();
     expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');

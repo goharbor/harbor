@@ -162,8 +162,8 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	mimeTypes, _ := extractMimeTypes(params)
 
 	// Print related infos to log
-	printJSONParameter(JobParamRegistration, params[JobParamRegistration].(string), myLogger)
-	printJSONParameter(JobParameterRequest, removeAuthInfo(req), myLogger)
+	printJSONParameter(JobParamRegistration, removeRegistrationAuthInfo(r), myLogger)
+	printJSONParameter(JobParameterRequest, removeScanAuthInfo(req), myLogger)
 	myLogger.Infof("Report mime types: %v\n", mimeTypes)
 
 	if shouldStop() {
@@ -371,7 +371,7 @@ func logAndWrapError(logger logger.Interface, err error, message string) error {
 }
 
 func printJSONParameter(parameter string, v string, logger logger.Interface) {
-	logger.Infof("%s:\n", parameter)
+	logger.Debugf("%s:\n", parameter)
 	printPrettyJSON([]byte(v), logger)
 }
 
@@ -385,7 +385,7 @@ func printPrettyJSON(in []byte, logger logger.Interface) {
 	logger.Infof("%s\n", out.String())
 }
 
-func removeAuthInfo(sr *v1.ScanRequest) string {
+func removeScanAuthInfo(sr *v1.ScanRequest) string {
 	req := &v1.ScanRequest{
 		Artifact: sr.Artifact,
 		Registry: &v1.Registry{
@@ -396,7 +396,38 @@ func removeAuthInfo(sr *v1.ScanRequest) string {
 
 	str, err := req.ToJSON()
 	if err != nil {
-		logger.Error(errors.Wrap(err, "scan job: remove auth"))
+		logger.Error(errors.Wrap(err, "scan job: remove auth for scan request"))
+	}
+
+	return str
+}
+
+func removeRegistrationAuthInfo(sr *scanner.Registration) string {
+	req := &scanner.Registration{
+		ID:               sr.ID,
+		UUID:             sr.UUID,
+		Name:             sr.Name,
+		Description:      sr.Description,
+		URL:              sr.URL,
+		Disabled:         sr.Disabled,
+		IsDefault:        sr.IsDefault,
+		Health:           sr.Health,
+		Auth:             sr.Auth,
+		AccessCredential: "[HIDDEN]",
+		SkipCertVerify:   sr.SkipCertVerify,
+		UseInternalAddr:  sr.UseInternalAddr,
+		Immutable:        sr.Immutable,
+		Adapter:          sr.Adapter,
+		Vendor:           sr.Vendor,
+		Version:          sr.Version,
+		Metadata:         sr.Metadata,
+		CreateTime:       sr.CreateTime,
+		UpdateTime:       sr.UpdateTime,
+	}
+
+	str, err := req.ToJSON()
+	if err != nil {
+		logger.Error(errors.Wrap(err, "scan job: remove auth for registration"))
 	}
 
 	return str

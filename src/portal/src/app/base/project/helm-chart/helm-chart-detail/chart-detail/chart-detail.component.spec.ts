@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailComponent } from './chart-detail.component';
 import { ClarityModule } from '@clr/angular';
@@ -100,7 +100,7 @@ describe('ChartDetailComponent', () => {
         },
         downloadChart: function () { }
     };
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
@@ -118,7 +118,7 @@ describe('ChartDetailComponent', () => {
                 { provide: HelmChartService, useValue: mockHelmChartService },
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailComponent);

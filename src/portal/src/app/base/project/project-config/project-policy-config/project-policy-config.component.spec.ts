@@ -1,15 +1,16 @@
 import { SystemInfoService } from '../../../../shared/services';
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
 import { ProjectPolicyConfigComponent } from './project-policy-config.component';
 import { ProjectService } from '../../../../shared/services';
-import {SystemCVEAllowlist, SystemInfo} from '../../../../shared/services';
+import { SystemCVEAllowlist, SystemInfo } from '../../../../shared/services';
 import { Project } from './project';
 import { UserPermissionService } from '../../../../shared/services';
 import { of } from 'rxjs';
-import { CURRENT_BASE_HREF } from "../../../../shared/units/utils";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { ErrorHandler } from '../../../../shared/units/error-handler';
+import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { Component, ViewChild } from '@angular/core';
 
 const mockSystemInfo: SystemInfo[] = [
   {
@@ -100,45 +101,54 @@ const userPermissionService = {
   }
 };
 describe('ProjectPolicyConfigComponent', () => {
-  let fixture: ComponentFixture<ProjectPolicyConfigComponent>,
-      component: ProjectPolicyConfigComponent;
-  function createComponent() {
-    fixture = TestBed.createComponent(ProjectPolicyConfigComponent);
-    component = fixture.componentInstance;
-    component.projectId = 1;
-    fixture.detectChanges();
-  }
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  let fixture: ComponentFixture<TestHostComponent>,
+      component: TestHostComponent;
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [SharedTestingModule],
       declarations: [
+        TestHostComponent,
         ProjectPolicyConfigComponent,
-        ConfirmationDialogComponent,
         ConfirmationDialogComponent,
       ],
       providers: [
-        ErrorHandler,
+        { provide: ErrorHandler, useClass: MessageHandlerService },
         { provide: ProjectService, useValue: projectService },
         { provide: SystemInfoService, useValue: systemInfoService},
         { provide: UserPermissionService, useValue: userPermissionService},
       ]
-    })
-    .compileComponents()
-    .then(() => {
-      createComponent();
-    });
-  }));
+    }).compileComponents();
+  });
+  beforeEach(() => {
+    fixture = TestBed.createComponent(TestHostComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  it('should get systemInfo', () => {
-    expect(component.systemInfo).toBeTruthy();
+  it('should get systemInfo', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.projectPolicyConfigComponent.systemInfo).toBeTruthy();
   });
   it('should get projectPolicy', () => {
-    expect(component.projectPolicy).toBeTruthy();
-    expect(component.projectPolicy.ScanImgOnPush).toBeTruthy();
+    expect(component.projectPolicyConfigComponent.projectPolicy).toBeTruthy();
+    expect(component.projectPolicyConfigComponent.projectPolicy.ScanImgOnPush).toBeTruthy();
   });
   it('should get hasChangeConfigRole', () => {
-    expect(component.hasChangeConfigRole).toBeTruthy();
+    expect(component.projectPolicyConfigComponent.hasChangeConfigRole).toBeTruthy();
   });
 });
+
+
+// mock a TestHostComponent for ProjectPolicyConfigComponent
+@Component({
+  template: `
+    <hbr-project-policy-config [projectName]="'testing'" [projectId]='1'>
+    </hbr-project-policy-config>`
+})
+class TestHostComponent {
+  @ViewChild(ProjectPolicyConfigComponent)
+  projectPolicyConfigComponent: ProjectPolicyConfigComponent
+}

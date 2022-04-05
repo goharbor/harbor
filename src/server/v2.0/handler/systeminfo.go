@@ -2,9 +2,10 @@ package handler
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/rbac"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	si "github.com/goharbor/harbor/src/controller/systeminfo"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -90,6 +91,8 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.ReadOnly = &d.Protected.ReadOnly
 		res.RegistryStorageProviderName = &d.Protected.RegistryStorageProviderName
 		res.NotificationEnable = &d.Protected.NotificationEnable
+		currentTime := strfmt.DateTime(d.Protected.CurrentTime)
+		res.CurrentTime = &currentTime
 	}
 	return res
 

@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ImageNameInputComponent } from "./image-name-input.component";
 import { ProjectDefaultService, ProjectService } from "../../services";
 import { Project } from "../../../base/project/project-config/project-policy-config/project";
@@ -23,8 +23,8 @@ describe("ImageNameInputComponent (inline template)", () => {
             "creation_time": "",
         }
     ];
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -34,8 +34,8 @@ describe("ImageNameInputComponent (inline template)", () => {
             providers: [
                 { provide: ProjectService, useClass: ProjectDefaultService }
             ]
-        });
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ImageNameInputComponent);
@@ -46,7 +46,7 @@ describe("ImageNameInputComponent (inline template)", () => {
         spy = spyOn(projectService, "listProjects").and.returnValues(of(new HttpResponse({ body: mockProjects })));
     });
 
-    it("should load data", waitForAsync(() => {
+    it("should load data", () => {
         expect(spy.calls.any).toBeTruthy();
-    }));
+    });
 });

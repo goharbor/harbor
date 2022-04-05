@@ -14,7 +14,8 @@
             "allowedCommonJsDependencies": [
               "swagger-ui",
               "buffer",
-              "js-yaml"
+              "js-yaml",
+              "hoist-non-react-statics"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
@@ -45,10 +46,8 @@
               }
             ],
             "scripts": [
-              "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
-              "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
               "node_modules/@clr/icons/clr-icons.min.js",
-              "node_modules/marked/lib/marked.js",
+              "node_modules/marked/marked.min.js",
               "node_modules/prismjs/prism.js",
               "node_modules/prismjs/components/prism-yaml.min.js"
             ],
@@ -109,8 +108,6 @@
             "polyfills": "src/polyfills.ts",
             "karmaConfig": "karma.conf.js",
             "scripts": [
-              "node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js",
-              "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
               "node_modules/@clr/icons/clr-icons.min.js"
             ],
             "styles": [

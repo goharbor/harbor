@@ -147,6 +147,13 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
+	// validate metadata.public value, should only be "true" or "false"
+	if p := req.Metadata.Public; p != "" {
+		if p != "true" && p != "false" {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+		}
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
@@ -493,10 +500,9 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		wg.Add(1)
 		go func(p *project.Project) {
 			defer wg.Done()
-			// due to the issue https://github.com/lib/pq/issues/81 of lib/pg or postgres,
-			// simultaneous queries in transaction may failed, so clone a ctx with new ormer here
+			// simultaneous queries in transaction will fail, so clone a ctx with new ormer here
 			if err := a.populateProperties(orm.Clone(ctx), p); err != nil {
-				log.G(ctx).Errorf("failed to populate propertites for project %s, error: %v", p.Name, err)
+				log.G(ctx).Errorf("failed to populate properties for project %s, error: %v", p.Name, err)
 			}
 		}(p)
 	}
@@ -736,7 +742,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable(ctx) {
-		log.Debug("Quota per project disabled")
+		log.Debug("Quota per project deactivated")
 		return
 	}
 
@@ -748,10 +754,10 @@ func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *mo
 
 	summary.Quota = &models.ProjectSummaryQuota{}
 	if hard, err := q.GetHard(); err == nil {
-		summary.Quota.Hard = hard
+		summary.Quota.Hard = model.NewResourceList(hard).ToSwagger()
 	}
 	if used, err := q.GetUsed(); err == nil {
-		summary.Quota.Used = used
+		summary.Quota.Used = model.NewResourceList(used).ToSwagger()
 	}
 }
 

@@ -77,12 +77,17 @@ Test Case - Push CNAB Bundle and Display
     [Tags]  push_cnab
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
+    ${index1_image1}=  Set Variable  busybox
+    ${index1_image2}=  Set Variable  alpine
+    ${index2_image1}=  Set Variable  hello-world
+    ${index2_image2}=  Set Variable  redis
+    ${user}=  Set Variable  user010
+    ${pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Create An New Project And Go Into Project  test${d}
-
+    ${index1}  ${index2}=  Prepare Cnab Push Test Data  ${ip}  ${user}  ${pwd}  test${d}  ${index1_image1}  ${index1_image2}  ${index2_image1}  ${index2_image2}
     ${target}=  Set Variable  ${ip}/test${d}/cnab${d}:cnab_tag${d}
-    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  user010  Test1@34  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${DOCKER_USER}  ${DOCKER_PWD}
+    Retry Keyword N Times When Error  5  CNAB Push Bundle  ${ip}  ${user}  ${pwd}  ${target}  ./tests/robot-cases/Group0-Util/bundle.json  ${ip}  test${d}  ${index1}  ${index2}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
@@ -513,6 +518,36 @@ Test Case - Copy A Image
     Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
+Test Case - Copy A Image And Accessory
+    [Tags]  copy_image_and_accessory
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${source_project}=  Set Variable  source_project${d}
+    ${target_project}=  Set Variable  target_project${d}
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${image}=  Set Variable  redis
+    ${tag}=  Set Variable  latest
+
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  ${target_project}
+    Create An New Project And Go Into Project  ${source_project}
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Sign  ${ip}/${source_project}/${image}:${tag}
+    Docker Logout  ${ip}
+    Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
+    
+    Copy Image  ${tag}  ${target_project}  ${image}
+    Retry Wait Until Page Contains  Copy artifact successfully
+
+    Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
+    Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed By Cosign  ${tag}
+    Close Browser
+
 Test Case - Create An New Project With Quotas Set
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
@@ -592,7 +627,7 @@ Test Case - Webhook CRUD
     Create A New Webhook   webhook${d}   https://test.com
     Create A New Webhook   webhook2${d}   https://test2.com
     Update A Webhook    webhook${d}  newWebhook${d}   https://new-test.com
-    Enable/Disable State of Same Webhook   newWebhook${d}
+    Enable/Deactivate State of Same Webhook   newWebhook${d}
     Delete A Webhook  newWebhook${d}
     Close Browser
 
@@ -802,7 +837,7 @@ Test Case - System Robot Account Cover All Projects
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${pro_name}
-    ${name}=  Create A New System Robot Account  is_cover_all=${true}
+    ${name}  ${secret}=  Create A New System Robot Account  is_cover_all=${true}
     Navigate To Projects
     Switch To Robot Account
     System Robot Account Exist  ${name}  all
@@ -816,7 +851,7 @@ Test Case - System Robot Account
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
-    ${name}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
+    ${name}  ${secret}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
     System Robot Account Exist  ${name}  ${project_count}
     Close Browser
 
@@ -826,3 +861,62 @@ Test Case - Go To Harbor Api Page
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Retry Keyword N Times When Error  4  Check Harbor Api Page 
     Close Browser
+
+Test Case - WASM Push And Pull To Harbor
+    [Tags]  wasm_push_and_pull_to_harbor
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Run  wget https://github.com/engineerd/wasm-to-oci/blob/v0.1.2/testdata/hello.wasm
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  wasm-to-oci push hello.wasm ${ip}/project${d}/wasm-to-oci:v1
+    Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry file should exist  test.wasm
+
+Test Case - Carvel Imgpkg Push And Pull To Harbor
+    [Tags]  imgpkg_push_and_pull
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    ${out_path}=    Set Variable    /tmp/my-bundle
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d}
+    Prepare Image Package Test Files  ${EXECDIR}/config
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Wait Unitl Command Success  imgpkg push -b ${ip}/project${d}/my-bundle:v1.0.0 -f config/
+    Wait Unitl Command Success  imgpkg pull -b ${ip}/project${d}/my-bundle:v1.0.0 -o ${out_path}
+    Wait Unitl Command Success  docker logout ${ip}
+    Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
+    Retry File Should Exist  ${out_path}/.imgpkg/images.yml
+
+Test Case - Cosign And Cosign Deployment Security Policy
+    [Tags]  cosign
+    Init Chrome Driver
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
+    Go Into Project  project${d}
+    Retry Double Keywords When Error  Go Into Repo  project${d}/${image}  Should Not Be Signed By Cosign  ${tag}
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
+    
+    Cosign Generate Key Pair
+    Cosign Sign  ${ip}/project${d}/${image}:${tag}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
+
+    Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}

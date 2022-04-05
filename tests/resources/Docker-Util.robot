@@ -220,6 +220,10 @@ Docker Login
     [Arguments]  ${server}  ${username}  ${password}
     Wait Unitl Command Success  docker login -u ${username} -p ${password} ${server}
 
+Docker Logout
+    [Arguments]  ${server}
+    Wait Unitl Command Success  docker logout ${server}
+
 Docker Pull
     [Arguments]  ${image}
     ${output}=  Retry Keyword N Times When Error  6  Wait Unitl Command Success  docker pull ${image}

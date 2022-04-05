@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LabelMarkerComponent } from './label-marker.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -33,7 +33,7 @@ describe('LabelMarkerComponent', () => {
     let component: LabelMarkerComponent;
     let fixture: ComponentFixture<LabelMarkerComponent>;
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [
                 CUSTOM_ELEMENTS_SCHEMA
@@ -50,9 +50,8 @@ describe('LabelMarkerComponent', () => {
         { provide: ErrorHandler, useValue: mockErrorHandler },
 
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(LabelMarkerComponent);

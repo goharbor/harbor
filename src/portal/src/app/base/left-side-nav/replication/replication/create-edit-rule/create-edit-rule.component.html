@@ -108,7 +108,7 @@
                   <clr-dropdown class="width-tag-label">
                     <button type="button" class="width-100 dropdown-toggle btn btn-link statistic-data label-text" clrDropdownTrigger>
                       <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
-                        <span class="label" *ngIf="m<1"> {{label}} </span>
+                        <hbr-label-piece *ngIf="m < 1" [hasIcon]="false" [label]="getLabel(label)" [labelWidth]="84"></hbr-label-piece>
                       </ng-template>
                       <span class="ellipsis color-white-dark" *ngIf="filter.value.value.length>1">···</span>
                       <div *ngFor="let label1 of filter.value.value;let k = index" hidden="true">
@@ -116,10 +116,14 @@
                           placeholder="select labels">
                       </div>
                     </button>
-                    <clr-dropdown-menu class="right-align"  clrPosition="bottom-left" *clrIfOpen>
+                    <clr-dropdown-menu [ngStyle]="{'max-height.px': 230}" class="right-align"  clrPosition="bottom-left" *clrIfOpen>
                       <button type="button" class="dropdown-item flex" *ngFor="let value of supportedFilterLabels" (click)="stickLabel(value,i)">
                         <clr-icon shape="check" [style.visibility]="value.select ? 'visible' : 'hidden'"></clr-icon>
                         <hbr-label-piece [label]="value" [labelWidth]="130"></hbr-label-piece>
+                      </button>
+                      <button type="button" class="dropdown-item  space-between no-labels" *ngIf="!supportedFilterLabels?.length">
+                        <span class="alert-label">{{"REPLICATION.NO_LABEL_INFO" | translate}}</span>
+                        <span class="alert-label go-link"  routerLink="/harbor/labels">{{'CONFIG.LABEL' | translate}}</span>
                       </button>
                     </clr-dropdown-menu>
                   </clr-dropdown>

@@ -43,7 +43,7 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
-To build the project, please refer the [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
+To build the project, please refer the [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
 ### Repository Structure
 
@@ -161,7 +161,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.1    |    1.14.13    |
 |   2.2    |    1.15.6     |
 |   2.3    |    1.15.12    |
-|   2.4    |    1.16.7     |
+|   2.4    |    1.17.7     |
+|   2.5    |    1.17.7     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -191,7 +192,7 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 
 To run the Web UI code, please refer to the UI [start](https://github.com/goharbor/harbor/blob/master/src/portal/README.md) guideline.
 
-To run the code, please refer to the [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
+To run the code, please refer to the [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
 ## Contribute Workflow
 
@@ -269,7 +270,7 @@ Run UI library test cases:
 npm run test
 ```
 
-To build the code, please refer to [build](https://goharbor.io/docs/2.0.0/build-customize-contribute/compile-guide/) guideline.
+To build the code, please refer to [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
 **Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
 

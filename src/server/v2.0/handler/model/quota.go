@@ -54,8 +54,8 @@ func (q *Quota) ToSwagger(ctx context.Context) *models.Quota {
 	return &models.Quota{
 		ID:           q.ID,
 		Ref:          q.Ref,
-		Hard:         hard,
-		Used:         used,
+		Hard:         NewResourceList(hard).ToSwagger(),
+		Used:         NewResourceList(used).ToSwagger(),
 		CreationTime: strfmt.DateTime(q.CreationTime),
 		UpdateTime:   strfmt.DateTime(q.UpdateTime),
 	}

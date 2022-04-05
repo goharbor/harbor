@@ -1,6 +1,6 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { UserService } from './user.service';
 import { SessionService } from '../../../shared/services/session.service';
@@ -17,8 +17,8 @@ describe('NewUserModalComponent', () => {
         handleError: function () { }
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [NewUserModalComponent],
             imports: [
                 ClarityModule,
@@ -34,7 +34,7 @@ describe('NewUserModalComponent', () => {
                 { provide: SessionService, useValue: fakeSessionService }
             ]
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(NewUserModalComponent);

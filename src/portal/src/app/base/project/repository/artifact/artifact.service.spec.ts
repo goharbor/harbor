@@ -14,7 +14,6 @@ describe('ArtifactService', () => {
         HttpClientTestingModule
       ],
       providers: [
-        ArtifactDefaultService,
         {
           provide: ArtifactService,
           useClass: ArtifactDefaultService
@@ -25,7 +24,7 @@ describe('ArtifactService', () => {
     });
   });
 
-  it('should be initialized', inject([ArtifactDefaultService], (service: ArtifactService) => {
+  it('should be initialized', inject([ArtifactService], (service: ArtifactService) => {
     expect(service).toBeTruthy();
   }));
 

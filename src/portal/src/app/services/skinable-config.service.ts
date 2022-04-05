@@ -5,6 +5,7 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { CustomStyle } from "./theme";
 import { DOCUMENT } from "@angular/common";
+import { environment } from "src/environments/environment";
 @Injectable()
 export class SkinableConfig {
     private customSkinData: CustomStyle;
@@ -12,7 +13,7 @@ export class SkinableConfig {
                 @Inject(DOCUMENT) private document: Document) {}
 
     public getCustomFile(): Observable<any> {
-       return this.http.get('setting.json')
+       return this.http.get(`setting.json?buildTimeStamp=${environment?.buildTimestamp}`)
            .pipe(map(response => this.customSkinData = response as CustomStyle)
            , catchError((error: any) => {
                 console.error('custom skin json file load failed');

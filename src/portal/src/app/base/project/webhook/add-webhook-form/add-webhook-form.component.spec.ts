@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddWebhookFormComponent } from './add-webhook-form.component';
 import { ProjectWebhookService } from "../webhook.service";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
@@ -83,8 +83,8 @@ describe('AddWebhookFormComponent', () => {
         ]
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [
                 SharedTestingModule
             ],
@@ -96,9 +96,8 @@ describe('AddWebhookFormComponent', () => {
                 { provide: WebhookService, useValue: mockedWebhookService },
                 { provide: MessageHandlerService, useValue: mockMessageHandlerService },
             ]
-        })
-            .compileComponents();
-    }));
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AddWebhookFormComponent);

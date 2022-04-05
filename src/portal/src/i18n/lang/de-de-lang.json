@@ -14,8 +14,8 @@
         "INVALID_MSG": "Falscher Nutzername oder Passwort.",
         "FORGOT_PWD": "Passwort vergessen",
         "HEADER_LINK": "Einloggen",
-        "OR": "OR",
-        "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB",
+        "OR": "ODER",
+        "VIA_LOCAL_DB": "LOGIN MIT LOKALER DB",
 	"CORE_SERVICE_NOT_AVAILABLE": "Core Service ist nicht verfügbar"
     },
     "SIGN_UP": {
@@ -255,7 +255,7 @@
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay und Google GCR.",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
-        "NO_PROJECT": "We couldn't find any projects"
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
@@ -335,9 +335,9 @@
         "SWITCH_SUMMARY": "Soll die Rolle des Mitglieds {{param}} geändert werden?",
         "SET_ROLE": "Rolle festlegen",
         "REMOVE": "Entfernen",
-        "GROUP_NAME_REQUIRED": "Group name is required",
-        "NON_EXISTENT_GROUP": "Group name does not exists",
-        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
+        "GROUP_NAME_REQUIRED": "Ein Gruppenname ist erforderlich",
+        "NON_EXISTENT_GROUP": "Der Gruppenname existiert nicht",
+        "GROUP_ALREADY_ADDED": "Die Gruppe wurde bereits dem Projekt hinzugefügt"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Name",
@@ -597,6 +597,7 @@
         "PLACEHOLDER": "Es konnten keine Replikations-Regeln gefunden werden!",
         "JOB_PLACEHOLDER": "Es konnten keine Replikations-Jobs gefunden werden!",
         "NO_ENDPOINT_INFO": "Bitte zuerst einen Endpunkt hinzufügen",
+        "NO_LABEL_INFO": "Bitte zuerst ein Label hinzufügen",
         "NO_PROJECT_INFO": "Dieses Projekt existiert nicht",
         "SOURCE_RESOURCE_FILTER": "Quellen-Filter",
         "SCHEDULED": "Geplant",
@@ -627,33 +628,33 @@
         "TAG": "Tag",
         "LABEL": "Label",
         "RESOURCE": "Ressource",
-	    "ENABLE_TITLE": "Aktiviere Regel",
-	    "ENABLE_SUMMARY": "Soll die Regel {{param}} aktiviert werden?",
-	    "DISABLE_TITLE": "Deaktiviere Regel",
-	    "DISABLE_SUMMARY": "Soll die Regel {{param}} deaktiviert werden?",
-	    "ENABLE_SUCCESS": "Aktivieren der Regel erfolgreich",
+        "ENABLE_TITLE": "Aktiviere Regel",
+        "ENABLE_SUMMARY": "Soll die Regel {{param}} aktiviert werden?",
+        "DISABLE_TITLE": "Deaktiviere Regel",
+        "DISABLE_SUMMARY": "Soll die Regel {{param}} deaktiviert werden?",
+        "ENABLE_SUCCESS": "Aktivieren der Regel erfolgreich",
         "ENABLE_FAILED": "Aktivieren der Regel fehlgeschlagen",
         "DISABLE_SUCCESS": "Deaktivieren der Regel erfolgreich",
         "DISABLE_FAILED": "Deaktivieren der Regel fehlgeschlagen",
-        "DES_REPO_FLATTENING": "Destination Repository Flattening",
+        "DES_REPO_FLATTENING": "Ziel-Repository Ebenen-Reduzierung",
         "NAMESPACE": "Namespace",
-        "REPO_FLATTENING": "Flattening",
-        "NO_FLATTING": "No Flatting",
-        "FLATTEN_LEVEL_1": "Flatten 1 Level",
-        "FLATTEN_LEVEL_2": "Flatten 2 Levels",
-        "FLATTEN_LEVEL_3": "Flatten 3 Levels",
-        "FLATTEN_ALL": "Flatten All Levels",
-        "FLATTEN_LEVEL_TIP": "Reduce the nested repository structure when copying images. Assuming that the nested repository structure is 'a/b/c/d/img' and the destination namespace is 'ns', the corresponding results of each item are as below:",
-        "FLATTEN_LEVEL_TIP_ALL": "'Flatten All Levels'(Used prior v2.3): 'a/b/c/d/img' -> 'ns/img'",
-        "FLATTEN_LEVEL_TIP_NO": "'No Flatting': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
-        "FLATTEN_LEVEL_TIP_1": "'Flatten 1 Level'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
-        "FLATTEN_LEVEL_TIP_2": "'Flatten 2 Levels': 'a/b/c/d/img' -> 'ns/c/d/img'",
-        "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
-        "NOTE": "Notes: The Chartmuseum Charts only support the repository structure with 2 path components: 'a/chart'",
-        "BANDWIDTH": "Bandwidth",
-        "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
-        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
-        "UNLIMITED": "Unlimited"
+        "REPO_FLATTENING": "Reduzierung",
+        "NO_FLATTING": "Keine Reduzierung",
+        "FLATTEN_LEVEL_1": "Reduzierung um 1 Ebene",
+        "FLATTEN_LEVEL_2": "Reduzierung um 2 Ebenen",
+        "FLATTEN_LEVEL_3": "Reduzierung um 3 Ebenen",
+        "FLATTEN_ALL": "Reduzierung aller Ebenen",
+        "FLATTEN_LEVEL_TIP": "Reduziert verschachtelte Repository-Strukturen beim Kopieren der Images. Angenommen die verschachtelte Repositry-Struktur ist 'a/b/c/d/img' und der Ziel-Namespace ist 'ns', so sind die zugehörigen Ergebnisse der Reduzierung jedes Elements wie unten dargestellt:",
+        "FLATTEN_LEVEL_TIP_ALL": "'Reduzierung aller Ebenen'(Verhalten vor v2.3): 'a/b/c/d/img' -> 'ns/img'",
+        "FLATTEN_LEVEL_TIP_NO": "'Keine Reduzierung': 'a/b/c/d/img' -> 'ns/a/b/c/d/img",
+        "FLATTEN_LEVEL_TIP_1": "'Reduzierung um 1 Ebene'(Default): 'a/b/c/d/img' -> 'ns/b/c/d/img'",
+        "FLATTEN_LEVEL_TIP_2": "'Reduzierung um 2 Ebenen': 'a/b/c/d/img' -> 'ns/c/d/img'",
+        "FLATTEN_LEVEL_TIP_3": "'Reduzierung um 3 Ebenen': 'a/b/c/d/img' -> 'ns/d/img'",
+        "NOTE": "Hinweis: Charts im Chartmuseum unterstützen lediglich eine Struktur mit zwei Komponenten im Pfad: 'a/chart'",
+        "BANDWIDTH": "Bandbreite",
+        "BANDWIDTH_ERROR_TIP": "Bitte -1 oder einen Integer-Wert größer als 0 eingeben",
+        "BANDWIDTH_TOOLTIP": "Legt die maximale Netzwerkbandbreite für jede Ausführung fest. Bitte auf die Anzahl der parallelen Ausführungen achten. Für umbegrenzte Bandbreite, bitte -1 eingeben",
+        "UNLIMITED": "Unbegrenzt"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Neuer Endpunkt",
@@ -688,7 +689,7 @@
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
         "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-	    "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+        "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -827,7 +828,7 @@
         "DEVELOPER": "Developer(s)",
         "GUEST": "Guest(s)",
         "LIMITED_GUEST": "Limited guest(s)",
-        "SEE_ALL": "SEE ALL"
+        "SEE_ALL": "Alle anzeigen"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Einige Änderungen wurden noch nicht gespeichert. Sollen diese verworfen werden?"
@@ -892,7 +893,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
-            "VERIFY_REMOTE_CERT": "Festlegen, ob die Image-Replikation das Zertifikat der Gegenstelle überprüfen soll. Deaktiviere die Box, wenn der E-Mail-Server ein selbstsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.", 
+            "VERIFY_REMOTE_CERT": "Festlegen, ob die Image-Replikation das Zertifikat der Gegenstelle überprüfen soll. Deaktiviere die Box, wenn der E-Mail-Server ein selbstsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.",
             "AUTH_MODE": "Der Standard Authentifizierungsmodus ist Datenbank, die Zugriffsdaten werden hierbei in einer lokalen Datenbank gespeichert. Wähle einen alternativen Authentifizierungsmodus, um die Nutzer gegen den konfigurierten Dienst zu verifizieren.",
             "LDAP_SEARCH_DN": "DN eines Nutzers, der die Berechtigungen auf dem LDAP/AD Server hat. Falls der LDAP/AD server anonyme Suche nicht unterstützt, muss der DN und das ldap_search_pwd konfiguriert werden.",
             "LDAP_BASE_DN": "Der Base DN unterhalb dem nach Nutzern im LDAP/AD gesucht wird.",
@@ -921,16 +922,16 @@
             "SCOPE": "LDAP Scope",
             "VERIFY_CERT": "LDAP Zertifikat prüfen. Box deaktivieren, falls der LDAP Server mit selbstsignierten Zertifikaten betrieben wird.",
             "LDAP_GROUP_BASE_DN": "LDAP Gruppen Base DN",
-            "LDAP_GROUP_BASE_DN_INFO": "Der Base DN von dem Gruppen im LDAP/AD gesucht werden.",
+            "LDAP_GROUP_BASE_DN_INFO": "Der Base DN von dem Gruppen im LDAP/AD gesucht werden. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_FILTER": "LDAP Gruppen Filter",
-            "LDAP_GROUP_FILTER_INFO": "Der Filter sucht LDAP/AD Gruppen, verwendet standardmäßig objectclass=groupOfNames.",
+            "LDAP_GROUP_FILTER_INFO": "Der Filter für die Suche nach LDAP/AD Gruppen. Für OpenLDAP: objectclass=groupOfNames. Für Active Directory: objectclass=group. Dieses Feld darf nicht leer sein, wenn die Gruppenbezogenen LDAP-Features benötigt werden.",
             "LDAP_GROUP_GID": "LDAP Gruppen GID",
-            "LDAP_GROUP_GID_INFO": "Das Attribut, das in der Suche für die Zuordnung einer Gruppe verwendet wird. Kann uid, cn, email, sAMAccountName oder ein anderes Attribut abhängig vom LDAP/AD sein. Die Gruppe in Harbor wird per Default nach dem Inhalt des Attributes benannt.",
+            "LDAP_GROUP_GID_INFO": "Das Attribut, das in der Suche für die Zuordnung einer Gruppe verwendet wird. Kann uid, cn, email, sAMAccountName oder ein anderes Attribut abhängig vom LDAP/AD sein. Die Gruppe in Harbor wird per Default nach dem Inhalt des Attributes benannt. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Gruppen Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Legt LDAP Group DN fest. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "LDAP_GROUP_MEMBERSHIP": "LDAP Gruppenmitgliedschaft",
-            "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein.",
-            "GROUP_SCOPE": "LDAP Gruppen Scope",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. This field cannot be empty if you need to enable the LDAP group related feature.",
+            "GROUP_SCOPE": "LDAP Gruppen Search Scope",
             "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
 
         },
@@ -945,7 +946,7 @@
             "TOKEN_REVIEW": "Token Review Endpunkt",
             "SKIP_SEARCH": "Suche überspringen",
             "VERIFY_CERT": "Zertifikate überprüfen",
-            "ADMIN_GROUPS": "Admin Groups"
+            "ADMIN_GROUPS": "Admin Gruppen"
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Provider Name",
@@ -956,7 +957,7 @@
             "SCOPE": "OIDC Scope",
             "OIDC_VERIFYCERT": "Zertifikat überprüfen",
             "OIDC_AUTOONBOARD": "Automatisches Onboarding",
-            "USER_CLAIM": "Username Claim",    
+            "USER_CLAIM": "Username Claim",
             "OIDC_SETNAME": "Setze OIDC Nutzername",
             "OIDC_SETNAMECONTENT": "Es muss ein Harbor Nutzername bei der ersten Anmeldung über thirdParty (OIDC) gesetzt werden. Dieser wird in Harbor für die assoziation mit Projekten, Rollen, etc. verwendet.",
             "OIDC_USERNAME": "Nutzername",
@@ -965,7 +966,7 @@
 	    "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden."
         },
         "SCANNING": {
-            "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
+            "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
             "TRIGGER_SCAN_ALL_SUCCESS": "Scan erfolgreich gestartet!",
             "TRIGGER_SCAN_ALL_FAIL": "Fehler beim Start des Scans: {{error}}",
             "TITLE": "Schwachstellen-Scanning",
@@ -1025,7 +1026,7 @@
         "INDEX_TOTAL": "GESAMT",
         "STORAGE": "SPEICHER",
         "LIMIT": "Limit",
-        "STORAGE_USED": "Storage used"
+        "STORAGE_USED": "Genutzter Speicher"
     },
     "SEARCH": {
         "IN_PROGRESS": "Suche...",
@@ -1036,8 +1037,8 @@
             "OTHER_STATUS": "Nicht gescannt",
             "QUEUED": "In Warteschlange",
             "ERROR": "Log anzeigen",
-            "SCANNING": "Scanning",
-            "STOPPED": "Scan stopped"
+            "SCANNING": "Scan wird ausgeführt",
+            "STOPPED": "Scan angehalten"
         },
         "GRID": {
             "PLACEHOLDER": "Es wurden keine Scan-Ergebnisse gefunden!",
@@ -1050,7 +1051,7 @@
             "COLUMN_DESCRIPTION": "Beschreibung",
             "FOOT_ITEMS": "Elemente",
             "FOOT_OF": "von",
-	        "IN_ALLOW_LIST": "In CVE Allowliste enthalten",
+            "IN_ALLOW_LIST": "In CVE Allowliste enthalten",
             "CVSS3": "CVSS3"
         },
         "CHART": {
@@ -1066,8 +1067,6 @@
             "HIGH": "Hoch",
             "MEDIUM": "Mittel",
             "LOW": "Niedrig",
-            "NEGLIGIBLE": "Geringfügig",
-            "UNKNOWN": "Unbekannt",
             "NONE": "Keine"
         },
         "SINGULAR": "Schwachstelle",
@@ -1078,18 +1077,18 @@
         "PACKAGE": "Paket",
         "PACKAGES": "Pakete",
         "SCAN_NOW": "Scan",
-        "SCAN_BY": "SCAN BY {{scanner}}",
-        "REPORTED_BY": "Reported by {{scanner}}",
-        "NO_SCANNER": "NO SCANNER",
-        "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
-        "STOP_NOW": "Stop Scan"
+        "SCAN_BY": "SCAN DURCH {{scanner}}",
+        "REPORTED_BY": "GEMELDET VON {{scanner}}",
+        "NO_SCANNER": "KEIN SCANNER",
+        "TRIGGER_STOP_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
+        "STOP_NOW": "Scan STOPPEN"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Befehl",
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag ein Chart für dieses Projekt:",
+        "TAG_COMMAND_CHART": "Package ein Chart für dieses Projekt:",
         "PUSH_COMMAND_CHART": "Push ein Chart für dieses Projekt:",
         "PUSH_COMMAND_CNAB": "Push ein CNAB für dieses Projekt:",
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
@@ -1109,7 +1108,7 @@
         "UNTAGGED": "Untagged",
         "ALL": "Alle",
         "PLACEHOLDER": "Keine Artefakte gefunden!",
-        "SCAN_UNSUPPORTED": "Unsupported"
+        "SCAN_UNSUPPORTED": "Nicht unterstützt"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Erstellt am",
@@ -1180,7 +1179,7 @@
         "UNLIMITED": "unlimitiert",
         "INVALID_INPUT": "ungültige Eingabe",
         "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden",
-        "FILTER_PLACEHOLDER": "Search by name(exact match)"
+        "FILTER_PLACEHOLDER": "Suche nach Name (genaue Übereinstimmung)"
     },
     "WEEKLY": {
         "MONDAY": "Montag",
@@ -1695,15 +1694,34 @@
         "ENABLE_NEW_SECRET": "Aktiviere diese Option um das neue Secret selbst zu definieren",
         "DELETE": "Löschen",
         "ARTIFACT_LABEL": "Artefakt Label",
-        "SCAN": "Scannen",
+        "SCAN": "Scans",
         "SCANNER_PULL": "Scanner Pull",
         "SEARCH_BY_NAME": "Robot-Account mittels Namen suchen (ohne Prefix)",
         "FINAL_PROJECT_NAME_TIP": "Der zusammengesetzte Robot-Account-Name besteht aus dem Prefix, dem Projektnamen, einem plus und dem Inhalt des Eingabefeldes.",
         "FINAL_SYSTEM_NAME_TIP": "Der zusammengesetzte systemweite Robot-Account-Name besteht aus dem Prefix und dem Inhalt des Eingabefeldes.",
         "PUSH_AND_PULL": "Push",
-        "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
-        "STOP": "Stop",
-        "LIST": "List",
-        "REPOSITORY": "Repository"
+        "PUSH_PERMISSION_TOOLTIP": "Die Push Berechtigung benötigt die Pull Berechtigung.",
+        "STOP": "Stoppen",
+        "LIST": "Auflisten",
+        "REPOSITORY": "Repository",
+        "HELM_LABEL": "Helm Chart Label",
+        "EXPIRES_IN": "Läuft ab in",
+        "EXPIRED": "Abgelaufen"
+    },
+    "ACCESSORY": {
+        "DELETION_TITLE_ACCESSORY": "Bestätige die Löschung des Anhangs",
+        "DELETION_SUMMARY_ACCESSORY": "Sollen alle Anhänge des Artefakts {{param}} gelöscht werden?",
+        "DELETION_SUMMARY_ONE_ACCESSORY": "Soll der Anhang/die Anhänge {{param}} gelöscht werden?",
+        "DELETE_ACCESSORY": "Anhang löschen",
+        "DELETED_SUCCESS": "Anhang erfolgreich gelöscht",
+        "DELETED_FAILED": "Löschen des Anhangs fehlgeschlagen",
+        "CO_SIGNED": "Signiert mit Cosign",
+        "NOTARY_SIGNED": "Signiert mit Notary",
+        "ACCESSORY": "Anhang",
+        "ACCESSORIES": "Anhänge",
+        "SUBJECT_ARTIFACT": "Subjekt Artefakt",
+        "CO_SIGN": "Cosign",
+        "NOTARY": "Notary",
+        "PLACEHOLDER": "Es konnten keine Anhänge gefunden werden!"
     }
 }

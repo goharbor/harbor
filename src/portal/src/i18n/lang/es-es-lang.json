@@ -343,7 +343,7 @@
     "ROBOT_ACCOUNT": {
         "NAME": "Name",
         "PERMISSIONS": "Permissions",
-        "TOKEN": "Token",
+        "TOKEN": "Secret",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
         "CREATETION": "Created time",
@@ -599,6 +599,7 @@
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_LABEL_INFO": "Please add a label first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
         "SCHEDULED": "Scheduled",
@@ -923,16 +924,16 @@
             "SCOPE": "LDAP Ámbito",
             "VERIFY_CERT": "LDAP Verify Cert",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
-            "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
+            "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
-            "LDAP_GROUP_FILTER_INFO": "The filter to look up an LDAP/AD group, use objectclass=groupOfNames by default.",
+            "LDAP_GROUP_FILTER_INFO": "The filter to search for LDAP/AD groups. For OpenLDAP: objectclass=groupOfNames. For Active Directory: objectclass=group. This field cannot be empty if you need the LDAP group-related feature.",
             "LDAP_GROUP_GID": "LDAP Group GID",
-            "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default.",
+            "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
-            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
-            "GROUP_SCOPE": "LDAP Group Scope",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
+            "GROUP_SCOPE": "LDAP Group Search Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
         },
         "UAA": {
@@ -1067,8 +1068,6 @@
             "HIGH": "High",
             "MEDIUM": "Medium",
             "LOW": "Low",
-            "NEGLIGIBLE": "Negligible",
-            "UNKNOWN": "Unknown",
             "NONE": "None"
         },
         "SINGULAR": "vulnerability",
@@ -1090,7 +1089,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "TAG_COMMAND_CHART": "Package a chart for this project:",
         "PUSH_COMMAND_CHART": "Push a chart to this project:",
         "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
         "TOOLTIP": "Command references for pushing an artifact to this project.",
@@ -1703,6 +1702,25 @@
         "PUSH_PERMISSION_TOOLTIP": "Push permission can not work alone, it must work with pull permission",
         "STOP": "Stop",
         "LIST": "List",
-        "REPOSITORY": "Repository"
+        "REPOSITORY": "Repository",
+        "HELM_LABEL": "Helm Chart label",
+        "EXPIRES_IN": "Expires in",
+        "EXPIRED": "Expired"
+    },
+    "ACCESSORY": {
+        "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
+        "DELETION_SUMMARY_ACCESSORY": "Do you want to delete all the accessories of the artifact {{param}}?",
+        "DELETION_SUMMARY_ONE_ACCESSORY": "Do you want to delete the accessory(s) {{param}}?",
+        "DELETE_ACCESSORY": "Delete Accessory",
+        "DELETED_SUCCESS": "Accessory deleted successfully",
+        "DELETED_FAILED": "Deleting accessory failed",
+        "CO_SIGNED": "Signed by Cosign",
+        "NOTARY_SIGNED": "Signed by Notary",
+        "ACCESSORY": "Accessory",
+        "ACCESSORIES": "Accessories",
+        "SUBJECT_ARTIFACT": "Subject Artifact",
+        "CO_SIGN": "Cosign",
+        "NOTARY": "Notary",
+        "PLACEHOLDER": "We couldn't find any accessories!"
     }
 }

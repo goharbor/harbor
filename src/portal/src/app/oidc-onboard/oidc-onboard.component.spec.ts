@@ -1,12 +1,10 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClarityModule } from '@clr/angular';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { OidcOnboardService } from './oidc-onboard.service';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { OidcOnboardComponent } from './oidc-onboard.component';
+import { SharedTestingModule } from '../shared/shared.module';
 
 describe('OidcOnboardComponent', () => {
   let component: OidcOnboardComponent;
@@ -14,20 +12,16 @@ describe('OidcOnboardComponent', () => {
   let fakeOidcOnboardService = null;
   let fakeRouter = null;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [OidcOnboardComponent],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
       imports: [
-        ClarityModule,
-        FormsModule,
-        ReactiveFormsModule,
-        TranslateModule.forRoot()
+        SharedTestingModule
       ],
       providers: [
-        TranslateService,
         { provide: OidcOnboardService, useValue: fakeOidcOnboardService },
         { provide: Router, useValue: fakeRouter },
         {
@@ -43,7 +37,7 @@ describe('OidcOnboardComponent', () => {
         }
       ]
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OidcOnboardComponent);

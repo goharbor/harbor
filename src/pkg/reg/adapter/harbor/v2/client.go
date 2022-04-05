@@ -16,13 +16,13 @@ package v2
 
 import (
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
+	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 type client struct {
@@ -48,27 +48,85 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 	project, repo := utils.ParseRepository(repo)
 	repo = repository.Encode(repo)
-	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true",
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true&with_accessory=true",
 		c.BasePath(), project, repo)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
 		return nil, err
 	}
 	var arts []*model.Artifact
-	for _, artifact := range artifacts {
-		art := &model.Artifact{
-			Type:   artifact.Type,
-			Digest: artifact.Digest,
+
+	// append the accessory objects behind the subject artifact if it has.
+	var getAccessoryArts = func(art *artifact.Artifact) ([]*model.Artifact, error) {
+		var accArts = []*model.Artifact{}
+		for _, acc := range art.Accessories {
+			accArt := &model.Artifact{
+				Type:   art.Type,
+				Digest: acc.GetData().Digest,
+			}
+			tags, err := c.listTags(project, repo, acc.GetData().Digest)
+			if err != nil {
+				return nil, err
+			}
+			for _, tag := range tags {
+				accArt.Tags = append(accArt.Tags, tag)
+			}
+
+			accArts = append(accArts, accArt)
 		}
-		for _, label := range artifact.Labels {
+		return accArts, nil
+	}
+
+	for _, artItem := range artifacts {
+		art := &model.Artifact{
+			Type:   artItem.Type,
+			Digest: artItem.Digest,
+		}
+		for _, label := range artItem.Labels {
 			art.Labels = append(art.Labels, label.Name)
 		}
-		for _, tag := range artifact.Tags {
+		for _, tag := range artItem.Tags {
 			art.Tags = append(art.Tags, tag.Name)
 		}
 		arts = append(arts, art)
+
+		// append the accessory of index or individual artifact
+		accArts, err := getAccessoryArts(artItem)
+		if err != nil {
+			return nil, err
+		}
+		arts = append(arts, accArts...)
+
+		// append the accessory of reference if it has
+		for _, ref := range artItem.References {
+			url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s?with_accessory=true",
+				c.BasePath(), project, repo, ref.ChildDigest)
+			artRef := artifact.Artifact{}
+			if err := c.C.Get(url, &artRef); err != nil {
+				return nil, err
+			}
+			accArts, err := getAccessoryArts(&artRef)
+			if err != nil {
+				return nil, err
+			}
+			arts = append(arts, accArts...)
+		}
 	}
 	return arts, nil
+}
+
+func (c *client) listTags(project, repo, digest string) ([]string, error) {
+	tags := []*tagmodel.Tag{}
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags",
+		c.BasePath(), project, repo, digest)
+	if err := c.C.GetAndIteratePagination(url, &tags); err != nil {
+		return nil, err
+	}
+	var tagNames []string
+	for _, tag := range tags {
+		tagNames = append(tagNames, tag.Name)
+	}
+	return tagNames, nil
 }
 
 func (c *client) deleteTag(repo, tag string) error {

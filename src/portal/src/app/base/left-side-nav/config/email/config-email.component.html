@@ -76,9 +76,9 @@
 </form>
 <div>
     <button type="button" id="config_email_save" class="btn btn-primary" (click)="save()"
-        [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE'
+        [disabled]="!isValid() || !hasChanges() || inProgress()">{{'BUTTON.SAVE'
         | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL'
+    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges() || inProgress()">{{'BUTTON.CANCEL'
         | translate}}</button>
     <button type="button" id="ping-test" class="btn btn-outline" (click)="testMailServer()" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL'
         | translate}}</button>

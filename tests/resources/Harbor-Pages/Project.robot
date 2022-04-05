@@ -376,3 +376,25 @@ Select Storage Quota unit
     [Arguments]  ${unit}
     Select From List By Value  ${project_add_storage_quota_unit_id}  ${unit}
 
+Back Project Home
+    [Arguments]  ${project_name}
+    Retry Link Click  //a[contains(.,'${project_name}')]
+
+Should Not Be Signed By Cosign
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
+
+Should Be Signed By Cosign
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]// clr-icon[contains(@class,'signed')]
+
+Delete Accessory
+    [Arguments]  ${tag}
+    Retry Button Click  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-expandable-caret-button')]
+    Retry Button Click  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-action-toggle')]
+    Retry Button Click  //button[contains(.,'Delete')]
+    Retry Button Click  //div[contains(@class,'modal-content')]//button[contains(@class,'btn-danger')]
+
+Should be Accessory deleted
+    [Arguments]  ${tag}
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-expandable-caret-button')]

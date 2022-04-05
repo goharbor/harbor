@@ -5,12 +5,21 @@ import base
 import v2_swagger_client
 from v2_swagger_client.rest import ApiException
 
+
+report_mime_types = [
+    'application/vnd.security.vulnerability.report; version=1.1',
+    'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0',
+]
+
 class Artifact(base.Base, object):
     def __init__(self):
         super(Artifact,self).__init__(api_type = "artifact")
 
     def list_artifacts(self, project_name, repo_name, **kwargs):
-        return self._get_client(**kwargs).list_artifacts(project_name, repo_name)
+        params = {}
+        if "with_accessory" in kwargs:
+            params["with_accessory"] = kwargs["with_accessory"]
+        return self._get_client(**kwargs).list_artifacts(project_name, repo_name, **params)
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
         params = {}
@@ -20,8 +29,11 @@ class Artifact(base.Base, object):
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
+            params["x_accept_vulnerabilities"] = ",".join(report_mime_types)
         if "with_immutable_status" in kwargs:
             params["with_immutable_status"] = kwargs["with_immutable_status"]
+        if "with_accessory" in kwargs:
+            params["with_accessory"] = kwargs["with_accessory"]
 
         try:
             data, status_code, _ = self._get_client(**kwargs).get_artifact_with_http_info(project_name, repo_name, reference, **params)
@@ -97,6 +109,9 @@ class Artifact(base.Base, object):
             base._assert_status_code(expect_status_code, status_code)
             base._assert_status_code(200, status_code)
 
+    def list_accessories(self, project_name, repo_name, reference, **kwargs):
+        return self._get_client(**kwargs).list_accessories(project_name, repo_name, reference)
+
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
         timeout_count = 30
         scan_status=""
@@ -115,7 +130,12 @@ class Artifact(base.Base, object):
                 else:
                     raise Exception("Artifact should not be scanned {}.".format(artifact.scan_overview))
 
-            scan_status = artifact.scan_overview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'].scan_status
+            scan_status = ''
+            for mime_type in report_mime_types:
+                overview = artifact.scan_overview.get(mime_type)
+                if overview:
+                    scan_status = overview.scan_status
+
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))

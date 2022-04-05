@@ -6,7 +6,6 @@ set -e
 sudo apt-get update && sudo apt-get install -y libldap2-dev
 go get -d github.com/docker/distribution
 go get -d github.com/docker/libtrust
-go get -d github.com/lib/pq
 go get golang.org/x/lint/golint
 go get github.com/GeertJohan/fgt
 go get github.com/dghubble/sling
@@ -21,7 +20,7 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false
+sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDBIN=true
 docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"

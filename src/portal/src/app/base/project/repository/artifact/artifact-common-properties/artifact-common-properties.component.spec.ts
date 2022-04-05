@@ -1,5 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactCommonPropertiesComponent } from './artifact-common-properties.component';
 import { ClarityModule } from "@clr/angular";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -16,8 +15,8 @@ describe('ArtifactCommonPropertiesComponent', () => {
     os: "linux"
   };
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [
         ClarityModule,
         BrowserAnimationsModule,
@@ -32,9 +31,8 @@ describe('ArtifactCommonPropertiesComponent', () => {
       providers: [
         TranslateService
       ]
-    })
-    .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactCommonPropertiesComponent);

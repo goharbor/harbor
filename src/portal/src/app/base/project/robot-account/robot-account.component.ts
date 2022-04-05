@@ -25,6 +25,7 @@ import { ConfirmationDialogService } from "../../global-confirmation-dialog/conf
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
+import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
 
 @Component({
   selector: "app-robot-account",
@@ -55,6 +56,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
   hasRobotReadPermission: boolean;
   projectId: number;
   projectName: string;
+  deltaTime: number; // the different between server time and local time
   constructor(private robotService: RobotService,
               private msgHandler: MessageHandlerService,
               private operateDialogService: ConfirmationDialogService,
@@ -63,8 +65,10 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
               private route: ActivatedRoute,
               private translate: TranslateService,
               private sanitizer: DomSanitizer,
+              private systemInfoService: SysteminfoService
   ) {}
   ngOnInit() {
+    this.getCurrenTime();
     this.projectId = +this.route.snapshot.parent.parent.params["id"];
     let resolverData = this.route.snapshot.parent.parent.data;
     if (resolverData) {
@@ -120,6 +124,15 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
           }
       );
     }
+  }
+  getCurrenTime() {
+    this.systemInfoService.getSystemInfo().subscribe(
+        res => {
+          if (res?.current_time) {
+            this.deltaTime = new Date().getTime() - new Date(res?.current_time).getTime();
+          }
+        }
+    );
   }
   getPermissionsList(): void {
     let permissionsList = [];

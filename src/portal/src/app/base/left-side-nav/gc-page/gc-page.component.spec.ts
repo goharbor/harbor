@@ -1,9 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ClarityModule } from '@clr/angular';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SessionService } from "../../../shared/services/session.service";
 import { GcPageComponent } from './gc-page.component';
+import { SharedTestingModule } from '../../../shared/shared.module';
 
 describe('GcPageComponent', () => {
   let component: GcPageComponent;
@@ -13,23 +12,20 @@ describe('GcPageComponent', () => {
       return { has_admin_role: true };
     }
   };
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       declarations: [GcPageComponent],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
       ],
       imports: [
-        ClarityModule,
-        TranslateModule.forRoot()
+        SharedTestingModule
       ],
       providers: [
-        TranslateService,
         { provide: SessionService, useValue: fakeSessionService }
       ]
-    })
-      .compileComponents();
-  }));
+    }).compileComponents();
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(GcPageComponent);

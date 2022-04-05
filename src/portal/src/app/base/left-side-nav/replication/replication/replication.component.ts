@@ -224,7 +224,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   // Server driven data loading
-  clrLoadJobs(state: ClrDatagridStateInterface): void {
+  clrLoadJobs(withLoading: boolean, state: ClrDatagridStateInterface): void {
     if (!state || !state.page || !this.search.ruleId) {
       return;
     }
@@ -241,8 +241,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     if (this.currentTerm && this.currentTerm !== "") {
       params = params.set(this.defaultFilter, this.currentTerm);
     }
-
-    this.jobsLoading = true;
+    if (withLoading) {
+      this.jobsLoading = true;
+    }
     this.selectedRow = [];
     this.replicationService.getExecutions(this.search.ruleId, params).subscribe(
       response => {
@@ -259,7 +260,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
               }
             });
             if (count > 0) {
-              this.clrLoadJobs(this.currentState);
+              this.clrLoadJobs(false, this.currentState);
             } else {
               this.timerDelay.unsubscribe();
               this.timerDelay = null;
@@ -298,7 +299,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
 
-    this.clrLoadJobs(st);
+    this.clrLoadJobs(true, st);
   }
 
   selectOneRule(rule: ReplicationRule) {
@@ -504,7 +505,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         size: this.pageSize
       }
     };
-    this.clrLoadJobs(st);
+    this.clrLoadJobs(true, st);
   }
 
   openFilter(isOpen: boolean): void {
