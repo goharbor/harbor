@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { Project } from "../../../base/project/project-config/project-policy-config/project";
 import { Subject } from "rxjs";
 import { debounceTime, switchMap } from "rxjs/operators";
-import { ProjectService } from "../../services";
 import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ErrorHandler } from "../../units/error-handler";
+import { ProjectService } from "ng-swagger-gen/services/project.service";
+import { Project } from "ng-swagger-gen/models/project";
 
 @Component({
     selector: "hbr-image-name-input",
@@ -46,13 +46,17 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                 switchMap(name => {
                     this.noProjectInfo = "";
                     this.selectedProjectList = [];
-                    return this.proService.listProjects(name, undefined);
+                    return this.proService.listProjects({
+                        name: name,
+                        page: 1,
+                        pageSize: 10
+                    });
                 })
             ).subscribe(response => {
-            if (response.body) {
-                this.selectedProjectList = response.body.slice(0, 10);
+            if (response) {
+                this.selectedProjectList = response;
                 // if input project name exist in the project list
-                let exist = response.body.find((data: any) => data.name === this.imageNameForm.controls["projectName"].value);
+                let exist = response.find((data: Project) => data.name === this.imageNameForm.controls["projectName"].value);
                 if (!exist) {
                     this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                 } else {
