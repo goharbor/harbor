@@ -40,25 +40,28 @@ func Notary() func(http.Handler) http.Handler {
 		if af == none {
 			return errors.New("artifactinfo middleware required before this middleware").WithCode(errors.NotFoundCode)
 		}
+
 		pro, err := project.Ctl.GetByName(ctx, af.ProjectName)
 		if err != nil {
 			return err
 		}
-
-		if util.SkipPolicyChecking(r, pro.ProjectID) {
-			// the artifact is pulling by the scanner, skip the checking
-			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", af.Repository, af.Digest)
-			return nil
-		}
-
 		if pro.ContentTrustEnabled() {
+			art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, nil)
+			if err != nil {
+				return err
+			}
 			if len(af.Digest) == 0 {
-				art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, nil)
-				if err != nil {
-					return err
-				}
 				af.Digest = art.Digest
 			}
+			ok, err := util.SkipPolicyChecking(r, pro.ProjectID, art.ID)
+			if err != nil {
+				return err
+			}
+			if ok {
+				logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", af.Repository, af.Digest)
+				return nil
+			}
+
 			match, err := isArtifactSigned(r, af)
 			if err != nil {
 				return err
