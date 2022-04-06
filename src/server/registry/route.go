@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/nydus"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/server/middleware/blob"
@@ -79,6 +80,7 @@ func RegisterRoutes() {
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
+		Middleware(nydus.NydusMiddleware()).
 		Middleware(cosign.CosignSignatureMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)

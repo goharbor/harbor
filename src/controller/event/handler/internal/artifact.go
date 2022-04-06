@@ -238,5 +238,11 @@ func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error 
 		}
 	}()
 
+	go func() {
+		if err := autoAcc(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
+			log.Errorf("acc artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
+		}
+	}()
+
 	return nil
 }

@@ -12,16 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package nydus
 
-// keys of project metadata and severity values
-const (
-	ProMetaPublic                   = "public"
-	ProMetaEnableContentTrust       = "enable_content_trust"
-	ProMetaEnableContentTrustCosign = "enable_content_trust_cosign"
-	ProMetaPreventVul               = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity                 = "severity"
-	ProMetaAutoScan                 = "auto_scan"
-	ProMetaAutoAcc                  = "auto_accelerate"
-	ProMetaReuseSysCVEAllowlist     = "reuse_sys_cve_allowlist"
+import (
+	"github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/goharbor/harbor/src/pkg/accessory/model/base"
 )
+
+// Nydus signature model
+type Nydus struct {
+	base.Default
+}
+
+// Kind gives the reference type of nydus.
+func (n *Nydus) Kind() string {
+	return model.RefHard
+}
+
+// IsHard ...
+func (n *Nydus) IsHard() bool {
+	return true
+}
+
+// New returns nydus
+func New(data model.AccessoryData) model.Accessory {
+	return &Nydus{base.Default{
+		Data: data,
+	}}
+}
+
+func init() {
+	model.Register(model.TypeAccelNydus, New)
+}

@@ -3875,6 +3875,187 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /accelerations:
+    post:
+      summary: Create a acceleration service
+      description: Create a acceleration service
+      tags:
+        - acceleration
+      operationId: createAccelerationService
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: acceleration
+          in: body
+          description: The acceleration
+          required: true
+          schema:
+            $ref: '#/definitions/Acceleration'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List the acceleration services
+      description: List the acceleration services
+      tags:
+        - acceleration
+      operationId: listAccelerationServices
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: Deprecated, use `q` instead.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Acceleration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /accelerations/ping:
+    post:
+      summary: Check status of a acceleration service
+      description: Check status of a acceleration service
+      tags:
+        - acceleration
+      operationId: pingAccelerationService
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: acceleration
+          in: body
+          description: The acceleration service
+          required: true
+          schema:
+            $ref: '#/definitions/AccelerationPing'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /accelerations/{id}:
+    get:
+      summary: Get the specific acceleration service
+      description: Get the specific acceleration service
+      tags:
+        - acceleration
+      operationId: getAccelerationService
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: acceleration ID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Acceleration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific acceleration service
+      description: Delete the specific acceleration service
+      tags:
+        - acceleration
+      operationId: deleteAccelerationService
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Acceleration ID
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the acceleration service
+      description: Update the acceleration service
+      tags:
+        - acceleration
+      operationId: updateAccelerationService
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The acceleration service ID
+        - name: acceleration
+          in: body
+          description: The acceleration service
+          required: true
+          schema:
+            $ref: '#/definitions/AccelerationUpdate'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
   /scans/all/metrics:
     get:
       summary: Get the metrics of the latest scan all process
@@ -6471,6 +6652,10 @@ definitions:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
         x-nullable: true
+      auto_accelerate:
+        type: string
+        description: 'Whether acclerate images automatically when pushing. The valid values are "true", "false".'
+        x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
         description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
@@ -6826,6 +7011,117 @@ definitions:
       value:
         type: string
         description: The endpoint value
+  AccelerationCredential:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Credential type, such as 'basic', 'oauth'.
+      access_key:
+        type: string
+        description: Access key, e.g. user name when credential type is 'basic'.
+      access_secret:
+        type: string
+        description: Access secret, e.g. password when credential type is 'basic'.
+  Acceleration:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The acceleration ID.
+        x-omitempty: false
+      url:
+        type: string
+        description: The acceleration URL string.
+      name:
+        type: string
+        description: The acceleration name.
+      type:
+        type: string
+        description: Type of the acceleration, e.g. 'nydus'.
+      credential:
+        $ref: '#/definitions/AccelerationCredential'
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      description:
+        type: string
+        description: Description of the acceleration.
+      status:
+        type: string
+        description: Health status of the acceleration.
+      creation_time:
+        type: string
+        format: date-time
+        description: The create time of the policy.
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the policy.
+  AccelerationUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The acceleration name.
+        x-nullable: true
+      description:
+        type: string
+        description: Description of the acceleration.
+        x-nullable: true
+      url:
+        type: string
+        description: The acceleration URL.
+        x-nullable: true
+      credential_type:
+        type: string
+        description: Credential type of the registry, e.g. 'basic'.
+        x-nullable: true
+      access_key:
+        type: string
+        description: The registry access key.
+        x-nullable: true
+      access_secret:
+        type: string
+        description: The registry access secret.
+        x-nullable: true
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+  AccelerationPing:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The acceleration ID.
+        x-nullable: true
+      type:
+        type: string
+        description: Type of the acceleration, e.g. 'nudys'.
+        x-nullable: true
+      url:
+        type: string
+        description: The acceleration URL.
+        x-nullable: true
+      credential_type:
+        type: string
+        description: Credential type of the registry, e.g. 'basic'.
+        x-nullable: true
+      access_key:
+        type: string
+        description: The acceleration access key.
+        x-nullable: true
+      access_secret:
+        type: string
+        description: The acceleration access secret.
+        x-nullable: true
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
   FilterStyle:
     type: object
     description: The style of the resource filter

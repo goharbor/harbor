@@ -68,6 +68,7 @@ const (
 	ResourceUser               = Resource("user")
 	ResourceUserGroup          = Resource("user-group")
 	ResourceRegistry           = Resource("registry")
+	ResourceAcceleration       = Resource("acceleration")
 	ResourceReplication        = Resource("replication")
 	ResourceDistribution       = Resource("distribution")
 	ResourceGarbageCollection  = Resource("garbage-collection")

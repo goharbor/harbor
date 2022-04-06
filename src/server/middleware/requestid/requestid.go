@@ -15,12 +15,11 @@
 package requestid
 
 import (
-	"net/http"
-
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
+	"net/http"
 
 	"github.com/google/uuid"
 )
