@@ -93,7 +93,7 @@
         <span class="spinner spinner-inline loading-top" [hidden]="showProgress === false"></span>
         <button type="button" id="cancel-btn" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
 
-        <button type="button" id="submit-btn" class="btn btn-primary" [disabled]="!isValid || showProgress"
+        <button type="button" id="submit-btn" class="btn btn-primary" [disabled]="!isValid || showProgress || !isUserDataChange()"
             (click)="submit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
