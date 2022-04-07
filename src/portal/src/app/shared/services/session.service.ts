@@ -35,7 +35,7 @@ const signOffEndpoint = "/c/log_out";
 const accountEndpoint = CURRENT_BASE_HREF + "/users/:id";
 const langEndpoint = "/language";
 const userExistsEndpoint = "/c/userExists";
-const renameAdminEndpoint = CURRENT_BASE_HREF + '/internal/renameadmin';
+const renameAdminEndpoint =  'api/internal/renameadmin';
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
