@@ -16,7 +16,11 @@ package vulnerable
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,6 +54,9 @@ type MiddlewareTestSuite struct {
 	originalScanController scan.Controller
 	scanController         *scantesting.Controller
 
+	originalAccessMgr accessory.Manager
+	accessMgr         *accessorytesting.Manager
+
 	checker     *scantesting.Checker
 	scanChecker func() scan.Checker
 
@@ -67,6 +74,10 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 	suite.originalProjectController = projectController
 	suite.projectController = &projecttesting.Controller{}
 	projectController = suite.projectController
+
+	suite.originalAccessMgr = accessory.Mgr
+	suite.accessMgr = &accessorytesting.Manager{}
+	accessory.Mgr = suite.accessMgr
 
 	suite.originalScanController = scanController
 	suite.scanController = &scantesting.Controller{}
@@ -103,7 +114,7 @@ func (suite *MiddlewareTestSuite) TearDownTest() {
 	artifactController = suite.originalArtifactController
 	projectController = suite.originalProjectController
 	scanController = suite.originalScanController
-
+	accessory.Mgr = suite.originalAccessMgr
 	scanChecker = suite.scanChecker
 }
 
@@ -167,6 +178,7 @@ func (suite *MiddlewareTestSuite) TestPreventionDisabled() {
 func (suite *MiddlewareTestSuite) TestNonScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("local")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
@@ -183,6 +195,7 @@ func (suite *MiddlewareTestSuite) TestNonScannerPulling() {
 func (suite *MiddlewareTestSuite) TestScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("v2token")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
@@ -199,6 +212,7 @@ func (suite *MiddlewareTestSuite) TestCheckIsScannableFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(false, fmt.Errorf("error"))
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
@@ -211,6 +225,7 @@ func (suite *MiddlewareTestSuite) TestArtifactIsNotScannable() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(false, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
@@ -224,6 +239,7 @@ func (suite *MiddlewareTestSuite) TestArtifactNotScanned() {
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
@@ -237,6 +253,7 @@ func (suite *MiddlewareTestSuite) TestArtifactScanFailed() {
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{ScanStatus: "Error"}, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
@@ -250,6 +267,7 @@ func (suite *MiddlewareTestSuite) TestGetVulnerableFailed() {
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, fmt.Errorf("error"))
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
@@ -262,6 +280,7 @@ func (suite *MiddlewareTestSuite) TestNoVulnerabilities() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{
 		ScanStatus:  "Success",
 		CVEBypassed: []string{"cve-2020"},
@@ -279,6 +298,7 @@ func (suite *MiddlewareTestSuite) TestAllowed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{
 		ScanStatus:           "Success",
 		Severity:             &low,
@@ -297,6 +317,7 @@ func (suite *MiddlewareTestSuite) TestPrevented() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	critical := vuln.Critical
 
@@ -342,9 +363,33 @@ func (suite *MiddlewareTestSuite) TestArtifactIsImageIndex() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{
 		ScanStatus: "Success",
 		Severity:   &critical,
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
+}
+
+// pull cosign signature when policy checker is enabled.
+func (suite *MiddlewareTestSuite) TestSignaturePulling() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    2,
+			SubArtifactID: 1,
+			Type:          accessorymodel.TypeCosignSignature,
+		},
+	}
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
+		acc,
 	}, nil)
 
 	req := suite.makeRequest()

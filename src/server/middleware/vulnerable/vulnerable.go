@@ -61,18 +61,20 @@ func Middleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		if util.SkipPolicyChecking(r, proj.ProjectID) {
-			// the artifact is pulling by the scanner, skip the checking
-			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", info.Repository, info.Reference)
-			return nil
-		}
-
 		art, err := artifactController.GetByReference(ctx, info.Repository, info.Reference, nil)
 		if err != nil {
 			if !errors.IsNotFoundErr(err) {
 				logger.Errorf("get artifact failed, error %v", err)
 			}
 			return err
+		}
+		ok, err := util.SkipPolicyChecking(r, proj.ProjectID, art.ID)
+		if err != nil {
+			return err
+		}
+		if ok {
+			logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", info.Repository, info.Digest)
+			return nil
 		}
 
 		checker := scanChecker()
