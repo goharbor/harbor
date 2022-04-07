@@ -44,3 +44,24 @@ Test Case - Main Menu Routing
     FOR  ${key}  IN  @{routing.keys()}
         Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}
     END
+
+Test Case - Project Tab Routing
+    [Tags]  project_tab_routing
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    &{routing}=	 Create Dictionary  harbor/projects/1/summary=//project-detail//summary
+    ...  harbor/projects/1/repositories=//project-detail//hbr-repository-gridview
+    ...  harbor/projects/1/helm-charts=//project-detail//project-list-charts
+    ...  harbor/projects/1/members=//project-detail//ng-component//button//span[contains(.,'User')]
+    ...  harbor/projects/1/labels=//project-detail//app-project-config//hbr-label
+    ...  harbor/projects/1/scanner=//project-detail//scanner
+    ...  harbor/projects/1/p2p-provider/policies=//project-detail//ng-component//button//span[contains(.,'NEW POLICY')]
+    ...  harbor/projects/1/tag-strategy/tag-retention=//project-detail//app-tag-feature-integration//tag-retention
+    ...  harbor/projects/1/tag-strategy/immutable-tag=//project-detail//app-tag-feature-integration//app-immutable-tag
+    ...  harbor/projects/1/robot-account=//project-detail//app-robot-account
+    ...  harbor/projects/1/webhook=//project-detail//ng-component//button//span[contains(.,'New Webhook')]
+    ...  harbor/projects/1/logs=//project-detail//audit-log
+    ...  harbor/projects/1/configs=//project-detail//app-project-config//hbr-project-policy-config
+    FOR  ${key}  IN  @{routing.keys()}
+        Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}
+    END
