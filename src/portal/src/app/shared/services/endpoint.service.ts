@@ -26,7 +26,8 @@ export const ADAPTERS_MAP = {
   "quay": "Quay",
   "dtr": "DTR",
   "tencent-tcr": "Tencent TCR",
-  "github-ghcr": "Github GHCR"
+  "github-ghcr": "Github GHCR",
+  "nydus": "Nydus"
 };
 
 export const HELM_HUB: string = "helm-hub";
@@ -56,7 +57,10 @@ export abstract class EndpointService {
     endpointName?: string,
     queryParams?: RequestQueryParams
   ): Observable<Endpoint[]>;
-
+  abstract getAccelerations(
+      endpointName?: string,
+      queryParams?: RequestQueryParams
+  ): Observable<Endpoint[]>;
   /**
    * Get the specified endpoint.
    *
@@ -69,7 +73,9 @@ export abstract class EndpointService {
   abstract getEndpoint(
     endpointId: number | string
   ): Observable<Endpoint>;
-
+  abstract getAccelerationEndpoint(
+      endpointId: number | string
+  ): Observable<Endpoint>;
   /**
    * Create new endpoint.
    *
@@ -93,6 +99,9 @@ export abstract class EndpointService {
   abstract createEndpoint(
     endpoint: Endpoint
   ): Observable<any>;
+  abstract createAccelerationEndpoint(
+      endpoint: Endpoint
+  ): Observable<any>;
 
   /**
    * Update the specified endpoint.
@@ -108,7 +117,10 @@ export abstract class EndpointService {
     endpointId: number | string,
     endpoint: Endpoint
   ): Observable<any>;
-
+  abstract updateAccelerationEndpoint(
+      endpointId: number | string,
+      endpoint: Endpoint
+  ): Observable<any>;
   /**
    * Delete the specified endpoint.
    *
@@ -134,7 +146,9 @@ export abstract class EndpointService {
   abstract pingEndpoint(
     endpoint: PingEndpoint
   ): Observable<any>;
-
+  abstract pingAccelerationEndpoint(
+      endpoint: PingEndpoint
+  ): Observable<any>;
   /**
    * Check endpoint whether in used with specific replication rule.
    *
@@ -159,7 +173,7 @@ export abstract class EndpointService {
 @Injectable()
 export class EndpointDefaultService extends EndpointService {
   _endpointUrl: string;
-
+  private _accelerationsUrl: string = CURRENT_BASE_HREF + "/accelerations";
   constructor(
     private http: HttpClient
   ) {
@@ -183,6 +197,22 @@ export class EndpointDefaultService extends EndpointService {
       .pipe(map(response => response as Endpoint[])
       , catchError(error => observableThrowError(error)));
   }
+  public getAccelerations(
+      endpointName?: string,
+      queryParams?: RequestQueryParams
+  ): Observable<Endpoint[]> {
+    if (!queryParams) {
+      queryParams = new RequestQueryParams();
+    }
+    if (endpointName) {
+      queryParams = queryParams.set("name", endpointName);
+    }
+    let requestUrl: string = `${this._accelerationsUrl}`;
+    return this.http
+        .get(requestUrl, buildHttpRequestOptions(queryParams))
+        .pipe(map(response => response as Endpoint[])
+            , catchError(error => observableThrowError(error)));
+  }
 
   public getEndpoint(
     endpointId: number | string
@@ -195,6 +225,18 @@ export class EndpointDefaultService extends EndpointService {
       .get(requestUrl, HTTP_GET_OPTIONS)
       .pipe(map(response => response as Endpoint)
       , catchError(error => observableThrowError(error)));
+  }
+  public getAccelerationEndpoint(
+      endpointId: number | string
+  ): Observable<Endpoint> {
+    if (!endpointId || endpointId <= 0) {
+      return observableThrowError("Bad request argument.");
+    }
+    let requestUrl: string = `${this._accelerationsUrl}/${endpointId}`;
+    return this.http
+        .get(requestUrl, HTTP_GET_OPTIONS)
+        .pipe(map(response => response as Endpoint)
+            , catchError(error => observableThrowError(error)));
   }
 
   public getAdapters(): Observable<any> {
@@ -214,7 +256,17 @@ export class EndpointDefaultService extends EndpointService {
       .post<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
   }
-
+  public createAccelerationEndpoint(
+      endpoint: Endpoint
+  ): Observable<any> {
+    if (!endpoint) {
+      return  observableThrowError("Invalid endpoint.");
+    }
+    let requestUrl: string = `${this._accelerationsUrl}`;
+    return this.http
+        .post<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
+        .pipe(catchError(error => observableThrowError(error)));
+  }
   public updateEndpoint(
     endpointId: number | string,
     endpoint: Endpoint
@@ -230,6 +282,21 @@ export class EndpointDefaultService extends EndpointService {
       .put<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
   }
+  public updateAccelerationEndpoint(
+      endpointId: number | string,
+      endpoint: Endpoint
+  ): Observable<any> {
+    if (!endpointId || endpointId <= 0) {
+      return  observableThrowError("Bad request argument.");
+    }
+    if (!endpoint) {
+      return  observableThrowError("Invalid endpoint.");
+    }
+    let requestUrl: string = `${this._accelerationsUrl}/${endpointId}`;
+    return this.http
+        .put<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
+        .pipe(catchError(error => observableThrowError(error)));
+  }
 
   public deleteEndpoint(
     endpointId: number | string
@@ -237,7 +304,7 @@ export class EndpointDefaultService extends EndpointService {
     if (!endpointId || endpointId <= 0) {
       return  observableThrowError("Bad request argument.");
     }
-    let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
+    let requestUrl: string = `${this._accelerationsUrl}/${endpointId}`;
     return this.http
       .delete<any>(requestUrl)
       .pipe(catchError(error => observableThrowError(error)));
@@ -253,6 +320,17 @@ export class EndpointDefaultService extends EndpointService {
     return this.http
       .post<any>(requestUrl, endpoint, HTTP_JSON_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
+  }
+  public pingAccelerationEndpoint(
+      endpoint: Endpoint
+  ): Observable<any> {
+    if (!endpoint) {
+      return  observableThrowError("Invalid endpoint.");
+    }
+    let requestUrl: string = `${this._accelerationsUrl}/ping`;
+    return this.http
+        .post<any>(requestUrl, endpoint, HTTP_JSON_OPTIONS)
+        .pipe(catchError(error => observableThrowError(error)));
   }
 
   public getEndpointWithReplicationRules(

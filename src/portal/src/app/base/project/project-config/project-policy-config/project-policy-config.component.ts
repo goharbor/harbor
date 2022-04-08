@@ -27,6 +27,7 @@ export class ProjectPolicy {
     PreventVulImg: boolean;
     PreventVulImgSeverity: string;
     ScanImgOnPush: boolean;
+    AutoAccelerate?: boolean;
 
     constructor() {
         this.Public = false;
@@ -35,6 +36,7 @@ export class ProjectPolicy {
         this.PreventVulImg = false;
         this.PreventVulImgSeverity = LOW;
         this.ScanImgOnPush = false;
+        this.AutoAccelerate = false;
     }
 
     initByProject(pro: Project) {
@@ -46,6 +48,7 @@ export class ProjectPolicy {
             this.PreventVulImgSeverity = pro.metadata.severity;
         }
         this.ScanImgOnPush = pro.metadata.auto_scan === 'true';
+        this.AutoAccelerate = pro.metadata.auto_accelerate === 'true';
     }
 }
 
