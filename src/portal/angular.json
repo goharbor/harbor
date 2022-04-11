@@ -15,7 +15,17 @@
               "swagger-ui",
               "buffer",
               "js-yaml",
-              "hoist-non-react-statics"
+              "hoist-non-react-statics",
+              "lodash",
+              "core-js-pure",
+              "prop-types",
+              "randexp",
+              "react-copy-to-clipboard",
+              "react-debounce-input",
+              "react-immutable-proptypes",
+              "redux-immutable",
+              "url-parse",
+              "xml-but-prettier"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
