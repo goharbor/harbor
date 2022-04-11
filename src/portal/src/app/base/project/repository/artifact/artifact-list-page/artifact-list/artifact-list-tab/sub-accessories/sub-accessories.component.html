@@ -9,7 +9,7 @@
         </clr-dg-action-overflow>
         <clr-dg-cell>
             <div class="cell">
-                <div title="{{a?.digest}}" class="artifact-icon clr-display-inline-block">
+                <div title="{{a?.digest}}" class="artifact-icon-div clr-display-inline-block">
                     <img *ngIf="getIcon(a.icon)" class="artifact-icon" [title]="a.type"
                          [src]="getIcon(a.icon)" (error)="showDefaultIcon($event)" />
                 </div>
