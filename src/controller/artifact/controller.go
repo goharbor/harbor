@@ -173,6 +173,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 		e.Tag = option.Tags[0]
 	}
 	notification.AddEvent(ctx, e)
+
 	return created, artifact.ID, nil
 }
 

@@ -16,11 +16,15 @@ package internal
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/q"
+	accel "github.com/goharbor/harbor/src/pkg/acceleration"
+	accelModel "github.com/goharbor/harbor/src/pkg/acceleration/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/acceleration/adapter"
 )
 
 // autoScan scan artifact when the project of the artifact enable auto scan
@@ -42,4 +46,38 @@ func autoScan(ctx context.Context, a *artifact.Artifact, tags ...string) error {
 
 		return scan.DefaultController.Scan(ctx, a, options...)
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-auto-scan"))
+}
+
+// autoAcc accelerate artifact
+func autoAcc(ctx context.Context, a *artifact.Artifact, tags ...string) error {
+	proj, err := project.Ctl.Get(ctx, a.ProjectID)
+	if err != nil {
+		return err
+	}
+	if !proj.AutoAcc() {
+		return nil
+	}
+
+	// convert
+	acceleration, err := adapter.GetFactory(accelModel.AccelerationTypeNydus)
+	if err != nil {
+		return err
+	}
+	accs, err := accel.Mgr.List(ctx, q.New(q.KeyWords{"type": accelModel.AccelerationTypeNydus}))
+	if err != nil {
+		return err
+	}
+	adapter, err := acceleration.Create(accs[0])
+	if err != nil {
+		return err
+	}
+	var tagName string
+	if len(tags) > 0 {
+		tagName = tags[0]
+	}
+	err = adapter.Convert(&a.Artifact, tagName)
+	if err != nil {
+		return err
+	}
+	return nil
 }
