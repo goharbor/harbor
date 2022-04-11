@@ -19,6 +19,7 @@ export class Project {
       prevent_vul: string | boolean;
       severity: string;
       auto_scan: string | boolean;
+      auto_accelerate?: string | boolean;
       reuse_sys_cve_allowlist?: string;
     };
     cve_allowlist?: object;

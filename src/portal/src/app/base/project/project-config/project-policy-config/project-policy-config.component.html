@@ -61,6 +61,16 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label></label>
+            <clr-checkbox-wrapper id="accelerate-image-on-push-wrapper">
+                <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.AutoAccelerate"
+                       [disabled]="!hasChangeConfigRole" name="accelerate-image-on-push" />
+                <label>Automatically accelerate images on push</label>
+            </clr-checkbox-wrapper>
+            <clr-control-helper class="config-subtext">Automatically accelerate images when they are pushed to the project registry.
+            </clr-control-helper>
+        </clr-checkbox-container>
         <div *ngIf="systemInfo" class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole">
             <label class="clr-control-label">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</label>
             <div class="w-100 clr-control-container">

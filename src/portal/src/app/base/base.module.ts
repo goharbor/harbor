@@ -59,6 +59,11 @@ const routes: Routes = [
         loadChildren: () => import('./left-side-nav/registries/endpoint.module').then(m => m.EndpointModule)
       },
       {
+        path: 'accelerations',
+        canActivate: [SystemAdminGuard],
+        loadChildren: () => import('./left-side-nav/accelerations/accelerations.module').then(m => m.AccelerationsModule)
+      },
+      {
         path: 'replications',
         canActivate: [SystemAdminGuard],
         loadChildren: () => import('./left-side-nav/replication/replication.module').then(m => m.ReplicationModule)
