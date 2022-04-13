@@ -22,11 +22,26 @@ def oras_push(harbor_server, user, password, project, repo, tag):
     fo = open(file_config, "w")
     fo.write( "{\"doc\":\"readme.md\"}" )
     fo.close()
-    ret = base.run_command( [oras_cmd, "push", harbor_server + "/" + project + "/" + repo+":"+ tag,
+
+    exception = None
+    for _ in range(5):
+        exception = oras_push_cmd(harbor_server, project, repo, tag)
+        if exception == None:
+            break
+    if exception != None:
+        raise exception
+    return md5_artifact.split(' ')[0], md5_readme.split(' ')[0]
+
+def oras_push_cmd(harbor_server, project, repo, tag):
+    try:
+        ret = base.run_command( [oras_cmd, "push", harbor_server + "/" + project + "/" + repo+":"+ tag,
                              "--manifest-config", "config.json:application/vnd.acme.rocket.config.v1+json", \
                              file_artifact+":application/vnd.acme.rocket.layer.v1+txt", \
                              file_readme +":application/vnd.acme.rocket.docs.layer.v1+json"] )
-    return md5_artifact.split(' ')[0], md5_readme.split(' ')[0]
+        return None
+    except Exception as e:
+        print("Run command error:", str(e))
+        return e
 
 def oras_login(harbor_server, user, password):
      ret = base.run_command([oras_cmd, "login", "-u", user, "-p", password, harbor_server])

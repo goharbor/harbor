@@ -174,10 +174,7 @@ Body Of Admin Push Signed Image
     ${src_tag}=   Set Variable  latest
     ${src_image}=   Set Variable  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${src_tag}
     Docker Pull  ${src_image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${src_image} ${user} ${pwd}
-
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
+    Wait Unitl Command Success  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${src_image} ${user} ${pwd}
 
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/${tag}?with_signature=true"
 

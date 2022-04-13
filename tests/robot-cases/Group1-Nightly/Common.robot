@@ -747,7 +747,7 @@ Test Case - Push Helm Chart and Display
     Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
     Create An New Project And Go Into Project  test${d}
 
-    Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
+    Retry Action Keyword  Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/${repo_name}
