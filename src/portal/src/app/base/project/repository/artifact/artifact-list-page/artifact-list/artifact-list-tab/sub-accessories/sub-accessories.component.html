@@ -1,15 +1,16 @@
-<clr-datagrid (clrDgRefresh)="clrLoad()" [clrDgLoading]="loading">
+<clr-datagrid class="ml-8" (clrDgRefresh)="clrLoad()" [clrDgLoading]="loading">
     <clr-dg-column>{{'ACCESSORY.ACCESSORY' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.TYPE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'ROBOT_ACCOUNT.CREATETION' | translate}}</clr-dg-column>
-    <clr-dg-row *ngFor="let a of displayedAccessories" [clrDgItem]="a">
+    <clr-dg-row *ngFor="let a of displayedAccessories;let i = index;" [clrDgItem]="a">
         <clr-dg-action-overflow>
             <button class="action-item" (click)="delete(a)">{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-overflow>
-        <clr-dg-cell>
+        <clr-dg-cell class="relative">
+            <hr class="y-dash-line" *ngIf="i===displayedAccessories?.length-1" [style.height.px]="dashLineHeight"><hr class="x-dash-line">
             <div class="cell">
-                <div title="{{a?.digest}}" class="artifact-icon clr-display-inline-block">
+                <div title="{{a?.digest}}" class="artifact-icon-div clr-display-inline-block">
                     <img *ngIf="getIcon(a.icon)" class="artifact-icon" [title]="a.type"
                          [src]="getIcon(a.icon)" (error)="showDefaultIcon($event)" />
                 </div>
