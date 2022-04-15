@@ -44,6 +44,7 @@ Test Case - Main Menu Routing
     FOR  ${key}  IN  @{routing.keys()}
         Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}
     END
+    Close Browser
 
 Test Case - Project Tab Routing
     [Tags]  project_tab_routing
@@ -65,3 +66,15 @@ Test Case - Project Tab Routing
     FOR  ${key}  IN  @{routing.keys()}
         Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}
     END
+    Close Browser
+
+Test Case - Open License Page
+    [Tags]  license_page
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    View About
+    Retry Link Click  ${license_xpath}
+    Sleep  3
+    Switch Window  locator=NEW
+    Retry Wait Until Page Contains  Apache License
+    Close Browser
