@@ -88,3 +88,22 @@ Test Case - Open More Info Page
     Switch Window  locator=NEW
     Retry Wait Until Page Contains  An open source trusted cloud native registry project that stores, signs, and scans content.
     Close Browser
+
+Test Case - Open CVE Details Page
+    [Tags]  cve_details_page
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  goharbor/harbor-portal
+    ${sha256}=  Set Variable  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d
+    ${cve}=  Set Variable  CVE-2021-36222
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
+    Go Into Repo  project${d}/${image}
+    Scan Repo  ${sha256}  Succeed
+    Go Into Artifact  ${sha256}
+    Retry Link Click  //hbr-artifact-vulnerabilities//clr-dg-row//a[contains(.,'${cve}')]
+    Sleep  3
+    Switch Window  locator=NEW
+    Retry Wait Element  //h1[contains(.,'${cve}')]
+    Close Browser
