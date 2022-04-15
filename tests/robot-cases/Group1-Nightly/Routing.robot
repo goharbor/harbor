@@ -107,3 +107,13 @@ Test Case - Open CVE Details Page
     Switch Window  locator=NEW
     Retry Wait Element  //h1[contains(.,'${cve}')]
     Close Browser
+
+Test Case - Open Image Scanners Documentation Page
+    [Tags]  image_scanners_documentation_page
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Open Image Scanners Documentation
+    Sleep  3
+    Switch Window  locator=NEW
+    Retry Wait Until Page Contains  Vulnerability Scanning with Pluggable Scanners
+    Close Browser
