@@ -166,6 +166,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	remoteRepo := getRemoteRepo(art)
 	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
+		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
+			return true, nil, nil
+		}
 		return false, nil, err
 	}
 	if !exist || desc == nil {

@@ -678,6 +678,8 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			code = errors.ForbiddenCode
 		case http.StatusNotFound:
 			code = errors.NotFoundCode
+		case http.StatusTooManyRequests:
+			code = errors.RateLimitCode
 		}
 		return nil, errors.New(nil).WithCode(code).
 			WithMessage(message)
