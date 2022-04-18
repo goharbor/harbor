@@ -78,3 +78,13 @@ Test Case - Open License Page
     Switch Window  locator=NEW
     Retry Wait Until Page Contains  Apache License
     Close Browser
+
+Test Case - Open More Info Page
+    [Tags]  more_info_page
+    Init Chrome Driver
+    Go To  ${HARBOR_URL}
+    Retry Link Click  //sign-in//div//a[contains(.,'More info...')]
+    Sleep  3
+    Switch Window  locator=NEW
+    Retry Wait Until Page Contains  An open source trusted cloud native registry project that stores, signs, and scans content.
+    Close Browser
