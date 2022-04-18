@@ -19,9 +19,10 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"strings"
 	"time"
+
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
@@ -531,19 +532,24 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
 		return err
 	}
-	tg, err := c.tagCtl.Get(ctx, tagID, nil)
-	if err != nil {
-		return err
+	// update tag pull time if artifact has tag
+	if tagID != 0 {
+		tg, err := c.tagCtl.Get(ctx, tagID, nil)
+		if err != nil {
+			return err
+		}
+		if tg.ArtifactID != artifactID {
+			return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
+		}
+		return c.tagCtl.Update(ctx, &tag.Tag{
+			Tag: model_tag.Tag{
+				ID:       tg.ID,
+				PullTime: time,
+			},
+		}, "PullTime")
 	}
-	if tg.ArtifactID != artifactID {
-		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
-	}
-	return c.tagCtl.Update(ctx, &tag.Tag{
-		Tag: model_tag.Tag{
-			ID:       tg.ID,
-			PullTime: time,
-		},
-	}, "PullTime")
+
+	return nil
 }
 
 func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*processor.Addition, error) {
