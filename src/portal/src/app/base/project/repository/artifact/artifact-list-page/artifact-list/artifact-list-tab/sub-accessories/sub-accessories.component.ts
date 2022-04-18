@@ -113,4 +113,9 @@ export class SubAccessoriesComponent implements OnInit {
             this.artifactService.getIconsFromBackEnd(this.displayedAccessories);
         }
     }
+
+    get dashLineHeight() {
+        // fixed height 27 plus each row height 40
+        return 27 + this.displayedAccessories?.length * 40;
+    }
 }

@@ -1,5 +1,9 @@
-.artifact-icon {
+.artifact-icon-div {
+  text-align: center;
   width: 2.5rem;
+  height: 0.8rem;
+}
+.artifact-icon {
   height: 0.8rem;
 }
 .cell {
@@ -10,4 +14,21 @@
 }
 .margin-left-5 {
   margin-left: 5px;
+}
+.ml-8 {
+  margin-left: 8rem;
+}
+.x-dash-line {
+  position: absolute;
+  width: 80px;
+  left: -80px;
+  border: 0;
+  border-top: 2px dotted #a2a9b6;
+}
+.y-dash-line {
+  position: absolute;
+  border: 0;
+  border-left: 2px dotted #a2a9b6;
+  left: -4.2rem;
+  bottom: 0
 }
