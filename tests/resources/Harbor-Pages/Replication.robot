@@ -291,3 +291,6 @@ Executions Result Count Should Be
     ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
     Should Be Equal As Integers  ${count}  ${expected_result_count}
 
+Check Latest Replication Job Status
+    [Arguments]  ${expected_status}
+    Retry Wait Element  //hbr-replication//div[contains(@class,'datagrid')]//clr-dg-row[1][contains(.,'${expected_status}')]
