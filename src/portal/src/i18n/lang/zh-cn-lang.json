@@ -656,7 +656,8 @@
         "BANDWIDTH": "带宽",
         "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
         "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
-        "UNLIMITED": "无限制"
+        "UNLIMITED": "无限制",
+        "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",

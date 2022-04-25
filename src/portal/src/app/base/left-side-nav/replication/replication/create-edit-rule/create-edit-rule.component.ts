@@ -36,6 +36,7 @@ import { Registry } from "../../../../../../../ng-swagger-gen/models/registry";
 import { Label } from "../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../ng-swagger-gen/services/label.service";
 import { BandwidthUnit, Decoration, Flatten_I18n_MAP, Flatten_Level } from "../../replication";
+import { errorHandler as  errorHandlerFn} from '../../../../../shared/units/shared.utils';
 
 const PREFIX: string = '0 ';
 const PAGE_SIZE: number = 100;
@@ -496,7 +497,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
               this.setFilterAndTrigger(adapter);
               this.updateRuleFormAndCopyUpdateForm(ruleInfo);
             }, (error: any) => {
-              this.inlineAlert.showInlineError(error);
+              this.translateService.get('REPLICATION.UNREACHABLE_SOURCE_REGISTRY', {
+                error: errorHandlerFn(error)
+              }).subscribe(translatedResponse => {
+                this.inlineAlert.showInlineError(translatedResponse);
+              });
             });
         }, (error: any) => {
           this.onGoing = false;
