@@ -386,7 +386,11 @@ Should Not Be Signed By Cosign
 
 Should Be Signed By Cosign
     [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]// clr-icon[contains(@class,'signed')]
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+
+Should Be Signed By Notary
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-green')]
 
 Delete Accessory
     [Arguments]  ${tag}

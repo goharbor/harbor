@@ -570,3 +570,282 @@ Test Case - Replication Triggered By Events
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should be Accessory deleted  ${image1_short_sha256}
     Should Not Be Signed By Cosign  ${image1_short_sha256}
     Close Browser
+
+Test Case - Enable Replication Of Cosign Deployment Security Policy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image1sha256}=  Set Variable  sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a
+    ${image1_short_sha256}=  Get Substring  ${image1sha256}  0  15
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
+    ${image2sha256}=  Set Variable  sha256:34efe68cca33507682b1673c851700ec66839ecf94d19b928176e20d20e02413
+    ${image2_short_sha256}=  Get Substring  ${image2sha256}  0  15
+    ${index}=  Set Variable  index
+    ${index_tag}=  Set Variable  index_tag
+
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_push_dest${d}
+    Create An New Project And Go Into Project  project_pull_dest${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project${d}/*  image  e${d}  project_pull_dest${d}
+    Logout Harbor
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    # push images
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    Docker Push Index  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${ip}/project${d}/${index}:${index_tag}  ${ip}/project${d}/${image1}:${tag1}  ${ip}/project${d}/${image2}:${tag2}
+    # enable cosign deployment security policy
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+    # push mode replication should fail
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_push_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # sign
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Cosign Sign  ${ip}/project${d}/${index}:${index_tag}
+    Cosign Sign  ${ip}/project${d}/${index}@${image1sha256}
+    Cosign Sign  ${ip}/project${d}/${index}@${image2sha256}
+    Docker Logout  ${ip}
+    # push mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Succeeded
+    # pull mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Succeeded
+    # check project_pull_dest
+    Go Into Project  project_pull_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_pull_dest${d}  ${image1}
+    Repo Exist  project_pull_dest${d}  ${image2}
+    Repo Exist  project_pull_dest${d}  ${index}
+    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
+    Back Project Home  project_pull_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
+    Back Project Home  project_pull_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
+    Back Project Home  project_pull_dest${d}
+    Go Into Repo  project_pull_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Back Project Home  project_pull_dest${d}
+    Go Into Repo  project_pull_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    # check project_push_dest
+    Go Into Project  project_push_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_push_dest${d}  ${image1}
+    Repo Exist  project_push_dest${d}  ${image2}
+    Repo Exist  project_push_dest${d}  ${index}
+    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
+    Back Project Home  project_push_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
+    Back Project Home  project_push_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
+    Back Project Home  project_push_dest${d}
+    Go Into Repo  project_push_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Back Project Home  project_push_dest${d}
+    Go Into Repo  project_push_dest${d}/${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    Close Browser
+
+Test Case - Enable Replication Of Notary Deployment Security Policy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
+
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_push_dest${d}
+    Create An New Project And Go Into Project  project_pull_dest${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project${d}/*  image  e${d}  project_pull_dest${d}
+    Logout Harbor
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    # push images
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    # enable notary deployment security policy
+    Goto Project Config
+    Click Notary Deployment Security
+    Save Project Config
+    Content Notary Deployment security Be Selected
+    # push mode replication should fail
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_push_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # sign
+    Body Of Admin Push Signed Image  project${d}  ${image1}  ${tag1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Body Of Admin Push Signed Image  project${d}  ${image2}  ${tag2}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # push mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Succeeded
+    # pull mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Succeeded
+    # check project_pull_dest
+    Go Into Project  project_pull_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_pull_dest${d}  ${image1}
+    Repo Exist  project_pull_dest${d}  ${image2}
+    # check project_push_dest
+    Go Into Project  project_push_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_push_dest${d}  ${image1}
+    Repo Exist  project_push_dest${d}  ${image2}
+    Close Browser
+
+Test Case - Enable Replication Of Cosign And Notary Deployment Security Policy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
+
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_push_dest${d}
+    Create An New Project And Go Into Project  project_pull_dest${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project${d}/*  image  e${d}  project_pull_dest${d}
+    Logout Harbor
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    # push images
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    # enable cosign deployment security policy
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+    # enable notary deployment security policy
+    Goto Project Config
+    Click Notary Deployment Security
+    Save Project Config
+    Content Notary Deployment security Be Selected
+    # cosign sign
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # push mode replication should fail
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_push_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # notary sign
+    Body Of Admin Push Signed Image  project${d}  ${image1}  ${tag1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Body Of Admin Push Signed Image  project${d}  ${image2}  ${tag2}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # delete cosign accessory
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${image1}
+    Retry Double Keywords When Error  Delete Accessory  ${tag1}  Should be Accessory deleted  ${tag1}
+    Back Project Home  project${d}
+    Go Into Repo  project${d}/${image2}
+    Retry Double Keywords When Error  Delete Accessory  ${tag2}  Should be Accessory deleted  ${tag2}
+    # push mode replication should fail
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # cosign sign
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # push mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Succeeded
+    # pull mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Succeeded
+    # check project_pull_dest
+    Go Into Project  project_pull_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_pull_dest${d}  ${image1}
+    Repo Exist  project_pull_dest${d}  ${image2}
+    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
+    Back Project Home  project_pull_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
+    # check project_push_dest
+    Go Into Project  project_push_dest${d}
+    Switch To Project Repo
+    Repo Exist  project_push_dest${d}  ${image1}
+    Repo Exist  project_push_dest${d}  ${image2}
+    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
+    Back Project Home  project_push_dest${d}
+    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
+    Close Browser
