@@ -49,8 +49,8 @@ paths:
           description: Unexpected internal errors.
   /chartrepo/{repo}/charts/{name}/{version}/labels:
     get:
-      summary: Return the attahced labels of chart.
-      description: Return the attahced labels of the specified chart version.
+      summary: Return the attached labels of chart.
+      description: Return the attached labels of the specified chart version.
       tags:
         - Products
         - Chart Repository
