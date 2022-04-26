@@ -29,10 +29,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.15
+      - name: Set up Go 1.17
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.17.9
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -95,10 +95,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.15
+      - name: Set up Go 1.17
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.17.9
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -155,10 +155,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.15
+      - name: Set up Go 1.17
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.17.9
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -213,10 +213,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.15
+      - name: Set up Go 1.17
         uses: actions/setup-go@v1
         with:
-          go-version: 1.15.6
+          go-version: 1.17.9
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
