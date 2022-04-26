@@ -56,6 +56,36 @@ func (_m *Cache) Fetch(ctx context.Context, key string, value interface{}) error
 	return r0
 }
 
+// Keys provides a mock function with given fields: ctx, prefixes
+func (_m *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
+	_va := make([]interface{}, len(prefixes))
+	for _i := range prefixes {
+		_va[_i] = prefixes[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context, ...string) []string); ok {
+		r0 = rf(ctx, prefixes...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, ...string) error); ok {
+		r1 = rf(ctx, prefixes...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Ping provides a mock function with given fields: ctx
 func (_m *Cache) Ping(ctx context.Context) error {
 	ret := _m.Called(ctx)

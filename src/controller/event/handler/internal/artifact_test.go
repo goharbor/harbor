@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	repo "github.com/goharbor/harbor/src/pkg/repository"
@@ -54,7 +55,7 @@ func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	suite.ctx = orm.NewContext(context.TODO(), beegoorm.NewOrm())
 
 	// mock artifact
-	_, err := artifact.Mgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
+	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
 	suite.Nil(err)
 	// mock repository
 	_, err = repo.Mgr.Create(suite.ctx, &model.RepoRecord{RepositoryID: 1})
@@ -70,7 +71,7 @@ func (suite *ArtifactHandlerTestSuite) TearDownSuite() {
 	err := tag.Mgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 	// delete artifact
-	err = artifact.Mgr.Delete(suite.ctx, 1)
+	err = pkg.ArtifactMgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 	// delete repository
 	err = repo.Mgr.Delete(suite.ctx, 1)
@@ -107,7 +108,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Nil(err, "onPull should return nil")
 	// sync mode should update db immediately
 	// pull_time
-	art, err := artifact.Mgr.Get(suite.ctx, 1)
+	art, err := pkg.ArtifactMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.False(art.PullTime.IsZero(), "sync update pull_time")
 	lastPullTime := art.PullTime
@@ -122,7 +123,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Nil(err, "onPull should return nil")
 	// async mode should not update db immediately
 	// pull_time
-	art, err = artifact.Mgr.Get(suite.ctx, 1)
+	art, err = pkg.ArtifactMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(lastPullTime, art.PullTime, "pull_time should not be updated immediately")
 	// pull_count
@@ -131,7 +132,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Equal(int64(1), repository.PullCount, "pull_count should not be updated immediately")
 	// wait for db update
 	suite.Eventually(func() bool {
-		art, err = artifact.Mgr.Get(suite.ctx, 1)
+		art, err = pkg.ArtifactMgr.Get(suite.ctx, 1)
 		suite.Nil(err)
 		return art.PullTime.After(lastPullTime)
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_time async update")

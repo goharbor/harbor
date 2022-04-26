@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
@@ -109,6 +110,29 @@ func (c *Cache) Save(ctx context.Context, key string, value interface{}, expirat
 	})
 
 	return nil
+}
+
+// Keys returns the key matched by prefixes.
+func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
+	// if no prefix, means match all keys.
+	matchAll := len(prefixes) == 0
+	// range map to get all keys
+	keys := make([]string, 0)
+	c.storage.Range(func(k, v interface{}) bool {
+		ks := k.(string)
+		if matchAll {
+			keys = append(keys, ks)
+		} else {
+			for _, p := range prefixes {
+				if strings.HasPrefix(ks, c.opts.Key(p)) {
+					keys = append(keys, ks)
+				}
+			}
+		}
+		return true
+	})
+
+	return keys, nil
 }
 
 // New returns memory cache

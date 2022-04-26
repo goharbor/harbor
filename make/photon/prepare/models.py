@@ -7,6 +7,7 @@ from g import internal_tls_dir, DEFAULT_GID, DEFAULT_UID, PG_GID, PG_UID
 from utils.misc import check_permission, owner_can_read, get_realpath, port_number_valid
 from utils.cert import san_existed
 
+
 class InternalTLS:
 
     harbor_certs_filename = {
@@ -137,8 +138,9 @@ class InternalTLS:
             else:
                 os.chown(file, DEFAULT_UID, DEFAULT_GID)
 
+
 class Metric:
-    def __init__(self, enabled: bool = False, port: int = 8080, path: str = "metrics" ):
+    def __init__(self, enabled: bool = False, port: int = 8080, path: str = "metrics"):
         self.enabled = enabled
         self.port = port
         self.path = path
@@ -166,6 +168,7 @@ class JaegerExporter:
         if self.endpoint and self.agent_host:
             raise Exception('Jaeger Colector Endpoint and Agent host both set, only can set one')
 
+
 class OtelExporter:
     def __init__(self, config: dict):
         if not config:
@@ -183,6 +186,7 @@ class OtelExporter:
             raise Exception('Trace endpoint not set')
         if not self.url_path:
             raise Exception('Trace url path not set')
+
 
 class Trace:
     def __init__(self, config: dict):
@@ -205,6 +209,7 @@ class Trace:
         elif self.otel.enabled:
             self.otel.validate()
 
+
 class PurgeUpload:
     def __init__(self, config: dict):
         if not config:
@@ -223,14 +228,30 @@ class PurgeUpload:
             raise Exception('purge upload age should set with with nh, n is the number of hour')
         # interval should larger than 2h
         age = self.age[:-1]
-        if not age.isnumeric() or int(age) < 2 :
+        if not age.isnumeric() or int(age) < 2:
             raise Exception('purge upload age should set with with nh, n is the number of hour and n should not be less than 2')
-        
+
         # interval should end with h
         if not isinstance(self.interval, str) or not self.interval.endswith('h'):
             raise Exception('purge upload interval should set with with nh, n is the number of hour')
         # interval should larger than 2h
         interval = self.interval[:-1]
-        if not interval.isnumeric() or int(interval) < 2 :
+        if not interval.isnumeric() or int(interval) < 2:
             raise Exception('purge upload interval should set with with nh, n is the number of hour and n should not beless than 2')
+        return
+
+
+class Cache:
+    def __init__(self, config: dict):
+        if not config:
+            self.enabled = False
+        self.enabled = config.get('enabled')
+        self.expire_hours = config.get('expire_hours')
+
+    def validate(self):
+        if not self.enabled:
+            return
+
+        if not self.expire_hours.isnumeric():
+            raise Exception('cache expire hours should be number')
         return

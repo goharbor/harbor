@@ -56,6 +56,9 @@ type Cache interface {
 
 	// Save cache the value by key
 	Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error
+
+	// Keys returns the key matched by prefixes
+	Keys(ctx context.Context, prefixes ...string) ([]string, error)
 }
 
 var (

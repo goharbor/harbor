@@ -108,6 +108,30 @@ func (suite *CacheTestSuite) TestPing() {
 	suite.NoError(suite.cache.Ping(suite.ctx))
 }
 
+func (suite *CacheTestSuite) TestKeys() {
+	key1 := "p1"
+	key2 := "p2"
+
+	var err error
+	err = suite.cache.Save(suite.ctx, key1, "hello, p1")
+	suite.Nil(err)
+	err = suite.cache.Save(suite.ctx, key2, "hello, p2")
+	suite.Nil(err)
+
+	// should match all
+	keys, err := suite.cache.Keys(suite.ctx, "p")
+	suite.Nil(err)
+	suite.ElementsMatch([]string{"p1", "p2"}, keys)
+	// only get p1
+	keys, err = suite.cache.Keys(suite.ctx, key1)
+	suite.Nil(err)
+	suite.Equal([]string{"p1"}, keys)
+	// only get p2
+	keys, err = suite.cache.Keys(suite.ctx, key2)
+	suite.Nil(err)
+	suite.Equal([]string{"p2"}, keys)
+}
+
 func TestCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheTestSuite))
 }

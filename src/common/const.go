@@ -196,4 +196,13 @@ const (
 	PullTimeUpdateDisable = "pull_time_update_disable"
 	// PullAuditLogDisable indicate if pull audit log is disable for pull request.
 	PullAuditLogDisable = "pull_audit_log_disable"
+
+	// Cache layer settings
+	// CacheEnabled indicate whether enable cache layer.
+	CacheEnabled = "cache_enabled"
+	// CacheExpireHours is the cache expiration time, unit is hour.
+	CacheExpireHours = "cache_expire_hours"
+	// DefaultCacheExpireHours is the default cache expire hours, default is
+	// 24h.
+	DefaultCacheExpireHours = 24
 )
