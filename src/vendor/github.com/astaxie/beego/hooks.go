@@ -34,6 +34,7 @@ func registerDefaultErrorHandler() error {
 		"504": gatewayTimeout,
 		"417": invalidxsrf,
 		"422": missingxsrf,
+		"413": payloadTooLarge,
 	}
 	for e, h := range m {
 		if _, ok := ErrorMaps[e]; !ok {
@@ -60,6 +61,7 @@ func registerSession() error {
 			conf.EnableSidInHTTPHeader = BConfig.WebConfig.Session.SessionEnableSidInHTTPHeader
 			conf.SessionNameInHTTPHeader = BConfig.WebConfig.Session.SessionNameInHTTPHeader
 			conf.EnableSidInURLQuery = BConfig.WebConfig.Session.SessionEnableSidInURLQuery
+			conf.CookieSameSite = BConfig.WebConfig.Session.SessionCookieSameSite
 		} else {
 			if err = json.Unmarshal([]byte(sessionConfig), conf); err != nil {
 				return err
