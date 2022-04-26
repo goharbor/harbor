@@ -11,15 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-  Component,
-  Output,
-  EventEmitter,
-  ViewChild,
-  AfterViewChecked,
-  OnDestroy,
-  OnInit
-} from "@angular/core";
+import { AfterViewChecked, Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { Subscription, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
@@ -31,6 +23,7 @@ import { HttpClient } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
 import { AppConfigService } from '../../../../services/app-config.service';
 import { EndpointService, HELM_HUB } from "../../../../shared/services/endpoint.service";
+import { ClrLoadingState } from '@clr/angular';
 
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
@@ -73,6 +66,8 @@ export class CreateEditEndpointComponent
   adapterInfo: object;
   showEndpointList: boolean = false;
   endpointOnHover: boolean = false;
+  testButtonState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  okButtonState: ClrLoadingState = ClrLoadingState.DEFAULT;
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
@@ -290,16 +285,19 @@ export class CreateEditEndpointComponent
     }
 
     this.testOngoing = true;
+    this.testButtonState = ClrLoadingState.LOADING;
     this.endpointService.pingEndpoint(payload).subscribe(
       response => {
         this.inlineAlert.showInlineSuccess({
           message: "DESTINATION.TEST_CONNECTION_SUCCESS"
         });
         this.testOngoing = false;
+        this.testButtonState = ClrLoadingState.SUCCESS;
       },
       error => {
         this.inlineAlert.showInlineError("DESTINATION.TEST_CONNECTION_FAILURE");
         this.testOngoing = false;
+        this.testButtonState = ClrLoadingState.ERROR;
       }
     );
   }
@@ -317,6 +315,7 @@ export class CreateEditEndpointComponent
       return; // Avoid duplicated submitting
     }
     this.onGoing = true;
+    this.okButtonState = ClrLoadingState.LOADING;
     this.endpointService.createEndpoint(this.target).subscribe(
       response => {
         this.translateService
@@ -324,10 +323,12 @@ export class CreateEditEndpointComponent
           .subscribe(res => this.errorHandler.info(res));
         this.reload.emit(true);
         this.onGoing = false;
+        this.okButtonState = ClrLoadingState.SUCCESS;
         this.close();
       },
       error => {
         this.onGoing = false;
+        this.okButtonState = ClrLoadingState.ERROR;
         this.inlineAlert.showInlineError(error);
       }
     );
@@ -358,6 +359,7 @@ export class CreateEditEndpointComponent
     }
 
     this.onGoing = true;
+    this.okButtonState = ClrLoadingState.LOADING;
     this.endpointService.updateEndpoint(this.target.id, payload).subscribe(
       response => {
         this.translateService
@@ -366,10 +368,12 @@ export class CreateEditEndpointComponent
         this.reload.emit(true);
         this.close();
         this.onGoing = false;
+        this.okButtonState = ClrLoadingState.SUCCESS;
       },
       error => {
         this.inlineAlert.showInlineError(error);
         this.onGoing = false;
+        this.okButtonState = ClrLoadingState.ERROR;
       }
     );
   }
