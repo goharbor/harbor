@@ -36,10 +36,9 @@ import {
 
 import {
   CustomComparator,
-  DEFAULT_PAGE_SIZE,
   doFiltering,
   doSorting,
-  calculatePage
+  calculatePage, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage
 } from "../../../../shared/units/utils";
 
 import {
@@ -79,7 +78,6 @@ export class SearchOption {
   trigger: string = "";
   status: string = "";
   page: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
 }
 
 const STATUS_MAP = {
@@ -141,7 +139,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   // Server driven pagination
   currentPage: number = 1;
   totalCount: number = 0;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS);
   currentState: ClrDatagridStateInterface;
   jobsLoading: boolean = false;
   timerDelay: Subscription;
@@ -229,6 +227,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       return;
     }
     this.pageSize = state.page.size;
+    setPageSizeToLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS, this.pageSize);
     this.currentState = state;
 
     let pageNumber: number = calculatePage(state);

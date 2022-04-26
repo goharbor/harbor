@@ -5,7 +5,7 @@ import {
 } from '../../../../shared/services';
 import {
   clone, isEmpty, getChanges, getSuitableUnit, calculatePage
-  , getByte, GetIntegerAndUnit
+  , getByte, GetIntegerAndUnit, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage
 } from '../../../../shared/units/utils';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { QuotaUnits, QuotaUnlimited, QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT } from '../../../../shared/entities/shared.const';
@@ -44,7 +44,7 @@ export class ProjectQuotasComponent implements OnChanges {
   originalConfig: Configuration;
   currentPage = 1;
   totalCount = 0;
-  pageSize = 15;
+  pageSize = getPageSizeFromLocalStorage(PageSizeMapKeys.PROJECT_QUOTA_COMPONENT);
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
   quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
   @Input()
@@ -176,6 +176,7 @@ export class ProjectQuotasComponent implements OnChanges {
       return;
     }
     this.pageSize = state.page.size;
+    setPageSizeToLocalStorage(PageSizeMapKeys.PROJECT_QUOTA_COMPONENT, this.pageSize);
     // Keep state for future filtering and sorting
     this.currentState = state;
 

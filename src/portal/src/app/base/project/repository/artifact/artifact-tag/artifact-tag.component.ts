@@ -16,10 +16,9 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import {
   calculatePage,
   dbEncodeURIComponent,
-  DEFAULT_PAGE_SIZE,
   doFiltering,
-  doSorting,
-  getSortingString
+  doSorting, getPageSizeFromLocalStorage,
+  getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage
 } from '../../../../../shared/units/utils';
 import { AppConfigService } from "../../../../../services/app-config.service";
 import { errorHandler } from "../../../../../shared/units/shared.utils";
@@ -61,7 +60,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
   totalCount: number = 0;
   allTags: Tag[] = [];
   currentTags: Tag[] = [];
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.ARTIFACT_TAGS_COMPONENT);
   currentPage = 1;
   tagNameChecker: Subject<string> = new Subject<string>();
   tagNameCheckSub: Subscription;
@@ -124,6 +123,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
       return ;
     }
     this.pageSize = state.page.size;
+    setPageSizeToLocalStorage(PageSizeMapKeys.ARTIFACT_TAGS_COMPONENT, this.pageSize);
     let pageNumber: number = calculatePage(state);
       if (pageNumber <= 0) { pageNumber = 1; }
     let params: ArtifactService.ListTagsParams = {

@@ -22,9 +22,8 @@ import {
   clone,
   CURRENT_BASE_HREF,
   dbEncodeURIComponent,
-  DEFAULT_PAGE_SIZE,
-  doFiltering,
-  getSortingString
+  doFiltering, getPageSizeFromLocalStorage,
+  getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage
 } from "../../../shared/units/utils";
 import { ErrorHandler } from "../../../shared/units/error-handler";
 import {
@@ -79,7 +78,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
   cardHover = false;
   listHover = false;
 
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.REPOSITORY_GRIDVIEW_COMPONENT);
   currentPage = 1;
   totalCount = 0;
   currentState: ClrDatagridStateInterface;
@@ -359,6 +358,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       return;
     }
     this.pageSize = state.page.size;
+    setPageSizeToLocalStorage(PageSizeMapKeys.REPOSITORY_GRIDVIEW_COMPONENT, this.pageSize);
     this.selectedRow = [];
     // Keep it for future filtering and sorting
     this.currentState = state;

@@ -18,6 +18,7 @@ import { AuditlogService } from "../../../../../ng-swagger-gen/services/auditlog
 import { AuditLog } from "../../../../../ng-swagger-gen/models/audit-log";
 import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from '../../../shared/units/utils';
 
 @Component({
     selector: 'hbr-log',
@@ -31,7 +32,7 @@ export class RecentLogComponent implements OnInit {
     currentTerm: string;
     defaultFilter = "username";
     isOpenFilterTag: boolean;
-    pageSize: number = 15;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_RECENT_LOG_COMPONENT);
     currentPage: number = 1; // Double bound to pagination component
     totalCount: number = 0;
     constructor(
@@ -72,6 +73,7 @@ export class RecentLogComponent implements OnInit {
     load(state?: ClrDatagridStateInterface) {
         if (state && state.page) {
            this.pageSize = state.page.size;
+           setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_RECENT_LOG_COMPONENT, this.pageSize);
         }
         // Keep it for future filter
         // this.currentState = state;

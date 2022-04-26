@@ -12,7 +12,8 @@
   line-height: 1;
 }
 .immutable {
-  padding-right: 94px;
+  display: flex;
+  align-items: center;
   position: relative;
   .label {
     position: absolute;

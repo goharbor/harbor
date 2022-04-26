@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AdditionsService } from "../additions.service";
-import { ClrDatagridComparatorInterface, ClrLoadingState } from "@clr/angular";
+import { ClrDatagridComparatorInterface, ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
 import {
@@ -13,7 +13,12 @@ import {
   VulnerabilityItem
 } from "../../../../../../shared/services";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import { SEVERITY_LEVEL_MAP, VULNERABILITY_SEVERITY } from "../../../../../../shared/units/utils";
+import {
+  getPageSizeFromLocalStorage,
+  PageSizeMapKeys, setPageSizeToLocalStorage,
+  SEVERITY_LEVEL_MAP,
+  VULNERABILITY_SEVERITY
+} from "../../../../../../shared/units/utils";
 import { ResultBarChartComponent } from "../../vulnerability-scanning/result-bar-chart.component";
 import { Subscription } from "rxjs";
 import { Artifact } from "../../../../../../../../ng-swagger-gen/models/artifact";
@@ -56,7 +61,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   sub: Subscription;
   hasViewInitWithDelay: boolean = false;
   currentCVEList: Array<{ "cve_id": string; }> = [];
-
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.ARTIFACT_VUL_COMPONENT, 25);
   constructor(
       private errorHandler: ErrorHandler,
       private additionsService: AdditionsService,
@@ -301,5 +306,10 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   }
   canScan(): boolean {
     return this.hasEnabledScanner && this.hasScanningPermission && !this.onSendingScanCommand;
+  }
+  load(state: ClrDatagridStateInterface) {
+    if (state?.page?.size) {
+      setPageSizeToLocalStorage(PageSizeMapKeys.ARTIFACT_VUL_COMPONENT, state.page.size);
+    }
   }
 }

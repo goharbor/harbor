@@ -4,7 +4,13 @@ import { NewScannerModalComponent } from "./new-scanner-modal/new-scanner-modal.
 import { finalize } from "rxjs/operators";
 import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
-import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../../shared/units/utils";
+import {
+    clone,
+    getPageSizeFromLocalStorage,
+    getSortingString,
+    PageSizeMapKeys,
+    setPageSizeToLocalStorage
+} from "../../../../shared/units/utils";
 import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../shared/entities/shared.const";
 import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
@@ -26,7 +32,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     deletionSubscription: any;
     scannerDocUrl: string = SCANNERS_DOC;
     page: number = 1;
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_SCANNER_COMPONENT);
     total: number = 0;
     state: ClrDatagridStateInterface;
     constructor(
@@ -70,6 +76,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         this.state = state;
         if (state && state.page) {
             this.pageSize = state.page.size;
+            setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_SCANNER_COMPONENT, this.pageSize);
         }
         let q: string;
         if (state && state.filters && state.filters.length) {

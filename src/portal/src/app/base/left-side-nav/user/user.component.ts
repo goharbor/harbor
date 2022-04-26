@@ -34,7 +34,7 @@ import {
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
 import { HttpErrorResponse } from "@angular/common/http";
-
+import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from '../../../shared/units/utils';
 
 /**
  * NOTES:
@@ -61,7 +61,7 @@ export class UserComponent implements OnInit, OnDestroy {
     currentTerm: string;
     totalCount: number = 0;
     currentPage: number = 1;
-    pageSize: number = 15;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_USER_COMPONENT);
     timerHandler: any;
 
     private onGoing: boolean = true;
@@ -343,6 +343,7 @@ export class UserComponent implements OnInit, OnDestroy {
     load(state: any): void {
         if (state && state.page) {
            this.pageSize = state.page.size;
+           setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_USER_COMPONENT, this.pageSize);
         }
         this.selectedRow = [];
         this.onGoing = true;

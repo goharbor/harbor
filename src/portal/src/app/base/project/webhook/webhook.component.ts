@@ -19,7 +19,13 @@ import { AddWebhookFormComponent } from './add-webhook-form/add-webhook-form.com
 import { ActivatedRoute } from '@angular/router';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { Project } from '../project';
-import { clone, DEFAULT_PAGE_SIZE, getSortingString } from '../../../shared/units/utils';
+import {
+  clone,
+  getPageSizeFromLocalStorage,
+  getSortingString,
+  PageSizeMapKeys,
+  setPageSizeToLocalStorage
+} from '../../../shared/units/utils';
 import { forkJoin, Observable } from 'rxjs';
 import { UserPermissionService, USERSTATICPERMISSION } from '../../../shared/services';
 import { ClrDatagridStateInterface } from '@clr/angular';
@@ -54,7 +60,7 @@ export class WebhookComponent implements OnInit {
   hasCreatPermission: boolean = false;
   hasUpdatePermission: boolean = false;
   page: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.WEBHOOK_COMPONENT);
   total: number = 0;
   state: ClrDatagridStateInterface;
   constructor(
@@ -147,6 +153,7 @@ export class WebhookComponent implements OnInit {
     }
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.WEBHOOK_COMPONENT, this.pageSize);
     }
     let q: string;
     if (state && state.filters && state.filters.length) {

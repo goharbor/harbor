@@ -28,8 +28,8 @@ import { AppConfigService } from "../../../../services/app-config.service";
 import { Project } from "../../../project/project";
 import { map, catchError, finalize } from "rxjs/operators";
 import {
-    calculatePage,
-    getSortingString
+    calculatePage, getPageSizeFromLocalStorage,
+    getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage
 } from "../../../../shared/units/utils";
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
@@ -44,7 +44,6 @@ import {
 import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
 import { errorHandler } from "../../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
-
 @Component({
     selector: "list-project",
     templateUrl: "list-project.component.html"
@@ -61,7 +60,7 @@ export class ListProjectComponent implements OnDestroy {
     roleInfo = RoleInfo;
     currentPage = 1;
     totalCount = 0;
-    pageSize = 15;
+    pageSize = getPageSizeFromLocalStorage(PageSizeMapKeys.LIST_PROJECT_COMPONENT);
     currentState: State;
     subscription: Subscription;
     projectTypeMap: any = {
@@ -143,6 +142,7 @@ export class ListProjectComponent implements OnDestroy {
         }
         this.state = state;
         this.pageSize = state.page.size;
+        setPageSizeToLocalStorage(PageSizeMapKeys.LIST_PROJECT_COMPONENT, this.pageSize);
         this.selectedRow = [];
 
         // Keep state for future filtering and sorting

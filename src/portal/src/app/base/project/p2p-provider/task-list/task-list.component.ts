@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { debounceTime, finalize, switchMap } from 'rxjs/operators';
-import { clone, DEFAULT_PAGE_SIZE } from '../../../../shared/units/utils';
+import { clone, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from '../../../../shared/units/utils';
 import { Task } from '../../../../../../ng-swagger-gen/models/task';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { Project } from '../../project';
@@ -24,7 +24,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
   inProgress: boolean = false;
   currentPage: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.P2P_TASKS_COMPONENT);
   totalCount: number;
   loading = true;
   tasks: Task[];
@@ -226,6 +226,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     }
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.P2P_TASKS_COMPONENT, this.pageSize);
     }
     let params: string;
     if (this.searchString) {

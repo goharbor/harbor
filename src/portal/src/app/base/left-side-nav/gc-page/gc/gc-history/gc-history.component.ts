@@ -3,7 +3,12 @@ import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { Subscription, timer } from "rxjs";
 import { REFRESH_TIME_DIFFERENCE } from '../../../../../shared/entities/shared.const';
 import { GcService } from "../../../../../../../ng-swagger-gen/services/gc.service";
-import { CURRENT_BASE_HREF, DEFAULT_PAGE_SIZE, getSortingString } from "../../../../../shared/units/utils";
+import {
+  CURRENT_BASE_HREF,
+  getPageSizeFromLocalStorage,
+  getSortingString,
+  PageSizeMapKeys, setPageSizeToLocalStorage
+} from "../../../../../shared/units/utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { GCHistory } from "../../../../../../../ng-swagger-gen/models/gchistory";
@@ -24,7 +29,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
   jobs: Array<GCHistory> = [];
   loading: boolean = true;
   timerDelay: Subscription;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.GC_HISTORY_COMPONENT);
   page: number = 1;
   total: number = 0;
   state: ClrDatagridStateInterface;
@@ -49,6 +54,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     }
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.GC_HISTORY_COMPONENT, this.pageSize);
     }
     let q: string;
     if (state && state.filters && state.filters.length) {

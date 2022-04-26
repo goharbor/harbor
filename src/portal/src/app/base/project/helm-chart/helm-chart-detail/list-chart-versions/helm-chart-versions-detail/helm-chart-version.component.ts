@@ -12,7 +12,12 @@ import {
   UserPermissionService,
   USERSTATICPERMISSION
 } from "../../../../../../shared/services";
-import { DEFAULT_PAGE_SIZE, downloadFile } from "../../../../../../shared/units/utils";
+import {
+  downloadFile,
+  getPageSizeFromLocalStorage,
+  PageSizeMapKeys,
+  setPageSizeToLocalStorage
+} from "../../../../../../shared/units/utils";
 import { ErrorHandler } from "../../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../shared/components/operation/operate";
@@ -29,6 +34,7 @@ import { ConfirmationMessage } from "../../../../../global-confirmation-dialog/c
 import { ConfirmationAcknowledgement } from "../../../../../global-confirmation-dialog/confirmation-state-message";
 import { Label } from "../../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../../ng-swagger-gen/services/label.service";
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 const PAGE_SIZE: number = 100;
 @Component({
@@ -60,7 +66,7 @@ export class ChartVersionComponent implements OnInit {
   cardHover = false;
   listHover = false;
 
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.CHART_VERSION_COMPONENT);
   currentPage = 1;
   totalCount = 0;
   currentState: State;
@@ -181,7 +187,10 @@ export class ChartVersionComponent implements OnInit {
     });
   }
 
-  refresh() {
+  refresh(state?: ClrDatagridStateInterface) {
+    if (state?.page?.size) {
+      setPageSizeToLocalStorage(PageSizeMapKeys.CHART_VERSION_COMPONENT, state.page.size);
+    }
     this.loading = true;
     this.helmChartService
       .getChartVersions(this.projectName, this.chartName)

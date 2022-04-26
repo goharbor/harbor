@@ -19,7 +19,7 @@ import { ProjectService } from "../../../../../ng-swagger-gen/services/project.s
 import { AuditLog } from "../../../../../ng-swagger-gen/models/audit-log";
 import { Project } from "../project";
 import { finalize } from "rxjs/operators";
-import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../shared/units/utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
@@ -73,7 +73,7 @@ export class AuditLogComponent implements OnInit {
   ];
 
   pageOffset = 1;
-  pageSize = DEFAULT_PAGE_SIZE;
+  pageSize = getPageSizeFromLocalStorage(PageSizeMapKeys.PROJECT_AUDIT_LOG_COMPONENT);
   totalRecordCount = 0;
   currentPage = 1;
   totalPage = 0;
@@ -102,6 +102,7 @@ export class AuditLogComponent implements OnInit {
   retrieve(state?: ClrDatagridStateInterface) {
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.PROJECT_AUDIT_LOG_COMPONENT, this.pageSize);
     }
     const arr: string[] = [];
     if (this.queryUsername) {
@@ -139,7 +140,7 @@ export class AuditLogComponent implements OnInit {
           if (response.headers) {
             let xHeader: string = response.headers.get("x-total-count");
             if (xHeader) {
-              this.totalRecordCount = Number.parseInt(xHeader);
+              this.totalRecordCount = Number.parseInt(xHeader, 10);
             }
           }
           this.auditLogs = response.body;
