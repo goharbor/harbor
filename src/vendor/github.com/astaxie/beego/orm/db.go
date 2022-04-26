@@ -36,10 +36,11 @@ var (
 
 var (
 	operators = map[string]bool{
-		"exact":     true,
-		"iexact":    true,
-		"contains":  true,
-		"icontains": true,
+		"exact":       true,
+		"iexact":      true,
+		"strictexact": true,
+		"contains":    true,
+		"icontains":   true,
 		// "regex":       true,
 		// "iregex":      true,
 		"gt":          true,
@@ -470,7 +471,7 @@ func (d *dbBase) InsertValue(q dbQuerier, mi *modelInfo, isMulti bool, names []s
 
 	multi := len(values) / len(names)
 
-	if isMulti {
+	if isMulti && multi > 1 {
 		qmarks = strings.Repeat(qmarks+"), (", multi-1) + qmarks
 	}
 
@@ -770,6 +771,16 @@ func (d *dbBase) UpdateBatch(q dbQuerier, qs *querySet, mi *modelInfo, cond *Con
 				cols = append(cols, col+" = "+col+" * ?")
 			case ColExcept:
 				cols = append(cols, col+" = "+col+" / ?")
+			case ColBitAnd:
+				cols = append(cols, col+" = "+col+" & ?")
+			case ColBitRShift:
+				cols = append(cols, col+" = "+col+" >> ?")
+			case ColBitLShift:
+				cols = append(cols, col+" = "+col+" << ?")
+			case ColBitXOR:
+				cols = append(cols, col+" = "+col+" ^ ?")
+			case ColBitOr:
+				cols = append(cols, col+" = "+col+" | ?")
 			}
 			values[i] = c.value
 		} else {
@@ -1192,7 +1203,7 @@ func (d *dbBase) GenerateOperatorSQL(mi *modelInfo, fi *fieldInfo, operator stri
 		}
 		sql = d.ins.OperatorSQL(operator)
 		switch operator {
-		case "exact":
+		case "exact", "strictexact":
 			if arg == nil {
 				params[0] = "IS NULL"
 			}

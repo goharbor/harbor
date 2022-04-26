@@ -102,7 +102,12 @@ func (a *AuthorizationError) Error() string {
 	for i, err := range a.Errors {
 		e[i] = err.Error()
 	}
-	return fmt.Sprintf("acme: authorization error for %s: %s", a.Identifier, strings.Join(e, "; "))
+
+	if a.Identifier != "" {
+		return fmt.Sprintf("acme: authorization error for %s: %s", a.Identifier, strings.Join(e, "; "))
+	}
+
+	return fmt.Sprintf("acme: authorization error: %s", strings.Join(e, "; "))
 }
 
 // OrderError is returned from Client's order related methods.
@@ -194,6 +199,28 @@ type Account struct {
 	//
 	// It is non-RFC 8555 compliant and is obsoleted by OrdersURL.
 	Certificates string
+
+	// ExternalAccountBinding represents an arbitrary binding to an account of
+	// the CA which the ACME server is tied to.
+	// See https://tools.ietf.org/html/rfc8555#section-7.3.4 for more details.
+	ExternalAccountBinding *ExternalAccountBinding
+}
+
+// ExternalAccountBinding contains the data needed to form a request with
+// an external account binding.
+// See https://tools.ietf.org/html/rfc8555#section-7.3.4 for more details.
+type ExternalAccountBinding struct {
+	// KID is the Key ID of the symmetric MAC key that the CA provides to
+	// identify an external account from ACME.
+	KID string
+
+	// Key is the bytes of the symmetric key that the CA provides to identify
+	// the account. Key must correspond to the KID.
+	Key []byte
+}
+
+func (e *ExternalAccountBinding) String() string {
+	return fmt.Sprintf("&{KID: %q, Key: redacted}", e.KID)
 }
 
 // Directory is ACME server discovery data.
@@ -407,6 +434,7 @@ type wireAuthz struct {
 	Wildcard     bool
 	Challenges   []wireChallenge
 	Combinations [][]int
+	Error        *wireError
 }
 
 func (z *wireAuthz) authorization(uri string) *Authorization {
@@ -430,11 +458,17 @@ func (z *wireAuthz) error(uri string) *AuthorizationError {
 		URI:        uri,
 		Identifier: z.Identifier.Value,
 	}
+
+	if z.Error != nil {
+		err.Errors = append(err.Errors, z.Error.error(nil))
+	}
+
 	for _, raw := range z.Challenges {
 		if raw.Error != nil {
 			err.Errors = append(err.Errors, raw.Error.error(nil))
 		}
 	}
+
 	return err
 }
 
