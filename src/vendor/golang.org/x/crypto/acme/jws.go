@@ -7,12 +7,15 @@ package acme
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	_ "crypto/sha512" // need for EC keys
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 )
@@ -29,6 +32,14 @@ const noKeyID = keyID("")
 // authenticated GET requests via POSTing with an empty payload.
 // See https://tools.ietf.org/html/rfc8555#section-6.3 for more details.
 const noPayload = ""
+
+// jsonWebSignature can be easily serialized into a JWS following
+// https://tools.ietf.org/html/rfc7515#section-3.2.
+type jsonWebSignature struct {
+	Protected string `json:"protected"`
+	Payload   string `json:"payload"`
+	Sig       string `json:"signature"`
+}
 
 // jwsEncodeJSON signs claimset using provided key and a nonce.
 // The result is serialized in JSON format containing either kid or jwk
@@ -70,17 +81,49 @@ func jwsEncodeJSON(claimset interface{}, key crypto.Signer, kid keyID, nonce, ur
 	if err != nil {
 		return nil, err
 	}
-
-	enc := struct {
-		Protected string `json:"protected"`
-		Payload   string `json:"payload"`
-		Sig       string `json:"signature"`
-	}{
+	enc := jsonWebSignature{
 		Protected: phead,
 		Payload:   payload,
 		Sig:       base64.RawURLEncoding.EncodeToString(sig),
 	}
 	return json.Marshal(&enc)
+}
+
+// jwsWithMAC creates and signs a JWS using the given key and the HS256
+// algorithm. kid and url are included in the protected header. rawPayload
+// should not be base64-URL-encoded.
+func jwsWithMAC(key []byte, kid, url string, rawPayload []byte) (*jsonWebSignature, error) {
+	if len(key) == 0 {
+		return nil, errors.New("acme: cannot sign JWS with an empty MAC key")
+	}
+	header := struct {
+		Algorithm string `json:"alg"`
+		KID       string `json:"kid"`
+		URL       string `json:"url,omitempty"`
+	}{
+		// Only HMAC-SHA256 is supported.
+		Algorithm: "HS256",
+		KID:       kid,
+		URL:       url,
+	}
+	rawProtected, err := json.Marshal(header)
+	if err != nil {
+		return nil, err
+	}
+	protected := base64.RawURLEncoding.EncodeToString(rawProtected)
+	payload := base64.RawURLEncoding.EncodeToString(rawPayload)
+
+	h := hmac.New(sha256.New, key)
+	if _, err := h.Write([]byte(protected + "." + payload)); err != nil {
+		return nil, err
+	}
+	mac := h.Sum(nil)
+
+	return &jsonWebSignature{
+		Protected: protected,
+		Payload:   payload,
+		Sig:       base64.RawURLEncoding.EncodeToString(mac),
+	}, nil
 }
 
 // jwkEncode encodes public part of an RSA or ECDSA key into a JWK.
@@ -126,21 +169,23 @@ func jwkEncode(pub crypto.PublicKey) (string, error) {
 
 // jwsSign signs the digest using the given key.
 // The hash is unused for ECDSA keys.
-//
-// Note: non-stdlib crypto.Signer implementations are expected to return
-// the signature in the format as specified in RFC7518.
-// See https://tools.ietf.org/html/rfc7518 for more details.
 func jwsSign(key crypto.Signer, hash crypto.Hash, digest []byte) ([]byte, error) {
-	if key, ok := key.(*ecdsa.PrivateKey); ok {
-		// The key.Sign method of ecdsa returns ASN1-encoded signature.
-		// So, we use the package Sign function instead
-		// to get R and S values directly and format the result accordingly.
-		r, s, err := ecdsa.Sign(rand.Reader, key, digest)
+	switch pub := key.Public().(type) {
+	case *rsa.PublicKey:
+		return key.Sign(rand.Reader, digest, hash)
+	case *ecdsa.PublicKey:
+		sigASN1, err := key.Sign(rand.Reader, digest, hash)
 		if err != nil {
 			return nil, err
 		}
-		rb, sb := r.Bytes(), s.Bytes()
-		size := key.Params().BitSize / 8
+
+		var rs struct{ R, S *big.Int }
+		if _, err := asn1.Unmarshal(sigASN1, &rs); err != nil {
+			return nil, err
+		}
+
+		rb, sb := rs.R.Bytes(), rs.S.Bytes()
+		size := pub.Params().BitSize / 8
 		if size%8 > 0 {
 			size++
 		}
@@ -149,7 +194,7 @@ func jwsSign(key crypto.Signer, hash crypto.Hash, digest []byte) ([]byte, error)
 		copy(sig[size*2-len(sb):], sb)
 		return sig, nil
 	}
-	return key.Sign(rand.Reader, digest, hash)
+	return nil, ErrUnsupportedKey
 }
 
 // jwsHasher indicates suitable JWS algorithm name and a hash function
