@@ -55,8 +55,9 @@ const (
 	ALPNProto = "acme-tls/1"
 )
 
-// idPeACMEIdentifierV1 is the OID for the ACME extension for the TLS-ALPN challenge.
-var idPeACMEIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 30, 1}
+// idPeACMEIdentifier is the OID for the ACME extension for the TLS-ALPN challenge.
+// https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
+var idPeACMEIdentifier = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
 const (
 	maxChainLen = 5       // max depth and breadth of a certificate chain
@@ -362,6 +363,10 @@ func AcceptTOS(tosURL string) bool { return true }
 // Also see Error's Instance field for when a CA requires already registered accounts to agree
 // to an updated Terms of Service.
 func (c *Client) Register(ctx context.Context, acct *Account, prompt func(tosURL string) bool) (*Account, error) {
+	if c.Key == nil {
+		return nil, errors.New("acme: client.Key must be set to Register")
+	}
+
 	dir, err := c.Discover(ctx)
 	if err != nil {
 		return nil, err
@@ -778,7 +783,7 @@ func (c *Client) TLSALPN01ChallengeCert(token, domain string, opt ...CertOption)
 		return tls.Certificate{}, err
 	}
 	acmeExtension := pkix.Extension{
-		Id:       idPeACMEIdentifierV1,
+		Id:       idPeACMEIdentifier,
 		Critical: true,
 		Value:    extValue,
 	}
