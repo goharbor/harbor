@@ -19,7 +19,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 func TestMaxOpenConns(t *testing.T) {
