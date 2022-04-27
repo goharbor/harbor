@@ -1,7 +1,7 @@
 #!/bin/bash
 #docker version: 17.06.0+
 #docker-compose version: 1.18.0+
-#golang version: 1.12.0+
+#golang version: 1.17.0+
 
 set +e
 set -o noglob
