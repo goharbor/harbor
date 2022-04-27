@@ -54,8 +54,8 @@ if [ $GITHUB_TOKEN ];
 then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
-
-sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" BUILDBIN=true NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true PULL_BASE_FROM_DOCKERHUB=false
+echo $(nproc)
+sudo make -j$(nproc) compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" BUILDBIN=true NOTARYFLAG=true TRIVYFLAG=true CHARTFLAG=true GEN_TLS=true PULL_BASE_FROM_DOCKERHUB=false
 
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env
