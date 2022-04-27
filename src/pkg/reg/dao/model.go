@@ -15,8 +15,9 @@
 package dao
 
 import (
-	"github.com/astaxie/beego/orm"
 	"time"
+
+	"github.com/beego/beego/orm"
 )
 
 func init() {

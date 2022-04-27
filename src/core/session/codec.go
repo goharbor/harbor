@@ -17,7 +17,7 @@ package session
 import (
 	"encoding/gob"
 
-	"github.com/astaxie/beego/session"
+	"github.com/beego/beego/session"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"

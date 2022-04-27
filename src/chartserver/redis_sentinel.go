@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/FZambia/sentinel"
 	"strconv"
 	"time"
 
+	"github.com/FZambia/sentinel"
+
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/astaxie/beego/cache"
 	"strings"
+
+	"github.com/beego/beego/cache"
 )
 
 var (

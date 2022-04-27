@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	beegoorm "github.com/astaxie/beego/orm"
+	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"

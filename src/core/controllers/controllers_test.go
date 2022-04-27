@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/common"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"

@@ -17,13 +17,14 @@ package models
 import (
 	"context"
 	"fmt"
-	"github.com/astaxie/beego/orm"
+	"strings"
+	"time"
+
+	"github.com/beego/beego/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"strings"
-	"time"
 )
 
 func init() {

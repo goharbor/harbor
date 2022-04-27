@@ -7,7 +7,6 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/astaxie/beego v1.12.1
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
@@ -76,6 +75,8 @@ require (
 	k8s.io/client-go v0.22.1
 )
 
+require github.com/beego/beego v1.12.7
+
 require (
 	cloud.google.com/go v0.88.0 // indirect
 	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
@@ -122,7 +123,6 @@ require (
 	github.com/go-openapi/analysis v0.19.10 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
-	github.com/go-redis/redis v6.14.2+incompatible // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -139,6 +139,7 @@ require (
 	github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
