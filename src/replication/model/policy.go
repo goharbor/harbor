@@ -20,7 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/replication/filter"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/robfig/cron"
 )

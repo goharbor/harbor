@@ -17,7 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/api"
 	"html/template"
 	"net"
 	"net/http"
@@ -26,7 +25,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego"
+	"github.com/goharbor/harbor/src/core/api"
+
+	"github.com/beego/beego"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"

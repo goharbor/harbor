@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/orm"
+	"github.com/beego/beego/validation"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 )

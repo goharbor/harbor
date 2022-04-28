@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
 	common_models "github.com/goharbor/harbor/src/common/models"

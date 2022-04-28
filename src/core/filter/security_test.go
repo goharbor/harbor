@@ -28,9 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/stretchr/testify/require"
 
-	"github.com/astaxie/beego"
-	beegoctx "github.com/astaxie/beego/context"
-	"github.com/astaxie/beego/session"
+	"github.com/beego/beego"
+	beegoctx "github.com/beego/beego/context"
+	"github.com/beego/beego/session"
 	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"

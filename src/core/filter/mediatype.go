@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"strings"
 
-	beegoctx "github.com/astaxie/beego/context"
+	beegoctx "github.com/beego/beego/context"
 
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 )

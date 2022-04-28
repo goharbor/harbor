@@ -1,6 +1,6 @@
 package dao
 
-import "github.com/astaxie/beego/orm"
+import "github.com/beego/beego/orm"
 
 func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
 	if size > 0 {

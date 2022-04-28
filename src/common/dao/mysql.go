@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	_ "github.com/go-sql-driver/mysql" // register mysql driver
 	"github.com/goharbor/harbor/src/common/utils"
 )

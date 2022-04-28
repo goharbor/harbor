@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota/driver"
 	"github.com/goharbor/harbor/src/common/utils/log"

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
