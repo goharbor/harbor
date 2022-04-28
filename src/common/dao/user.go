@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -249,7 +249,7 @@ func OnBoardUser(u *models.User) error {
 	if created {
 		u.UserID = int(id)
 		// current orm framework doesn't support to fetch a pointer or sql.NullString with QueryRow
-		// https://github.com/astaxie/beego/issues/3767
+		// https://github.com/beego/beego/issues/3767
 		if len(u.Email) == 0 {
 			_, err = o.Raw("update harbor_user set email = null where user_id = ? ", id).Exec()
 			if err != nil {

@@ -15,9 +15,11 @@ package controllers
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/core/filter"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/goharbor/harbor/src/core/filter"
+
 	// "net/url"
 	"path/filepath"
 	"runtime"
@@ -27,7 +29,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"

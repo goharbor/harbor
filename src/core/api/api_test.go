@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"

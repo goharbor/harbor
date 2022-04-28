@@ -770,9 +770,9 @@ AuthorizeOrderLoop:
 		}
 		// Remove all hanging authorizations to reduce rate limit quotas
 		// after we're done.
-		defer func() {
-			go m.deactivatePendingAuthz(o.AuthzURLs)
-		}()
+		defer func(urls []string) {
+			go m.deactivatePendingAuthz(urls)
+		}(o.AuthzURLs)
 
 		// Check if there's actually anything we need to do.
 		switch o.Status {

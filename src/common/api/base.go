@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego"
+	"github.com/beego/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/pkg/errors"

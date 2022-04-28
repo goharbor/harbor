@@ -2,10 +2,11 @@ package filter
 
 import (
 	"context"
-	beegoctx "github.com/astaxie/beego/context"
+	"net/http"
+
+	beegoctx "github.com/beego/beego/context"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"net/http"
 )
 
 // SessionReqKey is the key in the context of a request to mark the request carries session when reaching the backend

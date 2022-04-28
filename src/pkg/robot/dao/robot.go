@@ -2,12 +2,13 @@ package dao
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/orm"
+	"strings"
+	"time"
+
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
-	"strings"
-	"time"
 )
 
 // RobotAccountDao defines the interface to access the ImmutableRule data model

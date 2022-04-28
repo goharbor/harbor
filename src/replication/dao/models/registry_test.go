@@ -17,7 +17,7 @@ package models
 import (
 	"testing"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

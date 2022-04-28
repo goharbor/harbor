@@ -16,13 +16,14 @@ package dao
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/pkg/errors"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/beego/beego/orm"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/pkg/errors"
 )
 
 // AddArtifactNBlob ...

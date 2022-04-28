@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/stretchr/testify/assert"
 )
 

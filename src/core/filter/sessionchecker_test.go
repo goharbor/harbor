@@ -1,10 +1,11 @@
 package filter
 
 import (
-	beegoctx "github.com/astaxie/beego/context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	beegoctx "github.com/beego/beego/context"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReqHasNoSession(t *testing.T) {

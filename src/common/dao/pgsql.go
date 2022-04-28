@@ -19,7 +19,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/golang-migrate/migrate"
 	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
 	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
@@ -93,7 +93,7 @@ func (p *pgsql) Register(alias ...string) error {
 
 	// Due to the issues of beego v1.12.1 and v1.12.2, we set the max open conns ourselves.
 	// See https://github.com/goharbor/harbor/issues/12403
-	// and https://github.com/astaxie/beego/issues/4059 for more info.
+	// and https://github.com/beego/beego/issues/4059 for more info.
 	db, _ := orm.GetDB(an)
 	db.SetMaxOpenConns(p.maxOpenConns)
 
