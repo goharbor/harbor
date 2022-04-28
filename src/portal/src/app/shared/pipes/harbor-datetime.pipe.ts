@@ -11,13 +11,11 @@ const baseTimeLine: Date = new Date('1970-1-1');
 export class HarborDatetimePipe implements PipeTransform {
 
     transform(value: any, format?: string): string {
-        let lang: string = DeFaultLang;
-        if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {
-            lang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
-        }
         if (value && value <= baseTimeLine) {// invalid date
             return '-';
         }
+        const langFromLocalStorage = localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+        const lang = langFromLocalStorage || DeFaultLang;
         // default format medium
         return new DatePipe(lang).transform(value, format ? format : 'medium');
     }
