@@ -18,7 +18,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/google/uuid"
 )
 

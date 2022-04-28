@@ -3,7 +3,7 @@
 package orm
 
 import (
-	orm "github.com/astaxie/beego/orm"
+	orm "github.com/beego/beego/orm"
 	mock "github.com/stretchr/testify/mock"
 )
 

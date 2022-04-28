@@ -25,7 +25,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/core/session"
 
 	"github.com/goharbor/harbor/src/common/dao"

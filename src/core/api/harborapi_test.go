@@ -17,7 +17,13 @@ package api
 
 import (
 	"bytes"
-	"github.com/astaxie/beego"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
+	"runtime"
+
+	"github.com/beego/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -30,11 +36,6 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/security"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"path/filepath"
-	"runtime"
 )
 
 const (

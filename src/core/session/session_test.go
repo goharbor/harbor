@@ -17,7 +17,7 @@ package session
 import (
 	"testing"
 
-	"github.com/astaxie/beego/session"
+	"github.com/beego/beego/session"
 	"github.com/stretchr/testify/suite"
 )
 
