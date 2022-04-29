@@ -23,6 +23,7 @@ TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 
 # add patch redis
+cd $TEMP
 git apply $cur/redis.patch
 cd $cur
 
