@@ -24,11 +24,16 @@ import { MessageHandlerService } from '../../services/message-handler.service';
 import { SkinableConfig } from "../../../services/skinable-config.service";
 import {
     CommonRoutes,
+    DATETIME_RENDERINGS,
+    DatetimeRendering,
+    DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
     DEFAULT_LANG_LOCALSTORAGE_KEY,
+    DefaultDatetimeRendering,
     DeFaultLang,
     languageNames,
 } from "../../entities/shared.const";
 import { CustomStyle, HAS_STYLE_MODE, StyleMode } from "../../../services/theme";
+import { getDatetimeRendering } from '../../units/shared.utils';
 
 
 @Component({
@@ -42,6 +47,8 @@ export class NavigatorComponent implements OnInit {
     @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
     selectedLang: string = DeFaultLang;
+    selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
+    readonly guiDatetimeRenderings = Object.entries(DATETIME_RENDERINGS);
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: CustomStyle;
     constructor(
@@ -59,6 +66,7 @@ export class NavigatorComponent implements OnInit {
         // custom skin
         this.customStyle = this.skinableConfig.getSkinConfig();
         this.selectedLang = this.translate.currentLang;
+        this.selectedDatetimeRendering = getDatetimeRendering();
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
         }
@@ -78,6 +86,10 @@ export class NavigatorComponent implements OnInit {
 
     public get currentLang(): string {
         return languageNames[this.selectedLang];
+    }
+
+    public get currentDatetimeRendering(): string {
+        return DATETIME_RENDERINGS[this.selectedDatetimeRendering];
     }
 
     public get admiralLink(): string {
@@ -105,6 +117,10 @@ export class NavigatorComponent implements OnInit {
 
     matchLang(lang: string): boolean {
         return lang.trim() === this.selectedLang;
+    }
+
+    matchDatetimeRendering(datetime: DatetimeRendering): boolean {
+        return datetime === this.selectedDatetimeRendering;
     }
 
     // Open the account setting dialog
@@ -152,6 +168,11 @@ export class NavigatorComponent implements OnInit {
         // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
         // have to reload
         this.translate.use(lang).subscribe(() => window.location.reload());
+    }
+
+    switchDatetimeRendering(datetime: DatetimeRendering): void {
+        this.selectedDatetimeRendering = datetime;
+        localStorage.setItem(DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY, datetime);
     }
 
     // Handle the home action

@@ -157,6 +157,9 @@
         "PLACEHOLDER": "Recherche {{param}}...",
         "PLACEHOLDER_VIC": "Recherche dans le registre..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Défaut"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Tableau de bord",
         "PROJECTS": "Projets",

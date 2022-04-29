@@ -161,6 +161,9 @@
     "PLACEHOLDER": "搜索{{param}}...",
     "PLACEHOLDER_VIC": "搜索Registry..."
   },
+  "TOP_NAV": {
+    "DATETIME_RENDERING_DEFAULT": "默認"
+  },
   "SIDE_NAV":{
     "DASHBOARD": "儀表板",
     "PROJECTS": "項目",

@@ -15,7 +15,7 @@
     height: 24px;
 }
 
-.lang-selected {
+.locale-selected {
     font-weight: bold;
 }
 
@@ -48,7 +48,7 @@
     .icon-left {
         left: -8px;
     }
-    .currentLang {
+    .currentLocale {
         padding-right: 40px;
     }
 }
@@ -65,7 +65,7 @@
 .dropdown-item {
     outline: none;
 }
-.dropdown-lang {
+.dropdown-locale {
     padding-right: 0.5rem;
 }
 .user-down {
