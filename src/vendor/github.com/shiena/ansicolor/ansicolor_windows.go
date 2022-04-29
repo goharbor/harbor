@@ -409,7 +409,7 @@ func (cw *ansiColorWriter) Write(p []byte) (int, error) {
 	}
 
 	if cw.mode != DiscardNonColorEscSeq || cw.state == outsideCsiCode {
-		nw, err = cw.w.Write(p[first:len(p)])
+		nw, err = cw.w.Write(p[first:])
 		r += nw
 	}
 
