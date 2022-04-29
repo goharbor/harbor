@@ -27,9 +27,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/astaxie/beego"
-	_ "github.com/astaxie/beego/session/redis"
-	_ "github.com/astaxie/beego/session/redis_sentinel"
+	"github.com/beego/beego"
+	_ "github.com/beego/beego/session/redis"
+	_ "github.com/beego/beego/session/redis_sentinel"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"

@@ -16,14 +16,15 @@ package dao
 
 import (
 	"context"
-	beegoorm "github.com/astaxie/beego/orm"
+	"testing"
+
+	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type daoTestSuite struct {

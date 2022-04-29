@@ -19,7 +19,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"path/filepath"
+	"runtime"
+	"strconv"
+
+	"github.com/beego/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -34,13 +42,6 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"path/filepath"
-	"runtime"
-	"strconv"
 )
 
 const (
