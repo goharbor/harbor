@@ -19,7 +19,7 @@ import { ConfirmationDialogService } from "../../global-confirmation-dialog/conf
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
 import { ClrDatagridStateInterface } from "@clr/angular";
-import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../shared/units/utils";
 import { UsergroupService } from "../../../../../ng-swagger-gen/services/usergroup.service";
 import { UserGroup } from "../../../../../ng-swagger-gen/models/user-group";
 import { FilterComponent } from "../../../shared/components/filter/filter.component";
@@ -34,7 +34,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   groups: UserGroup[] = [];
   currentPage: number = 1;
   totalCount: number = 0;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_GROUP_COMPONENT);
   selectedGroups: UserGroup[] = [];
   currentTerm = "";
   delSub: Subscription;
@@ -118,6 +118,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   loadData(state?: ClrDatagridStateInterface): void {
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_GROUP_COMPONENT, this.pageSize);
     }
     this.loading = true;
     if (this.currentTerm) {

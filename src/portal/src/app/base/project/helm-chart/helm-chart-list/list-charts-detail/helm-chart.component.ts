@@ -6,7 +6,7 @@ import { catchError, finalize, map } from "rxjs/operators";
 import { HelmChartItem } from "../../helm-chart-detail/helm-chart.interface.service";
 import { HelmChartService } from "../../helm-chart-detail/helm-chart.service";
 import { State, SystemInfo, SystemInfoService, UserPermissionService, USERSTATICPERMISSION } from "../../../../../shared/services";
-import { DEFAULT_PAGE_SIZE, downloadFile } from "../../../../../shared/units/utils";
+import { downloadFile, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../../../shared/units/utils";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../shared/components/operation/operate";
@@ -21,7 +21,7 @@ import { errorHandler } from "../../../../../shared/units/shared.utils";
 import { ConfirmationDialogComponent } from "../../../../../shared/components/confirmation-dialog";
 import { ConfirmationMessage } from "../../../../global-confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../../../../global-confirmation-dialog/confirmation-state-message";
-
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 @Component({
   selector: "hbr-helm-chart",
@@ -57,7 +57,7 @@ export class HelmChartComponent implements OnInit {
   cardHover = false;
   listHover = false;
 
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.HELM_CHART_COMPONENT);
   currentPage = 1;
   totalCount = 0;
   currentState: State;
@@ -311,6 +311,11 @@ export class HelmChartComponent implements OnInit {
       return "HELM_CHART.DEPRECATED";
     } else {
       return "HELM_CHART.ACTIVE";
+    }
+  }
+  clrLoad(state: ClrDatagridStateInterface) {
+    if (state?.page?.size) {
+      setPageSizeToLocalStorage(PageSizeMapKeys.HELM_CHART_COMPONENT, state.page.size);
     }
   }
 }

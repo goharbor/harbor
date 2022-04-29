@@ -15,7 +15,7 @@ import {
 } from '../../../../shared/components/operation/operate';
 import { TranslateService } from '@ngx-translate/core';
 import { map, catchError, finalize } from 'rxjs/operators';
-import { clone, DEFAULT_PAGE_SIZE } from '../../../../shared/units/utils';
+import { clone, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from '../../../../shared/units/utils';
 import { Instance } from "../../../../../../ng-swagger-gen/models/instance";
 import { PreheatService } from "../../../../../../ng-swagger-gen/services/preheat.service";
 import { Metadata } from '../../../../../../ng-swagger-gen/models/metadata';
@@ -47,7 +47,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   instances: FrontInstance[] = [];
   selectedRow: FrontInstance[] = [];
 
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.DISTRIBUTION_INSTANCE_COMPONENT);
   currentPage: number = 1;
   totalCount: number = 0;
   queryString: string;
@@ -116,6 +116,7 @@ export class DistributionInstancesComponent implements OnInit, OnDestroy {
   loadData(state?: ClrDatagridStateInterface) {
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.DISTRIBUTION_INSTANCE_COMPONENT, this.pageSize);
     }
     this.selectedRow = [];
     const queryParam: PreheatService.ListInstancesParams = {

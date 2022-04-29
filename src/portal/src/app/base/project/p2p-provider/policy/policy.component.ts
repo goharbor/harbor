@@ -17,7 +17,12 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { Project } from '../../project';
-import { clone, DEFAULT_PAGE_SIZE, getSortingString } from '../../../../shared/units/utils';
+import {
+  clone,
+  getPageSizeFromLocalStorage,
+  getSortingString, PageSizeMapKeys,
+  setPageSizeToLocalStorage
+} from '../../../../shared/units/utils';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import {
   UserPermissionService,
@@ -45,6 +50,7 @@ import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirm
 import { EventService, HarborEvent } from "../../../../services/event-service/event.service";
 // The route path which will display this component
 const URL_TO_DISPLAY: RegExp = /\/harbor\/projects\/(\d+)\/p2p-provider\/policies/;
+
 @Component({
   templateUrl: './policy.component.html',
   styleUrls: ['./policy.component.scss']
@@ -72,7 +78,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   stopLoading: boolean = false;
   executionList: Execution[] = [];
   currentExecutionPage: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.P2P_POLICY_COMPONENT_EXECUTIONS);
   totalExecutionCount: number = 0;
   filterKey: string = 'id';
   searchString: string;
@@ -85,7 +91,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
   routerSub: Subscription;
   scrollSub: Subscription;
   scrollTop: number;
-  policyPageSize: number = 10;
+  policyPageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.P2P_POLICY_COMPONENT,  10);
   policyPage: number = 1;
   totalPolicy: number = 0;
   state: ClrDatagridStateInterface;
@@ -192,7 +198,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
       this.state = state;
     }
     if (state && state.page) {
-      this.pageSize = state.page.size;
+      this.policyPageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.P2P_POLICY_COMPONENT, this.policyPageSize);
     }
     let q: string;
     if (state && state.filters && state.filters.length) {
@@ -440,6 +447,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
     if (this.selectedRow) {
       if (state && state.page) {
         this.pageSize = state.page.size;
+        setPageSizeToLocalStorage(PageSizeMapKeys.P2P_POLICY_COMPONENT_EXECUTIONS, this.pageSize);
       }
       if (withLoading) {
         // if datagrid is under control of *ngIf, should add timeout in case of ng changes checking error

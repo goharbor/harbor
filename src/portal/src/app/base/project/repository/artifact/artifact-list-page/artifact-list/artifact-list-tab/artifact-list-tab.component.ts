@@ -23,11 +23,10 @@ import {
     clone,
     CustomComparator,
     dbEncodeURIComponent,
-    DEFAULT_PAGE_SIZE,
     DEFAULT_SUPPORTED_MIME_TYPES,
     doSorting,
-    formatSize,
-    getSortingString,
+    formatSize, getPageSizeFromLocalStorage,
+    getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS
 } from "../../../../../../../shared/units/utils";
 import { ImageNameInputComponent } from "../../../../../../../shared/components/image-name-input/image-name-input.component";
@@ -129,7 +128,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     imageNameInput: ImageNameInputComponent;
 
     @ViewChild("digestTarget") textInput: ElementRef;
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT);
     currentPage = 1;
     totalCount = 0;
     currentState: ClrDatagridStateInterface;
@@ -332,6 +331,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             return;
         }
         this.pageSize = state.page.size;
+        setPageSizeToLocalStorage(PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT, this.pageSize);
         this.selectedRow = [];
         // Keep it for future filtering and sorting
 

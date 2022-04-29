@@ -29,7 +29,12 @@ import {
     ConfirmationButtons
 } from "../../../shared/entities/shared.const";
 import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
-import { CustomComparator, DEFAULT_PAGE_SIZE, getSortingString } from "../../../shared/units/utils";
+import {
+    CustomComparator,
+    getPageSizeFromLocalStorage,
+    getSortingString, PageSizeMapKeys,
+    setPageSizeToLocalStorage
+} from "../../../shared/units/utils";
 import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
 import { OperationService } from "../../../shared/components/operation/operation.service";
 import { errorHandler } from "../../../shared/units/shared.utils";
@@ -39,7 +44,6 @@ import { EndpointService, HELM_HUB } from "../../../shared/services/endpoint.ser
 import { RegistryService } from "../../../../../ng-swagger-gen/services/registry.service";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { Registry } from "../../../../../ng-swagger-gen/models/registry";
-
 
 @Component({
     selector: "hbr-endpoint",
@@ -84,7 +88,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
         };
     }
 
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT);
     page: number = 1;
     total: number = 0;
     constructor(private endpointService: RegistryService,
@@ -114,6 +118,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
         }
         if (state && state.page) {
             this.pageSize = state.page.size;
+            setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT, this.pageSize);
         }
         let sort: string;
         if (state && state.sort && state.sort.by) {

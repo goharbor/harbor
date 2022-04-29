@@ -29,7 +29,7 @@ import { ConfirmationButtons, ConfirmationState, ConfirmationTargets, RoleInfo }
 import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
 import { errorHandler } from "../../../shared/units/shared.utils";
 import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
-import { DEFAULT_PAGE_SIZE } from "../../../shared/units/utils";
+import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../shared/units/utils";
 import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
@@ -69,7 +69,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   hasUpdateMemberPermission: boolean;
   hasDeleteMemberPermission: boolean;
   page: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.MEMBER_COMPONENT);
   total: number = 0;
   constructor(
     private route: ActivatedRoute,
@@ -135,6 +135,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   retrieve(username: string, state?: ClrDatagridStateInterface) {
     if (state && state.page) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.MEMBER_COMPONENT, this.pageSize);
     }
     this.loading = true;
     this.selectedRow = [];

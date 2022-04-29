@@ -3,7 +3,13 @@ import { NewRobotComponent } from './new-robot/new-robot.component';
 import { ViewTokenComponent } from '../../../shared/components/view-token/view-token.component';
 import { RobotService } from "../../../../../ng-swagger-gen/services/robot.service";
 import { Robot } from "../../../../../ng-swagger-gen/models/robot";
-import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../shared/units/utils";
+import {
+  clone,
+  getPageSizeFromLocalStorage,
+  getSortingString,
+  PageSizeMapKeys,
+  setPageSizeToLocalStorage
+} from "../../../shared/units/utils";
 import { ClrDatagridStateInterface, ClrLoadingState } from "@clr/angular";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -31,6 +37,7 @@ import { RobotPermission } from "../../../../../ng-swagger-gen/models/robot-perm
 import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
 
 const FIRST_PROJECTS_PAGE_SIZE: number = 100;
+
 @Component({
   selector: 'system-robot-accounts',
   templateUrl: './system-robot-accounts.component.html',
@@ -38,7 +45,7 @@ const FIRST_PROJECTS_PAGE_SIZE: number = 100;
 })
 export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
   i18nMap = ACTION_RESOURCE_I18N_MAP;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_ROBOT_COMPONENT);
   currentPage: number = 1;
   total: number = 0;
   robots: FrontRobot[] = [];
@@ -196,6 +203,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
   clrLoad(state?: ClrDatagridStateInterface) {
     if (state && state.page && state.page.size) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_ROBOT_COMPONENT, this.pageSize);
     }
     this.selectedRows = [];
     const queryParam: RobotService.ListRobotParams = {

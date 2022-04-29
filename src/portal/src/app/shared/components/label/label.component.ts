@@ -35,8 +35,9 @@ import { ConfirmationMessage } from "../../../base/global-confirmation-dialog/co
 import { ConfirmationAcknowledgement } from "../../../base/global-confirmation-dialog/confirmation-state-message";
 import { LabelService } from "../../../../../ng-swagger-gen/services/label.service";
 import { Label } from "../../../../../ng-swagger-gen/models/label";
-import { DEFAULT_PAGE_SIZE, getSortingString } from "../../units/utils";
+import { getPageSizeFromLocalStorage, getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../units/utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
+
 @Component({
     selector: "hbr-label",
     templateUrl: "./label.component.html",
@@ -61,7 +62,7 @@ export class LabelComponent implements OnInit {
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     page: number = 1;
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.LABEL_COMPONENT);
     total: number = 0;
     constructor(private labelService: LabelService,
         private errorHandlerEntity: ErrorHandler,
@@ -77,6 +78,7 @@ export class LabelComponent implements OnInit {
         // this.targetName = "";
         if (state && state.page) {
             this.pageSize = state.page.size;
+            setPageSizeToLocalStorage(PageSizeMapKeys.LABEL_COMPONENT, this.pageSize);
         }
         let sort: string;
         if (state && state.sort && state.sort.by) {

@@ -8,10 +8,9 @@ import { ClrDatagridComparatorInterface, ReplicationJob, ReplicationTasks } from
 import {
   CURRENT_BASE_HREF,
   CustomComparator,
-  DEFAULT_PAGE_SIZE,
   doFiltering,
-  doSorting,
-  getSortingString
+  doSorting, getPageSizeFromLocalStorage,
+  getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage
 } from "../../../../../shared/units/utils";
 import { REFRESH_TIME_DIFFERENCE } from '../../../../../shared/entities/shared.const';
 import { ClrDatagridStateInterface } from '@clr/angular';
@@ -34,7 +33,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
   inProgress: boolean = false;
   currentPage: number = 1;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.REPLICATION_TASKS_COMPONENT);
   totalCount: number;
   loading = true;
   searchTask: string;
@@ -164,6 +163,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
       }
       if (state && state.page && state.page.size) {
         this.pageSize = state.page.size;
+        setPageSizeToLocalStorage(PageSizeMapKeys.REPLICATION_TASKS_COMPONENT, this.pageSize);
       }
       const param: ListReplicationTasksParams = {
         id: +this.executionId,

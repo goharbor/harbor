@@ -7,7 +7,13 @@ import {
   ACTION_RESOURCE_I18N_MAP,
   PermissionsKinds
 } from "../../left-side-nav/system-robot-accounts/system-robot-util";
-import { clone, DEFAULT_PAGE_SIZE, getSortingString } from "../../../shared/units/utils";
+import {
+  clone,
+  getPageSizeFromLocalStorage,
+  getSortingString,
+  PageSizeMapKeys,
+  setPageSizeToLocalStorage
+} from "../../../shared/units/utils";
 import { ViewTokenComponent } from "../../../shared/components/view-token/view-token.component";
 import { FilterComponent } from "../../../shared/components/filter/filter.component";
 import { MessageHandlerService } from "../../../shared/services/message-handler.service";
@@ -34,7 +40,7 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
   i18nMap = ACTION_RESOURCE_I18N_MAP;
-  pageSize: number = DEFAULT_PAGE_SIZE;
+  pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.PROJECT_ROBOT_COMPONENT);
   currentPage: number = 1;
   total: number = 0;
   robots: Robot[] = [];
@@ -165,6 +171,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
   clrLoad(state?: ClrDatagridStateInterface) {
     if (state && state.page && state.page.size) {
       this.pageSize = state.page.size;
+      setPageSizeToLocalStorage(PageSizeMapKeys.PROJECT_ROBOT_COMPONENT, this.pageSize);
     }
     this.selectedRows = [];
     const queryParam: RobotService.ListRobotParams = {

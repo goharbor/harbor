@@ -7,6 +7,7 @@ import {QuotaUnit, QuotaUnits, StorageMultipleConstant} from '../entities/shared
 import { AbstractControl } from "@angular/forms";
 import { isValidCron } from 'cron-validator';
 import { ClrDatagridStateInterface } from "@clr/angular";
+
 /**
  * Api levels
  */
@@ -816,4 +817,73 @@ export function delUrlParam(url: string, key: string): string {
         }
     }
     return url;
+}
+
+const PAGE_SIZE_MAP_KEY: string = 'pageSizeMap';
+
+/**
+ * Get the page size from the browser's localStorage
+ * @param key
+ * @param initialSize
+ */
+export function getPageSizeFromLocalStorage(key: string, initialSize?: number): number {
+    if (!initialSize) {
+        initialSize = DEFAULT_PAGE_SIZE;
+    }
+    if (localStorage && key && localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
+        const pageSizeMap: {
+            [k: string]: number
+        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
+        return pageSizeMap[key] ? pageSizeMap[key] : initialSize;
+    }
+    return initialSize;
+}
+
+/**
+ * Set the page size to the browser's localStorage
+ * @param key
+ * @param pageSize
+ */
+export function setPageSizeToLocalStorage(key: string, pageSize: number) {
+    if (localStorage && key && pageSize) {
+        if (!localStorage.getItem(PAGE_SIZE_MAP_KEY)) { // if first set
+            localStorage.setItem(PAGE_SIZE_MAP_KEY, '{}');
+        }
+        const pageSizeMap: {
+            [k: string]: number
+        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
+        pageSizeMap[key] = pageSize;
+        localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(pageSizeMap));
+    }
+}
+
+export enum PageSizeMapKeys {
+    LIST_PROJECT_COMPONENT = 'ListProjectComponent',
+    REPOSITORY_GRIDVIEW_COMPONENT = 'RepositoryGridviewComponent',
+    ARTIFACT_LIST_TAB_COMPONENT = 'ArtifactListTabComponent',
+    ARTIFACT_TAGS_COMPONENT = 'ArtifactTagComponent',
+    ARTIFACT_VUL_COMPONENT = 'ArtifactVulnerabilitiesComponent',
+    HELM_CHART_COMPONENT = 'HelmChartComponent',
+    CHART_VERSION_COMPONENT = 'ChartVersionComponent',
+    MEMBER_COMPONENT = 'MemberComponent',
+    LABEL_COMPONENT = 'LabelComponent',
+    P2P_POLICY_COMPONENT = 'P2pPolicyComponent',
+    P2P_POLICY_COMPONENT_EXECUTIONS = 'P2pPolicyComponentExecutions',
+    P2P_TASKS_COMPONENT = 'P2pTaskListComponent',
+    TAG_RETENTION_COMPONENT = 'TagRetentionComponent',
+    PROJECT_ROBOT_COMPONENT = 'ProjectRobotAccountComponent',
+    WEBHOOK_COMPONENT = 'WebhookComponent',
+    PROJECT_AUDIT_LOG_COMPONENT = 'ProjectAuditLogComponent',
+    SYSTEM_RECENT_LOG_COMPONENT = 'SystemRecentLogComponent',
+    SYSTEM_USER_COMPONENT = 'SystemUserComponent',
+    SYSTEM_ROBOT_COMPONENT = 'SystemRobotAccountsComponent',
+    SYSTEM_ENDPOINT_COMPONENT = 'SystemEndpointComponent',
+    LIST_REPLICATION_RULE_COMPONENT = 'ListReplicationRuleComponent',
+    LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS = 'ListReplicationRuleComponentExecutions',
+    REPLICATION_TASKS_COMPONENT = 'ReplicationTasksComponent',
+    DISTRIBUTION_INSTANCE_COMPONENT = 'DistributionInstancesComponent',
+    PROJECT_QUOTA_COMPONENT = 'ProjectQuotasComponent',
+    SYSTEM_SCANNER_COMPONENT = 'ConfigurationScannerComponent',
+    GC_HISTORY_COMPONENT = 'GcHistoryComponent',
+    SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent'
 }

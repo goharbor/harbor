@@ -32,7 +32,7 @@ import {
     ConfirmationButtons
 } from "../../../../../shared/entities/shared.const";
 import { ErrorHandler } from "../../../../../shared/units/error-handler";
-import { clone } from "../../../../../shared/units/utils";
+import { clone, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../../../shared/units/utils";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../shared/components/operation/operate";
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import { ClrDatagridStateInterface } from '@clr/angular';
@@ -69,7 +69,7 @@ export class ListReplicationRuleComponent  {
     @ViewChild("deletionConfirmDialog")
     deletionConfirmDialog: ConfirmationDialogComponent;
     page: number = 1;
-    pageSize: number = 5;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT, 5);
     totalCount: number = 0;
     loading: boolean = true;
 
@@ -231,6 +231,7 @@ export class ListReplicationRuleComponent  {
     clrLoad(state?: ClrDatagridStateInterface) {
         if (state && state.page) {
             this.pageSize = state.page.size;
+            setPageSizeToLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT, this.pageSize);
         }
         this.loading = true;
         this.replicationService.getReplicationRulesResponse(

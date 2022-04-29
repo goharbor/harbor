@@ -21,7 +21,7 @@ import { finalize } from "rxjs/operators";
 import { CronScheduleComponent } from "../../../../shared/components/cron-schedule";
 import { ErrorHandler } from "../../../../shared/units/error-handler";
 import { OriginCron } from "../../../../shared/services";
-import { clone, DEFAULT_PAGE_SIZE} from "../../../../shared/units/utils";
+import { clone, getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../../../shared/units/utils";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -38,6 +38,7 @@ const DECORATION = {
     MATCHES: "matches",
     EXCLUDES: "excludes",
 };
+
 @Component({
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
@@ -76,7 +77,7 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
     label: string = 'TAG_RETENTION.TRIGGER';
     loadingRule: boolean = false;
     currentPage: number = 1;
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.TAG_RETENTION_COMPONENT);
     totalCount: number = 0;
     @ViewChild('cronScheduleComponent')
     cronScheduleComponent: CronScheduleComponent;
@@ -309,6 +310,7 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
         if (this.retentionId) {
             if (state && state.page) {
                 this.pageSize = state.page.size;
+                setPageSizeToLocalStorage(PageSizeMapKeys.TAG_RETENTION_COMPONENT, this.pageSize);
             }
             this.loadingExecutions = true;
             this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)

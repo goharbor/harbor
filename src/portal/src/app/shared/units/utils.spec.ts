@@ -1,4 +1,15 @@
-import { delUrlParam, getQueryString, getSizeNumber, getSizeUnit, getSortingString, isSameArrayValue, isSameObject } from "./utils";
+import {
+  DEFAULT_PAGE_SIZE,
+  delUrlParam,
+  getPageSizeFromLocalStorage,
+  getQueryString,
+  getSizeNumber,
+  getSizeUnit,
+  getSortingString,
+  isSameArrayValue,
+  isSameObject,
+  setPageSizeToLocalStorage,
+} from "./utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import {QuotaUnit} from "../entities/shared.const";
 
@@ -71,5 +82,25 @@ describe('functions in utils.ts should work', () => {
     expect(getSizeUnit(4564000)).toEqual(QuotaUnit.MB);
     expect(getSizeUnit(4564000000)).toEqual(QuotaUnit.GB);
     expect(getSizeUnit(4564000000000)).toEqual(QuotaUnit.TB);
+  });
+
+  it('functions getPageSizeFromLocalStorage() and setPageSizeToLocalStorage() should work', () => {
+    let store = {};
+    spyOn(localStorage, 'getItem').and.callFake( key => {
+      return store[key];
+    });
+    spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+      return store[key] = value + '';
+    });
+    spyOn(localStorage, 'clear').and.callFake( () => {
+      store = {};
+    });
+    expect(getPageSizeFromLocalStorage(null)).toEqual(DEFAULT_PAGE_SIZE);
+    expect(getPageSizeFromLocalStorage('test', 99)).toEqual(99);
+    expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
+    setPageSizeToLocalStorage('test1', null);
+    expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
+    setPageSizeToLocalStorage('test1', 10);
+    expect(getPageSizeFromLocalStorage('test1')).toEqual(10);
   });
 });
