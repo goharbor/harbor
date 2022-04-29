@@ -17,12 +17,16 @@ import (
 	piface "google.golang.org/protobuf/runtime/protoiface"
 )
 
+var errDecode = errors.New("cannot parse invalid wire-format data")
+var errRecursionDepth = errors.New("exceeded maximum recursion depth")
+
 type unmarshalOptions struct {
 	flags    protoiface.UnmarshalInputFlags
 	resolver interface {
 		FindExtensionByName(field protoreflect.FullName) (protoreflect.ExtensionType, error)
 		FindExtensionByNumber(message protoreflect.FullName, field protoreflect.FieldNumber) (protoreflect.ExtensionType, error)
 	}
+	depth int
 }
 
 func (o unmarshalOptions) Options() proto.UnmarshalOptions {
@@ -42,6 +46,7 @@ func (o unmarshalOptions) IsDefault() bool {
 
 var lazyUnmarshalOptions = unmarshalOptions{
 	resolver: preg.GlobalTypes,
+	depth:    protowire.DefaultRecursionLimit,
 }
 
 type unmarshalOutput struct {
@@ -60,6 +65,7 @@ func (mi *MessageInfo) unmarshal(in piface.UnmarshalInput) (piface.UnmarshalOutp
 	out, err := mi.unmarshalPointer(in.Buf, p, 0, unmarshalOptions{
 		flags:    in.Flags,
 		resolver: in.Resolver,
+		depth:    in.Depth,
 	})
 	var flags piface.UnmarshalOutputFlags
 	if out.initialized {
@@ -80,6 +86,10 @@ var errUnknown = errors.New("unknown")
 
 func (mi *MessageInfo) unmarshalPointer(b []byte, p pointer, groupTag protowire.Number, opts unmarshalOptions) (out unmarshalOutput, err error) {
 	mi.init()
+	opts.depth--
+	if opts.depth < 0 {
+		return out, errRecursionDepth
+	}
 	if flags.ProtoLegacy && mi.isMessageSet {
 		return unmarshalMessageSet(mi, b, p, opts)
 	}
@@ -100,13 +110,13 @@ func (mi *MessageInfo) unmarshalPointer(b []byte, p pointer, groupTag protowire.
 			var n int
 			tag, n = protowire.ConsumeVarint(b)
 			if n < 0 {
-				return out, protowire.ParseError(n)
+				return out, errDecode
 			}
 			b = b[n:]
 		}
 		var num protowire.Number
 		if n := tag >> 3; n < uint64(protowire.MinValidNumber) || n > uint64(protowire.MaxValidNumber) {
-			return out, errors.New("invalid field number")
+			return out, errDecode
 		} else {
 			num = protowire.Number(n)
 		}
@@ -114,7 +124,7 @@ func (mi *MessageInfo) unmarshalPointer(b []byte, p pointer, groupTag protowire.
 
 		if wtyp == protowire.EndGroupType {
 			if num != groupTag {
-				return out, errors.New("mismatching end group marker")
+				return out, errDecode
 			}
 			groupTag = 0
 			break
@@ -170,10 +180,10 @@ func (mi *MessageInfo) unmarshalPointer(b []byte, p pointer, groupTag protowire.
 			}
 			n = protowire.ConsumeFieldValue(num, wtyp, b)
 			if n < 0 {
-				return out, protowire.ParseError(n)
+				return out, errDecode
 			}
 			if !opts.DiscardUnknown() && mi.unknownOffset.IsValid() {
-				u := p.Apply(mi.unknownOffset).Bytes()
+				u := mi.mutableUnknownBytes(p)
 				*u = protowire.AppendTag(*u, num, wtyp)
 				*u = append(*u, b[:n]...)
 			}
@@ -181,7 +191,7 @@ func (mi *MessageInfo) unmarshalPointer(b []byte, p pointer, groupTag protowire.
 		b = b[n:]
 	}
 	if groupTag != 0 {
-		return out, errors.New("missing end group marker")
+		return out, errDecode
 	}
 	if mi.numRequiredFields > 0 && bits.OnesCount64(requiredMask) != int(mi.numRequiredFields) {
 		initialized = false
@@ -221,7 +231,7 @@ func (mi *MessageInfo) unmarshalExtension(b []byte, num protowire.Number, wtyp p
 					return out, nil
 				}
 			case ValidationInvalid:
-				return out, errors.New("invalid wire format")
+				return out, errDecode
 			case ValidationUnknown:
 			}
 		}

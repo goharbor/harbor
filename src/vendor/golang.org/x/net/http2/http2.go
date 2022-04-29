@@ -13,13 +13,11 @@
 // See https://http2.github.io/ for more information on HTTP/2.
 //
 // See https://http2.golang.org/ for a test server running this code.
-//
 package http2 // import "golang.org/x/net/http2"
 
 import (
 	"bufio"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -173,19 +171,15 @@ func (s SettingID) String() string {
 	return fmt.Sprintf("UNKNOWN_SETTING_%d", uint16(s))
 }
 
-var (
-	errInvalidHeaderFieldName  = errors.New("http2: invalid header field name")
-	errInvalidHeaderFieldValue = errors.New("http2: invalid header field value")
-)
-
 // validWireHeaderFieldName reports whether v is a valid header field
 // name (key). See httpguts.ValidHeaderName for the base rules.
 //
 // Further, http2 says:
-//   "Just as in HTTP/1.x, header field names are strings of ASCII
-//   characters that are compared in a case-insensitive
-//   fashion. However, header field names MUST be converted to
-//   lowercase prior to their encoding in HTTP/2. "
+//
+//	"Just as in HTTP/1.x, header field names are strings of ASCII
+//	characters that are compared in a case-insensitive
+//	fashion. However, header field names MUST be converted to
+//	lowercase prior to their encoding in HTTP/2. "
 func validWireHeaderFieldName(v string) bool {
 	if len(v) == 0 {
 		return false
@@ -247,6 +241,7 @@ func (cw closeWaiter) Wait() {
 // Its buffered writer is lazily allocated as needed, to minimize
 // idle memory usage with many connections.
 type bufferedWriter struct {
+	_  incomparable
 	w  io.Writer     // immutable
 	bw *bufio.Writer // non-nil when data is buffered
 }
@@ -319,6 +314,7 @@ func bodyAllowedForStatus(status int) bool {
 }
 
 type httpError struct {
+	_       incomparable
 	msg     string
 	timeout bool
 }
@@ -369,8 +365,8 @@ func (s *sorter) SortStrings(ss []string) {
 // validPseudoPath reports whether v is a valid :path pseudo-header
 // value. It must be either:
 //
-//     *) a non-empty string starting with '/'
-//     *) the string '*', for OPTIONS requests.
+//   - a non-empty string starting with '/'
+//   - the string '*', for OPTIONS requests.
 //
 // For now this is only used a quick check for deciding when to clean
 // up Opaque URLs before sending requests from the Transport.
@@ -382,3 +378,8 @@ func (s *sorter) SortStrings(ss []string) {
 func validPseudoPath(v string) bool {
 	return (len(v) > 0 && v[0] == '/') || v == "*"
 }
+
+// incomparable is a zero-width, non-comparable type. Adding it to a struct
+// makes that struct also non-comparable, and generally doesn't add
+// any size (as long as it's first).
+type incomparable [0]func()
