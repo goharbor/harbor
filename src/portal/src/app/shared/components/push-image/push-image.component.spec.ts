@@ -15,7 +15,7 @@ describe('PushImageButtonComponent (inline template)', () => {
       imports: [
         SharedTestingModule
       ],
-      declarations: [InlineAlertComponent, CopyInputComponent, PushImageButtonComponent,TestHostComponent],
+      declarations: [InlineAlertComponent, CopyInputComponent, PushImageButtonComponent, TestHostComponent],
       providers: [
         ErrorHandler
       ]
