@@ -6,8 +6,8 @@ import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, DatetimeRendering } from ".
 const baseTimeLine: Date = new Date('1970-1-1');
 
 const formatTransformers: Record<DatetimeRendering, (format: string) => string> = {
-  "iso-8601": asISO8601,
-  "locale-default": format => format,
+    "iso-8601": asISO8601,
+    "locale-default": format => format,
 } as const;
 
 @Pipe({
