@@ -77,23 +77,6 @@ github.com/andres-erbsen/clock
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/astaxie/beego v1.12.1
-## explicit; go 1.13
-github.com/astaxie/beego
-github.com/astaxie/beego/cache
-github.com/astaxie/beego/cache/redis
-github.com/astaxie/beego/config
-github.com/astaxie/beego/context
-github.com/astaxie/beego/context/param
-github.com/astaxie/beego/grace
-github.com/astaxie/beego/logs
-github.com/astaxie/beego/orm
-github.com/astaxie/beego/session
-github.com/astaxie/beego/session/redis
-github.com/astaxie/beego/session/redis_sentinel
-github.com/astaxie/beego/toolbox
-github.com/astaxie/beego/utils
-github.com/astaxie/beego/validation
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
@@ -142,6 +125,23 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/beego/beego v1.12.8
+## explicit; go 1.13
+github.com/beego/beego
+github.com/beego/beego/cache
+github.com/beego/beego/cache/redis
+github.com/beego/beego/config
+github.com/beego/beego/context
+github.com/beego/beego/context/param
+github.com/beego/beego/grace
+github.com/beego/beego/logs
+github.com/beego/beego/orm
+github.com/beego/beego/session
+github.com/beego/beego/session/redis
+github.com/beego/beego/session/redis_sentinel
+github.com/beego/beego/toolbox
+github.com/beego/beego/utils
+github.com/beego/beego/validation
 # github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 ## explicit
 github.com/beego/i18n
@@ -478,6 +478,10 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
 ## explicit; go 1.14
 github.com/hashicorp/go-multierror
+# github.com/hashicorp/golang-lru v0.5.4
+## explicit; go 1.12
+github.com/hashicorp/golang-lru
+github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
 github.com/hashicorp/hcl

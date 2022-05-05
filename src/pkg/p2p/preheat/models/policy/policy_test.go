@@ -17,7 +17,7 @@ package policy
 import (
 	"testing"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
