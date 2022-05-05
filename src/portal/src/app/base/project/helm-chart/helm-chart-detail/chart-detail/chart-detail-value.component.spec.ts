@@ -11,7 +11,7 @@ describe('ChartDetailValueComponent', () => {
     let component: ChartDetailValueComponent;
     let fixture: ComponentFixture<ChartDetailValueComponent>;
 
-    beforeEach(async ()=> {
+    beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),

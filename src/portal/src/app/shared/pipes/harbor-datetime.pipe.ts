@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { DatePipe } from "@angular/common";
-import { getDatetimeRendering } from "../units/shared.utils";
-import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, DatetimeRendering } from "../entities/shared.const";
+import { DatetimeRendering, DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang } from "../entities/shared.const";
+import { getDatetimeRendering, isSupportedLanguage } from '../units/shared.utils';
 
 const baseTimeLine: Date = new Date('1970-1-1');
 
@@ -17,13 +17,11 @@ const formatTransformers: Record<DatetimeRendering, (format: string) => string> 
 export class HarborDatetimePipe implements PipeTransform {
 
     transform(value: any, format?: string): string {
-        let lang: string = DeFaultLang;
-        if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {
-            lang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
-        }
         if (value && value <= baseTimeLine) {// invalid date
             return '-';
         }
+        const savedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+        const lang = isSupportedLanguage(savedLang) ? savedLang : DeFaultLang;
         const formatTransformer = formatTransformers[getDatetimeRendering()];
         // default format medium
         return new DatePipe(lang).transform(value, formatTransformer(format ? format : 'medium'));

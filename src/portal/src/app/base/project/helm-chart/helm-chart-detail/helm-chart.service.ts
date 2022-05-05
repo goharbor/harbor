@@ -177,9 +177,9 @@ export class HelmChartDefaultService extends HelmChartService {
       responseType: 'blob',
     })
     .pipe(map(response => {
-      let parts = filename.split('/')
+      let parts = filename.split('/');
       return {
-        filename: parts[parts.length-1],
+        filename: parts[parts.length - 1],
         data: response
       };
     }))

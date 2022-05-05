@@ -18,9 +18,9 @@ import { AppConfigService } from './services/app-config.service';
 import { ThemeService } from './services/theme.service';
 import { CustomStyle, HAS_STYLE_MODE, THEME_ARRAY, ThemeInterface } from './services/theme';
 import { clone } from './shared/units/utils';
-import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, supportedLangs } from "./shared/entities/shared.const";
-import { forkJoin, Observable } from "rxjs";
+import { DEFAULT_LANG_LOCALSTORAGE_KEY, DeFaultLang, supportedLangs, SupportedLanguage } from "./shared/entities/shared.const";
 import { SkinableConfig } from "./services/skinable-config.service";
+import { isSupportedLanguage } from './shared/units/shared.utils';
 
 
 
@@ -75,20 +75,18 @@ export class AppComponent {
     initLanguage() {
         this.translate.addLangs(supportedLangs);
         this.translate.setDefaultLang(DeFaultLang);
-        let selectedLang: string = DeFaultLang;
-        if (localStorage && localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY)) {// If user has selected lang, then directly use it
-            selectedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+        let selectedLang: SupportedLanguage;
+        const savedLang = localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY);
+        if (isSupportedLanguage(savedLang)) {// If user has selected lang, then directly use it
+            selectedLang = savedLang;
+        } else if (savedLang !== null) { // If there is a saved value, but it is not a supported language, warn and use the default language.
+            console.warn(`Invalid saved language setting ${JSON.stringify(savedLang)}; defaulting to ${JSON.stringify(DeFaultLang)}.`);
+            selectedLang = DeFaultLang;
         } else {// If user has not selected lang, then use browser language(if contained in supportedLangs)
             const browserCultureLang: string = this.translate
                 .getBrowserCultureLang()
                 .toLowerCase();
-            if (browserCultureLang && browserCultureLang.trim() !== "") {
-                if (supportedLangs && supportedLangs.length > 0) {
-                    if (supportedLangs.find(lang => lang === browserCultureLang)) {
-                        selectedLang = browserCultureLang;
-                    }
-                }
-            }
+            selectedLang = isSupportedLanguage(browserCultureLang) ? browserCultureLang : DeFaultLang;
         }
         localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, selectedLang);
         // use method will load related language json from backend server
