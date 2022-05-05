@@ -27,7 +27,7 @@ export function portValidator(): ValidatorFn {
         if (!regExp.test(value)) {
             return { 'port': 65535 };
         } else {
-            const portV = Number.parseInt(value);
+            const portV = Number.parseInt(value, 10);
             if (portV <= 0 || portV > 65535) {
                 return { 'port': 65535 };
             }

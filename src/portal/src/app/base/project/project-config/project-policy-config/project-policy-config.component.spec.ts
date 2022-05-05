@@ -150,5 +150,5 @@ describe('ProjectPolicyConfigComponent', () => {
 })
 class TestHostComponent {
   @ViewChild(ProjectPolicyConfigComponent)
-  projectPolicyConfigComponent: ProjectPolicyConfigComponent
+  projectPolicyConfigComponent: ProjectPolicyConfigComponent;
 }

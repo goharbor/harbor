@@ -27,7 +27,7 @@ import { InlineAlertComponent } from "../../shared/components/inline-alert/inlin
 export class PasswordSettingComponent implements AfterViewChecked {
     showOldPwd: boolean = false;
     showNewPwd: boolean = false;
-    showReNewPwd: boolean =false;
+    showReNewPwd: boolean = false;
     opened: boolean = false;
     oldPwd: string = "";
     newPwd: string = "";

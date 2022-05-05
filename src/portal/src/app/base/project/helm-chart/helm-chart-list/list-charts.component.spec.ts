@@ -14,7 +14,7 @@ describe('ListChartsComponent', () => {
     }
   };
 
-  beforeEach(()=> {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ListChartsComponent],
       imports: [
