@@ -16,6 +16,7 @@ package user
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
@@ -177,6 +178,13 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 		if err := c.oidcMetaMgr.DeleteByUserID(ctx, id); err != nil {
 			return errors.UnknownError(err).WithMessage("delete user failed, user id: %v, cannot delete oidc user, error:%v", id, err)
 		}
+	}
+	gdprSetting, err := config.GDPRSetting(ctx)
+	if err != nil {
+		return errors.UnknownError(err).WithMessage("failed to load GDPR setting: %v", err)
+	}
+	if gdprSetting.DeleteUser {
+		return c.mgr.DeleteGDPR(ctx, id)
 	}
 	return c.mgr.Delete(ctx, id)
 }

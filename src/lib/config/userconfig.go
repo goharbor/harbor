@@ -191,6 +191,16 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 	}, nil
 }
 
+// GDPRSetting returns the setting of GDPR
+func GDPRSetting(ctx context.Context) (*cfgModels.GDPRSetting, error) {
+	if err := DefaultMgr().Load(ctx); err != nil {
+		return nil, err
+	}
+	return &cfgModels.GDPRSetting{
+		DeleteUser: DefaultMgr().Get(ctx, common.GDPRDeleteUser).GetBool(),
+	}, nil
+}
+
 // NotificationEnable returns a bool to indicates if notification enabled in harbor
 func NotificationEnable(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.NotificationEnable).GetBool()
