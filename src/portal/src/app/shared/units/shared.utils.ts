@@ -216,7 +216,7 @@ export const errorHandler = function (error: any): string {
  * Gets the datetime rendering setting saved by the user, or the default setting if no valid saved value is found.
  */
 export function getDatetimeRendering(): DatetimeRendering {
-    const savedDatetimeRendering = localStorage && localStorage.getItem(DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY);
+    const savedDatetimeRendering = localStorage.getItem(DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY);
     if (isDatetimeRendering(savedDatetimeRendering)) {
         return savedDatetimeRendering;
     } else {
