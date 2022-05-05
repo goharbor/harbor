@@ -1,27 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../../shared/components/confirmation-dialog';
 import { ListReplicationRuleComponent } from './list-replication-rule.component';
-import { ReplicationRule } from '../../../../../shared/services';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
-import { ReplicationService } from '../../../../../shared/services';
 import { OperationService } from "../../../../../shared/components/operation/operation.service";
 import { of } from 'rxjs';
 import { delay } from "rxjs/operators";
 import {HttpHeaders, HttpResponse} from "@angular/common/http";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
+import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
+import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 
 describe('ListReplicationRuleComponent (inline template)', () => {
 
-    let mockRules: ReplicationRule[] = [
+    let mockRules: ReplicationPolicy[] = [
         {
             "id": 1,
             "name": "sync_01",
             "description": "",
             "filters": null,
             "trigger": {"type": "Manual", "trigger_settings": null},
-            "error_job_count": 2,
             "deletion": false,
-            "src_namespaces": ["name1", "name2"],
+            "dest_namespace": "",
             "src_registry": {id: 3},
             "enabled": true,
             "override": true,
@@ -33,9 +32,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
             "description": "",
             "filters": null,
             "trigger": {"type": "Manual", "trigger_settings": null},
-            "error_job_count": 2,
             "deletion": false,
-            "src_namespaces": ["name1", "name2"],
+            "dest_namespace": "",
             "dest_registry": {id: 3},
             "enabled": true,
             "override": true,
@@ -47,13 +45,13 @@ describe('ListReplicationRuleComponent (inline template)', () => {
 
     let comp: ListReplicationRuleComponent;
     const fakedReplicationService = {
-        updateReplicationRule() {
+        updateReplicationPolicy() {
             return of(true).pipe(delay(0));
         },
-        deleteReplicationRule() {
+        deleteReplicationPolicy() {
             return of(true).pipe(delay(0));
         },
-        getReplicationRulesResponse() {
+        listReplicationPoliciesResponse() {
             return of(new HttpResponse({
                 body: mockRules,
                 headers:  new HttpHeaders({

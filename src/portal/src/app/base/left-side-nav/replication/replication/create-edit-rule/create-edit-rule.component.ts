@@ -20,7 +20,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule } from "../../../../../shared/services";
+import { Filter } from "../../../../../shared/services";
 import { forkJoin, Observable, Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, finalize } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
@@ -37,6 +37,7 @@ import { Label } from "../../../../../../../ng-swagger-gen/models/label";
 import { LabelService } from "../../../../../../../ng-swagger-gen/services/label.service";
 import { BandwidthUnit, Decoration, Flatten_I18n_MAP, Flatten_Level } from "../../replication";
 import { errorHandler as  errorHandlerFn} from '../../../../../shared/units/shared.utils';
+import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
 
 const PREFIX: string = '0 ';
 const PAGE_SIZE: number = 100;
@@ -71,7 +72,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   policyId: number;
   confirmSub: Subscription;
   ruleForm: FormGroup;
-  copyUpdateForm: ReplicationRule;
+  copyUpdateForm: ReplicationPolicy;
   cronString: string;
   supportedTriggers: string[];
   supportedFilters: Filter[];
@@ -292,7 +293,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
 
-  updateRuleFormAndCopyUpdateForm(rule: ReplicationRule): void {
+  updateRuleFormAndCopyUpdateForm(rule: ReplicationPolicy): void {
     this.isPushMode = rule.dest_registry.id !== 0;
     setTimeout(() => {
       // convert speed unit to KB or MB
@@ -407,7 +408,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     // add new Replication rule
     this.inProgress = true;
-    let copyRuleForm: ReplicationRule = this.ruleForm.value;
+    let copyRuleForm: ReplicationPolicy = this.ruleForm.value;
     // need to convert unit to KB for speed property
     copyRuleForm.speed = this.convertToKB(copyRuleForm.speed);
     copyRuleForm.dest_namespace_replace_count = copyRuleForm.dest_namespace_replace_count
@@ -457,7 +458,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         });
     }
   }
-  openCreateEditRule(rule?: ReplicationRule): void {
+  openCreateEditRule(rule?: ReplicationPolicy): void {
     this.formReset();
     this.copyUpdateForm = clone(this.ruleForm.value);
     this.inlineAlert.close();
@@ -474,8 +475,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         this.supportedFilterLabels.forEach((label, index) => {
           if (rule.filters && rule.filters.length) {
             rule.filters.forEach(f => {
-              if (f.type === FilterType.LABEL && f.value && f.value.length) {
-                f.value.forEach(name => {
+              if (f.type === FilterType.LABEL && f.value && (f.value as any).length) {
+                (f.value as any).forEach(name => {
                   if (label.name === name) {
                     this.supportedFilterLabels[index].select = true;
                   }

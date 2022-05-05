@@ -6,7 +6,6 @@ import { DatePickerComponent } from "../../../../../shared/components/datetime-p
 import { FilterComponent } from "../../../../../shared/components/filter/filter.component";
 import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
 import {
-  ReplicationRule,
   ReplicationJob,
   ReplicationJobItem
 } from "../../../../../shared/services";
@@ -21,15 +20,16 @@ import {delay} from "rxjs/operators";
 import { SharedTestingModule } from "../../../../../shared/shared.module";
 import { RegistryService } from "../../../../../../../ng-swagger-gen/services/registry.service";
 import { Registry } from "../../../../../../../ng-swagger-gen/models/registry";
+import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
 
 describe("CreateEditRuleComponent (inline template)", () => {
-  let mockRules: ReplicationRule[] = [
+  let mockRules: ReplicationPolicy[] = [
     {
       id: 1,
       name: "sync_01",
       description: "",
       src_registry: {id: 2},
-      src_namespaces: ["name1", "name2"],
+      dest_namespace: "",
       trigger: {
         type: "Manual",
         trigger_settings: {}
@@ -137,11 +137,11 @@ describe("CreateEditRuleComponent (inline template)", () => {
     }
   ];
 
-  let mockRule: ReplicationRule = {
+  let mockRule: ReplicationPolicy = {
     id: 1,
     name: "sync_01",
     description: "",
-    src_namespaces: ["namespace1", "namespace2"],
+    dest_namespace: "",
     src_registry: {id: 10 },
     dest_registry: {id: 0 },
     trigger: {

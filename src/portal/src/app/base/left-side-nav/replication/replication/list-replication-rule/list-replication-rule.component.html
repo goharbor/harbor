@@ -2,7 +2,7 @@
 <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)">
     <clr-dg-action-bar>
         <button type="button" id="new_replication_rule_id" class="btn  btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
-        <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
+        <button type="button" id="replication_exe_id" class="btn  btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow || !selectedRow.enabled" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
         <clr-dropdown
                 [clrCloseMenuOnItemClick]="false"
                 class="btn  btn-link"
@@ -47,7 +47,7 @@
     <clr-dg-column class="col-width">{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPLICATION.DES_REPO_FLATTENING' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'speed'">{{'REPLICATION.BANDWIDTH' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>

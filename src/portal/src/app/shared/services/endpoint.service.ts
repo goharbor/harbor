@@ -7,8 +7,9 @@ import {
   HTTP_GET_OPTIONS, CURRENT_BASE_HREF
 } from "../units/utils";
 import { RequestQueryParams } from "./index";
-import { Endpoint, ReplicationRule, PingEndpoint } from "./index";
+import { Endpoint, PingEndpoint } from "./index";
 import { catchError, map } from "rxjs/operators";
+import { ReplicationPolicy } from '../../../../ng-swagger-gen/models/replication-policy';
 
 export const ADAPTERS_MAP = {
   "ali-acr": "Alibaba ACR",
@@ -264,7 +265,7 @@ export class EndpointDefaultService extends EndpointService {
     let requestUrl: string = `${this._endpointUrl}/${endpointId}/policies`;
     return this.http
       .get(requestUrl, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as ReplicationRule[])
+      .pipe(map(response => response as ReplicationPolicy[])
       , catchError(error => observableThrowError(error)));
   }
 

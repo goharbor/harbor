@@ -4,10 +4,9 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
 import { ReplicationComponent } from './replication.component';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
-import { ReplicationRule, ReplicationJob, Endpoint} from '../../../../shared/services';
+import { ReplicationJob, Endpoint} from '../../../../shared/services';
 import { CronTooltipComponent } from "../../../../shared/components/cron-schedule";
 import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { ReplicationService } from '../../../../shared/services';
 import { ReplicationJobItem } from '../../../../shared/services';
 import { OperationService } from "../../../../shared/components/operation/operation.service";
 import { RouterTestingModule } from '@angular/router/testing';
@@ -15,21 +14,22 @@ import { of, Subscription } from 'rxjs';
 import { HttpHeaders, HttpResponse } from "@angular/common/http";
 import { delay } from "rxjs/operators";
 import { SharedTestingModule } from "../../../../shared/shared.module";
+import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
+import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 
 
 describe('Replication Component (inline template)', () => {
 
-  let mockRules: ReplicationRule[] = [
+  let mockRules: ReplicationPolicy[] = [
       {
           "id": 1,
           "name": "sync_01",
           "description": "",
           "filters": null,
           "trigger": {"type": "Manual", "trigger_settings": null},
-          "error_job_count": 2,
           "deletion": false,
           "src_registry": {id: 3},
-          "src_namespaces": ["name1"],
+          "dest_namespace": "",
           "enabled": true,
           "override": true,
           "speed": -1
@@ -40,10 +40,9 @@ describe('Replication Component (inline template)', () => {
           "description": "",
           "filters": null,
           "trigger": {"type": "Manual", "trigger_settings": null},
-          "error_job_count": 2,
           "deletion": false,
           "dest_registry": {id: 5},
-          "src_namespaces": ["name1"],
+          "dest_namespace": "",
           "enabled": true,
           "override": true,
           "speed": -1
@@ -127,7 +126,7 @@ describe('Replication Component (inline template)', () => {
     }
   };
   const fakedReplicationService = {
-    getReplicationRulesResponse() {
+      listReplicationPoliciesResponse() {
       return of(new HttpResponse({
         body: mockRules,
         headers:  new HttpHeaders({

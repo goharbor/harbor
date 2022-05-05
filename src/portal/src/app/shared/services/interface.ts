@@ -53,32 +53,6 @@ export interface Filter {
   values?: string[];
 }
 
-/**
- * Interface for replication rule.
- *
- **
- * interface ReplicationRule
- * interface Filter
- * interface Trigger
- */
-export interface ReplicationRule extends Base {
-  [key: string]: any;
-  id?: number;
-  name: string;
-  description: string;
-  trigger: Trigger;
-  filters: Filter[];
-  deletion?: boolean;
-  src_registry?: any;
-  dest_registry?: any;
-  src_namespaces: string[];
-  dest_namespace?: string;
-  dest_namespace_replace_count?: number;
-  enabled: boolean;
-  override: boolean;
-  speed: number;
-}
-
 export class Filter {
   type: string;
   value?: any;

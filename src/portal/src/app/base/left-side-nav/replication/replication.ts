@@ -22,3 +22,7 @@ export enum BandwidthUnit {
   MB = 'Mbps',
   KB = 'Kbps'
 }
+export enum ReplicationExecutionFilter {
+  TRIGGER = 'trigger',
+  STATUS = 'status'
+}
