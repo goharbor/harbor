@@ -26,7 +26,8 @@ import {
     CommonRoutes,
     DEFAULT_LANG_LOCALSTORAGE_KEY,
     DeFaultLang,
-    languageNames,
+    LANGUAGES,
+    SupportedLanguage,
 } from "../../entities/shared.const";
 import { CustomStyle, HAS_STYLE_MODE, StyleMode } from "../../../services/theme";
 
@@ -41,7 +42,8 @@ export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
-    selectedLang: string = DeFaultLang;
+    readonly guiLanguages = Object.entries(LANGUAGES);
+    selectedLang: SupportedLanguage = DeFaultLang;
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: CustomStyle;
     constructor(
@@ -58,7 +60,7 @@ export class NavigatorComponent implements OnInit {
     ngOnInit(): void {
         // custom skin
         this.customStyle = this.skinableConfig.getSkinConfig();
-        this.selectedLang = this.translate.currentLang;
+        this.selectedLang = this.translate.currentLang as SupportedLanguage;
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
         }
@@ -77,7 +79,7 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get currentLang(): string {
-        return languageNames[this.selectedLang];
+        return LANGUAGES[this.selectedLang];
     }
 
     public get admiralLink(): string {
@@ -103,8 +105,8 @@ export class NavigatorComponent implements OnInit {
         || config.auth_mode === "oidc_auth")) || (user.user_id === 1 && user.username === "admin"));
     }
 
-    matchLang(lang: string): boolean {
-        return lang.trim() === this.selectedLang;
+    matchLang(lang: SupportedLanguage): boolean {
+        return lang === this.selectedLang;
     }
 
     // Open the account setting dialog
@@ -146,7 +148,7 @@ export class NavigatorComponent implements OnInit {
     }
 
     // Switch languages
-    switchLanguage(lang: string): void {
+    switchLanguage(lang: SupportedLanguage): void {
         this.selectedLang = lang;
         localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, lang);
         // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module

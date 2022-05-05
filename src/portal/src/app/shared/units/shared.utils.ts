@@ -13,7 +13,7 @@
 // limitations under the License.
 import { NgForm } from '@angular/forms';
 import { MessageService } from '../components/global-message/message.service';
-import { AlertType, httpStatusCode } from "../entities/shared.const";
+import { AlertType, httpStatusCode, SupportedLanguage, LANGUAGES } from "../entities/shared.const";
 
 /**
  * To check if form is empty
@@ -33,6 +33,13 @@ export const isEmptyForm = function (ngForm: NgForm): boolean {
 
     return true;
 };
+
+/**
+ * A type guard that checks if the given value is a supported language.
+ */
+export function isSupportedLanguage(x: unknown): x is SupportedLanguage {
+    return Object.keys(LANGUAGES).some(lang => x === lang);
+}
 
 /**
  * Hanlde the 401 and 403 code
