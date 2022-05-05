@@ -75,7 +75,7 @@ func (m *mgrTestSuite) TestUserDeleteGDPR() {
 		"deleted",
 	).Return(nil)
 
-	err := m.mgr.Delete(context.Background(), 123)
+	err := m.mgr.DeleteGDPR(context.Background(), 123)
 	m.Nil(err)
 }
 
