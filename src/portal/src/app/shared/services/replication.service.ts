@@ -9,13 +9,13 @@ import {
 } from "../units/utils";
 import {
   ReplicationJob,
-  ReplicationRule,
   ReplicationJobItem,
   ReplicationTasks
 } from "./interface";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
+import { ReplicationPolicy } from '../../../../ng-swagger-gen/models/replication-policy';
 
 /**
  * Define the service methods to handle the replication (rule and job) related things.
@@ -44,13 +44,13 @@ export abstract class ReplicationService {
     ruleName?: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<ReplicationRule[]>;
+    | Observable<ReplicationPolicy[]>;
   abstract getReplicationRulesResponse(
     ruleName?: string,
     page?: number ,
     pageSize?: number,
     queryParams?: RequestQueryParams
-  ): Observable<HttpResponse<ReplicationRule[]>>;
+  ): Observable<HttpResponse<ReplicationPolicy[]>>;
 
   /**
    * Get the specified replication rule.
@@ -63,7 +63,7 @@ export abstract class ReplicationService {
    */
   abstract getReplicationRule(
     ruleId: number | string
-  ): Observable<ReplicationRule>;
+  ): Observable<ReplicationPolicy>;
 
 
   /**
@@ -88,7 +88,7 @@ export abstract class ReplicationService {
    * @memberOf ReplicationService
    */
   abstract createReplicationRule(
-    replicationRule: ReplicationRule
+    replicationRule: ReplicationPolicy
   ): Observable<any>;
 
   /**
@@ -102,7 +102,7 @@ export abstract class ReplicationService {
    */
   abstract updateReplicationRule(
     id: number,
-    rep: ReplicationRule
+    rep: ReplicationPolicy
   ): Observable<any>;
 
   /**
@@ -229,7 +229,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
   // Private methods
   // Check if the rule object is valid
-  _isValidRule(rule: ReplicationRule): boolean {
+  _isValidRule(rule: ReplicationPolicy): boolean {
     return (
       rule !== undefined &&
       rule != null &&
@@ -255,7 +255,7 @@ export class ReplicationDefaultService extends ReplicationService {
     ruleName?: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<ReplicationRule[]> {
+    | Observable<ReplicationPolicy[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -269,14 +269,14 @@ export class ReplicationDefaultService extends ReplicationService {
     }
     return this.http
       .get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response as ReplicationRule[])
+      .pipe(map(response => response as ReplicationPolicy[])
         , catchError(error => observableThrowError(error)));
   }
   public getReplicationRulesResponse(
     ruleName?: string,
     page?: number,
     pageSize?: number,
-    queryParams?: RequestQueryParams): Observable<HttpResponse<ReplicationRule[]>> {
+    queryParams?: RequestQueryParams): Observable<HttpResponse<ReplicationPolicy[]>> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -290,14 +290,14 @@ export class ReplicationDefaultService extends ReplicationService {
       queryParams = queryParams.set("page_size", pageSize + "");
     }
    return this.http
-      .get<HttpResponse<ReplicationRule[]>>(this._ruleBaseUrl, buildHttpRequestOptionsWithObserveResponse(queryParams))
-       .pipe(map(response => response as HttpResponse<ReplicationRule[]>)
+      .get<HttpResponse<ReplicationPolicy[]>>(this._ruleBaseUrl, buildHttpRequestOptionsWithObserveResponse(queryParams))
+       .pipe(map(response => response as HttpResponse<ReplicationPolicy[]>)
         , catchError(error => observableThrowError(error)));
   }
 
   public getReplicationRule(
     ruleId: number | string
-  ): Observable<ReplicationRule> {
+  ): Observable<ReplicationPolicy> {
     if (!ruleId) {
       return observableThrowError("Bad argument");
     }
@@ -305,7 +305,7 @@ export class ReplicationDefaultService extends ReplicationService {
     let url: string = `${this._ruleBaseUrl}/${ruleId}`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as ReplicationRule)
+      .pipe(map(response => response as ReplicationPolicy)
         , catchError(error => observableThrowError(error)));
   }
 
@@ -324,7 +324,7 @@ export class ReplicationDefaultService extends ReplicationService {
   }
 
   public createReplicationRule(
-    replicationRule: ReplicationRule
+    replicationRule: ReplicationPolicy
   ): Observable<any> {
     if (!this._isValidRule(replicationRule)) {
       return observableThrowError("Bad argument");
@@ -342,7 +342,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
   public updateReplicationRule(
     id: number,
-    rep: ReplicationRule
+    rep: ReplicationPolicy
   ): Observable<any> {
     if (!this._isValidRule(rep)) {
       return observableThrowError("Bad argument");

@@ -15,7 +15,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from "@angular/router";
 import {SessionService} from "../../../shared/services/session.service";
 import {AppConfigService} from "../../../services/app-config.service";
-import { ReplicationRule } from "../../../shared/services";
 import { Subscription } from "rxjs";
 import { EventService, HarborEvent } from "../../../services/event-service/event.service";
 // The route path which will display this component
@@ -62,11 +61,6 @@ export class TotalReplicationPageComponent implements OnInit, OnDestroy {
     if (this.scrollSub) {
       this.scrollSub.unsubscribe();
       this.scrollSub = null;
-    }
-  }
-  customRedirect(rule: ReplicationRule): void {
-    if (rule) {
-      this.router.navigate(['../projects', rule.projects[0].project_id, 'replications'],  { relativeTo: this.activeRoute });
     }
   }
   goRegistry(): void {
