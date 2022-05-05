@@ -12,7 +12,6 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/pkg"
-	"github.com/goharbor/harbor/src/pkg/project"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -75,7 +74,7 @@ func randomString(n int) string {
 }
 
 func (suite *HandlerSuite) addProject(ctx context.Context, projectName string) int64 {
-	projectID, err := project.Mgr.Create(ctx, &proModels.Project{
+	projectID, err := pkg.ProjectMgr.Create(ctx, &proModels.Project{
 		Name:    projectName,
 		OwnerID: 1,
 	})
@@ -163,7 +162,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 	tagID := suite.addTags(ctx, repoID, afID, "release-1.10")
 
 	defer func() {
-		project.Mgr.Delete(ctx, projectID)
+		pkg.ProjectMgr.Delete(ctx, projectID)
 		pkg.ArtifactMgr.Delete(ctx, afID)
 		repository.Mgr.Delete(ctx, repoID)
 		tag.Mgr.Delete(ctx, tagID)
