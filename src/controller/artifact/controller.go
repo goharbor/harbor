@@ -116,7 +116,7 @@ type Controller interface {
 func NewController() Controller {
 	return &controller{
 		tagCtl:       tag.Ctl,
-		repoMgr:      repository.Mgr,
+		repoMgr:      pkg.RepositoryMgr,
 		artMgr:       pkg.ArtifactMgr,
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,

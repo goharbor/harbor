@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 func abstractArtData(ctx context.Context) error {
@@ -32,7 +31,7 @@ func abstractArtData(ctx context.Context) error {
 		return err
 	}
 	for _, pro := range pros {
-		repos, err := repository.Mgr.List(ctx, &q.Query{
+		repos, err := pkg.RepositoryMgr.List(ctx, &q.Query{
 			Keywords: map[string]interface{}{
 				"ProjectID": pro.ProjectID,
 			},

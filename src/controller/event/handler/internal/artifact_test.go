@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
-	repo "github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -58,7 +57,7 @@ func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
 	suite.Nil(err)
 	// mock repository
-	_, err = repo.Mgr.Create(suite.ctx, &model.RepoRecord{RepositoryID: 1})
+	_, err = pkg.RepositoryMgr.Create(suite.ctx, &model.RepoRecord{RepositoryID: 1})
 	suite.Nil(err)
 	// mock tag
 	_, err = tag.Mgr.Create(suite.ctx, &tagmodel.Tag{ID: 1, RepositoryID: 1, ArtifactID: 1, Name: "latest"})
@@ -74,7 +73,7 @@ func (suite *ArtifactHandlerTestSuite) TearDownSuite() {
 	err = pkg.ArtifactMgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 	// delete repository
-	err = repo.Mgr.Delete(suite.ctx, 1)
+	err = pkg.RepositoryMgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 
 }
@@ -113,7 +112,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.False(art.PullTime.IsZero(), "sync update pull_time")
 	lastPullTime := art.PullTime
 	// pull_count
-	repository, err := repo.Mgr.Get(suite.ctx, 1)
+	repository, err := pkg.RepositoryMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(int64(1), repository.PullCount, "sync update pull_count")
 
@@ -127,7 +126,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Nil(err)
 	suite.Equal(lastPullTime, art.PullTime, "pull_time should not be updated immediately")
 	// pull_count
-	repository, err = repo.Mgr.Get(suite.ctx, 1)
+	repository, err = pkg.RepositoryMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(int64(1), repository.PullCount, "pull_count should not be updated immediately")
 	// wait for db update
@@ -138,7 +137,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_time async update")
 
 	suite.Eventually(func() bool {
-		repository, err = repo.Mgr.Get(suite.ctx, 1)
+		repository, err = pkg.RepositoryMgr.Get(suite.ctx, 1)
 		suite.Nil(err)
 		return int64(2) == repository.PullCount
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_count async update")
