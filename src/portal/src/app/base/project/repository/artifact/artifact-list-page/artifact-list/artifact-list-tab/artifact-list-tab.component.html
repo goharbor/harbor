@@ -202,9 +202,9 @@
                     <div *ngIf="artifact.tags" class="truncated width-p-100">
                         <clr-tooltip class="width-p-100">
                             <div clrTooltipTrigger class="center">
-                                <div class="center">
-                                    <span class="truncated">{{tagsString(artifact?.tags)}}</span>
-                                    <span *ngIf="artifact?.tags?.length>1">({{artifact?.tagNumber}})</span>
+                                <div class="center width-p-100">
+                                    <span #tagsSpan class="truncated width-p-75">{{tagsString(artifact?.tags)}}</span>
+                                    <span *ngIf="artifact?.tags?.length>1 && isEllipsisActive(tagsSpan)">({{artifact?.tagNumber}})</span>
                                 </div>
                             </div>
                             <clr-tooltip-content [clrPosition]="'top-right'" class="lg" [clrSize]="'lg'" *clrIfOpen>
