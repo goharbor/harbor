@@ -543,7 +543,7 @@ misspell:
 
 golint:
 	@echo checking golint...
-	@go list ./... | grep -v -E 'vendor|test' | xargs fgt golint
+	@cd src;go list ./... | grep -v -E 'vendor|test' | xargs golint
 
 govet:
 	@echo checking govet...
