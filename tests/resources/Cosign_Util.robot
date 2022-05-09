@@ -25,3 +25,8 @@ Cosign Generate Key Pair
 Cosign Sign
     [Arguments]  ${artifact}
     Wait Unitl Command Success  cosign sign --allow-insecure-registry --key cosign.key ${artifact}
+
+Cosign Verify
+    [Arguments]  ${artifact}  ${signed}
+    Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub ${artifact}
+    ...  ELSE  Command Should be Failed  cosign verify --key cosign.pub ${artifact}
