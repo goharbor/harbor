@@ -402,14 +402,12 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 
 	// allTrashedArts contains the artifacts that actual removed and simulate removed(for dry run).
 	allTrashedArts := make([]model.ArtifactTrash, 0)
-	untaggedArts := make([]*artifact.Artifact, 0)
-	var err error
 
 	// artMap : map[digest : []ArtifactTrash list]
 	artMap := make(map[string][]model.ArtifactTrash)
 	// handle the optional ones, and the artifact controller will move them into trash.
 	if gc.deleteUntagged {
-		untaggedArts, err = gc.artCtl.List(ctx.SystemContext(), &q.Query{
+		untaggedArts, err := gc.artCtl.List(ctx.SystemContext(), &q.Query{
 			Keywords: map[string]interface{}{
 				"Tags": "nil",
 			},

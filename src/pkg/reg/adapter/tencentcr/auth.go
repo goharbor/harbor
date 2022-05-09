@@ -29,7 +29,7 @@ func (q *qcloudAuthCredential) Modify(r *http.Request) (err error) {
 }
 
 func (q *qcloudAuthCredential) isCacheTokenValid() (ok bool) {
-	if &q.cacheTokenExpiredAt == nil {
+	if q.cacheTokenExpiredAt.IsZero() {
 		return
 	}
 	if q.cacheTokener == nil {

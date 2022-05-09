@@ -127,7 +127,6 @@ func (c *Client) Post(url string, v ...interface{}) error {
 func (c *Client) Put(url string, v ...interface{}) error {
 	var reader io.Reader
 	if len(v) > 0 {
-		data := []byte{}
 		data, err := json.Marshal(v[0])
 		if err != nil {
 			return err

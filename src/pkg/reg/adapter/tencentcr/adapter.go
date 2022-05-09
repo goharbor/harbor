@@ -219,7 +219,6 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) (err error) {
 		if err != nil {
 			return
 		}
-		return
 	}
 
 	return

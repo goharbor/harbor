@@ -159,6 +159,10 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	_, t, err := secretAndToken(tokenBytes)
+	if err != nil {
+		oc.SendInternalServerError(err)
+		return
+	}
 	oidcUser := um.OIDCUserMeta
 	oidcUser.Token = t
 	if err := ctluser.Ctl.UpdateOIDCMeta(ctx, oidcUser); err != nil {

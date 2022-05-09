@@ -91,7 +91,7 @@ func (a *artifactTypeFilter) Filter(artifacts []*model.Artifact) ([]*model.Artif
 	var result []*model.Artifact
 	for _, artifact := range artifacts {
 		for _, t := range a.types {
-			if strings.ToLower(artifact.Type) == strings.ToLower(t) {
+			if strings.EqualFold(strings.ToLower(artifact.Type), strings.ToLower(t)) {
 				result = append(result, artifact)
 				continue
 			}

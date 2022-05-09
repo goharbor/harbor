@@ -41,6 +41,8 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func init() {
@@ -625,7 +627,8 @@ func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interfa
 	// Append vulnerability filter if vulnerability severity config is set at project configurations
 	if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
 		if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
-			se = strings.Title(strings.ToLower(se))
+			title := cases.Title(language.Und)
+			se = title.String(strings.ToLower(se))
 			code := vuln.Severity(se).Code()
 			filters = append(filters, &pol.Filter{
 				Type:  pol.FilterTypeVulnerability,
