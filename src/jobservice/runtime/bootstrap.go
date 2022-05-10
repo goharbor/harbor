@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
@@ -308,6 +309,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Functional jobs
 			job.ImageScanJob:           (*scan.Job)(nil),
 			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
+			job.PurgeAudit:             (*purge.Job)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),

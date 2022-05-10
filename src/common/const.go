@@ -205,4 +205,8 @@ const (
 	// DefaultCacheExpireHours is the default cache expire hours, default is
 	// 24h.
 	DefaultCacheExpireHours = 24
+
+	PurgeAuditIncludeOperations = "include_operations"
+	PurgeAuditDryRun            = "dry_run"
+	PurgeAuditRetentionHour     = "audit_retention_hour"
 )
