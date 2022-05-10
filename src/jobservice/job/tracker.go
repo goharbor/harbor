@@ -231,14 +231,17 @@ func (bt *basicTracker) CheckIn(message string) error {
 	current := Status(bt.jobStats.Info.Status)
 
 	bt.refresh(current, message)
-	err := bt.fireHookEvent(current, message)
-	err = bt.Update(
+	errFireHE := bt.fireHookEvent(current, message)
+	err := bt.Update(
 		// skip checkin data here
 		"check_in_at", now,
 		"update_time", now,
 	)
+	if err != nil {
+		return errors.Wrap(err, errFireHE.Error())
+	}
 
-	return err
+	return nil
 }
 
 // Run job

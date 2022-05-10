@@ -219,7 +219,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Listen to the system signals
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	terminated := false
 	go func(errChan chan error) {
 		defer func() {

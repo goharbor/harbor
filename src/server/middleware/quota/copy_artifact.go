@@ -64,7 +64,7 @@ func parseRepositoryName(p string) string {
 	return strings.TrimSuffix(parts[1], "/artifacts")
 }
 
-func copyArtifactResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
+func copyArtifactResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
 	query := r.URL.Query()
 	from := query.Get("from")
 	if from == "" {
@@ -132,7 +132,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 }
 
 func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
-	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+	return func(r *http.Request, _, referenceID string, message string) event.Metadata {
 		ctx := r.Context()
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
