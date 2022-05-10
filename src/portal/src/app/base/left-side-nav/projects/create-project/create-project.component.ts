@@ -95,7 +95,7 @@ export class CreateProjectComponent
 
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
-        'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry}';
+        'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr}';
 
     constructor(
         private projectService: ProjectService,
