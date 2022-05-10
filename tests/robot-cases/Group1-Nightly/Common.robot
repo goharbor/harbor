@@ -915,9 +915,11 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Go Into Project  project${d}
     Retry Double Keywords When Error  Go Into Repo  project${d}/${image}  Should Not Be Signed By Cosign  ${tag}
     Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
-    
     Cosign Generate Key Pair
+    Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
+
     Cosign Sign  ${ip}/project${d}/${image}:${tag}
+    Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${true}
     Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
 

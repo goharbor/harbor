@@ -69,7 +69,7 @@ RUN pwd && mkdir /tool/binary && \
     IMGPKG_VERSION=0.22.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
     mv imgpkg-linux-amd64 /tool/binary/imgpkg && chmod +x /tool/binary/imgpkg && \
     # Install cosign
-    COSIGN_VERSION=1.4.1 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
+    COSIGN_VERSION=1.8.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
     mv cosign-linux-amd64 /tool/binary/cosign && chmod +x /tool/binary/cosign && \
     pwd
 
