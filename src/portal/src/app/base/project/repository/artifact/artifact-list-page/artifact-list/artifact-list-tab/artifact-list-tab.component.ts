@@ -1213,4 +1213,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             buttons);
         this.confirmationDialog.open(message);
     }
+    isEllipsisActive(ele: HTMLSpanElement): boolean {
+        return ele?.offsetWidth < ele?.scrollWidth;
+    }
 }
