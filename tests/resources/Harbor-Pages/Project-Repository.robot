@@ -44,3 +44,6 @@ Check Scan Artifact Job Status Is Stopped
     Wait Until Element Is Visible  ${stopped_label}
     ${job_status}=  Get Text  ${stopped_label}
     Should Be Equal As Strings  '${job_status}'  'Scan stopped'
+
+Refresh Repositories
+    Retry Element Click  ${refresh_repositories_xpath}

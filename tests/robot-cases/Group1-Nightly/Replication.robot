@@ -849,3 +849,40 @@ Test Case - Enable Replication Of Cosign And Notary Deployment Security Policy
     Back Project Home  project_push_dest${d}
     Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
     Close Browser
+
+Test Case - Carvel Imgpkg Copy To Harbor
+    [Tags]  imgpkg_copy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${out_file_path}=  Set Variable  /tmp/my-bundle.tar
+    ${repository}=  Set Variable  my-bundle
+    ${tag}=  Set Variable  v1.0.0
+
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_dest${d}
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Docker Login  ${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Prepare Image Package Test Files  ${EXECDIR}/config
+    Imgpkg Push  ${ip}  project${d}  ${repository}  ${tag}  ${EXECDIR}/config
+    Imgpkg Copy From Registry To Registry  ${ip}/project${d}/${repository}:${tag}  ${ip1}/project_dest${d}/${repository}
+    Refresh Repositories
+    Repo Exist  project_dest${d}  ${repository}
+    Go Into Repo  project_dest${d}/${repository}
+    Artifact Exist  ${tag}
+    Back Project Home  project_dest${d}
+    Delete Repo  project_dest${d}  ${repository}
+    Repo Not Exist  project_dest${d}  ${repository}
+    Imgpkg Copy From Registry To Local Tarball  ${ip}/project${d}/${repository}:${tag}  ${out_file_path}
+    Retry File Should Exist  ${out_file_path}
+    Imgpkg Copy From Local Tarball To Registry  ${out_file_path}  ${ip1}/project_dest${d}/${repository}
+    Refresh Repositories
+    Repo Exist  project_dest${d}  ${repository}
+    Retry Element Click  ${repo_search_icon}
+    Go Into Repo  project_dest${d}/${repository}
+    Artifact Exist  ${tag}
+    Docker Logout  ${ip}
+    Docker Logout  ${ip1}
+    Close Browser
