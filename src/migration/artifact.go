@@ -22,13 +22,12 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 func abstractArtData(ctx context.Context) error {
 	abstractor := art.NewAbstractor()
-	pros, err := project.Mgr.List(ctx, nil)
+	pros, err := pkg.ProjectMgr.List(ctx, nil)
 	if err != nil {
 		return err
 	}

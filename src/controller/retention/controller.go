@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -390,13 +391,13 @@ func (r *defaultController) UpdateTaskInfo(ctx context.Context, taskID int64, to
 // NewController ...
 func NewController() Controller {
 	retentionMgr := retention.NewManager()
-	retentionLauncher := retention.NewLauncher(project.Mgr, repository.Mgr, retentionMgr, task.ExecMgr, task.Mgr)
+	retentionLauncher := retention.NewLauncher(pkg.ProjectMgr, repository.Mgr, retentionMgr, task.ExecMgr, task.Mgr)
 	return &defaultController{
 		manager:        retentionMgr,
 		execMgr:        task.ExecMgr,
 		taskMgr:        task.Mgr,
 		launcher:       retentionLauncher,
-		projectManager: project.Mgr,
+		projectManager: pkg.ProjectMgr,
 		repositoryMgr:  repository.Mgr,
 		scheduler:      scheduler.Sched,
 	}

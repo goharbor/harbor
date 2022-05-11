@@ -60,7 +60,7 @@ type Controller interface {
 // NewController creates an instance of the default repository controller
 func NewController() Controller {
 	return &controller{
-		proMgr:  project.Mgr,
+		proMgr:  pkg.ProjectMgr,
 		repoMgr: repository.Mgr,
 		artMgr:  pkg.ArtifactMgr,
 		artCtl:  artifact.Ctl,
