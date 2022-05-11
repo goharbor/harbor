@@ -26,7 +26,7 @@ type TriggerSettings struct {
 	Cron string `json:"cron"`
 }
 
-// Execution model for replication
+// Execution model for gc
 type Execution struct {
 	ID            int64
 	Status        string
@@ -34,10 +34,10 @@ type Execution struct {
 	Trigger       string
 	ExtraAttrs    map[string]interface{}
 	StartTime     time.Time
-	EndTime       time.Time
+	UpdateTime    time.Time
 }
 
-// Task model for replication
+// Task model for gc
 type Task struct {
 	ID             int64
 	ExecutionID    int64
