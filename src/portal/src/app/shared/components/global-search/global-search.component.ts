@@ -14,11 +14,11 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 // limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Subscription } from "rxjs";
+import { Subject, Subscription } from 'rxjs';
 import { SearchTriggerService } from './search-trigger.service';
 import { AppConfigService } from '../../../services/app-config.service';
-import { TranslateService } from "@ngx-translate/core";
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { TranslateService } from '@ngx-translate/core';
+import { SkinableConfig } from '../../../services/skinable-config.service';
 import { Location } from '@angular/common';
 
 const deBounceTime = 500; // ms
@@ -26,8 +26,8 @@ const SEARCH_KEY: string = 'globalSearch';
 
 @Component({
     selector: 'global-search',
-    templateUrl: "global-search.component.html",
-    styleUrls: ["search.component.scss"]
+    templateUrl: 'global-search.component.html',
+    styleUrls: ['search.component.scss'],
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Keep search term as Subject
@@ -40,7 +40,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     // To indicate if the result panel is opened
     isResPanelOpened: boolean = false;
     placeholderText: string;
-    private _searchTerm = "";
+    private _searchTerm = '';
     constructor(
         private searchTrigger: SearchTriggerService,
         private router: Router,
@@ -48,35 +48,45 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         private location: Location,
         private appConfigService: AppConfigService,
         private translate: TranslateService,
-        private skinableConfig: SkinableConfig) {
-    }
+        private skinableConfig: SkinableConfig
+    ) {}
 
     ngOnInit(): void {
         // custom skin
         let customSkinObj = this.skinableConfig.getSkinConfig();
-        if (customSkinObj && customSkinObj.product && customSkinObj.product.name) {
-            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.product.name}).subscribe(res => {
-                // Placeholder text
-                this.placeholderText = res;
-            });
+        if (
+            customSkinObj &&
+            customSkinObj.product &&
+            customSkinObj.product.name
+        ) {
+            this.translate
+                .get('GLOBAL_SEARCH.PLACEHOLDER', {
+                    param: customSkinObj.product.name,
+                })
+                .subscribe(res => {
+                    // Placeholder text
+                    this.placeholderText = res;
+                });
         } else {
-            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': 'Harbor'}).subscribe(res => {
-                // Placeholder text
-                this.placeholderText = res;
-            });
+            this.translate
+                .get('GLOBAL_SEARCH.PLACEHOLDER', { param: 'Harbor' })
+                .subscribe(res => {
+                    // Placeholder text
+                    this.placeholderText = res;
+                });
         }
 
-        this.searchSub = this.searchTerms.pipe(
-            debounceTime(deBounceTime))
+        this.searchSub = this.searchTerms
+            .pipe(debounceTime(deBounceTime))
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
         this.closeSub = this.searchTrigger.searchClearChan$.subscribe(clear => {
-            this.searchTerm = "";
+            this.searchTerm = '';
         });
 
         if (this.appConfigService.isIntegrationMode()) {
-            this.placeholderText = "GLOBAL_SEARCH.PLACEHOLDER_VIC";
+            this.placeholderText = 'GLOBAL_SEARCH.PLACEHOLDER_VIC';
         }
         // init _searchTerm from queryParams
         this._searchTerm = this.activatedRoute.snapshot.queryParams[SEARCH_KEY];
@@ -106,14 +116,18 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     set searchTerm(s) {
         let url: string;
         if (s) {
-             url = this.router.createUrlTree([], {
-                relativeTo: this.activatedRoute,
-                queryParams: {[SEARCH_KEY]: s}
-            }).toString();
+            url = this.router
+                .createUrlTree([], {
+                    relativeTo: this.activatedRoute,
+                    queryParams: { [SEARCH_KEY]: s },
+                })
+                .toString();
         } else {
-            url = this.router.createUrlTree([], {
-                relativeTo: this.activatedRoute,
-            }).toString();
+            url = this.router
+                .createUrlTree([], {
+                    relativeTo: this.activatedRoute,
+                })
+                .toString();
         }
         this.location.replaceState(url);
         this._searchTerm = s;

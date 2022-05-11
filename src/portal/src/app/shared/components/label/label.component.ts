@@ -11,39 +11,43 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-    Component,
-    OnInit,
-    ViewChild,
-    Input
-} from "@angular/core";
-import { ErrorHandler } from "../../units/error-handler";
-import { CreateEditLabelComponent } from "./create-edit-label/create-edit-label.component";
+import { Component, ViewChild, Input } from '@angular/core';
+import { ErrorHandler } from '../../units/error-handler';
+import { CreateEditLabelComponent } from './create-edit-label/create-edit-label.component';
 import {
     ConfirmationButtons,
     ConfirmationState,
-    ConfirmationTargets
-} from "../../entities/shared.const";
-import { TranslateService } from "@ngx-translate/core";
-import { ConfirmationDialogComponent } from "../confirmation-dialog";
-import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
-import { OperationService } from "../operation/operation.service";
-import { map, catchError, finalize } from "rxjs/operators";
-import { Observable, throwError as observableThrowError, forkJoin } from "rxjs";
-import { errorHandler } from "../../units/shared.utils";
-import { ConfirmationMessage } from "../../../base/global-confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../../../base/global-confirmation-dialog/confirmation-state-message";
-import { LabelService } from "../../../../../ng-swagger-gen/services/label.service";
-import { Label } from "../../../../../ng-swagger-gen/models/label";
-import { getPageSizeFromLocalStorage, getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage } from "../../units/utils";
-import { ClrDatagridStateInterface } from "@clr/angular";
+    ConfirmationTargets,
+} from '../../entities/shared.const';
+import { TranslateService } from '@ngx-translate/core';
+import { ConfirmationDialogComponent } from '../confirmation-dialog';
+import {
+    operateChanges,
+    OperateInfo,
+    OperationState,
+} from '../operation/operate';
+import { OperationService } from '../operation/operation.service';
+import { map, catchError, finalize } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError, forkJoin } from 'rxjs';
+import { errorHandler } from '../../units/shared.utils';
+import { ConfirmationMessage } from '../../../base/global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../../../base/global-confirmation-dialog/confirmation-state-message';
+import { LabelService } from '../../../../../ng-swagger-gen/services/label.service';
+import { Label } from '../../../../../ng-swagger-gen/models/label';
+import {
+    getPageSizeFromLocalStorage,
+    getSortingString,
+    PageSizeMapKeys,
+    setPageSizeToLocalStorage,
+} from '../../units/utils';
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 @Component({
-    selector: "hbr-label",
-    templateUrl: "./label.component.html",
-    styleUrls: ["./label.component.scss"],
+    selector: 'hbr-label',
+    templateUrl: './label.component.html',
+    styleUrls: ['./label.component.scss'],
 })
-export class LabelComponent implements OnInit {
+export class LabelComponent {
     timerHandler: any;
     loading: boolean = true;
     targets: Label[];
@@ -58,57 +62,68 @@ export class LabelComponent implements OnInit {
 
     @ViewChild(CreateEditLabelComponent)
     createEditLabel: CreateEditLabelComponent;
-    @ViewChild("confirmationDialog")
+    @ViewChild('confirmationDialog')
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     page: number = 1;
-    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.LABEL_COMPONENT);
+    pageSize: number = getPageSizeFromLocalStorage(
+        PageSizeMapKeys.LABEL_COMPONENT
+    );
     total: number = 0;
-    constructor(private labelService: LabelService,
+    constructor(
+        private labelService: LabelService,
         private errorHandlerEntity: ErrorHandler,
         private translateService: TranslateService,
-        private operationService: OperationService) {
-    }
-
-    ngOnInit(): void {
-    }
+        private operationService: OperationService
+    ) {}
 
     retrieve(state?: ClrDatagridStateInterface) {
         this.selectedRow = [];
         // this.targetName = "";
         if (state && state.page) {
             this.pageSize = state.page.size;
-            setPageSizeToLocalStorage(PageSizeMapKeys.LABEL_COMPONENT, this.pageSize);
+            setPageSizeToLocalStorage(
+                PageSizeMapKeys.LABEL_COMPONENT,
+                this.pageSize
+            );
         }
         let sort: string;
         if (state && state.sort && state.sort.by) {
-            sort =  getSortingString(state);
-        } else { // sort by creation_time desc by default
+            sort = getSortingString(state);
+        } else {
+            // sort by creation_time desc by default
             sort = `-creation_time`;
         }
         this.loading = true;
-        this.labelService.ListLabelsResponse({
-            page: this.page,
-            pageSize: this.pageSize,
-            name: this.targetName,
-            sort: sort,
-            scope: this.scope,
-            projectId: this.projectId
-        }).pipe(finalize(() => {
-            this.loading = false;
-        }))
-            .subscribe(res => {
-                // Get total count
-                if (res.headers) {
-                    let xHeader: string = res.headers.get("X-Total-Count");
-                    if (xHeader) {
-                        this.total = parseInt(xHeader, 0);
+        this.labelService
+            .ListLabelsResponse({
+                page: this.page,
+                pageSize: this.pageSize,
+                name: this.targetName,
+                sort: sort,
+                scope: this.scope,
+                projectId: this.projectId,
+            })
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                })
+            )
+            .subscribe(
+                res => {
+                    // Get total count
+                    if (res.headers) {
+                        let xHeader: string = res.headers.get('X-Total-Count');
+                        if (xHeader) {
+                            this.total = parseInt(xHeader, 0);
+                        }
                     }
+                    this.targets = res.body || [];
+                },
+                error => {
+                    this.errorHandlerEntity.error(error);
                 }
-                this.targets = res.body || [];
-            }, error => {
-                this.errorHandlerEntity.error(error);
-            });
+            );
     }
 
     openModal(): void {
@@ -116,7 +131,7 @@ export class LabelComponent implements OnInit {
     }
 
     reload(): void {
-        this.targetName = "";
+        this.targetName = '';
         this.page = 1;
         this.total = 0;
         this.selectedRow = [];
@@ -132,7 +147,7 @@ export class LabelComponent implements OnInit {
     }
 
     refreshTargets() {
-        this.targetName = "";
+        this.targetName = '';
         this.page = 1;
         this.total = 0;
         this.selectedRow = [];
@@ -154,26 +169,32 @@ export class LabelComponent implements OnInit {
                 targetNames.join(', ') || '',
                 targets,
                 ConfirmationTargets.TARGET,
-                ConfirmationButtons.DELETE_CANCEL);
+                ConfirmationButtons.DELETE_CANCEL
+            );
             this.confirmationDialogComponent.open(deletionMessage);
         }
     }
 
     confirmDeletion(message: ConfirmationAcknowledgement) {
-        if (message &&
+        if (
+            message &&
             message.source === ConfirmationTargets.TARGET &&
-            message.state === ConfirmationState.CONFIRMED) {
+            message.state === ConfirmationState.CONFIRMED
+        ) {
             let targetLists: Label[] = message.data;
             if (targetLists && targetLists.length) {
                 let observableLists: any[] = [];
                 targetLists.forEach(target => {
                     observableLists.push(this.delOperate(target));
                 });
-                forkJoin(...observableLists).subscribe((item) => {
-                    this.reload();
-                }, error => {
-                    this.errorHandlerEntity.error(error);
-                });
+                forkJoin(...observableLists).subscribe(
+                    item => {
+                        this.reload();
+                    },
+                    error => {
+                        this.errorHandlerEntity.error(error);
+                    }
+                );
             }
         }
     }
@@ -187,20 +208,23 @@ export class LabelComponent implements OnInit {
         operMessage.data.name = target.name;
         this.operationService.publishInfo(operMessage);
 
-        return this.labelService
-            .DeleteLabel({labelId: target.id})
-            .pipe(map(
-                response => {
-                    this.translateService.get('BATCH.DELETED_SUCCESS')
-                        .subscribe(res => {
-                            operateChanges(operMessage, OperationState.success);
-                        });
-                }), catchError(error => {
-                    const message = errorHandler(error);
-                    this.translateService.get(message).subscribe(res =>
+        return this.labelService.DeleteLabel({ labelId: target.id }).pipe(
+            map(response => {
+                this.translateService
+                    .get('BATCH.DELETED_SUCCESS')
+                    .subscribe(res => {
+                        operateChanges(operMessage, OperationState.success);
+                    });
+            }),
+            catchError(error => {
+                const message = errorHandler(error);
+                this.translateService
+                    .get(message)
+                    .subscribe(res =>
                         operateChanges(operMessage, OperationState.failure, res)
-                      );
-                    return observableThrowError(error);
-                }));
+                    );
+                return observableThrowError(error);
+            })
+        );
     }
 }

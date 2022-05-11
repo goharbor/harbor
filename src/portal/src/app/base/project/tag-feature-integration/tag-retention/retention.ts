@@ -14,13 +14,13 @@
 export class BaseRetention {
     algorithm: string;
     scope: {
-        level: string,
+        level: string;
         ref: number;
     };
     cap: number;
 
     constructor() {
-        this.algorithm = "or";
+        this.algorithm = 'or';
     }
 }
 export class Retention extends BaseRetention {
@@ -30,17 +30,17 @@ export class Retention extends BaseRetention {
         references: object;
         settings: {
             cron: string;
-        }
+        };
     };
     constructor() {
         super();
         this.rules = [];
         this.trigger = {
-            kind: "Schedule",
+            kind: 'Schedule',
             references: {},
             settings: {
-                cron: "",
-            }
+                cron: '',
+            },
         };
     }
 }
@@ -58,22 +58,22 @@ export class BaseRule {
 
     constructor() {
         this.disabled = false;
-        this.action = "retain";
+        this.action = 'retain';
         this.scope_selectors = {
             repository: [
                 {
                     kind: 'doublestar',
                     decoration: 'repoMatches',
-                    pattern: '**'
-                }
-            ]
+                    pattern: '**',
+                },
+            ],
         };
         this.tag_selectors = [
             {
                 kind: 'doublestar',
                 decoration: 'matches',
-                pattern: '**'
-            }
+                pattern: '**',
+            },
         ];
     }
 }
@@ -90,13 +90,12 @@ export class ImmutableRetentionRule extends BaseRule {
 }
 // rule for tag-retention
 export class Rule extends BaseRule {
-
     params: object;
 
     constructor() {
         super();
         this.params = {};
-        this.tag_selectors[0].extras = JSON.stringify({untagged: true});
+        this.tag_selectors[0].extras = JSON.stringify({ untagged: true });
     }
 }
 
@@ -116,7 +115,7 @@ export class Param {
 export class Template {
     rule_template: string;
     display_text: string;
-    action: "retain";
+    action: 'retain';
     params: Array<Param>;
 }
 
@@ -137,24 +136,24 @@ export class RuleMetadate {
             {
                 display_text: null,
                 kind: null,
-                decorations: []
-            }
+                decorations: [],
+            },
         ];
         this.tag_selectors = [
             {
                 display_text: null,
                 kind: null,
-                decorations: []
+                decorations: [],
             },
             {
                 display_text: null,
                 kind: null,
-                decorations: []
-            }
+                decorations: [],
+            },
         ];
     }
 }
 
-export const RUNNING: string = "Running";
-export const PENDING: string = "Pending";
+export const RUNNING: string = 'Running';
+export const PENDING: string = 'Pending';
 export const TIMEOUT: number = 5000;

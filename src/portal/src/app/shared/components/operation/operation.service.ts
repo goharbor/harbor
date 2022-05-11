@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject} from "rxjs";
-import { OperateInfo } from "./operate";
+import { Observable, Subject } from 'rxjs';
+import { OperateInfo } from './operate';
 
 @Injectable({
     providedIn: 'root',

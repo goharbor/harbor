@@ -3,24 +3,23 @@ import { TagFeatureIntegrationComponent } from './tag-feature-integration.compon
 import { SharedTestingModule } from '../../../shared/shared.module';
 
 describe('TagFeatureIntegrationComponent', () => {
-  let component: TagFeatureIntegrationComponent;
-  let fixture: ComponentFixture<TagFeatureIntegrationComponent>;
+    let component: TagFeatureIntegrationComponent;
+    let fixture: ComponentFixture<TagFeatureIntegrationComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ TagFeatureIntegrationComponent ],
-      imports: [ SharedTestingModule ]
-    })
-    .compileComponents();
-  });
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            declarations: [TagFeatureIntegrationComponent],
+            imports: [SharedTestingModule],
+        }).compileComponents();
+    });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(TagFeatureIntegrationComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(TagFeatureIntegrationComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

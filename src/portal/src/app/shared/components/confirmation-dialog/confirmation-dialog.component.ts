@@ -13,17 +13,20 @@
 // limitations under the License.
 import { Component, EventEmitter, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../../entities/shared.const';
-import { ConfirmationMessage } from "../../../base/global-confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../../../base/global-confirmation-dialog/confirmation-state-message";
-import { BatchInfo } from "../../../base/global-confirmation-dialog/confirmation-batch-message";
+import {
+    ConfirmationState,
+    ConfirmationTargets,
+    ConfirmationButtons,
+} from '../../entities/shared.const';
+import { ConfirmationMessage } from '../../../base/global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../../../base/global-confirmation-dialog/confirmation-state-message';
+import { BatchInfo } from '../../../base/global-confirmation-dialog/confirmation-batch-message';
 
 @Component({
     selector: 'confirmation-dialog',
     templateUrl: './confirmation-dialog.component.html',
-    styleUrls: [ './confirmation-dialog.component.scss' ]
+    styleUrls: ['./confirmation-dialog.component.scss'],
 })
-
 export class ConfirmationDialogComponent {
     opened = false;
     dialogTitle = '';
@@ -35,21 +38,23 @@ export class ConfirmationDialogComponent {
     @Output() cancelAction = new EventEmitter<ConfirmationAcknowledgement>();
     isDelete = false;
 
-    constructor(
-        private translate: TranslateService) {}
+    constructor(private translate: TranslateService) {}
 
     open(msg: ConfirmationMessage): void {
         this.dialogTitle = msg.title;
         this.message = msg;
-        this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
-        this.translate.get(msg.message, { 'param': msg.param }).subscribe((res: string) => {
-            this.dialogContent = res;
-        });
+        this.translate
+            .get(this.dialogTitle)
+            .subscribe((res: string) => (this.dialogTitle = res));
+        this.translate
+            .get(msg.message, { param: msg.param })
+            .subscribe((res: string) => {
+                this.dialogContent = res;
+            });
         // Open dialog
         this.buttons = msg.buttons;
         this.opened = true;
     }
-
 
     colorChange(list: BatchInfo) {
         if (!list.loading && !list.errorState) {
@@ -62,7 +67,8 @@ export class ConfirmationDialogComponent {
     }
 
     toggleErrorTitle(errorSpan: any) {
-        errorSpan.style.display = (errorSpan.style.display === 'none') ? 'block' : 'none';
+        errorSpan.style.display =
+            errorSpan.style.display === 'none' ? 'block' : 'none';
     }
 
     close(): void {
@@ -77,24 +83,31 @@ export class ConfirmationDialogComponent {
         }
 
         let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
-        this.cancelAction.emit(new ConfirmationAcknowledgement(
-            ConfirmationState.CANCEL,
-            data,
-            target
-        ));
+        let target = this.message.targetId
+            ? this.message.targetId
+            : ConfirmationTargets.EMPTY;
+        this.cancelAction.emit(
+            new ConfirmationAcknowledgement(
+                ConfirmationState.CANCEL,
+                data,
+                target
+            )
+        );
         this.isDelete = false;
         this.close();
     }
 
     confirm(): void {
-        if (!this.message) {// Inproper condition
+        if (!this.message) {
+            // Inproper condition
             this.close();
             return;
         }
 
         let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
+        let target = this.message.targetId
+            ? this.message.targetId
+            : ConfirmationTargets.EMPTY;
         let message = new ConfirmationAcknowledgement(
             ConfirmationState.CONFIRMED,
             data,

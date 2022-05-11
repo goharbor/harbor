@@ -14,16 +14,15 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { TopRepoService } from './top-repository.service';
-import { Repository } from "../../../../../ng-swagger-gen/models/repository";
-import { ListMode } from "../../../shared/entities/shared.const";
-
+import { Repository } from '../../../../../ng-swagger-gen/models/repository';
+import { ListMode } from '../../../shared/entities/shared.const';
 
 @Component({
     selector: 'top-repo',
-    templateUrl: "top-repo.component.html",
+    templateUrl: 'top-repo.component.html',
     styleUrls: ['top-repo.component.scss'],
 
-    providers: [TopRepoService]
+    providers: [TopRepoService],
 })
 export class TopRepoComponent implements OnInit {
     topRepos: Repository[] = [];
@@ -31,7 +30,7 @@ export class TopRepoComponent implements OnInit {
     constructor(
         private topRepoService: TopRepoService,
         private messageHandlerService: MessageHandlerService
-    ) { }
+    ) {}
 
     public get listMode(): string {
         return ListMode.READONLY;
@@ -44,10 +43,11 @@ export class TopRepoComponent implements OnInit {
 
     // Get top popular repositories
     getTopRepos() {
-        this.topRepoService.getTopRepos()
-            .subscribe(repos => this.topRepos = repos
-            , error => {
+        this.topRepoService.getTopRepos().subscribe(
+            repos => (this.topRepos = repos),
+            error => {
                 this.messageHandlerService.handleError(error);
-            });
+            }
+        );
     }
 }

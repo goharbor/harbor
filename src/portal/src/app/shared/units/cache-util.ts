@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Observable, of } from "rxjs";
-import { tap, publishReplay, refCount } from "rxjs/operators";
+import { Observable, of } from 'rxjs';
+import { tap, publishReplay, refCount } from 'rxjs/operators';
 
 function hashCode(str: string): string {
     let hash: number = 0;
@@ -25,10 +25,10 @@ function hashCode(str: string): string {
     for (let i = 0; i < str.length; i++) {
         chr = str.charCodeAt(i);
 
-        /* tslint:disable:no-bitwise */
-        hash = ((hash << 5) - hash) + chr;
+        /* eslint-disable no-bitwise */
+        hash = (hash << 5) - hash + chr;
         hash |= 0;
-        /* tslint:enable:no-bitwise */
+        /* eslint-enable no-bitwise */
     }
 
     return hash.toString(36);
@@ -55,19 +55,31 @@ interface IObservableCacheConfig {
     slidingExpiration?: boolean;
 }
 
-const cache: Map<string, IObservableCacheValue> = new Map<string, IObservableCacheValue>();
+const cache: Map<string, IObservableCacheValue> = new Map<
+    string,
+    IObservableCacheValue
+>();
 
 export function CacheObservable(config: IObservableCacheConfig = {}) {
-    return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
+    return function (
+        target: any,
+        methodName: string,
+        descriptor: PropertyDescriptor
+    ) {
         const original = descriptor.value;
         const targetName = target.constructor.name;
 
         (descriptor.value as any) = function (...args: Array<any>) {
-            const key = hashCode(`${targetName}:${methodName}:${JSON.stringify(args)}`);
+            const key = hashCode(
+                `${targetName}:${methodName}:${JSON.stringify(args)}`
+            );
 
             let value = cache.get(key);
             if (value && value.created) {
-                if (new Date().getTime() - new Date(value.created).getTime() > config.maxAge) {
+                if (
+                    new Date().getTime() - new Date(value.created).getTime() >
+                    config.maxAge
+                ) {
                     cache[key] = null;
                     value = null;
                 } else if (config.slidingExpiration) {
@@ -80,11 +92,13 @@ export function CacheObservable(config: IObservableCacheConfig = {}) {
                 return of(value.response);
             }
 
-            const response$ = (original.apply(this, args) as Observable<any>).pipe(
+            const response$ = (
+                original.apply(this, args) as Observable<any>
+            ).pipe(
                 tap((response: Observable<any>) => {
-                    cache.set(key,  {
+                    cache.set(key, {
                         response: response,
-                        created: config.maxAge ? new Date() : null
+                        created: config.maxAge ? new Date() : null,
                     });
                 }),
                 publishReplay(1),

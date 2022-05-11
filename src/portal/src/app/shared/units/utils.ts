@@ -1,19 +1,29 @@
-import { Observable } from "rxjs";
+import { Observable } from 'rxjs';
 import { HttpHeaders } from '@angular/common/http';
 import { RequestQueryParams } from '../services';
 import { DebugElement } from '@angular/core';
-import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from '../services';
-import {QuotaUnit, QuotaUnits, StorageMultipleConstant} from '../entities/shared.const';
-import { AbstractControl } from "@angular/forms";
+import {
+    Comparator,
+    State,
+    HttpOptionInterface,
+    HttpOptionTextInterface,
+    QuotaUnitInterface,
+} from '../services';
+import {
+    QuotaUnit,
+    QuotaUnits,
+    StorageMultipleConstant,
+} from '../entities/shared.const';
+import { AbstractControl } from '@angular/forms';
 import { isValidCron } from 'cron-validator';
-import { ClrDatagridStateInterface } from "@clr/angular";
+import { ClrDatagridStateInterface } from '@clr/angular';
 
 /**
  * Api levels
  */
 enum APILevels {
     V1 = '',
-    V2 = '/v2.0'
+    V2 = '/v2.0',
 }
 
 /**
@@ -34,9 +44,11 @@ export const CURRENT_BASE_HREF = '/api' + APILevels.V2;
  *  ** deprecated param {(Observable<T> | Promise<T> | T)} async
  * returns {Promise<T>}
  */
-export function toPromise<T>(async: Observable<T> | Promise<T> | T): Promise<T> {
+export function toPromise<T>(
+    async: Observable<T> | Promise<T> | T
+): Promise<T> {
     if (!async) {
-        return Promise.reject("Bad argument");
+        return Promise.reject('Bad argument');
     }
 
     if (async instanceof Observable) {
@@ -49,70 +61,70 @@ export function toPromise<T>(async: Observable<T> | Promise<T> | T): Promise<T> 
 
 export const HTTP_JSON_OPTIONS: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json'
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
     }),
-    responseType: 'json'
+    responseType: 'json',
 };
 
 export const HTTP_GET_OPTIONS: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-        "Cache-Control": 'no-cache',
-        "Pragma": 'no-cache'
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
     }),
-    responseType: 'json'
+    responseType: 'json',
 };
 export const HTTP_GET_OPTIONS_OBSERVE_RESPONSE: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-        "Cache-Control": 'no-cache',
-        "Pragma": 'no-cache'
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
     }),
     observe: 'response' as 'body',
-    responseType: 'json'
+    responseType: 'json',
 };
 export const HTTP_GET_OPTIONS_TEXT: HttpOptionTextInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-        "Cache-Control": 'no-cache',
-        "Pragma": 'no-cache'
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
     }),
-    responseType: 'text'
+    responseType: 'text',
 };
 
 export const HTTP_FORM_OPTIONS: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
     }),
-    responseType: 'json'
+    responseType: 'json',
 };
 
 export const HTTP_GET_HEADER: HttpHeaders = new HttpHeaders({
-    "Content-Type": 'application/json',
-    "Accept": 'application/json',
-    "Cache-Control": 'no-cache',
-    "Pragma": 'no-cache'
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache',
+    Pragma: 'no-cache',
 });
 
 export const HTTP_GET_OPTIONS_CACHE: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-        "Cache-Control": 'no-cache',
-        "Pragma": 'no-cache',
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
     }),
-    responseType: 'json'
+    responseType: 'json',
 };
 
 export const FILE_UPLOAD_OPTION: HttpOptionInterface = {
     headers: new HttpHeaders({
-        "Content-Type": 'multipart/form-data',
+        'Content-Type': 'multipart/form-data',
     }),
-    responseType: 'json'
+    responseType: 'json',
 };
 
 /**
@@ -122,13 +134,15 @@ export const FILE_UPLOAD_OPTION: HttpOptionInterface = {
  *  ** deprecated param {RequestQueryParams} params
  * returns {RequestOptions}
  */
-export function buildHttpRequestOptions(params: RequestQueryParams): HttpOptionInterface {
+export function buildHttpRequestOptions(
+    params: RequestQueryParams
+): HttpOptionInterface {
     let reqOptions: HttpOptionInterface = {
         headers: new HttpHeaders({
-            "Content-Type": 'application/json',
-            "Accept": 'application/json',
-            "Cache-Control": 'no-cache',
-            "Pragma": 'no-cache'
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
         }),
         responseType: 'json',
     };
@@ -138,34 +152,36 @@ export function buildHttpRequestOptions(params: RequestQueryParams): HttpOptionI
 
     return reqOptions;
 }
-export function buildHttpRequestOptionsWithObserveResponse(params: RequestQueryParams): HttpOptionInterface {
+export function buildHttpRequestOptionsWithObserveResponse(
+    params: RequestQueryParams
+): HttpOptionInterface {
     let reqOptions: HttpOptionInterface = {
         headers: new HttpHeaders({
-            "Content-Type": 'application/json',
-            "Accept": 'application/json',
-            "Cache-Control": 'no-cache',
-            "Pragma": 'no-cache'
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
         }),
         responseType: 'json',
-        observe: 'response' as 'body'
+        observe: 'response' as 'body',
     };
     if (params) {
         reqOptions.params = params;
     }
     return reqOptions;
 }
-
-
 
 /** Button events to pass to `DebugElement.triggerEventHandler` for RouterLink event handler */
 export const ButtonClickEvents = {
     left: { button: 0 },
-    right: { button: 2 }
+    right: { button: 2 },
 };
 
-
 /** Simulate element click. Defaults to mouse left-button click event. */
-export function click(el: DebugElement | HTMLElement, eventObj: any = ButtonClickEvents.left): void {
+export function click(
+    el: DebugElement | HTMLElement,
+    eventObj: any = ButtonClickEvents.left
+): void {
     if (el instanceof HTMLElement) {
         el.click();
     } else {
@@ -178,7 +194,6 @@ export function click(el: DebugElement | HTMLElement, eventObj: any = ButtonClic
  *
  */
 export class CustomComparator<T> implements Comparator<T> {
-
     fieldName: string;
     type: string;
 
@@ -187,7 +202,10 @@ export class CustomComparator<T> implements Comparator<T> {
         this.type = type;
     }
 
-    compare(a: { [key: string]: any | any[] }, b: { [key: string]: any | any[] }) {
+    compare(
+        a: { [key: string]: any | any[] },
+        b: { [key: string]: any | any[] }
+    ) {
         let comp = 0;
         if (a && b) {
             let fieldA, fieldB;
@@ -208,13 +226,14 @@ export class CustomComparator<T> implements Comparator<T> {
                 }
             }
             switch (this.type) {
-                case "number":
+                case 'number':
                     comp = fieldB - fieldA;
                     break;
-                case "date":
-                    comp = new Date(fieldB).getTime() - new Date(fieldA).getTime();
+                case 'date':
+                    comp =
+                        new Date(fieldB).getTime() - new Date(fieldA).getTime();
                     break;
-                case "string":
+                case 'string':
                     comp = fieldB.localeCompare(fieldA);
                     break;
             }
@@ -232,47 +251,49 @@ export const DEFAULT_PAGE_SIZE: number = 15;
  *  The default supported mime type
  */
 export const DEFAULT_SUPPORTED_MIME_TYPES =
-    "application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
+    'application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0';
 
 /**
  *  the property name of vulnerability database updated time
  */
-export const DATABASE_UPDATED_PROPERTY = "harbor.scanner-adapter/vulnerability-database-updated-at";
-export const DATABASE_NEXT_UPDATE_PROPERTY = "harbor.scanner-adapter/vulnerability-database-next-update-at";
+export const DATABASE_UPDATED_PROPERTY =
+    'harbor.scanner-adapter/vulnerability-database-updated-at';
+export const DATABASE_NEXT_UPDATE_PROPERTY =
+    'harbor.scanner-adapter/vulnerability-database-next-update-at';
 
 /**
  * The state of vulnerability scanning
  */
 export const VULNERABILITY_SCAN_STATUS = {
     // front-end status
-    NOT_SCANNED: "Not Scanned",
+    NOT_SCANNED: 'Not Scanned',
     // back-end status
-    PENDING: "Pending",
-    RUNNING: "Running",
-    ERROR: "Error",
-    STOPPED: "Stopped",
-    SUCCESS: "Success",
-    SCHEDULED: "Scheduled"
+    PENDING: 'Pending',
+    RUNNING: 'Running',
+    ERROR: 'Error',
+    STOPPED: 'Stopped',
+    SUCCESS: 'Success',
+    SCHEDULED: 'Scheduled',
 };
 /**
  * The severity of vulnerability scanning
  */
 export const VULNERABILITY_SEVERITY = {
-    LOW: "Low",
-    MEDIUM: "Medium",
-    HIGH: "High",
-    CRITICAL: "Critical",
-    NONE: "None"
+    LOW: 'Low',
+    MEDIUM: 'Medium',
+    HIGH: 'High',
+    CRITICAL: 'Critical',
+    NONE: 'None',
 };
 /**
  * The level of vulnerability severity for comparing
  */
 export const SEVERITY_LEVEL_MAP = {
-    "Critical": 5,
-    "High": 4,
-    "Medium": 3,
-    "Low": 2,
-    "None": 1
+    Critical: 5,
+    High: 4,
+    Medium: 3,
+    Low: 2,
+    None: 1,
 };
 
 /**
@@ -298,7 +319,10 @@ export function calculatePage(state: State): number {
  *  ** deprecated param {State} state
  * returns {void}
  */
-export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
+export function doFiltering<T extends { [key: string]: any | any[] }>(
+    items: T[],
+    state: State
+): T[] {
     if (!items || items.length === 0) {
         return items;
     }
@@ -307,10 +331,7 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
         return items;
     }
 
-    state.filters.forEach((filter: {
-        property: string;
-        value: string;
-    }) => {
+    state.filters.forEach((filter: { property: string; value: string }) => {
         items = items.filter(item => {
             if (filter['property'].indexOf('.') !== -1) {
                 let arr = filter['property'].split('.');
@@ -350,7 +371,10 @@ export function regexpFilter(terms: string, testedValue: any): boolean {
  *  ** deprecated param {State} state
  * returns {T[]}
  */
-export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
+export function doSorting<T extends { [key: string]: any | any[] }>(
+    items: T[],
+    state: State
+): T[] {
     if (!items || items.length === 0) {
         return items;
     }
@@ -360,11 +384,12 @@ export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], 
 
     return items.sort((a: T, b: T) => {
         let comp: number = 0;
-        if (typeof state.sort.by !== "string") {
+        if (typeof state.sort.by !== 'string') {
             comp = state.sort.by.compare(a, b);
         } else {
-            let propA = a[state.sort.by.toString()], propB = b[state.sort.by.toString()];
-            if (typeof propA === "string") {
+            let propA = a[state.sort.by.toString()],
+                propB = b[state.sort.by.toString()];
+            if (typeof propA === 'string') {
                 comp = propA.localeCompare(propB);
             } else {
                 if (propA > propB) {
@@ -392,8 +417,12 @@ export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], 
  * returns {boolean}
  */
 export function compareValue(a: any, b: any): boolean {
-    if ((a && !b) || (!a && b)) { return false; }
-    if (!a && !b) { return true; }
+    if ((a && !b) || (!a && b)) {
+        return false;
+    }
+    if (!a && !b) {
+        return true;
+    }
 
     return JSON.stringify(a) === JSON.stringify(b);
 }
@@ -406,7 +435,7 @@ export function compareValue(a: any, b: any): boolean {
  * returns {boolean}
  */
 export function isEmptyObject(obj: any): boolean {
-    return !obj || JSON.stringify(obj) === "{}";
+    return !obj || JSON.stringify(obj) === '{}';
 }
 
 /**
@@ -417,7 +446,9 @@ export function isEmptyObject(obj: any): boolean {
  * returns {*}
  */
 export function clone(srcObj: any): any {
-    if (!srcObj) { return null; }
+    if (!srcObj) {
+        return null;
+    }
     return JSON.parse(JSON.stringify(srcObj));
 }
 
@@ -427,9 +458,9 @@ export function isEmpty(obj: any): boolean {
 
 export function downloadFile(fileData) {
     let url = window.URL.createObjectURL(fileData.data);
-    let a = document.createElement("a");
+    let a = document.createElement('a');
     document.body.appendChild(a);
-    a.setAttribute("style", "display: none");
+    a.setAttribute('style', 'display: none');
     a.href = url;
     a.download = fileData.filename;
     a.click();
@@ -437,7 +468,10 @@ export function downloadFile(fileData) {
     a.remove();
 }
 
-export function getChanges(original: any, afterChange: any): { [key: string]: any | any[] } {
+export function getChanges(
+    original: any,
+    afterChange: any
+): { [key: string]: any | any[] } {
     let changes: { [key: string]: any | any[] } = {};
     if (!afterChange || !original) {
         return changes;
@@ -453,7 +487,7 @@ export function getChanges(original: any, afterChange: any): { [key: string]: an
                 }
 
                 // Trim string value
-                if (typeof field.value === "string") {
+                if (typeof field.value === 'string') {
                     changes[prop] = ('' + changes[prop]).trim();
                 }
             }
@@ -471,7 +505,11 @@ export function cronRegex(testValue: any): boolean {
     if (testValue && testValue.trim().split(/\s+/g).length < 6) {
         return false;
     }
-    return isValidCron(testValue, {seconds: true, alias: true, allowBlankDay: true});
+    return isValidCron(testValue, {
+        seconds: true,
+        alias: true,
+        allowBlankDay: true,
+    });
 }
 
 /**
@@ -483,17 +521,25 @@ export const roundDecimals = (count, decimals = 0) => {
     return Number(`${Math.round(+`${count}e${decimals}`)}e-${decimals}`);
 };
 /**
-   * get suitable unit
-   * @param count number  ;bit
-   * @param quotaUnitsDeep Array link  QuotaUnits;
-   */
-export const getSuitableUnit = (count: number, quotaUnitsDeep: QuotaUnitInterface[]): string => {
+ * get suitable unit
+ * @param count number  ;bit
+ * @param quotaUnitsDeep Array link  QuotaUnits;
+ */
+export const getSuitableUnit = (
+    count: number,
+    quotaUnitsDeep: QuotaUnitInterface[]
+): string => {
     for (let unitObj of quotaUnitsDeep) {
         if (count / StorageMultipleConstant >= 1 && quotaUnitsDeep.length > 1) {
             quotaUnitsDeep.shift();
-            return getSuitableUnit(count / StorageMultipleConstant, quotaUnitsDeep);
+            return getSuitableUnit(
+                count / StorageMultipleConstant,
+                quotaUnitsDeep
+            );
         } else {
-            return +count ? `${roundDecimals(count, 2)}${unitObj.UNIT}` : `0${unitObj.UNIT}`;
+            return +count
+                ? `${roundDecimals(count, 2)}${unitObj.UNIT}`
+                : `0${unitObj.UNIT}`;
         }
     }
     return `${roundDecimals(count, 2)}${QuotaUnits[0].UNIT}`;
@@ -524,57 +570,72 @@ export const getByte = (count: number, unit: string): number => {
  * @param usedNumber used storage number
  * @param quotaUnitsDeepClone clone(Quotas)
  */
-export const GetIntegerAndUnit = (hardNumber: number, quotaUnitsDeep: QuotaUnitInterface[]
-    , usedNumber: number, quotaUnitsDeepClone: QuotaUnitInterface[]) => {
-
+export const GetIntegerAndUnit = (
+    hardNumber: number,
+    quotaUnitsDeep: QuotaUnitInterface[],
+    usedNumber: number,
+    quotaUnitsDeepClone: QuotaUnitInterface[]
+) => {
     for (let unitObj of quotaUnitsDeep) {
-        if (hardNumber % StorageMultipleConstant === 0 && quotaUnitsDeep.length > 1) {
+        if (
+            hardNumber % StorageMultipleConstant === 0 &&
+            quotaUnitsDeep.length > 1
+        ) {
             quotaUnitsDeep.shift();
             if (usedNumber / StorageMultipleConstant >= 1) {
                 quotaUnitsDeepClone.shift();
-                return GetIntegerAndUnit(hardNumber / StorageMultipleConstant
-                    , quotaUnitsDeep, usedNumber / StorageMultipleConstant, quotaUnitsDeepClone);
+                return GetIntegerAndUnit(
+                    hardNumber / StorageMultipleConstant,
+                    quotaUnitsDeep,
+                    usedNumber / StorageMultipleConstant,
+                    quotaUnitsDeepClone
+                );
             } else {
-                return GetIntegerAndUnit(hardNumber / StorageMultipleConstant, quotaUnitsDeep, usedNumber, quotaUnitsDeepClone);
+                return GetIntegerAndUnit(
+                    hardNumber / StorageMultipleConstant,
+                    quotaUnitsDeep,
+                    usedNumber,
+                    quotaUnitsDeepClone
+                );
             }
         } else {
             return {
                 partNumberHard: +hardNumber,
                 partCharacterHard: unitObj.UNIT,
                 partNumberUsed: roundDecimals(+usedNumber, 2),
-                partCharacterUsed: quotaUnitsDeepClone[0].UNIT
+                partCharacterUsed: quotaUnitsDeepClone[0].UNIT,
             };
         }
     }
 };
 
 export const validateLimit = unitContrl => {
-  return (control: AbstractControl) => {
-    if (
-      // 1024TB
-      getByte(control.value, unitContrl.value) >
-      Math.pow(StorageMultipleConstant, 5)
-    ) {
-      return {
-        error: true
-      };
-    }
-    return null;
-  };
+    return (control: AbstractControl) => {
+        if (
+            // 1024TB
+            getByte(control.value, unitContrl.value) >
+            Math.pow(StorageMultipleConstant, 5)
+        ) {
+            return {
+                error: true,
+            };
+        }
+        return null;
+    };
 };
 
 export function formatSize(tagSize: string): string {
     const size: number = Number.parseInt(tagSize, 10);
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
-        return (size / Math.pow(1024, 1)).toFixed(2) + "KiB";
+        return (size / Math.pow(1024, 1)).toFixed(2) + 'KiB';
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
-        return (size / Math.pow(1024, 2)).toFixed(2) + "MiB";
+        return (size / Math.pow(1024, 2)).toFixed(2) + 'MiB';
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-        return (size / Math.pow(1024, 3)).toFixed(2) + "GiB";
+        return (size / Math.pow(1024, 3)).toFixed(2) + 'GiB';
     } else if (Math.pow(1024, 4) <= size) {
-        return (size / Math.pow(1024, 4)).toFixed(2) + "TiB";
+        return (size / Math.pow(1024, 4)).toFixed(2) + 'TiB';
     } else {
-        return size + "B";
+        return size + 'B';
     }
 }
 
@@ -600,7 +661,7 @@ export function getSizeNumber(size: number): string | number {
  * get size unit of target size (in byte)
  * @param size
  */
-export function getSizeUnit(size: number): string  {
+export function getSizeUnit(size: number): string {
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
         return QuotaUnit.KB;
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
@@ -620,7 +681,7 @@ export function getSizeUnit(size: number): string  {
  * @returns {boolean}
  */
 export function isObject(item): boolean {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+    return item && typeof item === 'object' && !Array.isArray(item);
 }
 
 /**
@@ -629,13 +690,17 @@ export function isObject(item): boolean {
  * @param ...sources
  */
 export function mergeDeep(target, ...sources) {
-    if (!sources.length) { return target; }
+    if (!sources.length) {
+        return target;
+    }
     const source = sources.shift();
 
     if (isObject(target) && isObject(source)) {
         for (const key in source) {
             if (isObject(source[key])) {
-                if (!target[key]) { Object.assign(target, { [key]: {} }); }
+                if (!target[key]) {
+                    Object.assign(target, { [key]: {} });
+                }
                 mergeDeep(target[key], source[key]);
             } else {
                 Object.assign(target, { [key]: source[key] });
@@ -645,10 +710,10 @@ export function mergeDeep(target, ...sources) {
     return mergeDeep(target, ...sources);
 }
 export function dbEncodeURIComponent(url: string) {
-    if (typeof url === "string") {
+    if (typeof url === 'string') {
         return encodeURIComponent(encodeURIComponent(url));
     }
-    return "";
+    return '';
 }
 
 /**
@@ -656,11 +721,11 @@ export function dbEncodeURIComponent(url: string) {
  * @param obj
  */
 export function deleteEmptyKey(obj: Object): void {
-   if (isEmptyObject(obj)) {
-       return;
-   }
-    for ( let key in obj ) {
-        if ( !obj[key] ) {
+    if (isEmptyObject(obj)) {
+        return;
+    }
+    for (let key in obj) {
+        if (!obj[key]) {
             delete obj[key];
         }
     }
@@ -685,7 +750,6 @@ export function getSortingString(state: ClrDatagridStateInterface): string {
     }
     return null;
 }
-
 
 /**
  * Get query string from current state, rules as below:
@@ -733,7 +797,7 @@ export function isSameObject(a: any, b: any): boolean {
             if (c.hasOwnProperty(key)) {
                 if (!c[key]) {
                     // should not use triple-equals here
-                    // tslint:disable-next-line:triple-equals
+                    // eslint-disable-next-line eqeqeq
                     if (a[key] != b[key]) {
                         return false;
                     }
@@ -748,7 +812,7 @@ export function isSameObject(a: any, b: any): boolean {
                         }
                     } else {
                         // should not use triple-equals here
-                        // tslint:disable-next-line:triple-equals
+                        // eslint-disable-next-line eqeqeq
                         if (a[key] != b[key]) {
                             return false;
                         }
@@ -809,11 +873,14 @@ export function delUrlParam(url: string, key: string): string {
             if (!Object.keys(obj) || !Object.keys(obj).length) {
                 return baseUrl;
             }
-            return baseUrl + '?' +
-              JSON.stringify(obj)
-                .replace(/[\"\{\}]/g, '')
-                .replace(/\:/g, '=')
-                .replace(/\,/g, '&');
+            return (
+                baseUrl +
+                '?' +
+                JSON.stringify(obj)
+                    .replace(/[\"\{\}]/g, '')
+                    .replace(/\:/g, '=')
+                    .replace(/\,/g, '&')
+            );
         }
     }
     return url;
@@ -826,13 +893,16 @@ const PAGE_SIZE_MAP_KEY: string = 'pageSizeMap';
  * @param key
  * @param initialSize
  */
-export function getPageSizeFromLocalStorage(key: string, initialSize?: number): number {
+export function getPageSizeFromLocalStorage(
+    key: string,
+    initialSize?: number
+): number {
     if (!initialSize) {
         initialSize = DEFAULT_PAGE_SIZE;
     }
     if (localStorage && key && localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
         const pageSizeMap: {
-            [k: string]: number
+            [k: string]: number;
         } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
         return pageSizeMap[key] ? pageSizeMap[key] : initialSize;
     }
@@ -846,11 +916,12 @@ export function getPageSizeFromLocalStorage(key: string, initialSize?: number): 
  */
 export function setPageSizeToLocalStorage(key: string, pageSize: number) {
     if (localStorage && key && pageSize) {
-        if (!localStorage.getItem(PAGE_SIZE_MAP_KEY)) { // if first set
+        if (!localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
+            // if first set
             localStorage.setItem(PAGE_SIZE_MAP_KEY, '{}');
         }
         const pageSizeMap: {
-            [k: string]: number
+            [k: string]: number;
         } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
         pageSizeMap[key] = pageSize;
         localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(pageSizeMap));
@@ -885,5 +956,5 @@ export enum PageSizeMapKeys {
     PROJECT_QUOTA_COMPONENT = 'ProjectQuotasComponent',
     SYSTEM_SCANNER_COMPONENT = 'ConfigurationScannerComponent',
     GC_HISTORY_COMPONENT = 'GcHistoryComponent',
-    SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent'
+    SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent',
 }

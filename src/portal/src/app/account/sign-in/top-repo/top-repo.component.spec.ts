@@ -10,27 +10,25 @@ describe('TopRepoComponent', () => {
     let component: TopRepoComponent;
     let fixture: ComponentFixture<TopRepoComponent>;
     const mockMessageHandlerService = {
-        showSuccess: () => { },
-        handleError: () => { },
-        isAppLevel: () => { },
+        showSuccess: () => {},
+        handleError: () => {},
+        isAppLevel: () => {},
     };
     const mockTopRepoService = {
-        getTopRepos: () => of([])
+        getTopRepos: () => of([]),
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-               SharedTestingModule
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [TopRepoComponent],
             providers: [
                 { provide: TopRepoService, useValue: mockTopRepoService },
-                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
-
-            ]
+                {
+                    provide: MessageHandlerService,
+                    useValue: mockMessageHandlerService,
+                },
+            ],
         }).compileComponents();
     });
 

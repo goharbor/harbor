@@ -14,40 +14,44 @@
 import { Component, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { PasswordSettingService } from '../password-setting.service';
-import { InlineAlertComponent } from "../../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'forgot-password',
-    templateUrl: "forgot-password.component.html",
-    styleUrls: ['./forgot-password.component.scss', '../password-setting.component.scss', '../../../common.scss']
+    templateUrl: 'forgot-password.component.html',
+    styleUrls: [
+        './forgot-password.component.scss',
+        '../password-setting.component.scss',
+        '../../../common.scss',
+    ],
 })
 export class ForgotPasswordComponent {
     opened: boolean = false;
     onGoing: boolean = false;
-    email: string = "";
+    email: string = '';
     validationState: boolean = true;
     isSuccess: boolean = false;
 
-    @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
+    @ViewChild('forgotPasswordFrom', { static: true }) forgotPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
-    constructor(private pwdService: PasswordSettingService) { }
+    constructor(private pwdService: PasswordSettingService) {}
 
     public get showProgress(): boolean {
         return this.onGoing;
     }
 
     public get isValid(): boolean {
-        return this.forgotPwdForm && this.forgotPwdForm.valid ;
+        return this.forgotPwdForm && this.forgotPwdForm.valid;
     }
 
     public get btnCancelCaption(): string {
         if (this.isSuccess) {
-            return "BUTTON.CLOSE";
+            return 'BUTTON.CLOSE';
         }
 
-        return "BUTTON.CANCEL";
+        return 'BUTTON.CANCEL';
     }
 
     public open(): void {
@@ -55,7 +59,7 @@ export class ForgotPasswordComponent {
         this.validationState = true;
         this.isSuccess = false;
         this.onGoing = false;
-        this.email = "";
+        this.email = '';
         this.forgotPwdForm.resetForm();
         this.inlineAlert.close();
 
@@ -77,18 +81,19 @@ export class ForgotPasswordComponent {
         }
 
         this.onGoing = true;
-        this.pwdService.sendResetPasswordMail(this.email)
-            .subscribe(response => {
+        this.pwdService.sendResetPasswordMail(this.email).subscribe(
+            response => {
                 this.onGoing = false;
                 this.isSuccess = true;
                 this.inlineAlert.showInlineSuccess({
-                    message: "RESET_PWD.SUCCESS"
+                    message: 'RESET_PWD.SUCCESS',
                 });
-            }, error => {
+            },
+            error => {
                 this.onGoing = false;
                 this.inlineAlert.showInlineError(error);
-            });
-
+            }
+        );
     }
 
     public handleValidation(flag: boolean): void {

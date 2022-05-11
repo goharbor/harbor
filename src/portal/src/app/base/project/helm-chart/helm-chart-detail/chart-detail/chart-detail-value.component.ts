@@ -1,56 +1,53 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
-  selector: "hbr-chart-detail-value",
-  templateUrl: "./chart-detail-value.component.html",
-  styleUrls: ["./chart-detail-value.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'hbr-chart-detail-value',
+    templateUrl: './chart-detail-value.component.html',
+    styleUrls: ['./chart-detail-value.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ChartDetailValueComponent implements OnInit {
-  @Input() values;
-  @Input() yaml;
+export class ChartDetailValueComponent {
+    @Input() values;
+    @Input() yaml;
 
-  // Default set to yaml file
-  valueMode = false;
-  valueHover = false;
-  yamlHover = true;
+    // Default set to yaml file
+    valueMode = false;
+    valueHover = false;
+    yamlHover = true;
 
-  objKeys = Object.keys;
+    objKeys = Object.keys;
 
-  constructor() {}
+    constructor() {}
 
-  ngOnInit(): void {
-  }
-
-  public get isValueMode() {
-    return this.valueMode;
-  }
-
-  isHovering(view: string) {
-    if (view === 'value') {
-      return this.valueHover ? true : false;
-    } else {
-      return this.yamlHover ? true : false;
+    public get isValueMode() {
+        return this.valueMode;
     }
-  }
 
-  showYamlFile(showYaml: boolean) {
-    this.valueMode = !showYaml;
-  }
-
-  mouseEnter(mode: string) {
-    if (mode === "value") {
-      this.valueHover = true;
-    } else {
-      this.yamlHover = true;
+    isHovering(view: string) {
+        if (view === 'value') {
+            return this.valueHover;
+        } else {
+            return this.yamlHover;
+        }
     }
-  }
 
-  mouseLeave(mode: string) {
-    if (mode === "value") {
-      this.valueHover = false;
-    } else {
-      this.yamlHover = false;
+    showYamlFile(showYaml: boolean) {
+        this.valueMode = !showYaml;
     }
-  }
+
+    mouseEnter(mode: string) {
+        if (mode === 'value') {
+            this.valueHover = true;
+        } else {
+            this.yamlHover = true;
+        }
+    }
+
+    mouseLeave(mode: string) {
+        if (mode === 'value') {
+            this.valueHover = false;
+        } else {
+            this.yamlHover = false;
+        }
+    }
 }

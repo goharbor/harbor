@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ConfigurationComponent } from './config.component';
-import { SharedTestingModule } from "../../../shared/shared.module";
-import { ConfigService } from "./config.service";
-import { Configuration } from "./config";
+import { SharedTestingModule } from '../../../shared/shared.module';
+import { ConfigService } from './config.service';
+import { Configuration } from './config';
 
 describe('ConfigurationComponent', () => {
     let component: ConfigurationComponent;
@@ -18,27 +18,25 @@ describe('ConfigurationComponent', () => {
         getLoadingConfigStatus() {
             return false;
         },
-        updateConfig() {
-        },
-        initConfig() {
-        }
+        updateConfig() {},
+        initConfig() {},
     };
     let initSpy: jasmine.Spy;
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
+            imports: [SharedTestingModule],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             declarations: [ConfigurationComponent],
             providers: [
                 { provide: ConfigService, useValue: fakeConfigService },
-            ]
+            ],
         }).compileComponents();
     });
 
     beforeEach(() => {
-        initSpy = spyOn(fakeConfigService, "initConfig").and.returnValue(undefined);
+        initSpy = spyOn(fakeConfigService, 'initConfig').and.returnValue(
+            undefined
+        );
         fixture = TestBed.createComponent(ConfigurationComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();

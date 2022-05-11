@@ -19,15 +19,18 @@ import { ConfirmationMessage } from 'src/app/base/global-confirmation-dialog/con
 import { ConfirmationAcknowledgement } from 'src/app/base/global-confirmation-dialog/confirmation-state-message';
 import { Project } from 'src/app/base/project/project';
 import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
-import { ConfirmationState, ConfirmationTargets } from 'src/app/shared/entities/shared.const';
+import {
+    ConfirmationState,
+    ConfirmationTargets,
+} from 'src/app/shared/entities/shared.const';
 import { ErrorHandler } from 'src/app/shared/units/error-handler/error-handler';
 import { dbEncodeURIComponent } from 'src/app/shared/units/utils';
-import { finalize } from "rxjs/operators";
+import { finalize } from 'rxjs/operators';
 
 @Component({
     selector: 'artifact-info',
     templateUrl: './artifact-info.component.html',
-    styleUrls: ['./artifact-info.component.scss']
+    styleUrls: ['./artifact-info.component.scss'],
 })
 export class ArtifactInfoComponent implements OnInit {
     projectName: string;
@@ -45,16 +48,17 @@ export class ArtifactInfoComponent implements OnInit {
         private errorHandler: ErrorHandler,
         private repositoryService: RepositoryService,
         private translate: TranslateService,
-        private activatedRoute: ActivatedRoute,
-    ) {
-    }
+        private activatedRoute: ActivatedRoute
+    ) {}
 
     ngOnInit(): void {
         this.repoName = this.activatedRoute.snapshot?.parent?.params['repo'];
         let resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
         if (resolverData) {
             this.projectName = (<Project>resolverData['projectResolver']).name;
-            this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+            this.hasProjectAdminRole = (<Project>(
+                resolverData['projectResolver']
+            )).has_project_admin_role;
         }
         this.retrieve();
     }
@@ -65,12 +69,16 @@ export class ArtifactInfoComponent implements OnInit {
             repositoryName: dbEncodeURIComponent(this.repoName),
         };
         this.loading = true;
-        this.repositoryService.getRepository(params)
-            .pipe(finalize(() => this.loading = false))
-            .subscribe(response => {
-                this.orgImageInfo = response.description;
-                this.imageInfo = response.description;
-            }, error => this.errorHandler.error(error));
+        this.repositoryService
+            .getRepository(params)
+            .pipe(finalize(() => (this.loading = false)))
+            .subscribe(
+                response => {
+                    this.orgImageInfo = response.description;
+                    this.imageInfo = response.description;
+                },
+                error => this.errorHandler.error(error)
+            );
     }
 
     refresh() {
@@ -96,21 +104,25 @@ export class ArtifactInfoComponent implements OnInit {
         this.onSaving = true;
         let params: RepositoryService.UpdateRepositoryParams = {
             repositoryName: dbEncodeURIComponent(this.repoName),
-            repository: {description: this.imageInfo},
+            repository: { description: this.imageInfo },
             projectName: this.projectName,
         };
-        this.repositoryService.updateRepository(params)
-            .subscribe(() => {
+        this.repositoryService.updateRepository(params).subscribe(
+            () => {
                 this.onSaving = false;
-                this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
-                    this.errorHandler.info(res);
-                });
+                this.translate
+                    .get('CONFIG.SAVE_SUCCESS')
+                    .subscribe((res: string) => {
+                        this.errorHandler.info(res);
+                    });
                 this.editing = false;
                 this.refresh();
-            }, error => {
+            },
+            error => {
                 this.onSaving = false;
                 this.errorHandler.error(error);
-            });
+            }
+        );
     }
 
     cancelInfo() {
@@ -126,8 +138,11 @@ export class ArtifactInfoComponent implements OnInit {
 
     confirmCancel(ack: ConfirmationAcknowledgement): void {
         this.editing = false;
-        if (ack && ack.source === ConfirmationTargets.CONFIG &&
-            ack.state === ConfirmationState.CONFIRMED) {
+        if (
+            ack &&
+            ack.source === ConfirmationTargets.CONFIG &&
+            ack.state === ConfirmationState.CONFIRMED
+        ) {
             this.reset();
         }
     }

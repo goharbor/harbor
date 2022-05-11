@@ -13,16 +13,16 @@ export class Project {
     is_member?: boolean;
     role_name?: string;
     metadata?: {
-      public: string | boolean;
-      enable_content_trust: string | boolean;
-      enable_content_trust_cosign?: string | boolean;
-      prevent_vul: string | boolean;
-      severity: string;
-      auto_scan: string | boolean;
-      reuse_sys_cve_allowlist?: string;
+        public: string | boolean;
+        enable_content_trust: string | boolean;
+        enable_content_trust_cosign?: string | boolean;
+        prevent_vul: string | boolean;
+        severity: string;
+        auto_scan: string | boolean;
+        reuse_sys_cve_allowlist?: string;
     };
     cve_allowlist?: object;
-    constructor () {
+    constructor() {
         this.metadata.public = false;
         this.metadata.enable_content_trust = false;
         this.metadata.enable_content_trust_cosign = false;

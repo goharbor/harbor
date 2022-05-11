@@ -11,41 +11,71 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
-import { catchError, debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
-import { forkJoin, Observable, Subscription, throwError as observableThrowError, timer } from "rxjs";
-import { TranslateService } from "@ngx-translate/core";
-import { ListReplicationRuleComponent } from "./list-replication-rule/list-replication-rule.component";
-import { CreateEditRuleComponent } from "./create-edit-rule/create-edit-rule.component";
-import { ErrorHandler } from "../../../../shared/units/error-handler";
-import { Comparator, ReplicationJob, ReplicationJobItem } from "../../../../shared/services";
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild,
+} from '@angular/core';
+import {
+    catchError,
+    debounceTime,
+    distinctUntilChanged,
+    finalize,
+    map,
+    switchMap,
+} from 'rxjs/operators';
+import {
+    forkJoin,
+    Observable,
+    Subscription,
+    throwError as observableThrowError,
+    timer,
+} from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import { ListReplicationRuleComponent } from './list-replication-rule/list-replication-rule.component';
+import { CreateEditRuleComponent } from './create-edit-rule/create-edit-rule.component';
+import { ErrorHandler } from '../../../../shared/units/error-handler';
+import {
+    Comparator,
+    ReplicationJob,
+    ReplicationJobItem,
+} from '../../../../shared/services';
 
 import {
     calculatePage,
     CustomComparator,
     doFiltering,
     doSorting,
-    getPageSizeFromLocalStorage, getSortingString,
+    getPageSizeFromLocalStorage,
+    getSortingString,
     PageSizeMapKeys,
-    setPageSizeToLocalStorage
-} from "../../../../shared/units/utils";
+    setPageSizeToLocalStorage,
+} from '../../../../shared/units/utils';
 
 import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    REFRESH_TIME_DIFFERENCE
-} from "../../../../shared/entities/shared.const";
-import { ConfirmationDialogComponent } from "../../../../shared/components/confirmation-dialog";
-import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
-import { OperationService } from "../../../../shared/components/operation/operation.service";
-import { Router } from "@angular/router";
-import { FilterComponent } from "../../../../shared/components/filter/filter.component";
+    REFRESH_TIME_DIFFERENCE,
+} from '../../../../shared/entities/shared.const';
+import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
+import {
+    operateChanges,
+    OperateInfo,
+    OperationState,
+} from '../../../../shared/components/operation/operate';
+import { OperationService } from '../../../../shared/components/operation/operation.service';
+import { Router } from '@angular/router';
+import { FilterComponent } from '../../../../shared/components/filter/filter.component';
 import { ClrDatagridStateInterface } from '@clr/angular';
-import { errorHandler } from "../../../../shared/units/shared.utils";
-import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../../../global-confirmation-dialog/confirmation-state-message";
-import { ReplicationService } from "ng-swagger-gen/services/replication.service";
+import { errorHandler } from '../../../../shared/units/shared.utils';
+import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../../../global-confirmation-dialog/confirmation-state-message';
+import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationExecutionFilter } from '../replication';
 
@@ -55,27 +85,27 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 const IN_PROCESS: string = 'InProgress';
 
 const ruleStatus: { [key: string]: any } = [
-    {key: "all", description: "REPLICATION.ALL_STATUS"},
-    {key: "1", description: "REPLICATION.ENABLED"},
-    {key: "0", description: "REPLICATION.DISABLED"}
+    { key: 'all', description: 'REPLICATION.ALL_STATUS' },
+    { key: '1', description: 'REPLICATION.ENABLED' },
+    { key: '0', description: 'REPLICATION.DISABLED' },
 ];
 
 export class SearchOption {
     ruleId: number | string;
-    ruleName: string = "";
-    trigger: string = "";
-    status: string = "";
+    ruleName: string = '';
+    trigger: string = '';
+    status: string = '';
     page: number = 1;
 }
 
 const STATUS_MAP = {
-    "Succeed": "Succeeded"
+    Succeed: 'Succeeded',
 };
 
 @Component({
-    selector: "hbr-replication",
-    templateUrl: "./replication.component.html",
-    styleUrls: ["./replication.component.scss"]
+    selector: 'hbr-replication',
+    templateUrl: './replication.component.html',
+    styleUrls: ['./replication.component.scss'],
 })
 export class ReplicationComponent implements OnInit, OnDestroy {
     @Input() projectId: number | string;
@@ -96,7 +126,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     ruleStatus = ruleStatus;
     currentRuleStatus: { key: string; description: string };
     currentTerm: string;
-    defaultFilter = "trigger";
+    defaultFilter = 'trigger';
     selectedRow: ReplicationJobItem[] = [];
     isStopOnGoing: boolean;
     hiddenJobList = true;
@@ -109,23 +139,27 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     @ViewChild(CreateEditRuleComponent)
     createEditPolicyComponent: CreateEditRuleComponent;
 
-    @ViewChild("replicationConfirmDialog")
+    @ViewChild('replicationConfirmDialog')
     replicationConfirmDialog: ConfirmationDialogComponent;
 
-    @ViewChild("StopConfirmDialog")
+    @ViewChild('StopConfirmDialog')
     StopConfirmDialog: ConfirmationDialogComponent;
 
-    creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>("start_time", "date");
-    updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>("end_time", "date");
+    creationTimeComparator: Comparator<ReplicationJob> =
+        new CustomComparator<ReplicationJob>('start_time', 'date');
+    updateTimeComparator: Comparator<ReplicationJob> =
+        new CustomComparator<ReplicationJob>('end_time', 'date');
 
     // Server driven pagination
     currentPage: number = 1;
     totalCount: number = 0;
-    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS);
+    pageSize: number = getPageSizeFromLocalStorage(
+        PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS
+    );
     currentState: ClrDatagridStateInterface;
     jobsLoading: boolean = false;
     timerDelay: Subscription;
-    @ViewChild(FilterComponent, {static: true})
+    @ViewChild(FilterComponent, { static: true })
     filterComponent: FilterComponent;
     searchSub: Subscription;
 
@@ -135,8 +169,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         private replicationService: ReplicationService,
         private operationService: OperationService,
         private translateService: TranslateService
-    ) {
-    }
+    ) {}
 
     public get showPaginationIndex(): boolean {
         return this.totalCount > 0;
@@ -144,38 +177,48 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         if (!this.searchSub) {
-            this.searchSub = this.filterComponent.filterTerms.pipe(
-                debounceTime(500),
-                distinctUntilChanged(),
-                switchMap(ruleName => {
-                    this.listReplicationRule.loading = true;
-                    this.listReplicationRule.page = 1;
-                    return this.replicationService
-                        .listReplicationPoliciesResponse({
-                            page: this.listReplicationRule.page,
-                            pageSize: this.listReplicationRule.pageSize,
-                            q: ruleName ? encodeURIComponent(`name=~${ruleName}`) : null
-                        });
-                })
-            ).subscribe({
-                next: response => {
-                    this.hideJobs();
-                    // Get total count
-                    if (response.headers) {
-                        let xHeader: string = response.headers.get("x-total-count");
-                        if (xHeader) {
-                            this.listReplicationRule.totalCount = parseInt(xHeader, 0);
+            this.searchSub = this.filterComponent.filterTerms
+                .pipe(
+                    debounceTime(500),
+                    distinctUntilChanged(),
+                    switchMap(ruleName => {
+                        this.listReplicationRule.loading = true;
+                        this.listReplicationRule.page = 1;
+                        return this.replicationService.listReplicationPoliciesResponse(
+                            {
+                                page: this.listReplicationRule.page,
+                                pageSize: this.listReplicationRule.pageSize,
+                                q: ruleName
+                                    ? encodeURIComponent(`name=~${ruleName}`)
+                                    : null,
+                            }
+                        );
+                    })
+                )
+                .subscribe({
+                    next: response => {
+                        this.hideJobs();
+                        // Get total count
+                        if (response.headers) {
+                            let xHeader: string =
+                                response.headers.get('x-total-count');
+                            if (xHeader) {
+                                this.listReplicationRule.totalCount = parseInt(
+                                    xHeader,
+                                    0
+                                );
+                            }
                         }
-                    }
-                    this.listReplicationRule.selectedRow = null; // Clear selection
-                    this.listReplicationRule.rules = response.body as ReplicationPolicy[];
-                    this.listReplicationRule.loading = false;
-                },
-                error: error => {
-                    this.errorHandlerEntity.error(error);
-                    this.listReplicationRule.loading = false;
-                }
-            });
+                        this.listReplicationRule.selectedRow = null; // Clear selection
+                        this.listReplicationRule.rules =
+                            response.body as ReplicationPolicy[];
+                        this.listReplicationRule.loading = false;
+                    },
+                    error: error => {
+                        this.errorHandlerEntity.error(error);
+                        this.listReplicationRule.loading = false;
+                    },
+                });
         }
         this.currentRuleStatus = this.ruleStatus[0];
     }
@@ -207,7 +250,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     goToLink(exeId: number): void {
-        let linkUrl = ["harbor", "replications", exeId, "tasks"];
+        let linkUrl = ['harbor', 'replications', exeId, 'tasks'];
         this.router.navigate(linkUrl);
     }
 
@@ -217,7 +260,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             return;
         }
         this.pageSize = state.page.size;
-        setPageSizeToLocalStorage(PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS, this.pageSize);
+        setPageSizeToLocalStorage(
+            PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS,
+            this.pageSize
+        );
         this.currentState = state;
 
         let pageNumber: number = calculatePage(state);
@@ -230,51 +276,64 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             pageSize: this.pageSize,
             sort: getSortingString(state),
         };
-        if (this.defaultFilter === ReplicationExecutionFilter.TRIGGER && this.currentTerm) {
+        if (
+            this.defaultFilter === ReplicationExecutionFilter.TRIGGER &&
+            this.currentTerm
+        ) {
             params.trigger = this.currentTerm;
         }
-        if (this.defaultFilter === ReplicationExecutionFilter.STATUS && this.currentTerm) {
+        if (
+            this.defaultFilter === ReplicationExecutionFilter.STATUS &&
+            this.currentTerm
+        ) {
             params.status = this.currentTerm;
         }
         if (withLoading) {
             this.jobsLoading = true;
         }
         this.selectedRow = [];
-        this.replicationService.listReplicationExecutionsResponse(params).subscribe(
-            response => {
-                this.totalCount = Number.parseInt(
-                    response.headers.get('x-total-count'), 10
-                );
-                this.jobs = response.body as ReplicationJobItem[];
-                if (!this.timerDelay) {
-                    this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
-                        let count: number = 0;
-                        this.jobs.forEach(job => {
-                            if (
-                                job.status === IN_PROCESS
-                            ) {
-                                count++;
+        this.replicationService
+            .listReplicationExecutionsResponse(params)
+            .subscribe(
+                response => {
+                    this.totalCount = Number.parseInt(
+                        response.headers.get('x-total-count'),
+                        10
+                    );
+                    this.jobs = response.body as ReplicationJobItem[];
+                    if (!this.timerDelay) {
+                        this.timerDelay = timer(
+                            REFRESH_TIME_DIFFERENCE,
+                            REFRESH_TIME_DIFFERENCE
+                        ).subscribe(() => {
+                            let count: number = 0;
+                            this.jobs.forEach(job => {
+                                if (job.status === IN_PROCESS) {
+                                    count++;
+                                }
+                            });
+                            if (count > 0) {
+                                this.clrLoadJobs(false, this.currentState);
+                            } else {
+                                this.timerDelay.unsubscribe();
+                                this.timerDelay = null;
                             }
                         });
-                        if (count > 0) {
-                            this.clrLoadJobs(false, this.currentState);
-                        } else {
-                            this.timerDelay.unsubscribe();
-                            this.timerDelay = null;
-                        }
-                    });
-                }
-                // Do filtering and sorting
-                this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
-                this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
+                    }
+                    // Do filtering and sorting
+                    this.jobs = doFiltering<ReplicationJobItem>(
+                        this.jobs,
+                        state
+                    );
+                    this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
-                this.jobsLoading = false;
-            },
-            error => {
-                this.jobsLoading = false;
-                this.errorHandlerEntity.error(error);
-            }
-        );
+                    this.jobsLoading = false;
+                },
+                error => {
+                    this.jobsLoading = false;
+                    this.errorHandlerEntity.error(error);
+                }
+            );
     }
 
     public doSearchExecutions(terms: string): void {
@@ -291,7 +350,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         let st: ClrDatagridStateInterface = this.currentState;
         if (!st) {
             st = {
-                page: {}
+                page: {},
             };
         }
         st.page.size = this.pageSize;
@@ -304,7 +363,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     selectOneRule(rule: ReplicationPolicy) {
         if (rule && rule.id) {
             this.hiddenJobList = false;
-            this.search.ruleId = rule.id || "";
+            this.search.ruleId = rule.id || '';
             this.loadFirstPage();
         }
     }
@@ -312,8 +371,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     replicateManualRule(rule: ReplicationPolicy) {
         if (rule) {
             let replicationMessage = new ConfirmationMessage(
-                "REPLICATION.REPLICATION_TITLE",
-                "REPLICATION.REPLICATION_SUMMARY",
+                'REPLICATION.REPLICATION_TITLE',
+                'REPLICATION.REPLICATION_SUMMARY',
                 rule.name,
                 rule,
                 ConfirmationTargets.TARGET,
@@ -332,11 +391,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             let rule: ReplicationPolicy = message.data;
 
             if (rule) {
-                forkJoin(this.replicationOperate(rule)).subscribe(item => {
-                    this.selectOneRule(rule);
-                }, error => {
-                    this.errorHandlerEntity.error(error);
-                });
+                forkJoin(this.replicationOperate(rule)).subscribe(
+                    item => {
+                        this.selectOneRule(rule);
+                    },
+                    error => {
+                        this.errorHandlerEntity.error(error);
+                    }
+                );
             }
         }
     }
@@ -344,36 +406,44 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     replicationOperate(rule: ReplicationPolicy): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
-        operMessage.name = "OPERATION.REPLICATION";
+        operMessage.name = 'OPERATION.REPLICATION';
         operMessage.data.id = rule.id;
         operMessage.state = OperationState.progressing;
         operMessage.data.name = rule.name;
         this.operationService.publishInfo(operMessage);
 
-        return this.replicationService.startReplication({
-            execution: {
-                policy_id: rule.id
-            }
-        }).pipe(
-            map(response => {
-                this.translateService
-                    .get("BATCH.REPLICATE_SUCCESS")
-                    .subscribe(res =>
-                        operateChanges(operMessage, OperationState.success)
-                    );
-            }),
-            catchError(error => {
-                const message = errorHandler(error);
-                this.translateService.get(message).subscribe(res =>
-                    operateChanges(operMessage, OperationState.failure, res)
-                );
-                return observableThrowError(error);
+        return this.replicationService
+            .startReplication({
+                execution: {
+                    policy_id: rule.id,
+                },
             })
-        );
+            .pipe(
+                map(response => {
+                    this.translateService
+                        .get('BATCH.REPLICATE_SUCCESS')
+                        .subscribe(res =>
+                            operateChanges(operMessage, OperationState.success)
+                        );
+                }),
+                catchError(error => {
+                    const message = errorHandler(error);
+                    this.translateService
+                        .get(message)
+                        .subscribe(res =>
+                            operateChanges(
+                                operMessage,
+                                OperationState.failure,
+                                res
+                            )
+                        );
+                    return observableThrowError(error);
+                })
+            );
     }
 
     doFilterJob($event: any): void {
-        this.defaultFilter = $event["target"].value;
+        this.defaultFilter = $event['target'].value;
         this.doSearchJobs(this.currentTerm);
     }
 
@@ -393,10 +463,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     openStopExecutionsDialog(targets: ReplicationJobItem[]) {
-        let ExecutionId = targets.map(robot => robot.id).join(",");
+        let ExecutionId = targets.map(robot => robot.id).join(',');
         let StopExecutionsMessage = new ConfirmationMessage(
-            "REPLICATION.STOP_TITLE",
-            "REPLICATION.STOP_SUMMARY",
+            'REPLICATION.STOP_TITLE',
+            'REPLICATION.STOP_SUMMARY',
             ExecutionId,
             targets,
             ConfirmationTargets.STOP_EXECUTIONS,
@@ -435,7 +505,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
         this.isStopOnGoing = true;
         if (this.jobs && this.jobs.length) {
-            let ExecutionsStop$ = targets.map(target => this.StopOperate(target));
+            let ExecutionsStop$ = targets.map(target =>
+                this.StopOperate(target)
+            );
             forkJoin(ExecutionsStop$)
                 .pipe(
                     finalize(() => {
@@ -443,17 +515,18 @@ export class ReplicationComponent implements OnInit, OnDestroy {
                         this.isStopOnGoing = false;
                     })
                 )
-                .subscribe(() => {
-                    }
-                    , error => {
+                .subscribe(
+                    () => {},
+                    error => {
                         this.errorHandlerEntity.error(error);
-                    });
+                    }
+                );
         }
     }
 
     StopOperate(targets: ReplicationJobItem): any {
         let operMessage = new OperateInfo();
-        operMessage.name = "OPERATION.STOP_EXECUTIONS";
+        operMessage.name = 'OPERATION.STOP_EXECUTIONS';
         operMessage.data.id = targets.id;
         operMessage.state = OperationState.progressing;
         operMessage.data.name = targets.id;
@@ -461,21 +534,27 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
         return this.replicationService
             .stopReplication({
-                id: targets.id
+                id: targets.id,
             })
             .pipe(
                 map(response => {
                     this.translateService
-                        .get("BATCH.STOP_SUCCESS")
+                        .get('BATCH.STOP_SUCCESS')
                         .subscribe(res =>
                             operateChanges(operMessage, OperationState.success)
                         );
                 }),
                 catchError(error => {
                     const message = errorHandler(error);
-                    this.translateService.get(message).subscribe(res =>
-                        operateChanges(operMessage, OperationState.failure, res)
-                    );
+                    this.translateService
+                        .get(message)
+                        .subscribe(res =>
+                            operateChanges(
+                                operMessage,
+                                OperationState.failure,
+                                res
+                            )
+                        );
                     return observableThrowError(error);
                 })
             );
@@ -483,16 +562,16 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
     reloadRules(isReady: boolean) {
         if (isReady) {
-            this.search.ruleName = "";
-            this.filterComponent.currentValue = "";
+            this.search.ruleName = '';
+            this.filterComponent.currentValue = '';
             this.listReplicationRule.refreshRule();
         }
     }
 
     refreshRules() {
-        this.search.ruleName = "";
+        this.search.ruleName = '';
         if (this.filterComponent.currentValue) {
-            this.filterComponent.currentValue = "";
+            this.filterComponent.currentValue = '';
             this.filterComponent.filterTerms.next(''); // will trigger refreshing
         } else {
             this.listReplicationRule.refreshRule(); // manually refresh
@@ -500,14 +579,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     refreshJobs() {
-        this.currentTerm = "";
+        this.currentTerm = '';
         this.currentPage = 1;
         let st: ClrDatagridStateInterface = {
             page: {
                 from: 0,
                 to: this.pageSize - 1,
-                size: this.pageSize
-            }
+                size: this.pageSize,
+            },
         };
         this.clrLoadJobs(true, st);
     }
@@ -529,13 +608,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         let seconds = Math.floor(timesDiffSeconds % ONE_MINUTE_SECONDS);
         if (minutes > 0) {
             if (seconds === 0) {
-                return minutes + "m";
+                return minutes + 'm';
             }
-            return minutes + "m" + seconds + "s";
+            return minutes + 'm' + seconds + 's';
         }
 
         if (seconds > 0) {
-            return seconds + "s";
+            return seconds + 's';
         }
 
         if (seconds <= 0 && timesDiff > 0) {
