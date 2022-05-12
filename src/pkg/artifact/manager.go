@@ -26,7 +26,7 @@ import (
 type Manager interface {
 	// Count returns the total count of artifacts according to the query.
 	// The artifacts that referenced by others and without tags are not counted
-	Count(ctx context.Context, query *q.Query) (total int64, err error)
+	Count(ctx context.Context, query *q.Query) (artifact []*Artifact, err error)
 	// List artifacts according to the query. The artifacts that referenced by others and
 	// without tags are not returned
 	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
@@ -63,8 +63,18 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
-	return m.dao.Count(ctx, query)
+func (m *manager) Count(ctx context.Context, query *q.Query) ([]*Artifact, error) {
+	var artifacts []*Artifact
+	arts, err := m.dao.Count(ctx, query)
+	if err != nil {
+		return artifacts, err
+	}
+	for _, art := range arts {
+		artifact := &Artifact{}
+		artifact.From(art)
+		artifacts = append(artifacts, artifact)
+	}
+	return artifacts, nil
 }
 
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {

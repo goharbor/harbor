@@ -148,7 +148,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().Nil(err)
-	d.True(totalOfAll >= 2)
+	d.True(len(totalOfAll) >= 2)
 
 	// only query tagged artifacts
 	totalOfTagged, err := d.dao.Count(d.ctx, &q.Query{
@@ -158,7 +158,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().Nil(err)
-	d.Equal(totalOfAll-1, totalOfTagged)
+	d.Equal(len(totalOfAll)-1, len(totalOfTagged))
 
 	// only query untagged artifacts
 	totalOfUnTagged, err := d.dao.Count(d.ctx, &q.Query{
@@ -168,7 +168,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().Nil(err)
-	d.Equal(totalOfAll-1, totalOfUnTagged)
+	d.Equal(len(totalOfAll)-1, len(totalOfUnTagged))
 
 	// specific tag value
 	total, err := d.dao.Count(d.ctx, &q.Query{
@@ -178,7 +178,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().Nil(err)
-	d.Equal(int64(1), total)
+	d.Equal(1, len(total))
 
 	// query by repository ID and digest
 	total, err = d.dao.Count(d.ctx, &q.Query{
@@ -188,7 +188,7 @@ func (d *daoTestSuite) TestCount() {
 		},
 	})
 	d.Require().Nil(err)
-	d.Equal(int64(1), total)
+	d.Equal(1, len(total))
 
 	// set pagination in query
 	total, err = d.dao.Count(d.ctx, &q.Query{
@@ -199,7 +199,7 @@ func (d *daoTestSuite) TestCount() {
 		PageSize:   1,
 	})
 	d.Require().Nil(err)
-	d.True(total > 1)
+	d.True(len(total) > 1)
 }
 
 func (d *daoTestSuite) TestList() {

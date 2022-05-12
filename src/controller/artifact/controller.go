@@ -239,7 +239,22 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	return c.artMgr.Count(ctx, query)
+	var total int64
+	arts, err := c.artMgr.Count(ctx, query)
+	if err != nil {
+		return int64(0), err
+	}
+	// filter out the accessory
+	for _, art := range arts {
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "digest": art.Digest}))
+		if err != nil {
+			return int64(0), err
+		}
+		if len(accs) == 0 || (len(accs) > 0 && accs[0].Display()) {
+			total++
+		}
+	}
+	return total, nil
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {

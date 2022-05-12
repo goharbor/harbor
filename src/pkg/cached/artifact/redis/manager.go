@@ -60,7 +60,7 @@ func NewManager(m artifact.Manager) *manager {
 	}
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (m *manager) Count(ctx context.Context, query *q.Query) ([]*artifact.Artifact, error) {
 	return m.delegator.Count(ctx, query)
 }
 

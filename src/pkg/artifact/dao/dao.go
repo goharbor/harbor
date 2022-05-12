@@ -29,7 +29,7 @@ import (
 // DAO is the data access object interface for artifact
 type DAO interface {
 	// Count returns the total count of artifacts according to the query
-	Count(ctx context.Context, query *q.Query) (total int64, err error)
+	Count(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// List artifacts according to the query. The artifacts that referenced by others and
 	// without tags are not returned
 	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
@@ -81,7 +81,8 @@ func New() DAO {
 
 type dao struct{}
 
-func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (d *dao) Count(ctx context.Context, query *q.Query) ([]*Artifact, error) {
+	artifacts := []*Artifact{}
 	if query != nil {
 		// ignore the page number and size
 		query = &q.Query{
@@ -90,9 +91,12 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	}
 	qs, err := querySetter(ctx, query)
 	if err != nil {
-		return 0, err
+		return artifacts, err
 	}
-	return qs.Count()
+	if _, err = qs.All(&artifacts); err != nil {
+		return artifacts, err
+	}
+	return artifacts, nil
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	artifacts := []*Artifact{}

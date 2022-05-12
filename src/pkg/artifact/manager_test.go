@@ -30,9 +30,9 @@ type fakeDao struct {
 	mock.Mock
 }
 
-func (f *fakeDao) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (f *fakeDao) Count(ctx context.Context, query *q.Query) ([]*dao.Artifact, error) {
 	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
+	return args.Get(0).([]*dao.Artifact), args.Error(1)
 }
 func (f *fakeDao) List(ctx context.Context, query *q.Query) ([]*dao.Artifact, error) {
 	args := f.Called()
@@ -93,10 +93,24 @@ func (m *managerTestSuite) SetupTest() {
 }
 
 func (m *managerTestSuite) TestCount() {
-	m.dao.On("Count", mock.Anything).Return(1, nil)
+	art := &dao.Artifact{
+		ID:                1,
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1,
+		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+		Size:              1024,
+		PushTime:          time.Now(),
+		PullTime:          time.Now(),
+		ExtraAttrs:        `{"attr1":"value1"}`,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	m.dao.On("Count", mock.Anything).Return([]*dao.Artifact{art}, nil)
 	total, err := m.mgr.Count(nil, nil)
 	m.Require().Nil(err)
-	m.Equal(int64(1), total)
+	m.Equal(1, len(total))
 }
 
 func (m *managerTestSuite) TestAssemble() {

@@ -20,14 +20,16 @@ type Manager struct {
 }
 
 // Count provides a mock function with given fields: ctx, query
-func (_m *Manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (_m *Manager) Count(ctx context.Context, query *q.Query) ([]*artifact.Artifact, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) int64); ok {
+	var r0 []*artifact.Artifact
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*artifact.Artifact); ok {
 		r0 = rf(ctx, query)
 	} else {
-		r0 = ret.Get(0).(int64)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*artifact.Artifact)
+		}
 	}
 
 	var r1 error

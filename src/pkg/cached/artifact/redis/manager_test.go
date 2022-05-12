@@ -132,10 +132,15 @@ func (m *managerTestSuite) TestUpdatePullTime() {
 }
 
 func (m *managerTestSuite) TestCount() {
-	m.artMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
+	art := &artifact.Artifact{
+		ID:             1,
+		Digest:         "sha256:123",
+		RepositoryName: "library/hello-world",
+	}
+	m.artMgr.On("Count", mock.Anything, mock.Anything).Return([]*artifact.Artifact{art}, nil)
 	c, err := m.cachedManager.Count(m.ctx, nil)
 	m.NoError(err)
-	m.Equal(int64(1), c)
+	m.Equal(1, len(c))
 	m.artMgr.AssertCalled(m.T(), "Count", mock.Anything, mock.Anything)
 }
 
