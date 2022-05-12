@@ -168,7 +168,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 			},
 			Status:       exec.Status,
 			CreationTime: exec.StartTime,
-			UpdateTime:   exec.EndTime,
+			UpdateTime:   exec.UpdateTime,
 		})
 	}
 
@@ -207,7 +207,7 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 			Type: exec.Trigger,
 		},
 		CreationTime: exec.StartTime,
-		UpdateTime:   exec.EndTime,
+		UpdateTime:   exec.UpdateTime,
 	}
 
 	return operation.NewGetGCOK().WithPayload(res.ToSwagger())
