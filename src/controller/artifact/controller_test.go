@@ -263,10 +263,26 @@ func (c *controllerTestSuite) TestEnsure() {
 }
 
 func (c *controllerTestSuite) TestCount() {
-	c.artMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
+	c.artMgr.On("List", mock.Anything, mock.Anything).Return([]*artifact.Artifact{
+		{
+			ID:           1,
+			RepositoryID: 1,
+		},
+	}, nil)
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    2,
+			SubArtifactID: 1,
+			Type:          accessorymodel.TypeCosignSignature,
+		},
+	}
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
+		acc,
+	}, nil)
 	total, err := c.ctl.Count(nil, nil)
 	c.Require().Nil(err)
-	c.Equal(int64(1), total)
+	c.Equal(int64(0), total)
 }
 
 func (c *controllerTestSuite) TestList() {
