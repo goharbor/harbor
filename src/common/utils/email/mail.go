@@ -20,9 +20,10 @@ import (
 	"net"
 	"net/smtp"
 	"strings"
-	"time"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/hashicorp/go-multierror"
 )
 
 // Send ...
@@ -90,62 +91,58 @@ func Ping(addr, identity, username, password string,
 func newClient(addr, identity, username, password string,
 	timeout int, tls, insecure bool) (*smtp.Client, error) {
 	log.Debugf("establishing TCP connection with %s ...", addr)
-	conn, err := net.DialTimeout("tcp", addr,
-		time.Duration(timeout)*time.Second)
-	if err != nil {
-		return nil, err
-	}
+	var conn net.Conn
 
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err
 	}
+	tlsOK := true
 
-	if tls {
-		log.Debugf("establishing SSL/TLS connection with %s ...", addr)
-		tlsConn := tlspkg.Client(conn, &tlspkg.Config{
-			ServerName:         host,
-			InsecureSkipVerify: insecure,
-		})
-		if err = tlsConn.Handshake(); err != nil {
-			return nil, err
+	conn, err = tlspkg.Dial("tcp", addr, &tlspkg.Config{
+		ServerName:         host,
+		InsecureSkipVerify: insecure,
+	})
+	if err != nil {
+		tlsOK = false
+
+		log.Debugf("could not establish TLS connection to %s: %v", addr, err)
+		dialer := net.Dialer{}
+		conn, err = dialer.Dial("tcp", addr)
+		if err != nil {
+			return nil, errors.Wrap(err, "establish connection to server")
 		}
-
-		conn = tlsConn
 	}
 
-	log.Debugf("creating SMTP client for %s ...", host)
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
-		return nil, err
+		conn.Close()
+		return nil, errors.Wrap(err, "create SMTP client")
 	}
 
-	// try to swith to SSL/TLS
-	if !tls {
-		if ok, _ := client.Extension("STARTTLS"); ok {
-			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)
-			if err = client.StartTLS(&tlspkg.Config{
-				ServerName:         host,
-				InsecureSkipVerify: insecure,
-			}); err != nil {
-				return nil, err
+	ok, _ := client.Extension("STARTTLS")
+	if ok {
+		tlsConf := &tlspkg.Config{
+			ServerName:         host,
+			InsecureSkipVerify: insecure,
+		}
+
+		if err := client.StartTLS(tlsConf); err != nil {
+			return nil, errors.Wrap(err, "send STARTTLS command")
+		}
+	} else if tls && !tlsOK {
+		return nil, errors.Errorf("%q does not advertise the STARTTLS extension and establishing a TLS connection failed", host)
+	}
+
+	if ok, mech := client.Extension("AUTH"); ok {
+		auth, err := findAuthMech(mech, identity, username, password, host)
+		if err != nil {
+			return nil, errors.Wrap(err, "find auth mechanism")
+		}
+		if auth != nil {
+			if err := client.Auth(auth); err != nil {
+				return nil, errors.Wrapf(err, "authentication with mechanism %T", auth)
 			}
-			tls = true
-		} else {
-			log.Debugf("the email server %s does not support STARTTLS", addr)
-		}
-	}
-
-	if ok, _ := client.Extension("AUTH"); ok {
-		log.Debug("authenticating the client...")
-		var auth smtp.Auth
-		if tls {
-			auth = smtp.PlainAuth(identity, username, password, host)
-		} else {
-			auth = smtp.CRAMMD5Auth(username, password)
-		}
-		if err = client.Auth(auth); err != nil {
-			return nil, err
 		}
 	} else {
 		log.Debugf("the email server %s does not support AUTH, skip",
@@ -155,4 +152,61 @@ func newClient(addr, identity, username, password string,
 	log.Debug("create smtp client successfully")
 
 	return client, nil
+}
+
+func findAuthMech(mechs, identity, username, password, host string) (smtp.Auth, error) {
+	var err error
+	for _, mech := range strings.Split(mechs, " ") {
+		switch mech {
+		case "CRAM-MD5":
+			if password == "" {
+				multierror.Append(err, errors.New("missing secret for CRAM-MD5 auth mechanism"))
+				continue
+			}
+			return smtp.CRAMMD5Auth(username, password), nil
+		case "PLAIN":
+			if password == "" {
+				multierror.Append(err, errors.New("missing password for PLAIN auth mechanism"))
+				continue
+			}
+			return smtp.PlainAuth(identity, username, password, host), nil
+		case "LOGIN":
+			if password == "" {
+				multierror.Append(err, errors.New("missing password for LOGIN auth mechanism"))
+				continue
+			}
+			return LoginAuth(username, password), nil
+		}
+	}
+	if err == nil {
+		multierror.Append(err, errors.New("unknown auth mechanism: "+mechs))
+	}
+	return nil, err
+}
+
+type loginAuth struct {
+	username, password string
+}
+
+func LoginAuth(username, password string) smtp.Auth {
+	return &loginAuth{username, password}
+}
+
+func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	return "LOGIN", []byte{}, nil
+}
+
+// Used for AUTH LOGIN. (Maybe password should be encrypted)
+func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		switch strings.ToLower(string(fromServer)) {
+		case "username:":
+			return []byte(a.username), nil
+		case "password:":
+			return []byte(a.password), nil
+		default:
+			return nil, errors.New("unexpected server challenge")
+		}
+	}
+	return nil, nil
 }

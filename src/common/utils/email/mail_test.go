@@ -17,44 +17,25 @@ package email
 import (
 	"strings"
 	"testing"
-	//	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSend(t *testing.T) {
-	addr := "smtp.gmail.com:465"
+func TestSend_legacy_no_starttls(t *testing.T) {
+	t.Parallel()
 	identity := ""
 	username := "harbortestonly@gmail.com"
 	password := "harborharbor"
 	timeout := 60
-	tls := true
 	insecure := false
 	from := "from"
 	to := []string{username}
 	subject := "subject"
 	message := "message"
 
-	// tls connection
-	tls = true
+	addr := "smtp.gmail.com:465"
+	tls := true
 	err := Send(addr, identity, username, password,
-		timeout, tls, insecure, from, to,
-		subject, message)
-	// bypass the check due to securty policy change on gmail
-	// TODO
-	// assert.Nil(t, err)
-
-	/*not work on ci
-	// non-tls connection
-	addr = "smtp.gmail.com:25"
-	tls = false
-	err = Send(addr, identity, username, password,
-		timeout, tls, insecure, from, to,
-		subject, message)
-	assert.Nil(t, err)
-	*/
-
-	// invalid username/password
-	username = "invalid_username"
-	err = Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
 		subject, message)
 	if err == nil {
@@ -66,34 +47,43 @@ func TestSend(t *testing.T) {
 	}
 }
 
-func TestPing(t *testing.T) {
-	addr := "smtp.gmail.com:465"
+func TestSend(t *testing.T) {
+	t.Parallel()
+	identity := ""
+	username := "harbortestonly@gmail.com"
+	password := "harborharbor"
+	timeout := 60
+	insecure := false
+	from := "from"
+	to := []string{username}
+	subject := "subject"
+	message := "message"
+
+	addr := "smtp.gmail.com:587"
+	tls := true
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err == nil {
+		t.Errorf("there should be an auth error")
+	} else {
+		if !strings.Contains(err.Error(), "535") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}
+}
+
+func TestPing_legacy_no_starttls(t *testing.T) {
+	t.Parallel()
 	identity := ""
 	username := "harbortestonly@gmail.com"
 	password := "harborharbor"
 	timeout := 0
-	tls := true
 	insecure := false
 
-	// tls connection
+	addr := "smtp.gmail.com:465"
+	tls := false
 	err := Ping(addr, identity, username, password,
-		timeout, tls, insecure)
-	// bypass the check due to securty policy change on gmail
-	// TODO
-	// assert.Nil(t, err)
-
-	/*not work on ci
-	// non-tls connection
-	addr = "smtp.gmail.com:25"
-	tls = false
-	err = Ping(addr, identity, username, password,
-		timeout, tls, insecure)
-	assert.Nil(t, err)
-	*/
-
-	// invalid username/password
-	username = "invalid_username"
-	err = Ping(addr, identity, username, password,
 		timeout, tls, insecure)
 	if err == nil {
 		t.Errorf("there should be an auth error")
@@ -102,4 +92,114 @@ func TestPing(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
+}
+
+func TestPing(t *testing.T) {
+	t.Parallel()
+	identity := ""
+	username := "harbortestonly@gmail.com"
+	password := "harborharbor"
+	timeout := 0
+	insecure := false
+
+	addr := "smtp.gmail.com:587"
+	tls := true
+	err := Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	if err == nil {
+		t.Errorf("there should be an auth error")
+	} else {
+		assert.Error(t, err, "'email_ssl' is true but \"smtp.gmail.com\" does not advertise the STARTTLS extension")
+	}
+}
+
+func TestSend_exchange_invalid_auth_fails(t *testing.T) {
+	t.Parallel()
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "someone@someorg.com"
+	password := "hunter2"
+	timeout := 0
+	tls := true
+	insecure := false
+	from := "someone@someorg.com"
+	to := []string{username}
+	subject := "subject"
+	message := "message"
+
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err == nil {
+		t.Errorf("there should be an auth error")
+	} else {
+		if !strings.Contains(err.Error(), "535") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}
+
+}
+
+func TestSend_exchange(t *testing.T) {
+	t.Parallel()
+	t.Skip("TODO: create a real account so we can test if sending succeeds")
+
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "someone@someorg.com"
+	password := "hunter2"
+	timeout := 0
+	tls := true
+	insecure := false
+	from := "someone@someorg.com"
+	to := []string{username}
+	subject := "subject"
+	message := "message"
+
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	assert.NoError(t, err)
+}
+
+func TestSend_exchange_no_tls_fails(t *testing.T) {
+	t.Parallel()
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "someone@someorg.com"
+	password := "hunter2"
+	timeout := 0
+	tls := false
+	insecure := false
+	from := "someone@someorg.com"
+	to := []string{username}
+	subject := "subject"
+	message := "message"
+
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err == nil {
+		t.Errorf("there should be an error")
+	} else {
+		if !strings.Contains(err.Error(), "535") {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}
+}
+
+func TestPing_exchange(t *testing.T) {
+	t.Parallel()
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "someone@someorg.com"
+	password := "hunter2"
+	timeout := 0
+	tls := false
+	insecure := false
+
+	err := Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "535")
 }
