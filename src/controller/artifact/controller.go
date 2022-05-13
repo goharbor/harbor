@@ -239,7 +239,17 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	return c.artMgr.Count(ctx, query)
+	if query != nil {
+		// ignore the page number and size
+		query = &q.Query{
+			Keywords: query.Keywords,
+		}
+	}
+	arts, err := c.List(ctx, query, nil)
+	if err != nil {
+		return int64(0), err
+	}
+	return int64(len(arts)), nil
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {
