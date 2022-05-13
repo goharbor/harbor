@@ -21,23 +21,25 @@ import { SessionService } from '../../services/session.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SkinableConfig } from '../../../services/skinable-config.service';
 import {
     CommonRoutes,
     DEFAULT_LANG_LOCALSTORAGE_KEY,
     DeFaultLang,
     LANGUAGES,
     SupportedLanguage,
-} from "../../entities/shared.const";
-import { CustomStyle, HAS_STYLE_MODE, StyleMode } from "../../../services/theme";
-
+} from '../../entities/shared.const';
+import {
+    CustomStyle,
+    HAS_STYLE_MODE,
+    StyleMode,
+} from '../../../services/theme';
 
 @Component({
     selector: 'navigator',
-    templateUrl: "navigator.component.html",
-    styleUrls: ["navigator.component.scss"]
+    templateUrl: 'navigator.component.html',
+    styleUrls: ['navigator.component.scss'],
 })
-
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
@@ -54,8 +56,8 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
-        private skinableConfig: SkinableConfig) {
-    }
+        private skinableConfig: SkinableConfig
+    ) {}
 
     ngOnInit(): void {
         // custom skin
@@ -75,7 +77,9 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get accountName(): string {
-        return this.session.getCurrentUser() ? this.session.getCurrentUser().username : "N/A";
+        return this.session.getCurrentUser()
+            ? this.session.getCurrentUser().username
+            : 'N/A';
     }
 
     public get currentLang(): string {
@@ -91,18 +95,28 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get canDownloadCert(): boolean {
-        return this.session.getCurrentUser() &&
+        return (
+            this.session.getCurrentUser() &&
             this.session.getCurrentUser().has_admin_role &&
             this.appConfigService.getConfig() &&
-            this.appConfigService.getConfig().has_ca_root;
+            this.appConfigService.getConfig().has_ca_root
+        );
     }
 
     public get canChangePassword(): boolean {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
 
-        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth"
-        || config.auth_mode === "oidc_auth")) || (user.user_id === 1 && user.username === "admin"));
+        return (
+            user &&
+            ((config &&
+                !(
+                    config.auth_mode === 'ldap_auth' ||
+                    config.auth_mode === 'uaa_auth' ||
+                    config.auth_mode === 'oidc_auth'
+                )) ||
+                (user.user_id === 1 && user.username === 'admin'))
+        );
     }
 
     matchLang(lang: SupportedLanguage): boolean {
@@ -113,7 +127,7 @@ export class NavigatorComponent implements OnInit {
     openAccountSettingsModal(): void {
         this.showAccountSettingsModal.emit({
             modalName: modalEvents.USER_PROFILE,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -121,7 +135,7 @@ export class NavigatorComponent implements OnInit {
     openChangePwdModal(): void {
         this.showDialogModalAction.emit({
             modalName: modalEvents.CHANGE_PWD,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -129,7 +143,7 @@ export class NavigatorComponent implements OnInit {
     openAboutDialog(): void {
         this.showDialogModalAction.emit({
             modalName: modalEvents.ABOUT,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -140,7 +154,7 @@ export class NavigatorComponent implements OnInit {
         let signout = true;
         let redirect_url = this.location.pathname;
         let navigatorExtra: NavigationExtras = {
-            queryParams: {signout, redirect_url}
+            queryParams: { signout, redirect_url },
         };
         this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
         // Confirm search result panel is close
@@ -175,7 +189,11 @@ export class NavigatorComponent implements OnInit {
     }
 
     getBgColor(): string {
-        if (this.customStyle && this.customStyle.headerBgColor && localStorage) {
+        if (
+            this.customStyle &&
+            this.customStyle.headerBgColor &&
+            localStorage
+        ) {
             if (localStorage.getItem(HAS_STYLE_MODE) === StyleMode.LIGHT) {
                 return `background-color:${this.customStyle.headerBgColor.lightMode} !important`;
             }

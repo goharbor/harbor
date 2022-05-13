@@ -15,23 +15,16 @@ import { NgModule } from '@angular/core';
 import { ListChartsComponent } from './list-charts.component';
 import { HelmChartComponent } from './list-charts-detail/helm-chart.component';
 import { SharedModule } from '../../../../shared/shared.module';
-import { RouterModule, Routes } from "@angular/router";
-
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
     {
         path: '',
-        component: ListChartsComponent
-    }
+        component: ListChartsComponent,
+    },
 ];
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes)
-    ],
-    declarations: [
-        ListChartsComponent,
-        HelmChartComponent,
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
+    declarations: [ListChartsComponent, HelmChartComponent],
 })
-export class HelmChartListModule { }
+export class HelmChartListModule {}

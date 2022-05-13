@@ -11,61 +11,66 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {Subscription, forkJoin, of} from "rxjs";
+import { Subscription, forkJoin, of } from 'rxjs';
+import { Component, Output, OnDestroy, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
+import { ProjectService, State } from '../../../../shared/services';
+import { TranslateService } from '@ngx-translate/core';
+import { SessionService } from '../../../../shared/services/session.service';
+import { StatisticHandler } from '../statictics/statistic-handler.service';
+import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { SearchTriggerService } from '../../../../shared/components/global-search/search-trigger.service';
+import { AppConfigService } from '../../../../services/app-config.service';
+import { Project } from '../../../project/project';
+import { map, catchError, finalize } from 'rxjs/operators';
 import {
-    Component,
-    Output,
-    OnDestroy, EventEmitter
-} from "@angular/core";
-import { Router } from "@angular/router";
-import { ProjectService, State } from "../../../../shared/services";
-import {TranslateService} from "@ngx-translate/core";
-import { SessionService } from "../../../../shared/services/session.service";
-import { StatisticHandler } from "../statictics/statistic-handler.service";
-import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
-import { SearchTriggerService } from "../../../../shared/components/global-search/search-trigger.service";
-import { AppConfigService } from "../../../../services/app-config.service";
-import { Project } from "../../../project/project";
-import { map, catchError, finalize } from "rxjs/operators";
+    calculatePage,
+    getPageSizeFromLocalStorage,
+    getSortingString,
+    PageSizeMapKeys,
+    setPageSizeToLocalStorage,
+} from '../../../../shared/units/utils';
+import { OperationService } from '../../../../shared/components/operation/operation.service';
 import {
-    calculatePage, getPageSizeFromLocalStorage,
-    getSortingString, PageSizeMapKeys, setPageSizeToLocalStorage
-} from "../../../../shared/units/utils";
-import { OperationService } from "../../../../shared/components/operation/operation.service";
-import { operateChanges, OperateInfo, OperationState } from "../../../../shared/components/operation/operate";
-import {HttpErrorResponse} from "@angular/common/http";
+    operateChanges,
+    OperateInfo,
+    OperationState,
+} from '../../../../shared/components/operation/operate';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    RoleInfo
-} from "../../../../shared/entities/shared.const";
-import { ConfirmationDialogService } from "../../../global-confirmation-dialog/confirmation-dialog.service";
-import { errorHandler } from "../../../../shared/units/shared.utils";
-import { ConfirmationMessage } from "../../../global-confirmation-dialog/confirmation-message";
+    RoleInfo,
+} from '../../../../shared/entities/shared.const';
+import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
+import { errorHandler } from '../../../../shared/units/shared.utils';
+import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
 @Component({
-    selector: "list-project",
-    templateUrl: "list-project.component.html"
+    selector: 'list-project',
+    templateUrl: 'list-project.component.html',
 })
 export class ListProjectComponent implements OnDestroy {
     loading = true;
     projects: Project[] = [];
     filteredType = 0; // All projects
-    searchKeyword = "";
-    selectedRow: Project[]  = [];
+    searchKeyword = '';
+    selectedRow: Project[] = [];
 
     @Output() addProject = new EventEmitter<void>();
 
     roleInfo = RoleInfo;
     currentPage = 1;
     totalCount = 0;
-    pageSize = getPageSizeFromLocalStorage(PageSizeMapKeys.LIST_PROJECT_COMPONENT);
+    pageSize = getPageSizeFromLocalStorage(
+        PageSizeMapKeys.LIST_PROJECT_COMPONENT
+    );
     currentState: State;
     subscription: Subscription;
     projectTypeMap: any = {
-        0: "PROJECT.PROJECT",
-        1: "PROJECT.PROXY_CACHE"
+        0: 'PROJECT.PROJECT',
+        1: 'PROJECT.PROXY_CACHE',
     };
     state: ClrDatagridStateInterface;
     constructor(
@@ -79,23 +84,29 @@ export class ListProjectComponent implements OnDestroy {
         private translate: TranslateService,
         private deletionDialogService: ConfirmationDialogService,
         private operationService: OperationService,
-        private translateService: TranslateService) {
-        this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
-            if (message &&
-                message.state === ConfirmationState.CONFIRMED &&
-                message.source === ConfirmationTargets.PROJECT) {
-                this.delProjects(message.data);
-            }
-        });
+        private translateService: TranslateService
+    ) {
+        this.subscription =
+            deletionDialogService.confirmationConfirm$.subscribe(message => {
+                if (
+                    message &&
+                    message.state === ConfirmationState.CONFIRMED &&
+                    message.source === ConfirmationTargets.PROJECT
+                ) {
+                    this.delProjects(message.data);
+                }
+            });
     }
 
     get projectCreationRestriction(): boolean {
         let account = this.session.getCurrentUser();
         if (account) {
-            switch (this.appConfigService.getConfig().project_creation_restriction) {
-                case "adminonly":
-                    return (account.has_admin_role);
-                case "everyone":
+            switch (
+                this.appConfigService.getConfig().project_creation_restriction
+            ) {
+                case 'adminonly':
+                    return account.has_admin_role;
+                case 'everyone':
                     return true;
             }
         }
@@ -116,7 +127,12 @@ export class ListProjectComponent implements OnDestroy {
             return false;
         }
 
-        return this.isSystemAdmin || this.selectedRow.every((pro: Project) => pro.current_user_role_id === 1);
+        return (
+            this.isSystemAdmin ||
+            this.selectedRow.every(
+                (pro: Project) => pro.current_user_role_id === 1
+            )
+        );
     }
 
     ngOnDestroy(): void {
@@ -142,14 +158,19 @@ export class ListProjectComponent implements OnDestroy {
         }
         this.state = state;
         this.pageSize = state.page.size;
-        setPageSizeToLocalStorage(PageSizeMapKeys.LIST_PROJECT_COMPONENT, this.pageSize);
+        setPageSizeToLocalStorage(
+            PageSizeMapKeys.LIST_PROJECT_COMPONENT,
+            this.pageSize
+        );
         this.selectedRow = [];
 
         // Keep state for future filtering and sorting
         this.currentState = state;
 
         let pageNumber: number = calculatePage(state);
-        if (pageNumber <= 0) { pageNumber = 1; }
+        if (pageNumber <= 0) {
+            pageNumber = 1;
+        }
 
         this.loading = true;
 
@@ -157,28 +178,43 @@ export class ListProjectComponent implements OnDestroy {
         if (this.filteredType > 0) {
             passInFilteredType = this.filteredType - 1;
         }
-        this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize, getSortingString(state))
-        .pipe(finalize(() => {
-            this.loading = false;
-          }))
-            .subscribe(response => {
-                // Get total count
-                if (response.headers) {
-                    let xHeader: string = response.headers.get("X-Total-Count");
-                    if (xHeader) {
-                        this.totalCount = parseInt(xHeader, 0);
+        this.proService
+            .listProjects(
+                this.searchKeyword,
+                passInFilteredType,
+                pageNumber,
+                this.pageSize,
+                getSortingString(state)
+            )
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                })
+            )
+            .subscribe(
+                response => {
+                    // Get total count
+                    if (response.headers) {
+                        let xHeader: string =
+                            response.headers.get('X-Total-Count');
+                        if (xHeader) {
+                            this.totalCount = parseInt(xHeader, 0);
+                        }
                     }
-                }
 
-                this.projects = response.body as Project[];
-            }, error => {
-                this.msgHandler.handleError(error);
-            });
+                    this.projects = response.body as Project[];
+                },
+                error => {
+                    this.msgHandler.handleError(error);
+                }
+            );
     }
 
     newReplicationRule(p: Project) {
         if (p) {
-            this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replications?is_create=true`);
+            this.router.navigateByUrl(
+                `/harbor/projects/${p.project_id}/replications?is_create=true`
+            );
         }
     }
 
@@ -189,14 +225,14 @@ export class ListProjectComponent implements OnDestroy {
                 nameArr.push(data.name);
             });
             let deletionMessage = new ConfirmationMessage(
-                "PROJECT.DELETION_TITLE",
-                "PROJECT.DELETION_SUMMARY",
-                nameArr.join(","),
+                'PROJECT.DELETION_TITLE',
+                'PROJECT.DELETION_SUMMARY',
+                nameArr.join(','),
                 p,
                 ConfirmationTargets.PROJECT,
                 ConfirmationButtons.DELETE_CANCEL
-                );
-                this.deletionDialogService.openComfirmDialog(deletionMessage);
+            );
+            this.deletionDialogService.openComfirmDialog(deletionMessage);
         }
     }
     delProjects(projects: Project[]) {
@@ -217,9 +253,11 @@ export class ListProjectComponent implements OnDestroy {
                 if (error) {
                     this.msgHandler.handleError(error);
                 } else {
-                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                        this.msgHandler.showSuccess(res);
-                    });
+                    this.translate
+                        .get('BATCH.DELETED_SUCCESS')
+                        .subscribe(res => {
+                            this.msgHandler.showSuccess(res);
+                        });
                 }
                 let st: State = this.getStateAfterDeletion();
                 this.selectedRow = [];
@@ -241,24 +279,24 @@ export class ListProjectComponent implements OnDestroy {
         operMessage.state = OperationState.progressing;
         operMessage.data.name = project.name;
         this.operationService.publishInfo(operMessage);
-        return this.proService.deleteProject(project.project_id)
-            .pipe(map(
-                () => {
-                    operateChanges(operMessage, OperationState.success);
-                }), catchError(
-                error => {
-                    const message = errorHandler(error);
-                    this.translateService.get(message).subscribe(res => {
-                        operateChanges(operMessage, OperationState.failure, res);
-                    });
-                    return of(error);
-                }));
+        return this.proService.deleteProject(project.project_id).pipe(
+            map(() => {
+                operateChanges(operMessage, OperationState.success);
+            }),
+            catchError(error => {
+                const message = errorHandler(error);
+                this.translateService.get(message).subscribe(res => {
+                    operateChanges(operMessage, OperationState.failure, res);
+                });
+                return of(error);
+            })
+        );
     }
 
     refresh(): void {
         this.currentPage = 1;
         this.filteredType = 0;
-        this.searchKeyword = "";
+        this.searchKeyword = '';
 
         this.reload();
         this.statisticHandler.refresh();
@@ -280,7 +318,7 @@ export class ListProjectComponent implements OnDestroy {
         let st: State = this.currentState;
         if (!st) {
             st = {
-                page: {}
+                page: {},
             };
         }
         st.page.from = 0;
@@ -292,7 +330,9 @@ export class ListProjectComponent implements OnDestroy {
 
     getStateAfterDeletion(): State {
         let total: number = this.totalCount - this.selectedRow.length;
-        if (total <= 0) { return null; }
+        if (total <= 0) {
+            return null;
+        }
 
         let totalPages: number = Math.ceil(total / this.pageSize);
         let targetPageNumber: number = this.currentPage;
@@ -311,5 +351,4 @@ export class ListProjectComponent implements OnDestroy {
 
         return st;
     }
-
 }

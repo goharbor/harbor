@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-import { Subscription, Observable, forkJoin, of } from "rxjs";
+import { Subscription, Observable, forkJoin, of } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { SessionService } from '../../../shared/services/session.service';
@@ -20,21 +20,29 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
-import { ChangePasswordComponent } from "./change-password/change-password.component";
+import { ChangePasswordComponent } from './change-password/change-password.component';
 import { map, catchError } from 'rxjs/operators';
-import { OperationService } from "../../../shared/components/operation/operation.service";
-import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
-import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
+import { OperationService } from '../../../shared/components/operation/operation.service';
+import {
+    operateChanges,
+    OperateInfo,
+    OperationState,
+} from '../../../shared/components/operation/operate';
+import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
 import {
     CONFIG_AUTH_MODE,
     ConfirmationButtons,
     ConfirmationState,
-    ConfirmationTargets
-} from "../../../shared/entities/shared.const";
-import { errorHandler } from "../../../shared/units/shared.utils";
-import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
-import { HttpErrorResponse } from "@angular/common/http";
-import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage } from '../../../shared/units/utils';
+    ConfirmationTargets,
+} from '../../../shared/entities/shared.const';
+import { errorHandler } from '../../../shared/units/shared.utils';
+import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
+import { HttpErrorResponse } from '@angular/common/http';
+import {
+    getPageSizeFromLocalStorage,
+    PageSizeMapKeys,
+    setPageSizeToLocalStorage,
+} from '../../../shared/units/utils';
 
 /**
  * NOTES:
@@ -52,26 +60,27 @@ import { getPageSizeFromLocalStorage, PageSizeMapKeys, setPageSizeToLocalStorage
     styleUrls: ['user.component.scss'],
     providers: [UserService],
 })
-
-export class UserComponent implements OnInit, OnDestroy {
+export class UserComponent implements OnDestroy {
     users: User[] = [];
     selectedRow: User[] = [];
-    ISADMINISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
+    ISADMINISTRATOR: string = 'USER.ENABLE_ADMIN_ACTION';
 
     currentTerm: string;
     totalCount: number = 0;
     currentPage: number = 1;
-    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_USER_COMPONENT);
+    pageSize: number = getPageSizeFromLocalStorage(
+        PageSizeMapKeys.SYSTEM_USER_COMPONENT
+    );
     timerHandler: any;
 
     private onGoing: boolean = true;
-    private adminMenuText: string = "";
-    private adminColumn: string = "";
+    private adminMenuText: string = '';
+    private adminColumn: string = '';
     private deletionSubscription: Subscription;
 
-    @ViewChild(NewUserModalComponent, {static: true})
+    @ViewChild(NewUserModalComponent, { static: true })
     newUserDialog: NewUserModalComponent;
-    @ViewChild(ChangePasswordComponent, {static: true})
+    @ViewChild(ChangePasswordComponent, { static: true })
     changePwdDialog: ChangePasswordComponent;
 
     constructor(
@@ -81,14 +90,18 @@ export class UserComponent implements OnInit, OnDestroy {
         private msgHandler: MessageHandlerService,
         private session: SessionService,
         private appConfigService: AppConfigService,
-        private operationService: OperationService) {
-        this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
-            if (confirmed &&
-                confirmed.source === ConfirmationTargets.USER &&
-                confirmed.state === ConfirmationState.CONFIRMED) {
-                this.delUser(confirmed.data);
-            }
-        });
+        private operationService: OperationService
+    ) {
+        this.deletionSubscription =
+            deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
+                if (
+                    confirmed &&
+                    confirmed.source === ConfirmationTargets.USER &&
+                    confirmed.state === ConfirmationState.CONFIRMED
+                ) {
+                    this.delUser(confirmed.data);
+                }
+            });
     }
 
     isMySelf(uid: number): boolean {
@@ -103,13 +116,20 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     get onlySelf(): boolean {
-        return this.selectedRow.length === 1 && this.isMySelf(this.selectedRow[0].user_id);
+        return (
+            this.selectedRow.length === 1 &&
+            this.isMySelf(this.selectedRow[0].user_id)
+        );
     }
 
     public get canCreateUser(): boolean {
         let appConfig = this.appConfigService.getConfig();
         if (appConfig) {
-            return !(appConfig.auth_mode === 'ldap_auth' || appConfig.auth_mode === 'uaa_auth' || appConfig.auth_mode === 'oidc_auth');
+            return !(
+                appConfig.auth_mode === 'ldap_auth' ||
+                appConfig.auth_mode === 'uaa_auth' ||
+                appConfig.auth_mode === 'oidc_auth'
+            );
         } else {
             return true;
         }
@@ -140,31 +160,40 @@ export class UserComponent implements OnInit, OnDestroy {
 
     isSystemAdmin(u: User): string {
         if (!u) {
-            return "{{MISS}}";
+            return '{{MISS}}';
         }
-        let key: string = u.sysadmin_flag ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+        let key: string = u.sysadmin_flag
+            ? 'USER.IS_ADMIN'
+            : 'USER.IS_NOT_ADMIN';
         const appConfig = this.appConfigService.getConfig();
-        if (appConfig && appConfig.auth_mode !== CONFIG_AUTH_MODE.DB_AUTH && !u.sysadmin_flag) {
-            key = "USER.UNKNOWN";
+        if (
+            appConfig &&
+            appConfig.auth_mode !== CONFIG_AUTH_MODE.DB_AUTH &&
+            !u.sysadmin_flag
+        ) {
+            key = 'USER.UNKNOWN';
         }
-        this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
+        this.translate
+            .get(key)
+            .subscribe((res: string) => (this.adminColumn = res));
         return this.adminColumn;
     }
 
     adminActions(u: User): string {
         if (!u) {
-            return "{{MISS}}";
+            return '{{MISS}}';
         }
-        let key: string = u.sysadmin_flag ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
-        this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
+        let key: string = u.sysadmin_flag
+            ? 'USER.DISABLE_ADMIN_ACTION'
+            : 'USER.ENABLE_ADMIN_ACTION';
+        this.translate
+            .get(key)
+            .subscribe((res: string) => (this.adminMenuText = res));
         return this.adminMenuText;
     }
 
     public get inProgress(): boolean {
         return this.onGoing;
-    }
-
-    ngOnInit(): void {
     }
 
     ngOnDestroy(): void {
@@ -200,37 +229,50 @@ export class UserComponent implements OnInit, OnDestroy {
             if (this.ISADMINISTRATOR === 'USER.ENABLE_ADMIN_ACTION') {
                 for (let i = 0; i < this.selectedRow.length; i++) {
                     // Double confirm user is existing
-                    if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+                    if (
+                        this.selectedRow[i].user_id === 0 ||
+                        this.isMySelf(this.selectedRow[i].user_id)
+                    ) {
                         continue;
                     }
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
                     updatedUser.sysadmin_flag = true; // Set as admin
-                    observableLists.push(this.userService.updateUserRole(updatedUser));
+                    observableLists.push(
+                        this.userService.updateUserRole(updatedUser)
+                    );
                 }
             }
             if (this.ISADMINISTRATOR === 'USER.DISABLE_ADMIN_ACTION') {
                 for (let i = 0; i < this.selectedRow.length; i++) {
                     // Double confirm user is existing
-                    if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+                    if (
+                        this.selectedRow[i].user_id === 0 ||
+                        this.isMySelf(this.selectedRow[i].user_id)
+                    ) {
                         continue;
                     }
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
                     updatedUser.sysadmin_flag = false; // Set as none admin
-                    observableLists.push(this.userService.updateUserRole(updatedUser));
+                    observableLists.push(
+                        this.userService.updateUserRole(updatedUser)
+                    );
                 }
             }
 
-            forkJoin(...observableLists).subscribe(() => {
-                this.selectedRow = [];
-                this.refresh();
-            }, error => {
-                this.selectedRow = [];
-                this.msgHandler.handleError(error);
-            });
+            forkJoin(...observableLists).subscribe(
+                () => {
+                    this.selectedRow = [];
+                    this.refresh();
+                },
+                error => {
+                    this.selectedRow = [];
+                    this.msgHandler.handleError(error);
+                }
+            );
         }
     }
 
@@ -248,8 +290,8 @@ export class UserComponent implements OnInit, OnDestroy {
         }
         // Confirm deletion
         let msg: ConfirmationMessage = new ConfirmationMessage(
-            "USER.DELETION_TITLE",
-            "USER.DELETION_SUMMARY",
+            'USER.DELETION_TITLE',
+            'USER.DELETION_SUMMARY',
             userArr.join(','),
             users,
             ConfirmationTargets.USER,
@@ -265,7 +307,7 @@ export class UserComponent implements OnInit, OnDestroy {
                 observableLists.push(this.delOperate(user));
             });
 
-            forkJoin(...observableLists).subscribe((resArr) => {
+            forkJoin(...observableLists).subscribe(resArr => {
                 let error;
                 if (resArr && resArr.length) {
                     resArr.forEach(item => {
@@ -277,9 +319,11 @@ export class UserComponent implements OnInit, OnDestroy {
                 if (error) {
                     this.msgHandler.handleError(error);
                 } else {
-                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                        this.msgHandler.showSuccess(res);
-                    });
+                    this.translate
+                        .get('BATCH.DELETED_SUCCESS')
+                        .subscribe(res => {
+                            this.msgHandler.showSuccess(res);
+                        });
                 }
                 this.selectedRow = [];
                 this.currentTerm = '';
@@ -298,22 +342,29 @@ export class UserComponent implements OnInit, OnDestroy {
         this.operationService.publishInfo(operMessage);
 
         if (this.isMySelf(user.user_id)) {
-            return this.translate.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-                operateChanges(operMessage, OperationState.failure, res);
-            }));
+            return this.translate.get('BATCH.DELETED_FAILURE').pipe(
+                map(res => {
+                    operateChanges(operMessage, OperationState.failure, res);
+                })
+            );
         }
 
-        return this.userService.deleteUser(user.user_id).pipe(map(() => {
-            this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
-                operateChanges(operMessage, OperationState.success);
-            });
-        }), catchError(error => {
-            const message = errorHandler(error);
-            this.translate.get(message).subscribe(res =>
-                operateChanges(operMessage, OperationState.failure, res)
-            );
-            return of(error);
-        }));
+        return this.userService.deleteUser(user.user_id).pipe(
+            map(() => {
+                this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                    operateChanges(operMessage, OperationState.success);
+                });
+            }),
+            catchError(error => {
+                const message = errorHandler(error);
+                this.translate
+                    .get(message)
+                    .subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                return of(error);
+            })
+        );
     }
 
     // Refresh the user list
@@ -342,8 +393,11 @@ export class UserComponent implements OnInit, OnDestroy {
     // Data loading
     load(state: any): void {
         if (state && state.page) {
-           this.pageSize = state.page.size;
-           setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_USER_COMPONENT, this.pageSize);
+            this.pageSize = state.page.size;
+            setPageSizeToLocalStorage(
+                PageSizeMapKeys.SYSTEM_USER_COMPONENT,
+                this.pageSize
+            );
         }
         this.selectedRow = [];
         this.onGoing = true;
@@ -356,20 +410,29 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     getUserListByPaging() {
-        this.userService.getUserListByPaging(this.currentPage, this.pageSize, this.currentTerm)
-            .subscribe(response => {
-                // Get total count
-                if (response.headers) {
-                    let xHeader: string = response.headers.get("X-Total-Count");
-                    if (xHeader) {
-                        this.totalCount = parseInt(xHeader, 0);
+        this.userService
+            .getUserListByPaging(
+                this.currentPage,
+                this.pageSize,
+                this.currentTerm
+            )
+            .subscribe(
+                response => {
+                    // Get total count
+                    if (response.headers) {
+                        let xHeader: string =
+                            response.headers.get('X-Total-Count');
+                        if (xHeader) {
+                            this.totalCount = parseInt(xHeader, 0);
+                        }
                     }
+                    this.users = response.body as User[];
+                    this.onGoing = false;
+                },
+                error => {
+                    this.msgHandler.handleError(error);
+                    this.onGoing = false;
                 }
-                this.users = response.body as User[];
-                this.onGoing = false;
-            }, error => {
-                this.msgHandler.handleError(error);
-                this.onGoing = false;
-            });
+            );
     }
 }

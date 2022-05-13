@@ -15,33 +15,34 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { SessionService } from "../../services/session.service";
-import { UN_LOGGED_PARAM, YES } from "../../../account/sign-in/sign-in.service";
+import { SessionService } from '../../services/session.service';
+import { UN_LOGGED_PARAM, YES } from '../../../account/sign-in/sign-in.service';
 
 @Component({
-  selector: 'list-repository-ro',
-  templateUrl: 'list-repository-ro.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'list-repository-ro',
+    templateUrl: 'list-repository-ro.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListRepositoryROComponent {
+    @Input() repositories: Repository[];
 
-  @Input() repositories: Repository[];
+    constructor(
+        private router: Router,
+        private searchTrigger: SearchTriggerService,
+        private sessionService: SessionService
+    ) {}
 
-  constructor(
-      private router: Router,
-      private searchTrigger: SearchTriggerService,
-      private sessionService: SessionService) {
-  }
-
-  getLink(projectId: number, repoName: string) {
-    let projectName = repoName.split('/')[0];
-    let repositorieName = projectName ? repoName.substr(projectName.length + 1) : repoName;
-    return ['/harbor/projects', projectId, 'repositories', repositorieName];
-  }
-  getQueryParams() {
-    if (this.sessionService.getCurrentUser()) {
-      return null;
+    getLink(projectId: number, repoName: string) {
+        let projectName = repoName.split('/')[0];
+        let repositorieName = projectName
+            ? repoName.substr(projectName.length + 1)
+            : repoName;
+        return ['/harbor/projects', projectId, 'repositories', repositorieName];
     }
-    return {[UN_LOGGED_PARAM]: YES};
-  }
+    getQueryParams() {
+        if (this.sessionService.getCurrentUser()) {
+            return null;
+        }
+        return { [UN_LOGGED_PARAM]: YES };
+    }
 }

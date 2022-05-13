@@ -12,6 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 export const environment = {
-  production: true,
-  buildTimestamp: 0,
+    production: true,
+    buildTimestamp: 0,
 };

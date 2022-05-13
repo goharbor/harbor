@@ -11,38 +11,37 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { Subscription } from "rxjs";
-import { SessionService } from "../../../../shared/services/session.service";
-import { MessageHandlerService } from "../../../../shared/services/message-handler.service";
-import { StatisticHandler } from "./statistic-handler.service";
-import { Statistic } from "../../../../../../ng-swagger-gen/models/statistic";
-import { StatisticService } from "../../../../../../ng-swagger-gen/services/statistic.service";
-import { getSizeNumber, getSizeUnit } from "../../../../shared/units/utils";
-
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { SessionService } from '../../../../shared/services/session.service';
+import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { StatisticHandler } from './statistic-handler.service';
+import { Statistic } from '../../../../../../ng-swagger-gen/models/statistic';
+import { StatisticService } from '../../../../../../ng-swagger-gen/services/statistic.service';
+import { getSizeNumber, getSizeUnit } from '../../../../shared/units/utils';
 
 @Component({
-    selector: "statistics-panel",
-    templateUrl: "statistics-panel.component.html",
-    styleUrls: ["statistics-panel.component.scss"],
-   })
-
+    selector: 'statistics-panel',
+    templateUrl: 'statistics-panel.component.html',
+    styleUrls: ['statistics-panel.component.scss'],
+})
 export class StatisticsPanelComponent implements OnInit, OnDestroy {
-
     originalCopy: Statistic;
     refreshSub: Subscription;
     constructor(
         private statistics: StatisticService,
         private msgHandler: MessageHandlerService,
         private session: SessionService,
-        private statisticHandler: StatisticHandler) {
-    }
+        private statisticHandler: StatisticHandler
+    ) {}
 
     ngOnInit(): void {
         // Refresh
-        this.refreshSub = this.statisticHandler.refreshChan$.subscribe(clear => {
-            this.getStatistics();
-        });
+        this.refreshSub = this.statisticHandler.refreshChan$.subscribe(
+            clear => {
+                this.getStatistics();
+            }
+        );
 
         if (this.session.getCurrentUser()) {
             this.getStatistics();
@@ -55,11 +54,12 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
         }
     }
     getStatistics(): void {
-        this.statistics.getStatistic()
-            .subscribe(statistics => this.originalCopy = statistics
-                , error => {
-                    this.msgHandler.handleError(error);
-                });
+        this.statistics.getStatistic().subscribe(
+            statistics => (this.originalCopy = statistics),
+            error => {
+                this.msgHandler.handleError(error);
+            }
+        );
     }
     get isValidSession(): boolean {
         let user = this.session.getCurrentUser();

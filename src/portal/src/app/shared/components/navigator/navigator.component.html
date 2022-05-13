@@ -1,43 +1,104 @@
-<clr-header class="header-5 header"  [attr.style]="getBgColor()">
+<clr-header class="header-5 header" [attr.style]="getBgColor()">
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <!-- <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon> -->
-            <img [attr.src]="'images/'+customStyle?.product?.logo" *ngIf="customStyle?.product?.logo;else elseBlock" class="headerLogo">
-            <ng-template #elseBlock><img [src]="'images/harbor-logo.svg'" class="harbor-logo" /></ng-template>
-            <span class="title">{{customStyle?.product?.name ? customStyle?.product?.name:(appTitle | translate)}}</span>
+            <img
+                [attr.src]="'images/' + customStyle?.product?.logo"
+                *ngIf="customStyle?.product?.logo; else elseBlock"
+                class="headerLogo" />
+            <ng-template #elseBlock
+                ><img [src]="'images/harbor-logo.svg'" class="harbor-logo"
+            /></ng-template>
+            <span class="title">{{
+                customStyle?.product?.name
+                    ? customStyle?.product?.name
+                    : (appTitle | translate)
+            }}</span>
         </a>
     </div>
     <div class="header-nav">
-        <a href="{{admiralLink}}" class="nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.MGMT' | translate}}</span></a>
-        <a href="javascript:void(0)" (click)="registryAction()" routerLink="/harbor" class="active nav-link" *ngIf="isIntegrationMode"><span class="nav-text">{{'APP_TITLE.REG' | translate}}</span></a>
+        <a href="{{ admiralLink }}" class="nav-link" *ngIf="isIntegrationMode"
+            ><span class="nav-text">{{ 'APP_TITLE.MGMT' | translate }}</span></a
+        >
+        <a
+            href="javascript:void(0)"
+            (click)="registryAction()"
+            routerLink="/harbor"
+            class="active nav-link"
+            *ngIf="isIntegrationMode"
+            ><span class="nav-text">{{ 'APP_TITLE.REG' | translate }}</span></a
+        >
     </div>
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown-lang dropdown bottom-left" *ngIf="!isIntegrationMode">
+        <clr-dropdown
+            class="dropdown-lang dropdown bottom-left"
+            *ngIf="!isIntegrationMode">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
-                <span class="currentLang">{{currentLang}}</span>
+                <span class="currentLang">{{ currentLang }}</span>
                 <clr-icon size="10" shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
-                <a *ngFor="let lang of guiLanguages" href="javascript:void(0)" clrDropdownItem (click)='switchLanguage(lang[0])' [class.lang-selected]='matchLang(lang[0])'>{{lang[1]}}</a>
+                <a
+                    *ngFor="let lang of guiLanguages"
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="switchLanguage(lang[0])"
+                    [class.lang-selected]="matchLang(lang[0])"
+                    >{{ lang[1] }}</a
+                >
             </clr-dropdown-menu>
         </clr-dropdown>
         <div class="nav-divider"></div>
         <clr-dropdown class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
-                <clr-icon shape="user" class="is-inverse user-icon" size="24"></clr-icon>
-                <span>{{accountName}}</span>
-                <clr-icon class="user-down" size="10" shape="caret down"></clr-icon>
+                <clr-icon
+                    shape="user"
+                    class="is-inverse user-icon"
+                    size="24"></clr-icon>
+                <span>{{ accountName }}</span>
+                <clr-icon
+                    class="user-down"
+                    size="10"
+                    shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu [clrPosition]="'bottom-right'" *clrIfOpen>
-                <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
-                <a *ngIf="canChangePassword" href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
-                <a href="javascript:void(0)" clrDropdownItem (click)="openAboutDialog()">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+                <a
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="openAccountSettingsModal()"
+                    >{{ 'ACCOUNT_SETTINGS.PROFILE' | translate }}</a
+                >
+                <a
+                    *ngIf="canChangePassword"
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="openChangePwdModal()"
+                    >{{ 'ACCOUNT_SETTINGS.CHANGE_PWD' | translate }}</a
+                >
+                <a
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="openAboutDialog()"
+                    >{{ 'ACCOUNT_SETTINGS.ABOUT' | translate }}</a
+                >
                 <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
+                <a
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="logOut()"
+                    >{{ 'ACCOUNT_SETTINGS.LOGOUT' | translate }}</a
+                >
             </clr-dropdown-menu>
         </clr-dropdown>
-        <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+        <a
+            href="javascript:void(0)"
+            id="aboutMenu"
+            class="nav-link nav-text nav-about-link"
+            (click)="openAboutDialog()"
+            *ngIf="!isSessionValid"
+            >{{ 'ACCOUNT_SETTINGS.ABOUT' | translate }}</a
+        >
     </div>
 </clr-header>

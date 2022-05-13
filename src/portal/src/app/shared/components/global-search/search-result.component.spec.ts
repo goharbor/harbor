@@ -37,44 +37,57 @@ describe('SearchResultComponent', () => {
             prevent_vul: 'string',
             severity: 'string',
             auto_scan: 'string',
-            retention_id: 1
-        }
+            retention_id: 1,
+        },
     };
     let fakeGlobalSearchService = {
-        doSearch: () => of({
-            project: [project],
-            repository: [],
-            chart: []
-        })
+        doSearch: () =>
+            of({
+                project: [project],
+                repository: [],
+                chart: [],
+            }),
     };
     let fakeAppConfigService = {
-        getConfig: () => new AppConfig()
+        getConfig: () => new AppConfig(),
     };
-    let searchResult = "";
+    let searchResult = '';
     let fakeMessageHandlerService = null;
     let fakeSearchTriggerService = {
         searchTriggerChan$: of(searchResult),
         searchCloseChan$: of(null),
-        clear: () => null
+        clear: () => null,
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
+            imports: [SharedTestingModule],
             declarations: [SearchResultComponent, ListProjectROComponent],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
-        }).overrideComponent(SearchResultComponent, {
-            set: {
-                providers: [
-                    { provide: AppConfigService, useValue: fakeAppConfigService },
-                    { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-                    { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
-                    { provide: GlobalSearchService, useValue: fakeGlobalSearchService },
-                    { provide: SearchResults, useValue: fakeSearchResults }
-                ]
-            }
-        }).compileComponents();
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+        })
+            .overrideComponent(SearchResultComponent, {
+                set: {
+                    providers: [
+                        {
+                            provide: AppConfigService,
+                            useValue: fakeAppConfigService,
+                        },
+                        {
+                            provide: MessageHandlerService,
+                            useValue: fakeMessageHandlerService,
+                        },
+                        {
+                            provide: SearchTriggerService,
+                            useValue: fakeSearchTriggerService,
+                        },
+                        {
+                            provide: GlobalSearchService,
+                            useValue: fakeGlobalSearchService,
+                        },
+                        { provide: SearchResults, useValue: fakeSearchResults },
+                    ],
+                },
+            })
+            .compileComponents();
     });
 
     beforeEach(() => {

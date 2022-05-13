@@ -1,15 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'cron-tooltip',
-  templateUrl: './cron-tooltip.component.html',
-  styleUrls: ['./cron-tooltip.component.scss']
+    selector: 'cron-tooltip',
+    templateUrl: './cron-tooltip.component.html',
+    styleUrls: ['./cron-tooltip.component.scss'],
 })
-export class CronTooltipComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+export class CronTooltipComponent {
+    constructor() {}
 }

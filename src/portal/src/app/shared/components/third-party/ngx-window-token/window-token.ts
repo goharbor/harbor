@@ -8,9 +8,11 @@ export function _window(): Window {
 }
 
 @NgModule({
-    providers: [{
-        provide: WINDOW,
-        useFactory: _window
-    }]
+    providers: [
+        {
+            provide: WINDOW,
+            useFactory: _window,
+        },
+    ],
 })
-export class WindowTokenModule { }
+export class WindowTokenModule {}

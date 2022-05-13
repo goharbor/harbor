@@ -12,34 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Subject } from "rxjs";
+import { Subject } from 'rxjs';
 
 @Injectable({
-      providedIn: 'root',
+    providedIn: 'root',
 })
 export class SearchTriggerService {
+    searchTriggerSource = new Subject<string>();
+    searchCloseSource = new Subject<boolean>();
+    searchClearSource = new Subject<boolean>();
 
-  searchTriggerSource = new Subject<string>();
-  searchCloseSource = new Subject<boolean>();
-  searchClearSource = new Subject<boolean>();
+    searchTriggerChan$ = this.searchTriggerSource.asObservable();
+    searchCloseChan$ = this.searchCloseSource.asObservable();
+    searchClearChan$ = this.searchClearSource.asObservable();
 
-  searchTriggerChan$ = this.searchTriggerSource.asObservable();
-  searchCloseChan$ = this.searchCloseSource.asObservable();
-  searchClearChan$ = this.searchClearSource.asObservable();
+    triggerSearch(event: string) {
+        this.searchTriggerSource.next(event);
+    }
 
-  triggerSearch(event: string) {
-    this.searchTriggerSource.next(event);
-  }
+    // Set event to true for shell
+    // set to false for search panel
+    closeSearch(event: boolean) {
+        this.searchCloseSource.next(event);
+    }
 
-  // Set event to true for shell
-  // set to false for search panel
-  closeSearch(event: boolean) {
-    this.searchCloseSource.next(event);
-  }
-
-  // Clear search term
-  clear(event: any): void {
-    this.searchClearSource.next(event);
-  }
-
+    // Clear search term
+    clear(event: any): void {
+        this.searchClearSource.next(event);
+    }
 }

@@ -16,11 +16,15 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie';
 import { AppConfig } from './app-config';
 import { maintainUrlQueryParmas } from '../shared/units/shared.utils';
-import { map } from "rxjs/operators";
-import { Observable } from "rxjs";
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../shared/units/utils";
-import { CONFIG_AUTH_MODE, CookieKeyOfAdmiral, HarborQueryParamKey } from "../shared/entities/shared.const";
-export const systemInfoEndpoint = CURRENT_BASE_HREF + "/systeminfo";
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from '../shared/units/utils';
+import {
+    CONFIG_AUTH_MODE,
+    CookieKeyOfAdmiral,
+    HarborQueryParamKey,
+} from '../shared/entities/shared.const';
+export const systemInfoEndpoint = CURRENT_BASE_HREF + '/systeminfo';
 /**
  * Declare service to handle the bootstrap options
  *
@@ -30,28 +34,28 @@ export const systemInfoEndpoint = CURRENT_BASE_HREF + "/systeminfo";
  */
 @Injectable()
 export class AppConfigService {
-
     // Store the application configuration
     configurations: AppConfig = new AppConfig();
 
-    constructor(
-        private http: HttpClient,
-        private cookie: CookieService) { }
+    constructor(private http: HttpClient, private cookie: CookieService) {}
 
     public load(): Observable<AppConfig> {
-        return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => {
+        return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS).pipe(
+            map(response => {
                 this.configurations = response as AppConfig;
 
                 // Read admiral endpoint from cookie if existing
-                let admiralUrlFromCookie: string = this.cookie.get(CookieKeyOfAdmiral);
+                let admiralUrlFromCookie: string =
+                    this.cookie.get(CookieKeyOfAdmiral);
                 if (admiralUrlFromCookie) {
                     // Override the endpoint from configuration file
-                    this.configurations.admiral_endpoint = decodeURIComponent(admiralUrlFromCookie);
+                    this.configurations.admiral_endpoint =
+                        decodeURIComponent(admiralUrlFromCookie);
                 }
 
                 return this.configurations;
-            }));
+            })
+        );
     }
 
     public getConfig(): AppConfig {
@@ -59,33 +63,48 @@ export class AppConfigService {
     }
 
     public isIntegrationMode(): boolean {
-        return this.configurations &&
+        return (
+            this.configurations &&
             this.configurations.with_admiral &&
-            this.configurations.admiral_endpoint.trim() !== "";
+            this.configurations.admiral_endpoint.trim() !== ''
+        );
     }
 
     public isLdapMode(): boolean {
-        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.LDAP_AUTH;
+        return (
+            this.configurations &&
+            this.configurations.auth_mode === CONFIG_AUTH_MODE.LDAP_AUTH
+        );
     }
     public isHttpAuthMode(): boolean {
-        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.HTTP_AUTH;
+        return (
+            this.configurations &&
+            this.configurations.auth_mode === CONFIG_AUTH_MODE.HTTP_AUTH
+        );
     }
     public isOidcMode(): boolean {
-        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
+        return (
+            this.configurations &&
+            this.configurations.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH
+        );
     }
 
     // Return the reconstructed admiral url
     public getAdmiralEndpoint(currentHref: string): string {
         let admiralUrl: string = this.configurations.admiral_endpoint;
-        if (admiralUrl.trim() === "" || currentHref.trim() === "") {
-            return "#";
+        if (admiralUrl.trim() === '' || currentHref.trim() === '') {
+            return '#';
         }
 
-        return maintainUrlQueryParmas(admiralUrl, HarborQueryParamKey, encodeURIComponent(currentHref));
+        return maintainUrlQueryParmas(
+            admiralUrl,
+            HarborQueryParamKey,
+            encodeURIComponent(currentHref)
+        );
     }
 
     public saveAdmiralEndpoint(endpoint: string): void {
-        if (!(endpoint.trim())) {
+        if (!endpoint.trim()) {
             return;
         }
 

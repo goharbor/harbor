@@ -8,9 +8,7 @@ describe('ChartDetailDependencyComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-               SharedTestingModule
-            ],
+            imports: [SharedTestingModule],
             declarations: [ChartDetailDependencyComponent],
         }).compileComponents();
     });

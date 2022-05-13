@@ -4,19 +4,19 @@ import { ConfigurationService } from '../../../../services/config.service';
 import { ConfigurationEmailComponent } from './config-email.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
-import { ConfigService } from "../config.service";
-import { SharedTestingModule } from "../../../../shared/shared.module";
-import { Configuration } from "../config";
+import { ConfigService } from '../config.service';
+import { SharedTestingModule } from '../../../../shared/shared.module';
+import { Configuration } from '../config';
 
 describe('ConfigurationEmailComponent', () => {
     let component: ConfigurationEmailComponent;
     let fixture: ComponentFixture<ConfigurationEmailComponent>;
     let fakeConfigurationService = {
         saveConfiguration: () => of(null),
-        testMailServer: () => of(null)
+        testMailServer: () => of(null),
     };
     let fakeMessageHandlerService = {
-        showSuccess: () => null
+        showSuccess: () => null,
     };
     const fakeConfigService = {
         config: new Configuration(),
@@ -32,23 +32,25 @@ describe('ConfigurationEmailComponent', () => {
         getLoadingConfigStatus() {
             return false;
         },
-        updateConfig() {
-        },
-        resetConfig() {
-        }
+        updateConfig() {},
+        resetConfig() {},
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
+            imports: [SharedTestingModule],
             declarations: [ConfigurationEmailComponent],
             providers: [
-                { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakeMessageHandlerService,
+                },
                 { provide: ConfigService, useValue: fakeConfigService },
-                { provide: ConfigurationService, useValue: fakeConfigurationService }
+                {
+                    provide: ConfigurationService,
+                    useValue: fakeConfigurationService,
+                },
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
     });
 
@@ -67,7 +69,8 @@ describe('ConfigurationEmailComponent', () => {
         component.currentConfig.email_port.value = 25;
         component.currentConfig.email_from.value = 'smtp.mydomain.com';
         await fixture.whenStable();
-        const configEmailSaveBtn: HTMLButtonElement = fixture.nativeElement.querySelector("#config_email_save");
+        const configEmailSaveBtn: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#config_email_save');
         component.onGoing = true;
         configEmailSaveBtn.dispatchEvent(new Event('click'));
         await fixture.whenStable();
@@ -78,7 +81,7 @@ describe('ConfigurationEmailComponent', () => {
         component.currentConfig.email_port.value = 25;
         component.currentConfig.email_from.value = 'smtp.mydomain.com';
         await fixture.whenStable();
-        const pingTestBtn = fixture.nativeElement.querySelector("#ping-test");
+        const pingTestBtn = fixture.nativeElement.querySelector('#ping-test');
         expect(pingTestBtn).toBeTruthy();
         pingTestBtn.dispatchEvent(new Event('click'));
         await fixture.whenStable();

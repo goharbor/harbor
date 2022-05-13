@@ -1,23 +1,17 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from "@angular/router";
-import { SharedModule } from "../../../shared/shared.module";
-import { ProjectConfigComponent } from "./project-config.component";
-import { ProjectPolicyConfigComponent } from "./project-policy-config/project-policy-config.component";
+import { RouterModule, Routes } from '@angular/router';
+import { SharedModule } from '../../../shared/shared.module';
+import { ProjectConfigComponent } from './project-config.component';
+import { ProjectPolicyConfigComponent } from './project-policy-config/project-policy-config.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: ProjectConfigComponent
-  }
+    {
+        path: '',
+        component: ProjectConfigComponent,
+    },
 ];
 @NgModule({
-  declarations: [
-    ProjectConfigComponent,
-    ProjectPolicyConfigComponent
-  ],
-  imports: [
-    RouterModule.forChild(routes),
-    SharedModule
-  ]
+    declarations: [ProjectConfigComponent, ProjectPolicyConfigComponent],
+    imports: [RouterModule.forChild(routes), SharedModule],
 })
-export class ProjectConfigModule { }
+export class ProjectConfigModule {}

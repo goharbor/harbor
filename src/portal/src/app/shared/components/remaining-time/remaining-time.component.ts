@@ -15,7 +15,9 @@ import {
     Component,
     Input,
     OnInit,
-    OnDestroy, SimpleChanges, OnChanges,
+    OnDestroy,
+    SimpleChanges,
+    OnChanges,
 } from '@angular/core';
 import { RobotTimeRemainColor } from '../../../base/left-side-nav/system-robot-accounts/system-robot-util';
 const SEC: number = 1000;
@@ -26,9 +28,9 @@ const WARNING_DAYS = 7;
 @Component({
     selector: 'app-remaining-time',
     templateUrl: 'remaining-time.component.html',
-    styleUrls: ['./remaining-time.component.scss']
+    styleUrls: ['./remaining-time.component.scss'],
 })
-export class RemainingTimeComponent implements  OnInit, OnDestroy, OnChanges {
+export class RemainingTimeComponent implements OnInit, OnDestroy, OnChanges {
     color: string;
     timeRemain: string;
     @Input()
@@ -36,7 +38,7 @@ export class RemainingTimeComponent implements  OnInit, OnDestroy, OnChanges {
     @Input()
     deadline: number; // unit second
     intelVal: any;
-    constructor() { }
+    constructor() {}
 
     ngOnInit() {
         if (!this.intelVal) {
@@ -52,7 +54,7 @@ export class RemainingTimeComponent implements  OnInit, OnDestroy, OnChanges {
         }
     }
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes && changes["timeDiff"] && changes["deadline"]) {
+        if (changes && changes['timeDiff'] && changes['deadline']) {
             this.refreshTimeRemain();
         }
     }
@@ -63,7 +65,9 @@ export class RemainingTimeComponent implements  OnInit, OnDestroy, OnChanges {
                 this.timeRemain = 'ROBOT_ACCOUNT.NEVER_EXPIRED';
                 return;
             }
-            const time = new Date(this.deadline * SEC).getTime() - new Date(new Date().getTime() - this.timeDiff).getTime();
+            const time =
+                new Date(this.deadline * SEC).getTime() -
+                new Date(new Date().getTime() - this.timeDiff).getTime();
             if (time > 0) {
                 const days = Math.floor(time / DAY);
                 const hours = Math.floor((time % DAY) / HOUR);

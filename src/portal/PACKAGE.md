@@ -119,10 +119,19 @@
     "protractor": "^7.0.0",
     
     // For code grammar checking. Optional
-    "eslint": "8.1.0",
+    "eslint": "^8.12.0",
+    "@angular-eslint/eslint-plugin": "13.2.1",
+    "@angular-eslint/eslint-plugin-template": "13.2.1",
+    "@angular-eslint/schematics": "13.2.1",
+    "@angular-eslint/template-parser": "13.2.1",
+    "@typescript-eslint/eslint-plugin": "5.17.0",
+    "@typescript-eslint/parser": "5.17.0",
     
-    // For code checking. Optional
-    "codelyzer": "^6.0.2",
+    // For code format
+    "prettier": "^2.6.2",
+    "prettier-eslint": "^14.0.2",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
   }
 }
 ```
