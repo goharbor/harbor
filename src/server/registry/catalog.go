@@ -17,18 +17,20 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
 	"sort"
 	"strconv"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
+	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/server/registry/util"
 )
 
 func newRepositoryHandler() http.Handler {
 	return &repositoryHandler{
-		repoMgr: repository.Mgr,
+		repoMgr: pkg.RepositoryMgr,
 	}
 }
 

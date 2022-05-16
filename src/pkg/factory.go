@@ -19,7 +19,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
 	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
+	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 // Define global resource manager.
@@ -28,6 +30,8 @@ var (
 	ArtifactMgr artifact.Manager
 	// ProjectMgr is the manager for project.
 	ProjectMgr project.Manager
+	// RepositoryMgr is the manager for repository.
+	RepositoryMgr repository.Manager
 )
 
 // init initialize mananger for resources
@@ -35,7 +39,7 @@ func init() {
 	cacheEnabled := config.CacheEnabled()
 	initArtifactMgr(cacheEnabled)
 	initProjectMgr(cacheEnabled)
-
+	initRepositoryMgr(cacheEnabled)
 }
 
 func initArtifactMgr(cacheEnabled bool) {
@@ -55,5 +59,14 @@ func initProjectMgr(cacheEnabled bool) {
 		ProjectMgr = cachedProject.NewManager(projectMgr)
 	} else {
 		ProjectMgr = projectMgr
+	}
+}
+
+func initRepositoryMgr(cacheEnabled bool) {
+	repoMgr := repository.New()
+	if cacheEnabled {
+		RepositoryMgr = cachedRepo.NewManager(repoMgr)
+	} else {
+		RepositoryMgr = repoMgr
 	}
 }

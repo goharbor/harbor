@@ -391,14 +391,14 @@ func (r *defaultController) UpdateTaskInfo(ctx context.Context, taskID int64, to
 // NewController ...
 func NewController() Controller {
 	retentionMgr := retention.NewManager()
-	retentionLauncher := retention.NewLauncher(pkg.ProjectMgr, repository.Mgr, retentionMgr, task.ExecMgr, task.Mgr)
+	retentionLauncher := retention.NewLauncher(pkg.ProjectMgr, pkg.RepositoryMgr, retentionMgr, task.ExecMgr, task.Mgr)
 	return &defaultController{
 		manager:        retentionMgr,
 		execMgr:        task.ExecMgr,
 		taskMgr:        task.Mgr,
 		launcher:       retentionLauncher,
 		projectManager: pkg.ProjectMgr,
-		repositoryMgr:  repository.Mgr,
+		repositoryMgr:  pkg.RepositoryMgr,
 		scheduler:      scheduler.Sched,
 	}
 }

@@ -61,7 +61,7 @@ type Controller interface {
 func NewController() Controller {
 	return &controller{
 		proMgr:  pkg.ProjectMgr,
-		repoMgr: repository.Mgr,
+		repoMgr: pkg.RepositoryMgr,
 		artMgr:  pkg.ArtifactMgr,
 		artCtl:  artifact.Ctl,
 	}
