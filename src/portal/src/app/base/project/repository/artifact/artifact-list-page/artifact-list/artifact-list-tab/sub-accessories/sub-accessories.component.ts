@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import {
     clone,
     dbEncodeURIComponent,
@@ -16,6 +23,7 @@ import { finalize } from 'rxjs/operators';
 import { SafeUrl } from '@angular/platform-browser';
 import { ArtifactService } from '../../../../artifact.service';
 import { AccessoryQueryParams, artifactDefault } from '../../../../artifact';
+import { ClrDatagrid } from '@clr/angular';
 
 export const ACCESSORY_PAGE_SIZE: number = 5;
 
@@ -42,7 +50,9 @@ export class SubAccessoriesComponent implements OnInit {
     page: number = 1;
     displayedAccessories: Accessory[] = [];
     loading: boolean = false;
-
+    @ViewChild('datagrid')
+    datagrid: ClrDatagrid;
+    viewInit: boolean = false;
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
@@ -53,8 +63,11 @@ export class SubAccessoriesComponent implements OnInit {
 
     ngOnInit(): void {
         this.displayedAccessories = clone(this.accessories);
+        // avoid ng checking error
+        setTimeout(() => {
+            this.viewInit = true;
+        });
     }
-
     size(size: number) {
         return formatSize(size.toString());
     }
@@ -104,7 +117,7 @@ export class SubAccessoriesComponent implements OnInit {
             projectName: this.projectName,
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDigest,
-            page: 1,
+            page: this.currentPage,
             pageSize: ACCESSORY_PAGE_SIZE,
         };
         this.newArtifactService
@@ -127,7 +140,13 @@ export class SubAccessoriesComponent implements OnInit {
     }
 
     get dashLineHeight() {
-        // fixed height 27 plus each row height 40
-        return 27 + this.displayedAccessories?.length * 40;
+        if (
+            this.datagrid &&
+            this.datagrid['el'] &&
+            this.datagrid['el']?.nativeElement?.offsetHeight
+        ) {
+            return this.datagrid['el'].nativeElement?.offsetHeight;
+        }
+        return 0;
     }
 }
