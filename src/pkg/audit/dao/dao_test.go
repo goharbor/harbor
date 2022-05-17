@@ -16,7 +16,7 @@ package dao
 
 import (
 	"context"
-	"testing"
+	"reflect"
 
 	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
 	"github.com/stretchr/testify/suite"
+	"testing"
+	"time"
 )
 
 type daoTestSuite struct {
@@ -43,14 +45,18 @@ func (d *daoTestSuite) SetupSuite() {
 		ResourceType: "artifact",
 		Resource:     "library/test-audit",
 		Username:     "admin",
+		OpTime:       time.Now().AddDate(0, 0, -8),
 	})
 	d.Require().Nil(err)
 	d.auditID = artifactID
 }
 
 func (d *daoTestSuite) TearDownSuite() {
-	err := d.dao.Delete(d.ctx, d.auditID)
+	ormer, err := orm.FromContext(d.ctx)
 	d.Require().Nil(err)
+	_, err = ormer.Raw("delete from audit_log").Exec()
+	d.Require().Nil(err)
+
 }
 
 func (d *daoTestSuite) TestCount() {
@@ -158,6 +164,82 @@ func (d *daoTestSuite) TestDelete() {
 	d.Equal(errors.NotFoundCode, e.Code)
 }
 
+func (d *daoTestSuite) TestPurge() {
+	result, err := d.dao.Purge(d.ctx, 24*30, []string{"Create"}, true)
+	d.Require().Nil(err)
+	d.Require().Equal(int64(0), result)
+	result1, err := d.dao.Purge(d.ctx, 24*7, []string{"Create"}, true)
+	d.Require().Nil(err)
+	d.Require().Equal(int64(1), result1)
+
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &daoTestSuite{})
+}
+
+func (d *daoTestSuite) Test_dao_Purge() {
+
+	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
+	_, err := d.dao.Create(d.ctx, &model.AuditLog{
+		Operation:    "Delete",
+		ResourceType: "artifact",
+		Resource:     "library/test-audit",
+		Username:     "admin",
+		OpTime:       time.Now().AddDate(0, 0, -8),
+	})
+	d.Require().Nil(err)
+
+	type args struct {
+		ctx               context.Context
+		retentionHour     int
+		includeOperations []string
+		dryRun            bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{"dry run 1 month", args{d.ctx, 24 * 30, []string{"create", "delete", "pull"}, true}, int64(0), false},
+		{"dry run 1 week", args{d.ctx, 24 * 7, []string{"create", "delete", "pull"}, true}, int64(2), false},
+		{"dry run delete run 1 week", args{d.ctx, 24 * 7, []string{"Delete"}, true}, int64(1), false},
+		{"delete run 1 week", args{d.ctx, 24 * 7, []string{"Delete"}, false}, int64(1), false},
+	}
+	for _, tt := range tests {
+		d.Run(tt.name, func() {
+			got, err := d.dao.Purge(tt.args.ctx, tt.args.retentionHour, tt.args.includeOperations, tt.args.dryRun)
+			if tt.wantErr {
+				d.Require().NotNil(err)
+			} else {
+				d.Require().Nil(err)
+			}
+			d.Require().Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_filterOps(t *testing.T) {
+	type args struct {
+		includeOperations []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"normal", args{[]string{"delete", "create", "pull"}}, []string{"delete", "create", "pull"}},
+		{"upper cased", args{[]string{"Delete", "Create", "Pull"}}, []string{"delete", "create", "pull"}},
+		{"mixed with not allowed", args{[]string{"Delete", "Create", "not_allowed_operation", "Pull"}}, []string{"delete", "create", "pull"}},
+		{"empty", args{[]string{}}, nil},
+		{"all not allowed", args{[]string{"destroy", "insert", "query"}}, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := permitOps(tt.args.includeOperations); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("permitOps() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
