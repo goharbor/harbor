@@ -713,15 +713,18 @@
                         }}
                     </div>
                 </clr-dg-cell>
-                <sub-accessories
-                    (deleteAccessory)="deleteAccessory($event)"
-                    [projectName]="projectName"
-                    [repositoryName]="repoName"
-                    *ngIf="artifact?.accessories?.length"
-                    [total]="artifact?.accessoryNumber"
-                    [accessories]="artifact?.accessories"
-                    [clrIfExpanded]="false"
-                    ngProjectAs="clr-dg-row-detail"></sub-accessories>
+                <ng-container
+                    ngProjectAs="clr-dg-row-detail"
+                    *ngIf="artifact?.accessories?.length">
+                    <sub-accessories
+                        (deleteAccessory)="deleteAccessory($event)"
+                        [projectName]="projectName"
+                        [repositoryName]="repoName"
+                        [artifactDigest]="artifact?.digest"
+                        [total]="artifact?.accessoryNumber"
+                        [accessories]="artifact?.accessories"
+                        *clrIfExpanded></sub-accessories>
+                </ng-container>
             </clr-dg-row>
             <clr-dg-footer>
                 <clr-dg-pagination

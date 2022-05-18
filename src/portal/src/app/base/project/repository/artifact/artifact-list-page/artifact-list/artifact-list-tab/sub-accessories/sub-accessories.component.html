@@ -1,4 +1,8 @@
-<clr-datagrid class="ml-8" (clrDgRefresh)="clrLoad()" [clrDgLoading]="loading">
+<clr-datagrid
+    #datagrid
+    class="ml-8"
+    (clrDgRefresh)="clrLoad()"
+    [clrDgLoading]="loading">
     <clr-dg-column>{{ 'ACCESSORY.ACCESSORY' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'PROJECT.TYPE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'REPOSITORY.SIZE' | translate }}</clr-dg-column>
@@ -14,7 +18,7 @@
         <clr-dg-cell class="relative">
             <hr
                 class="y-dash-line"
-                *ngIf="i === displayedAccessories?.length - 1"
+                *ngIf="i === displayedAccessories?.length - 1 && viewInit"
                 [style.height.px]="dashLineHeight" />
             <hr class="x-dash-line" />
             <div class="cell">

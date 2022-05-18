@@ -85,7 +85,7 @@ describe('SubAccessoriesComponent', () => {
         component = fixture.componentInstance;
         component.accessories = mockedAccessories;
         component.total = 6;
-        fixture.detectChanges();
+        fixture.autoDetectChanges();
     });
     it('should create', () => {
         expect(component).toBeTruthy();
