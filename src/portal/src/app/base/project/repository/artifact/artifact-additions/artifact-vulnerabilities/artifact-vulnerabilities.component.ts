@@ -125,10 +125,8 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         setTimeout(() => {
             this.hasViewInitWithDelay = true;
         }, 0);
-        if (this.isSystemAdmin()) {
-            // get system and project CVE allow list
-            this.getCurrentCVEAllowList();
-        }
+        // get system and project CVE allow list
+        this.getCurrentCVEAllowList();
     }
 
     ngOnDestroy() {

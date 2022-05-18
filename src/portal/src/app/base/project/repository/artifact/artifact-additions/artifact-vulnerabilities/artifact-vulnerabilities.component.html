@@ -73,7 +73,7 @@
             <clr-dg-column [clrDgField]="'fix_version'">{{
                 'VULNERABILITY.GRID.COLUMN_FIXED' | translate
             }}</clr-dg-column>
-            <clr-dg-column *ngIf="isSystemAdmin()">{{
+            <clr-dg-column>{{
                 'VULNERABILITY.GRID.IN_ALLOW_LIST' | translate
             }}</clr-dg-column>
             <clr-dg-placeholder>
@@ -168,7 +168,7 @@
                     </div>
                     <ng-template #elseBlock>{{ res.fix_version }}</ng-template>
                 </clr-dg-cell>
-                <clr-dg-cell *ngIf="isSystemAdmin()">
+                <clr-dg-cell>
                     {{
                         (isInAllowList(res.id)
                             ? 'TAG_RETENTION.YES'
