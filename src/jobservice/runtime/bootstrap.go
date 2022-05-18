@@ -24,6 +24,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job/impl/systemartifact"
+
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -319,9 +321,10 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases
-			"IMAGE_REPLICATE": (*legacy.ReplicationScheduler)(nil),
-			"IMAGE_GC":        (*legacy.GarbageCollectionScheduler)(nil),
-			"IMAGE_SCAN_ALL":  (*legacy.ScanAllScheduler)(nil),
+			"IMAGE_REPLICATE":         (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":                (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":          (*legacy.ScanAllScheduler)(nil),
+			job.SystemArtifactCleanup: (*systemartifact.Cleanup)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
