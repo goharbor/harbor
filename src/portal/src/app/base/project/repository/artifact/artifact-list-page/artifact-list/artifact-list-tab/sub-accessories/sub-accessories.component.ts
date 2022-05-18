@@ -93,7 +93,7 @@ export class SubAccessoriesComponent implements OnInit {
             projectName: this.projectName,
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDigest,
-            page: 1,
+            page: this.currentPage,
             pageSize: ACCESSORY_PAGE_SIZE
         };
         this.newArtifactService.listAccessories(listTagParams)
