@@ -366,19 +366,22 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 	query.Keywords["SubjectArtifactID"] = artifact.ID
 
 	// list accessories according to the query
+	total, err := a.accMgr.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
 	accs, err := a.accMgr.List(ctx, query)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	total := len(accs)
 
 	var res []*models.Accessory
 	for _, acc := range accs {
 		res = append(res, model.NewAccessory(acc.GetData()).ToSwagger())
 	}
 	return operation.NewListAccessoriesOK().
-		WithXTotalCount(int64(total)).
-		WithLink(a.Links(ctx, params.HTTPRequest.URL, int64(total), query.PageNumber, query.PageSize).String()).
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(res)
 }
 
