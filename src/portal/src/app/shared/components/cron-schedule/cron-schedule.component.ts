@@ -25,6 +25,7 @@ const PREFIX: string = '0 ';
     styleUrls: ['./cron-schedule.component.scss'],
 })
 export class CronScheduleComponent implements OnChanges {
+    @Input() externalValidation: boolean = true; //extra check
     @Input() isInlineModel: boolean = false;
     @Input() originCron: OriginCron;
     @Input() labelEdit: string;
@@ -46,7 +47,7 @@ export class CronScheduleComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         let cronChange: SimpleChange = changes['originCron'];
-        if (cronChange.currentValue) {
+        if (cronChange?.currentValue) {
             this.originScheduleType = cronChange.currentValue.type;
             this.oriCron = cronChange.currentValue.cron;
         }

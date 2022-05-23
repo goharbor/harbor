@@ -136,7 +136,11 @@
                 </label>
             </div>
         </div>
-        <button class="btn btn-link" (click)="save()" id="config-save">
+        <button
+            class="btn btn-link"
+            [disabled]="!externalValidation"
+            (click)="save()"
+            id="config-save">
             {{ 'BUTTON.SAVE' | translate }}
         </button>
         <button class="btn btn-link" (click)="isEditMode = false">

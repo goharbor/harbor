@@ -1,17 +1,16 @@
-import {
-    Component,
-    Output,
-    EventEmitter,
-    ViewChild,
-    OnInit,
-} from '@angular/core';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
-import { OriginCron } from '../../../../shared/services';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { ErrorHandler } from '../../../../../shared/units/error-handler';
+import { CronScheduleComponent } from '../../../../../shared/components/cron-schedule';
+import { OriginCron } from '../../../../../shared/services';
 import { finalize } from 'rxjs/operators';
-import { GcService } from '../../../../../../ng-swagger-gen/services/gc.service';
-import { GCHistory } from '../../../../../../ng-swagger-gen/models/gchistory';
-import { ScheduleType } from '../../../../shared/entities/shared.const';
+import { GcService } from '../../../../../../../ng-swagger-gen/services/gc.service';
+import { GCHistory } from '../../../../../../../ng-swagger-gen/models/gchistory';
+import { ScheduleType } from '../../../../../shared/entities/shared.const';
+import { GcHistoryComponent } from './gc-history/gc-history.component';
+import {
+    JOB_STATUS,
+    REFRESH_STATUS_TIME_DIFFERENCE,
+} from '../../clearing-job-interfact';
 
 const ONE_MINUTE = 60000;
 
@@ -20,16 +19,22 @@ const ONE_MINUTE = 60000;
     templateUrl: './gc.component.html',
     styleUrls: ['./gc.component.scss'],
 })
-export class GcComponent implements OnInit {
+export class GcComponent implements OnInit, OnDestroy {
     originCron: OriginCron;
     disableGC: boolean = false;
     getLabelCurrent = 'GC.CURRENT_SCHEDULE';
-    @Output() loadingGcStatus = new EventEmitter<boolean>();
+    loadingGcStatus = false;
     @ViewChild(CronScheduleComponent)
     CronScheduleComponent: CronScheduleComponent;
     shouldDeleteUntagged: boolean;
     dryRunOnGoing: boolean = false;
 
+    lastCompletedTime: string;
+    loadingLastCompletedTime: boolean = false;
+    isDryRun: boolean = false;
+    nextScheduledTime: string;
+    statusTimeout: any;
+    @ViewChild(GcHistoryComponent) gcHistoryComponent: GcHistoryComponent;
     constructor(
         private gcService: GcService,
         private errorHandler: ErrorHandler
@@ -37,15 +42,47 @@ export class GcComponent implements OnInit {
 
     ngOnInit() {
         this.getCurrentSchedule();
+        this.getStatus();
     }
-
+    ngOnDestroy() {
+        if (this.statusTimeout) {
+            clearTimeout(this.statusTimeout);
+            this.statusTimeout = null;
+        }
+    }
+    // get the latest non-dry-run execution to get the status
+    getStatus() {
+        this.loadingLastCompletedTime = true;
+        this.gcService
+            .getGCHistory({
+                page: 1,
+                pageSize: 1,
+                sort: '-update_time',
+            })
+            .subscribe(res => {
+                if (res?.length) {
+                    this.isDryRun = JSON.parse(res[0]?.job_parameters).dry_run;
+                    this.lastCompletedTime = res[0]?.update_time;
+                    if (
+                        res[0]?.job_status === JOB_STATUS.RUNNING ||
+                        res[0]?.job_status === JOB_STATUS.PENDING
+                    ) {
+                        this.statusTimeout = setTimeout(() => {
+                            this.getStatus();
+                        }, REFRESH_STATUS_TIME_DIFFERENCE);
+                    } else {
+                        this.loadingLastCompletedTime = false;
+                    }
+                }
+            });
+    }
     getCurrentSchedule() {
-        this.loadingGcStatus.emit(true);
+        this.loadingGcStatus = true;
         this.gcService
             .getGCSchedule()
             .pipe(
                 finalize(() => {
-                    this.loadingGcStatus.emit(false);
+                    this.loadingGcStatus = false;
                 })
             )
             .subscribe(
@@ -59,6 +96,11 @@ export class GcComponent implements OnInit {
     }
 
     private initSchedule(gcHistory: GCHistory) {
+        if ((gcHistory?.schedule as any)?.next_scheduled_time) {
+            this.nextScheduledTime = (
+                gcHistory.schedule as any
+            )?.next_scheduled_time;
+        }
         if (gcHistory && gcHistory.schedule) {
             this.originCron = {
                 type: gcHistory.schedule.type,
@@ -97,14 +139,15 @@ export class GcComponent implements OnInit {
                     },
                 },
             })
-            .subscribe(
-                response => {
+            .subscribe({
+                next: response => {
                     this.errorHandler.info('GC.MSG_SUCCESS');
+                    this.refresh();
                 },
-                error => {
+                error: error => {
                     this.errorHandler.error(error);
-                }
-            );
+                },
+            });
     }
 
     dryRun() {
@@ -122,14 +165,15 @@ export class GcComponent implements OnInit {
                 },
             })
             .pipe(finalize(() => (this.dryRunOnGoing = false)))
-            .subscribe(
-                response => {
+            .subscribe({
+                next: response => {
                     this.errorHandler.info('GC.DRY_RUN_SUCCESS');
+                    this.refresh();
                 },
-                error => {
+                error: error => {
                     this.errorHandler.error(error);
-                }
-            );
+                },
+            });
     }
 
     private enableGc() {
@@ -137,7 +181,7 @@ export class GcComponent implements OnInit {
     }
 
     saveGcSchedule(cron: string) {
-        if (this.originCron && this.originCron.type !== ScheduleType.NONE) {
+        if (this.originCron && this.originCron.type === ScheduleType.NONE) {
             // no schedule, then create
             this.gcService
                 .createGCSchedule({
@@ -205,5 +249,9 @@ export class GcComponent implements OnInit {
             return ScheduleType.CUSTOM;
         }
         return ScheduleType.NONE;
+    }
+    refresh() {
+        this.getStatus();
+        this.gcHistoryComponent?.refresh();
     }
 }

@@ -1,5 +1,4 @@
 .cron-selection {
-    margin-top: 1rem;
     display: flex;
     align-items: center;
 }
@@ -21,8 +20,17 @@
 .font-weight-400 {
     font-weight: 400;
 }
-
-.explain {
-    font-weight: 100;
-    font-size: 10px;
+.center {
+    justify-content: center;
+    align-items: center;
+}
+.flex {
+    display: flex;
+}
+.mt-08 {
+    margin-top: 0.8rem;
+}
+.unit-select {
+    padding-top: 1px;
+    margin-left: 2rem;
 }

@@ -160,15 +160,12 @@
                         <a
                             clrVerticalNavLink
                             *ngIf="hasAdminRole"
-                            routerLink="/harbor/gc"
+                            routerLink="/harbor/clearing-job"
                             routerLinkActive="active">
                             <clr-icon
                                 shape="trash"
                                 clrVerticalNavIcon></clr-icon>
-                            {{
-                                'SIDE_NAV.SYSTEM_MGMT.GARBAGE_COLLECTION'
-                                    | translate
-                            }}
+                            {{ 'CLEARANCES.CLEARANCES' | translate }}
                         </a>
                         <a
                             clrVerticalNavLink

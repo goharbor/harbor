@@ -108,6 +108,8 @@ export class Configuration {
     cfg_expiration: NumberValueItem;
     oidc_groups_claim: StringValueItem;
     oidc_admin_group: StringValueItem;
+    audit_log_forward_endpoint: StringValueItem;
+    skip_audit_log_database: BoolValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem('db_auth', true);
         this.project_creation_restriction = new StringValueItem(
@@ -178,6 +180,8 @@ export class Configuration {
         this.oidc_user_claim = new StringValueItem('', true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
+        this.audit_log_forward_endpoint = new StringValueItem('', true);
+        this.skip_audit_log_database = new BoolValueItem(false, true);
     }
 }
 
