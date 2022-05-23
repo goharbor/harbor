@@ -10,11 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	contentTypeHeader = "content-type"
-	contentTypeJSON   = "application/json"
-)
-
 // Extract error object '{"error": "****---***"}' from the content if existing
 // nil error will be returned if it does exist
 func extractError(content []byte) (text string, err error) {

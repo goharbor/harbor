@@ -39,12 +39,6 @@ const (
 	rootIndexEndpoint       = "/chartrepo/index.yaml"
 	chartRepoHealthEndpoint = "/api/chartrepo/health"
 
-	accessLevelPublic = iota
-	accessLevelRead
-	accessLevelWrite
-	accessLevelAll
-	accessLevelSystem
-
 	formFieldNameForChart = "chart"
 	formFiledNameForProv  = "prov"
 	headerContentType     = "Content-Type"

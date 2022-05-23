@@ -537,7 +537,7 @@ GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
-	@$(GOLANGCI_LINT) -v run ./src/...
+	@cd ./src/; $(GOLANGCI_LINT) -v run ./...;
 
 pushimage:
 	@echo "pushing harbor images ..."

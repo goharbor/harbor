@@ -48,12 +48,6 @@ func (cc *CommonController) Render() error {
 // Prepare overwrites the Prepare func in api.BaseController to ignore unnecessary steps
 func (cc *CommonController) Prepare() {}
 
-type messageDetail struct {
-	Hint string
-	URL  string
-	UUID string
-}
-
 func redirectForOIDC(ctx context.Context, username string) bool {
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return false
