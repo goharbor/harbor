@@ -19,7 +19,7 @@ import (
 )
 
 // define a new interface to combine the two interfaces of adapter for mockery to generate the mocks
-//nolint:deadcode
+// nolint:deadcode
 type registryAdapter interface {
 	adapter.Adapter
 	adapter.ArtifactRegistry

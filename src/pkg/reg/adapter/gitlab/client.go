@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	scheme = "bearer" //nolint:deadcode
+	scheme = "bearer" // nolint:deadcode
 )
 
 // Client is a client to interact with GitLab
@@ -55,7 +55,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 	return client, nil
 }
 
-//nolint:deadcode
+// nolint:deadcode
 func buildPingURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/", endpoint)
 }

@@ -104,7 +104,7 @@ type Manager interface {
 }
 
 const (
-	reportTimeout = 1 * time.Hour //nolint:deadcode
+	reportTimeout = 1 * time.Hour // nolint:deadcode
 )
 
 // basicManager is a default implementation of report manager.

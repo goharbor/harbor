@@ -41,7 +41,7 @@ func IsInvalidErr(err error) bool {
 	return ok
 }
 
-const cveIDPattern = `^CVE-\d{4}-\d+$` //nolint:deadcode
+const cveIDPattern = `^CVE-\d{4}-\d+$` // nolint:deadcode
 
 // Validate help validates the CVE allowlist, to ensure the CVE ID is valid and there's no duplication
 func Validate(wl models2.CVEAllowlist) error {
