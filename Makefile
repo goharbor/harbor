@@ -533,6 +533,7 @@ misspell:
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # go get -u github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
+# go mod tidy
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint

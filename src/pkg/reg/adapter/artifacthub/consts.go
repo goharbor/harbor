@@ -24,6 +24,7 @@ const (
 // ErrHTTPNotFound defines the return error when receiving 404 response code
 var ErrHTTPNotFound = errors.New("not found")
 
+//nolint:deadcode
 func searchPackages(kind, offset, limit int, queryString string) string {
 	if len(queryString) == 0 {
 		return fmt.Sprintf("/api/v1/packages/search?kind=%d&limit=%d&offset=%d",
@@ -33,6 +34,7 @@ func searchPackages(kind, offset, limit int, queryString string) string {
 		kind, limit, offset, queryString)
 }
 
+//nolint:deadcode
 func getHelmPackageDetail(fullName string) string {
 	return fmt.Sprintf("/api/v1/packages/helm/%s", fullName)
 }

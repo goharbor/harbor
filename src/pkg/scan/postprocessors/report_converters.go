@@ -300,6 +300,7 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 	return item
 }
 
+//nolint:deadcode
 func convertingKey(reportUUID string) string {
 	return fmt.Sprintf("converting:%s", reportUUID)
 }
