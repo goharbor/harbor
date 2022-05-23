@@ -43,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
@@ -62,7 +63,7 @@ const defaultDaysToRetentionForProxyCacheProject = 7
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
-		metadataMgr:   metadata.Mgr,
+		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,

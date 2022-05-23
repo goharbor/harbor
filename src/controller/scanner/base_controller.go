@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -45,7 +46,7 @@ var DefaultController = New()
 func New() Controller {
 	return &basicController{
 		manager:    rscanner.New(),
-		proMetaMgr: metadata.Mgr,
+		proMetaMgr: pkg.ProjectMetaMgr,
 		clientPool: v1.DefaultClientPool,
 	}
 }

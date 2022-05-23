@@ -20,59 +20,43 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/lib/cache"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
-	testProject "github.com/goharbor/harbor/src/testing/pkg/project"
+	testProjectMeta "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 
 	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {
 	suite.Suite
-	cachedManager CachedManager
-	projectMgr    *testProject.Manager
-	cache         *testcache.Cache
-	ctx           context.Context
+	cachedManager  CachedManager
+	projectMetaMgr *testProjectMeta.Manager
+	cache          *testcache.Cache
+	ctx            context.Context
 }
 
 func (m *managerTestSuite) SetupTest() {
-	m.projectMgr = &testProject.Manager{}
+	m.projectMetaMgr = &testProjectMeta.Manager{}
 	m.cache = &testcache.Cache{}
 	m.cachedManager = NewManager(
-		m.projectMgr,
+		m.projectMetaMgr,
 	)
 	m.cachedManager.(*manager).client = func() cache.Cache { return m.cache }
 	m.ctx = context.TODO()
 }
 
-func (m *managerTestSuite) TestCreate() {
-	m.projectMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	id, err := m.cachedManager.Create(m.ctx, &models.Project{})
+func (m *managerTestSuite) TestAdd() {
+	m.projectMetaMgr.On("Add", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := m.cachedManager.Add(m.ctx, 1, map[string]string{})
 	m.NoError(err)
-	m.Equal(int64(1), id)
-}
-
-func (m *managerTestSuite) TestCount() {
-	m.projectMgr.On("Count", mock.Anything, mock.Anything).Return(int64(100), nil)
-	c, err := m.cachedManager.Count(m.ctx, q.New(q.KeyWords{}))
-	m.NoError(err)
-	m.Equal(int64(100), c)
 }
 
 func (m *managerTestSuite) TestList() {
-	m.projectMgr.On("List", mock.Anything, mock.Anything).Return([]*models.Project{}, nil)
-	ps, err := m.cachedManager.List(m.ctx, q.New(q.KeyWords{}))
+	m.projectMetaMgr.On("List", mock.Anything, mock.Anything, mock.Anything).Return([]*models.ProjectMetadata{}, nil)
+	ps, err := m.cachedManager.List(m.ctx, "", "")
 	m.NoError(err)
-	m.ElementsMatch([]*models.Project{}, ps)
-}
-
-func (m *managerTestSuite) TestListRoles() {
-	m.projectMgr.On("ListRoles", mock.Anything, mock.Anything, mock.Anything).Return([]int{1}, nil)
-	rs, err := m.cachedManager.ListRoles(m.ctx, 1, 1)
-	m.NoError(err)
-	m.Equal([]int{1}, rs)
+	m.ElementsMatch([]*models.ProjectMetadata{}, ps)
 }
 
 func (m *managerTestSuite) TestGet() {
@@ -80,28 +64,28 @@ func (m *managerTestSuite) TestGet() {
 	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	_, err := m.cachedManager.Get(m.ctx, 100)
 	m.NoError(err, "should get from cache")
-	m.projectMgr.AssertNotCalled(m.T(), "Get", mock.Anything, mock.Anything)
+	m.projectMetaMgr.AssertNotCalled(m.T(), "Get", mock.Anything, mock.Anything)
 
 	// not found in cache, read from dao
 	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(cache.ErrNotFound).Once()
 	m.cache.On("Save", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-	m.projectMgr.On("Get", mock.Anything, mock.Anything).Return(&models.Project{}, nil).Once()
+	m.projectMetaMgr.On("Get", mock.Anything, mock.Anything).Return(map[string]string{}, nil).Once()
 	_, err = m.cachedManager.Get(m.ctx, 100)
-	m.NoError(err, "should get from projectMgr")
-	m.projectMgr.AssertCalled(m.T(), "Get", mock.Anything, mock.Anything)
+	m.NoError(err, "should get from projectMetaMgr")
+	m.projectMetaMgr.AssertCalled(m.T(), "Get", mock.Anything, mock.Anything)
 }
 
 func (m *managerTestSuite) TestDelete() {
 	// delete from projectMgr error
 	errDelete := errors.New("delete failed")
-	m.projectMgr.On("Delete", mock.Anything, mock.Anything).Return(errDelete).Once()
+	m.projectMetaMgr.On("Delete", mock.Anything, mock.Anything).Return(errDelete).Once()
 	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	err := m.cachedManager.Delete(m.ctx, 100)
 	m.ErrorIs(err, errDelete, "delete should error")
 	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 
 	// delete from projectMgr success
-	m.projectMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+	m.projectMetaMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Twice()
 	err = m.cachedManager.Delete(m.ctx, 100)
@@ -111,7 +95,7 @@ func (m *managerTestSuite) TestDelete() {
 
 func (m *managerTestSuite) TestResourceType() {
 	t := m.cachedManager.ResourceType(m.ctx)
-	m.Equal("project", t)
+	m.Equal("project_metadata", t)
 }
 
 func (m *managerTestSuite) TestCountCache() {
