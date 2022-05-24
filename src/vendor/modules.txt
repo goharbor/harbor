@@ -125,7 +125,7 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/beego/beego v1.12.8
+# github.com/beego/beego v1.12.9
 ## explicit; go 1.13
 github.com/beego/beego
 github.com/beego/beego/cache
