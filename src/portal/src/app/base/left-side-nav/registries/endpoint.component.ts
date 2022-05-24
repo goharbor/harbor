@@ -11,50 +11,58 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import {
-    Component,
-    OnInit,
-    OnDestroy,
-    ViewChild,
-} from "@angular/core";
-import { Subscription, Observable, forkJoin, throwError as observableThrowError } from "rxjs";
-import { TranslateService } from "@ngx-translate/core";
-import { Comparator } from "../../../shared/services";
-import { ErrorHandler } from "../../../shared/units/error-handler";
-import { map, catchError, finalize } from "rxjs/operators";
-import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog";
+    Subscription,
+    Observable,
+    forkJoin,
+    throwError as observableThrowError,
+} from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import { Comparator } from '../../../shared/services';
+import { ErrorHandler } from '../../../shared/units/error-handler';
+import { map, catchError, finalize } from 'rxjs/operators';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog';
 import {
     ConfirmationTargets,
     ConfirmationState,
-    ConfirmationButtons
-} from "../../../shared/entities/shared.const";
-import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
+    ConfirmationButtons,
+} from '../../../shared/entities/shared.const';
+import { CreateEditEndpointComponent } from './create-edit-endpoint/create-edit-endpoint.component';
 import {
     CustomComparator,
     getPageSizeFromLocalStorage,
-    getSortingString, PageSizeMapKeys,
-    setPageSizeToLocalStorage
-} from "../../../shared/units/utils";
-import { operateChanges, OperateInfo, OperationState } from "../../../shared/components/operation/operate";
-import { OperationService } from "../../../shared/components/operation/operation.service";
-import { errorHandler } from "../../../shared/units/shared.utils";
-import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../../global-confirmation-dialog/confirmation-state-message";
-import { EndpointService, HELM_HUB } from "../../../shared/services/endpoint.service";
-import { RegistryService } from "../../../../../ng-swagger-gen/services/registry.service";
-import { ClrDatagridStateInterface } from "@clr/angular";
-import { Registry } from "../../../../../ng-swagger-gen/models/registry";
+    getSortingString,
+    PageSizeMapKeys,
+    setPageSizeToLocalStorage,
+} from '../../../shared/units/utils';
+import {
+    operateChanges,
+    OperateInfo,
+    OperationState,
+} from '../../../shared/components/operation/operate';
+import { OperationService } from '../../../shared/components/operation/operation.service';
+import { errorHandler } from '../../../shared/units/shared.utils';
+import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../../global-confirmation-dialog/confirmation-state-message';
+import {
+    EndpointService,
+    HELM_HUB,
+} from '../../../shared/services/endpoint.service';
+import { RegistryService } from '../../../../../ng-swagger-gen/services/registry.service';
+import { ClrDatagridStateInterface } from '@clr/angular';
+import { Registry } from '../../../../../ng-swagger-gen/models/registry';
 
 @Component({
-    selector: "hbr-endpoint",
-    templateUrl: "./endpoint.component.html",
-    styleUrls: ["./endpoint.component.scss"],
+    selector: 'hbr-endpoint',
+    templateUrl: './endpoint.component.html',
+    styleUrls: ['./endpoint.component.scss'],
 })
 export class EndpointComponent implements OnInit, OnDestroy {
     @ViewChild(CreateEditEndpointComponent)
     createEditEndpointComponent: CreateEditEndpointComponent;
 
-    @ViewChild("confirmationDialog")
+    @ViewChild('confirmationDialog')
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     targets: Registry[];
@@ -65,10 +73,8 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     loading: boolean = true;
 
-    creationTimeComparator: Comparator<Registry> = new CustomComparator<Registry>(
-        "creation_time",
-        "date"
-    );
+    creationTimeComparator: Comparator<Registry> =
+        new CustomComparator<Registry>('creation_time', 'date');
 
     timerHandler: any;
     selectedRow: Registry[] = [];
@@ -76,30 +82,33 @@ export class EndpointComponent implements OnInit, OnDestroy {
     get initEndpoint(): Registry {
         return {
             credential: {
-                access_key: "",
-                access_secret: "",
-                type: ""
+                access_key: '',
+                access_secret: '',
+                type: '',
             },
-            description: "",
+            description: '',
             insecure: false,
-            name: "",
-            type: "",
-            url: "",
+            name: '',
+            type: '',
+            url: '',
         };
     }
 
-    pageSize: number = getPageSizeFromLocalStorage(PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT);
+    pageSize: number = getPageSizeFromLocalStorage(
+        PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT
+    );
     page: number = 1;
     total: number = 0;
-    constructor(private endpointService: RegistryService,
+    constructor(
+        private endpointService: RegistryService,
         private errorHandlerEntity: ErrorHandler,
         private translateService: TranslateService,
         private operationService: OperationService,
-        private oldEndpointService: EndpointService) {
-    }
+        private oldEndpointService: EndpointService
+    ) {}
 
     ngOnInit(): void {
-        this.targetName = "";
+        this.targetName = '';
     }
 
     ngOnDestroy(): void {
@@ -112,41 +121,55 @@ export class EndpointComponent implements OnInit, OnDestroy {
         let q: string = '';
         if (state && state.filters && state.filters.length) {
             this.targetName = '';
-            q = encodeURIComponent(`${state.filters[0].property}=~${state.filters[0].value}`);
+            q = encodeURIComponent(
+                `${state.filters[0].property}=~${state.filters[0].value}`
+            );
         } else if (this.targetName) {
             q = `name=~${this.targetName}`;
         }
         if (state && state.page) {
             this.pageSize = state.page.size;
-            setPageSizeToLocalStorage(PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT, this.pageSize);
+            setPageSizeToLocalStorage(
+                PageSizeMapKeys.SYSTEM_ENDPOINT_COMPONENT,
+                this.pageSize
+            );
         }
         let sort: string;
         if (state && state.sort && state.sort.by) {
-            sort =  getSortingString(state);
-        } else { // sort by creation_time desc by default
+            sort = getSortingString(state);
+        } else {
+            // sort by creation_time desc by default
             sort = `-creation_time`;
         }
         this.loading = true;
-        this.endpointService.listRegistriesResponse({
-            q: q,
-            pageSize: this.pageSize,
-            page: this.page,
-            sort: sort
-        }).pipe(finalize(() => {
-            this.loading = false;
-        }))
-            .subscribe(response => {
-                // Get total count
-                if (response.headers) {
-                    let xHeader: string = response.headers.get("X-Total-Count");
-                    if (xHeader) {
-                        this.total = parseInt(xHeader, 0);
+        this.endpointService
+            .listRegistriesResponse({
+                q: q,
+                pageSize: this.pageSize,
+                page: this.page,
+                sort: sort,
+            })
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                })
+            )
+            .subscribe(
+                response => {
+                    // Get total count
+                    if (response.headers) {
+                        let xHeader: string =
+                            response.headers.get('X-Total-Count');
+                        if (xHeader) {
+                            this.total = parseInt(xHeader, 0);
+                        }
                     }
+                    this.targets = response.body || [];
+                },
+                error => {
+                    this.errorHandlerEntity.error(error);
                 }
-                this.targets = response.body || [];
-            }, error => {
-                this.errorHandlerEntity.error(error);
-            });
+            );
     }
 
     doSearchTargets(targetName: string) {
@@ -158,7 +181,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
     }
 
     refreshTargets() {
-        this.targetName = "";
+        this.targetName = '';
         this.page = 1;
         this.total = 0;
         this.selectedRow = [];
@@ -193,15 +216,18 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 targetNames.join(', ') || '',
                 targets,
                 ConfirmationTargets.TARGET,
-                ConfirmationButtons.DELETE_CANCEL);
+                ConfirmationButtons.DELETE_CANCEL
+            );
             this.confirmationDialogComponent.open(deletionMessage);
         }
     }
 
     confirmDeletion(message: ConfirmationAcknowledgement) {
-        if (message &&
+        if (
+            message &&
             message.source === ConfirmationTargets.TARGET &&
-            message.state === ConfirmationState.CONFIRMED) {
+            message.state === ConfirmationState.CONFIRMED
+        ) {
             let targetLists: Registry[] = message.data;
             if (targetLists && targetLists.length) {
                 let observableLists: any[] = [];
@@ -209,13 +235,17 @@ export class EndpointComponent implements OnInit, OnDestroy {
                     observableLists.push(this.delOperate(target));
                 });
                 forkJoin(...observableLists)
-                .pipe(finalize(() => {
-                    this.refreshTargets();
-                }))
-                .subscribe((item) => {
-                }, error => {
-                    this.errorHandlerEntity.error(error);
-                });
+                    .pipe(
+                        finalize(() => {
+                            this.refreshTargets();
+                        })
+                    )
+                    .subscribe(
+                        item => {},
+                        error => {
+                            this.errorHandlerEntity.error(error);
+                        }
+                    );
             }
         }
     }
@@ -227,23 +257,32 @@ export class EndpointComponent implements OnInit, OnDestroy {
         operMessage.state = OperationState.progressing;
         operMessage.data.name = target.name;
         this.operationService.publishInfo(operMessage);
-        return this.endpointService.deleteRegistry({
-            id: target.id
-        }).pipe(map(
-                response => {
-                    this.translateService.get('BATCH.DELETED_SUCCESS')
+        return this.endpointService
+            .deleteRegistry({
+                id: target.id,
+            })
+            .pipe(
+                map(response => {
+                    this.translateService
+                        .get('BATCH.DELETED_SUCCESS')
                         .subscribe(res => {
                             operateChanges(operMessage, OperationState.success);
                         });
-                })
-                , catchError(error => {
+                }),
+                catchError(error => {
                     const message = errorHandler(error);
-                    this.translateService.get(message).subscribe(res =>
-                        operateChanges(operMessage, OperationState.failure, res)
-                    );
+                    this.translateService
+                        .get(message)
+                        .subscribe(res =>
+                            operateChanges(
+                                operMessage,
+                                OperationState.failure,
+                                res
+                            )
+                        );
                     return observableThrowError(error);
-                }
-                ));
+                })
+            );
     }
     getAdapterText(adapter: string): string {
         return this.oldEndpointService.getAdapterText(adapter);

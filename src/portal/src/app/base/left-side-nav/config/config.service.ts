@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
-import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
-import { ConfirmationState, ConfirmationTargets } from "../../../shared/entities/shared.const";
-import { ConfirmationMessage } from "../../global-confirmation-dialog/confirmation-message";
-import { Configuration, StringValueItem } from "./config";
+import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
+import {
+    ConfirmationState,
+    ConfirmationTargets,
+} from '../../../shared/entities/shared.const';
+import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
+import { Configuration, StringValueItem } from './config';
 import { ConfigureService } from 'ng-swagger-gen/services/configure.service';
-import { clone } from "../../../shared/units/utils";
-import { MessageHandlerService } from "../../../shared/services/message-handler.service";
-import { finalize } from "rxjs/operators";
-import { Subscription } from "rxjs";
+import { clone } from '../../../shared/units/utils';
+import { MessageHandlerService } from '../../../shared/services/message-handler.service';
+import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 
@@ -19,15 +22,21 @@ export class ConfigService {
     private _currentConfig: Configuration = new Configuration();
     private _originalConfig: Configuration;
 
-    constructor(private confirmService: ConfirmationDialogService,
-                private configureService: ConfigureService,
-                private msgHandler: MessageHandlerService) {
-        this._confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
-            if (confirmation &&
-                confirmation.state === ConfirmationState.CONFIRMED) {
-                this.resetConfig();
+    constructor(
+        private confirmService: ConfirmationDialogService,
+        private configureService: ConfigureService,
+        private msgHandler: MessageHandlerService
+    ) {
+        this._confirmSub = this.confirmService.confirmationConfirm$.subscribe(
+            confirmation => {
+                if (
+                    confirmation &&
+                    confirmation.state === ConfirmationState.CONFIRMED
+                ) {
+                    this.resetConfig();
+                }
             }
-        });
+        );
     }
 
     getConfig(): Configuration {
@@ -37,7 +46,6 @@ export class ConfigService {
     setConfig(c: Configuration) {
         this._currentConfig = c;
     }
-
 
     getOriginalConfig(): Configuration {
         return this._originalConfig;
@@ -60,26 +68,38 @@ export class ConfigService {
 
     updateConfig() {
         this._loadingConfig = true;
-        this.configureService.getConfigurations()
-            .pipe(finalize(() => this._loadingConfig = false))
-            .subscribe(res => {
-                this._currentConfig = res as Configuration;
-                // Add password fields
-                this._currentConfig.email_password = new StringValueItem(fakePass, true);
-                this._currentConfig.ldap_search_password = new StringValueItem(fakePass, true);
-                this._currentConfig.uaa_client_secret = new StringValueItem(fakePass, true);
-                this._currentConfig.oidc_client_secret = new StringValueItem(fakePass, true);
-                // Keep the original copy of the data
-                this._originalConfig = clone(this._currentConfig);
-                // Handle read only
-                if (this._originalConfig?.read_only?.value) {
-                    this.msgHandler.handleReadOnly();
-                } else {
-                    this.msgHandler.clear();
+        this.configureService
+            .getConfigurations()
+            .pipe(finalize(() => (this._loadingConfig = false)))
+            .subscribe(
+                res => {
+                    this._currentConfig = res as Configuration;
+                    // Add password fields
+                    this._currentConfig.email_password = new StringValueItem(
+                        fakePass,
+                        true
+                    );
+                    this._currentConfig.ldap_search_password =
+                        new StringValueItem(fakePass, true);
+                    this._currentConfig.uaa_client_secret = new StringValueItem(
+                        fakePass,
+                        true
+                    );
+                    this._currentConfig.oidc_client_secret =
+                        new StringValueItem(fakePass, true);
+                    // Keep the original copy of the data
+                    this._originalConfig = clone(this._currentConfig);
+                    // Handle read only
+                    if (this._originalConfig?.read_only?.value) {
+                        this.msgHandler.handleReadOnly();
+                    } else {
+                        this.msgHandler.clear();
+                    }
+                },
+                error => {
+                    this.msgHandler.handleError(error);
                 }
-            }, error => {
-                this.msgHandler.handleError(error);
-            });
+            );
     }
 
     resetConfig() {
@@ -99,4 +119,3 @@ export class ConfigService {
         this.confirmService.openComfirmDialog(msg);
     }
 }
-

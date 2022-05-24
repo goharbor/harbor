@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -81,7 +82,7 @@ type controller struct {
 
 // NewController ...
 func NewController() Controller {
-	return &controller{mgr: member.Mgr, projectMgr: project.Mgr, userManager: user.New()}
+	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New()}
 }
 
 func (c *controller) Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error) {

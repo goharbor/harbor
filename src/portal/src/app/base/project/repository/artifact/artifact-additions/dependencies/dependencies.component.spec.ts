@@ -1,53 +1,50 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { DependenciesComponent } from "./dependencies.component";
+import { DependenciesComponent } from './dependencies.component';
 import { AdditionsService } from '../additions.service';
 import { of } from 'rxjs';
-import { ArtifactDependency } from "../models";
-import { AdditionLink } from "../../../../../../../../ng-swagger-gen/models/addition-link";
-import { ErrorHandler } from "../../../../../../shared/units/error-handler";
-import { ClarityModule } from "@clr/angular";
-
+import { ArtifactDependency } from '../models';
+import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
+import { ErrorHandler } from '../../../../../../shared/units/error-handler';
+import { ClarityModule } from '@clr/angular';
 
 describe('DependenciesComponent', () => {
     let component: DependenciesComponent;
     let fixture: ComponentFixture<DependenciesComponent>;
     const mockErrorHandler = {
-        error: () => { }
+        error: () => {},
     };
     const mockedDependencies: ArtifactDependency[] = [
         {
             name: 'abc',
             version: 'v1.0',
-            repository: 'test1'
+            repository: 'test1',
         },
         {
             name: 'def',
             version: 'v1.1',
-            repository: 'test2'
-        }
+            repository: 'test2',
+        },
     ];
     const mockAdditionsService = {
-        getDetailByLink: () => of(mockedDependencies)
+        getDetailByLink: () => of(mockedDependencies),
     };
     const mockedLink: AdditionLink = {
         absolute: false,
-        href: '/test'
+        href: '/test',
     };
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [
-                TranslateModule.forRoot(),
-                ClarityModule
-            ],
+            imports: [TranslateModule.forRoot(), ClarityModule],
             declarations: [DependenciesComponent],
             providers: [
                 TranslateService,
                 {
-                    provide: ErrorHandler, useValue: mockErrorHandler
+                    provide: ErrorHandler,
+                    useValue: mockErrorHandler,
                 },
                 { provide: AdditionsService, useValue: mockAdditionsService },
-            ]
+            ],
         }).compileComponents();
     });
 

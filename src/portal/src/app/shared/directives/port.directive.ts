@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Directive } from '@angular/core';
-import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS } from '@angular/forms';
+import {
+    ValidatorFn,
+    AbstractControl,
+    Validator,
+    NG_VALIDATORS,
+} from '@angular/forms';
 
 export const portNumbers = /^[\d]{1,5}$/;
 
@@ -20,16 +25,16 @@ export function portValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
         const value: string = control.value;
         if (!value) {
-            return { 'port': 65535 };
+            return { port: 65535 };
         }
 
         const regExp = new RegExp(portNumbers, 'i');
         if (!regExp.test(value)) {
-            return { 'port': 65535 };
+            return { port: 65535 };
         } else {
             const portV = Number.parseInt(value, 10);
             if (portV <= 0 || portV > 65535) {
-                return { 'port': 65535 };
+                return { port: 65535 };
             }
         }
         return null;
@@ -38,9 +43,14 @@ export function portValidator(): ValidatorFn {
 
 @Directive({
     selector: '[port]',
-    providers: [{ provide: NG_VALIDATORS, useExisting: PortValidatorDirective, multi: true }]
+    providers: [
+        {
+            provide: NG_VALIDATORS,
+            useExisting: PortValidatorDirective,
+            multi: true,
+        },
+    ],
 })
-
 export class PortValidatorDirective implements Validator {
     valFn = portValidator();
 

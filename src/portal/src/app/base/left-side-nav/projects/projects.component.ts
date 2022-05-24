@@ -15,133 +15,164 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
 import { ConfigurationService } from '../../../services/config.service';
-import { SessionService } from "../../../shared/services/session.service";
-import { ProjectService, QuotaHardInterface } from "../../../shared/services";
-import { Configuration } from "../config/config";
+import { SessionService } from '../../../shared/services/session.service';
+import { ProjectService, QuotaHardInterface } from '../../../shared/services';
+import { Configuration } from '../config/config';
 import { FilterComponent } from '../../../shared/components/filter/filter.component';
 import { Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs/operators';
+import {
+    debounceTime,
+    distinctUntilChanged,
+    finalize,
+    switchMap,
+} from 'rxjs/operators';
 import { Project } from '../../project/project';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
-import { ProjectTypes } from "../../../shared/entities/shared.const";
-import { getSortingString } from "../../../shared/units/utils";
+import { ProjectTypes } from '../../../shared/entities/shared.const';
+import { getSortingString } from '../../../shared/units/utils';
 
 @Component({
-  selector: 'projects',
-  templateUrl: 'projects.component.html',
-  styleUrls: ['./projects.component.scss']
+    selector: 'projects',
+    templateUrl: 'projects.component.html',
+    styleUrls: ['./projects.component.scss'],
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
-  projectTypes = ProjectTypes;
-  quotaObj: QuotaHardInterface;
-  @ViewChild(CreateProjectComponent)
-  creationProject: CreateProjectComponent;
+    projectTypes = ProjectTypes;
+    quotaObj: QuotaHardInterface;
+    @ViewChild(CreateProjectComponent)
+    creationProject: CreateProjectComponent;
 
-  @ViewChild(ListProjectComponent)
-  listProject: ListProjectComponent;
+    @ViewChild(ListProjectComponent)
+    listProject: ListProjectComponent;
 
-  currentFilteredType: number = 0; // all projects
-  projectName: string = "";
-  get selecteType(): string {
-    return this.currentFilteredType + "";
-  }
-  set selecteType(_project: string) {
-    this.currentFilteredType = +_project;
-    if (window.sessionStorage) {
-      window.sessionStorage['projectTypeValue'] = +_project;
+    currentFilteredType: number = 0; // all projects
+    projectName: string = '';
+    get selecteType(): string {
+        return this.currentFilteredType + '';
     }
-  }
-  @ViewChild(FilterComponent, {static: true})
-  filterComponent: FilterComponent;
-  searchSub: Subscription;
-
-  constructor(
-    public configService: ConfigurationService,
-    private session: SessionService,
-    private proService: ProjectService,
-    private msgHandler: MessageHandlerService,
-  ) { }
-
-  ngOnInit(): void {
-    if (window.sessionStorage && window.sessionStorage['projectTypeValue'] && window.sessionStorage['fromDetails']) {
-      this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
-      window.sessionStorage.removeItem('fromDetails');
+    set selecteType(_project: string) {
+        this.currentFilteredType = +_project;
+        if (window.sessionStorage) {
+            window.sessionStorage['projectTypeValue'] = +_project;
+        }
     }
-    if (this.isSystemAdmin) {
-      this.getConfigration();
-    }
-    if (!this.searchSub) {
-      this.searchSub = this.filterComponent.filterTerms.pipe(
-          debounceTime(500),
-          distinctUntilChanged(),
-          switchMap(projectName => {
-            // reset project list
-              this.listProject.currentPage = 1;
-              this.listProject.searchKeyword = projectName;
-              this.listProject.selectedRow = [];
-              this.listProject.loading = true;
-              let passInFilteredType: number = undefined;
-              if (this.listProject.filteredType > 0) {
-                  passInFilteredType = this.listProject.filteredType - 1;
-              }
-            return this.proService.listProjects( this.listProject.searchKeyword,
-                passInFilteredType,  this.listProject.currentPage, this.listProject.pageSize, getSortingString(this.listProject.state))
-                .pipe(finalize(() => {
-                  this.listProject.loading = false;
-                }));
-          })).subscribe(response => {
-                // Get total count
-                if (response.headers) {
-                    let xHeader: string = response.headers.get("X-Total-Count");
-                    if (xHeader) {
-                        this.listProject.totalCount = parseInt(xHeader, 0);
+    @ViewChild(FilterComponent, { static: true })
+    filterComponent: FilterComponent;
+    searchSub: Subscription;
+
+    constructor(
+        public configService: ConfigurationService,
+        private session: SessionService,
+        private proService: ProjectService,
+        private msgHandler: MessageHandlerService
+    ) {}
+
+    ngOnInit(): void {
+        if (
+            window.sessionStorage &&
+            window.sessionStorage['projectTypeValue'] &&
+            window.sessionStorage['fromDetails']
+        ) {
+            this.currentFilteredType =
+                +window.sessionStorage['projectTypeValue'];
+            window.sessionStorage.removeItem('fromDetails');
+        }
+        if (this.isSystemAdmin) {
+            this.getConfigration();
+        }
+        if (!this.searchSub) {
+            this.searchSub = this.filterComponent.filterTerms
+                .pipe(
+                    debounceTime(500),
+                    distinctUntilChanged(),
+                    switchMap(projectName => {
+                        // reset project list
+                        this.listProject.currentPage = 1;
+                        this.listProject.searchKeyword = projectName;
+                        this.listProject.selectedRow = [];
+                        this.listProject.loading = true;
+                        let passInFilteredType: number = undefined;
+                        if (this.listProject.filteredType > 0) {
+                            passInFilteredType =
+                                this.listProject.filteredType - 1;
+                        }
+                        return this.proService
+                            .listProjects(
+                                this.listProject.searchKeyword,
+                                passInFilteredType,
+                                this.listProject.currentPage,
+                                this.listProject.pageSize,
+                                getSortingString(this.listProject.state)
+                            )
+                            .pipe(
+                                finalize(() => {
+                                    this.listProject.loading = false;
+                                })
+                            );
+                    })
+                )
+                .subscribe(
+                    response => {
+                        // Get total count
+                        if (response.headers) {
+                            let xHeader: string =
+                                response.headers.get('X-Total-Count');
+                            if (xHeader) {
+                                this.listProject.totalCount = parseInt(
+                                    xHeader,
+                                    0
+                                );
+                            }
+                        }
+                        this.listProject.projects = response.body as Project[];
+                    },
+                    error => {
+                        this.msgHandler.handleError(error);
                     }
-                }
-                this.listProject.projects = response.body as Project[];
-            }, error => {
-                this.msgHandler.handleError(error);
+                );
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+            this.searchSub = null;
+        }
+    }
+
+    getConfigration() {
+        this.configService
+            .getConfiguration()
+            .subscribe((configurations: Configuration) => {
+                this.quotaObj = {
+                    storage_per_project: configurations.storage_per_project
+                        ? configurations.storage_per_project.value
+                        : -1,
+                };
             });
     }
-  }
 
-  ngOnDestroy() {
-    if (this.searchSub) {
-      this.searchSub.unsubscribe();
-      this.searchSub = null;
+    public get isSystemAdmin(): boolean {
+        let account = this.session.getCurrentUser();
+        return account != null && account.has_admin_role;
     }
-  }
-
-  getConfigration() {
-    this.configService.getConfiguration()
-        .subscribe((configurations: Configuration) => {
-          this.quotaObj = {
-            storage_per_project: configurations.storage_per_project ? configurations.storage_per_project.value : -1
-          };
-        });
-  }
-
-  public get isSystemAdmin(): boolean {
-    let account = this.session.getCurrentUser();
-    return account != null && account.has_admin_role;
-  }
-  openModal(): void {
-    this.creationProject.newProject();
-  }
-
-  createProject(created: boolean) {
-    if (created) {
-      this.refresh();
+    openModal(): void {
+        this.creationProject.newProject();
     }
-  }
 
-  doFilterProjects(): void {
-    this.listProject.doFilterProject(+this.selecteType);
-  }
+    createProject(created: boolean) {
+        if (created) {
+            this.refresh();
+        }
+    }
 
-  refresh(): void {
-    this.currentFilteredType = 0;
-    this.projectName = "";
-    this.listProject.refresh();
-  }
+    doFilterProjects(): void {
+        this.listProject.doFilterProject(+this.selecteType);
+    }
 
+    refresh(): void {
+        this.currentFilteredType = 0;
+        this.projectName = '';
+        this.listProject.refresh();
+    }
 }

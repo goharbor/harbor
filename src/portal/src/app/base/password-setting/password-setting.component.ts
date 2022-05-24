@@ -17,46 +17,50 @@ import { PasswordSettingService } from './password-setting.service';
 import { SessionService } from '../../shared/services/session.service';
 import { isEmptyForm } from '../../shared/units/shared.utils';
 import { MessageHandlerService } from '../../shared/services/message-handler.service';
-import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'password-setting',
-    templateUrl: "password-setting.component.html",
-    styleUrls: ['./password-setting.component.scss', '../../common.scss']
+    templateUrl: 'password-setting.component.html',
+    styleUrls: ['./password-setting.component.scss', '../../common.scss'],
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     showOldPwd: boolean = false;
     showNewPwd: boolean = false;
     showReNewPwd: boolean = false;
     opened: boolean = false;
-    oldPwd: string = "";
-    newPwd: string = "";
-    reNewPwd: string = "";
+    oldPwd: string = '';
+    newPwd: string = '';
+    reNewPwd: string = '';
     error: any = null;
 
     formValueChanged: boolean = false;
     onCalling: boolean = false;
     private validationStateMap: any = {
-        "newPassword": true,
-        "reNewPassword": true
+        newPassword: true,
+        reNewPassword: true,
     };
 
     pwdFormRef: NgForm;
-    @ViewChild("changepwdForm", {static: true}) pwdForm: NgForm;
-    @ViewChild(InlineAlertComponent, {static: true})
+    @ViewChild('changepwdForm', { static: true }) pwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, { static: true })
     inlineAlert: InlineAlertComponent;
 
     constructor(
         private passwordService: PasswordSettingService,
         private session: SessionService,
-        private msgHandler: MessageHandlerService) { }
+        private msgHandler: MessageHandlerService
+    ) {}
 
     // If form is valid
     public get isValid(): boolean {
-        if (this.pwdForm && this.pwdForm.form.get("newPassword")) {
-            return this.pwdForm.valid &&
-                (this.pwdForm.form.get("newPassword").value === this.pwdForm.form.get("reNewPassword").value) &&
-                this.error === null;
+        if (this.pwdForm && this.pwdForm.form.get('newPassword')) {
+            return (
+                this.pwdForm.valid &&
+                this.pwdForm.form.get('newPassword').value ===
+                    this.pwdForm.form.get('reNewPassword').value &&
+                this.error === null
+            );
         }
         return false;
     }
@@ -80,11 +84,15 @@ export class PasswordSettingComponent implements AfterViewChecked {
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
                 if (cont.valid) {
-                    if (key === "reNewPassword" || key === "newPassword") {
-                        let cpKey = key === "reNewPassword" ? "newPassword" : "reNewPassword";
+                    if (key === 'reNewPassword' || key === 'newPassword') {
+                        let cpKey =
+                            key === 'reNewPassword'
+                                ? 'newPassword'
+                                : 'reNewPassword';
                         let compareCont = this.pwdForm.controls[cpKey];
                         if (compareCont && compareCont.valid) {
-                            this.validationStateMap["reNewPassword"] = cont.value === compareCont.value;
+                            this.validationStateMap['reNewPassword'] =
+                                cont.value === compareCont.value;
                         }
                     }
                 }
@@ -115,8 +123,8 @@ export class PasswordSettingComponent implements AfterViewChecked {
         this.onCalling = false;
         this.error = null;
         this.validationStateMap = {
-            "newPassword": true,
-            "reNewPassword": true
+            newPassword: true,
+            reNewPassword: true,
         };
         this.pwdForm.reset();
         this.inlineAlert.close();
@@ -132,7 +140,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             } else {
                 // Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
+                    message: 'ALERT.FORM_CHANGE_CONFIRMATION',
                 });
             }
         } else {
@@ -163,30 +171,38 @@ export class PasswordSettingComponent implements AfterViewChecked {
         // Call service
         this.onCalling = true;
 
-        this.passwordService.changePassword(cUser.user_id,
-            {
+        this.passwordService
+            .changePassword(cUser.user_id, {
                 new_password: this.pwdForm.value.newPassword,
-                old_password: this.pwdForm.value.oldPassword
+                old_password: this.pwdForm.value.oldPassword,
             })
-            .subscribe(() => {
-                this.onCalling = false;
-                this.opened = false;
-                this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
-            }, error => {
-                this.onCalling = false;
-                this.error = error;
-                if (this.msgHandler.isAppLevel(error)) {
+            .subscribe(
+                () => {
+                    this.onCalling = false;
                     this.opened = false;
-                    this.msgHandler.handleError(error);
-                } else {
-                    // Special case for 400
-                    let msg = '' + error.error;
-                    if (msg && msg.includes('old_password_is_not_correct')) {
-                        this.inlineAlert.showInlineError("INCONRRECT_OLD_PWD");
+                    this.msgHandler.showSuccess('CHANGE_PWD.SAVE_SUCCESS');
+                },
+                error => {
+                    this.onCalling = false;
+                    this.error = error;
+                    if (this.msgHandler.isAppLevel(error)) {
+                        this.opened = false;
+                        this.msgHandler.handleError(error);
                     } else {
-                        this.inlineAlert.showInlineError(error);
+                        // Special case for 400
+                        let msg = '' + error.error;
+                        if (
+                            msg &&
+                            msg.includes('old_password_is_not_correct')
+                        ) {
+                            this.inlineAlert.showInlineError(
+                                'INCONRRECT_OLD_PWD'
+                            );
+                        } else {
+                            this.inlineAlert.showInlineError(error);
+                        }
                     }
                 }
-            });
+            );
     }
 }

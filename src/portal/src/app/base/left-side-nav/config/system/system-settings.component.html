@@ -1,139 +1,284 @@
 <form #systemConfigFrom="ngForm" class="clr-form clr-form-horizontal">
     <section>
         <clr-select-container>
-            <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}
+            <label for="proCreation"
+                >{{ 'CONFIG.PRO_CREATION_RESTRICTION' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION'
+                                | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
-            <select clrSelect id="proCreation" name="proCreation"
+            <select
+                clrSelect
+                id="proCreation"
+                name="proCreation"
                 [(ngModel)]="currentConfig.project_creation_restriction.value"
-                [disabled]="disabled(currentConfig.project_creation_restriction)">
-                <option value="everyone">{{'CONFIG.PRO_CREATION_EVERYONE' | translate }}</option>
-                <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
+                [disabled]="
+                    disabled(currentConfig.project_creation_restriction)
+                ">
+                <option value="everyone">
+                    {{ 'CONFIG.PRO_CREATION_EVERYONE' | translate }}
+                </option>
+                <option value="adminonly">
+                    {{ 'CONFIG.PRO_CREATION_ADMIN' | translate }}
+                </option>
             </select>
         </clr-select-container>
         <clr-input-container>
-            <label for="tokenExpiration" class="required">{{'CONFIG.TOKEN_EXPIRATION' | translate}}
+            <label for="tokenExpiration" class="required"
+                >{{ 'CONFIG.TOKEN_EXPIRATION' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.TOKEN_EXPIRATION' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.TOKEN_EXPIRATION' | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
-            <input clrInput name="tokenExpiration" type="text" #tokenExpirationInput="ngModel"
-                [(ngModel)]="tokenExpirationValue" required pattern="^[1-9]{1}[0-9]*$"
-                id="tokenExpiration" size="20" [disabled]="!editable" />
-            <clr-control-error>{{'TOOLTIP.NUMBER_REQUIRED' | translate}}</clr-control-error>
-
+            <input
+                clrInput
+                name="tokenExpiration"
+                type="text"
+                #tokenExpirationInput="ngModel"
+                [(ngModel)]="tokenExpirationValue"
+                required
+                pattern="^[1-9]{1}[0-9]*$"
+                id="tokenExpiration"
+                size="20"
+                [disabled]="!editable" />
+            <clr-control-error>{{
+                'TOOLTIP.NUMBER_REQUIRED' | translate
+            }}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
-            <label for="robotNamePrefix" class="required">{{'ROBOT_ACCOUNT.NAME_PREFIX' | translate}}
+            <label for="robotNamePrefix" class="required"
+                >{{ 'ROBOT_ACCOUNT.NAME_PREFIX' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.ROBOT_NAME_PREFIX' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.ROBOT_NAME_PREFIX' | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
-            <input clrInput name="robotNamePrefix" type="text"
-                   [(ngModel)]="currentConfig.robot_name_prefix.value"
-                   required
-                   autocomplete="off"
-                   id="robotNamePrefix" size="20" [disabled]="!robotNamePrefixEditable()" />
-            <clr-control-error>{{'ROBOT_ACCOUNT.NAME_PREFIX_REQUIRED' | translate}}</clr-control-error>
+            <input
+                clrInput
+                name="robotNamePrefix"
+                type="text"
+                [(ngModel)]="currentConfig.robot_name_prefix.value"
+                required
+                autocomplete="off"
+                id="robotNamePrefix"
+                size="20"
+                [disabled]="!robotNamePrefixEditable()" />
+            <clr-control-error>{{
+                'ROBOT_ACCOUNT.NAME_PREFIX_REQUIRED' | translate
+            }}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
-            <label for="robotTokenExpiration" class="required">{{'ROBOT_ACCOUNT.TOKEN_EXPIRATION' | translate}}
+            <label for="robotTokenExpiration" class="required"
+                >{{ 'ROBOT_ACCOUNT.TOKEN_EXPIRATION' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.ROBOT_TOKEN_EXPIRATION' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.ROBOT_TOKEN_EXPIRATION' | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
-            <input clrInput name="robotTokenExpiration" type="text" #robotTokenExpirationInput="ngModel"
-                [(ngModel)]="robotTokenExpirationValue" required
-                pattern="^[1-9]{1}[0-9]*$" id="robotTokenExpiration" size="20" [disabled]="!robotExpirationEditable" />
-            <clr-control-error>{{'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate}}</clr-control-error>
-
+            <input
+                clrInput
+                name="robotTokenExpiration"
+                type="text"
+                #robotTokenExpirationInput="ngModel"
+                [(ngModel)]="robotTokenExpirationValue"
+                required
+                pattern="^[1-9]{1}[0-9]*$"
+                id="robotTokenExpiration"
+                size="20"
+                [disabled]="!robotExpirationEditable" />
+            <clr-control-error>{{
+                'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate
+            }}</clr-control-error>
         </clr-input-container>
-        <label *ngIf="canDownloadCert"
-            class="clr-control-label cert-down-label mt-1">{{'CONFIG.ROOT_CERT' | translate}}
+        <label
+            *ngIf="canDownloadCert"
+            class="clr-control-label cert-down-label mt-1"
+            >{{ 'CONFIG.ROOT_CERT' | translate }}
             <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
+                <clr-icon
+                    clrTooltipTrigger
+                    shape="info-circle"
+                    size="24"></clr-icon>
+                <clr-tooltip-content
+                    clrPosition="top-right"
+                    clrSize="lg"
+                    *clrIfOpen>
+                    <span>{{
+                        'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate
+                    }}</span>
                 </clr-tooltip-content>
             </clr-tooltip>
-            <a rel='noopener noreferrer' #certDownloadLink class="cert-down" [href]="downloadLink" target="_blank">{{'CONFIG.ROOT_CERT_LINK' | translate}}</a>
+            <a
+                rel="noopener noreferrer"
+                #certDownloadLink
+                class="cert-down"
+                [href]="downloadLink"
+                target="_blank"
+                >{{ 'CONFIG.ROOT_CERT_LINK' | translate }}</a
+            >
         </label>
         <clr-checkbox-container>
-            <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
+            <label id="repo_read_only_lbl" for="repoReadOnly"
+                >{{ 'CONFIG.REPO_READ_ONLY' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.REPO_TOOLTIP' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.REPO_TOOLTIP' | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" [disabled]="!currentConfig.read_only.editable"  clrCheckbox name="repoReadOnly" id="repoReadOnly"
-                    [ngModel]="currentConfig.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
+                <input
+                    type="checkbox"
+                    [disabled]="!currentConfig.read_only.editable"
+                    clrCheckbox
+                    name="repoReadOnly"
+                    id="repoReadOnly"
+                    [ngModel]="currentConfig.read_only.value"
+                    (ngModelChange)="setRepoReadOnlyValue($event)" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
 
-
         <div class="clr-form-control d-f">
-            <label
-                class="clr-control-label">{{'CVE_ALLOWLIST.DEPLOYMENT_SECURITY'|translate}}</label>
+            <label class="clr-control-label">{{
+                'CVE_ALLOWLIST.DEPLOYMENT_SECURITY' | translate
+            }}</label>
             <div class="form-content">
                 <div class="font-size-13">
                     <div class="mt-05">
-                        <span class="title font-size-13">{{'CVE_ALLOWLIST.CVE_ALLOWLIST'|translate}}</span>
+                        <span class="title font-size-13">{{
+                            'CVE_ALLOWLIST.CVE_ALLOWLIST' | translate
+                        }}</span>
                     </div>
                     <div class="mt-05">
-                        <span>{{'CVE_ALLOWLIST.SYS_ALLOWLIST_EXPLAIN'|translate}}</span>
+                        <span>{{
+                            'CVE_ALLOWLIST.SYS_ALLOWLIST_EXPLAIN' | translate
+                        }}</span>
                     </div>
                     <div class="mt-05">
-                        <span>{{'CVE_ALLOWLIST.ADD_SYS'|translate}}</span>
+                        <span>{{ 'CVE_ALLOWLIST.ADD_SYS' | translate }}</span>
                     </div>
                     <div class="mt-05" *ngIf="hasExpired">
-                        <span class="label label-warning">{{'CVE_ALLOWLIST.WARNING_SYS'|translate}}</span>
+                        <span class="label label-warning">{{
+                            'CVE_ALLOWLIST.WARNING_SYS' | translate
+                        }}</span>
                     </div>
                 </div>
                 <div class="clr-row width-90per">
                     <div class="position-relative pl-05">
                         <div>
-                            <button id="show-add-modal-button" (click)="showAddModal=!showAddModal"
-                                class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
+                            <button
+                                id="show-add-modal-button"
+                                (click)="showAddModal = !showAddModal"
+                                class="btn btn-link">
+                                {{ 'CVE_ALLOWLIST.ADD' | translate }}
+                            </button>
                         </div>
-                        <div class="add-modal add-modal-dark" *ngIf="showAddModal">
-                            <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4"
+                        <div
+                            class="add-modal add-modal-dark"
+                            *ngIf="showAddModal">
+                            <clr-icon
+                                (click)="showAddModal = false"
+                                class="float-lg-right margin-top-4"
                                 shape="window-close"></clr-icon>
                             <div>
-                                <clr-textarea-container class="flex-direction-column">
-                                    <label>{{'CVE_ALLOWLIST.ENTER'|translate}}</label>
-                                    <textarea id="allowlist-textarea" class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
+                                <clr-textarea-container
+                                    class="flex-direction-column">
+                                    <label>{{
+                                        'CVE_ALLOWLIST.ENTER' | translate
+                                    }}</label>
+                                    <textarea
+                                        id="allowlist-textarea"
+                                        class="w-100 font-italic"
+                                        clrTextarea
+                                        [(ngModel)]="cveIds"
                                         name="cveIds"></textarea>
-                                    <clr-control-helper>{{'CVE_ALLOWLIST.HELP'|translate}}</clr-control-helper>
+                                    <clr-control-helper>{{
+                                        'CVE_ALLOWLIST.HELP' | translate
+                                    }}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
                             <div>
-                                <button id="add-to-system" [disabled]="isDisabled()" (click)="addToSystemAllowlist()"
-                                    class="btn btn-link">{{'CVE_ALLOWLIST.ADD'|translate}}</button>
+                                <button
+                                    id="add-to-system"
+                                    [disabled]="isDisabled()"
+                                    (click)="addToSystemAllowlist()"
+                                    class="btn btn-link">
+                                    {{ 'CVE_ALLOWLIST.ADD' | translate }}
+                                </button>
                             </div>
                         </div>
                         <ul class="allowlist-window">
-                            <li *ngIf="systemAllowlist?.items?.length<1" class="none">{{'CVE_ALLOWLIST.NONE'|translate}}
+                            <li
+                                *ngIf="systemAllowlist?.items?.length < 1"
+                                class="none">
+                                {{ 'CVE_ALLOWLIST.NONE' | translate }}
                             </li>
-                            <li *ngFor="let item of systemAllowlist?.items;let i = index;">
-                                <a href="javascript:void(0)" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</a>
-                                <a  class="float-lg-right" href="javascript:void(0)" (click)="deleteItem(i)">
+                            <li
+                                *ngFor="
+                                    let item of systemAllowlist?.items;
+                                    let i = index
+                                ">
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="goToDetail(item.cve_id)"
+                                    >{{ item.cve_id }}</a
+                                >
+                                <a
+                                    class="float-lg-right"
+                                    href="javascript:void(0)"
+                                    (click)="deleteItem(i)">
                                     <clr-icon shape="times-circle"></clr-icon>
                                 </a>
                             </li>
@@ -141,19 +286,37 @@
                     </div>
                     <div class="clr-col padding-top-8">
                         <div class="clr-row expire-data">
-                            <label class="bottom-line clr-col-4">{{'CVE_ALLOWLIST.EXPIRES_AT'|translate}}</label>
+                            <label class="bottom-line clr-col-4">{{
+                                'CVE_ALLOWLIST.EXPIRES_AT' | translate
+                            }}</label>
                             <div>
-                                <input #dateInput placeholder="{{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}" readonly
-                                    type="date" [(clrDate)]="expiresDate" newFormLayout="true">
+                                <input
+                                    #dateInput
+                                    placeholder="{{
+                                        'CVE_ALLOWLIST.NEVER_EXPIRES'
+                                            | translate
+                                    }}"
+                                    readonly
+                                    type="date"
+                                    [(clrDate)]="expiresDate"
+                                    newFormLayout="true" />
                             </div>
                         </div>
                         <div class="clr-row">
                             <label class="clr-col-4"></label>
                             <clr-checkbox-wrapper>
-                                <input [checked]="neverExpires" [(ngModel)]="neverExpires" type="checkbox" clrCheckbox
-                                    name="neverExpires" id="neverExpires" />
+                                <input
+                                    [checked]="neverExpires"
+                                    [(ngModel)]="neverExpires"
+                                    type="checkbox"
+                                    clrCheckbox
+                                    name="neverExpires"
+                                    id="neverExpires" />
                                 <label>
-                                    {{'CVE_ALLOWLIST.NEVER_EXPIRES'|translate}}
+                                    {{
+                                        'CVE_ALLOWLIST.NEVER_EXPIRES'
+                                            | translate
+                                    }}
                                 </label>
                             </clr-checkbox-wrapper>
                         </div>
@@ -162,16 +325,29 @@
             </div>
         </div>
         <clr-checkbox-container>
-            <label for="webhookNotificationEnabled">{{'CONFIG.WEBHOOK_NOTIFICATION_ENABLED' | translate}}
+            <label for="webhookNotificationEnabled"
+                >{{ 'CONFIG.WEBHOOK_NOTIFICATION_ENABLED' | translate }}
                 <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.WEBHOOK_TOOLTIP' | translate}}</span>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.WEBHOOK_TOOLTIP' | translate
+                        }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="webhookNotificationEnabled" id="webhookNotificationEnabled"
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="webhookNotificationEnabled"
+                    id="webhookNotificationEnabled"
                     [ngModel]="currentConfig.notification_enable.value"
                     (ngModelChange)="setWebhookNotificationEnabledValue($event)"
                     [disabled]="!currentConfig.notification_enable.editable" />
@@ -180,10 +356,26 @@
     </section>
 </form>
 <div>
-    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()"
-        [disabled]="(!isValid() || !hasChanges()) && (!hasAllowlistChanged) || inProgress">{{'BUTTON.SAVE'
-        | translate}}</button>
-    <button type="button" id="config_system_cancel" class="btn btn-outline" (click)="cancel()"
-        [disabled]="(!isValid() || !hasChanges()) && (!hasAllowlistChanged) || inProgress">{{'BUTTON.CANCEL'
-        | translate}}</button>
+    <button
+        type="button"
+        id="config_system_save"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="
+            ((!isValid() || !hasChanges()) && !hasAllowlistChanged) ||
+            inProgress
+        ">
+        {{ 'BUTTON.SAVE' | translate }}
+    </button>
+    <button
+        type="button"
+        id="config_system_cancel"
+        class="btn btn-outline"
+        (click)="cancel()"
+        [disabled]="
+            ((!isValid() || !hasChanges()) && !hasAllowlistChanged) ||
+            inProgress
+        ">
+        {{ 'BUTTON.CANCEL' | translate }}
+    </button>
 </div>

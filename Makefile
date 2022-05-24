@@ -516,16 +516,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis mocks_check misspell gofmt commentfmt golint govet
-
-gofmt:
-	@echo checking gofmt...
-	@res=$$(gofmt -d -e -s $$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print)); \
-	if [ -n "$${res}" ]; then \
-		echo checking gofmt fail... ; \
-		echo "$${res}"; \
-		exit 1; \
-	fi
+go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
@@ -541,13 +532,12 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-golint:
-	@echo checking golint...
-	@go list ./... | grep -v -E 'vendor|test' | xargs fgt golint
-
-govet:
-	@echo checking govet...
-	@cd src;go list ./... | grep -v -E 'vendor|test' | xargs go vet
+# go get -u github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
+GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
+lint:
+	@echo checking lint
+	@echo $(GOLANGCI_LINT)
+	@$(GOLANGCI_LINT) -v run ./src/...
 
 pushimage:
 	@echo "pushing harbor images ..."

@@ -12,7 +12,6 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/pkg"
-	"github.com/goharbor/harbor/src/pkg/project"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -20,7 +19,6 @@ import (
 	internal_orm "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	immu_model "github.com/goharbor/harbor/src/pkg/immutable/model"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -75,7 +73,7 @@ func randomString(n int) string {
 }
 
 func (suite *HandlerSuite) addProject(ctx context.Context, projectName string) int64 {
-	projectID, err := project.Mgr.Create(ctx, &proModels.Project{
+	projectID, err := pkg.ProjectMgr.Create(ctx, &proModels.Project{
 		Name:    projectName,
 		OwnerID: 1,
 	})
@@ -104,7 +102,7 @@ func (suite *HandlerSuite) addRepo(ctx context.Context, pid int64, repo string) 
 		Name:      repo,
 		ProjectID: pid,
 	}
-	repoid, err := repository.Mgr.Create(ctx, repoRec)
+	repoid, err := pkg.RepositoryMgr.Create(ctx, repoRec)
 	suite.Nil(err, fmt.Sprintf("Add repository failed for %s", repo))
 	return repoid
 }
@@ -163,9 +161,9 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 	tagID := suite.addTags(ctx, repoID, afID, "release-1.10")
 
 	defer func() {
-		project.Mgr.Delete(ctx, projectID)
+		pkg.ProjectMgr.Delete(ctx, projectID)
 		pkg.ArtifactMgr.Delete(ctx, afID)
-		repository.Mgr.Delete(ctx, repoID)
+		pkg.RepositoryMgr.Delete(ctx, repoID)
 		tag.Mgr.Delete(ctx, tagID)
 		immutable.Ctr.DeleteImmutableRule(internal_orm.Context(), immuRuleID)
 	}()

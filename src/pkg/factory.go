@@ -15,35 +15,58 @@
 package pkg
 
 import (
-	"sync"
-
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
+	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
+	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
+	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
+	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 // Define global resource manager.
 var (
-	// once for only init one time.
-	once sync.Once
 	// ArtifactMgr is the manager for artifact.
 	ArtifactMgr artifact.Manager
+	// ProjectMgr is the manager for project.
+	ProjectMgr project.Manager
+	// RepositoryMgr is the manager for repository.
+	RepositoryMgr repository.Manager
 )
 
 // init initialize mananger for resources
 func init() {
-	once.Do(func() {
-		cacheEnabled := config.CacheEnabled()
-		initArtifactManager(cacheEnabled)
-	})
+	cacheEnabled := config.CacheEnabled()
+	initArtifactMgr(cacheEnabled)
+	initProjectMgr(cacheEnabled)
+	initRepositoryMgr(cacheEnabled)
 }
 
-func initArtifactManager(cacheEnabled bool) {
+func initArtifactMgr(cacheEnabled bool) {
 	artMgr := artifact.NewManager()
 	// check cache enable
 	if cacheEnabled {
-		ArtifactMgr = redis.NewManager(artMgr)
+		ArtifactMgr = cachedArtifact.NewManager(artMgr)
 	} else {
 		ArtifactMgr = artMgr
+	}
+}
+
+func initProjectMgr(cacheEnabled bool) {
+	projectMgr := project.New()
+	// check cache enable
+	if cacheEnabled {
+		ProjectMgr = cachedProject.NewManager(projectMgr)
+	} else {
+		ProjectMgr = projectMgr
+	}
+}
+
+func initRepositoryMgr(cacheEnabled bool) {
+	repoMgr := repository.New()
+	if cacheEnabled {
+		RepositoryMgr = cachedRepo.NewManager(repoMgr)
+	} else {
+		RepositoryMgr = repoMgr
 	}
 }

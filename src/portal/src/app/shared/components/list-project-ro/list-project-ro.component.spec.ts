@@ -1,14 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ListProjectROComponent } from './list-project-ro.component';
-import { SharedTestingModule } from "../../shared.module";
-import { Project } from "../../../../../ng-swagger-gen/models/project";
+import { SharedTestingModule } from '../../shared.module';
+import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { Component } from '@angular/core';
 
 // mock a TestHostComponent for ListProjectROComponent
 @Component({
-    template: `
-    <list-project-ro [projects]="projects">
-    </list-project-ro>`
+    template: ` <list-project-ro [projects]="projects"> </list-project-ro>`,
 })
 class TestHostComponent {
     projects: Project[] = [];
@@ -17,29 +15,26 @@ class TestHostComponent {
 describe('ListProjectROComponent', () => {
     let component: TestHostComponent;
     let fixture: ComponentFixture<TestHostComponent>;
-    const  mockedProjects: Project[] = [
+    const mockedProjects: Project[] = [
         {
             chart_count: 0,
-            name: "test1",
+            name: 'test1',
             metadata: {},
             project_id: 1,
-            repo_count: 1
+            repo_count: 1,
         },
         {
             chart_count: 0,
-            name: "test2",
+            name: 'test2',
             metadata: {},
             project_id: 2,
-            repo_count: 1
-        }
+            repo_count: 1,
+        },
     ];
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
-            declarations: [ListProjectROComponent,
-                TestHostComponent],
+            imports: [SharedTestingModule],
+            declarations: [ListProjectROComponent, TestHostComponent],
         }).compileComponents();
     });
 

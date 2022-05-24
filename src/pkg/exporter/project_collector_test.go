@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
@@ -80,13 +79,13 @@ func setupTest(t *testing.T) {
 
 	// Add repo to project
 	repo1.ProjectID = testPro1.ProjectID
-	repo1ID, err := repository.Mgr.Create(ctx, &repo1)
+	repo1ID, err := pkg.RepositoryMgr.Create(ctx, &repo1)
 	if err != nil {
 		t.Errorf("add repo error %v", err)
 	}
 	repo1.RepositoryID = repo1ID
 	repo2.ProjectID = testPro2.ProjectID
-	repo2ID, err := repository.Mgr.Create(ctx, &repo2)
+	repo2ID, err := pkg.RepositoryMgr.Create(ctx, &repo2)
 	repo2.RepositoryID = repo2ID
 	if err != nil {
 		t.Errorf("add repo error %v", err)

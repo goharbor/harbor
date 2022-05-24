@@ -13,32 +13,31 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from 'rxjs';
 import { SessionUser, SessionUserBackend } from '../entities/session-user';
 import { SessionViewmodelFactory } from './session.viewmodel.factory';
 import {
     HTTP_FORM_OPTIONS,
     HTTP_GET_OPTIONS,
     HTTP_JSON_OPTIONS,
-    CURRENT_BASE_HREF
-} from "../units/utils";
-import { FlushAll } from "../units/cache-util";
-import { SignInCredential } from "../../account/sign-in/sign-in-credential";
-import { ProjectMemberEntity } from "../../../../ng-swagger-gen/models/project-member-entity";
-import { DeFaultLang } from "../entities/shared.const";
-
+    CURRENT_BASE_HREF,
+} from '../units/utils';
+import { FlushAll } from '../units/cache-util';
+import { SignInCredential } from '../../account/sign-in/sign-in-credential';
+import { ProjectMemberEntity } from '../../../../ng-swagger-gen/models/project-member-entity';
+import { DeFaultLang } from '../entities/shared.const';
 
 const signInUrl = '/c/login';
-const currentUserEndpoint = CURRENT_BASE_HREF + "/users/current";
-const signOffEndpoint = "/c/log_out";
-const accountEndpoint = CURRENT_BASE_HREF + "/users/:id";
-const langEndpoint = "/language";
-const userExistsEndpoint = "/c/userExists";
-const renameAdminEndpoint =  'api/internal/renameadmin';
+const currentUserEndpoint = CURRENT_BASE_HREF + '/users/current';
+const signOffEndpoint = '/c/log_out';
+const accountEndpoint = CURRENT_BASE_HREF + '/users/:id';
+const langEndpoint = '/language';
+const userExistsEndpoint = '/c/userExists';
+const renameAdminEndpoint = 'api/internal/renameadmin';
 const langMap = {
-    "zh": "zh-CN",
-    "en": "en-US"
+    zh: 'zh-CN',
+    en: 'en-US',
 };
 
 /**
@@ -53,7 +52,10 @@ const langMap = {
 export class SessionService {
     currentUser: SessionUser = null;
     projectMembers: ProjectMemberEntity[];
-    constructor(private http: HttpClient, public sessionViewmodel: SessionViewmodelFactory) { }
+    constructor(
+        private http: HttpClient,
+        public sessionViewmodel: SessionViewmodelFactory
+    ) {}
 
     // Handle the related exceptions
     handleError(error: any): Observable<any> {
@@ -70,13 +72,17 @@ export class SessionService {
     // Submit signin form to backend (NOT restful service)
     signIn(signInCredential: SignInCredential): Observable<any> {
         // Build the form package
-        let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
-            '&password=' + encodeURIComponent(signInCredential.password);
+        let queryParam: string =
+            'principal=' +
+            encodeURIComponent(signInCredential.principal) +
+            '&password=' +
+            encodeURIComponent(signInCredential.password);
 
         // Trigger HttpClient
-        return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
-            .pipe(map(() => null)
-            , catchError(error => observableThrowError(error)));
+        return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS).pipe(
+            map(() => null),
+            catchError(error => observableThrowError(error))
+        );
     }
 
     /**
@@ -87,9 +93,15 @@ export class SessionService {
      * @memberOf SessionService
      */
     retrieveUser(): Observable<SessionUserBackend> {
-        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map((response: SessionUserBackend) => this.currentUser = this.sessionViewmodel.getCurrentUser(response) as SessionUser)
-            , catchError(error => this.handleError(error)));
+        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS).pipe(
+            map(
+                (response: SessionUserBackend) =>
+                    (this.currentUser = this.sessionViewmodel.getCurrentUser(
+                        response
+                    ) as SessionUser)
+            ),
+            catchError(error => this.handleError(error))
+        );
     }
     /**
      * For getting info
@@ -102,12 +114,13 @@ export class SessionService {
      * Log out the system
      */
     signOff(): Observable<any> {
-        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(() => {
+        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS).pipe(
+            map(() => {
                 // Destroy current session cache
                 // this.currentUser = null;
-            })  // Nothing returned
-            , catchError(error => this.handleError(error)));
+            }), // Nothing returned
+            catchError(error => this.handleError(error))
+        );
     }
 
     /**
@@ -121,15 +134,18 @@ export class SessionService {
      */
     updateAccountSettings(account: SessionUser): Observable<any> {
         if (!account) {
-            return observableThrowError("Invalid account settings");
+            return observableThrowError('Invalid account settings');
         }
-        let putUrl = accountEndpoint.replace(":id", account.user_id + "");
-        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS)
-            .pipe(map(() => {
-                // Retrieve current session user
-                return this.retrieveUser();
-            })
-            , catchError(error => this.handleError(error)));
+        let putUrl = accountEndpoint.replace(':id', account.user_id + '');
+        return this.http
+            .put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS)
+            .pipe(
+                map(() => {
+                    // Retrieve current session user
+                    return this.retrieveUser();
+                }),
+                catchError(error => this.handleError(error))
+            );
     }
 
     /**
@@ -143,11 +159,14 @@ export class SessionService {
      */
     renameAdmin(account: SessionUser): Observable<any> {
         if (!account) {
-            return observableThrowError("Invalid account settings");
+            return observableThrowError('Invalid account settings');
         }
-        return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
-            .pipe(map(() => null)
-            , catchError(error => this.handleError(error)));
+        return this.http
+            .post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
+            .pipe(
+                map(() => null),
+                catchError(error => this.handleError(error))
+            );
     }
 
     /**
@@ -155,7 +174,7 @@ export class SessionService {
      */
     switchLanguage(lang: string): Observable<any> {
         if (!lang) {
-            return observableThrowError("Invalid language");
+            return observableThrowError('Invalid language');
         }
 
         let backendLang = langMap[lang];
@@ -163,10 +182,11 @@ export class SessionService {
             backendLang = langMap[DeFaultLang];
         }
 
-        let getUrl = langEndpoint + "?lang=" + backendLang;
-        return this.http.get(getUrl, HTTP_GET_OPTIONS)
-            .pipe(map(() => null)
-            , catchError(error => this.handleError(error)));
+        let getUrl = langEndpoint + '?lang=' + backendLang;
+        return this.http.get(getUrl, HTTP_GET_OPTIONS).pipe(
+            map(() => null),
+            catchError(error => this.handleError(error))
+        );
     }
 
     checkUserExisting(target: string, value: string): Observable<boolean> {
@@ -176,7 +196,8 @@ export class SessionService {
         body = body.set('value', value);
 
         // Trigger HttpClient
-        return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
+        return this.http
+            .post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
             .pipe(catchError(error => this.handleError(error)));
     }
 
@@ -187,5 +208,4 @@ export class SessionService {
     getProjectMembers(): ProjectMemberEntity[] {
         return this.projectMembers;
     }
-
 }

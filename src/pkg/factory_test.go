@@ -18,19 +18,43 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
+	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
+	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
+	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
+	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInit(t *testing.T) {
+func TestInitArtifactMgr(t *testing.T) {
 	// cache not enable
-	// artifact
 	assert.NotNil(t, ArtifactMgr)
 	assert.IsType(t, artifact.NewManager(), ArtifactMgr)
 
 	// cache enable
-	initArtifactManager(true)
-	// artifact
+	initArtifactMgr(true)
 	assert.NotNil(t, ArtifactMgr)
-	assert.IsType(t, redis.NewManager(artifact.NewManager()), ArtifactMgr)
+	assert.IsType(t, cachedArtifact.NewManager(artifact.NewManager()), ArtifactMgr)
+}
+
+func TestInitProjectMgr(t *testing.T) {
+	// cache not enable
+	assert.NotNil(t, ProjectMgr)
+	assert.IsType(t, project.New(), ProjectMgr)
+
+	// cache enable
+	initProjectMgr(true)
+	assert.NotNil(t, ProjectMgr)
+	assert.IsType(t, cachedProject.NewManager(project.New()), ProjectMgr)
+}
+
+func TestInitRepositoryMgr(t *testing.T) {
+	// cache not enable
+	assert.NotNil(t, RepositoryMgr)
+	assert.IsType(t, repository.New(), RepositoryMgr)
+
+	// cache enable
+	initRepositoryMgr(true)
+	assert.NotNil(t, RepositoryMgr)
+	assert.IsType(t, cachedRepo.NewManager(repository.New()), RepositoryMgr)
 }

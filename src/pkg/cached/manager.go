@@ -25,6 +25,10 @@ const (
 	// Resource type definitions
 	// ResourceTypeArtifact defines artifact type.
 	ResourceTypeArtifact = "artifact"
+	// ResourceTypeProject defines project type.
+	ResourceTypeProject = "project"
+	// ResourceTypeRepository defines repository type.
+	ResourceTypeRepository = "repository"
 )
 
 // Manager is the interface for resource cache manager.

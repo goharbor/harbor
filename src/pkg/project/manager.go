@@ -26,11 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
 
-var (
-	// Mgr is the global project manager
-	Mgr = New()
-)
-
 // Manager is used for project management
 type Manager interface {
 	// Create create project instance

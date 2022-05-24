@@ -12,14 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Directive, OnChanges, Input, SimpleChanges } from '@angular/core';
-import { ValidatorFn, AbstractControl, Validator, NG_VALIDATORS, Validators } from '@angular/forms';
+import {
+    ValidatorFn,
+    AbstractControl,
+    Validator,
+    NG_VALIDATORS,
+    Validators,
+} from '@angular/forms';
 
 export const assiiChars = /[\u4e00-\u9fa5]/;
 
 export function maxLengthExtValidator(length: number): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
         const value: string = control.value;
-        if (!value || value.trim() === "") {
+        if (!value || value.trim() === '') {
             return null;
         }
 
@@ -34,15 +40,20 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
                 count++;
             }
         }
-        return count > length ? { 'maxLengthExt': count } : null;
+        return count > length ? { maxLengthExt: count } : null;
     };
 }
 
 @Directive({
     selector: '[maxLengthExt]',
-    providers: [{ provide: NG_VALIDATORS, useExisting: MaxLengthExtValidatorDirective, multi: true }]
+    providers: [
+        {
+            provide: NG_VALIDATORS,
+            useExisting: MaxLengthExtValidatorDirective,
+            multi: true,
+        },
+    ],
 })
-
 export class MaxLengthExtValidatorDirective implements Validator, OnChanges {
     @Input() maxLengthExt: number;
     valFn = Validators.nullValidator;

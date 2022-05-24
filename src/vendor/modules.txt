@@ -125,7 +125,7 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/beego/beego v1.12.7
+# github.com/beego/beego v1.12.9
 ## explicit; go 1.13
 github.com/beego/beego
 github.com/beego/beego/cache
@@ -365,8 +365,6 @@ github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.10
 ## explicit; go 1.14
 github.com/go-openapi/validate
-# github.com/go-redis/redis v6.14.2+incompatible
-## explicit
 # github.com/go-redis/redis/v8 v8.11.4
 ## explicit; go 1.13
 github.com/go-redis/redis/v8

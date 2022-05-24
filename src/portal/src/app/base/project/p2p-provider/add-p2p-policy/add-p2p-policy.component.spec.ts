@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+    BrowserAnimationsModule,
+    NoopAnimationsModule,
+} from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -16,16 +19,16 @@ import { AppConfigService } from '../../../../services/app-config.service';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { ProjectService } from '../../../../shared/services';
-import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 describe('AddP2pPolicyComponent', () => {
     let component: AddP2pPolicyComponent;
     let fixture: ComponentFixture<AddP2pPolicyComponent>;
     const mockedAppConfigService = {
         getConfig() {
             return {
-                with_notary: true
+                with_notary: true,
             };
-        }
+        },
     };
     const mockPreheatService = {
         CreatePolicy() {
@@ -36,7 +39,7 @@ describe('AddP2pPolicyComponent', () => {
         },
         ListPolicies() {
             return of([]).pipe(delay(0));
-        }
+        },
     };
     const mockActivatedRoute = {
         snapshot: {
@@ -49,20 +52,20 @@ describe('AddP2pPolicyComponent', () => {
                             metadata: {
                                 prevent_vul: 'true',
                                 enable_content_trust: 'true',
-                                severity: 'none'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                severity: 'none',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     };
     const mockedSessionService = {
         getCurrentUser() {
             return {
-                has_admin_role: true
+                has_admin_role: true,
             };
-        }
+        },
     };
     const mockedProjectService = {
         getProject() {
@@ -71,17 +74,14 @@ describe('AddP2pPolicyComponent', () => {
                 metadata: {
                     prevent_vul: 'true',
                     enable_content_trust: 'true',
-                    severity: 'none'
-                }
+                    severity: 'none',
+                },
             });
-        }
+        },
     };
     beforeEach(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA,
-                NO_ERRORS_SCHEMA
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -89,7 +89,7 @@ describe('AddP2pPolicyComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule
+                HttpClientTestingModule,
             ],
             declarations: [AddP2pPolicyComponent, InlineAlertComponent],
             providers: [
@@ -100,7 +100,7 @@ describe('AddP2pPolicyComponent', () => {
                 { provide: SessionService, useValue: mockedSessionService },
                 { provide: AppConfigService, useValue: mockedAppConfigService },
                 { provide: ProjectService, useValue: mockedProjectService },
-            ]
+            ],
         }).compileComponents();
     });
 
@@ -118,7 +118,8 @@ describe('AddP2pPolicyComponent', () => {
         component.isOpen = true;
         fixture.detectChanges();
         await fixture.whenStable();
-        let modalBody: HTMLDivElement = fixture.nativeElement.querySelector('.modal-body');
+        let modalBody: HTMLDivElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(modalBody).toBeTruthy();
         component.closeModal();
         fixture.detectChanges();
@@ -126,36 +127,42 @@ describe('AddP2pPolicyComponent', () => {
         modalBody = fixture.nativeElement.querySelector('.modal-body');
         expect(modalBody).toBeFalsy();
     });
-    it("should show a 'name is required' error",  async () => {
+    it("should show a 'name is required' error", async () => {
         fixture.autoDetectChanges(true);
         component.isOpen = true;
         await fixture.whenStable();
-        const nameInput: HTMLInputElement = fixture.nativeElement.querySelector("#name");
-        nameInput.value = "test";
+        const nameInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#name');
+        nameInput.value = 'test';
         nameInput.dispatchEvent(new Event('input'));
         nameInput.value = null;
         nameInput.dispatchEvent(new Event('input'));
         nameInput.blur();
-        const errorEle: HTMLElement = fixture.nativeElement.querySelector("clr-control-error");
+        const errorEle: HTMLElement =
+            fixture.nativeElement.querySelector('clr-control-error');
         expect(errorEle.innerText).toEqual('P2P_PROVIDER.NAME_TOOLTIP');
     });
-    it("save button should work", async () => {
+    it('save button should work', async () => {
         fixture.autoDetectChanges(true);
         component.isOpen = true;
         await fixture.whenStable();
-        const spy: jasmine.Spy = spyOn(component, 'addOrSave').and.returnValue(undefined);
-        component.tags = "**";
-        component.repos = "**";
+        const spy: jasmine.Spy = spyOn(component, 'addOrSave').and.returnValue(
+            undefined
+        );
+        component.tags = '**';
+        component.repos = '**';
         component.policy = {
-            provider_id: 1
+            provider_id: 1,
         };
-        const nameInput: HTMLInputElement = fixture.nativeElement.querySelector("#name");
-        nameInput.value = "policy1";
+        const nameInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#name');
+        nameInput.value = 'policy1';
         nameInput.dispatchEvent(new Event('input'));
         fixture.detectChanges();
         await fixture.whenStable();
         expect(component.valid()).toBeTruthy();
-        const addButton: HTMLButtonElement = fixture.nativeElement.querySelector("#new-policy");
+        const addButton: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#new-policy');
         addButton.click();
         fixture.detectChanges();
         await fixture.whenStable();

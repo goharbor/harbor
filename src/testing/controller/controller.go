@@ -28,3 +28,4 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/config --name Controller --output ./config --outpkg config
 //go:generate mockery --case snake --dir ../../controller/user --name Controller --output ./user --outpkg user
 //go:generate mockery --case snake --dir ../../controller/repository --name Controller --output ./repository --outpkg repository
+//go:generate mockery --case snake --dir ../../controller/purge --name Controller --output ./purge --outpkg purge

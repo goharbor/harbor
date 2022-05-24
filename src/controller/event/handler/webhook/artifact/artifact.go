@@ -24,11 +24,11 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 // Handler preprocess artifact event data
@@ -118,7 +118,7 @@ func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *
 	}
 
 	ctx := orm.NewContext(context.Background(), beegorm.NewOrm())
-	repoRecord, err := repository.Mgr.GetByName(ctx, repoName)
+	repoRecord, err := pkg.RepositoryMgr.GetByName(ctx, repoName)
 	if err != nil {
 		log.Errorf("failed to get repository with name %s: %v", repoName, err)
 	} else {

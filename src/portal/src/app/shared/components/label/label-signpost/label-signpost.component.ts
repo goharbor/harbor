@@ -1,4 +1,3 @@
-
 // Copyright (c) 2018 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
-import {Label} from "../../../services/interface";
-
+import { Label } from '../../../services';
 
 @Component({
     selector: 'hbr-resource-label-signpost',
     templateUrl: './label-signpost.component.html',
-    styleUrls: ['./label-signpost.component.scss']
+    styleUrls: ['./label-signpost.component.scss'],
 })
-
-export class LabelSignPostComponent implements OnInit {
-
+export class LabelSignPostComponent {
     @Input() labels: Label[] = [];
 
     sortedLabels: Label[] = [];
-
-    ngOnInit(): void {
-    }
 
     constructor() {}
 }

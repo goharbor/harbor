@@ -75,4 +75,5 @@ const (
 	ResourceReplicationPolicy  = Resource("replication-policy")
 	ResourceScanAll            = Resource("scan-all")
 	ResourceSystemVolumes      = Resource("system-volumes")
+	ResourcePurgeAuditLog      = Resource("purge-audit")
 )

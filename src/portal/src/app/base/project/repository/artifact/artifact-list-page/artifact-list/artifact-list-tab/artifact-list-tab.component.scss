@@ -431,7 +431,7 @@ clr-datagrid {
   width: 5rem !important;
 }
 .tag-column {
-  width: 7rem !important;
+  min-width: 7rem;
 }
 .signed {
   color: #00d40f;
@@ -445,4 +445,7 @@ clr-datagrid {
 .center {
   display: flex;
   align-items: center;
+}
+.width-p-75 {
+  width: 75%;
 }

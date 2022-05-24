@@ -12,26 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { NgModule } from "@angular/core";
-import { SharedModule } from "../../../shared/shared.module";
-import { RouterModule, Routes } from "@angular/router";
-import { LabelsComponent } from "./labels.component";
-
+import { NgModule } from '@angular/core';
+import { SharedModule } from '../../../shared/shared.module';
+import { RouterModule, Routes } from '@angular/router';
+import { LabelsComponent } from './labels.component';
 
 const routes: Routes = [
     {
         path: '',
-        component: LabelsComponent
+        component: LabelsComponent,
     },
 ];
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes),
-    ],
-    declarations: [
-        LabelsComponent,
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
+    declarations: [LabelsComponent],
 })
-export class LabelsModule {
-}
+export class LabelsModule {}

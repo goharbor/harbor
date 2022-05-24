@@ -15,29 +15,22 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { UserComponent } from './user.component';
 import { NewUserModalComponent } from './new-user-modal.component';
-import { ChangePasswordComponent } from "./change-password/change-password.component";
-import { RouterModule, Routes } from "@angular/router";
+import { ChangePasswordComponent } from './change-password/change-password.component';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: UserComponent
-  }
+    {
+        path: '',
+        component: UserComponent,
+    },
 ];
 @NgModule({
-  imports: [
-    SharedModule,
-    RouterModule.forChild(routes)
-  ],
-  declarations: [
-    UserComponent,
-    ChangePasswordComponent,
-    NewUserModalComponent
-  ],
-  exports: [
-    UserComponent
-  ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
+    declarations: [
+        UserComponent,
+        ChangePasswordComponent,
+        NewUserModalComponent,
+    ],
+    exports: [UserComponent],
 })
-export class UserModule {
-
-}
+export class UserModule {}

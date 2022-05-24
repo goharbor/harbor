@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 export const enum CopyStatus {
-    NORMAL, SUCCESS, ERROR
+    NORMAL,
+    SUCCESS,
+    ERROR,
 }
 
 @Component({
@@ -10,21 +11,20 @@ export const enum CopyStatus {
     templateUrl: './copy-input.coponent.html',
     styleUrls: ['./push-image.scss'],
 
-    providers: []
+    providers: [],
 })
-
-export class CopyInputComponent implements OnInit {
+export class CopyInputComponent {
     @Input() inputSize: number = 40;
-    @Input() headerTitle: string = "Copy Input";
-    @Input() defaultValue: string = "N/A";
+    @Input() headerTitle: string = 'Copy Input';
+    @Input() defaultValue: string = 'N/A';
     @Input() iconMode: boolean = false;
 
     state: CopyStatus = CopyStatus.NORMAL;
 
+    // eslint-disable-next-line @angular-eslint/no-output-on-prefix
     @Output() onCopySuccess: EventEmitter<any> = new EventEmitter<any>();
+    // eslint-disable-next-line @angular-eslint/no-output-on-prefix
     @Output() onCopyError: EventEmitter<any> = new EventEmitter<any>();
-
-    ngOnInit(): void { }
     onSuccess($event: any): void {
         this.state = CopyStatus.SUCCESS;
         this.onCopySuccess.emit($event);

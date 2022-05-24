@@ -36,6 +36,8 @@ type Manager interface {
 	Create(ctx context.Context, audit *model.AuditLog) (id int64, err error)
 	// Delete the audit log specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// Purge delete the audit log with retention hours
+	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
 }
 
 // New returns a default implementation of Manager
@@ -67,6 +69,11 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.AuditLog, error) {
 // Create ...
 func (m *manager) Create(ctx context.Context, audit *model.AuditLog) (int64, error) {
 	return m.dao.Create(ctx, audit)
+}
+
+// Purge ...
+func (m *manager) Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error) {
+	return m.dao.Purge(ctx, retentionHour, includeOperations, dryRun)
 }
 
 // Delete ...
