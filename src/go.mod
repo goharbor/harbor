@@ -75,7 +75,10 @@ require (
 	k8s.io/client-go v0.22.1
 )
 
-require github.com/beego/beego v1.12.7
+require (
+	github.com/beego/beego v1.12.9
+	golang.org/x/text v0.3.7
+)
 
 require (
 	cloud.google.com/go v0.88.0 // indirect
@@ -202,7 +205,6 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
-	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/api v0.51.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8 // indirect
