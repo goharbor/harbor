@@ -162,6 +162,9 @@
         "PLACEHOLDER": "Suche {{param}}...",
         "PLACEHOLDER_VIC": "Suche Registry..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Standard"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Übersicht",
         "PROJECTS": "Projekte",

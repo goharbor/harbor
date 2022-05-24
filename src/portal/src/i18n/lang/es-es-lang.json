@@ -162,6 +162,9 @@
         "PLACEHOLDER": "Buscar en {{param}}...",
         "PLACEHOLDER_VIC": "Buscar en el registro..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Default"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Panel",
         "PROJECTS": "Proyectos",

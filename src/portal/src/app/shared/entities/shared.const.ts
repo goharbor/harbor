@@ -230,6 +230,18 @@ export const supportedLangs = Object.keys(LANGUAGES) as SupportedLanguage[];
  */
 export const DEFAULT_LANG_LOCALSTORAGE_KEY = 'harbor-lang';
 
+export type DatetimeRendering = keyof typeof DATETIME_RENDERINGS;
+export const DATETIME_RENDERINGS = {
+    'locale-default': 'TOP_NAV.DATETIME_RENDERING_DEFAULT',
+    'iso-8601': 'ISO 8601',
+} as const;
+export const DefaultDatetimeRendering = 'locale-default';
+/**
+ * The default cookie key used to store current used datetime rendering preference.
+ */
+export const DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY =
+    'harbor-datetime-rendering';
+
 export const AdmiralQueryParamKey = 'admiral_redirect_url';
 
 export const HarborQueryParamKey = 'harbor_redirect_url';

@@ -15,6 +15,10 @@ import { NgForm } from '@angular/forms';
 import { MessageService } from '../components/global-message/message.service';
 import {
     AlertType,
+    DatetimeRendering,
+    DATETIME_RENDERINGS,
+    DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
+    DefaultDatetimeRendering,
     httpStatusCode,
     SupportedLanguage,
     LANGUAGES,
@@ -285,3 +289,26 @@ export const errorHandler = function (error: any): string {
         }
     }
 };
+
+/**
+ * Gets the datetime rendering setting saved by the user, or the default setting if no valid saved value is found.
+ */
+export function getDatetimeRendering(): DatetimeRendering {
+    const savedDatetimeRendering = localStorage.getItem(
+        DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY
+    );
+    if (isDatetimeRendering(savedDatetimeRendering)) {
+        return savedDatetimeRendering;
+    } else {
+        console.warn(
+            `Invalid saved datetime rendering setting ${JSON.stringify(
+                savedDatetimeRendering
+            )}; defaulting to ${JSON.stringify(DefaultDatetimeRendering)}.`
+        );
+        return DefaultDatetimeRendering;
+    }
+}
+
+function isDatetimeRendering(x: unknown): x is DatetimeRendering {
+    return Object.keys(DATETIME_RENDERINGS).some(k => k === x);
+}

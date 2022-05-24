@@ -162,6 +162,9 @@
         "PLACEHOLDER": "Ara {{param}}...",
         "PLACEHOLDER_VIC": "Arama Kaydı..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Default"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Kontrol Paneli",
         "PROJECTS": "Projeler",
