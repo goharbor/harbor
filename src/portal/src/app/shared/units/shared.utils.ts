@@ -297,16 +297,10 @@ export function getDatetimeRendering(): DatetimeRendering {
     const savedDatetimeRendering = localStorage.getItem(
         DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY
     );
-    if (isDatetimeRendering(savedDatetimeRendering)) {
+    if (savedDatetimeRendering && isDatetimeRendering(savedDatetimeRendering)) {
         return savedDatetimeRendering;
-    } else {
-        console.warn(
-            `Invalid saved datetime rendering setting ${JSON.stringify(
-                savedDatetimeRendering
-            )}; defaulting to ${JSON.stringify(DefaultDatetimeRendering)}.`
-        );
-        return DefaultDatetimeRendering;
     }
+    return DefaultDatetimeRendering;
 }
 
 function isDatetimeRendering(x: unknown): x is DatetimeRendering {

@@ -22,7 +22,7 @@ const formatTransformers: Record<
 
 @Pipe({
     name: 'harborDatetime',
-    pure: false,
+    pure: true,
 })
 export class HarborDatetimePipe implements PipeTransform {
     transform(value: any, format?: string): string {

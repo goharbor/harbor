@@ -1,7 +1,6 @@
 <clr-header class="header-5 header" [attr.style]="getBgColor()">
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
-            <!-- <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon> -->
             <img
                 [attr.src]="'images/' + customStyle?.product?.logo"
                 *ngIf="customStyle?.product?.logo; else elseBlock"
