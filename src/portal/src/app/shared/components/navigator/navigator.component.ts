@@ -188,7 +188,10 @@ export class NavigatorComponent implements OnInit {
 
     switchDatetimeRendering(datetime: DatetimeRendering): void {
         this.selectedDatetimeRendering = datetime;
-        localStorage.setItem(DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY, datetime);
+        localStorage.setItem(
+            DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
+            datetime
+        );
     }
 
     // Handle the home action

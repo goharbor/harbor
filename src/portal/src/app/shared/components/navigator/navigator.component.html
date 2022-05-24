@@ -50,14 +50,27 @@
                 >
             </clr-dropdown-menu>
         </clr-dropdown>
-        <clr-dropdown class="dropdown-locale dropdown bottom-left" *ngIf="!isIntegrationMode">
+        <clr-dropdown
+            class="dropdown-locale dropdown bottom-left"
+            *ngIf="!isIntegrationMode">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="date" class="icon-left"></clr-icon>
-                <span class="currentLocale">{{currentDatetimeRendering | translate}}</span>
+                <span class="currentLocale">{{
+                    currentDatetimeRendering | translate
+                }}</span>
                 <clr-icon size="10" shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
-                <a *ngFor="let rendering of guiDatetimeRenderings" href="javascript:void(0)" clrDropdownItem (click)='switchDatetimeRendering(rendering[0])' [class.locale-selected]='matchDatetimeRendering(rendering[0])'>{{rendering[1] | translate}}</a>
+                <a
+                    *ngFor="let rendering of guiDatetimeRenderings"
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="switchDatetimeRendering(rendering[0])"
+                    [class.locale-selected]="
+                        matchDatetimeRendering(rendering[0])
+                    "
+                    >{{ rendering[1] | translate }}</a
+                >
             </clr-dropdown-menu>
         </clr-dropdown>
         <div class="nav-divider"></div>

@@ -24,7 +24,6 @@ import {
     LANGUAGES,
 } from '../entities/shared.const';
 
-
 /**
  * To check if form is empty
  */
@@ -295,15 +294,21 @@ export const errorHandler = function (error: any): string {
  * Gets the datetime rendering setting saved by the user, or the default setting if no valid saved value is found.
  */
 export function getDatetimeRendering(): DatetimeRendering {
-    const savedDatetimeRendering = localStorage.getItem(DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY);
+    const savedDatetimeRendering = localStorage.getItem(
+        DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY
+    );
     if (isDatetimeRendering(savedDatetimeRendering)) {
         return savedDatetimeRendering;
     } else {
-        console.warn(`Invalid saved datetime rendering setting ${JSON.stringify(savedDatetimeRendering)}; defaulting to ${JSON.stringify(DefaultDatetimeRendering)}.`);
+        console.warn(
+            `Invalid saved datetime rendering setting ${JSON.stringify(
+                savedDatetimeRendering
+            )}; defaulting to ${JSON.stringify(DefaultDatetimeRendering)}.`
+        );
         return DefaultDatetimeRendering;
     }
 }
 
 function isDatetimeRendering(x: unknown): x is DatetimeRendering {
-  return Object.keys(DATETIME_RENDERINGS).some(k => k === x);
+    return Object.keys(DATETIME_RENDERINGS).some(k => k === x);
 }
