@@ -4174,6 +4174,170 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /system/purgeaudit:
+    get:
+      summary: Get purge job results.
+      description: get purge job execution history.
+      tags:
+        - purge
+      operationId: getPurgeHistory
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Get purge job results successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of history
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /system/purgeaudit/{purge_id}:
+    get:
+      summary: Get purge job status.
+      description: This endpoint let user get purge job status filtered by specific ID.
+      operationId: getPurgeJob
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      tags:
+        - purge
+      responses:
+        '200':
+          description: Get purge job results successfully.
+          schema:
+            $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /system/purgeaudit/{purge_id}/log:
+    get:
+      summary: Get purge job log.
+      description: This endpoint let user get purge job logs filtered by specific ID.
+      operationId: getPurgeJobLog
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      tags:
+        - purge
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: Get successfully.
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /system/purgeaudit/schedule:
+    get:
+      summary: Get purge's schedule.
+      description: This endpoint is for get schedule of purge job.
+      operationId: getPurgeSchedule
+      tags:
+        - purge
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get purge job's schedule.
+          schema:
+            $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a purge job schedule.
+      description: |
+        This endpoint is for update purge job schedule.
+      operationId: createPurgeSchedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: |
+            The purge job's schedule, it is a json object. ｜
+            The sample format is ｜
+            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} ｜
+            the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
+      tags:
+        - purge
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update purge job's schedule.
+      description: |
+        This endpoint is for update purge job schedule.
+      operationId: updatePurgeSchedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: |
+            The purge job's schedule, it is a json object. ｜
+            The sample format is ｜
+            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} ｜
+            the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
+      tags:
+        - purge
+      responses:
+        '200':
+          description: Updated purge's schedule successfully.
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
   /system/CVEAllowlist:
     get:
       summary: Get the system level allowlist of CVE.
@@ -5520,6 +5684,13 @@ parameters:
     name: gc_id
     in: path
     description: The ID of the gc log
+    required: true
+    type: integer
+    format: int64
+  purgeId:
+    name: purge_id
+    in: path
+    description: The ID of the purge log
     required: true
     type: integer
     format: int64
@@ -7224,6 +7395,37 @@ definitions:
         type: string
         format: date-time
         description: the update time of gc job.
+  ExecHistory:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: the id of purge job.
+      job_name:
+        type: string
+        description: the job name of purge job.
+      job_kind:
+        type: string
+        description: the job kind of purge job.
+      job_parameters:
+        type: string
+        description: the job parameters of purge job.
+      schedule:
+        $ref: '#/definitions/ScheduleObj'
+      job_status:
+        type: string
+        description: the status of purge job.
+      deleted:
+        type: boolean
+        description: if purge job was deleted.
+      creation_time:
+        type: string
+        format: date-time
+        description: the creation time of purge job.
+      update_time:
+        type: string
+        format: date-time
+        description: the update time of purge job.        
   Schedule:
     type: object
     properties:
