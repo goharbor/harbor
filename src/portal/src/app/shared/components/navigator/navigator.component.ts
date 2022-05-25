@@ -192,6 +192,8 @@ export class NavigatorComponent implements OnInit {
             DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
             datetime
         );
+        // have to reload,as HarborDatetimePipe is pure pipe
+        window.location.reload();
     }
 
     // Handle the home action
