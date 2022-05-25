@@ -92,8 +92,6 @@ export class ConfigService {
                     // Handle read only
                     if (this._originalConfig?.read_only?.value) {
                         this.msgHandler.handleReadOnly();
-                    } else {
-                        this.msgHandler.clear();
                     }
                 },
                 error => {
