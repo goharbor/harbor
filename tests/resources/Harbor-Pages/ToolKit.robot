@@ -70,7 +70,7 @@ Multi-delete Object
 
 # This func cannot support as the delete user flow changed.
 Multi-delete Artifact
-    [Arguments]    ${delete_btn}  @{obj}
+    [Arguments]  @{obj}
     FOR  ${obj}  IN  @{obj}
         ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
         Retry Element Click  ${element}

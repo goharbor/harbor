@@ -76,6 +76,7 @@ Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
 Resource  Cosign_Util.robot
 Resource  Imgpkg-Util.robot
+Resource  Webhook-Util.robot
 Resource  TestCaseBody.robot
 
 *** Keywords ***
@@ -296,3 +297,7 @@ Log All
     [Arguments]  ${text}
     Log To Console  ${text}
     Log  ${text}
+
+New Tab
+    Execute Javascript  window.open('')
+    Select Window  title=undefined

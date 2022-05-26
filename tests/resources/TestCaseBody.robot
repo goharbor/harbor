@@ -453,8 +453,7 @@ Check Harbor Api Page
     Retry Link Click  //a[contains(.,'Harbor API V2.0')]
     Sleep  3
     Switch Window  locator=NEW
-    ${Title}=  Get Title
-    Should Be Equal  ${Title}  Harbor Swagger
+    Title Should Be  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
 
 Body Of Stop Scan And Stop Scan All
