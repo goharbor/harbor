@@ -299,7 +299,3 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 
 	return item
 }
-
-func convertingKey(reportUUID string) string {
-	return fmt.Sprintf("converting:%s", reportUUID)
-}

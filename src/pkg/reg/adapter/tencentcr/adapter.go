@@ -25,7 +25,7 @@ import (
 
 var (
 	errInvalidTcrEndpoint    error = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
-	errPingTcrEndpointFailed error = errors.New("[tencent-tcr.newAdapter] Ping TCR instance endpoint failed")
+	errPingTcrEndpointFailed error = errors.New("[tencent-tcr.newAdapter] Ping TCR instance endpoint failed") // nolint:deadcode
 )
 
 func init() {

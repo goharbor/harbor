@@ -2,14 +2,14 @@ package dao
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 )
 
 const (
-	sizeQuery       = "select sum(size) as total_size from system_artifact"
-	totalSizeColumn = "total_size"
+	sizeQuery = "select sum(size) as total_size from system_artifact"
 )
 
 // DAO defines an data access interface for manging the CRUD and read of system
