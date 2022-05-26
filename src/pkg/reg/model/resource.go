@@ -58,10 +58,12 @@ type Repository struct {
 
 // Artifact is the individual unit that can be replicated
 type Artifact struct {
-	Type   string   `json:"type"`
-	Digest string   `json:"digest"`
-	Labels []string `json:"labels"`
-	Tags   []string `json:"tags"`
+	Type       string   `json:"type"`
+	Digest     string   `json:"digest"`
+	Labels     []string `json:"labels"`
+	Tags       []string `json:"tags"`
+	IsAcc      bool     `json:"-"` // indicate whether it is an accessory artifact
+	ParentTags []string `json:"-"` // the tags belong to the artifact which the accessory is attached.
 }
 
 func (r *ResourceMetadata) String() string {

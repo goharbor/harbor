@@ -167,8 +167,17 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 	}
 	var result []*model.Artifact
 	for _, artifact := range artifacts {
+		// for individual artifact, use its own tags to match, reserve the matched tags.
+		// for accessory artifact, use the parent tags to match,
+		var tagsForMatching []string
+		if artifact.IsAcc {
+			tagsForMatching = append(tagsForMatching, artifact.ParentTags...)
+		} else {
+			tagsForMatching = append(tagsForMatching, artifact.Tags...)
+		}
+
 		// untagged artifact
-		if len(artifact.Tags) == 0 {
+		if len(tagsForMatching) == 0 {
 			match, err := util.Match(a.pattern, "")
 			if err != nil {
 				return nil, err
@@ -187,7 +196,7 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 
 		// tagged artifact
 		var tags []string
-		for _, tag := range artifact.Tags {
+		for _, tag := range tagsForMatching {
 			match, err := util.Match(a.pattern, tag)
 			if err != nil {
 				return nil, err
@@ -206,12 +215,21 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 			continue
 		}
 		// copy a new artifact here to avoid changing the original one
-		result = append(result, &model.Artifact{
-			Type:   artifact.Type,
-			Digest: artifact.Digest,
-			Labels: artifact.Labels,
-			Tags:   tags,
-		})
+		if artifact.IsAcc {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   artifact.Tags, // use its own tags to replicate
+			})
+		} else {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   tags, // only replicate the matched tags
+			})
+		}
 	}
 	return result, nil
 }
