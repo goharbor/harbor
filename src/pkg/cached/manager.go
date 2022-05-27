@@ -27,6 +27,8 @@ const (
 	ResourceTypeArtifact = "artifact"
 	// ResourceTypeProject defines project type.
 	ResourceTypeProject = "project"
+	// ResourceTypeProject defines project metadata type.
+	ResourceTypeProjectMeta = "project_metadata"
 	// ResourceTypeRepository defines repository type.
 	ResourceTypeRepository = "repository"
 )

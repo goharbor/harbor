@@ -19,8 +19,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
 	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
+	cachedProjectMeta "github.com/goharbor/harbor/src/pkg/cached/project_metadata/redis"
 	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
@@ -30,6 +32,8 @@ var (
 	ArtifactMgr artifact.Manager
 	// ProjectMgr is the manager for project.
 	ProjectMgr project.Manager
+	// ProjectMetaMgr is the manager for project metadata.
+	ProjectMetaMgr metadata.Manager
 	// RepositoryMgr is the manager for repository.
 	RepositoryMgr repository.Manager
 )
@@ -39,6 +43,7 @@ func init() {
 	cacheEnabled := config.CacheEnabled()
 	initArtifactMgr(cacheEnabled)
 	initProjectMgr(cacheEnabled)
+	initProjectMetaMgr(cacheEnabled)
 	initRepositoryMgr(cacheEnabled)
 }
 
@@ -59,6 +64,15 @@ func initProjectMgr(cacheEnabled bool) {
 		ProjectMgr = cachedProject.NewManager(projectMgr)
 	} else {
 		ProjectMgr = projectMgr
+	}
+}
+
+func initProjectMetaMgr(cacheEnabled bool) {
+	projectMetaMgr := metadata.New()
+	if cacheEnabled {
+		ProjectMetaMgr = cachedProjectMeta.NewManager(projectMetaMgr)
+	} else {
+		ProjectMetaMgr = projectMetaMgr
 	}
 }
 

@@ -70,7 +70,7 @@ type Controller interface {
 func NewController() Controller {
 	return &controller{
 		projectMgr:   pkg.ProjectMgr,
-		metaMgr:      metadata.Mgr,
+		metaMgr:      pkg.ProjectMetaMgr,
 		allowlistMgr: allowlist.NewDefaultManager(),
 		userMgr:      user.Mgr,
 	}

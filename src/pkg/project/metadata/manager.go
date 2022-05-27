@@ -23,11 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
 )
 
-var (
-	// Mgr is the global project metadata manager
-	Mgr = New()
-)
-
 // Manager defines the operations that a project metadata manager should implement
 type Manager interface {
 	// Add metadatas for project specified by projectID

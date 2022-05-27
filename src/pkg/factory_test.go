@@ -20,8 +20,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
 	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
+	cachedProjectMeta "github.com/goharbor/harbor/src/pkg/cached/project_metadata/redis"
 	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,6 +48,17 @@ func TestInitProjectMgr(t *testing.T) {
 	initProjectMgr(true)
 	assert.NotNil(t, ProjectMgr)
 	assert.IsType(t, cachedProject.NewManager(project.New()), ProjectMgr)
+}
+
+func TestInitProjectMetaMgr(t *testing.T) {
+	// cache not enable
+	assert.NotNil(t, ProjectMetaMgr)
+	assert.IsType(t, metadata.New(), ProjectMetaMgr)
+
+	// cache enable
+	initProjectMetaMgr(true)
+	assert.NotNil(t, ProjectMetaMgr)
+	assert.IsType(t, cachedProjectMeta.NewManager(metadata.New()), ProjectMetaMgr)
 }
 
 func TestInitRepositoryMgr(t *testing.T) {
