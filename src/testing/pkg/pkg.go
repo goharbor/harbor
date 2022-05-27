@@ -61,3 +61,4 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/systemartifact --name Manager --output ./systemartifact --outpkg systemartifact
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/ --name Selector --output ./systemartifact/cleanup --outpkg cleanup
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/dao --name DAO --output ./systemartifact/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/cached/manifest/redis --name CachedManager --output ./cached/manifest/redis --outpkg redis

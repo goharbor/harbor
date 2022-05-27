@@ -18,6 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
+	cachedManifest "github.com/goharbor/harbor/src/pkg/cached/manifest/redis"
 	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
 	cachedProjectMeta "github.com/goharbor/harbor/src/pkg/cached/project_metadata/redis"
 	cachedRepo "github.com/goharbor/harbor/src/pkg/cached/repository/redis"
@@ -36,6 +37,8 @@ var (
 	ProjectMetaMgr metadata.Manager
 	// RepositoryMgr is the manager for repository.
 	RepositoryMgr repository.Manager
+	// ManifestMgr is the manager for manifest.
+	ManifestMgr cachedManifest.CachedManager
 )
 
 // init initialize mananger for resources
@@ -45,6 +48,7 @@ func init() {
 	initProjectMgr(cacheEnabled)
 	initProjectMetaMgr(cacheEnabled)
 	initRepositoryMgr(cacheEnabled)
+	initManifestManager(cacheEnabled)
 }
 
 func initArtifactMgr(cacheEnabled bool) {
@@ -83,4 +87,8 @@ func initRepositoryMgr(cacheEnabled bool) {
 	} else {
 		RepositoryMgr = repoMgr
 	}
+}
+
+func initManifestManager(cacheEnabled bool) {
+	ManifestMgr = cachedManifest.NewManager()
 }

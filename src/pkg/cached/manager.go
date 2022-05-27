@@ -31,6 +31,8 @@ const (
 	ResourceTypeProjectMeta = "project_metadata"
 	// ResourceTypeRepository defines repository type.
 	ResourceTypeRepository = "repository"
+	// ResourceTypeManifest defines manifest type.
+	ResourceTypeManifest = "manifest"
 )
 
 // Manager is the interface for resource cache manager.
