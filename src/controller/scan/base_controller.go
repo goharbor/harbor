@@ -362,7 +362,8 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 				return
 			}
 
-			bc.startScanAll(ctx, executionID)
+			err = bc.startScanAll(ctx, executionID)
+			log.Errorf("failed to start scan all, executionID=%d, error: %v", executionID, err)
 		}(bc.makeCtx())
 	} else {
 		if err := bc.startScanAll(ctx, executionID); err != nil {

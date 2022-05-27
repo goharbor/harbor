@@ -167,7 +167,7 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 				}
 			}
 
-			res.Reset()
+			_ = res.Reset()
 
 			var errs quota.Errors
 			if errors.As(err, &errs) {

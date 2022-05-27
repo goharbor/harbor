@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
@@ -83,7 +84,9 @@ func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context
 	}
 
 	policy := &policy_model.Policy{}
-	lib.JSONCopy(policy, params.Policy)
+	if err := lib.JSONCopy(policy, params.Policy); err != nil {
+		log.Warningf("failed to call JSONCopy on notification policy when CreateWebhookPolicyOfProject, error: %v", err)
+	}
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
@@ -113,7 +116,9 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context
 	}
 
 	policy := &policy_model.Policy{}
-	lib.JSONCopy(policy, params.Policy)
+	if err := lib.JSONCopy(policy, params.Policy); err != nil {
+		log.Warningf("failed to call JSONCopy on notification policy when UpdateWebhookPolicyOfProject, error: %v", err)
+	}
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)

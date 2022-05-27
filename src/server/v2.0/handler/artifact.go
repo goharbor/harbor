@@ -36,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -107,7 +108,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	for _, art := range arts {
 		artifact := &model.Artifact{}
 		artifact.Artifact = *art
-		assembler.WithArtifacts(artifact).Assemble(ctx)
+		_ = assembler.WithArtifacts(artifact).Assemble(ctx)
 		artifacts = append(artifacts, artifact.ToSwagger())
 	}
 
@@ -133,7 +134,10 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	art := &model.Artifact{}
 	art.Artifact = *artifact
 
-	assembler.NewVulAssembler(lib.BoolValue(params.WithScanOverview), parseScanReportMimeTypes(params.XAcceptVulnerabilities)).WithArtifacts(art).Assemble(ctx)
+	err = assembler.NewVulAssembler(lib.BoolValue(params.WithScanOverview), parseScanReportMimeTypes(params.XAcceptVulnerabilities)).WithArtifacts(art).Assemble(ctx)
+	if err != nil {
+		log.Warningf("failed to assemble vulnerabilities with artifact, error: %v", err)
+	}
 
 	return operation.NewGetArtifactOK().WithPayload(art.ToSwagger())
 }
@@ -423,7 +427,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 
 	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(content)
+		_, _ = w.Write(content)
 	})
 }
 
@@ -444,7 +448,7 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 
 	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
 		w.Header().Set("Content-Type", addition.ContentType)
-		w.Write(addition.Content)
+		_, _ = w.Write(addition.Content)
 	})
 }
 

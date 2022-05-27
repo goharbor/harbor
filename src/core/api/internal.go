@@ -80,14 +80,20 @@ func (ia *InternalAPI) SyncQuota() {
 	cfgMgr := config.GetCfgManager(ctx)
 	if !cur {
 		cfgMgr.Set(ctx, common.ReadOnly, true)
-		cfgMgr.Save(ctx)
+		err := cfgMgr.Save(ctx)
+		if err != nil {
+			log.Warningf("failed to save context into config manager, error: %v", err)
+		}
 	}
 	// For api call, to avoid the timeout, it should be asynchronous
 	go func() {
 		defer func() {
 			ctx := orm.Context()
 			cfgMgr.Set(ctx, common.ReadOnly, cur)
-			cfgMgr.Save(ctx)
+			err := cfgMgr.Save(ctx)
+			if err != nil {
+				log.Warningf("failed to save context into config manager asynchronously, error: %v", err)
+			}
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
 		ctx := orm.NewContext(context.TODO(), o.NewOrm())

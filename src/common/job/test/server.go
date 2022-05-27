@@ -14,6 +14,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	job_models "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -99,7 +100,10 @@ func NewJobServiceServer() *httptest.Server {
 					panic(err)
 				}
 				jobReq := models.JobRequest{}
-				json.Unmarshal(data, &jobReq)
+				err = json.Unmarshal(data, &jobReq)
+				if err != nil {
+					log.Warningf("failed to unmarshal json to models.JobRequest, error: %v", err)
+				}
 				if jobReq.Job.Name == "replication" {
 					respData := models.JobStats{
 						Stats: &models.StatsInfo{

@@ -21,47 +21,47 @@ import (
 
 func init() {
 	// notification
-	notifier.Subscribe(event.TopicPushArtifact, &artifact.Handler{})
-	notifier.Subscribe(event.TopicPullArtifact, &artifact.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &artifact.Handler{})
-	notifier.Subscribe(event.TopicUploadChart, &chart.Handler{})
-	notifier.Subscribe(event.TopicDeleteChart, &chart.Handler{})
-	notifier.Subscribe(event.TopicDownloadChart, &chart.Handler{})
-	notifier.Subscribe(event.TopicQuotaExceed, &quota.Handler{})
-	notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
-	notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
-	notifier.Subscribe(event.TopicScanningStopped, &scan.Handler{})
-	notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
-	notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
-	notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &artifact.Handler{})
+	_ = notifier.Subscribe(event.TopicPullArtifact, &artifact.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteArtifact, &artifact.Handler{})
+	_ = notifier.Subscribe(event.TopicUploadChart, &chart.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteChart, &chart.Handler{})
+	_ = notifier.Subscribe(event.TopicDownloadChart, &chart.Handler{})
+	_ = notifier.Subscribe(event.TopicQuotaExceed, &quota.Handler{})
+	_ = notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningStopped, &scan.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteArtifact, &scan.DelArtHandler{})
+	_ = notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
+	_ = notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
 
 	// replication
-	notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &replication.Handler{})
-	notifier.Subscribe(event.TopicCreateTag, &replication.Handler{})
-	notifier.Subscribe(event.TopicDeleteTag, &replication.Handler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteArtifact, &replication.Handler{})
+	_ = notifier.Subscribe(event.TopicCreateTag, &replication.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteTag, &replication.Handler{})
 
 	// p2p preheat
-	notifier.Subscribe(event.TopicPushArtifact, &p2p.Handler{})
-	notifier.Subscribe(event.TopicScanningCompleted, &p2p.Handler{})
-	notifier.Subscribe(event.TopicArtifactLabeled, &p2p.Handler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &p2p.Handler{})
+	_ = notifier.Subscribe(event.TopicScanningCompleted, &p2p.Handler{})
+	_ = notifier.Subscribe(event.TopicArtifactLabeled, &p2p.Handler{})
 
 	// audit logs
-	notifier.Subscribe(event.TopicPushArtifact, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicPullArtifact, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicDeleteArtifact, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicCreateProject, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicDeleteProject, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicDeleteRepository, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicCreateTag, &auditlog.Handler{})
-	notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicPullArtifact, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteArtifact, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicCreateProject, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteProject, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteRepository, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicCreateTag, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 
 	// internal
-	notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
-	notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{})
+	_ = notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{})
 
-	task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
+	_ = task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
 		notification.AddEvent(ctx, &metadata.ReplicationMetaData{
 			ReplicationTaskID: taskID,
 			Status:            status,

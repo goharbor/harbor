@@ -136,7 +136,10 @@ func (rp *Provider) SessionExist(sid string) bool {
 func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error) {
 	ctx := context.TODO()
 	if !rp.SessionExist(oldsid) {
-		rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
+		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
+		if err != nil {
+			log.Warningf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
+		}
 	} else {
 		if rdb, ok := rp.c.(*redis.Cache); ok {
 			// redis has rename command
@@ -149,8 +152,14 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 				return nil, err
 			}
 
-			rp.c.Delete(ctx, oldsid)
-			rp.c.Save(ctx, sid, kv)
+			err = rp.c.Delete(ctx, oldsid)
+			if err != nil {
+				log.Warningf("failed to delete oldsid=%s, error: %s", oldsid, err)
+			}
+			err = rp.c.Save(ctx, sid, kv)
+			if err != nil {
+				log.Warningf("failed to save sid=%s, error: %s", sid, err)
+			}
 		}
 	}
 

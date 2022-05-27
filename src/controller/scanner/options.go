@@ -41,7 +41,7 @@ func newOptions(options ...Option) *Options {
 	opts := &Options{Ping: true}
 
 	for _, o := range options {
-		o(opts)
+		_ = o(opts)
 	}
 
 	return opts

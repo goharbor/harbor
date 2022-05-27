@@ -188,7 +188,7 @@ func (l *Logger) output(record *Record) (err error) {
 func (l *Logger) Debug(v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), DebugLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -196,7 +196,7 @@ func (l *Logger) Debug(v ...interface{}) {
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), DebugLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -204,7 +204,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 func (l *Logger) Info(v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), InfoLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -212,7 +212,7 @@ func (l *Logger) Info(v ...interface{}) {
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), InfoLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -220,7 +220,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 func (l *Logger) Warning(v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), WarningLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -228,7 +228,7 @@ func (l *Logger) Warning(v ...interface{}) {
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), WarningLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -236,7 +236,7 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 func (l *Logger) Error(v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), ErrorLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -244,7 +244,7 @@ func (l *Logger) Error(v ...interface{}) {
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), ErrorLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -252,7 +252,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 func (l *Logger) Fatal(v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), FatalLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 	os.Exit(1)
 }
@@ -261,7 +261,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), FatalLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 	os.Exit(1)
 }

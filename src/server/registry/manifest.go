@@ -89,7 +89,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 			buffer.WriteHeader(http.StatusOK)
 			// write data from cache, no need to write body if is head request
 			if req.Method == http.MethodGet {
-				buffer.Write(manifest)
+				_, _ = buffer.Write(manifest)
 			}
 		} else {
 			log.Warningf("failed to get manifest from cache, error: %v", err)

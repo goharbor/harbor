@@ -352,7 +352,10 @@ func (a *adapter) getTags(repo aliRepo, c *cr.Client) (tags []string, err error)
 		}
 
 		var resp = &aliTagResp{}
-		json.Unmarshal(tagsResp.GetHttpContentBytes(), resp)
+		err = json.Unmarshal(tagsResp.GetHttpContentBytes(), resp)
+		if err != nil {
+			return
+		}
 		for _, tag := range resp.Data.Tags {
 			tags = append(tags, tag.Tag)
 		}

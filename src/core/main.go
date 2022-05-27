@@ -223,7 +223,10 @@ func main() {
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 
 	log.Info("Fix empty subiss for meta info data.")
-	oidc.FixEmptySubIss(orm.Context())
+	_, err = oidc.FixEmptySubIss(orm.Context())
+	if err != nil {
+		log.Warningf("oidc.FixEmptySubIss() errors out, error: %v", err)
+	}
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
