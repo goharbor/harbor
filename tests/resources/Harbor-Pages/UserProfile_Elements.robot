@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${head_admin_xpath}  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
+${head_admin_xpath}  xpath=//clr-dropdown//button//clr-icon[@shape='user']
 ${change_password_xpath}  xpath=//clr-main-container//clr-dropdown//a[2]
 ${user_profile_xpath}  xpath=//clr-main-container//clr-dropdown//a[1]
 ${old_password_xpath}  xpath=//*[@id='oldPassword']
