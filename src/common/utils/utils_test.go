@@ -366,3 +366,31 @@ func TestGetStrValueOfAnyType(t *testing.T) {
 		})
 	}
 }
+
+func TestNextSchedule(t *testing.T) {
+	curTime := time.Date(2009, time.November, 10, 20, 0, 0, 0, time.UTC)
+	expectTime1 := time.Date(2009, time.November, 11, 0, 0, 0, 0, time.UTC)
+	expectTime2 := time.Date(2009, time.November, 10, 21, 0, 0, 0, time.UTC)
+	expectTime4 := time.Date(2009, time.November, 10, 20, 8, 0, 0, time.UTC)
+
+	type args struct {
+		cron    string
+		curTime time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want time.Time
+	}{
+		{"daily_in_six", args{"0 0 0 * * *", curTime}, expectTime1},
+		{"hourly_in_six", args{"0 0 * * * *", curTime}, expectTime2},
+		{"custom", args{"0 8 20 * * *", curTime}, expectTime4},
+		{"zero time", args{"", curTime}, time.Time{}},
+		{"invalid cron", args{"2", curTime}, time.Time{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, NextSchedule(tt.args.cron, tt.args.curTime), "NextSchedule(%v, %v)", tt.args.cron, tt.args.curTime)
+		})
+	}
+}

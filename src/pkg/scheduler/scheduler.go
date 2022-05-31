@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
-	cronlib "github.com/robfig/cron"
 )
 
 var (
@@ -90,7 +90,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
-	if _, err := cronlib.Parse(cron); err != nil {
+	if _, err := utils.CronParser().Parse(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("invalid cron %s: %v", cron, err)
 	}

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -28,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/gomodule/redigo/redis"
-	"github.com/robfig/cron"
 )
 
 const (
@@ -158,8 +158,7 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 	// Follow UTC time spec
 	nowTime := time.Unix(time.Now().UTC().Unix(), 0).UTC()
 	horizon := nowTime.Add(enqueuerHorizon)
-
-	schedule, err := cron.Parse(p.CronSpec)
+	schedule, err := comUtils.CronParser().Parse(p.CronSpec)
 	if err != nil {
 		// The cron spec should be already checked at upper layers.
 		// Just in cases, if error occurred, ignore it

@@ -7472,7 +7472,10 @@ definitions:
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
-
+      next_scheduled_time:
+        type: string
+        format: date-time
+        description: The next time to schedule to run the job.
   Stats:
     type: object
     description: Stats provides the overall progress of the scan all process.
