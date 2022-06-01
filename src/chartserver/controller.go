@@ -25,14 +25,14 @@ type Credential struct {
 // A reverse proxy will be created and managed to proxy the related traffics between API and
 // backend chart server
 type Controller struct {
-	// Proxy used to to transfer the traffic of requests
+	// Proxy used to transfer the traffic of requests
 	// It's mainly used to talk to the backend chart server
 	trafficProxy *ProxyEngine
 
 	// Parse and process the chart version to provide required info data
 	chartOperator *ChartOperator
 
-	// HTTP client used to call the realted APIs of the backend chart repositories
+	// HTTP client used to call the related APIs of the backend chart repositories
 	apiClient *ChartClient
 
 	// The access endpoint of the backend chart repository server
