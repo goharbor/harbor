@@ -16,10 +16,9 @@ package scanner
 
 import (
 	"encoding/json"
-	"net/url"
-	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -105,10 +104,11 @@ func (r *Registration) Validate(checkUUID bool) error {
 		return errors.New("missing registration name")
 	}
 
-	err := checkURL(r.URL)
+	url, err := lib.ValidateHTTPURL(r.URL)
 	if err != nil {
 		return errors.Wrap(err, "scanner registration validate")
 	}
+	r.URL = url
 
 	if len(r.Auth) > 0 &&
 		r.Auth != auth.Basic &&
@@ -198,20 +198,4 @@ func (r *Registration) GetRegistryAuthorizationType() string {
 	}
 
 	return auth
-}
-
-// Check the registration URL with url package
-func checkURL(u string) error {
-	if len(strings.TrimSpace(u)) == 0 {
-		return errors.New("empty url")
-	}
-
-	uri, err := url.Parse(u)
-	if err == nil {
-		if uri.Scheme != "http" && uri.Scheme != "https" {
-			err = errors.New("invalid scheme")
-		}
-	}
-
-	return err
 }

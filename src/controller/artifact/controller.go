@@ -19,9 +19,11 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
@@ -114,8 +116,8 @@ type Controller interface {
 func NewController() Controller {
 	return &controller{
 		tagCtl:       tag.Ctl,
-		repoMgr:      repository.Mgr,
-		artMgr:       artifact.Mgr,
+		repoMgr:      pkg.RepositoryMgr,
+		artMgr:       pkg.ArtifactMgr,
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,
 		sigMgr:       signature.GetManager(),
@@ -237,7 +239,17 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	return c.artMgr.Count(ctx, query)
+	if query != nil {
+		// ignore the page number and size
+		query = &q.Query{
+			Keywords: query.Keywords,
+		}
+	}
+	arts, err := c.List(ctx, query, nil)
+	if err != nil {
+		return int64(0), err
+	}
+	return int64(len(arts)), nil
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {
@@ -311,7 +323,9 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	return c.deleteDeeply(ctx, id, true, len(accs) > 0)
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return c.deleteDeeply(ctx, id, true, len(accs) > 0)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-delete"))
 }
 
 // "isRoot" is used to specify whether the artifact is the root parent artifact
@@ -529,19 +543,24 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
 		return err
 	}
-	tg, err := c.tagCtl.Get(ctx, tagID, nil)
-	if err != nil {
-		return err
+	// update tag pull time if artifact has tag
+	if tagID != 0 {
+		tg, err := c.tagCtl.Get(ctx, tagID, nil)
+		if err != nil {
+			return err
+		}
+		if tg.ArtifactID != artifactID {
+			return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
+		}
+		return c.tagCtl.Update(ctx, &tag.Tag{
+			Tag: model_tag.Tag{
+				ID:       tg.ID,
+				PullTime: time,
+			},
+		}, "PullTime")
 	}
-	if tg.ArtifactID != artifactID {
-		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
-	}
-	return c.tagCtl.Update(ctx, &tag.Tag{
-		Tag: model_tag.Tag{
-			ID:       tg.ID,
-			PullTime: time,
-		},
-	}, "PullTime")
+
+	return nil
 }
 
 func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*processor.Addition, error) {

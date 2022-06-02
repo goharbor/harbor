@@ -68,3 +68,9 @@
 #placeholder1 {
     height: 24px;
 }
+.search-input {
+    outline: none;
+}
+.search-input::placeholder{
+    color: #fafafa;
+}

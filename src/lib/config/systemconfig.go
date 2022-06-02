@@ -31,14 +31,15 @@ package config
 import (
 	"context"
 	"errors"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
-	"os"
-	"strconv"
-	"strings"
 )
 
 var (
@@ -242,6 +243,30 @@ func Metric() *models.Metric {
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
 	return DefaultMgr().Get(backgroundCtx, common.AdminInitialPassword).GetString(), nil
+}
+
+// CacheEnabled returns whether enable cache layer.
+func CacheEnabled() bool {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(backgroundCtx, common.CacheEnabled).GetBool()
+	}
+	// backoff read from env.
+	return os.Getenv("CACHE_ENABLED") == "true"
+}
+
+// CacheExpireHours returns the cache expire hours for cache layer.
+func CacheExpireHours() int {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(backgroundCtx, common.CacheExpireHours).GetInt()
+	}
+	// backoff read from env.
+	hours, err := strconv.Atoi(os.Getenv("CACHE_EXPIRE_HOURS"))
+	if err != nil {
+		// use default if parse error.
+		hours = common.DefaultCacheExpireHours
+	}
+
+	return hours
 }
 
 // Database returns database settings

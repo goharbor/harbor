@@ -182,9 +182,11 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	robotAccount, _ := extractRobotAccount(params)
 
 	var authorization string
+	var tokenURL string
+
 	authType, _ := extractAuthType(params)
 	if authType == authorizationBearer {
-		tokenURL, err := getInternalTokenServiceEndpoint(ctx)
+		tokenURL, err = getInternalTokenServiceEndpoint(ctx)
 		if err != nil {
 			return errors.Wrap(err, "scan job: get token service endpoint")
 		}

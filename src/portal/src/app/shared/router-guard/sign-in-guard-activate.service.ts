@@ -13,55 +13,66 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-  CanActivate, Router,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  CanActivateChild
+    CanActivate,
+    Router,
+    ActivatedRouteSnapshot,
+    RouterStateSnapshot,
+    CanActivateChild,
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
 import { Observable } from 'rxjs';
-import { CommonRoutes } from "../entities/shared.const";
+import { CommonRoutes } from '../entities/shared.const';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class SignInGuard implements CanActivate, CanActivateChild {
-  constructor(private authService: SessionService, private router: Router) { }
+    constructor(private authService: SessionService, private router: Router) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    // If user has logged in, should not login again
-    return new Observable((observer) => {
-      // If signout appended
-      let queryParams = route.queryParams;
-      if (queryParams && queryParams['signout']) {
-        this.authService.signOff()
-          .subscribe(() => {
-            this.authService.clear(); // Destroy session cache
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<boolean> | boolean {
+        // If user has logged in, should not login again
+        return new Observable(observer => {
+            // If signout appended
+            let queryParams = route.queryParams;
+            if (queryParams && queryParams['signout']) {
+                this.authService.signOff().subscribe(
+                    () => {
+                        this.authService.clear(); // Destroy session cache
 
-            return observer.next(true);
-          }, error => {
-            console.error(error);
-            return observer.next(false);
-          });
-      } else {
-        let user = this.authService.getCurrentUser();
-        if (user === null) {
-          this.authService.retrieveUser()
-            .subscribe(() => {
-              this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-              return observer.next(false);
-            }, error => {
-              return observer.next(true);
-            });
-        } else {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return observer.next(false);
-        }
-      }
-    });
-  }
+                        return observer.next(true);
+                    },
+                    error => {
+                        console.error(error);
+                        return observer.next(false);
+                    }
+                );
+            } else {
+                let user = this.authService.getCurrentUser();
+                if (user === null) {
+                    this.authService.retrieveUser().subscribe(
+                        () => {
+                            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                            return observer.next(false);
+                        },
+                        error => {
+                            return observer.next(true);
+                        }
+                    );
+                } else {
+                    this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                    return observer.next(false);
+                }
+            }
+        });
+    }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    return this.canActivate(route, state);
-  }
+    canActivateChild(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<boolean> | boolean {
+        return this.canActivate(route, state);
+    }
 }

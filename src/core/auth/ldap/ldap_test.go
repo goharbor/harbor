@@ -25,11 +25,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
-	"github.com/goharbor/harbor/src/pkg/project"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
 	userDao "github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
@@ -382,7 +382,7 @@ func TestSearchAndOnBoardUser(t *testing.T) {
 func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	memberMgr := member.Mgr
 	ctx := orm.Context()
-	currentProject, err := project.Mgr.Get(ctx, "member_test_01")
+	currentProject, err := pkg.ProjectMgr.Get(ctx, "member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
@@ -402,7 +402,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: pmid:%v", pmid)
 	}
 
-	currentProject, err = project.Mgr.Get(ctx, "member_test_02")
+	currentProject, err = pkg.ProjectMgr.Get(ctx, "member_test_02")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
@@ -424,7 +424,7 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	memberMgr := member.Mgr
 	ctx := orm.Context()
-	currentProject, err := project.Mgr.Get(ctx, "member_test_01")
+	currentProject, err := pkg.ProjectMgr.Get(ctx, "member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}

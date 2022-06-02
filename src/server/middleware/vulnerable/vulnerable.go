@@ -57,13 +57,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		if !proj.VulPrevented() {
 			// vulnerability prevention disabled, skip the checking
-			logger.Debugf("project %s vulnerability prevention disabled, skip the checking", proj.Name)
-			return nil
-		}
-
-		if util.SkipPolicyChecking(r, proj.ProjectID) {
-			// the artifact is pulling by the scanner, skip the checking
-			logger.Debugf("artifact %s@%s is pulling by the scanner, skip the checking", info.Repository, info.Reference)
+			logger.Debugf("project %s vulnerability prevention deactivated, skip the checking", proj.Name)
 			return nil
 		}
 
@@ -73,6 +67,14 @@ func Middleware() func(http.Handler) http.Handler {
 				logger.Errorf("get artifact failed, error %v", err)
 			}
 			return err
+		}
+		ok, err := util.SkipPolicyChecking(r, proj.ProjectID, art.ID)
+		if err != nil {
+			return err
+		}
+		if ok {
+			logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", info.Repository, info.Digest)
+			return nil
 		}
 
 		checker := scanChecker()

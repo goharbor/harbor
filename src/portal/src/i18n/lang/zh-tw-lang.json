@@ -161,6 +161,9 @@
     "PLACEHOLDER": "搜索{{param}}...",
     "PLACEHOLDER_VIC": "搜索Registry..."
   },
+  "TOP_NAV": {
+    "DATETIME_RENDERING_DEFAULT": "默認"
+  },
   "SIDE_NAV":{
     "DASHBOARD": "儀表板",
     "PROJECTS": "項目",
@@ -651,7 +654,8 @@
     "BANDWIDTH": "Bandwidth",
     "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
     "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
-    "UNLIMITED": "Unlimited"
+    "UNLIMITED": "Unlimited",
+    "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
@@ -1081,6 +1085,12 @@
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
+    "DOCKER": "Docker",
+    "HELM": "Helm",
+    "CNAB": "CNAB",
+    "TAG_COMMAND_CHART": "Package a chart for this project:",
+    "PUSH_COMMAND_CHART": "Push a chart to this project:",
+    "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
     "TOOLTIP": "推送一個鏡像到當前項目的參考命令。",
     "TAG_COMMAND": "在項目中標記鏡像：",
     "PUSH_COMMAND": "推送鏡像到當前項目：",

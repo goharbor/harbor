@@ -13,7 +13,6 @@ const (
 	dialConnectionTimeout = 30 * time.Second
 	dialReadTimeout       = 10 * time.Second
 	dialWriteTimeout      = 10 * time.Second
-	pageItemNum           = 20.0
 )
 
 var (

@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
@@ -61,7 +62,7 @@ type Controller interface {
 func NewController() Controller {
 	return &controller{
 		tagMgr:       tag.Mgr,
-		artMgr:       artifact.Mgr,
+		artMgr:       pkg.ArtifactMgr,
 		immutableMtr: rule.NewRuleMatcher(),
 	}
 }

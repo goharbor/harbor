@@ -13,23 +13,24 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { AppConfigService } from '../../../services/app-config.service';
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SkinableConfig } from '../../../services/skinable-config.service';
 
 @Component({
     selector: 'about-dialog',
-    templateUrl: "about-dialog.component.html",
-    styleUrls: ["about-dialog.component.scss"]
+    templateUrl: 'about-dialog.component.html',
+    styleUrls: ['about-dialog.component.scss'],
 })
 export class AboutDialogComponent implements OnInit {
     opened: boolean = false;
-    build: string = "4276418";
+    build: string = '4276418';
     customIntroduction: string;
     customName: string;
     customLogo: string;
 
-    constructor(private appConfigService: AppConfigService,
-        private skinableConfig: SkinableConfig) {
-    }
+    constructor(
+        private appConfigService: AppConfigService,
+        private skinableConfig: SkinableConfig
+    ) {}
 
     ngOnInit(): void {
         // custom skin

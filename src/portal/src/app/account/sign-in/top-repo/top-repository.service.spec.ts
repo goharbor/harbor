@@ -3,16 +3,17 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TopRepoService } from './top-repository.service';
 
 describe('TopRepoService', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ],
-      providers: [TopRepoService]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule],
+            providers: [TopRepoService],
+        });
     });
-  });
 
-  it('should be created', inject([TopRepoService], (service: TopRepoService) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should be created', inject(
+        [TopRepoService],
+        (service: TopRepoService) => {
+            expect(service).toBeTruthy();
+        }
+    ));
 });

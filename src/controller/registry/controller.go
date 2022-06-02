@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -64,7 +65,7 @@ func NewController() Controller {
 	return &controller{
 		regMgr: reg.Mgr,
 		repMgr: replication.Mgr,
-		proMgr: project.Mgr,
+		proMgr: pkg.ProjectMgr,
 	}
 }
 

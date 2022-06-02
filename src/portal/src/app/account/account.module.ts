@@ -16,31 +16,26 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { SignUpPageComponent } from './sign-up/sign-up-page.component';
-import { SignInComponent } from "./sign-in/sign-in.component";
-import { SignInGuard } from "../shared/router-guard/sign-in-guard-activate.service";
-import { TopRepoService } from "./sign-in/top-repo/top-repository.service";
-import { TopRepoComponent } from "./sign-in/top-repo/top-repo.component";
+import { SignInComponent } from './sign-in/sign-in.component';
+import { SignInGuard } from '../shared/router-guard/sign-in-guard-activate.service';
+import { TopRepoService } from './sign-in/top-repo/top-repository.service';
+import { TopRepoComponent } from './sign-in/top-repo/top-repo.component';
 
 const routes: Routes = [
-  {
-    path: 'sign-in',
-    canActivate: [SignInGuard],
-    component: SignInComponent
-  }
+    {
+        path: 'sign-in',
+        canActivate: [SignInGuard],
+        component: SignInComponent,
+    },
 ];
 @NgModule({
-  imports: [
-    RouterModule.forChild(routes),
-    SharedModule,
-  ],
-  declarations: [
-    SignUpComponent,
-    SignUpPageComponent,
-    SignInComponent,
-    TopRepoComponent,
-  ],
-  providers: [
-    TopRepoService
-  ]
+    imports: [RouterModule.forChild(routes), SharedModule],
+    declarations: [
+        SignUpComponent,
+        SignUpPageComponent,
+        SignInComponent,
+        TopRepoComponent,
+    ],
+    providers: [TopRepoService],
 })
-export class AccountModule { }
+export class AccountModule {}

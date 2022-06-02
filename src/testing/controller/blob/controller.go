@@ -235,20 +235,20 @@ func (_m *Controller) Get(ctx context.Context, digest string, options ...blob.Op
 	return r0, r1
 }
 
-// GetAcceptedBlobSize provides a mock function with given fields: sessionID
-func (_m *Controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
-	ret := _m.Called(sessionID)
+// GetAcceptedBlobSize provides a mock function with given fields: ctx, sessionID
+func (_m *Controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) (int64, error) {
+	ret := _m.Called(ctx, sessionID)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(string) int64); ok {
-		r0 = rf(sessionID)
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, sessionID)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(sessionID)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, sessionID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -279,13 +279,13 @@ func (_m *Controller) List(ctx context.Context, query *q.Query) ([]*models.Blob,
 	return r0, r1
 }
 
-// SetAcceptedBlobSize provides a mock function with given fields: sessionID, size
-func (_m *Controller) SetAcceptedBlobSize(sessionID string, size int64) error {
-	ret := _m.Called(sessionID, size)
+// SetAcceptedBlobSize provides a mock function with given fields: ctx, sessionID, size
+func (_m *Controller) SetAcceptedBlobSize(ctx context.Context, sessionID string, size int64) error {
+	ret := _m.Called(ctx, sessionID, size)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, int64) error); ok {
-		r0 = rf(sessionID, size)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64) error); ok {
+		r0 = rf(ctx, sessionID, size)
 	} else {
 		r0 = ret.Error(0)
 	}

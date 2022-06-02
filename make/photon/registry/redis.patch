@@ -1,51 +1,42 @@
 diff --git a/configuration/configuration.go b/configuration/configuration.go
-index b347d63b..04cdd230 100644
+index dd315485..a3e0818e 100644
 --- a/configuration/configuration.go
 +++ b/configuration/configuration.go
-@@ -162,6 +162,9 @@ type Configuration struct {
+@@ -168,6 +168,9 @@ type Configuration struct {
  		// Addr specifies the the redis instance available to the application.
  		Addr string `yaml:"addr,omitempty"`
- 
+
 +		// SentinelMasterSet specifies the the redis sentinel master set name.
 +		SentinelMasterSet string `yaml:"sentinelMasterSet,omitempty"`
 +
  		// Password string to use when making a connection.
  		Password string `yaml:"password,omitempty"`
- 
+
 diff --git a/registry/handlers/app.go b/registry/handlers/app.go
-index 978851bb..a8379071 100644
+index 8a30bd4d..4e9cec34 100644
 --- a/registry/handlers/app.go
 +++ b/registry/handlers/app.go
 @@ -3,6 +3,7 @@ package handlers
  import (
  	"context"
- 	cryptorand "crypto/rand"
+ 	"crypto/rand"
 +	"errors"
  	"expvar"
  	"fmt"
- 	"math/rand"
-@@ -15,6 +16,8 @@ import (
+ 	"math"
+@@ -16,6 +17,8 @@ import (
  	"strings"
  	"time"
- 
+
 +	"github.com/FZambia/sentinel"
 +
  	"github.com/docker/distribution"
  	"github.com/docker/distribution/configuration"
  	dcontext "github.com/docker/distribution/context"
-@@ -24,7 +27,7 @@ import (
- 	"github.com/docker/distribution/notifications"
- 	"github.com/docker/distribution/reference"
- 	"github.com/docker/distribution/registry/api/errcode"
--	"github.com/docker/distribution/registry/api/v2"
-+	v2 "github.com/docker/distribution/registry/api/v2"
- 	"github.com/docker/distribution/registry/auth"
- 	registrymiddleware "github.com/docker/distribution/registry/middleware/registry"
- 	repositorymiddleware "github.com/docker/distribution/registry/middleware/repository"
-@@ -498,6 +501,44 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+@@ -499,6 +502,44 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  		return
  	}
- 
+
 +	var getRedisAddr func() (string, error)
 +	var testOnBorrow func(c redis.Conn, t time.Time) error
 +	if configuration.Redis.SentinelMasterSet != "" {
@@ -87,10 +78,10 @@ index 978851bb..a8379071 100644
  	pool := &redis.Pool{
  		Dial: func() (redis.Conn, error) {
  			// TODO(stevvooe): Yet another use case for contextual timing.
-@@ -513,8 +554,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+@@ -514,8 +555,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  				}
  			}
- 
+
 -			conn, err := redis.DialTimeout("tcp",
 -				configuration.Redis.Addr,
 +			redisAddr, err := getRedisAddr()
@@ -101,7 +92,7 @@ index 978851bb..a8379071 100644
  				configuration.Redis.DialTimeout,
  				configuration.Redis.ReadTimeout,
  				configuration.Redis.WriteTimeout)
-@@ -546,16 +590,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+@@ -547,16 +591,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  			done(nil)
  			return conn, nil
  		},
@@ -121,21 +112,12 @@ index 978851bb..a8379071 100644
 +		TestOnBorrow: testOnBorrow,
 +		Wait:         false, // if a connection is not available, proceed without cache.
  	}
- 
+
  	app.redis = pool
 diff --git a/registry/handlers/app_test.go b/registry/handlers/app_test.go
-index 12c0b61c..8a644d83 100644
+index 60a57e6c..8a644d83 100644
 --- a/registry/handlers/app_test.go
 +++ b/registry/handlers/app_test.go
-@@ -11,7 +11,7 @@ import (
- 	"github.com/docker/distribution/configuration"
- 	"github.com/docker/distribution/context"
- 	"github.com/docker/distribution/registry/api/errcode"
--	"github.com/docker/distribution/registry/api/v2"
-+	v2 "github.com/docker/distribution/registry/api/v2"
- 	"github.com/docker/distribution/registry/auth"
- 	_ "github.com/docker/distribution/registry/auth/silly"
- 	"github.com/docker/distribution/registry/storage"
 @@ -140,7 +140,29 @@ func TestAppDispatcher(t *testing.T) {
  // TestNewApp covers the creation of an application via NewApp with a
  // configuration.
@@ -175,7 +157,7 @@ index 12c0b61c..8a644d83 100644
 +	config.Redis.DB = 0
 +	runAppWithConfig(t, config)
 +}
- 
+
 +// TestNewApp covers the creation of an application via NewApp with a
 +// configuration(with redis sentinel cluster).
 +func TestNewAppWithRedisSentinelCluster(t *testing.T) {
@@ -207,17 +189,18 @@ index 12c0b61c..8a644d83 100644
  	// ensuring that NewApp doesn't panic. We might want to tweak this
  	// behavior.
 diff --git a/vendor.conf b/vendor.conf
-index a249caf2..fcc9fee2 100644
+index bd1b4bff..a45ac137 100644
 --- a/vendor.conf
 +++ b/vendor.conf
 @@ -49,3 +49,4 @@ gopkg.in/yaml.v2 v2.2.1
  rsc.io/letsencrypt e770c10b0f1a64775ae91d240407ce00d1a5bdeb https://github.com/dmcgowan/letsencrypt.git
  github.com/opencontainers/go-digest a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
- github.com/opencontainers/image-spec ab7389ef9f50030c9b245bc16b981c7ddf192882
+ github.com/opencontainers/image-spec 67d2d5658fe0476ab9bf414cec164077ebff3920 # v1.0.2
 +github.com/FZambia/sentinel 5585739eb4b6478aa30161866ccf9ce0ef5847c7 https://github.com/jeremyxu2010/sentinel.git
+\ No newline at end of file
 diff --git a/vendor/github.com/FZambia/sentinel/LICENSE b/vendor/github.com/FZambia/sentinel/LICENSE
 new file mode 100644
-index 00000000..8dada3ed
+index 00000000..9c8f3ea0
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/LICENSE
 @@ -0,0 +1,201 @@
@@ -422,9 +405,10 @@ index 00000000..8dada3ed
 +   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 +   See the License for the specific language governing permissions and
 +   limitations under the License.
+\ No newline at end of file
 diff --git a/vendor/github.com/FZambia/sentinel/README.md b/vendor/github.com/FZambia/sentinel/README.md
 new file mode 100644
-index 00000000..f544c54e
+index 00000000..fc810435
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/README.md
 @@ -0,0 +1,39 @@
@@ -466,10 +450,11 @@ index 00000000..f544c54e
 +License
 +-------
 +
-+Library is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html). 
++Library is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+\ No newline at end of file
 diff --git a/vendor/github.com/FZambia/sentinel/sentinel.go b/vendor/github.com/FZambia/sentinel/sentinel.go
 new file mode 100644
-index 00000000..79209e9f
+index 00000000..98dea26d
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/sentinel.go
 @@ -0,0 +1,426 @@

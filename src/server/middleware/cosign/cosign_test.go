@@ -2,9 +2,16 @@ package cosign
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
@@ -12,11 +19,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 type MiddlewareTestSuite struct {
@@ -77,7 +79,7 @@ func (suite *MiddlewareTestSuite) addArt(pid, repositoryID int64, repositoryName
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	afid, err := artifact.Mgr.Create(suite.Context(), af)
+	afid, err := pkg.ArtifactMgr.Create(suite.Context(), af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 	return afid
 }
@@ -93,7 +95,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	subafid, err := artifact.Mgr.Create(suite.Context(), subaf)
+	subafid, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	af := &artifact.Artifact{
@@ -106,7 +108,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	afid, err := artifact.Mgr.Create(suite.Context(), af)
+	afid, err := pkg.ArtifactMgr.Create(suite.Context(), af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	accid, err := accessory.Mgr.Create(suite.Context(), accessorymodel.AccessoryData{

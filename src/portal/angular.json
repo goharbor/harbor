@@ -15,7 +15,17 @@
               "swagger-ui",
               "buffer",
               "js-yaml",
-              "hoist-non-react-statics"
+              "hoist-non-react-statics",
+              "lodash",
+              "core-js-pure",
+              "prop-types",
+              "randexp",
+              "react-copy-to-clipboard",
+              "react-debounce-input",
+              "react-immutable-proptypes",
+              "redux-immutable",
+              "url-parse",
+              "xml-but-prettier"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
@@ -122,6 +132,15 @@
               "src/i18n"
             ]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -138,7 +157,7 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
             "tsConfig": [],
             "exclude": []

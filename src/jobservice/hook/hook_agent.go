@@ -17,6 +17,7 @@ package hook
 import (
 	"context"
 	"encoding/json"
+	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"time"
 
@@ -244,6 +245,7 @@ func (ba *basicAgent) isOutdated(evt *Event) (bool, error) {
 		case st.After(est):
 			return true, nil
 		case st.Equal(est):
+			log.Debugf("ignore the consistent status: %v", est)
 			// Continue to compare check in at timestamp
 		}
 

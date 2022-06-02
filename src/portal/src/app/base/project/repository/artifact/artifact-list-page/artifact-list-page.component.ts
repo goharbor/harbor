@@ -13,64 +13,85 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Project } from "../../../project";
-import { ArtifactListPageService } from "./artifact-list-page.service";
+import { Project } from '../../../project';
+import { ArtifactListPageService } from './artifact-list-page.service';
 
 @Component({
-  selector: 'artifact-list-page',
-  templateUrl: 'artifact-list-page.component.html',
-  styleUrls: ['./artifact-list-page.component.scss']
+    selector: 'artifact-list-page',
+    templateUrl: 'artifact-list-page.component.html',
+    styleUrls: ['./artifact-list-page.component.scss'],
 })
 export class ArtifactListPageComponent implements OnInit {
-
-  projectId: string;
-  projectName: string;
-  repoName: string;
-  referArtifactNameArray: string[] = [];
-  depth: string;
-  artifactDigest: string;
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private artifactListPageService: ArtifactListPageService) {
-    this.route.params.subscribe(params => {
-      this.depth = this.route.snapshot.params['depth'];
-      if (this.depth) {
-        const arr: string[] = this.depth.split('-');
-        this.referArtifactNameArray = arr.slice(0, arr.length - 1);
-        this.artifactDigest = this.depth.split('-')[arr.length - 1];
-      } else {
-        this.referArtifactNameArray = [];
-        this.artifactDigest =  null;
-      }
-    });
-  }
-
-  ngOnInit() {
-    this.projectId = this.route.snapshot.parent.params['id'];
-    let resolverData = this.route.snapshot.parent.data;
-    if (resolverData) {
-      this.projectName = (<Project>resolverData['projectResolver']).name;
+    projectId: string;
+    projectName: string;
+    repoName: string;
+    referArtifactNameArray: string[] = [];
+    depth: string;
+    artifactDigest: string;
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private artifactListPageService: ArtifactListPageService
+    ) {
+        this.route.params.subscribe(params => {
+            this.depth = this.route.snapshot.params['depth'];
+            if (this.depth) {
+                const arr: string[] = this.depth.split('-');
+                this.referArtifactNameArray = arr.slice(0, arr.length - 1);
+                this.artifactDigest = this.depth.split('-')[arr.length - 1];
+            } else {
+                this.referArtifactNameArray = [];
+                this.artifactDigest = null;
+            }
+        });
     }
-    this.repoName = this.route.snapshot.params['repo'];
-    this.artifactListPageService.init(+this.projectId);
-  }
 
-  watchGoBackEvt(projectId: string| number): void {
-    this.router.navigate(["harbor", "projects", projectId, "repositories"]);
-  }
-  goProBack(): void {
-    this.router.navigate(["harbor", "projects"]);
-  }
-  backInitRepo() {
-    this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repoName]);
-  }
-  jumpDigest(index: number) {
-    const arr: string[] = this.referArtifactNameArray.slice(0, index + 1 );
-    if ( arr && arr.length) {
-      this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repoName, "artifacts-tab", "depth", arr.join('-')]);
-    } else {
-      this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repoName]);
+    ngOnInit() {
+        this.projectId = this.route.snapshot.parent.params['id'];
+        let resolverData = this.route.snapshot.parent.data;
+        if (resolverData) {
+            this.projectName = (<Project>resolverData['projectResolver']).name;
+        }
+        this.repoName = this.route.snapshot.params['repo'];
+        this.artifactListPageService.init(+this.projectId);
     }
-  }
+
+    watchGoBackEvt(projectId: string | number): void {
+        this.router.navigate(['harbor', 'projects', projectId, 'repositories']);
+    }
+    goProBack(): void {
+        this.router.navigate(['harbor', 'projects']);
+    }
+    backInitRepo() {
+        this.router.navigate([
+            'harbor',
+            'projects',
+            this.projectId,
+            'repositories',
+            this.repoName,
+        ]);
+    }
+    jumpDigest(index: number) {
+        const arr: string[] = this.referArtifactNameArray.slice(0, index + 1);
+        if (arr && arr.length) {
+            this.router.navigate([
+                'harbor',
+                'projects',
+                this.projectId,
+                'repositories',
+                this.repoName,
+                'artifacts-tab',
+                'depth',
+                arr.join('-'),
+            ]);
+        } else {
+            this.router.navigate([
+                'harbor',
+                'projects',
+                this.projectId,
+                'repositories',
+                this.repoName,
+            ]);
+        }
+    }
 }

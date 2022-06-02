@@ -8,9 +8,11 @@ Steps to deploy Harbor UI in a nginx container, it can be used for testing
 
 `cp nginx.conf.example nginx.conf`
 
-`location ~ /(api|c)/* {
-   proxy_pass  ${an available back-end server addr};
- }`
+`
+location ~ ^/(api|c|chartrepo)/ {
+   proxy_pass ${an available back-end server addr};
+}
+`
 
 3. Build harbor-ui image
 

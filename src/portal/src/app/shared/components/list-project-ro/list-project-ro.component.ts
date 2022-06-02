@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Project } from "../../../../../ng-swagger-gen/models/project";
+import { Project } from '../../../../../ng-swagger-gen/models/project';
 
 @Component({
     selector: 'list-project-ro',
     templateUrl: 'list-project-ro.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListProjectROComponent {
     @Input() projects: Project[];
 
-    constructor() {
-    }
+    constructor() {}
 
     getLink(proId: number) {
         return `/harbor/projects/${proId}/repositories`;

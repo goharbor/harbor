@@ -162,6 +162,9 @@
         "PLACEHOLDER": "Ara {{param}}...",
         "PLACEHOLDER_VIC": "Arama Kaydı..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Default"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Kontrol Paneli",
         "PROJECTS": "Projeler",
@@ -654,7 +657,8 @@
         "BANDWIDTH": "Bandwidth",
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
         "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
-        "UNLIMITED": "Unlimited"
+        "UNLIMITED": "Unlimited",
+        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",
@@ -1088,7 +1092,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "TAG_COMMAND_CHART": "Package a chart for this project:",
         "PUSH_COMMAND_CHART": "Push a chart to this project:",
         "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
         "TOOLTIP": "Command references for pushing an artifact to this project.",

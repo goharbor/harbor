@@ -11,33 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { NgModule } from "@angular/core";
-import { SharedModule } from "../../../shared/shared.module";
-import { ProjectsComponent } from "./projects.component";
-import { ListProjectComponent } from "./list-project/list-project.component";
-import { CreateProjectComponent } from "./create-project/create-project.component";
-import { RouterModule, Routes } from "@angular/router";
-import { StatisticsPanelComponent } from "./statictics/statistics-panel.component";
+import { NgModule } from '@angular/core';
+import { SharedModule } from '../../../shared/shared.module';
+import { ProjectsComponent } from './projects.component';
+import { ListProjectComponent } from './list-project/list-project.component';
+import { CreateProjectComponent } from './create-project/create-project.component';
+import { RouterModule, Routes } from '@angular/router';
+import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
 
 const routes: Routes = [
     {
         path: '',
-        component: ProjectsComponent
+        component: ProjectsComponent,
     },
 ];
 
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes),
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
     declarations: [
         ProjectsComponent,
         ListProjectComponent,
         CreateProjectComponent,
-        StatisticsPanelComponent
+        StatisticsPanelComponent,
     ],
-    providers: []
+    providers: [],
 })
-export class ProjectsModule {
-}
+export class ProjectsModule {}

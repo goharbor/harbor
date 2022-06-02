@@ -17,14 +17,13 @@ import { User } from './user';
 import { SessionService } from '../../../shared/services/session.service';
 import { UserService } from './user.service';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
-import { InlineAlertComponent } from "../../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
 
 @Component({
-    selector: "new-user-modal",
-    templateUrl: "new-user-modal.component.html",
-    styleUrls: ['../../../common.scss', "./new-user-madal.component.scss"]
+    selector: 'new-user-modal',
+    templateUrl: 'new-user-modal.component.html',
+    styleUrls: ['../../../common.scss', './new-user-madal.component.scss'],
 })
-
 export class NewUserModalComponent {
     opened: boolean = false;
     error: any;
@@ -33,11 +32,13 @@ export class NewUserModalComponent {
 
     @Output() addNew = new EventEmitter<User>();
 
-    constructor(private session: SessionService,
+    constructor(
+        private session: SessionService,
         private userService: UserService,
-        private msgHandler: MessageHandlerService) { }
+        private msgHandler: MessageHandlerService
+    ) {}
 
-    @ViewChild(NewUserFormComponent, {static: true})
+    @ViewChild(NewUserFormComponent, { static: true })
     newUserForm: NewUserFormComponent;
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
@@ -80,7 +81,7 @@ export class NewUserModalComponent {
             } else {
                 // Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
+                    message: 'ALERT.FORM_CHANGE_CONFIRMATION',
                 });
             }
         } else {
@@ -115,16 +116,17 @@ export class NewUserModalComponent {
         // Start process
         this.onGoing = true;
 
-        this.userService.addUser(u)
-            .subscribe(() => {
+        this.userService.addUser(u).subscribe(
+            () => {
                 this.onGoing = false;
                 // TODO:
                 // As no response data returned, can not add it to list directly
 
                 this.addNew.emit(u);
                 this.opened = false;
-                this.msgHandler.showSuccess("USER.SAVE_SUCCESS");
-            }, error => {
+                this.msgHandler.showSuccess('USER.SAVE_SUCCESS');
+            },
+            error => {
                 this.onGoing = false;
                 this.error = error;
                 if (this.msgHandler.isAppLevel(error)) {
@@ -133,6 +135,7 @@ export class NewUserModalComponent {
                 } else {
                     this.inlineAlert.showInlineError(error);
                 }
-            });
+            }
+        );
     }
 }

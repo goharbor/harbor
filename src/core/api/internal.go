@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -72,7 +72,7 @@ func (ia *InternalAPI) RenameAdmin() {
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	if !config.QuotaPerProjectEnable(orm.Context()) {
-		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is disabled"))
+		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is deactivated"))
 		return
 	}
 	ctx := orm.Context()

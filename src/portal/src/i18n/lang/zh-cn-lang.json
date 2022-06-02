@@ -68,7 +68,7 @@
     },
     "TOOLTIP": {
         "NAME_FILTER": "过滤资源的名字。不填或者填写“**”匹配所有资源；“library/**”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
-        "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
+        "TAG_FILTER": "过滤资源的tag/version。不填或者“**”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
         "LABEL_FILTER": "根据标签筛选资源。",
         "RESOURCE_FILTER": "过滤资源的类型。",
         "PUSH_BASED": "把资源由本地Harbor推送到远端仓库。",
@@ -160,6 +160,9 @@
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "搜索 {{param}}...",
         "PLACEHOLDER_VIC": "搜索 Registry..."
+    },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "默认"
     },
     "SIDE_NAV": {
         "DASHBOARD": "仪表板",
@@ -656,7 +659,8 @@
         "BANDWIDTH": "带宽",
         "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
         "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
-        "UNLIMITED": "无限制"
+        "UNLIMITED": "无限制",
+        "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -1089,7 +1093,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "在项目中标记 chart",
+        "TAG_COMMAND_CHART": "在项目中打包 chart",
         "PUSH_COMMAND_CHART": "推送 chart 到当前项目",
         "PUSH_COMMAND_CNAB": "推送 CNAB 到当前项目",
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",

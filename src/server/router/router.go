@@ -16,11 +16,12 @@ package router
 
 import (
 	"context"
-	"github.com/astaxie/beego"
-	beegocontext "github.com/astaxie/beego/context"
-	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 	"path/filepath"
+
+	"github.com/beego/beego"
+	beegocontext "github.com/beego/beego/context"
+	"github.com/goharbor/harbor/src/server/middleware"
 )
 
 // ContextKeyInput ...

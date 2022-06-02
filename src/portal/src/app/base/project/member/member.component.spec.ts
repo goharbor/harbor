@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MemberComponent } from './member.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ActivatedRoute } from "@angular/router";
-import { MessageHandlerService } from "../../../shared/services/message-handler.service";
-import { SessionService } from "../../../shared/services/session.service";
-import { MemberService } from "../../../../../ng-swagger-gen/services/member.service";
-import { AppConfigService } from "../../../services/app-config.service";
+import { ActivatedRoute } from '@angular/router';
+import { MessageHandlerService } from '../../../shared/services/message-handler.service';
+import { SessionService } from '../../../shared/services/session.service';
+import { MemberService } from '../../../../../ng-swagger-gen/services/member.service';
+import { AppConfigService } from '../../../services/app-config.service';
 import { of } from 'rxjs';
-import { OperationService } from "../../../shared/components/operation/operation.service";
-import { UserPermissionService } from "../../../shared/services";
-import { ErrorHandler } from "../../../shared/units/error-handler";
-import { ConfirmationDialogService } from "../../global-confirmation-dialog/confirmation-dialog.service";
-import { SharedTestingModule } from "../../../shared/shared.module";
-import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import { Registry } from "../../../../../ng-swagger-gen/models/registry";
-import { ProjectMemberEntity } from "../../../../../ng-swagger-gen/models/project-member-entity";
-import { delay } from "rxjs/operators";
+import { OperationService } from '../../../shared/components/operation/operation.service';
+import { UserPermissionService } from '../../../shared/services';
+import { ErrorHandler } from '../../../shared/units/error-handler';
+import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
+import { SharedTestingModule } from '../../../shared/shared.module';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Registry } from '../../../../../ng-swagger-gen/models/registry';
+import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
+import { delay } from 'rxjs/operators';
 
 describe('MemberComponent', () => {
     let component: MemberComponent;
@@ -28,7 +28,7 @@ describe('MemberComponent', () => {
             role_name: 'projectAdmin',
             role_id: 1,
             entity_id: 1,
-            entity_type: 'u'
+            entity_type: 'u',
         },
         {
             id: 2,
@@ -37,17 +37,19 @@ describe('MemberComponent', () => {
             role_name: 'projectAdmin',
             role_id: 1,
             entity_id: 2,
-            entity_type: 'u'
-        }
+            entity_type: 'u',
+        },
     ];
     const mockMemberService = {
         getUsersNameList: () => {
             return of([]);
         },
         listProjectMembersResponse: () => {
-            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
-                headers: new HttpHeaders({'x-total-count': '2'}),
-                body: mockedMembers
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<
+                Array<Registry>
+            >({
+                headers: new HttpHeaders({ 'x-total-count': '2' }),
+                body: mockedMembers,
             });
             return of(response).pipe(delay(0));
         },
@@ -61,9 +63,9 @@ describe('MemberComponent', () => {
     const mockSessionService = {
         getCurrentUser: () => {
             return of({
-                user_id: 1
+                user_id: 1,
             });
-        }
+        },
     };
     const mockAppConfigService = {
         isLdapMode: () => {
@@ -75,65 +77,66 @@ describe('MemberComponent', () => {
         isOidcMode: () => {
             return true;
         },
-
     };
     const mockOperationService = {
-        publishInfo: () => { }
+        publishInfo: () => {},
     };
     const mockMessageHandlerService = {
-        handleError: () => { }
+        handleError: () => {},
     };
     const mockConfirmationDialogService = {
-        openComfirmDialog: () => { },
-        confirmationConfirm$:  of(
-                {
-                    state: 1,
-                    source: 2,
-                }
-            )
+        openComfirmDialog: () => {},
+        confirmationConfirm$: of({
+            state: 1,
+            source: 2,
+        }),
     };
     const mockUserPermissionService = {
         getPermission() {
-          return of(true);
-        }
-      };
+            return of(true);
+        },
+    };
     const mockErrorHandler = {
-        error() { }
-      };
-
+        error() {},
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                SharedTestingModule
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [MemberComponent],
             providers: [
                 { provide: MemberService, useValue: mockMemberService },
-                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
-                { provide: ConfirmationDialogService, useValue: mockConfirmationDialogService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: mockMessageHandlerService,
+                },
+                {
+                    provide: ConfirmationDialogService,
+                    useValue: mockConfirmationDialogService,
+                },
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: OperationService, useValue: mockOperationService },
                 { provide: AppConfigService, useValue: mockAppConfigService },
-                { provide: UserPermissionService, useValue: mockUserPermissionService },
+                {
+                    provide: UserPermissionService,
+                    useValue: mockUserPermissionService,
+                },
                 { provide: ErrorHandler, useValue: mockErrorHandler },
                 {
-                    provide: ActivatedRoute, useValue: {
-                        RouterparamMap: of({ get: (key) => 'value' }),
+                    provide: ActivatedRoute,
+                    useValue: {
+                        RouterparamMap: of({ get: key => 'value' }),
                         snapshot: {
                             parent: {
                                 parent: {
-                                    params: { id: 1 }
-                                }
+                                    params: { id: 1 },
+                                },
                             },
-                        }
-                    }
-                }
-
-            ]
+                        },
+                    },
+                },
+            ],
         }).compileComponents();
     });
 

@@ -43,3 +43,7 @@ Logout Harbor
     Retry Link Click  Log Out
     Sleep  2
     Wait Until Keyword Succeeds  5x  1  Retry Wait Until Page Contains Element  ${sign_in_title_xpath}
+
+View About
+    Retry Element Click  ${head_admin_xpath}
+    Retry Link Click  ${about_xpath}

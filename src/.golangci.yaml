@@ -1,0 +1,56 @@
+linters-settings:
+  gofmt:
+    # Simplify code: gofmt with `-s` option.
+    # Default: true
+    simplify: false
+  misspell:
+    locale: US,UK
+
+linters:
+  disable-all: true
+  enable:
+    - gofmt
+    - goheader
+    - misspell
+    # - typecheck
+    # - dogsled
+    # - dupl
+    # - depguard
+    # - funlen
+    # - goconst
+    # - gocritic
+    # - gocyclo
+    # - goimports
+    # - goprintffuncname
+    # - ineffassign
+    # - nakedret
+    # - nolintlint
+    # - revive
+    # - whitespace
+    - bodyclose
+    - deadcode
+    # - errcheck
+    # - gosec
+    # - gosimple
+    - govet
+    # - noctx
+    # - rowserrcheck
+    # - staticcheck
+    # - structcheck
+    # - stylecheck
+    # - unconvert
+    # - unparam
+    # - unused
+    # - varcheck
+ 
+run:
+  skip-files:
+    - ".*_test.go"
+    - ".*test.go"
+  skip-dirs:
+    - "testing/"
+  timeout: 5m
+
+issue:
+  max-same-issues: 0
+  max-per-linter: 0

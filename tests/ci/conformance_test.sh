@@ -28,6 +28,7 @@ export OCI_TEST_PULL=1
 export OCI_TEST_CONTENT_DISCOVERY=1
 export OCI_TEST_CONTENT_MANAGEMENT=1
 export OCI_CROSSMOUNT_NAMESPACE="crossmount/testrepo"
+export OCI_AUTOMATIC_CROSSMOUNT="false"
 
 cd ./distribution-spec/conformance
 go test .

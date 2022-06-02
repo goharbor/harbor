@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -47,12 +47,6 @@ func (cc *CommonController) Render() error {
 
 // Prepare overwrites the Prepare func in api.BaseController to ignore unnecessary steps
 func (cc *CommonController) Prepare() {}
-
-type messageDetail struct {
-	Hint string
-	URL  string
-	UUID string
-}
 
 func redirectForOIDC(ctx context.Context, username string) bool {
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
@@ -125,7 +119,7 @@ func (cc *CommonController) UserExists() {
 	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
-		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration deactivated, only sysadmin can check user existence")
 	}
 
 	target := cc.GetString("target")

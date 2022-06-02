@@ -1,5 +1,5 @@
-import { HarborRouteReuseStrategy } from "./harbor-route-reuse-strategy";
-import { ActivatedRouteSnapshot } from "@angular/router";
+import { HarborRouteReuseStrategy } from './harbor-route-reuse-strategy';
+import { ActivatedRouteSnapshot } from '@angular/router';
 
 describe('HarborRouteReuseStrategy', () => {
     let harborRouteReuseStrategy: HarborRouteReuseStrategy;
@@ -12,6 +12,8 @@ describe('HarborRouteReuseStrategy', () => {
     it('shouldReuseRoute', () => {
         const future: ActivatedRouteSnapshot = new ActivatedRouteSnapshot();
         const curr: ActivatedRouteSnapshot = new ActivatedRouteSnapshot();
-        expect(harborRouteReuseStrategy.shouldReuseRoute(future, curr)).toBeTruthy();
+        expect(
+            harborRouteReuseStrategy.shouldReuseRoute(future, curr)
+        ).toBeTruthy();
     });
 });

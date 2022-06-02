@@ -1,206 +1,205 @@
 export const USERSTATICPERMISSION = {
-    "PROJECT": {
-        'KEY': '.',
-        'VALUE': {
-            "DELETE": "delete",
-            "UPDATE": "update",
-            "READ": "read",
-        }
+    PROJECT: {
+        KEY: '.',
+        VALUE: {
+            DELETE: 'delete',
+            UPDATE: 'update',
+            READ: 'read',
+        },
     },
-    "MEMBER": {
-        'KEY': 'member',
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "READ": "read",
-            "LIST": "list"
-        }
+    MEMBER: {
+        KEY: 'member',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            READ: 'read',
+            LIST: 'list',
+        },
     },
-    "LOG": {
-        'KEY': 'log',
-        'VALUE': {
-            "LIST": "list"
-        }
-    },
-    // to do remove
-    "REPLICATION": {
-        'KEY': 'replication',
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "LIST": "list",
-        }
+    LOG: {
+        KEY: 'log',
+        VALUE: {
+            LIST: 'list',
+        },
     },
     // to do remove
-    "REPLICATION_JOB": {
-        'KEY': 'replication-job',
-        'VALUE': {
-            "CREATE": "create",
-        }
+    REPLICATION: {
+        KEY: 'replication',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+        },
     },
-    "LABEL": {
-        'KEY': 'label',
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "READ": "read",
-            "LIST": "list",
-        }
+    // to do remove
+    REPLICATION_JOB: {
+        KEY: 'replication-job',
+        VALUE: {
+            CREATE: 'create',
+        },
     },
-    "CONFIGURATION": {
-        'KEY': 'configuration',
-        'VALUE': {
-            "UPDATE": "update",
-            "READ": "read",
-        }
+    LABEL: {
+        KEY: 'label',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            READ: 'read',
+            LIST: 'list',
+        },
     },
-    "QUOTA": {
-        "KEY": "quota",
-        "VALUE": {
-            "READ": "read"
-        }
+    CONFIGURATION: {
+        KEY: 'configuration',
+        VALUE: {
+            UPDATE: 'update',
+            READ: 'read',
+        },
     },
-    "REPOSITORY": {
-        'KEY': 'repository',
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "LIST": "list",
-            "PUSH": "push",
-            "READ": "read",
-            "PULL": "pull",
-        }
+    QUOTA: {
+        KEY: 'quota',
+        VALUE: {
+            READ: 'read',
+        },
     },
-    "ARTIFACT": {
-        'KEY': 'artifact',
-        'VALUE': {
-            "CREATE": "create",
-            "DELETE": "delete",
-            "LIST": "list",
-            "READ": "read",
-        }
+    REPOSITORY: {
+        KEY: 'repository',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+            PUSH: 'push',
+            READ: 'read',
+            PULL: 'pull',
+        },
     },
-    "ARTIFACT_ADDITION": {
-        'KEY': 'artifact-addition',
-        'VALUE': {
-            "READ": "read",
-        }
+    ARTIFACT: {
+        KEY: 'artifact',
+        VALUE: {
+            CREATE: 'create',
+            DELETE: 'delete',
+            LIST: 'list',
+            READ: 'read',
+        },
     },
-    "REPOSITORY_TAG": {
-        'KEY': 'tag',
-        'VALUE': {
-            "DELETE": "delete",
-            "LIST": "list",
-            "CREATE": "create"
-        }
+    ARTIFACT_ADDITION: {
+        KEY: 'artifact-addition',
+        VALUE: {
+            READ: 'read',
+        },
     },
-    "REPOSITORY_TAG_SCAN_JOB": {
-        'KEY': 'scan',
-        'VALUE': {
-            "CREATE": "create",
-            "READ": "read",
-        }
+    REPOSITORY_TAG: {
+        KEY: 'tag',
+        VALUE: {
+            DELETE: 'delete',
+            LIST: 'list',
+            CREATE: 'create',
+        },
     },
-    "REPOSITORY_ARTIFACT_LABEL": {
-        'KEY': 'artifact-label',
-        'VALUE': {
-            "CREATE": "create",
-            "DELETE": "delete",
-        }
+    REPOSITORY_TAG_SCAN_JOB: {
+        KEY: 'scan',
+        VALUE: {
+            CREATE: 'create',
+            READ: 'read',
+        },
     },
-    "HELM_CHART": {
-        'KEY': 'helm-chart',
-        'VALUE': {
-            "UPLOAD": "create",
-            "DOWNLOAD": "read",
-            "DELETE": "delete",
-            "LIST": "list",
-        }
+    REPOSITORY_ARTIFACT_LABEL: {
+        KEY: 'artifact-label',
+        VALUE: {
+            CREATE: 'create',
+            DELETE: 'delete',
+        },
     },
-    "HELM_CHART_VERSION": {
-        'KEY': 'helm-chart-version',
-        'VALUE': {
-            "DELETE": "delete",
-            "LIST": "list",
-            "CREATE": "create",
-            "READ": "read",
-        }
+    HELM_CHART: {
+        KEY: 'helm-chart',
+        VALUE: {
+            UPLOAD: 'create',
+            DOWNLOAD: 'read',
+            DELETE: 'delete',
+            LIST: 'list',
+        },
     },
-    "HELM_CHART_VERSION_LABEL": {
-        'KEY': 'helm-chart-version-label',
-        'VALUE': {
-            "CREATE": "create",
-            "DELETE": "delete",
-        }
+    HELM_CHART_VERSION: {
+        KEY: 'helm-chart-version',
+        VALUE: {
+            DELETE: 'delete',
+            LIST: 'list',
+            CREATE: 'create',
+            READ: 'read',
+        },
     },
-    "ROBOT": {
-        'KEY': 'robot',
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "LIST": "list",
-            "READ": "read",
-        }
+    HELM_CHART_VERSION_LABEL: {
+        KEY: 'helm-chart-version-label',
+        VALUE: {
+            CREATE: 'create',
+            DELETE: 'delete',
+        },
     },
-    "TAG_RETENTION": {
-        'KEY': "tag-retention",
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "LIST": "list",
-            "READ": "read",
-            "OPERATE": "operate"
-        }
+    ROBOT: {
+        KEY: 'robot',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+            READ: 'read',
+        },
     },
-    "IMMUTABLE_TAG": {
-        'KEY': "immutable-tag",
-        'VALUE': {
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-            "LIST": "list",
-        }
+    TAG_RETENTION: {
+        KEY: 'tag-retention',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+            READ: 'read',
+            OPERATE: 'operate',
+        },
     },
-    "WEBHOOK": {
-        "KEY": "notification-policy",
-        "VALUE": {
-            "LIST": "list",
-            "READ": "read",
-            "CREATE": "create",
-            "UPDATE": "update",
-        }
+    IMMUTABLE_TAG: {
+        KEY: 'immutable-tag',
+        VALUE: {
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+            LIST: 'list',
+        },
     },
-    "P2P_PROVIDER": {
-        "KEY": "preheat-policy",
-        "VALUE": {
-            "LIST": "list",
-            "READ": "read",
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete"
-        }
+    WEBHOOK: {
+        KEY: 'notification-policy',
+        VALUE: {
+            LIST: 'list',
+            READ: 'read',
+            CREATE: 'create',
+            UPDATE: 'update',
+        },
     },
-    "SCANNER": {
-        "KEY": "scanner",
-        "VALUE": {
-            "READ": "read",
-            "CREATE": "create"
-        }
+    P2P_PROVIDER: {
+        KEY: 'preheat-policy',
+        VALUE: {
+            LIST: 'list',
+            READ: 'read',
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+        },
     },
-    "METADATA": {
-        "KEY": "metadata",
-        "VALUE": {
-            "READ": "read",
-            "CREATE": "create",
-            "UPDATE": "update",
-            "DELETE": "delete",
-        }
-    }
+    SCANNER: {
+        KEY: 'scanner',
+        VALUE: {
+            READ: 'read',
+            CREATE: 'create',
+        },
+    },
+    METADATA: {
+        KEY: 'metadata',
+        VALUE: {
+            READ: 'read',
+            CREATE: 'create',
+            UPDATE: 'update',
+            DELETE: 'delete',
+        },
+    },
 };
-

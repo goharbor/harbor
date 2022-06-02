@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/base64"
 	"image"
+
 	// import the gif format
 	_ "image/gif"
 	// import the jpeg format
@@ -31,21 +32,43 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/nfnt/resize"
 )
 
 var (
-	builtInIcons = map[string]string{
-		icon.DigestOfIconImage:   "./icons/image.png",
-		icon.DigestOfIconChart:   "./icons/chart.png",
-		icon.DigestOfIconCNAB:    "./icons/cnab.png",
-		icon.DigestOfIconDefault: "./icons/default.png",
+	builtInIcons = map[string]buildInIcon{
+		icon.DigestOfIconImage: {
+			path:   "./icons/image.png",
+			resize: true,
+		},
+		icon.DigestOfIconChart: {
+			path:   "./icons/chart.png",
+			resize: true,
+		},
+		icon.DigestOfIconCNAB: {
+			path:   "./icons/cnab.png",
+			resize: true,
+		},
+		icon.DigestOfIconAccCosign: {
+			path:   "./icons/cosign.png",
+			resize: false,
+		},
+		icon.DigestOfIconDefault: {
+			path:   "./icons/default.png",
+			resize: true,
+		},
 	}
 	// Ctl is a global icon controller instance
 	Ctl = NewController()
 )
+
+type buildInIcon struct {
+	path   string
+	resize bool
+}
 
 // Icon model for artifact icon
 type Icon struct {
@@ -62,7 +85,7 @@ type Controller interface {
 // NewController creates a new instance of the icon controller
 func NewController() Controller {
 	return &controller{
-		artMgr: artifact.Mgr,
+		artMgr: pkg.ArtifactMgr,
 		regCli: registry.Cli,
 		cache:  sync.Map{},
 	}
@@ -84,9 +107,9 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		iconFile io.ReadCloser
 		err      error
 	)
-	// for the fixed icons: image, helm chart, CNAB and unknown
-	if path, exist := builtInIcons[digest]; exist {
-		iconFile, err = os.Open(path)
+
+	if i, exist := builtInIcons[digest]; exist {
+		iconFile, err = os.Open(i.path)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +141,13 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 	}
 
 	// resize the icon to 50x50
-	img = resize.Thumbnail(50, 50, img, resize.NearestNeighbor)
+	if i, exist := builtInIcons[digest]; exist {
+		if i.resize {
+			img = resize.Thumbnail(50, 50, img, resize.NearestNeighbor)
+		}
+	} else {
+		img = resize.Thumbnail(50, 50, img, resize.NearestNeighbor)
+	}
 
 	// encode the resized icon to png
 	buf := &bytes.Buffer{}

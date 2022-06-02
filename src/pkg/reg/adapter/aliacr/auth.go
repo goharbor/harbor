@@ -70,7 +70,7 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 }
 
 func (a *aliyunAuthCredential) isCacheTokenValid() bool {
-	if &a.cacheTokenExpiredAt == nil {
+	if a.cacheTokenExpiredAt.IsZero() {
 		return false
 	}
 	if a.cacheToken == nil {

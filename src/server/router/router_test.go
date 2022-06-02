@@ -16,11 +16,12 @@ package router
 
 import (
 	"context"
-	beegocontext "github.com/astaxie/beego/context"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	beegocontext "github.com/beego/beego/context"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/stretchr/testify/suite"
 )
 
 type routerTestSuite struct {

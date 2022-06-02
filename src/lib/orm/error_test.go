@@ -17,7 +17,7 @@ package orm
 import (
 	"testing"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/jackc/pgconn"
 	"github.com/stretchr/testify/assert"

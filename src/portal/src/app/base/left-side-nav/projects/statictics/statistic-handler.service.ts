@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Subject } from "rxjs";
+import { Subject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class StatisticHandler {
+    refreshSource = new Subject<boolean>();
 
-  refreshSource = new Subject<boolean>();
+    refreshChan$ = this.refreshSource.asObservable();
 
-  refreshChan$ = this.refreshSource.asObservable();
-
-  refresh() {
-    this.refreshSource.next(true);
-  }
+    refresh() {
+        this.refreshSource.next(true);
+    }
 }

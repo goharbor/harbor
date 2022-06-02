@@ -82,7 +82,7 @@ DEVFLAG=true
 NOTARYFLAG=false
 TRIVYFLAG=false
 HTTPPROXY=
-BUILDBIN=false
+BUILDBIN=true
 NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
 CHARTFLAG=false
@@ -111,8 +111,8 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.0-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.22.0
-TRIVYADAPTERVERSION=v0.25.0
+TRIVYVERSION=v0.26.0
+TRIVYADAPTERVERSION=v0.28.0
 
 # version of chartmuseum for pulling the source code
 CHARTMUSEUM_SRC_TAG=v0.14.0
@@ -516,16 +516,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis mocks_check misspell gofmt commentfmt golint govet
-
-gofmt:
-	@echo checking gofmt...
-	@res=$$(gofmt -d -e -s $$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print)); \
-	if [ -n "$${res}" ]; then \
-		echo checking gofmt fail... ; \
-		echo "$${res}"; \
-		exit 1; \
-	fi
+go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
@@ -541,13 +532,12 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-golint:
-	@echo checking golint...
-	@go list ./... | grep -v -E 'vendor|test' | xargs fgt golint
-
-govet:
-	@echo checking govet...
-	@cd src;go list ./... | grep -v -E 'vendor|test' | xargs go vet
+# go get -u github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
+GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
+lint:
+	@echo checking lint
+	@echo $(GOLANGCI_LINT)
+	@cd ./src/; $(GOLANGCI_LINT) -v run ./...;
 
 pushimage:
 	@echo "pushing harbor images ..."

@@ -75,6 +75,7 @@ Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
 Resource  Cosign_Util.robot
+Resource  Imgpkg-Util.robot
 Resource  TestCaseBody.robot
 
 *** Keywords ***

@@ -77,23 +77,6 @@ github.com/andres-erbsen/clock
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/astaxie/beego v1.12.1
-## explicit; go 1.13
-github.com/astaxie/beego
-github.com/astaxie/beego/cache
-github.com/astaxie/beego/cache/redis
-github.com/astaxie/beego/config
-github.com/astaxie/beego/context
-github.com/astaxie/beego/context/param
-github.com/astaxie/beego/grace
-github.com/astaxie/beego/logs
-github.com/astaxie/beego/orm
-github.com/astaxie/beego/session
-github.com/astaxie/beego/session/redis
-github.com/astaxie/beego/session/redis_sentinel
-github.com/astaxie/beego/toolbox
-github.com/astaxie/beego/utils
-github.com/astaxie/beego/validation
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
@@ -142,6 +125,21 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/beego/beego v1.12.9
+## explicit; go 1.13
+github.com/beego/beego
+github.com/beego/beego/cache
+github.com/beego/beego/cache/redis
+github.com/beego/beego/config
+github.com/beego/beego/context
+github.com/beego/beego/context/param
+github.com/beego/beego/grace
+github.com/beego/beego/logs
+github.com/beego/beego/orm
+github.com/beego/beego/session
+github.com/beego/beego/toolbox
+github.com/beego/beego/utils
+github.com/beego/beego/validation
 # github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 ## explicit
 github.com/beego/i18n
@@ -170,7 +168,7 @@ github.com/casbin/casbin/util
 # github.com/cenkalti/backoff/v4 v4.1.1
 ## explicit; go 1.13
 github.com/cenkalti/backoff/v4
-# github.com/cespare/xxhash/v2 v2.1.1
+# github.com/cespare/xxhash/v2 v2.1.2
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
 # github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
@@ -210,6 +208,9 @@ github.com/denverdino/aliyungo/util
 # github.com/dghubble/sling v1.1.0
 ## explicit
 github.com/dghubble/sling
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+## explicit
+github.com/dgryski/go-rendezvous
 # github.com/docker/cli v20.10.7+incompatible
 ## explicit
 github.com/docker/cli/cli/config
@@ -364,16 +365,16 @@ github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.10
 ## explicit; go 1.14
 github.com/go-openapi/validate
-# github.com/go-redis/redis v6.14.2+incompatible
-## explicit
-github.com/go-redis/redis
-github.com/go-redis/redis/internal
-github.com/go-redis/redis/internal/consistenthash
-github.com/go-redis/redis/internal/hashtag
-github.com/go-redis/redis/internal/pool
-github.com/go-redis/redis/internal/proto
-github.com/go-redis/redis/internal/singleflight
-github.com/go-redis/redis/internal/util
+# github.com/go-redis/redis/v8 v8.11.4
+## explicit; go 1.13
+github.com/go-redis/redis/v8
+github.com/go-redis/redis/v8/internal
+github.com/go-redis/redis/v8/internal/hashtag
+github.com/go-redis/redis/v8/internal/hscan
+github.com/go-redis/redis/v8/internal/pool
+github.com/go-redis/redis/v8/internal/proto
+github.com/go-redis/redis/v8/internal/rand
+github.com/go-redis/redis/v8/internal/util
 # github.com/go-sql-driver/mysql v1.5.0
 ## explicit; go 1.10
 github.com/go-sql-driver/mysql
@@ -478,6 +479,10 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.0
 ## explicit; go 1.14
 github.com/hashicorp/go-multierror
+# github.com/hashicorp/golang-lru v0.5.4
+## explicit; go 1.12
+github.com/hashicorp/golang-lru
+github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
 github.com/hashicorp/hcl

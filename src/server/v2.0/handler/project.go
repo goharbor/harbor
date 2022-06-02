@@ -43,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
@@ -62,7 +63,7 @@ const defaultDaysToRetentionForProxyCacheProject = 7
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
-		metadataMgr:   metadata.Mgr,
+		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
@@ -145,6 +146,13 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// populate public metadata as false if it isn't set
 	if req.Metadata.Public == "" {
 		req.Metadata.Public = strconv.FormatBool(false)
+	}
+
+	// validate metadata.public value, should only be "true" or "false"
+	if p := req.Metadata.Public; p != "" {
+		if p != "true" && p != "false" {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+		}
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -735,7 +743,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable(ctx) {
-		log.Debug("Quota per project disabled")
+		log.Debug("Quota per project deactivated")
 		return
 	}
 

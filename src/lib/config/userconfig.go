@@ -173,7 +173,7 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 		return nil, err
 	}
 	scopeStr := mgr.Get(ctx, common.OIDCScope).GetString()
-	extEndpoint := strings.TrimSuffix(mgr.Get(nil, common.ExtEndpoint).GetString(), "/")
+	extEndpoint := strings.TrimSuffix(mgr.Get(context.Background(), common.ExtEndpoint).GetString(), "/")
 	scope := SplitAndTrim(scopeStr, ",")
 	return &cfgModels.OIDCSetting{
 		Name:               mgr.Get(ctx, common.OIDCName).GetString(),

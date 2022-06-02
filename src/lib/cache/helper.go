@@ -15,6 +15,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -29,8 +30,8 @@ var (
 
 // FetchOrSave retrieves the value for the key if present in the cache.
 // Otherwise, it saves the value from the builder and retrieves the value for the key again.
-func FetchOrSave(c Cache, key string, value interface{}, builder func() (interface{}, error), expiration ...time.Duration) error {
-	err := c.Fetch(key, value)
+func FetchOrSave(ctx context.Context, c Cache, key string, value interface{}, builder func() (interface{}, error), expiration ...time.Duration) error {
+	err := c.Fetch(ctx, key, value)
 	// value found from the cache
 	if err == nil {
 		return nil
@@ -47,7 +48,7 @@ func FetchOrSave(c Cache, key string, value interface{}, builder func() (interfa
 	defer fetchOrSaveMu.Unlock(lockKey)
 
 	// fetch again to avoid to build the value multi-times
-	err = c.Fetch(key, value)
+	err = c.Fetch(ctx, key, value)
 	if err == nil {
 		return nil
 	}
@@ -61,7 +62,7 @@ func FetchOrSave(c Cache, key string, value interface{}, builder func() (interfa
 		return err
 	}
 
-	if err := c.Save(key, val, expiration...); err != nil {
+	if err := c.Save(ctx, key, val, expiration...); err != nil {
 		log.Warningf("failed to save value to cache, error: %v", err)
 
 		// save the val to cache failed, copy it to the value using the default codec
@@ -73,5 +74,5 @@ func FetchOrSave(c Cache, key string, value interface{}, builder func() (interfa
 		return codec.Decode(data, value)
 	}
 
-	return c.Fetch(key, value) // after the building, fetch value again
+	return c.Fetch(ctx, key, value) // after the building, fetch value again
 }

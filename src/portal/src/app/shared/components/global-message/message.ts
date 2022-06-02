@@ -12,43 +12,51 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AlertType } from "../../entities/shared.const";
+import { AlertType } from '../../entities/shared.const';
 
 export class Message {
-  statusCode: number;
-  message: string;
-  alertType: AlertType;
-  isAppLevel: boolean = false;
+    statusCode: number;
+    message: string;
+    alertType: AlertType;
+    isAppLevel: boolean = false;
 
-  get type(): string {
-    switch (this.alertType) {
-      case AlertType.DANGER:
-        return 'danger';
-      case AlertType.INFO:
-        return 'info';
-      case AlertType.SUCCESS:
-        return 'success';
-      case AlertType.WARNING:
-        return 'warning';
-      default:
-        return 'warning';
+    get type(): string {
+        switch (this.alertType) {
+            case AlertType.DANGER:
+                return 'danger';
+            case AlertType.INFO:
+                return 'info';
+            case AlertType.SUCCESS:
+                return 'success';
+            case AlertType.WARNING:
+                return 'warning';
+            default:
+                return 'warning';
+        }
     }
-  }
 
-  constructor() { }
+    constructor() {}
 
-  static newMessage(statusCode: number, message: string, alertType: AlertType): Message {
-    let m = new Message();
-    m.statusCode = statusCode;
-    m.message = message;
-    m.alertType = alertType;
-    return m;
-  }
+    static newMessage(
+        statusCode: number,
+        message: string,
+        alertType: AlertType
+    ): Message {
+        let m = new Message();
+        m.statusCode = statusCode;
+        m.message = message;
+        m.alertType = alertType;
+        return m;
+    }
 
-
-  toString(): string {
-    return 'Message with statusCode:' + this.statusCode +
-      ', message:' + this.message +
-      ', alert type:' + this.type;
-  }
+    toString(): string {
+        return (
+            'Message with statusCode:' +
+            this.statusCode +
+            ', message:' +
+            this.message +
+            ', alert type:' +
+            this.type
+        );
+    }
 }
