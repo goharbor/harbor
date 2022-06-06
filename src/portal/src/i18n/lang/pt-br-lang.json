@@ -254,7 +254,7 @@
         "QUOTA_UNLIMIT_TIP": "Para  não ter limite, utilize -1.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
-        "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR e repositórios compatíveis com o protocolo Docker Registry",
+        "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR, Github GHCR e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache"
     },
