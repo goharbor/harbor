@@ -4,7 +4,7 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
-# sudo go env -w GO111MODULE=auto
+sudo go env -w GO111MODULE=auto
 go get github.com/docker/distribution
 go get github.com/docker/libtrust
 go get golang.org/x/lint/golint
@@ -21,7 +21,7 @@ sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
 sudo rm -rf /data/* 
-sudo go env -w GO111MODULE=auto
+# sudo go env -w GO111MODULE=auto
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
