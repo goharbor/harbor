@@ -22,9 +22,9 @@ import (
 
 	beego_orm "github.com/beego/beego/orm"
 	"github.com/beego/beego/validation"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/robfig/cron"
 )
 
 func init() {
@@ -165,7 +165,7 @@ func (s *Schema) Valid(v *validation.Validation) {
 			if len(s.Trigger.Settings.Cron) == 0 {
 				v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
 			} else {
-				_, err := cron.Parse(s.Trigger.Settings.Cron)
+				_, err := utils.CronParser().Parse(s.Trigger.Settings.Cron)
 				if err != nil {
 					v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", s.Trigger.Settings.Cron))
 				}

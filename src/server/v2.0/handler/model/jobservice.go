@@ -16,6 +16,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"strings"
@@ -48,8 +49,9 @@ func (h *ExecHistory) ToSwagger() *models.ExecHistory {
 		Schedule: &models.ScheduleObj{
 			// covert MANUAL to Manual because the type of the ScheduleObj
 			// must be 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'
-			Type: lib.Title(strings.ToLower(h.Schedule.Type)),
-			Cron: h.Schedule.Cron,
+			Type:              lib.Title(strings.ToLower(h.Schedule.Type)),
+			Cron:              h.Schedule.Cron,
+			NextScheduledTime: strfmt.DateTime(utils.NextSchedule(h.Schedule.Cron, time.Now())),
 		},
 		CreationTime: strfmt.DateTime(h.CreationTime),
 		UpdateTime:   strfmt.DateTime(h.UpdateTime),
