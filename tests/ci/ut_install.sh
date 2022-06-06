@@ -4,13 +4,14 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
+export GO111MODULE=auto
 go install github.com/docker/distribution
 go install github.com/docker/libtrust
 go install github.com/GeertJohan/fgt
 go install github.com/dghubble/sling
 go install github.com/stretchr/testify
-go install golang.org/x/tools/cmd/cover
-go install github.com/mattn/goveralls
+go install golang.org/x/tools/cmd/cover@latest
+go install github.com/mattn/goveralls@latest
 go install github.com/client9/misspell/cmd/misspell@latest
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go install/go get installation aren't guaranteed to work. We recommend using binary installation.
