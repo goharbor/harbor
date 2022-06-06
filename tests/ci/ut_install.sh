@@ -4,14 +4,16 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
-go install github.com/docker/distribution@v2.8.0+incompatible
-go install github.com/docker/libtrust@latest
-go install github.com/GeertJohan/fgt@latest
-go install github.com/dghubble/sling@latest
-go install github.com/stretchr/testify@latest
-go install golang.org/x/tools/cmd/cover@latest
-go install github.com/mattn/goveralls@latest
-go install github.com/client9/misspell/cmd/misspell@latest
+sudo go env -w GO111MODULE=auto
+go get github.com/docker/distribution
+go get github.com/docker/libtrust
+go get golang.org/x/lint/golint
+go get github.com/GeertJohan/fgt
+go get github.com/dghubble/sling
+go get github.com/stretchr/testify
+go get golang.org/x/tools/cmd/cover
+go get github.com/mattn/goveralls
+go get -u github.com/client9/misspell/cmd/misspell
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go install/go get installation aren't guaranteed to work. We recommend using binary installation.
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
