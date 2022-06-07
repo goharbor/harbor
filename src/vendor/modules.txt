@@ -1,7 +1,7 @@
 # cloud.google.com/go v0.88.0
 ## explicit; go 1.11
 cloud.google.com/go/compute/metadata
-# github.com/Azure/azure-sdk-for-go v37.2.0+incompatible
+# github.com/Azure/azure-sdk-for-go v65.0.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go/storage
 github.com/Azure/azure-sdk-for-go/version
@@ -384,6 +384,9 @@ github.com/go-stack/stack
 # github.com/gocraft/work v0.5.1
 ## explicit
 github.com/gocraft/work
+# github.com/gofrs/uuid v4.2.0+incompatible
+## explicit
+github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
@@ -660,9 +663,6 @@ github.com/robfig/cron
 # github.com/robfig/cron/v3 v3.0.0
 ## explicit; go 1.12
 github.com/robfig/cron/v3
-# github.com/satori/go.uuid v1.2.0
-## explicit
-github.com/satori/go.uuid
 # github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644
 ## explicit
 github.com/shiena/ansicolor
