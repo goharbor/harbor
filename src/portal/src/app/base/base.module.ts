@@ -116,12 +116,12 @@ const routes: Routes = [
                     ).then(m => m.ProjectQuotasModule),
             },
             {
-                path: 'gc',
+                path: 'clearing-job',
                 canActivate: [SystemAdminGuard],
                 loadChildren: () =>
-                    import('./left-side-nav/gc-page/gc.module').then(
-                        m => m.GcModule
-                    ),
+                    import(
+                        './left-side-nav/clearing-job/clearing-job.module'
+                    ).then(m => m.ClearingJobModule),
             },
             {
                 path: 'configs',

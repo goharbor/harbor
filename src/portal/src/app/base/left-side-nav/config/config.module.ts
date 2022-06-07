@@ -20,6 +20,7 @@ import { ConfigurationEmailComponent } from './email/config-email.component';
 import { SystemSettingsComponent } from './system/system-settings.component';
 import { RouterModule, Routes } from '@angular/router';
 import { ConfigService } from './config.service';
+import { SecurityComponent } from './security/security.component';
 
 const routes: Routes = [
     {
@@ -33,6 +34,10 @@ const routes: Routes = [
             {
                 path: 'email',
                 component: ConfigurationEmailComponent,
+            },
+            {
+                path: 'security',
+                component: SecurityComponent,
             },
             {
                 path: 'setting',
@@ -53,6 +58,7 @@ const routes: Routes = [
         ConfigurationAuthComponent,
         ConfigurationEmailComponent,
         SystemSettingsComponent,
+        SecurityComponent,
     ],
     providers: [ConfigService],
 })

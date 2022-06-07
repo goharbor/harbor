@@ -6,19 +6,18 @@ import {
     tick,
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { GcHistoryComponent } from './gc-history.component';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
-import { GCHistory } from '../../../../../../../ng-swagger-gen/models/gchistory';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
-import { GcService } from '../../../../../../../ng-swagger-gen/services/gc.service';
 import { CURRENT_BASE_HREF } from '../../../../../shared/units/utils';
 import { delay } from 'rxjs/operators';
+import { PurgeHistoryComponent } from './purge-history.component';
+import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-history';
+import { PurgeService } from 'ng-swagger-gen/services/purge.service';
 
 describe('GcHistoryComponent', () => {
-    let component: GcHistoryComponent;
-    let fixture: ComponentFixture<GcHistoryComponent>;
-    const mockJobs: GCHistory[] = [
+    let component: PurgeHistoryComponent;
+    let fixture: ComponentFixture<PurgeHistoryComponent>;
+    const mockJobs: ExecHistory[] = [
         {
             id: 1,
             job_name: 'test',
@@ -40,13 +39,13 @@ describe('GcHistoryComponent', () => {
             update_time: null,
         },
     ];
-    const fakedGcService = {
+    const fakedPurgeService = {
         count: 0,
-        getGCHistoryResponse() {
+        getPurgeHistoryResponse() {
             if (this.count === 0) {
                 this.count += 1;
-                const response: HttpResponse<Array<Registry>> =
-                    new HttpResponse<Array<Registry>>({
+                const response: HttpResponse<Array<ExecHistory>> =
+                    new HttpResponse<Array<ExecHistory>>({
                         headers: new HttpHeaders({
                             'x-total-count': [mockJobs[0]].length.toString(),
                         }),
@@ -55,8 +54,8 @@ describe('GcHistoryComponent', () => {
                 return of(response).pipe(delay(0));
             } else {
                 this.count += 1;
-                const response: HttpResponse<Array<Registry>> =
-                    new HttpResponse<Array<Registry>>({
+                const response: HttpResponse<Array<ExecHistory>> =
+                    new HttpResponse<Array<ExecHistory>>({
                         headers: new HttpHeaders({
                             'x-total-count': [mockJobs[1]].length.toString(),
                         }),
@@ -68,10 +67,10 @@ describe('GcHistoryComponent', () => {
     };
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [GcHistoryComponent],
+            declarations: [PurgeHistoryComponent],
             imports: [SharedTestingModule],
             providers: [
-                { provide: GcService, useValue: fakedGcService },
+                { provide: PurgeService, useValue: fakedPurgeService },
                 // open auto detect
                 { provide: ComponentFixtureAutoDetect, useValue: true },
             ],
@@ -79,7 +78,7 @@ describe('GcHistoryComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(GcHistoryComponent);
+        fixture = TestBed.createComponent(PurgeHistoryComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -101,7 +100,7 @@ describe('GcHistoryComponent', () => {
     }));
     it('should return right log link', () => {
         expect(component.getLogLink('1')).toEqual(
-            `${CURRENT_BASE_HREF}/system/gc/1/log`
+            `${CURRENT_BASE_HREF}/system/purgeaudit/1/log`
         );
     });
 });

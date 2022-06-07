@@ -1,12 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GcComponent } from './gc.component';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
-import { CronTooltipComponent } from '../../../../shared/components/cron-schedule';
+import { ErrorHandler } from '../../../../../shared/units/error-handler';
+import { CronScheduleComponent } from '../../../../../shared/components/cron-schedule';
+import { CronTooltipComponent } from '../../../../../shared/components/cron-schedule';
 import { of } from 'rxjs';
-import { SharedTestingModule } from '../../../../shared/shared.module';
-import { GcService } from '../../../../../../ng-swagger-gen/services/gc.service';
-import { ScheduleType } from '../../../../shared/entities/shared.const';
+import { SharedTestingModule } from '../../../../../shared/shared.module';
+import { GcService } from '../../../../../../../ng-swagger-gen/services/gc.service';
+import { ScheduleType } from '../../../../../shared/entities/shared.const';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('GcComponent', () => {
     let component: GcComponent;
@@ -23,6 +24,7 @@ describe('GcComponent', () => {
     };
     let spySchedule: jasmine.Spy;
     let spyGcNow: jasmine.Spy;
+    let spyStatus: jasmine.Spy;
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [SharedTestingModule],
@@ -32,6 +34,7 @@ describe('GcComponent', () => {
                 CronTooltipComponent,
             ],
             providers: [{ provide: ErrorHandler, useValue: fakedErrorHandler }],
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
@@ -45,6 +48,20 @@ describe('GcComponent', () => {
         );
         spyGcNow = spyOn(gcRepoService, 'createGCSchedule').and.returnValues(
             of(null)
+        );
+        spyStatus = spyOn(gcRepoService, 'getGCHistory').and.returnValues(
+            of([
+                {
+                    id: 1,
+                    job_name: 'test',
+                    job_kind: 'manual',
+                    schedule: null,
+                    job_status: 'finished',
+                    job_parameters: '{"dry_run":true}',
+                    creation_time: null,
+                    update_time: null,
+                },
+            ])
         );
         fixture.detectChanges();
     });

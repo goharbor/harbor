@@ -1,43 +1,37 @@
 import { Component, OnDestroy } from '@angular/core';
-import { ErrorHandler } from '../../../../../shared/units/error-handler';
-import { Subscription, timer } from 'rxjs';
-import { REFRESH_TIME_DIFFERENCE } from '../../../../../shared/entities/shared.const';
-import { GcService } from '../../../../../../../ng-swagger-gen/services/gc.service';
+import { ClrDatagridStateInterface } from '@clr/angular';
+import { GCHistory } from 'ng-swagger-gen/models/gchistory';
+import { finalize, Subscription, timer } from 'rxjs';
+import { REFRESH_TIME_DIFFERENCE } from 'src/app/shared/entities/shared.const';
+import { ErrorHandler } from 'src/app/shared/units/error-handler/error-handler';
 import {
     CURRENT_BASE_HREF,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
-} from '../../../../../shared/units/utils';
-import { ClrDatagridStateInterface } from '@clr/angular';
-import { finalize } from 'rxjs/operators';
-import { GCHistory } from '../../../../../../../ng-swagger-gen/models/gchistory';
-
-const JOB_STATUS = {
-    PENDING: 'Pending',
-    RUNNING: 'Running',
-};
-const YES: string = 'TAG_RETENTION.YES';
-const NO: string = 'TAG_RETENTION.NO';
+} from 'src/app/shared/units/utils';
+import { PurgeService } from '../../../../../../../ng-swagger-gen/services/purge.service';
+import { JOB_STATUS, NO, YES } from '../../clearing-job-interfact';
 
 @Component({
-    selector: 'gc-history',
-    templateUrl: './gc-history.component.html',
-    styleUrls: ['./gc-history.component.scss'],
+    selector: 'app-purge-history',
+    templateUrl: './purge-history.component.html',
+    styleUrls: ['./purge-history.component.scss'],
 })
-export class GcHistoryComponent implements OnDestroy {
+export class PurgeHistoryComponent implements OnDestroy {
     jobs: Array<GCHistory> = [];
     loading: boolean = true;
     timerDelay: Subscription;
     pageSize: number = getPageSizeFromLocalStorage(
-        PageSizeMapKeys.GC_HISTORY_COMPONENT
+        PageSizeMapKeys.GC_HISTORY_COMPONENT,
+        5
     );
     page: number = 1;
     total: number = 0;
     state: ClrDatagridStateInterface;
     constructor(
-        private gcService: GcService,
+        private purgeService: PurgeService,
         private errorHandler: ErrorHandler
     ) {}
     refresh() {
@@ -70,8 +64,8 @@ export class GcHistoryComponent implements OnDestroy {
         if (withLoading) {
             this.loading = true;
         }
-        this.gcService
-            .getGCHistoryResponse({
+        this.purgeService
+            .getPurgeHistoryResponse({
                 page: this.page,
                 pageSize: this.pageSize,
                 q: q,
@@ -138,6 +132,6 @@ export class GcHistoryComponent implements OnDestroy {
     }
 
     getLogLink(id): string {
-        return `${CURRENT_BASE_HREF}/system/gc/${id}/log`;
+        return `${CURRENT_BASE_HREF}/system/purgeaudit/${id}/log`;
     }
 }

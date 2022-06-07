@@ -1,0 +1,13 @@
+.history-header {
+    margin:20px 0 6px 0;
+    display: inline-block;
+    width: 97%;
+}
+
+.refresh-btn {
+    cursor: pointer;
+    &:hover {
+        color: #007CBB;
+    }
+}
+  

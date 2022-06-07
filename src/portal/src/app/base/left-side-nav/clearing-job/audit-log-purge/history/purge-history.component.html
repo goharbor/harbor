@@ -1,5 +1,5 @@
-<h5 class="history-header" id="history-header">
-    {{ 'GC.JOB_HISTORY' | translate }}
+<h5 class="history-header font-style mt-3" id="history-header">
+    {{ 'CLEARANCES.PURGE_HISTORY' | translate }}
 </h5>
 <span class="refresh-btn" (click)="refresh()">
     <clr-icon shape="refresh"></clr-icon>
@@ -51,7 +51,7 @@
             [clrDgPageSize]="pageSize"
             [(clrDgPage)]="page"
             [clrDgTotalItems]="total">
-            <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+            <clr-dg-page-size [clrPageSizeOptions]="[5, 25, 50]">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
             <span *ngIf="total"

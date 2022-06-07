@@ -1726,5 +1726,28 @@
         "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
         "PLACEHOLDER": "We couldn't find any accessories!"
+    },
+    "CLEARANCES": {
+        "CLEARANCES": "Clean Up",
+        "AUDIT_LOG": "Log Rotation",
+        "LAST_COMPLETED": "Last completed",
+        "NEXT_SCHEDULED_TIME": "Next scheduled time",
+        "SCHEDULE_TO_PURGE": "Schedule to purge",
+        "KEEP_IN": "Keep records in",
+        "KEEP_IN_TOOLTIP": "Keep the records in this interval",
+        "KEEP_IN_ERROR": "This filed is required",
+        "DAYS": "Days",
+        "HOURS": "Hours",
+        "INCLUDED_OPERATIONS": "Included operations",
+        "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
+        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+        "PURGE_NOW": "PURGE NOW",
+        "PURGE_NOW_SUCCESS": "Purge triggered successfully",
+        "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
+        "PURGE_HISTORY": "Purge History",
+        "FORWARD_ENDPOINT": "Audit Log Forward Endpoint",
+        "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+        "SKIP_DATABASE": "Skip Audit Log Database",
+        "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured"
     }
 }

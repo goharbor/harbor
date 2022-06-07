@@ -1725,5 +1725,28 @@
         "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
         "PLACEHOLDER": "未发现任何附件！"
+    },
+    "CLEARANCES": {
+        "CLEARANCES": "清理服务",
+        "AUDIT_LOG": "日志轮替",
+        "LAST_COMPLETED": "最近完成时间",
+        "NEXT_SCHEDULED_TIME": "下次执行时间",
+        "SCHEDULE_TO_PURGE": "当前定时任务",
+        "KEEP_IN": "保留记录",
+        "KEEP_IN_TOOLTIP": "保留指定时间内的日志记录",
+        "KEEP_IN_ERROR": "此项为必填项",
+        "DAYS": "天",
+        "HOURS": "小时",
+        "INCLUDED_OPERATIONS": "包含操作",
+        "INCLUDED_OPERATION_TOOLTIP": "删除指定操作类型的日志",
+        "INCLUDED_OPERATION_ERROR": "请至少选择一种操作类型",
+        "PURGE_NOW": "立即清理",
+        "PURGE_NOW_SUCCESS": "触发清理成功",
+        "PURGE_SCHEDULE_RESET": "清理计划已被重置",
+        "PURGE_HISTORY": "清理历史",
+        "FORWARD_ENDPOINT": "日志转发端点",
+        "FORWARD_ENDPOINT_TOOLTIP": "将日志转发到指定的 syslog 端点，例如：harbor-log:10514",
+        "SKIP_DATABASE": "跳过日志数据库",
+        "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点"
     }
 }
