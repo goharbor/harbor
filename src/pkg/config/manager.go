@@ -48,7 +48,7 @@ func (c *CfgManager) LoadDefault() {
 				log.Errorf("LoadDefault failed, config item, key: %v,  err: %v", item.Name, err)
 				continue
 			}
-			c.Store.Set(item.Name, *cfgValue)
+			_ = c.Store.Set(item.Name, *cfgValue)
 		}
 	}
 }
@@ -65,7 +65,7 @@ func (c *CfgManager) LoadSystemConfigFromEnv() {
 					log.Errorf("LoadSystemConfigFromEnv failed, config item, key: %v,  err: %v", item.Name, err)
 					continue
 				}
-				c.Store.Set(item.Name, *configValue)
+				_ = c.Store.Set(item.Name, *configValue)
 			}
 		}
 	}
@@ -149,7 +149,7 @@ func (c *CfgManager) Set(ctx context.Context, key string, value interface{}) {
 		log.Errorf("error when setting key: %v,  error %v", key, err)
 		return
 	}
-	c.Store.Set(key, *configValue)
+	_ = c.Store.Set(key, *configValue)
 }
 
 // GetDatabaseCfg - Get database configurations

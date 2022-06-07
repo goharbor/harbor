@@ -52,7 +52,7 @@ func AsNotFoundError(err error, messageFormat string, args ...interface{}) *erro
 	if errors.Is(err, orm.ErrNoRows) {
 		e := errors.NotFoundError(nil)
 		if len(messageFormat) > 0 {
-			e.WithMessage(messageFormat, args...)
+			_ = e.WithMessage(messageFormat, args...)
 		}
 		return e
 	}

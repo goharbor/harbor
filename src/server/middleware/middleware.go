@@ -84,7 +84,7 @@ func AfterResponse(hook func(http.ResponseWriter, *http.Request, int) error, ski
 		next.ServeHTTP(res, r)
 
 		if err := hook(res, r, res.StatusCode()); err != nil {
-			res.Reset()
+			_ = res.Reset()
 			lib_http.SendError(res, err)
 		}
 	}, skippers...)

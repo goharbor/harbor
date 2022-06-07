@@ -195,7 +195,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		authorization, err = makeBasicAuthorization(robotAccount)
 	}
 	if err != nil {
-		logAndWrapError(myLogger, err, "scan job: make authorization")
+		_ = logAndWrapError(myLogger, err, "scan job: make authorization")
 	}
 
 	if shouldStop() {

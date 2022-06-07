@@ -29,7 +29,7 @@ linters:
     # - whitespace
     - bodyclose
     - deadcode
-    # - errcheck
+    - errcheck
     # - gosec
     # - gosimple
     - govet
@@ -48,7 +48,7 @@ run:
     - ".*_test.go"
     - ".*test.go"
   skip-dirs:
-    - "testing/"
+    - "testing"
   timeout: 5m
 
 issue:

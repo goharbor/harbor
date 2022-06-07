@@ -87,11 +87,13 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 		if len(chartData.Values) > 0 {
 			c := chartutil.Values(chartData.Values)
 			ValYaml, err := c.YAML()
-
 			if err != nil {
 				return nil, err
 			}
-			c.Encode(&buf)
+			err = c.Encode(&buf)
+			if err != nil {
+				return nil, err
+			}
 			values = parseRawValues(buf.Bytes())
 			// Append values.yaml file
 			files[valuesFileName] = ValYaml

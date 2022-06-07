@@ -204,7 +204,9 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		OwnerID:    ownerID,
 		RegistryID: lib.Int64Value(req.RegistryID),
 	}
-	lib.JSONCopy(&p.Metadata, req.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, req.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when CreateProject, error: %v", err)
+	}
 
 	projectID, err := a.projectCtl.Create(ctx, p)
 	if err != nil {
@@ -550,7 +552,9 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
 	}
-	lib.JSONCopy(&p.Metadata, params.Project.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
+	}
 
 	if err := a.projectCtl.Update(ctx, p); err != nil {
 		return a.SendError(ctx, err)
@@ -801,7 +805,9 @@ func getProjectRegistrySummary(ctx context.Context, p *project.Project, summary 
 		log.Warningf("failed to get registry %d: %v", p.RegistryID, err)
 	} else if registry != nil {
 		registry.Credential = nil
-		lib.JSONCopy(&summary.Registry, registry)
+		if err := lib.JSONCopy(&summary.Registry, registry); err != nil {
+			log.Warningf("failed to call JSONCopy on project registry summary, error: %v", err)
+		}
 	}
 }
 

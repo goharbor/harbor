@@ -57,7 +57,10 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 			return
 		}
 		var v authorizationToken
-		json.Unmarshal(tokenResponse.GetHttpContentBytes(), &v)
+		err = json.Unmarshal(tokenResponse.GetHttpContentBytes(), &v)
+		if err != nil {
+			return
+		}
 		a.cacheTokenExpiredAt = v.Data.ExpireDate.ToTime()
 		a.cacheToken.user = v.Data.TempUserName
 		a.cacheToken.password = v.Data.AuthorizationToken

@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	pkg "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -55,7 +56,9 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		Level: params.Robot.Level,
 	}
 
-	lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
+	if err := lib.JSONCopy(&r.Permissions, params.Robot.Permissions); err != nil {
+		log.Warningf("failed to call JSONCopy on robot permission when CreateRobot, error: %v", err)
+	}
 
 	rid, pwd, err := rAPI.robotCtl.Create(ctx, r)
 	if err != nil {
@@ -307,7 +310,9 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 	r.Description = params.Robot.Description
 	r.Disabled = params.Robot.Disable
 	if len(params.Robot.Permissions) != 0 {
-		lib.JSONCopy(&r.Permissions, params.Robot.Permissions)
+		if err := lib.JSONCopy(&r.Permissions, params.Robot.Permissions); err != nil {
+			log.Warningf("failed to call JSONCopy on robot permission when updateV2Robot, error: %v", err)
+		}
 	}
 
 	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{

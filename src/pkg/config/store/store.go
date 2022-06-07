@@ -112,7 +112,10 @@ func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]interface{})
 			delete(cfgMap, key)
 			continue
 		}
-		c.Set(key, *configValue)
+		if err := c.Set(key, *configValue); err != nil {
+			log.Warningf("failed to update configure item, key=%s, error: %v", key, err)
+			continue
+		}
 	}
 	// Update to driver
 	return c.cfgDriver.Save(ctx, cfgMap)

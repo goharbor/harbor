@@ -295,7 +295,7 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 	}
 
 	if len(updating) > 0 {
-		orm.WithTransaction(func(ctx context.Context) error {
+		err := orm.WithTransaction(func(ctx context.Context) error {
 			for _, blob := range updating {
 				if err := c.Update(ctx, blob); err != nil {
 					log.G(ctx).Warningf("Failed to update blob %s, error: %v", blob.Digest, err)
@@ -305,6 +305,9 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 
 			return nil
 		})(orm.SetTransactionOpNameToContext(ctx, "tx-sync-blob"))
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(missing) > 0 {

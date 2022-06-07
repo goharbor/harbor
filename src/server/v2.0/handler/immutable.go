@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 	handler_model "github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -36,7 +37,9 @@ func (ia *immutableAPI) CreateImmuRule(ctx context.Context, params operation.Cre
 	}
 
 	metadata := model.Metadata{}
-	lib.JSONCopy(&metadata, params.ImmutableRule)
+	if err := lib.JSONCopy(&metadata, params.ImmutableRule); err != nil {
+		log.Warningf("failed to call JSONCopy into Metadata of the immutable rule when CreateImmuRule, error: %v", err)
+	}
 
 	projectID, err := ia.getProjectID(ctx, projectNameOrID)
 	if err != nil {
@@ -73,7 +76,9 @@ func (ia *immutableAPI) UpdateImmuRule(ctx context.Context, params operation.Upd
 	}
 
 	metadata := model.Metadata{}
-	lib.JSONCopy(&metadata, params.ImmutableRule)
+	if err := lib.JSONCopy(&metadata, params.ImmutableRule); err != nil {
+		log.Warningf("failed to call JSONCopy into Metadata of the immutable rule when UpdateImmuRule, error: %v", err)
+	}
 
 	projectID, err := ia.getProjectID(ctx, projectNameOrID)
 	if err != nil {

@@ -120,7 +120,7 @@ type Trigger struct {
 // Valid the policy
 func (s *Schema) Valid(v *validation.Validation) {
 	if len(s.Name) == 0 {
-		v.SetError("name", "cannot be empty")
+		_ = v.SetError("name", "cannot be empty")
 	}
 
 	// valid the filters
@@ -129,30 +129,30 @@ func (s *Schema) Valid(v *validation.Validation) {
 		case FilterTypeRepository, FilterTypeTag, FilterTypeVulnerability:
 			_, ok := filter.Value.(string)
 			if !ok {
-				v.SetError("filters", "the type of filter value isn't string")
+				_ = v.SetError("filters", "the type of filter value isn't string")
 				break
 			}
 		case FilterTypeSignature:
 			_, ok := filter.Value.(bool)
 			if !ok {
-				v.SetError("filers", "the type of signature filter value isn't bool")
+				_ = v.SetError("filers", "the type of signature filter value isn't bool")
 				break
 			}
 		case FilterTypeLabel:
 			labels, ok := filter.Value.([]interface{})
 			if !ok {
-				v.SetError("filters", "the type of label filter value isn't string slice")
+				_ = v.SetError("filters", "the type of label filter value isn't string slice")
 				break
 			}
 			for _, label := range labels {
 				_, ok := label.(string)
 				if !ok {
-					v.SetError("filters", "the type of label filter value isn't string slice")
+					_ = v.SetError("filters", "the type of label filter value isn't string slice")
 					break
 				}
 			}
 		default:
-			v.SetError("filters", "invalid filter type")
+			_ = v.SetError("filters", "invalid filter type")
 			break
 		}
 	}
@@ -163,15 +163,15 @@ func (s *Schema) Valid(v *validation.Validation) {
 		case TriggerTypeManual, TriggerTypeEventBased:
 		case TriggerTypeScheduled:
 			if len(s.Trigger.Settings.Cron) == 0 {
-				v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
+				_ = v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
 			} else {
 				_, err := utils.CronParser().Parse(s.Trigger.Settings.Cron)
 				if err != nil {
-					v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", s.Trigger.Settings.Cron))
+					_ = v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", s.Trigger.Settings.Cron))
 				}
 			}
 		default:
-			v.SetError("trigger", "invalid trigger type")
+			_ = v.SetError("trigger", "invalid trigger type")
 		}
 	}
 }

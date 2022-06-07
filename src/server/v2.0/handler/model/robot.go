@@ -4,6 +4,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
@@ -17,7 +18,9 @@ func (r *Robot) ToSwagger() *models.Robot {
 	perms := []*models.RobotPermission{}
 	for _, p := range r.Permissions {
 		temp := &models.RobotPermission{}
-		lib.JSONCopy(temp, p)
+		if err := lib.JSONCopy(temp, p); err != nil {
+			log.Warningf("failed to do JSONCopy on RobotPermission, error: %v", err)
+		}
 		perms = append(perms, temp)
 	}
 

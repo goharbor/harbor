@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 type entry struct {
@@ -50,7 +51,8 @@ func (c *Cache) Contains(ctx context.Context, key string) bool {
 	}
 
 	if e.(*entry).isExpirated() {
-		c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, c.opts.Key(key))
+		log.Errorf("failed to delete cache in Contains() method when it's expired, error: %v", err)
 		return false
 	}
 
@@ -72,7 +74,8 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, c.opts.Key(key))
+		log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
 		return cache.ErrNotFound
 	}
 

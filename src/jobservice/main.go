@@ -35,7 +35,9 @@ import (
 
 func main() {
 	cfgLib.DefaultCfgManager = common.RestCfgManager
-	cfgLib.DefaultMgr().Load(context.Background())
+	if err := cfgLib.DefaultMgr().Load(context.Background()); err != nil {
+		panic(fmt.Sprintf("failed to load configuration, error: %v", err))
+	}
 
 	// Get parameters
 	configPath := flag.String("c", "", "Specify the yaml config file path")

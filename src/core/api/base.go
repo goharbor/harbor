@@ -155,7 +155,12 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 
 // PopulateUserSession generates a new session ID and fill the user model in parm to the session
 func (b *BaseController) PopulateUserSession(u models.User) {
-	b.SessionRegenerateID()
+	err := b.SessionRegenerateID()
+	if err != nil {
+		log.Errorf("failed to generate a new session ID and fill the user mode to this session, error: %v", err)
+		b.SendError(err)
+		return
+	}
 	b.SetSession(userSessionKey, u)
 }
 
