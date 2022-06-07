@@ -3,12 +3,13 @@
     position: fixed;
     height: 100%;
     width: 100%;
-    /*should be lesser than 1000 to avoid override the popup menu*/
+
+    /* should be lesser than 1000 to avoid override the popup menu */
     z-index: 999;
     box-sizing: border-box;
     background: #fafafa;
     top: 60px;
-    left: 0px;
+    left: 0;
     padding-left: 36px;
     padding-right: 36px;
 }
@@ -43,7 +44,7 @@
 .grid-filter {
     position: relative;
     top: 8px;
-    margin: 0px auto 0px auto;
+    margin: 0 auto;
 }
 
 .search-header a:hover {
@@ -68,9 +69,11 @@
 #placeholder1 {
     height: 24px;
 }
+
 .search-input {
     outline: none;
 }
+
 .search-input::placeholder{
     color: #fafafa;
 }

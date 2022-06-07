@@ -1,16 +1,17 @@
 .side-nav-override {
-    box-shadow: 6px 0px 0px 0px #ccc;
+    box-shadow: 6px 0 0 0 #ccc;
 }
 
 .container-override {
     position: relative !important;
 }
+
 .content-container{
     position: relative;
 }
 
 .start-content-padding {
-    padding: 0px !important;
+    padding: 0 !important;
     background-color: white;
     overflow-y: hidden !important;
 }
@@ -33,6 +34,7 @@ clr-vertical-nav {
         }
     }
 }
+
 .font-size-13 {
     font-size: 13px;
 }
@@ -45,27 +47,34 @@ clr-vertical-nav {
     color: #fff;
     align-items: center;
     font-size: 0.5rem;
+
     a {
         cursor: pointer;
         text-decoration: #bababa underline;
         font-weight: 600;
     }
+
     a:hover, a:visited, a:link {
         color: #fff;
     }
 }
+
 .all-scanners {
    margin-right: 1.5rem;
 }
+
 .close-icon {
    margin-right: 1rem;
 }
+
 .ml-05 {
     margin-left: 0.5rem;
 }
+
 .right {
     text-align: right;
 }
+
 .pointer {
     cursor: pointer;
 }

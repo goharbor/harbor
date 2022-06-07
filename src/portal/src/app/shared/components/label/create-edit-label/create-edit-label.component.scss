@@ -13,7 +13,7 @@
     section>label {
       margin-left: 20px;
     }
-
+  /* stylelint-disable */
     .btnColor {
       margin: 0 !important;
       padding: 0 !important;
@@ -38,6 +38,7 @@
       display: inline-block;
       width: 166px;
       padding: 6px;
+
       .dropdown-item {
         display: inline-block;
         margin: 2px 4px;
@@ -62,11 +63,13 @@
       line-height: 22px;
     }
 }
+
 ::ng-deep {
   .clr-form-control {
     display: inherit;
   }
 }
+
 .position-ab {
   position: absolute;
 }

@@ -4,24 +4,30 @@
       width: 14rem;
     }
   }
+
   .flex-direction-column {
     flex-direction: column;
   }
 }
+
 .bottom-line {
   display: flex;
   flex-direction: column-reverse;
 }
+
 .expire-data {
   min-width: 12.5rem;
   margin-top: -1rem;
 }
+
 .position-relative {
   position: relative;
 }
+
 .pl-05 {
   padding-left: 0.5rem;
 }
+
 .mt-1 {
   margin-top: 1rem;
 }
@@ -33,6 +39,7 @@
 .font-size-13 {
   font-size: 13px;
 }
+
 .mt-05 {
   margin-bottom: 0.5rem;
 }
@@ -52,6 +59,7 @@
   height: 224px;
   width: 222px;
   overflow-y: auto;
+
   li {
     height: 24px;
     line-height: 24px;
@@ -82,7 +90,7 @@
 .add-modal {
   position: absolute;
   padding: 0 8px;
-  background-color: rgb(238, 238, 238);
+  background-color: rgb(238 238 238);
 
   input {
     width: 100%;

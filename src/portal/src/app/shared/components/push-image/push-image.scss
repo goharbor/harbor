@@ -6,7 +6,7 @@
 
 .h5-override {
     display: inline-block !important;
-    margin-top: 0px !important;
+    margin-top: 0 !important;
     margin-bottom: 12px;
 }
 
@@ -37,10 +37,11 @@
 .btn-font {
     font-size: 14px !important;
 }
+
 .hide{
     display:none;
 }
-
+/* stylelint-disable */
 .inputTarget {
     width: 1px;
     min-width: 0;

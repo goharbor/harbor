@@ -44,15 +44,19 @@
 .padding-top-16 {
   padding-top: 16px;
 }
+
 .position-relative {
   position: relative;
 }
+
 .add-modal {
   position: absolute;
   padding: 0 8px;
+
   .flex-direction-column {
     flex-direction: column;
   }
+
   input {
     width: 100%;
     border: 1px solid;
@@ -89,6 +93,7 @@
   font-size: 13px;
   color: #000;
 }
+
 .margin-top-05 {
   margin-top: 0.5rem;
 }

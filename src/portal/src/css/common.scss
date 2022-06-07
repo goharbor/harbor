@@ -9,9 +9,11 @@
       }
     }
 }
+
 .label-form {
   background-color: $label-form-color !important;
 }
+
 .esxc-gauge-circle-bgc-dark {
   background-color: $mode-background-color1 ;
 }
@@ -32,9 +34,11 @@
 .filter-dark {
   color: $mode-font-color1 !important;
 }
+
 .side-form {
   background-color: $mode-background-color !important;
 }
+/* stylelint-disable */
 .toolBar {
   background-color: $mode-background-color !important;
 }
@@ -46,6 +50,7 @@
 .add-modal-dark {
   background: $mode-background-color3 !important;
 }
+
 .license {
   background-color: $mode-background-color !important;
 }
@@ -55,60 +60,77 @@
     color: $mode-font-color1 !important;
   }
 }
+
 .no-info-div,
 .info-div {
   background-color: $mode-background-color !important;
 }
+
 .bottom-line-project-config {
   color: $mode-font-color3 !important;
 }
+
 .config-subtext {
   color: $mode-font-color4 !important;
 }
+
 .permission-dark {
   color: $mode-font-color3 !important;
 }
+
 .scanner-name {
   color: $mode-font-color3 !important;
 }
+
 .summary-dark {
   color: $mode-font-color3 !important;
+
   h5 {
     color: $mode-font-color3 !important;
   }
 }
+
 .about-version {
   color: $mode-font-color2 !important;
 }
+
 .update-time {
   color: $mode-font-color3 !important;
 }
+
 .font-style {
   color: $mode-font-color3 !important;
 }
+
 .go-link {
   color: $mode-link-color1 !important; 
   border-bottom: 1px solid  $mode-link-color1 !important;
 }
+
 .circle-block {
   color: $mode-font-color5 !important;
 }
+
 .executions-detail {
   label {
     color: $mode-font-color3 !important;
   }
 }
+
 .black-point {
   background-color: $mode-font-color3 !important;
 }
+
 clr-dg-action-overflow {
   clr-icon {
     fill: $mode-font-color3 !important;
   }
 }
+
 .oidc-tip {
   color: $mode-font-color3 !important;
 }
+
 .clr-select-wrapper{
   select {
     option {
@@ -117,6 +139,7 @@ clr-dg-action-overflow {
     }
   } 
 }
+
 hbr-tag {
   .color-green {
     color: $light-color-green !important;
@@ -170,15 +193,20 @@ hbr-result-tip-histogram {
 .md-div {
   code:not([class*="language-"]) {
     @extend %code-block;
+
     color: $color-657b83
   }
+
   pre:not([class*="language-"]) {
     background: $color-fdf6e3;
+
     code:not([class*="language-"]) {
       @extend %code-block;
+
       background: transparent;
     }
   }
+
   table {
     display: block;
     width: 100%;
@@ -187,12 +215,14 @@ hbr-result-tip-histogram {
     border-spacing: 0;
     border-collapse: collapse;
     margin-bottom: 16px;
+
     td,
     th {
       padding: 6px 13px;
       border: 1px solid $color-ddd;
       @include align-text-mixin(left, right, center);
     }
+
     tr {
       &:nth-child(2n) {
         background-color: $color-f2;
@@ -200,12 +230,14 @@ hbr-result-tip-histogram {
     }
   }
 }
+
 .table-tag {
   .tag-thead {
     .tag-header-color {
       color: $mode-background-color3;
     }
   };
+
   .tag-tbody {
     .tag-tr {
       .tag-body-color {
@@ -219,24 +251,29 @@ hbr-result-tip-histogram {
 clr-header {
   background-color: $header-color;
 }
+
 .clr-page-size-select {
   z-index: 0!important;
 }
+
 hbr-copy-input {
   .command-input {
     color: $command-input-color;
     background-color: $command-input-bg-color;
   }
 }
+
 artifact-list-tab {
   .labelBtn {
      .pull-left {
        color: $mode-font-color1
      }
   }
+
   .labelBtn:hover {
     background-color: $label-hover-bg-color;
   }
+
   .list-filter {
     li:hover {
       background-color: $label-hover-bg-color;
@@ -251,25 +288,32 @@ artifact-list-tab {
 .label-color-input {
   color: $label-color-input !important;
 }
+
 // for repos page grid view
 .central-block-loading {
   background-color: $central-block-loading-bg-color;
 }
+
 .backStyle {
   color: $back-link-color;
 }
+
 .back-icon {
   color: $back-link-color;
 }
+
 .breadcrumb a {
   color: $back-link-color;
 }
+
 .arrow-block a{
   color: $back-link-color;
 }
+
 .onback {
   color: $back-link-color;
 }
+
 app-tag-feature-integration {
   .checked {
     background-color: $radio-button-checked;
@@ -277,7 +321,7 @@ app-tag-feature-integration {
 }
 
 input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 30px $input-autofill-bg-color inset;
+  box-shadow: 0 0 0 30px $input-autofill-bg-color inset;
   -webkit-text-fill-color: $input-autofill-color !important;
   caret-color: $input-autofill-color
 }
@@ -286,6 +330,7 @@ hbr-copy-input {
   .info-tips-icon {
     color: $pull-command-icon-color;
   }
+
   .info-tips-icon:hover {
     color: $pull-command-icon-hover-color;
   }

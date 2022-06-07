@@ -1,4 +1,5 @@
 @import "../../../shared/mixin";
+
 .header-title {
     margin-bottom: -34px;
 }
@@ -19,8 +20,10 @@
 .refresh-btn:hover {
     color: #007CBB;
 }
+/* stylelint-disable */
 .rightPos {
     @include grid-right-top-pos;
+
     margin-top: 28px;
 }
 
@@ -28,6 +31,7 @@
     padding-left: 15px;
     padding-right: 15px;
 }
+
 .position-r{
     position: relative;
 }

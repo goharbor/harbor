@@ -14,7 +14,7 @@
 .refresh-btn:hover {
   color: #007CBB;
 }
-
+/* stylelint-disable */
 .rightPos {
   position: absolute;
   z-index: 100;
@@ -30,9 +30,11 @@
 .flex-min-width {
   min-width: 180px;
 }
+
 .margin-right-2px {
   margin-right: 2px;
 }
+
 .content-top {
   margin-top: 4px;
 }

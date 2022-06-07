@@ -90,7 +90,7 @@
 :host ::ng-deep .datagrid clr-dg-column {
   min-width: 80px;
 }
-
+/* stylelint-disable */
 .rightPos {
   position: absolute;
   z-index: 1;
@@ -178,14 +178,15 @@
 .label-filter-panel {
   display: flex;
   position: relative;
-  -ms-flex-direction: column;
+  flex-direction: column;
   flex-direction: column;
   padding: .5rem 0;
   border: 1px solid #ccc;
-  box-shadow: 0 1px 0.125rem hsla(0, 0%, 45%, 0.25);
+  box-shadow: 0 1px 0.125rem hsl(0deg 0% 45% / 25%);
   min-width: 5rem;
   max-width: 15rem;
   border-radius: 0.125rem;
+
   .form-group input {
     position: relative;
     margin-left: 0.5rem;
@@ -261,9 +262,11 @@ hbr-image-name-input {
     max-width: 220px;
     min-width: 200px;
   }
+
   .icon-cell {
     max-width: 1.5rem;
     min-width: 1.5rem;
+
     clr-icon {
       cursor: pointer;
     }
@@ -281,6 +284,7 @@ hbr-image-name-input {
 .color-gray {
   color: #565656;
 }
+
 clr-datagrid {
   ::ng-deep .datagrid-table {
     position: static;
@@ -297,23 +301,28 @@ clr-datagrid {
 .ml-8 {
   margin-left: 8px;
 }
+
 .immutable {
   padding-right: 94px;
   position: relative;
+
   span {
     position: absolute;
     right: 0;
     margin-right: 0;
   }
 }
+
 .white-normal {
   white-space: normal;
 }
+
 .digest {
   width: 128px;
   flex-grow:0;
   flex-shrink:0;
 }
+
 .max-width-38 {
   max-width: 38px !important;
   min-width: 0 !important;
@@ -328,22 +337,28 @@ clr-datagrid {
   height: 0.8rem;
   vertical-align: top;
 }
+
 .width-p-100 {
   width: 100%;
+
   .lg {
     width: 550px;
   }
 }
+
 .w-rem-4 {
   min-width: 4rem !important;
 }
+
 .tag-header-color {
   color: #fff;
 }
+
 .tag-body-color {
   color: #ccc;
   max-width: 120px;
 }
+
 .table {
   .tag-tr {
     td {
@@ -351,6 +366,7 @@ clr-datagrid {
       padding-bottom: 2px;
     }
   }
+
   .tag-thead {
     th {
       padding-top: 0;
@@ -367,14 +383,17 @@ clr-datagrid {
     padding-left: 1rem;
     line-height: inherit;
     height: auto;
+
     &::before {
       margin-top: .5rem;
     }
   }
+
   .dropdown-header {
     text-transform: none;
   }
 }
+
 .filter-label-input {
   ::ng-deep {
     .clr-input-wrapper {
@@ -384,6 +403,7 @@ clr-datagrid {
   }
 
 }
+
 .scan-btn{
   margin-top: -.3rem;
 }
@@ -396,56 +416,72 @@ clr-datagrid {
   height: 24px;
   display: flex;
   justify-content: flex-end;
+
   .filter-tag {
       float: left;
       margin-top: 8px;
+
       .clr-form-control {
         margin-top: 0;
       }
   }
 }
+
 .list-filter {
   width:7rem;
   margin-left: 0.8rem;
   padding: 0;
+
   li {
     padding-left: 1rem;
   }
 }
+
 .no-border:focus {
   outline: none;
 }
+
 .margin-left-5 {
   margin-left: 5px;
 }
+
 .pull-command-column {
   width: 6rem !important;
 }
+
 .co-signed-column {
   width: 7rem !important;
 }
+
 .vul-column {
   width: 11rem !important;
 }
+
 .annotations-column {
   width: 5rem !important;
 }
+
 .tag-column {
   min-width: 7rem;
 }
+
 .signed {
   color: #00d40f;
 }
+
 .mb-05 {
   margin-bottom: 0.5rem;
 }
+
 .top-3-px {
   top: 3px;
 }
+
 .center {
   display: flex;
   align-items: center;
 }
+
 .width-p-75 {
   width: 75%;
 }

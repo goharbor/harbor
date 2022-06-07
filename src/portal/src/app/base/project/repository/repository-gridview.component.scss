@@ -39,9 +39,10 @@
 @mixin dropdown-as-action-button {
     margin: .25rem .5rem .25rem 0;
 }
-
+/* stylelint-disable */
 .rightPos{
     @include grid-right-top-pos;
+
     top: 18px;
 }
 
@@ -87,6 +88,7 @@
     height: 24px;
     @include text-overflow;
 }
+
 .card-media-text {
     overflow: hidden;
     height: 21px
@@ -95,8 +97,9 @@
 .card-media-description {
     height: 45px;
 }
+
 .card-media-description > p {
-    margin-top:  0px;
+    margin-top:  0;
 }
 
 .card-text {
@@ -106,7 +109,7 @@
 }
 
 .card-block {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .card-footer {
@@ -131,6 +134,7 @@
 .repository-box {
     margin-top: 5px;
 }
+
 .first-loading {
     width: 100%;
     height: 65vh;

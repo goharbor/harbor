@@ -13,7 +13,7 @@ body {
   height: 108px !important;
 }
 
-/*Hack Clarity alert*/
+/* Hack Clarity alert */
 
 .alert-global {
   font-size: 16px;
@@ -21,7 +21,7 @@ body {
   font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
   padding: 12px !important;
   border: none !important;
-  margin-top: 0px !important;
+  margin-top: 0 !important;
   max-height: 96px;
 }
 
@@ -33,6 +33,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
 .tooltip-content {
   white-space: normal;
   word-wrap: break-word;
@@ -41,21 +42,20 @@ body {
 .alert.alert-warning {
   padding: 10px 12px;
 }
+
 .alert-warning {
   .alert-actions {
     button {
-      margin: -2px 0 0px 0;
+      margin: -2px 0 0;
     }
   }
 }
+
 .modal-header {
   padding: 0;
 }
+
 .rotate-90 {
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
-  -o-transform: rotate(-90deg);
   transform: rotate(-90deg);
 }
 
@@ -64,18 +64,22 @@ body {
   width: 8px;
   background: transparent;
 }
+
 ::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 2px rgb(0 0 0 / 30%);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb {
   border-radius: 4px;
   background: #ccc;
-  -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 2px rgb(0 0 0 / 50%);
 }
+
 ::-webkit-scrollbar-thumb:window-inactive {
-  background: rgba(255, 0, 0, 0.4);
+  background: rgb(255 0 0 / 40%);
 }
+
 .custom-h2 {
   line-height: 24px;
 }
@@ -98,9 +102,9 @@ body {
   position: inherit !important;
 }
 
-.required:after {
+.required::after {
   content: "*";
-  font-size: 0.58479532rem;
+  font-size: 0.5848rem;
   line-height: 0.5rem;
   color: #c92100;
   margin-left: 0.25rem;
@@ -114,9 +118,6 @@ body {
   border-radius: 5px;
 }
 
-button:focus {
-  outline: none;
-}
 clr-dropdown {
   div:focus {
     outline: none;
@@ -138,7 +139,7 @@ clr-dropdown {
 }
 
 .m-0 {
-  margin: 0 0 !important;
+  margin: 0 !important;
 }
 
 .mt-0 {
@@ -168,7 +169,7 @@ clr-dropdown {
 }
 
 .m-1 {
-  margin: 1rem 1rem !important;
+  margin: 1rem !important;
 }
 
 .mt-1 {
@@ -198,7 +199,7 @@ clr-dropdown {
 }
 
 .m-2 {
-  margin: 1.5rem 1.5rem !important;
+  margin: 1.5rem !important;
 }
 
 .mt-2 {
@@ -228,7 +229,7 @@ clr-dropdown {
 }
 
 .m-3 {
-  margin: 3rem 3rem !important;
+  margin: 3rem !important;
 }
 
 .mt-3 {
@@ -258,7 +259,7 @@ clr-dropdown {
 }
 
 .p-0 {
-  padding: 0 0 !important;
+  padding: 0 !important;
 }
 
 .pt-0 {
@@ -288,7 +289,7 @@ clr-dropdown {
 }
 
 .p-1 {
-  padding: 1rem 1rem !important;
+  padding: 1rem !important;
 }
 
 .pt-1 {
@@ -318,7 +319,7 @@ clr-dropdown {
 }
 
 .p-2 {
-  padding: 1.5rem 1.5rem !important;
+  padding: 1.5rem !important;
 }
 
 .pt-2 {
@@ -348,7 +349,7 @@ clr-dropdown {
 }
 
 .p-3 {
-  padding: 3rem 3rem !important;
+  padding: 3rem !important;
 }
 
 .pt-3 {
@@ -418,22 +419,27 @@ clr-dropdown {
 .position-relative {
   position: relative;
 }
+
 clr-datagrid {
   clr-dg-row {
     .datagrid-scrolling-cells {
       align-items: center;
       width: 100%;
     }
+
     clr-dg-cell {
       overflow-wrap: break-word;
     }
+
     .datagrid-expandable-caret-icon {
       margin-top: 0;
     }
   }
+
   .datagrid-select {
     display: flex;
     align-items: center;
+
     clr-checkbox-wrapper,
     clr-radio-wrapper {
       .clr-control-label {
@@ -442,6 +448,7 @@ clr-datagrid {
       }
     }
   }
+
   .datagrid-table {
     .datagrid-column {
       .datagrid-column-title,
@@ -451,15 +458,19 @@ clr-datagrid {
     }
   }
 }
+/* stylelint-disable no-descending-specificity */
 button:focus {
   outline: none !important;
 }
+
 .cursor-pointer {
   cursor: pointer
 }
+
 .text-align-r {
   text-align: right !important;
 }
+
 .datagrid-expandable-caret.datagrid-fixed-column.datagrid-cell.ng-star-inserted {
   align-items: center;
   display: flex;
