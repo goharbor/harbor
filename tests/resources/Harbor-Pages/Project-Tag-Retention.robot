@@ -108,12 +108,12 @@ Execute Dry Run
     Execute Result Should Be  ${image}  ${result}
 
 Execute Run
-    [Arguments]  ${image}  ${result}
+    [Arguments]  ${image}  ${result}=${null}
     Retry Element Click  xpath=${project_tag_retention_run_now_xpath}
     Retry Element Click  xpath=${project_tag_retention_execute_run_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_no_xpath}
     Sleep    5
     Retry Element Click  xpath=${project_tag_retention_record_no_xpath}
     # memcached:123 should be deleted and hello-world:latest should be retained
-    Execute Result Should Be  ${image}  ${result}
+    Run Keyword If  '${result}' != '${null}'  Execute Result Should Be  ${image}  ${result}
 

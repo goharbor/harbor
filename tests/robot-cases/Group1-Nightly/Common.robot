@@ -410,7 +410,7 @@ Test Case - Delete Multi Artifacts
     Go Into Project  project${d}
     Go Into Repo  redis
     @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
-    Multi-delete Artifact  ${tag_delete_btn}  @{tag_list}
+    Multi-delete Artifact  @{tag_list}
     # Verify
     Delete Success  sha256:dd179737  sha256:28a85227
     Close Browser
@@ -615,20 +615,6 @@ Test Case - Project Quotas Control Under Copy
     Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
-    Close Browser
-
-Test Case - Webhook CRUD
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Switch To Project Webhooks
-    # create more than one webhooks
-    Create A New Webhook   webhook${d}   https://test.com
-    Create A New Webhook   webhook2${d}   https://test2.com
-    Update A Webhook    webhook${d}  newWebhook${d}   https://new-test.com
-    Enable/Deactivate State of Same Webhook   newWebhook${d}
-    Delete A Webhook  newWebhook${d}
     Close Browser
 
 Test Case - Tag CRUD
@@ -859,7 +845,7 @@ Test Case - Go To Harbor Api Page
     [Tags]  go_to_harbor_api_page
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry Keyword N Times When Error  4  Check Harbor Api Page 
+    Retry Keyword N Times When Error  4  Check Harbor Api Page
     Close Browser
 
 Test Case - WASM Push And Pull To Harbor
