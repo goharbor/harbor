@@ -252,6 +252,6 @@ class Cache:
         if not self.enabled:
             return
 
-        if not self.expire_hours.isnumeric():
-            raise Exception('cache expire hours should be number')
+        if not self.expire_hours or self.expire_hours <= 0:
+            raise Exception('cache expire hours should be positive number')
         return
