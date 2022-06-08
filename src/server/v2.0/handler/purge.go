@@ -165,7 +165,7 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 			},
 			Status:       exec.Status,
 			CreationTime: exec.StartTime,
-			UpdateTime:   exec.EndTime,
+			UpdateTime:   exec.UpdateTime,
 		})
 	}
 	var results []*models.ExecHistory
@@ -204,7 +204,7 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 			Type: exec.Trigger,
 		},
 		CreationTime: exec.StartTime,
-		UpdateTime:   exec.EndTime,
+		UpdateTime:   exec.UpdateTime,
 	}
 
 	return operation.NewGetPurgeJobOK().WithPayload(res.ToSwagger())
