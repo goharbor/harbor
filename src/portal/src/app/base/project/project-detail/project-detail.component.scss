@@ -17,6 +17,7 @@
   letter-spacing: 0.01em;
   margin-top: 8px;
 }
+/* stylelint-disable */
 .backStyle {
   color: #007cbb;
   font-size: 16px;
@@ -28,9 +29,11 @@
 button {
   outline: none;
 }
+
 #project-tabs {
   .clear-default-active {
     box-shadow: none;
+
     &:hover {
       box-shadow: 0 -3px 0 #0077b8 inset;
     }
@@ -42,27 +45,33 @@ button {
     padding: 0;
   }
 }
+
 .ml-05 {
   margin-left: 0.5rem;
 }
+
 .proxy-cache {
   margin-left: 2.5rem;
   font-size: 10px;
   font-weight: 300;
   opacity: 0.8;
 }
+
 .line-height-10 {
   line-height: 10px;
 }
+
 .back-icon {
   margin-right: 5px;
   color: #007cbb;
   font-size: 16px;
 }
+
 .flex-end {
   display: flex;
   justify-content: flex-end;
 }
+
 .card{
   width: auto;
   min-width: 10rem;
@@ -70,14 +79,17 @@ button {
   margin-top: 0;
   height: 6rem;
 }
+
 .head {
   margin-top: 0;
   margin-bottom: 0.25rem;
   font-size: 18px;
 }
+
 .font-weight-700 {
   font-weight: 700;
 }
+
 .storage-used {
   flex: 1;
   display: flex;
@@ -85,21 +97,26 @@ button {
   justify-content: center;
   min-width: 8rem;
 }
+
 .size-number {
   font-size: 1.5rem;
 }
+
 .container {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
+
 .margin-right-5px {
   margin-right: 5px;
 }
+
 .center {
   display: flex;
   align-items: center;
 }
+
 .divider {
   height: 24px;
   width: 1px;
@@ -114,6 +131,7 @@ button {
     max-height: 0.48rem;
   }
 }
+
 :host::ng-deep {
   .progress {
     &.warning>progress {

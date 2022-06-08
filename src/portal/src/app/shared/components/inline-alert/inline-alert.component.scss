@@ -2,14 +2,17 @@
     color: red;
     font-weight: bolder;
   }
+
   .alert-btn-link {
-    padding: 0px !important;
+    padding: 0 !important;
     min-width: 30px !important;
   }
+
   .alert-item {
     text-align: center;
     align-items: center;
 }
+
 :host::ng-deep .alert-icon-wrapper{
     display: inline;
 }

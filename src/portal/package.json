@@ -9,6 +9,8 @@
     "start:prod": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0 --proxy-config proxy.config.json --configuration production",
     "lint": "ng lint",
     "lint_fix": "ng lint --fix",
+    "lint:style": "npx stylelint \"**/*.scss\"",
+    "lint_fix:style": "npx stylelint \"**/*.scss\" --fix",
     "test": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng test --code-coverage",
     "test:watch": "ng test --code-coverage --watch",
     "test:debug": "ng test --code-coverage --source-map false",
@@ -80,7 +82,13 @@
     "ng-swagger-gen": "^1.8.1",
     "prettier": "^2.6.2",
     "prettier-eslint": "^14.0.2",
+    "prettier-stylelint": "^0.4.2",
     "protractor": "^7.0.0",
+    "stylelint": "^14.8.5",
+    "stylelint-config-prettier": "^9.0.3",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-standard": "^25.0.0",
+    "stylelint-config-standard-scss": "^4.0.0",
     "typescript": "~4.5.4"
   }
 }

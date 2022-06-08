@@ -1,5 +1,5 @@
 .sign-in-override {
-    padding-left: 0px !important;
+    padding-left: 0 !important;
     padding-right: 5px !important;
 }
 
@@ -10,7 +10,7 @@
 .custom-divider {
     display: inline-block;
     border-right: 2px inset snow;
-    padding: 2px 0px 2px 0px;
+    padding: 2px 0;
     vertical-align: middle;
     height: 24px;
 }
@@ -45,9 +45,11 @@
 .nav-icon-width {
     width: auto !important;
     padding-left: 18px !important;
+
     .icon-left {
         left: -8px;
     }
+    /* stylelint-disable */
     .currentLocale {
         padding-right: 40px;
     }
@@ -62,12 +64,15 @@
     height: 36px;
     object-fit: fill;
 }
+
 .dropdown-item {
     outline: none;
 }
+
 .dropdown-locale {
     padding-right: 0.5rem;
 }
+
 .user-down {
     right: 1rem !important;
 }

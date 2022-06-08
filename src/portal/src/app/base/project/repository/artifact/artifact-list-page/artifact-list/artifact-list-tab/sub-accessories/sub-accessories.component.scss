@@ -3,21 +3,26 @@
   width: 2.5rem;
   height: 0.8rem;
 }
+
 .artifact-icon {
   height: 0.8rem;
 }
+
 .cell {
   display: flex;
   align-items: center;
   width: 100%;
   height: 100%;
 }
+
 .margin-left-5 {
   margin-left: 5px;
 }
+
 .ml-8 {
   margin-left: 8rem;
 }
+
 .x-dash-line {
   position: absolute;
   width: 80px;
@@ -25,6 +30,7 @@
   border: 0;
   border-top: 2px dotted #a2a9b6;
 }
+
 .y-dash-line {
   position: absolute;
   border: 0;

@@ -1,5 +1,5 @@
 .h2-log-override {
-    margin-top: 0px !important;
+    margin-top: 0 !important;
 }
 
 .action-head-pos {
@@ -19,7 +19,7 @@
 }
 
 .custom-lines-button {
-    padding: 0px !important;
+    padding: 0 !important;
     min-width: 25px !important;
 }
 
@@ -44,7 +44,7 @@
     top: 8px;
     position: relative;
 }
-
+/* stylelint-disable */
 .rightPos {
     position: absolute;
     z-index: 100;
