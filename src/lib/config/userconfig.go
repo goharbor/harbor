@@ -241,3 +241,13 @@ func PullTimeUpdateDisable(ctx context.Context) bool {
 func PullAuditLogDisable(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.PullAuditLogDisable).GetBool()
 }
+
+// AuditLogForwardEndpoint returns the audit log forward endpoint
+func AuditLogForwardEndpoint(ctx context.Context) string {
+	return DefaultMgr().Get(ctx, common.AuditLogForwardEndpoint).GetString()
+}
+
+// SkipAuditLogDatabase returns the audit log forward endpoint
+func SkipAuditLogDatabase(ctx context.Context) bool {
+	return DefaultMgr().Get(ctx, common.SkipAuditLogDatabase).GetBool()
+}

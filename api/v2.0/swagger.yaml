@@ -8378,6 +8378,12 @@ definitions:
       storage_per_project:
         $ref: '#/definitions/IntegerConfigItem'
         description: The storage quota per project
+      audit_log_forward_endpoint:
+        $ref: '#/definitions/StringConfigItem'
+        description: The endpoint of the audit log forwarder
+      skip_audit_log_database:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether skip the audit log in database
       scan_all_policy:
         type: object
         properties:
@@ -8669,6 +8675,16 @@ definitions:
         description: The storage quota per project
         x-omitempty: true
         x-isnullable: true
+      audit_log_forward_endpoint:
+        type: string
+        description: The audit log forward endpoint
+        x-omitempty: true
+        x-isnullable: true  
+      skip_audit_log_database:
+        type: boolean
+        description: Skip audit log database
+        x-omitempty: true
+        x-isnullable: true          
   StringConfigItem:
     type: object
     properties:
