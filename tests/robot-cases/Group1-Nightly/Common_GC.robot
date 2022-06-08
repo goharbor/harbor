@@ -26,23 +26,22 @@ ${HARBOR_ADMIN}  admin
 Test Case - Garbage Collection
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    GC Now
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis  sha256=e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
-    Sleep  2
-    Go Into Project  project${d}
     Delete Repo  project${d}  redis
-    Sleep  2
-    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry GC Should Be Successful  1  7 blobs and 1 manifests eligible for deletion
-    Retry GC Should Be Successful  1  The GC job actual frees up 34 MB space
+    GC Now
+    ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
+    Retry GC Should Be Successful  ${latest_job_id}  7 blobs and 1 manifests eligible for deletion
+    Retry GC Should Be Successful  ${latest_job_id}  The GC job actual frees up 34 MB space
     Close Browser
 
 Test Case - GC Untagged Images
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    GC Now
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     # make hello-world untagged
@@ -53,16 +52,18 @@ Test Case - GC Untagged Images
     Delete A Tag   latest
     Should Not Contain Tag   latest
     # run gc without param delete untagged artifacts checked,  should not delete hello-world:latest
-    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry GC Should Be Successful  2  ${null}
+    GC Now
+    ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
+    Retry GC Should Be Successful  ${latest_job_id}  ${null}
     Go Into Project   project${d}
     Switch To Project Repo
     Go Into Repo   hello-world
     Should Contain Artifact
     # run gc with param delete untagged artifacts checked,  should delete hello-world
     Switch To Garbage Collection
-    GC Now    ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  untag=${true}
-    Retry GC Should Be Successful  3  ${null}
+    GC Now  untag=${true}
+    ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
+    Retry GC Should Be Successful  ${latest_job_id}  ${null}
     Go Into Project   project${d}
     Switch To Project Repo
     Go Into Repo   hello-world
@@ -79,10 +80,12 @@ Test Case - Project Quotas Control Under GC
     ${image_a_size}=    Set Variable    321.03MiB
     ${image_a_ver}=  Set Variable  6.8.3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    GC Now
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=will exceed the configured upper limit of 200.0 MiB
-    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry GC Should Be Successful  4  ${null}
+    GC Now
+    ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
+    Retry GC Should Be Successful  ${latest_job_id}  ${null}
     @{param}  Create List  project${d}
     Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
     Close Browser

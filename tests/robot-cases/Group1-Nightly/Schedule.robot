@@ -80,7 +80,6 @@ Test Case - GC Schedule Job
     Sleep  50
     Go Into Repo  ${project_name}/${image}
     Switch To Garbage Collection
-    Switch To GC History
     Set GC Schedule  custom  value=0 */2 * * * *
     Sleep  480
     Set GC Schedule  none
