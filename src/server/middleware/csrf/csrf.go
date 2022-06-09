@@ -74,6 +74,7 @@ func csrfSkipper(req *http.Request) bool {
 	path := req.URL.Path
 	if (strings.HasPrefix(path, "/v2/") ||
 		strings.HasPrefix(path, "/api/") ||
+		strings.HasPrefix(path, "/c/oidc/onboard") ||
 		strings.HasPrefix(path, "/service/")) && !lib.GetCarrySession(req.Context()) {
 		return true
 	}
