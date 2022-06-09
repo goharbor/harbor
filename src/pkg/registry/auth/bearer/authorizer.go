@@ -63,7 +63,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 
 	// set authorization header
 	if token != nil && len(token.Token) > 0 {
-		req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token.Token))
 	}
 	return nil
 }

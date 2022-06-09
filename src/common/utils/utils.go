@@ -250,7 +250,7 @@ func IsIllegalLength(s string, min int, max int) bool {
 // IsContainIllegalChar ...
 func IsContainIllegalChar(s string, illegalChar []string) bool {
 	for _, c := range illegalChar {
-		if strings.Index(s, c) >= 0 {
+		if strings.Contains(s, c) {
 			return true
 		}
 	}
@@ -259,11 +259,11 @@ func IsContainIllegalChar(s string, illegalChar []string) bool {
 
 // ParseJSONInt ...
 func ParseJSONInt(value interface{}) (int, bool) {
-	switch value.(type) {
+	switch v := value.(type) {
 	case float64:
-		return int(value.(float64)), true
+		return int(v), true
 	case int:
-		return value.(int), true
+		return v, true
 	default:
 		return 0, false
 	}

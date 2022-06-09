@@ -110,8 +110,8 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 	if err != nil {
 		return exist, nil, err
 	}
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	contentType := resp.Header.Get("Content-Type")
+	contentLen := resp.Header.Get("Content-Length")
 	len, _ := strconv.Atoi(contentLen)
 
 	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(len)}, nil

@@ -172,7 +172,7 @@ func (w *basicWorker) GetPoolID() string {
 
 // RegisterJobs is used to register multiple jobs to worker.
 func (w *basicWorker) RegisterJobs(jobs map[string]interface{}) error {
-	if jobs == nil || len(jobs) == 0 {
+	if len(jobs) == 0 {
 		// Do nothing
 		return nil
 	}

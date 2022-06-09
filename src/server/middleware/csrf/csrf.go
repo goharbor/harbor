@@ -39,7 +39,6 @@ func attachToken(w http.ResponseWriter, r *http.Request) {
 func handleError(w http.ResponseWriter, r *http.Request) {
 	attachToken(w, r)
 	lib_http.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
-	return
 }
 
 func attach(handler http.Handler) http.Handler {

@@ -223,7 +223,7 @@ func (a *Auth) ensure(ctx context.Context) error {
 	if a.client == nil {
 		a.client = &http.Client{}
 	}
-	if time.Now().Sub(a.settingTimeStamp) >= refreshDuration {
+	if time.Since(a.settingTimeStamp) >= refreshDuration {
 		setting, err := config.HTTPAuthProxySetting(ctx)
 		if err != nil {
 			return err

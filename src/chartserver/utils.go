@@ -41,7 +41,7 @@ func parseRedisConfig(redisConfigV string) (map[string]string, error) {
 	redisConfig := make(map[string]string)
 	redisConfig["key"] = cacheCollectionName
 
-	if strings.Index(redisConfigV, "//") < 0 {
+	if !strings.Contains(redisConfigV, "//") {
 		redisConfigV = "redis://" + redisConfigV
 	}
 	u, err := url.Parse(redisConfigV)

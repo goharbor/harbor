@@ -125,7 +125,6 @@ type notaryAuthorizer struct {
 }
 
 func (n *notaryAuthorizer) Modify(req *http.Request) error {
-	req.Header.Add(http.CanonicalHeaderKey("Authorization"),
-		fmt.Sprintf("Bearer %s", n.token))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.token))
 	return nil
 }

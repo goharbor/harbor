@@ -153,7 +153,6 @@ func (s *Schema) Valid(v *validation.Validation) {
 			}
 		default:
 			_ = v.SetError("filters", "invalid filter type")
-			break
 		}
 	}
 

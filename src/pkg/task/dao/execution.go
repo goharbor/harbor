@@ -365,7 +365,7 @@ func buildInClauseSqlForExtraAttrs(keys []string) string {
 		// act as a place holder to ensure "default" is equivalent to "len(keys) >= 2"
 		return ""
 	case 1:
-		return fmt.Sprintf("select id from execution where extra_attrs->>?=?")
+		return "select id from execution where extra_attrs->>?=?"
 	default:
 		// len(keys) >= 2
 		elements := make([]string, len(keys)-1)

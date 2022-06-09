@@ -154,7 +154,7 @@ func (pm *PolicyMigrator) Migrate() error {
 					policy.ID = pID
 					if !utils.IsEmptyStr(hookURL) {
 						// Copy web hook URL
-						policy.WebHookURL = fmt.Sprintf("%s", hookURL)
+						policy.WebHookURL = hookURL
 					}
 
 					if rawJSON, er := policy.Serialize(); er == nil {

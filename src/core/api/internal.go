@@ -104,5 +104,4 @@ func (ia *InternalAPI) SyncQuota() {
 		}
 		log.Info("success to sync quota(API).")
 	}()
-	return
 }

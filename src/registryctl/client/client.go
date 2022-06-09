@@ -105,7 +105,7 @@ func (c *client) DeleteManifest(repository, reference string) (err error) {
 }
 
 func (c *client) do(req *http.Request) (*http.Response, error) {
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
+	req.Header.Set("User-Agent", UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

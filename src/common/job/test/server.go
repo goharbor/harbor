@@ -69,7 +69,6 @@ func NewJobServiceServer() *httptest.Server {
 				panic(err)
 			}
 			rw.WriteHeader(http.StatusOK)
-			return
 		})
 	mux.HandleFunc(fmt.Sprintf("%s/%s", jobsPrefix, jobUUID),
 		func(rw http.ResponseWriter, req *http.Request) {
@@ -90,9 +89,8 @@ func NewJobServiceServer() *httptest.Server {
 				return
 			}
 			rw.WriteHeader(http.StatusNoContent)
-			return
 		})
-	mux.HandleFunc(fmt.Sprintf("%s", jobsPrefix),
+	mux.HandleFunc(jobsPrefix,
 		func(rw http.ResponseWriter, req *http.Request) {
 			if req.Method == http.MethodPost {
 				data, err := ioutil.ReadAll(req.Body)

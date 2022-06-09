@@ -55,7 +55,7 @@ type providerHelper struct {
 
 func (p *providerHelper) get() (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
-		if time.Now().Sub(p.creationTime) > 3*time.Second {
+		if time.Since(p.creationTime) > 3*time.Second {
 			if err := p.create(); err != nil {
 				return nil, err
 			}

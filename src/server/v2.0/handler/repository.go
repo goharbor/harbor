@@ -118,9 +118,9 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 		Keywords: map[string]interface{}{},
 	}
 	if secCtx.IsAuthenticated() {
-		switch secCtx.(type) {
+		switch v := secCtx.(type) {
 		case *local.SecurityContext:
-			currentUser := secCtx.(*local.SecurityContext).User()
+			currentUser := v.User()
 			query.Keywords["member"] = &project.MemberQuery{
 				UserID:     currentUser.UserID,
 				GroupIDs:   currentUser.GroupIDs,
@@ -130,7 +130,7 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 			// for the system level robot that covers all the project, see it as the system admin.
 			var coverAll bool
 			var names []string
-			r := secCtx.(*robot.SecurityContext).User()
+			r := v.User()
 			for _, p := range r.Permissions {
 				if p.Scope == robotCtr.SCOPEALLPROJECT {
 					coverAll = true

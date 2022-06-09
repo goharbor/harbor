@@ -20,7 +20,7 @@ const (
 // GetCountOfCharts calculates and returns the total count of charts under the specified namespaces.
 // See @ServiceHandler.GetCountOfCharts
 func (c *Controller) GetCountOfCharts(namespaces []string) (uint64, error) {
-	if namespaces == nil || len(namespaces) == 0 {
+	if len(namespaces) == 0 {
 		return 0, nil // Directly return 0 instead of non-nil error
 	}
 

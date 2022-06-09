@@ -26,7 +26,7 @@ import (
 
 func init() {
 	unitTest := os.Getenv("UTTEST")
-	if strings.EqualFold(unitTest, "true") == true {
+	if strings.EqualFold(unitTest, "true") {
 		libCfg.Register(common.RestCfgManager, NewRESTCfgManager("sample_url", "sample_secret"))
 		return
 	}

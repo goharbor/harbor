@@ -136,7 +136,7 @@ func (oc *OIDCController) Callback() {
 				return
 			}
 			userRec, onboarded := userOnboard(ctx, oc, info, username, tokenBytes)
-			if onboarded == false {
+			if !onboarded {
 				log.Error("User not onboarded\n")
 				return
 			}
