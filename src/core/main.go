@@ -25,6 +25,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/systemartifact"
+
 	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/core/session"
 
@@ -227,6 +229,7 @@ func main() {
 	if err != nil {
 		log.Warningf("oidc.FixEmptySubIss() errors out, error: %v", err)
 	}
+	systemartifact.ScheduleCleanupTask(ctx)
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
