@@ -209,4 +209,8 @@ const (
 	PurgeAuditIncludeOperations = "include_operations"
 	PurgeAuditDryRun            = "dry_run"
 	PurgeAuditRetentionHour     = "audit_retention_hour"
+	// AuditLogForwardEndpoint indicate to forward the audit log to an endpoint
+	AuditLogForwardEndpoint = "audit_log_forward_endpoint"
+	// SkipAuditLogDatabase skip to log audit log in database
+	SkipAuditLogDatabase = "skip_audit_log_database"
 )

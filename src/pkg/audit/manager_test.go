@@ -16,6 +16,7 @@ package audit
 
 import (
 	"github.com/goharbor/harbor/src/pkg/audit/model"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	mockDAO "github.com/goharbor/harbor/src/testing/pkg/audit/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

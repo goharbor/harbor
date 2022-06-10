@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -92,6 +93,22 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 		log.Errorf("failed to upload configurations: %v", err)
 		return fmt.Errorf("failed to validate configuration")
 	}
+	// update the audit logger to point to the new endpoint
+	return c.updateLogEndpoint(ctx, conf)
+}
+
+func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]interface{}) error {
+	// check if the audit log forward endpoint updated
+	if _, ok := cfgs[common.AuditLogForwardEndpoint]; ok {
+		auditEP := config.AuditLogForwardEndpoint(ctx)
+		if len(auditEP) == 0 {
+			return nil
+		}
+		if !audit.CheckEndpointActive(auditEP) {
+			return errors.BadRequestError(fmt.Errorf("could not connect to the audit endpoint: %v", auditEP))
+		}
+		audit.LogMgr.Init(ctx, auditEP)
+	}
 	return nil
 }
 
@@ -115,6 +132,21 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 	err := mgr.ValidateCfg(ctx, cfgs)
 	if err != nil {
 		return errors.BadRequestError(err)
+	}
+
+	return verifySkipAuditLogCfg(ctx, cfgs, mgr)
+}
+
+func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr config.Manager) error {
+	if skip, exist := cfgs[common.SkipAuditLogDatabase]; exist {
+		endPoint := mgr.Get(ctx, common.AuditLogForwardEndpoint).GetString()
+		if edp, found := cfgs[common.AuditLogForwardEndpoint]; found {
+			endPoint = edp.(string)
+		}
+		skipAuditDB := skip.(bool)
+		if len(endPoint) == 0 && skipAuditDB {
+			return errors.BadRequestError(errors.New("audit log forward endpoint should be configured before enable skip audit log in database"))
+		}
 	}
 	return nil
 }
