@@ -5610,7 +5610,7 @@ parameters:
     name: X-Accept-Vulnerabilities
     in: header
     type: string
-    default: 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
+    default: 'application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
     description: |-
       A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
       Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
