@@ -274,8 +274,7 @@ Body Of Verfiy System Level CVE Allowlist
 
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
-    Switch To Configure
-    Switch To Configuration System Setting
+    Switch To Configuration Security
     # Add Items To System CVE Allowlist    CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528
     Add Items To System CVE Allowlist    ${most_cve_list}
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
@@ -326,9 +325,8 @@ Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Switch To Configuration System Setting
-    Add Items To System CVE Allowlist    ${cve_list}
+    Switch To Configuration Security
+    Add Items To System CVE Allowlist  ${cve_list}
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project And Go Into Project    project${d}
