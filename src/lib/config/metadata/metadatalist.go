@@ -186,5 +186,8 @@ var (
 
 		{Name: common.CacheEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_ENABLED", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Enable cache`},
 		{Name: common.CacheExpireHours, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_EXPIRE_HOURS", DefaultValue: "24", ItemType: &IntType{}, Editable: false, Description: `The expire hours for cache`},
+
+		{Name: common.AuditLogForwardEndpoint, Scope: UserScope, Group: BasicGroup, EnvKey: "AUDIT_LOG_FORWARD_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint to forward the audit log.`},
+		{Name: common.SkipAuditLogDatabase, Scope: UserScope, Group: BasicGroup, EnvKey: "SKIP_LOG_AUDIT_DATABASE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip audit log in database`},
 	}
 )
