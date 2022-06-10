@@ -16,6 +16,7 @@ import {
 } from '../../clearing-job-interfact';
 import { clone } from '../../../../../shared/units/utils';
 import { PurgeHistoryComponent } from '../history/purge-history.component';
+import { NgForm } from '@angular/forms';
 
 const ONE_MINUTE: number = 60000;
 const ONE_DAY: number = 24;
@@ -31,7 +32,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
     getLabelCurrent = 'CLEARANCES.SCHEDULE_TO_PURGE';
     loadingGcStatus = false;
     @ViewChild(CronScheduleComponent)
-    CronScheduleComponent: CronScheduleComponent;
+    cronScheduleComponent: CronScheduleComponent;
     dryRunOnGoing: boolean = false;
     lastCompletedTime: string;
     loadingLastCompletedTime: boolean = false;
@@ -45,6 +46,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
     selectedOperations: string[] = clone(RETENTION_OPERATIONS);
     @ViewChild(PurgeHistoryComponent)
     purgeHistoryComponent: PurgeHistoryComponent;
+    @ViewChild('purgeForm')
+    purgeForm: NgForm;
     constructor(
         private purgeService: PurgeService,
         private errorHandler: ErrorHandler
@@ -80,10 +83,10 @@ export class SetJobComponent implements OnInit, OnDestroy {
                         this.statusTimeout = setTimeout(() => {
                             this.getStatus();
                         }, REFRESH_STATUS_TIME_DIFFERENCE);
-                    } else {
-                        this.loadingLastCompletedTime = false;
+                        return;
                     }
                 }
+                this.loadingLastCompletedTime = false;
             });
     }
     getCurrentSchedule(withLoading: boolean) {
@@ -108,11 +111,9 @@ export class SetJobComponent implements OnInit, OnDestroy {
     }
 
     initSchedule(purgeHistory: ExecHistory) {
-        if ((purgeHistory?.schedule as any)?.next_scheduled_time) {
-            this.nextScheduledTime = (
-                purgeHistory.schedule as any
-            )?.next_scheduled_time;
-        }
+        this.nextScheduledTime = purgeHistory?.schedule?.next_scheduled_time
+            ? purgeHistory?.schedule?.next_scheduled_time
+            : null;
         if (purgeHistory && purgeHistory.schedule) {
             this.originCron = {
                 type: purgeHistory.schedule.type,
@@ -244,7 +245,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                         this.errorHandler.info(
                             'CLEARANCES.PURGE_SCHEDULE_RESET'
                         );
-                        this.CronScheduleComponent.resetSchedule();
+                        this.cronScheduleComponent.resetSchedule();
                         this.getCurrentSchedule(false); // refresh schedule
                     },
                     error: error => {
@@ -272,7 +273,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                         this.errorHandler.info(
                             'CLEARANCES.PURGE_SCHEDULE_RESET'
                         );
-                        this.CronScheduleComponent.resetSchedule();
+                        this.cronScheduleComponent.resetSchedule();
                         this.getCurrentSchedule(false); // refresh schedule
                     },
                     error: error => {
@@ -303,5 +304,13 @@ export class SetJobComponent implements OnInit, OnDestroy {
     refresh() {
         this.getStatus();
         this.purgeHistoryComponent?.refresh();
+    }
+    isValid(): boolean {
+        if (this.cronScheduleComponent?.scheduleType === ScheduleType.NONE) {
+            return true;
+        }
+        return !(
+            this.purgeForm?.invalid || !(this.selectedOperations?.length > 0)
+        );
     }
 }

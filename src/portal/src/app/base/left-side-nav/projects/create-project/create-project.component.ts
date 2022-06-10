@@ -306,6 +306,9 @@ export class CreateProjectComponent
             +this.storageLimit === QuotaUnlimited
                 ? this.storageLimit
                 : getByte(+this.storageLimit, this.storageLimitUnit);
+        const registryId: number = this.enableProxyCache
+            ? +this.project.registry_id
+            : null;
         this.projectService
             .createProject({
                 project: {
@@ -314,7 +317,7 @@ export class CreateProjectComponent
                         public: this.project.metadata.public ? 'true' : 'false',
                     },
                     storage_limit: +storageByte,
-                    registry_id: +this.project.registry_id,
+                    registry_id: registryId,
                 },
             })
             .subscribe(

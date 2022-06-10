@@ -434,10 +434,10 @@ export interface ProjectRootInterface {
     LABEL: string;
 }
 export interface SystemCVEAllowlist {
-    id: number;
-    project_id: number;
-    expires_at: number;
-    items: Array<{ cve_id: string }>;
+    id?: number;
+    project_id?: number;
+    expires_at?: number;
+    items?: Array<{ cve_id: string }>;
 }
 export interface QuotaHardInterface {
     storage_per_project: number;

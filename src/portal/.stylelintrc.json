@@ -6,9 +6,17 @@
     "stylelint-config-prettier-scss"
   ],
   "rules": {
-    "selector-pseudo-element-no-unknown": [true, {
-      "ignorePseudoElements": ["ng-deep"]
-    }],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": [
+          "ng-deep"
+        ]
+      }
+    ],
     "no-empty-source": null
-  }
+  },
+  "ignoreFiles": [
+    "src/**/*.html"
+  ]
 }
