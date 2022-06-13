@@ -37,9 +37,11 @@ Test Case - Main Menu Routing
     ...  harbor/project-quotas=//app-project-quotas//h2[contains(.,'Project Quotas')]
     ...  harbor/interrogation-services/scanners=//config-scanner//div//h4[contains(.,'Image Scanners')]
     ...  harbor/interrogation-services/vulnerability=//vulnerability-config//div//button[contains(.,'SCAN NOW')]
-    ...  harbor/gc=//app-gc-page//h2[contains(.,'Garbage Collection')]
+    ...  harbor/clearing-job/gc=//gc-history//h5[contains(.,'GC History')]
+    ...  harbor/clearing-job/audit-log-purge=//app-purge-history//h5[contains(.,'Purge History')]
     ...  harbor/configs/auth=//config//config-auth//label[contains(.,'Auth Mode')]
-    ...  /harbor/configs/email=//config//config-email//label[contains(.,'Email Server Port')]
+    ...  harbor/configs/email=//config//config-email//label[contains(.,'Email Server Port')]
+    ...  harbor/configs/security=//config//app-security//span[contains(.,'CVE allowlist')]
     ...  harbor/configs/setting=//config//system-settings//label[contains(.,'Project Creation')]
     FOR  ${key}  IN  @{routing.keys()}
         Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}
