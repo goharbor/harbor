@@ -25,7 +25,7 @@ export class GcComponent implements OnInit, OnDestroy {
     getLabelCurrent = 'GC.CURRENT_SCHEDULE';
     loadingGcStatus = false;
     @ViewChild(CronScheduleComponent)
-    CronScheduleComponent: CronScheduleComponent;
+    cronScheduleComponent: CronScheduleComponent;
     shouldDeleteUntagged: boolean;
     dryRunOnGoing: boolean = false;
 
@@ -41,7 +41,7 @@ export class GcComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit() {
-        this.getCurrentSchedule();
+        this.getCurrentSchedule(true);
         this.getStatus();
     }
     ngOnDestroy() {
@@ -70,14 +70,16 @@ export class GcComponent implements OnInit, OnDestroy {
                         this.statusTimeout = setTimeout(() => {
                             this.getStatus();
                         }, REFRESH_STATUS_TIME_DIFFERENCE);
-                    } else {
-                        this.loadingLastCompletedTime = false;
+                        return;
                     }
                 }
+                this.loadingLastCompletedTime = false;
             });
     }
-    getCurrentSchedule() {
-        this.loadingGcStatus = true;
+    getCurrentSchedule(withLoading: boolean) {
+        if (withLoading) {
+            this.loadingGcStatus = true;
+        }
         this.gcService
             .getGCSchedule()
             .pipe(
@@ -96,11 +98,9 @@ export class GcComponent implements OnInit, OnDestroy {
     }
 
     private initSchedule(gcHistory: GCHistory) {
-        if ((gcHistory?.schedule as any)?.next_scheduled_time) {
-            this.nextScheduledTime = (
-                gcHistory.schedule as any
-            )?.next_scheduled_time;
-        }
+        this.nextScheduledTime = gcHistory?.schedule?.next_scheduled_time
+            ? gcHistory?.schedule?.next_scheduled_time
+            : null;
         if (gcHistory && gcHistory.schedule) {
             this.originCron = {
                 type: gcHistory.schedule.type,
@@ -199,8 +199,8 @@ export class GcComponent implements OnInit, OnDestroy {
                 .subscribe(
                     response => {
                         this.errorHandler.info('GC.MSG_SCHEDULE_RESET');
-                        this.CronScheduleComponent.resetSchedule();
-                        this.getCurrentSchedule(); // refresh schedule
+                        this.cronScheduleComponent.resetSchedule();
+                        this.getCurrentSchedule(false); // refresh schedule
                     },
                     error => {
                         this.errorHandler.error(error);
@@ -223,8 +223,8 @@ export class GcComponent implements OnInit, OnDestroy {
                 .subscribe(
                     response => {
                         this.errorHandler.info('GC.MSG_SCHEDULE_RESET');
-                        this.CronScheduleComponent.resetSchedule();
-                        this.getCurrentSchedule(); // refresh schedule
+                        this.cronScheduleComponent.resetSchedule();
+                        this.getCurrentSchedule(false); // refresh schedule
                     },
                     error => {
                         this.errorHandler.error(error);

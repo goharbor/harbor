@@ -44,9 +44,7 @@
     </div>
     <div class="cron-selection">
         <cron-selection
-            [externalValidation]="
-                !(purgeForm.invalid || !(selectedOperations?.length > 0))
-            "
+            [externalValidation]="isValid()"
             [labelCurrent]="getLabelCurrent"
             [labelEdit]="getLabelCurrent"
             [originCron]="originCron"

@@ -122,6 +122,9 @@ export class SecurityComponent implements OnInit, OnDestroy {
         this.systemInfoService.getSystemAllowlist().subscribe(
             systemAllowlist => {
                 this.onGoing = false;
+                if (!systemAllowlist) {
+                    systemAllowlist = {};
+                }
                 if (!systemAllowlist.items) {
                     systemAllowlist.items = [];
                 }

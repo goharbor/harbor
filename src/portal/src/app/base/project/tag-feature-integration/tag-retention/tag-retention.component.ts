@@ -340,12 +340,13 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
                             }
                         }
                         // data grid will be re-rendered if reassign "this.executionList"
-                        // so only refresh the status property
+                        // so only refresh the status and the end_time property
                         if (res?.body?.length) {
                             res.body.forEach(item => {
                                 this.executionList.forEach(item2 => {
                                     if (item2.id === item.id) {
                                         item2.status = item.status;
+                                        item2.end_time = item.end_time;
                                     }
                                 });
                             });
