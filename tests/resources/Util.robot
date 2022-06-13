@@ -55,6 +55,7 @@ Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
 Resource  Harbor-Pages/GC.robot
+Resource  Harbor-Pages/GC_Elements.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot

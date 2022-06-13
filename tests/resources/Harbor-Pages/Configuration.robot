@@ -297,37 +297,6 @@ Delete A Label
     Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
-## Garbage Collection
-Switch To Garbage Collection
-    Switch To Configure
-    Sleep  1
-    Retry Element Click  xpath=${gc_config_page}
-    Wait Until Page Contains Element  ${garbage_collection_xpath}
-    Retry Element Click  xpath=${garbage_collection_xpath}
-
-Set GC Schedule
-    [Arguments]  ${type}  ${value}=${null}
-    Switch To Garbage Collection
-    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_edit_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_edit_btn}
-    Retry Element Click  ${GC_schedule_select}
-    Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
-    ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
-    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_save_btn}
-    Capture Page Screenshot
-
-Click GC Now
-    Sleep  1
-    Retry Element Click  xpath=${gc_now_xpath}
-    Sleep  2
-
-View GC Details
-    Retry Element Click  xpath=${gc_log_details_xpath}
-    Sleep  2
-
-Switch To GC History
-    Retry Element Click  xpath=${gc_log_xpath}
-    Retry Wait Until Page Contains  Job
-
 Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_btn}

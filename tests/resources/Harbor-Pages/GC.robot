@@ -19,18 +19,14 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
+Switch To Garbage Collection
+    Retry Double Keywords When Error  Retry Element Click  xpath=${gc_page_xpath}  Retry Wait Until Page Contains Element  ${gc_now_button}
+
 GC Now
-    [Arguments]  ${harbor_url}  ${login_user}  ${login_pwd}  ${untag}=${false}
+    [Arguments]  ${untag}=${false}
     Switch To Garbage Collection
     Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
-    Click GC Now
-    Logout Harbor
-    Sleep  2
-    Sign In Harbor  ${harbor_url}  ${login_user}  ${login_pwd}
-    Switch To Garbage Collection
-    Sleep  1
-    #Switch To GC History
-    #Retry Keyword N Times When Error  60  Retry Wait Until Page Contains  Finished
+    Retry Double Keywords When Error  Retry Element Click  ${gc_now_button}  Retry Wait Until Page Contains  Running
 
 Retry GC Should Be Successful
     [Arguments]  ${history_id}  ${expected_msg}
@@ -45,9 +41,18 @@ GC Should Be Successful
     Should Contain  ${output}  success to run gc in job.
 
 Get GC Logs
-    [Arguments]
     ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/system/gc"
     Log All  cmd:${cmd}
     ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
     Log All  ${output}
     [Return]  ${output}
+
+Set GC Schedule
+    [Arguments]  ${type}  ${value}=${null}
+    Switch To Garbage Collection
+    Retry Double Keywords When Error  Retry Element Click  ${gc_schedule_edit_btn}  Retry Wait Until Page Not Contains Element  ${gc_schedule_edit_btn}
+    Retry Element Click  ${GC_schedule_select}
+    Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
+    ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
+    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${gc_schedule_save_btn}
+    Capture Page Screenshot
