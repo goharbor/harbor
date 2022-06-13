@@ -452,8 +452,7 @@ Verify System Setting Allowlist
     @{cve_ids}=  Get Value From Json  ${json}  $.configuration..cve..id
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Switch To System Settings
+    Switch To Configuration Security
     Log To Console  "@{cve_ids}"
     Loop Verifiy CVE_IDs  @{cve_ids}
     Close Browser

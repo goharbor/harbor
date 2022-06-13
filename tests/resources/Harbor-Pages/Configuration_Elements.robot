@@ -23,6 +23,7 @@ ${config_save_button_xpath}  //config//div/button[contains(.,'SAVE')]
 ${config_email_save_button_xpath}  //*[@id='config_email_save']
 ${config_auth_save_button_xpath}  //*[@id='config_auth_save']
 ${config_system_save_button_xpath}  //*[@id='config_system_save']
+${config_security_save_button_xpath}  //*[@id='security_save']
 ${vulnerbility_save_button_xpath}  //*[@id='config-save']
 ${configuration_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,' Configuration ')]
 ${garbage_collection_xpath}  //*[@id='config-gc']
@@ -31,12 +32,13 @@ ${gc_config_page}  //clr-vertical-nav-group-children/a[contains(.,'Garbage')]
 ${gc_now_xpath}  //*[@id='gc']/gc-config//button[contains(.,'GC')]
 ${gc_log_details_xpath}  //*[@id='clr-dg-row26']/clr-dg-cell[6]/a
 ${configuration_system_tabsheet_id}  //*[@id='config-system']
+${configuration_security_tabsheet_id}  //*[@id='config-security']
 ${configuration_authentication_tabsheet_id}  //*[@id="config-auth"]
 ${configuration_project_quotas_tabsheet_id}  //*[@id='config-quotas']
 ${configuration_system_wl_add_btn}    //*[@id='show-add-modal-button']
 ${configuration_system_wl_textarea}    //*[@id='allowlist-textarea']
 ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
-${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/a[2]/clr-icon
+${configuration_system_wl_delete_a_cve_id_icon}    //app-security//form/section//ul/li[1]/a[2]/clr-icon
 ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${checkbox_delete_untagged_artifacts}  //gc-config//clr-toggle-wrapper/label[contains(@for,'delete_untagged')]
 ${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@for,'oidcAutoOnboard')]
@@ -65,5 +67,3 @@ ${filter_dist_input}  //hbr-filter//input
 ${GC_schedule_edit_btn}  //*[@id='editSchedule']
 ${GC_schedule_select}  //*[@id='selectPolicy']
 ${GC_schedule_save_btn}  //*[@id='config-save']
-
-

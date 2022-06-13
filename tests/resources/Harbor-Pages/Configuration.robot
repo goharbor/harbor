@@ -250,11 +250,14 @@ Switch To System Labels
     Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Labels')]
 
-## System labels
 Switch To Configuration System Setting
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
     Retry Element Click  xpath=${configuration_system_tabsheet_id}
+
+Switch To Configuration Security
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${configuration_security_tabsheet_id}  Retry Wait Until Page Contains  Deployment security
 
 Switch To Configuration Project Quotas
     Sleep  1
@@ -330,14 +333,14 @@ Add Items To System CVE Allowlist
     Retry Element Click    ${configuration_system_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_confirm_btn}
-    Retry Element Click    ${config_system_save_button_xpath}
+    Retry Element Click    ${config_security_save_button_xpath}
 
 Delete Top Item In System CVE Allowlist
     [Arguments]  ${count}=1
     FOR  ${idx}  IN RANGE  1  ${count}
-        Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+        Retry Element Click  ${configuration_system_wl_delete_a_cve_id_icon}
     END
-    Retry Element Click    ${config_system_save_button_xpath}
+    Retry Element Click  ${config_security_save_button_xpath}
 
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
