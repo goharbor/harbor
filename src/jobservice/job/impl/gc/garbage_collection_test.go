@@ -21,9 +21,10 @@ import (
 
 	"github.com/docker/distribution/manifest/schema2"
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/artifact"
+	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -89,8 +90,10 @@ func (suite *gcTestSuite) TestDeletedArt() {
 
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
-			ID:           1,
-			RepositoryID: 1,
+			Artifact: pkgart.Artifact{
+				ID:           1,
+				RepositoryID: 1,
+			},
 		},
 	}, nil)
 	suite.artifactCtl.On("Delete").Return(nil)
@@ -116,6 +119,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
 
 	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{
@@ -148,7 +152,6 @@ func (suite *gcTestSuite) TestInit() {
 	logger := &mockjobservice.MockJobLogger{}
 	mock.OnAnything(ctx, "Get").Return("core url", true)
 	ctx.On("GetLogger").Return(logger)
-	ctx.On("OPCommand").Return(job.NilCommand, true)
 
 	gc := &GarbageCollector{
 		registryCtlClient: suite.registryCtlClient,
@@ -189,25 +192,22 @@ func (suite *gcTestSuite) TestStop() {
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.StopCommand, true)
 
+	mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{
+		{
+			Artifact: pkgart.Artifact{
+				ID:           1,
+				RepositoryID: 1,
+			},
+		},
+	}, nil)
+
 	gc := &GarbageCollector{
 		registryCtlClient: suite.registryCtlClient,
+		artCtl:            suite.artifactCtl,
+		deleteUntagged:    true,
 	}
-	params := map[string]interface{}{
-		"delete_untagged": true,
-		"redis_url_reg":   "redis url",
-	}
-	suite.Nil(gc.init(ctx, params))
 
-	ctx = &mockjobservice.MockJobContext{}
-	mock.OnAnything(ctx, "Get").Return("core url", true)
-	ctx.On("OPCommand").Return(job.StopCommand, false)
-	suite.Nil(gc.init(ctx, params))
-
-	ctx = &mockjobservice.MockJobContext{}
-	mock.OnAnything(ctx, "Get").Return("core url", true)
-	ctx.On("OPCommand").Return(job.NilCommand, true)
-	suite.Nil(gc.init(ctx, params))
-
+	suite.Equal(stopErr, gc.mark(ctx))
 }
 
 func (suite *gcTestSuite) TestRun() {
@@ -219,8 +219,10 @@ func (suite *gcTestSuite) TestRun() {
 
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
-			ID:           1,
-			RepositoryID: 1,
+			Artifact: pkgart.Artifact{
+				ID:           1,
+				RepositoryID: 1,
+			},
 		},
 	}, nil)
 	suite.artifactCtl.On("Delete").Return(nil)
@@ -285,11 +287,14 @@ func (suite *gcTestSuite) TestMark() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
 
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
-			ID:           1,
-			RepositoryID: 1,
+			Artifact: pkgart.Artifact{
+				ID:           1,
+				RepositoryID: 1,
+			},
 		},
 	}, nil)
 	suite.artifactCtl.On("Delete").Return(nil)
@@ -351,6 +356,7 @@ func (suite *gcTestSuite) TestSweep() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
 
 	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
 	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)

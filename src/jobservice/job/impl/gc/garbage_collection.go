@@ -36,6 +36,7 @@ import (
 
 var (
 	regCtlInit = registryctl.Init
+	stopErr    = errors.New("stopped")
 )
 
 const (
@@ -90,11 +91,7 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	gc.logger = ctx.GetLogger()
 	gc.deleteSet = make([]*blobModels.Blob, 0)
 	gc.trashedArts = make(map[string][]model.ArtifactTrash, 0)
-	opCmd, flag := ctx.OPCommand()
-	if flag && opCmd.IsStop() {
-		gc.logger.Info("received the stop signal, quit GC job.")
-		return nil
-	}
+
 	// UT will use the mock client, ctl and mgr
 	if os.Getenv("UTTEST") != "true" {
 		gc.registryCtlClient = registryctl.RegistryCtlClient
@@ -156,6 +153,10 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 
 	// mark
 	if err := gc.mark(ctx); err != nil {
+		if err == stopErr {
+			gc.logger.Info("received the stop signal, quit GC job.")
+			return nil
+		}
 		gc.logger.Errorf("failed to execute GC job at mark phase, error: %v", err)
 		return err
 	}
@@ -163,6 +164,11 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	// sweep
 	if !gc.dryRun {
 		if err := gc.sweep(ctx); err != nil {
+			if err == stopErr {
+				// we may already delete several artifacts before receiving the stop signal, so try to clean up the cache
+				gc.logger.Info("received the stop signal, quit GC job after cleaning up the cache.")
+				return gc.cleanCache()
+			}
 			gc.logger.Errorf("failed to execute GC job at sweep phase, error: %v", err)
 			return err
 		}
@@ -190,7 +196,11 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 
 	// get gc candidates, and set the repositories.
 	// AS the reference count is calculated by joining table project_blob and blob, here needs to call removeUntaggedBlobs to remove these non-used blobs from table project_blob firstly.
-	orphanBlobs := gc.markOrSweepUntaggedBlobs(ctx)
+	orphanBlobs, err := gc.markOrSweepUntaggedBlobs(ctx)
+	if err != nil {
+		return err
+	}
+
 	blobs, err := gc.uselessBlobs(ctx)
 	if err != nil {
 		gc.logger.Errorf("failed to get gc candidate: %v", err)
@@ -210,6 +220,9 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	makeSize := int64(0)
 	for _, blob := range blobs {
 		if !gc.dryRun {
+			if gc.shouldStop(ctx) {
+				return stopErr
+			}
 			blob.Status = blobModels.StatusDelete
 			count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
 			if err != nil {
@@ -245,6 +258,9 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	mfCnt := 0
 	total := len(gc.deleteSet)
 	for i, blob := range gc.deleteSet {
+		if gc.shouldStop(ctx) {
+			return stopErr
+		}
 		idx := i + 1
 		// set the status firstly, if the blob is updated by any HEAD/PUT request, it should be fail and skip.
 		blob.Status = blobModels.StatusDeleting
@@ -389,6 +405,8 @@ func (gc *GarbageCollector) cleanCache() error {
 		}
 	}
 
+	gc.logger.Info("cache clean up completed")
+
 	return nil
 }
 
@@ -427,6 +445,9 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 				}
 				allTrashedArts = append(allTrashedArts, simulateDeletion)
 			} else {
+				if gc.shouldStop(ctx) {
+					return nil, stopErr
+				}
 				if err := gc.artCtl.Delete(ctx.SystemContext(), untagged.ID); err != nil {
 					// the failure ones can be GCed by the next execution
 					gc.logger.Errorf("failed to delete untagged:%d artifact in DB, error, %v", untagged.ID, err)
@@ -471,9 +492,12 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 // mark or sweep the untagged blobs in each project, these blobs are not referenced by any manifest and will be cleaned by GC
 // * dry-run, find and return the untagged blobs
 // * non dry-run, remove the reference of the untagged blobs
-func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) []*blobModels.Blob {
+func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobModels.Blob, error) {
 	var orphanBlobs []*blobModels.Blob
 	for result := range project.ListAll(ctx.SystemContext(), 50, nil, project.Metadata(false)) {
+		if gc.shouldStop(ctx) {
+			return nil, stopErr
+		}
 		if result.Error != nil {
 			gc.logger.Errorf("remove untagged blobs for all projects got error: %v", result.Error)
 			continue
@@ -487,6 +511,10 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) []*blobMod
 		}
 
 		for {
+			if gc.shouldStop(ctx) {
+				gc.logger.Info("received the stop signal, quit GC job.")
+				return nil, stopErr
+			}
 			blobRG := q.Range{
 				Min: lastBlobID,
 			}
@@ -526,7 +554,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) []*blobMod
 			lastBlobID = blobs[len(blobs)-1].ID
 		}
 	}
-	return orphanBlobs
+	return orphanBlobs, nil
 }
 
 func (gc *GarbageCollector) uselessBlobs(ctx job.Context) ([]*blobModels.Blob, error) {
@@ -568,4 +596,12 @@ func (gc *GarbageCollector) markDeleteFailed(ctx job.Context, blob *blobModels.B
 		return errors.New(nil).WithMessage("no blob found to mark delete failed, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
+}
+
+func (gc *GarbageCollector) shouldStop(ctx job.Context) bool {
+	opCmd, exit := ctx.OPCommand()
+	if exit && opCmd.IsStop() {
+		return true
+	}
+	return false
 }
