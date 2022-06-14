@@ -1,3 +1,17 @@
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package handler
 
 import (
@@ -578,6 +592,10 @@ func (api *preheatAPI) GetExecution(ctx context.Context, params operation.GetExe
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireExecutionInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	execution, err := api.executionCtl.Get(ctx, params.ExecutionID)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -646,6 +664,10 @@ func (api *preheatAPI) StopExecution(ctx context.Context, params operation.StopE
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireExecutionInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	if params.Execution.Status == "Stopped" {
 		err := api.executionCtl.Stop(ctx, params.ExecutionID)
 		if err != nil {
@@ -683,7 +705,6 @@ func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasks
 	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourcePreatPolicy); err != nil {
 		return api.SendError(ctx, err)
 	}
-
 	query, err := api.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -722,12 +743,74 @@ func (api *preheatAPI) GetPreheatLog(ctx context.Context, params operation.GetPr
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireTaskInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.TaskID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	l, err := api.taskCtl.GetLog(ctx, params.TaskID)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
 
 	return operation.NewGetPreheatLogOK().WithPayload(string(l))
+}
+
+func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID interface{}, policyName string, taskID int64) error {
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	notFoundErr := fmt.Errorf("project id %d, task id %d not found", projectID, taskID)
+	if err != nil {
+		return err
+	}
+	plc, err := api.preheatCtl.GetPolicyByName(ctx, projectID, policyName)
+	if err != nil {
+		return err
+	}
+	execs, err := api.executionCtl.List(ctx, q.New(q.KeyWords{"VendorType": job.P2PPreheat, "VendorID": plc.ID}))
+	if err != nil {
+		return err
+	}
+	if len(execs) == 0 {
+		return errors.NotFoundError(notFoundErr)
+	}
+	var execIds []interface{}
+	for _, item := range execs {
+		execIds = append(execIds, item.ID)
+	}
+	tasks, err := api.taskCtl.List(ctx, q.New(q.KeyWords{"ExecutionID": q.NewOrList(execIds)}))
+	if err != nil {
+		return err
+	}
+	if len(tasks) == 0 {
+		return errors.NotFoundError(notFoundErr)
+	}
+	for _, t := range tasks {
+		if t.ID == taskID {
+			return nil
+		}
+	}
+	return errors.NotFoundError(notFoundErr)
+}
+
+func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID int64) error {
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	notFoundErr := fmt.Errorf("project id %d, execution id %d not found", projectID, executionID)
+	if err != nil {
+		return err
+	}
+	plc, err := api.preheatCtl.GetPolicyByName(ctx, projectID, policyName)
+	if err != nil {
+		return err
+	}
+	execs, err := api.executionCtl.List(ctx, q.New(q.KeyWords{"VendorType": job.P2PPreheat, "VendorID": plc.ID}))
+	if err != nil {
+		return err
+	}
+	for _, e := range execs {
+		if e.ID == executionID {
+			return nil
+		}
+	}
+	return errors.NotFoundError(notFoundErr)
 }
 
 // ListProvidersUnderProject is Get all providers at project level
