@@ -54,7 +54,7 @@ RUN pwd && mkdir /tool/binary && \
     # Install CNAB
     CNAB_PATH=$(go env GOPATH)/src/github.com/cnabio && \
     mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git && \
-    cd cnab-to-oci && git checkout v0.3.1-beta1 && \
+    cd cnab-to-oci && git checkout v0.3.3 && \
     go list && \
     make build && \
     mv bin/cnab-to-oci /tool/binary/ && \
@@ -62,14 +62,14 @@ RUN pwd && mkdir /tool/binary && \
     DIND_COMMIT=3b5fac462d21ca164b3778647420016315289034 && \
     wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /tool/binary/dind \
     && chmod +x /tool/binary/dind && \
-    # Install  wasm-to-oci
+    # Install wasm-to-oci
     WASM_TO_OCI_VERSION=0.1.2 && wget https://github.com/engineerd/wasm-to-oci/releases/download/v${WASM_TO_OCI_VERSION}/linux-amd64-wasm-to-oci && \
     chmod +x linux-amd64-wasm-to-oci && mv linux-amd64-wasm-to-oci /tool/binary/wasm-to-oci && \
     # Install imgpkg
-    IMGPKG_VERSION=0.22.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
+    IMGPKG_VERSION=0.29.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
     mv imgpkg-linux-amd64 /tool/binary/imgpkg && chmod +x /tool/binary/imgpkg && \
     # Install cosign
-    COSIGN_VERSION=1.8.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
+    COSIGN_VERSION=1.9.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
     mv cosign-linux-amd64 /tool/binary/cosign && chmod +x /tool/binary/cosign && \
     pwd
 
@@ -87,7 +87,3 @@ RUN pwd && \
 
 RUN cd /tool/binary/ && tar czvf tools.tar.gz * && cp tools.tar.gz /tool
 # --- End of base file ---
-
-
-
-
