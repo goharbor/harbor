@@ -130,7 +130,7 @@ func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) 
 		} else {
 			for _, p := range prefixes {
 				if strings.HasPrefix(ks, c.opts.Key(p)) {
-					keys = append(keys, ks)
+					keys = append(keys, strings.TrimPrefix(ks, c.opts.Prefix))
 				}
 			}
 		}

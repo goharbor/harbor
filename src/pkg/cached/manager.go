@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -38,6 +39,8 @@ const (
 // Manager is the interface for resource cache manager.
 // Provides common interfaces for admin to view and manage resource cache.
 type Manager interface {
+	// CacheClient returns the cache client.
+	CacheClient(ctx context.Context) cache.Cache
 	//  ResourceType returns the resource type.
 	//  eg. artifact、project、tag、repository
 	ResourceType(ctx context.Context) string
