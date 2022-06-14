@@ -47,6 +47,7 @@ func (m *managerTestSuite) SetupTest() {
 }
 
 func (m *managerTestSuite) TestAdd() {
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	m.projectMetaMgr.On("Add", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err := m.cachedManager.Add(m.ctx, 1, map[string]string{})
 	m.NoError(err)

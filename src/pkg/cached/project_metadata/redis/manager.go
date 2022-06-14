@@ -62,7 +62,12 @@ func NewManager(m metadata.Manager) *manager {
 }
 
 func (m *manager) Add(ctx context.Context, projectID int64, meta map[string]string) error {
-	return m.delegator.Add(ctx, projectID, meta)
+	if err := m.delegator.Add(ctx, projectID, meta); err != nil {
+		return err
+	}
+	// should cleanup cache when add metadata to project
+	m.cleanUp(ctx, projectID)
+	return nil
 }
 
 func (m *manager) List(ctx context.Context, name string, value string) ([]*models.ProjectMetadata, error) {
@@ -86,10 +91,12 @@ func (m *manager) Get(ctx context.Context, projectID int64, meta ...string) (map
 	if err != nil {
 		return nil, err
 	}
-
-	if err = m.client().Save(ctx, key, &result, m.lifetime); err != nil {
-		// log error if save to cache failed
-		log.Debugf("save project metadata %v to cache error: %v", result, err)
+	// only cache when result has attributes
+	if len(result) > 0 {
+		if err = m.client().Save(ctx, key, &result, m.lifetime); err != nil {
+			// log error if save to cache failed
+			log.Debugf("save project metadata %v to cache error: %v", result, err)
+		}
 	}
 
 	return result, nil
