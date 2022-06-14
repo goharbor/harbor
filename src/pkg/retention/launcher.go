@@ -154,9 +154,7 @@ func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID
 			if err != nil {
 				return 0, launcherError(err)
 			}
-			for _, repository := range repositories {
-				repositoryCandidates = append(repositoryCandidates, repository)
-			}
+			repositoryCandidates = append(repositoryCandidates, repositories...)
 		}
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {

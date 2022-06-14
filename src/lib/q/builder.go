@@ -150,9 +150,7 @@ func parseOrList(value string) (*OrList, error) {
 		return nil, err
 	}
 	ol := &OrList{}
-	for _, v := range values {
-		ol.Values = append(ol.Values, v)
-	}
+	ol.Values = append(ol.Values, values...)
 	return ol, nil
 }
 
@@ -162,9 +160,7 @@ func parseAndList(value string) (*AndList, error) {
 		return nil, err
 	}
 	al := &AndList{}
-	for _, v := range values {
-		al.Values = append(al.Values, v)
-	}
+	al.Values = append(al.Values, values...)
 	return al, nil
 }
 

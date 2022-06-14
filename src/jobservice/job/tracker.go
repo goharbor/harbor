@@ -535,7 +535,7 @@ func (bt *basicTracker) retrieve() error {
 		return err
 	}
 
-	if vals == nil || len(vals) == 0 {
+	if len(vals) == 0 {
 		return errs.NoObjectFoundError(bt.jobID)
 	}
 
@@ -549,10 +549,8 @@ func (bt *basicTracker) retrieve() error {
 		switch prop {
 		case "id":
 			res.Info.JobID = value
-			break
 		case "name":
 			res.Info.JobName = value
-			break
 		case "kind":
 			res.Info.JobKind = value
 		case "unique":
@@ -563,39 +561,28 @@ func (bt *basicTracker) retrieve() error {
 			res.Info.IsUnique = v
 		case "status":
 			res.Info.Status = value
-			break
 		case "ref_link":
 			res.Info.RefLink = value
-			break
 		case "enqueue_time":
 			res.Info.EnqueueTime = parseInt64(value)
-			break
 		case "update_time":
 			res.Info.UpdateTime = parseInt64(value)
-			break
 		case "run_at":
 			res.Info.RunAt = parseInt64(value)
-			break
 		case "check_in_at":
 			res.Info.CheckInAt = parseInt64(value)
-			break
 		case "check_in":
 			res.Info.CheckIn = "" // never read checkin placeholder data
-			break
 		case "cron_spec":
 			res.Info.CronSpec = value
-			break
 		case "web_hook_url":
 			res.Info.WebHookURL = value
-			break
 		case "die_at":
 			res.Info.DieAt = parseInt64(value)
 		case "upstream_job_id":
 			res.Info.UpstreamJobID = value
-			break
 		case "numeric_policy_id":
 			res.Info.NumericPID = parseInt64(value)
-			break
 		case "parameters":
 			params := make(Parameters)
 			if err := json.Unmarshal([]byte(value), &params); err == nil {
@@ -603,10 +590,8 @@ func (bt *basicTracker) retrieve() error {
 			} else {
 				logger.Error(errors.Wrap(err, "retrieve: tracker"))
 			}
-			break
 		case "revision":
 			res.Info.Revision = parseInt64(value)
-			break
 		case "ack":
 			ack := &ACK{}
 			if err := json.Unmarshal([]byte(value), ack); err == nil {

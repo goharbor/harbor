@@ -119,7 +119,7 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 
 // GetChartList returns a reorganized chart list
 func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
@@ -160,7 +160,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 
 // GetChartData returns raw data of chart
 func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
@@ -175,7 +175,7 @@ func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
 
 // GetChartVersions returns the chart versions
 func (cho *ChartOperator) GetChartVersions(content []byte) (ChartVersions, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 

@@ -262,28 +262,26 @@ func (n *notificationPolicyAPI) validateEventTypes(policy *policy_model.Policy) 
 // including event type, enabled, creation time, last trigger time
 func (n *notificationPolicyAPI) constructPolicyWithTriggerTime(ctx context.Context, policies []*policy_model.Policy) ([]*models.WebhookLastTrigger, error) {
 	res := []*models.WebhookLastTrigger{}
-	if policies != nil {
-		for _, policy := range policies {
-			for _, t := range policy.EventTypes {
-				ply := &models.WebhookLastTrigger{
-					PolicyName:   policy.Name,
-					EventType:    t,
-					Enabled:      policy.Enabled,
-					CreationTime: strfmt.DateTime(policy.CreationTime),
-				}
-				if !policy.CreationTime.IsZero() {
-					ply.CreationTime = strfmt.DateTime(policy.CreationTime)
-				}
-
-				ltTime, err := n.getLastTriggerTimeGroupByEventType(ctx, t, policy.ID)
-				if err != nil {
-					return nil, err
-				}
-				if !ltTime.IsZero() {
-					ply.LastTriggerTime = strfmt.DateTime(ltTime)
-				}
-				res = append(res, ply)
+	for _, policy := range policies {
+		for _, t := range policy.EventTypes {
+			ply := &models.WebhookLastTrigger{
+				PolicyName:   policy.Name,
+				EventType:    t,
+				Enabled:      policy.Enabled,
+				CreationTime: strfmt.DateTime(policy.CreationTime),
 			}
+			if !policy.CreationTime.IsZero() {
+				ply.CreationTime = strfmt.DateTime(policy.CreationTime)
+			}
+
+			ltTime, err := n.getLastTriggerTimeGroupByEventType(ctx, t, policy.ID)
+			if err != nil {
+				return nil, err
+			}
+			if !ltTime.IsZero() {
+				ply.LastTriggerTime = strfmt.DateTime(ltTime)
+			}
+			res = append(res, ply)
 		}
 	}
 	return res, nil

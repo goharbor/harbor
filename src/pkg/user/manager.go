@@ -121,7 +121,7 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 
 func (m *manager) UpdateProfile(ctx context.Context, user *commonmodels.User, cols ...string) error {
-	if cols == nil || len(cols) == 0 {
+	if len(cols) == 0 {
 		cols = []string{"Email", "Realname", "Comment"}
 	}
 	return m.dao.Update(ctx, user, cols...)

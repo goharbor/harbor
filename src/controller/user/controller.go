@@ -91,7 +91,7 @@ type controller struct {
 
 func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error {
 	defaultCols := []string{"secret", "token"}
-	if cols == nil || len(cols) == 0 {
+	if len(cols) == 0 {
 		cols = defaultCols
 	}
 	return c.oidcMetaMgr.Update(ctx, ou, cols...)

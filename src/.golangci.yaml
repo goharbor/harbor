@@ -31,7 +31,7 @@ linters:
     - deadcode
     - errcheck
     # - gosec
-    # - gosimple
+    - gosimple
     - govet
     # - noctx
     # - rowserrcheck

@@ -32,7 +32,7 @@ type processedResult struct {
 //
 // See @ServiceHandler.GetIndexFile
 func (c *Controller) GetIndexFile(namespaces []string) (*helm_repo.IndexFile, error) {
-	if namespaces == nil || len(namespaces) == 0 {
+	if len(namespaces) == 0 {
 		return emptyIndexFile(), nil
 	}
 

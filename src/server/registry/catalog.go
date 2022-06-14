@@ -115,7 +115,6 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	}
 
 	r.sendResponse(w, req, resRepos)
-	return
 }
 
 // sendResponse ...

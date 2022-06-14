@@ -61,5 +61,4 @@ func (apc *AuthProxyController) HandleRedirect() {
 		uri = "/"
 	}
 	apc.Ctx.Redirect(http.StatusMovedPermanently, uri)
-	return
 }

@@ -242,7 +242,7 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 		return false, nil, err
 	}
 	for _, mediaType := range accepts {
-		req.Header.Add(http.CanonicalHeaderKey("Accept"), mediaType)
+		req.Header.Add("Accept", mediaType)
 	}
 	resp, err := c.do(req)
 	if err != nil {
@@ -252,9 +252,9 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 		return false, nil, err
 	}
 	defer resp.Body.Close()
-	dig := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	dig := resp.Header.Get("Docker-Content-Digest")
+	contentType := resp.Header.Get("Content-Type")
+	contentLen := resp.Header.Get("Content-Length")
 	len, _ := strconv.Atoi(contentLen)
 	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(len)}, nil
 }
@@ -269,7 +269,7 @@ func (c *client) PullManifest(repository, reference string, acceptedMediaTypes .
 		acceptedMediaTypes = accepts
 	}
 	for _, mediaType := range acceptedMediaTypes {
-		req.Header.Add(http.CanonicalHeaderKey("Accept"), mediaType)
+		req.Header.Add("Accept", mediaType)
 	}
 	resp, err := c.do(req)
 	if err != nil {
@@ -280,12 +280,12 @@ func (c *client) PullManifest(repository, reference string, acceptedMediaTypes .
 	if err != nil {
 		return nil, "", err
 	}
-	mediaType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
+	mediaType := resp.Header.Get("Content-Type")
 	manifest, _, err := distribution.UnmarshalManifest(mediaType, payload)
 	if err != nil {
 		return nil, "", err
 	}
-	digest := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+	digest := resp.Header.Get("Docker-Content-Digest")
 	return manifest, digest, nil
 }
 
@@ -295,13 +295,13 @@ func (c *client) PushManifest(repository, reference, mediaType string, payload [
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Type"), mediaType)
+	req.Header.Set("Content-Type", mediaType)
 	resp, err := c.do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest")), nil
+	return resp.Header.Get("Docker-Content-Digest"), nil
 }
 
 func (c *client) DeleteManifest(repository, reference string) error {
@@ -352,14 +352,14 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 		return 0, nil, err
 	}
 
-	req.Header.Add(http.CanonicalHeaderKey("Accept-Encoding"), "identity")
+	req.Header.Add("Accept-Encoding", "identity")
 	resp, err := c.do(req)
 	if err != nil {
 		return 0, nil, err
 	}
 
 	var size int64
-	n := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	n := resp.Header.Get("Content-Length")
 	// no content-length is acceptable, which can taken from manifests
 	if len(n) > 0 {
 		size, err = strconv.ParseInt(n, 10, 64)
@@ -385,14 +385,13 @@ func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+	req.Header.Set("Content-Length", "0")
 	resp, err := c.do(req)
 	if err != nil {
 		return "", "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get(http.CanonicalHeaderKey("Location")),
-		resp.Header.Get(http.CanonicalHeaderKey("Docker-Upload-UUID")), nil
+	return resp.Header.Get("Location"), resp.Header.Get("Docker-Upload-UUID"), nil
 }
 
 func (c *client) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
@@ -418,7 +417,7 @@ func (c *client) MountBlob(srcRepository, digest, dstRepository string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+	req.Header.Set("Content-Length", "0")
 	resp, err := c.do(req)
 	if err != nil {
 		return err
@@ -516,7 +515,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
+	req.Header.Set("User-Agent", UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
