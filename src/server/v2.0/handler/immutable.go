@@ -2,19 +2,20 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 	handler_model "github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/immutable"
-	"strings"
 )
 
 func newImmutableAPI() *immutableAPI {
@@ -62,6 +63,15 @@ func (ia *immutableAPI) DeleteImmuRule(ctx context.Context, params operation.Del
 		return ia.SendError(ctx, err)
 	}
 
+	projectID, err := ia.getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return ia.SendError(ctx, err)
+	}
+
+	if err := ia.requireRuleAccess(ctx, projectID, params.ImmutableRuleID); err != nil {
+		return ia.SendError(ctx, err)
+	}
+
 	if err := ia.immuCtl.DeleteImmutableRule(ctx, params.ImmutableRuleID); err != nil {
 		return ia.SendError(ctx, err)
 	}
@@ -85,6 +95,10 @@ func (ia *immutableAPI) UpdateImmuRule(ctx context.Context, params operation.Upd
 		return ia.SendError(ctx, err)
 	}
 	metadata.ProjectID = projectID
+
+	if err = ia.requireRuleAccess(ctx, projectID, metadata.ID); err != nil {
+		return ia.SendError(ctx, err)
+	}
 
 	if err := ia.immuCtl.UpdateImmutableRule(ctx, projectID, &metadata); err != nil {
 		return ia.SendError(ctx, err)
@@ -145,4 +159,19 @@ func (ia *immutableAPI) getProjectID(ctx context.Context, projectNameOrID interf
 		return projectID, nil
 	}
 	return 0, errors.New("unknown project identifier type")
+}
+
+// requireRuleAccess checks whether the project has the permission to the
+// immutable rule.
+func (ia *immutableAPI) requireRuleAccess(ctx context.Context, projectID, metadataID int64) error {
+	rule, err := ia.immuCtl.GetImmutableRule(ctx, metadataID)
+	if err != nil {
+		return err
+	}
+	// if input project id does not equal projectID in db return err
+	if rule.ProjectID != projectID {
+		return errors.NotFoundError(errors.Errorf("project id %d does not match", projectID))
+	}
+
+	return nil
 }
