@@ -49,7 +49,6 @@ func Iterator(ctx context.Context, chunkSize int, query *q.Query, option *Option
 
 			clone.PageNumber++
 		}
-
 	}()
 
 	return ch

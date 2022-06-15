@@ -73,7 +73,6 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 }
 
 func (o *oidcCli) valid(req *http.Request) bool {
-
 	path := strings.TrimSuffix(req.URL.Path, "/")
 
 	if path == "/service/token" ||

@@ -104,7 +104,6 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		registry: registry,
 		client:   newClient(registry),
 	}, nil
-
 }
 
 // PrepareForPush creates local docker repository in jfrog artifactory

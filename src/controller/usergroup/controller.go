@@ -98,7 +98,6 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 		if err != nil {
 			return 0, err
 		}
-
 	}
 	id, err := c.mgr.Create(ctx, group)
 	if err != nil && err == usergroup.ErrDupUserGroup {

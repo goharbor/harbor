@@ -95,5 +95,4 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.CurrentTime = &currentTime
 	}
 	return res
-
 }

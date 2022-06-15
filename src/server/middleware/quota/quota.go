@@ -176,7 +176,6 @@ func RequestMiddleware(config RequestConfig, skippers ...middleware.Skipper) fun
 				lib_http.SendError(res, err)
 			}
 		}
-
 	}, skippers...)
 }
 

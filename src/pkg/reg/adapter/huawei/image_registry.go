@@ -28,7 +28,6 @@ import (
 
 // FetchArtifacts gets resources from Huawei SWR
 func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
-
 	resources := []*model.Resource{}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/repositories?filter=center::self", a.registry.URL)
@@ -66,7 +65,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		resources = append(resources, resource)
 	}
 	return resources, nil
-
 }
 
 // ManifestExist check the manifest of Huawei SWR

@@ -145,7 +145,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 		index := i
 		repo := r
 		runner.AddTask(func() error {
-
 			artifacts, err := a.listArtifacts(repo, filters)
 			if err != nil {
 				return fmt.Errorf("failed to list artifacts of repository %s: %v", repo, err)

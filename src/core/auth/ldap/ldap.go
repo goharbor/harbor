@@ -105,13 +105,11 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 	groupAdminDN := utils.TrimLower(groupCfg.AdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
-
 		groupDN = utils.TrimLower(groupDN)
 		// Attach LDAP group admin
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
 			u.AdminRoleInAuth = true
 		}
-
 	}
 	// skip to attach group when ldap_group_search_filter is empty
 	if len(groupCfg.Filter) == 0 {
@@ -182,7 +180,6 @@ func (l *Auth) SearchUser(ctx context.Context, username string) (*models.User, e
 		log.Warningf("There are more than one user found, return the first user")
 	}
 	if len(lUsers) > 0 {
-
 		user.Username = strings.TrimSpace(lUsers[0].Username)
 		user.Realname = strings.TrimSpace(lUsers[0].Realname)
 		user.Email = strings.TrimSpace(lUsers[0].Email)

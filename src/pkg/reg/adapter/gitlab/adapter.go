@@ -171,7 +171,6 @@ func (a *adapter) getProjectsByPattern(pattern string) ([]*Project, error) {
 	projectset := make(map[string]bool)
 	var err error
 	if len(pattern) > 0 {
-
 		names, ok := util.IsSpecificPath(pattern)
 		if ok {
 			for _, name := range names {

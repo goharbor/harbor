@@ -68,7 +68,6 @@ func BeforeRequest(hook func(*http.Request) error, skippers ...Skipper) func(htt
 		}
 
 		next.ServeHTTP(w, r)
-
 	}, skippers...)
 }
 

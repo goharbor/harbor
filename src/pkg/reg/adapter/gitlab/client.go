@@ -27,7 +27,6 @@ type Client struct {
 
 // NewClient creates a new GitLab client.
 func NewClient(registry *model.Registry) (*Client, error) {
-
 	realm, _, err := util.Ping(registry)
 	if err != nil && !liberrors.IsChallengesUnsupportedErr(err) {
 		return nil, err

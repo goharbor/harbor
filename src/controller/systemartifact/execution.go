@@ -109,7 +109,6 @@ func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parame
 }
 
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {
-
 	// try to stop the execution first in case that some tasks are already created
 	if err := c.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
 		logger.Errorf("failed to stop the execution %d: %v", executionID, err)

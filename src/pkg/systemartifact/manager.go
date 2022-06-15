@@ -85,7 +85,6 @@ func NewManager() Manager {
 }
 
 func (mgr *systemArtifactManager) Create(ctx context.Context, artifactRecord *model.SystemArtifact, reader io.Reader) (int64, error) {
-
 	var artifactId int64
 
 	// the entire create operation is executed within a transaction to ensure that any failures
@@ -122,7 +121,6 @@ func (mgr *systemArtifactManager) Read(ctx context.Context, vendor string, repos
 }
 
 func (mgr *systemArtifactManager) Delete(ctx context.Context, vendor string, repository string, digest string) error {
-
 	repoName := mgr.getRepositoryName(vendor, repository)
 	if err := mgr.regCli.DeleteBlob(repoName, digest); err != nil {
 		log.Errorf("Error deleting system artifact BLOB : %s. Error: %v", repoName, err)
@@ -195,7 +193,6 @@ func (mgr *systemArtifactManager) Cleanup(ctx context.Context) (int64, int64, er
 			// after logging the error
 			logger.Errorf("Error when cleaning up system artifacts for 'vendor:artifactType':%s, %v", key, err)
 		}
-
 	}
 
 	logger.Info("Executing cleanup for default cleanup criteria")
@@ -222,7 +219,6 @@ func (mgr *systemArtifactManager) cleanup(ctx context.Context, criteria Selector
 	records, err := criteria.List(ctx)
 
 	if err != nil {
-
 		return totalRecordsDeleted, totalReclaimedSize, err
 	}
 

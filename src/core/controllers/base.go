@@ -154,5 +154,4 @@ func init() {
 			log.Errorf("failed to load app config: %v", err)
 		}
 	}
-
 }

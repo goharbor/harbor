@@ -84,7 +84,6 @@ func (ps *PreheatingStatus) String() string {
 		}
 	default:
 		t = fmt.Sprintf("%s, start time=%s", t, ps.StartTime)
-
 	}
 
 	return t

@@ -245,7 +245,6 @@ func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *h
 
 	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
 	dh.handleJSONData(w, req, http.StatusOK, executions)
-
 }
 
 // HandleGetJobsReq is implementation of method defined in interface 'Handler'

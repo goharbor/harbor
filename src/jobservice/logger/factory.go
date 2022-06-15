@@ -27,7 +27,6 @@ func FileFactory(options ...OptionItem) (Interface, error) {
 		case "depth":
 			depth = op.Int()
 		default:
-
 		}
 	}
 

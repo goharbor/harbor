@@ -117,7 +117,6 @@ func NewJobServiceServer() *httptest.Server {
 						panic(err)
 					}
 					return
-
 				}
 			}
 		})

@@ -7,7 +7,6 @@ import (
 )
 
 func parseLevel(lvl string) log.Level {
-
 	var level = log.WarningLevel
 
 	switch strings.ToLower(lvl) {

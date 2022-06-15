@@ -51,5 +51,4 @@ func (h *Handler) Get() {
 	}
 	h.Data["json"] = token
 	h.ServeJSON()
-
 }

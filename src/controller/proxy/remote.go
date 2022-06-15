@@ -56,7 +56,6 @@ func NewRemoteHelper(ctx context.Context, regID int64) (RemoteInterface, error) 
 }
 
 func (r *remoteHelper) init(ctx context.Context) error {
-
 	if r.registry != nil {
 		return nil
 	}

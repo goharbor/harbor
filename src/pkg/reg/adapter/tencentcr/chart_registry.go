@@ -113,7 +113,6 @@ func (a *adapter) fetchCharts(namespaces []string, filters []*model.Filter) (res
 				})
 			}
 		}
-
 	}
 
 	return

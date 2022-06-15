@@ -97,7 +97,6 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetSta
 			return s.SendError(ctx, err)
 		}
 		statistic.TotalStorageConsumption = sum
-
 	} else {
 		var privProjectIDs []interface{}
 		if sc, ok := securityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {

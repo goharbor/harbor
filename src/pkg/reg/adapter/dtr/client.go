@@ -27,7 +27,6 @@ type Client struct {
 
 // NewClient creates a new DTR client.
 func NewClient(registry *model.Registry) *Client {
-
 	client := &Client{
 		url:      registry.URL,
 		username: registry.Credential.AccessKey,

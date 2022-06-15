@@ -107,7 +107,6 @@ func (d *dao) Update(ctx context.Context, instance *provider.Instance, props ...
 		return
 	}
 	return orm.WithTransaction(trans)(orm.SetTransactionOpNameToContext(ctx, "tx-prehead-update"))
-
 }
 
 // Delete deletes one distribution instance by id.

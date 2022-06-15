@@ -245,7 +245,6 @@ func (oc *OIDCController) Onboard() {
 		oc.DelSession(userInfoKey)
 		oc.PopulateUserSession(*user)
 	}
-
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
