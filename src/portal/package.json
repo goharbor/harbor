@@ -55,7 +55,7 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~13.3.4",
+    "@angular-devkit/build-angular": "~13.3.8",
     "@angular-eslint/builder": "13.2.1",
     "@angular-eslint/eslint-plugin": "13.2.1",
     "@angular-eslint/eslint-plugin-template": "13.2.1",
@@ -82,7 +82,6 @@
     "ng-swagger-gen": "^1.8.1",
     "prettier": "^2.6.2",
     "prettier-eslint": "^14.0.2",
-    "prettier-stylelint": "^0.4.2",
     "protractor": "^7.0.0",
     "stylelint": "^14.8.5",
     "stylelint-config-prettier": "^9.0.3",
