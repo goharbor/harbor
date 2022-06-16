@@ -97,7 +97,6 @@ func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig strin
 		return
 	}
 	log.Debugf("Saved key:%v, value:%v", key, newDig)
-
 }
 
 func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string, manifest distribution.Manifest) (distribution.Manifest, error) {

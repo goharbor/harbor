@@ -101,7 +101,6 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 				notification.AddEvent(ctx, e)
 			}
 		}
-
 	}
 
 	return nil

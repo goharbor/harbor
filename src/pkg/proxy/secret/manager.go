@@ -89,7 +89,6 @@ func (man *mgr) delete(sec string) {
 			man.m.Delete(sec)
 			atomic.AddUint64(&man.size, ^uint64(0))
 		}
-
 	}
 }
 

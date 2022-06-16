@@ -45,7 +45,6 @@ func (cleanupCriteria *defaultSelector) ListWithFilters(ctx context.Context, que
 }
 
 func (cleanupCriteria *defaultSelector) List(ctx context.Context) ([]*model.SystemArtifact, error) {
-
 	currentTime := time.Now()
 	duration := time.Duration(DefaultCleanupWindowSeconds) * time.Second
 	timeRange := q.Range{Max: currentTime.Add(-duration).Format(time.RFC3339)}

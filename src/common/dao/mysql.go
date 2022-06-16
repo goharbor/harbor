@@ -44,7 +44,6 @@ func NewMySQL(host, port, usr, pwd, database string) Database {
 
 // Register registers MySQL as the underlying database used
 func (m *mysql) Register(alias ...string) error {
-
 	if err := utils.TestTCPConn(m.host+":"+m.port, 60, 2); err != nil {
 		return err
 	}

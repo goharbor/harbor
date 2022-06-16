@@ -106,7 +106,6 @@ func (l *ldapAPI) SearchLdapGroup(ctx context.Context, params operation.SearchLd
 	var groupName, groupDN string
 	if params.Groupname != nil && len(*params.Groupname) > 0 {
 		groupName = *params.Groupname
-
 	}
 	if params.Groupdn != nil {
 		groupDN = *params.Groupdn

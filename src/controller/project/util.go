@@ -57,7 +57,6 @@ func ListAll(ctx context.Context, chunkSize int, query *q.Query, options ...Opti
 
 			query.PageNumber++
 		}
-
 	}()
 
 	return ch

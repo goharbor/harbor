@@ -113,7 +113,6 @@ func (m *manager) ImportUser(ctx context.Context, sess *Session, ldapImportUsers
 			failedImportUser = append(failedImportUser, u)
 			log.Errorf("Can't import user %s, error: %s", tempUID, u.Error)
 		}
-
 	}
 
 	return failedImportUser, nil

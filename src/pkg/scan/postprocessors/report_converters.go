@@ -55,7 +55,6 @@ func NewNativeToRelationalSchemaConverter() NativeScanReportConverter {
 
 // ToRelationalSchema converts the vulnerability report data present as JSON  to the new relational VulnerabilityRecord instance
 func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, reportData string) (string, string, error) {
-
 	if len(reportData) == 0 {
 		log.G(ctx).Infof("There is no vulnerability report to toSchema for report UUID : %s", reportUUID)
 		return reportUUID, "", nil
@@ -95,7 +94,6 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 }
 
 func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, rawReportData string) error {
-
 	var vulnReport vuln.Report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
 	if err != nil {

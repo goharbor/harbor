@@ -44,7 +44,6 @@ func InitBackendWorker(redisPoolConfig *RedisPoolConfig) {
 	jsNamespace = fmt.Sprintf("{%s}", redisPoolConfig.Namespace)
 	// Start the backend worker
 	jsClient = work.NewClient(jsNamespace, pool)
-
 }
 
 // GetBackendWorker ...

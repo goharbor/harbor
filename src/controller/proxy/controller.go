@@ -185,7 +185,6 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	}
 	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
 	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
-
 }
 
 func manifestListKey(repo, dig string) string {

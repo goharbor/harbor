@@ -22,7 +22,6 @@ import (
 // NewAuthorizer returns a null authorizer
 func NewAuthorizer() lib.Authorizer {
 	return &authorizer{}
-
 }
 
 type authorizer struct{}

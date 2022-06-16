@@ -372,7 +372,6 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 				needSch = true
 			}
 		}
-
 	}
 
 	// unschedule old

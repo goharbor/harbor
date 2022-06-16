@@ -74,7 +74,6 @@ func InitDatabase(database *models.Database) error {
 }
 
 func getDatabase(database *models.Database) (db Database, err error) {
-
 	switch database.Type {
 	case "", "postgresql":
 		db = NewPGSQL(

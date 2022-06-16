@@ -55,7 +55,6 @@ func (l Level) string() (lvl string) {
 }
 
 func parseLevel(lvl string) (level Level, err error) {
-
 	switch strings.ToLower(lvl) {
 	case "debug":
 		level = DebugLevel

@@ -168,7 +168,6 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 			}
 			member.EntityID = groupID
 		}
-
 	} else if len(req.MemberGroup.GroupName) > 0 {
 		// all group type can be added to project member by name
 		ugs, err := usergroup.Mgr.List(ctx, q.New(q.KeyWords{"GroupName": req.MemberGroup.GroupName, "GroupType": req.MemberGroup.GroupType}))
@@ -184,7 +183,6 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		} else {
 			member.EntityID = ugs[0].ID
 		}
-
 	}
 	if member.EntityID <= 0 {
 		return 0, fmt.Errorf("can not get valid member entity, request: %+v", req)

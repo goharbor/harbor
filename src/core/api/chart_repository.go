@@ -583,7 +583,6 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 		if err != nil {
 			return fmt.Errorf("copy file stream in multipart form data failed with error: %s", err.Error())
 		}
-
 	}
 
 	request.Header.Set(headerContentType, w.FormDataContentType())

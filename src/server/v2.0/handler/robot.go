@@ -133,7 +133,6 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 			}
 			projectID = pid
 		}
-
 	} else {
 		level = robot.LEVELSYSTEM
 		query.Keywords["ProjectID"] = 0

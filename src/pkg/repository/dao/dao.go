@@ -147,7 +147,6 @@ func (d *dao) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	}
 	if num == 0 {
 		return errors.New(nil).WithMessage("failed to increase repository pull count: %d", id)
-
 	}
 	return nil
 }

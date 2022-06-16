@@ -74,7 +74,6 @@ func InitDatabaseFromEnv() {
 	if err := updateUserInitialPassword(1, adminPwd); err != nil {
 		log.Fatalf("failed to init password for admin: %v", err)
 	}
-
 }
 
 func updateUserInitialPassword(userID int, password string) error {
