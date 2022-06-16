@@ -7,9 +7,13 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+func init() {
+	jwt.MarshalSingleStringAsArray = false
+}
+
 // Claim implements the interface of jwt.Claims
 type Claim struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	TokenID   int64           `json:"id"`
 	ProjectID int64           `json:"pid"`
 	Access    []*types.Policy `json:"access"`
@@ -26,7 +30,7 @@ func (rc Claim) Valid() error {
 	if rc.Access == nil {
 		return errors.New("the access info cannot be nil")
 	}
-	stdErr := rc.StandardClaims.Valid()
+	stdErr := rc.RegisteredClaims.Valid()
 	if stdErr != nil {
 		return stdErr
 	}
