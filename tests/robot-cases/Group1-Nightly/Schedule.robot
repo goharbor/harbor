@@ -104,6 +104,7 @@ Test Case - GC Schedule Job
     END
     #Only return latest 10 records for GC job
     Should Be True  ${len} > 3 and ${len} < 6
+    Close Browser
 
 Test Case - Scan Schedule Job
     [tags]  Scan_schedule
@@ -143,6 +144,7 @@ Test Case - Scan Schedule Job
     Go Into Repo  ${project_name}/${image}
     Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  Critical  High
+    Close Browser
 
 Test Case - Replication Schedule Job
     [tags]  Replication_schedule
@@ -194,3 +196,36 @@ Test Case - Replication Schedule Job
     Go Into Project  ${project_name}
     Go Into Repo  ${project_name}/${image_b}
     Artifact Exist  ${tag_b}
+    Close Browser
+
+Test Case - P2P Preheat Schedule Job
+    [Tags]  p2p_preheat_schedule  need_distribution_endpoint
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%M
+    ${project_name}=  Set Variable  p2p_preheat_schedule_proj${d}
+    ${dist_name}=  Set Variable  distribution${d}
+    ${policy_name}=  Set Variable  policy${d}
+    ${image}=  Set Variable  busybox
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
+    Create An New Project And Go Into Project  ${project_name}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}
+    Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  **  **
+    Set P2P Preheat Policy Schedule  ${policy_name}  Custom  0 */2 * * * *
+    Sleep  480
+    Edit A P2P Preheat Policy  ${policy_name}  **  Manual
+    Sleep  180
+    ${logs}=  Get P2P Preheat Logs  ${project_name}  ${policy_name}
+    ${logs}=  Evaluate  json.loads("""${logs}""")  json
+    ${len}=  Get Length  ${logs}
+    FOR  ${log}  IN  @{logs}
+        Log  ${log}
+        Should Be Equal As Strings  ${log["trigger"]}  scheduled
+        Should Be Equal As Strings  ${log["status"]}  Success
+        Should Be Equal As Strings  ${log["vendor_type"]}  P2P_PREHEAT
+    END
+    Should Be True  ${len} > 3 and ${len} < 6
+    Delete A P2P Preheat Policy  ${policy_name}
+    Delete A Distribution  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
+    Close Browser
