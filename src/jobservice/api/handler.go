@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -303,7 +304,11 @@ func extractQuery(req *http.Request) *query.Parameter {
 		Extras:     make(query.ExtraParameters),
 	}
 
-	queries := req.URL.Query()
+	queries, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		return q
+	}
+
 	// Page number
 	p := queries.Get(query.ParamKeyPage)
 	if !utils.IsEmptyStr(p) {

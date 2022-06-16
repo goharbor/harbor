@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -71,22 +72,27 @@ func (oc *OIDCController) RedirectLogin() {
 // Callback handles redirection from OIDC provider.  It will exchange the token and
 // kick off onboard if needed.
 func (oc *OIDCController) Callback() {
-	if oc.Ctx.Request.URL.Query().Get("state") != oc.GetSession(stateKey) {
+	values, err := url.ParseQuery(oc.Ctx.Request.URL.RawQuery)
+	if err != nil {
+		oc.SendBadRequestError(errors.Wrap(err, "Bad Request"))
+		return
+	}
+	if values.Get("state") != oc.GetSession(stateKey) {
 		log.Errorf("State mismatch, in session: %s, in url: %s", oc.GetSession(stateKey),
-			oc.Ctx.Request.URL.Query().Get("state"))
+			values.Get("state"))
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
 
-	errorCode := oc.Ctx.Request.URL.Query().Get("error")
+	errorCode := values.Get("error")
 	if errorCode != "" {
-		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
+		errorDescription := values.Get("error_description")
 		log.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription)
 		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
 		return
 	}
 
-	code := oc.Ctx.Request.URL.Query().Get("code")
+	code := values.Get("code")
 	ctx := oc.Ctx.Request.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
 	if err != nil {

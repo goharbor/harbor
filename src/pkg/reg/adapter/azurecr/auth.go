@@ -140,7 +140,10 @@ func (a *authorizer) buildTokenAPI(u *url.URL) (*url.URL, error) {
 		return nil, err
 	}
 
-	query := tokenURL.Query()
+	query, err := url.ParseQuery(tokenURL.RawQuery)
+	if err != nil {
+		return nil, err
+	}
 	query.Add("service", challenge.Parameters["service"])
 
 	var repository string

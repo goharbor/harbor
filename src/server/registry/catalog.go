@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 
@@ -42,7 +43,11 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	var maxEntries int
 	var err error
 
-	reqQ := req.URL.Query()
+	reqQ, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		lib_http.SendError(w, err)
+		return
+	}
 	lastEntry := reqQ.Get("last")
 	withN := reqQ.Get("n") != ""
 	if withN {

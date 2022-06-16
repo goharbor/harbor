@@ -17,6 +17,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
 )
@@ -50,9 +51,12 @@ func (a *apiKeyAuthorizer) Modify(r *http.Request) error {
 		r.Header.Set(a.key, a.value)
 		return nil
 	case APIKeyInQuery:
-		query := r.URL.Query()
-		query.Add(a.key, a.value)
-		r.URL.RawQuery = query.Encode()
+		values, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return err
+		}
+		values.Add(a.key, a.value)
+		r.URL.RawQuery = values.Encode()
 		return nil
 	}
 	return fmt.Errorf("set api key in %s is invalid", a.in)

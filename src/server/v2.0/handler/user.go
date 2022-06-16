@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -105,7 +106,10 @@ func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersPara
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
-	values := params.HTTPRequest.URL.Query()
+	values, err := url.ParseQuery(params.HTTPRequest.URL.RawQuery)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
 	for _, k := range []string{"username", "email"} {
 		if v := values.Get(k); v != "" {
 			query.Keywords[k] = &q.FuzzyMatchValue{Value: v}

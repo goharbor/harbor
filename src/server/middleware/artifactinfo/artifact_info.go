@@ -105,9 +105,13 @@ func projectNameFromRepo(repo string) (string, error) {
 	return components[0], nil
 }
 
-func parse(url *url.URL) (map[string]string, bool, error) {
-	path := url.Path
-	query := url.Query()
+func parse(u *url.URL) (map[string]string, bool, error) {
+	path := u.Path
+	values, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return nil, false, errors.BadRequestError(err)
+	}
+
 	m := make(map[string]string)
 	match := false
 	for key, re := range urlPatterns {
@@ -117,9 +121,9 @@ func parse(url *url.URL) (map[string]string, bool, error) {
 			for i := 1; i < len(l); i++ {
 				m[re.SubexpNames()[i]] = l[i]
 			}
-			if key == "blob_upload" && len(query.Get(blobFromQuery)) > 0 {
-				m[blobMountDigest] = query.Get(blobMountQuery)
-				m[blobMountRepo] = query.Get(blobFromQuery)
+			if key == "blob_upload" && len(values.Get(blobFromQuery)) > 0 {
+				m[blobMountDigest] = values.Get(blobMountQuery)
+				m[blobMountRepo] = values.Get(blobFromQuery)
 			}
 			break
 		}

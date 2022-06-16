@@ -60,8 +60,10 @@ func IndexString(strs []string, x string) int {
 
 // ParseNAndLastParameters parse the n and last parameters from the query of the http request
 func ParseNAndLastParameters(r *http.Request) (*int, string, error) {
-	q := r.URL.Query()
-
+	q, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return nil, "", err
+	}
 	var n *int
 
 	if q.Get("n") != "" {

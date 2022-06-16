@@ -94,18 +94,21 @@ type token struct {
 }
 
 func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
-	url, err := url.Parse(a.realm)
+	u, err := url.Parse(a.realm)
 	if err != nil {
 		return nil, err
 	}
-	query := url.Query()
-	query.Add("service", a.service)
-	for _, scope := range scopes {
-		query.Add("scope", scope.String())
+	values, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return nil, err
 	}
-	url.RawQuery = query.Encode()
+	values.Add("service", a.service)
+	for _, scope := range scopes {
+		values.Add("scope", scope.String())
+	}
+	u.RawQuery = values.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}

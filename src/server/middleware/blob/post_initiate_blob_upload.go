@@ -16,6 +16,7 @@ package blob
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -29,7 +30,10 @@ func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		query := r.URL.Query()
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return err
+		}
 
 		mount := query.Get("mount")
 		if mount == "" {

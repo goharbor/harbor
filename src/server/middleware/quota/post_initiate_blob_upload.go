@@ -16,6 +16,7 @@ package quota
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/blob"
@@ -35,7 +36,10 @@ func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 }
 
 func postInitiateBlobUploadResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
-	query := r.URL.Query()
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return nil, err
+	}
 	mount := query.Get("mount")
 	if mount == "" {
 		// it is not mount blob http request, skip to request the resources

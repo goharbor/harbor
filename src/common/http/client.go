@@ -178,7 +178,7 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 // GetAndIteratePagination iterates the pagination header and returns all resources
 // The parameter "v" must be a pointer to a slice
 func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
-	url, err := url.Parse(endpoint)
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return err
 	}
@@ -224,15 +224,19 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		links := lib.ParseLinks(resp.Header.Get("Link"))
 		for _, link := range links {
 			if link.Rel == "next" {
-				endpoint = url.Scheme + "://" + url.Host + link.URL
-				url, err = url.Parse(endpoint)
+				endpoint = u.Scheme + "://" + u.Host + link.URL
+				u, err = u.Parse(endpoint)
 				if err != nil {
 					return err
 				}
 				// encode the query parameters to avoid bad request
 				// e.g. ?q=name={p1 p2 p3} need to be encoded to ?q=name%3D%7Bp1+p2+p3%7D
-				url.RawQuery = url.Query().Encode()
-				endpoint = url.String()
+				values, err := url.ParseQuery(u.RawQuery)
+				if err != nil {
+					return err
+				}
+				u.RawQuery = values.Encode()
+				endpoint = u.String()
 				break
 			}
 		}

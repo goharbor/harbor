@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -139,13 +140,16 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	if err != nil {
 		return nil, err
 	}
-	url := dc.endpoint + UsersURLSuffix
+	u := dc.endpoint + UsersURLSuffix
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
-	q := req.URL.Query()
+	q, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		return nil, err
+	}
 	q.Add("filter", fmt.Sprintf("Username eq '%s'", username))
 	req.URL.RawQuery = q.Encode()
 	token.SetAuthHeader(req)

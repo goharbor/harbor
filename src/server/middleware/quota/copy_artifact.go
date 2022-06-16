@@ -31,6 +31,7 @@ package quota
 import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -65,7 +66,10 @@ func parseRepositoryName(p string) string {
 }
 
 func copyArtifactResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
-	query := r.URL.Query()
+	query, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return nil, err
+	}
 	from := query.Get("from")
 	if from == "" {
 		// miss the from parameter, skip to request the resources
@@ -137,7 +141,11 @@ func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, s
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
-		query := r.URL.Query()
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			logger.Errorf("parse query %s failed, error: %v", r.URL, err)
+			return nil
+		}
 		from := query.Get("from")
 		if from == "" {
 			// this will never be happened

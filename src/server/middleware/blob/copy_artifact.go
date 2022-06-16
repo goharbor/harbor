@@ -31,6 +31,7 @@ package blob
 import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -56,7 +57,10 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
 
-		query := r.URL.Query()
+		query, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return err
+		}
 		from := query.Get("from")
 		repository, reference, _ := distribution.ParseRef(from)
 

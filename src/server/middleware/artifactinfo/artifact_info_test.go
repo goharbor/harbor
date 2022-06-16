@@ -99,6 +99,12 @@ func TestParseURL(t *testing.T) {
 			match: true,
 		},
 		{
+			input:  "/v2/library/ubuntu/blobs/uploads/?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=old/ubuntu;",
+			expect: nil,
+			match:  false,
+			rc:     errors.BadRequestCode,
+		},
+		{
 			input: "/v2/library/centos/blobs/uploads/u-12345",
 			expect: map[string]string{
 				lib.RepositorySubexp: "library/centos",

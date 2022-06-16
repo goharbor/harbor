@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"path"
 	"runtime"
 	"strings"
@@ -117,7 +118,12 @@ func (su *searchUserHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request
 		http.Error(rw, "invalid token", http.StatusUnauthorized)
 		return
 	}
-	f := req.URL.Query().Get("filter")
+	values, err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		http.Error(rw, "invalid request", http.StatusBadRequest)
+		return
+	}
+	f := values.Get("filter")
 	elements := strings.Split(f, " ")
 	if len(elements) == 3 {
 		if elements[0] == "Username" && elements[1] == "eq" {

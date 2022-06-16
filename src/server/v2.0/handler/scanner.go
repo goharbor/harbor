@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -131,7 +132,10 @@ func (s *scannerAPI) ListScanners(ctx context.Context, params operation.ListScan
 	}
 
 	// compatible with previous version list scanners API
-	values := params.HTTPRequest.URL.Query()
+	values, err := url.ParseQuery(params.HTTPRequest.URL.RawQuery)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
 	for _, k := range []string{"name", "description", "url"} {
 		if v := values.Get(k); v != "" {
 			query.Keywords[k] = &q.FuzzyMatchValue{Value: v}

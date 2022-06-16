@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/docker/distribution/reference"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -63,7 +64,11 @@ func parseScopes(req *http.Request) []*scope {
 		// blob upload
 		repository = subs[1]
 		// blob mount
-		from := req.URL.Query().Get("from")
+		values, err := url.ParseQuery(req.URL.RawQuery)
+		if err != nil {
+			return scopes
+		}
+		from := values.Get("from")
 		if len(from) > 0 {
 			scopes = append(scopes, &scope{
 				Type:    scopeTypeRepository,

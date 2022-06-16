@@ -17,6 +17,7 @@ package blob
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/lib/log"
@@ -33,7 +34,10 @@ import (
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 	before := middleware.BeforeRequest(func(r *http.Request) error {
-		v := r.URL.Query()
+		v, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			return err
+		}
 		digest := v.Get("digest")
 		return probeBlob(r, digest)
 	})

@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
@@ -38,7 +39,13 @@ func (apc *AuthProxyController) Prepare() {
 
 // HandleRedirect reviews the token and login the user based on the review status.
 func (apc *AuthProxyController) HandleRedirect() {
-	token := apc.Ctx.Request.URL.Query().Get(authproxyTokenKey)
+	values, err := url.ParseQuery(apc.Ctx.Request.URL.RawQuery)
+	if err != nil {
+		log.Errorf("Failed to parse url query: %v", err)
+		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
+		return
+	}
+	token := values.Get(authproxyTokenKey)
 	if token == "" {
 		log.Errorf("No token found in request.")
 		apc.Ctx.Redirect(http.StatusMovedPermanently, "/")
@@ -56,7 +63,7 @@ func (apc *AuthProxyController) HandleRedirect() {
 		return
 	}
 	apc.PopulateUserSession(*u)
-	uri := apc.Ctx.Request.URL.Query().Get(postURIKey)
+	uri := values.Get(postURIKey)
 	if uri == "" {
 		uri = "/"
 	}

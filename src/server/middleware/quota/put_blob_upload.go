@@ -16,6 +16,7 @@ package quota
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/blob"
@@ -53,7 +54,11 @@ func putBlobUploadResources(r *http.Request, reference, referenceID string) (typ
 
 	projectID, _ := strconv.ParseInt(referenceID, 10, 64)
 
-	digest := r.URL.Query().Get("digest")
+	values, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return nil, err
+	}
+	digest := values.Get("digest")
 	exist, err := blobController.Exist(r.Context(), digest, blob.IsAssociatedWithProject(projectID))
 	if err != nil {
 		logger.Errorf("checking blob %s is associated with project %d failed, error: %v", digest, projectID, err)

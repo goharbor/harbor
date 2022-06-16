@@ -50,6 +50,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 		return "", fmt.Errorf("the security context got from request is nil")
 	}
 	al := accessList(req)
+
 	if len(al) == 0 {
 		return "", fmt.Errorf("un-recognized request: %s %s", req.Method, req.URL.Path)
 	}

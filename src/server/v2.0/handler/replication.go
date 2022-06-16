@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -240,7 +241,11 @@ func (r *replicationAPI) StartReplication(ctx context.Context, params operation.
 	// to trigger the scheduled replication, a query string "trigger" is added when sending the request
 	// here is the logic to cover this part
 	trigger := task.ExecutionTriggerManual
-	if params.HTTPRequest.URL.Query().Get("trigger") == "scheduled" {
+	values, err := url.ParseQuery(params.HTTPRequest.URL.RawQuery)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	if values.Get("trigger") == "scheduled" {
 		trigger = task.ExecutionTriggerSchedule
 	}
 

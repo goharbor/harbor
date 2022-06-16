@@ -582,16 +582,19 @@ func buildInitiateBlobUploadURL(endpoint, repository string) string {
 }
 
 func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {
-	url, err := url.Parse(location)
+	u, err := url.Parse(location)
 	if err != nil {
 		return "", err
 	}
-	q := url.Query()
+	q, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return "", err
+	}
 	q.Set("digest", digest)
-	url.RawQuery = q.Encode()
-	if url.IsAbs() {
-		return url.String(), nil
+	u.RawQuery = q.Encode()
+	if u.IsAbs() {
+		return u.String(), nil
 	}
 	// the "relativeurls" is enabled in registry
-	return endpoint + url.String(), nil
+	return endpoint + u.String(), nil
 }
