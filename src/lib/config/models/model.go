@@ -106,3 +106,7 @@ type GroupConf struct {
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
 }
+
+type GDPRSetting struct {
+	DeleteUser bool `json:"user_delete,omitempty"`
+}

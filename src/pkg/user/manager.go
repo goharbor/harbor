@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
+	"hash/crc32"
 	"strings"
 )
 
@@ -46,6 +47,8 @@ type Manager interface {
 	Create(ctx context.Context, user *commonmodels.User) (int, error)
 	// Delete deletes the user by updating user's delete flag and update the name and Email
 	Delete(ctx context.Context, id int) error
+	// DeleteGDPR deletes the user by updating user's delete flag and replace identifiable data with its crc
+	DeleteGDPR(ctx context.Context, id int) error
 	// SetSysAdminFlag sets the system admin flag of the user in local DB
 	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
 	// UpdateProfile updates the user's profile
@@ -100,6 +103,18 @@ func (m *manager) Delete(ctx context.Context, id int) error {
 	u.Email = lib.Truncate(u.Email, fmt.Sprintf("#%d", u.UserID), 255)
 	u.Deleted = true
 	return m.dao.Update(ctx, u, "username", "email", "deleted")
+}
+
+func (m *manager) DeleteGDPR(ctx context.Context, id int) error {
+	u, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	u.Username = fmt.Sprintf("%s#%d", checkSum(u.Username), u.UserID)
+	u.Email = fmt.Sprintf("%s#%d", checkSum(u.Email), u.UserID)
+	u.Realname = fmt.Sprintf("%s#%d", checkSum(u.Realname), u.UserID)
+	u.Deleted = true
+	return m.dao.Update(ctx, u, "username", "email", "realname", "deleted")
 }
 
 func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, password string) (*commonmodels.User, error) {
@@ -201,4 +216,8 @@ func injectPasswd(u *commonmodels.User, password string) {
 	u.Password = utils.Encrypt(password, salt, utils.SHA256)
 	u.Salt = salt
 	u.PasswordVersion = utils.SHA256
+}
+
+func checkSum(str string) string {
+	return fmt.Sprintf("%08x", crc32.Checksum([]byte(str), crc32.IEEETable))
 }

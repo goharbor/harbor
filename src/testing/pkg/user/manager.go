@@ -74,6 +74,20 @@ func (_m *Manager) Delete(ctx context.Context, id int) error {
 	return r0
 }
 
+// DeleteGDPR provides a mock function with given fields: ctx, id
+func (_m *Manager) DeleteGDPR(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *Manager) Get(ctx context.Context, id int) (*models.User, error) {
 	ret := _m.Called(ctx, id)
