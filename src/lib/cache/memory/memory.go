@@ -75,7 +75,9 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 	e := v.(*entry)
 	if e.isExpirated() {
 		err := c.Delete(ctx, c.opts.Key(key))
-		log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
+		if err != nil {
+			log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
+		}
 		return cache.ErrNotFound
 	}
 

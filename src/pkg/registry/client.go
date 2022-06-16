@@ -26,8 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/config"
-
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
 	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
@@ -35,8 +33,11 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -46,7 +47,7 @@ var (
 	Cli = func() Client {
 		url, _ := config.RegistryURL()
 		username, password := config.RegistryCredential()
-		return NewClient(url, username, password, false)
+		return NewClient(url, username, password, false, readonly.NewInterceptor())
 	}()
 
 	accepts = []string{
@@ -101,10 +102,17 @@ type Client interface {
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
-func NewClient(url, username, password string, insecure bool) Client {
+func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure)
+	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
+}
+
+// NewClientWithAuthorizer creates a registry client with the provided authorizer
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	return &client{
-		url:        url,
-		authorizer: auth.NewAuthorizer(username, password, insecure),
+		url:          url,
+		authorizer:   authorizer,
+		interceptors: interceptors,
 		client: &http.Client{
 			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 			Timeout:   30 * time.Minute,
@@ -112,21 +120,11 @@ func NewClient(url, username, password string, insecure bool) Client {
 	}
 }
 
-// NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool) Client {
-	return &client{
-		url:        url,
-		authorizer: authorizer,
-		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
-		},
-	}
-}
-
 type client struct {
-	url        string
-	authorizer lib.Authorizer
-	client     *http.Client
+	url          string
+	authorizer   lib.Authorizer
+	interceptors []interceptor.Interceptor
+	client       *http.Client
 }
 
 func (c *client) Ping() error {
@@ -510,6 +508,11 @@ func (c *client) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (c *client) do(req *http.Request) (*http.Response, error) {
+	for _, interceptor := range c.interceptors {
+		if err := interceptor.Intercept(req); err != nil {
+			return nil, err
+		}
+	}
 	if c.authorizer != nil {
 		if err := c.authorizer.Modify(req); err != nil {
 			return nil, err
