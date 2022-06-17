@@ -232,3 +232,15 @@ func (g *gcAPI) GetGCLog(ctx context.Context, params operation.GetGCLogParams) m
 	}
 	return operation.NewGetGCLogOK().WithPayload(string(log))
 }
+
+func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middleware.Responder {
+	if err := g.RequireSystemAccess(ctx, rbac.ActionStop, rbac.ResourceGarbageCollection); err != nil {
+		return g.SendError(ctx, err)
+	}
+
+	if err := g.gcCtr.Stop(ctx, params.GCID); err != nil {
+		return g.SendError(ctx, err)
+	}
+
+	return operation.NewStopGCOK()
+}
