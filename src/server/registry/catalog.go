@@ -75,7 +75,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	}
 
 	// handle the pagination
-	resRepos := repoNames
+	var resRepos []string
 	repoNamesLen := len(repoNames)
 	// with "last", get items form lastEntryIndex+1 to lastEntryIndex+maxEntries
 	// without "last", get items from 0 to maxEntries'

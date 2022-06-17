@@ -50,7 +50,7 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 		}
 
 		var tokenRequest = cr.CreateGetAuthorizationTokenRequest()
-		var tokenResponse = cr.CreateGetAuthorizationTokenResponse()
+		var tokenResponse *cr.GetAuthorizationTokenResponse
 		tokenRequest.SetDomain(fmt.Sprintf(endpointTpl, a.region))
 		tokenResponse, err = client.GetAuthorizationToken(tokenRequest)
 		if err != nil {

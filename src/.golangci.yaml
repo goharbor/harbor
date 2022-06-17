@@ -22,7 +22,7 @@ linters:
     # - gocyclo
     # - goimports
     # - goprintffuncname
-    # - ineffassign
+    - ineffassign
     # - nakedret
     # - nolintlint
     # - revive
