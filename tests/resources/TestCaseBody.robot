@@ -475,3 +475,118 @@ Body Of Stop Scan And Stop Scan All
 Prepare Image Package Test Files
     [Arguments]  ${files_path}
     ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}
+
+Verify Webhook By Artifact Pushed Event
+    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}    
+    &{artifact_pushed_property}=  Create Dictionary  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    Verify Request  &{artifact_pushed_property}
+    Clean All Local Images
+
+Verify Webhook By Artifact Pulled Event
+    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Clean All Local Images
+    Docker Login  ${ip}  ${user}  ${pwd}
+    Docker Pull  ${ip}/${project_name}/${image}:${tag}
+    Docker Logout  ${ip}
+    &{artifact_pulled_property}=  Create Dictionary  type=PULL_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}
+    Verify Request  &{artifact_pulled_property}
+
+Verify Webhook By Artifact Deleted Event
+    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    @{tag_list}  Create List  ${tag}
+    Multi-delete Artifact  @{tag_list}
+    Switch Window  ${webhook_handle}
+    &{artifact_deleted_property}=  Create Dictionary  type=DELETE_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    Verify Request  &{artifact_deleted_property}
+
+Verify Webhook By Scanning Finished Event
+    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Switch Window  ${webhook_handle}
+    &{scanning_finished_property}=  Create Dictionary  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
+    Verify Request  &{scanning_finished_property}
+
+Verify Webhook By Scanning Stopped Event
+    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Switch Window  ${harbor_handle}
+    Scan Artifact  ${project_name}  ${image}
+    Stop Scan Artifact
+    Check Scan Artifact Job Status Is Stopped
+    Switch Window  ${webhook_handle}
+    &{scanning_stopped_property}=  Create Dictionary  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
+    Verify Request  &{scanning_stopped_property}
+
+Verify Webhook By Tag Retention Finished Event
+    [Arguments]  ${project_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag1}  ${tag1}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag2}  ${tag2}
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Tag Retention
+    Execute Run  ${image}
+    Switch Window  ${webhook_handle}
+    &{tag_retention_finished_property}=  Create Dictionary  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
+    Verify Request  &{tag_retention_finished_property}
+
+Verify Webhook By Replication Finished Event
+    [Arguments]  ${project_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Switch Window  ${harbor_handle}
+    Switch To Replication Manage
+    Select Rule And Replicate  ${replication_rule_name}
+    Retry Wait Until Page Contains  Succeeded
+    Switch Window  ${webhook_handle}
+    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}  
+    Verify Request  &{replication_finished_property}
+
+Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
+    [Arguments]  ${webhook_endpoint_url}  ${harbor_handle}  ${webhook_handle}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  nginx
+    ${tag1}=  Set Variable  1.17.6
+    ${tag2}=  Set Variable  1.14.0
+    ${storage_quota}=  Set Variable  50
+    Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=MiB
+    Switch To Project Webhooks
+    ${event_type}  Create List  Quota near threshold
+    Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${event_type}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    # Quota near threshold
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  ${tag1}  ${tag1}
+    &{quota_near_threshold_property}=  Create Dictionary  type=QUOTA_WARNING  name=nginx  namespace=project${d}
+    Verify Request  &{quota_near_threshold_property}
+    Retry Action Keyword  Verify Webhook By Quota Exceed Event  project${d}  webhook${d}  ${image}  ${tag2}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+
+Verify Webhook By Quota Exceed Event
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+    # Quota exceed
+    Switch Window  ${harbor_handle}
+    Delete A Webhook  ${webhook_name}
+    ${event_type}  Create List  Quota exceed
+    Create A New Webhook  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}
+    Switch Window  ${webhook_handle}
+    Delete All Requests
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}  err_msg=adding 21.1 MiB of storage resource, which when updated to current usage of 48.5 MiB will exceed the configured upper limit of ${storage_quota}.0 MiB.
+    &{quota_exceed_property}=  Create Dictionary  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
+    Verify Request  &{quota_exceed_property}
