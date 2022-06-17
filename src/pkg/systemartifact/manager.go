@@ -19,6 +19,7 @@ var (
 )
 
 const repositoryFormat = "sys_harbor/%s/%s"
+const systemArtifactProjectName = "sys_h@rb0r"
 
 // Manager provides a low-level interface for harbor services
 // to create registry artifacts containing arbitrary data but which
@@ -64,6 +65,10 @@ type Manager interface {
 	// artifact records selected by the Selector registered for each vendor type.
 	// Returns the total number of records deleted, the reclaimed size and any error (if encountered)
 	Cleanup(ctx context.Context) (int64, int64, error)
+
+	// GetSystemArtifactProjectNames returns a list of project names that are reserved
+	// to be used by the system artifact manager for creation of system artifacts.
+	GetSystemArtifactProjectNames() []string
 }
 
 type systemArtifactManager struct {
@@ -165,6 +170,10 @@ func (mgr *systemArtifactManager) GetCleanupCriteria(vendor string, artifactType
 		return criteria
 	}
 	return DefaultSelector
+}
+
+func (mgr *systemArtifactManager) GetSystemArtifactProjectNames() []string {
+	return []string{systemArtifactProjectName}
 }
 
 func (mgr *systemArtifactManager) Cleanup(ctx context.Context) (int64, int64, error) {
