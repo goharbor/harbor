@@ -65,7 +65,7 @@ func NewClient(ctx context.Context) Client {
 	}
 
 	client := &http.Client{
-		Timeout:   15 * time.Second,
+		Timeout:   30 * time.Second,
 		Transport: transport,
 	}
 

@@ -134,7 +134,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Create stats manager
 		manager = mgt.NewManager(ctx, namespace, redisPool)
 		// Create hook agent, it's a singleton object
-		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
+		// the retryConcurrency keep same with worker num
+		hookAgent := hook.NewAgent(rootContext, namespace, redisPool, workerNum)
 		hookCallback := func(URL string, change *job.StatusChange) error {
 			msg := fmt.Sprintf(
 				"status change: job=%s, status=%s, revision=%d",
