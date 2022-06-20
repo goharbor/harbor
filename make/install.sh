@@ -22,6 +22,9 @@ with_trivy=$false
 # chartmuseum is not enabled by default
 with_chartmuseum=$false
 
+# flag to using docker compose v1 or v2, default would using v1 docker-compose
+DOCKER_COMPOSE=docker-compose
+
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
@@ -88,14 +91,14 @@ fi
 ./prepare $prepare_para
 echo ""
 
-if [ -n "$(docker-compose ps -q)"  ]
-then
-    note "stopping existing Harbor instance ..." 
-    docker-compose down -v
+if [ -n "$DOCKER_COMPOSE ps -q"  ]
+    then
+        note "stopping existing Harbor instance ..." 
+        $DOCKER_COMPOSE down -v
 fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
-docker-compose up -d
+$DOCKER_COMPOSE up -d
 
 success $"----Harbor has been installed and started successfully.----"
