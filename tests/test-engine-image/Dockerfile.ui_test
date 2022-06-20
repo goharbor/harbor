@@ -36,8 +36,8 @@ RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
     requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \
     apt-get clean all
-# Upgrade chromedriver version to 101.0.4951.41
-RUN wget -N https://chromedriver.storage.googleapis.com/101.0.4951.41/chromedriver_linux64.zip && \
+# Upgrade chromedriver version to 102.0.5005.61
+RUN wget -N https://chromedriver.storage.googleapis.com/102.0.5005.61/chromedriver_linux64.zip && \
     unzip chromedriver_linux64.zip && \
     chmod +x chromedriver && \
     mv -f chromedriver /usr/local/share/chromedriver && \
