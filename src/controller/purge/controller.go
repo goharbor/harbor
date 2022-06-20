@@ -55,11 +55,17 @@ func purgeCallback(ctx context.Context, p string) error {
 type Controller interface {
 	// Start kick off a purge schedule
 	Start(ctx context.Context, policy JobPolicy, trigger string) (int64, error)
+	// Stop a purge job
+	Stop(ctx context.Context, id int64) error
 }
 
 type controller struct {
 	taskMgr task.Manager
 	exeMgr  task.ExecutionManager
+}
+
+func (c *controller) Stop(ctx context.Context, id int64) error {
+	return c.exeMgr.Stop(ctx, id)
 }
 
 func (c *controller) Start(ctx context.Context, policy JobPolicy, trigger string) (int64, error) {

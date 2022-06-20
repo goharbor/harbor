@@ -63,6 +63,7 @@ func (suite *PurgeJobTestSuite) TestRun() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, true)
 	auditManager := &mockAudit.Manager{}
 	auditManager.On("Purge", mock.Anything, 128, []string{}, true).Return(int64(100), nil)
 	j := &Job{auditMgr: auditManager}
@@ -75,6 +76,15 @@ func (suite *PurgeJobTestSuite) TestRun() {
 	param2 := job.Parameters{common.PurgeAuditRetentionHour: 24, common.PurgeAuditDryRun: false}
 	ret2 := j2.Run(ctx, param2)
 	suite.Require().NotNil(ret2)
+}
+func (suite *PurgeJobTestSuite) TestStop() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.StopCommand, true)
+	auditManager := &mockAudit.Manager{}
+	j := &Job{auditMgr: auditManager}
+	suite.True(j.shouldStop(ctx))
 }
 
 func TestPurgeJobTestSuite(t *testing.T) {

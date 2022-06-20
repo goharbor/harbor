@@ -92,7 +92,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 	logger.Info("Purge audit job start")
 	logger.Infof("job parameters %+v", params)
-
+	if j.shouldStop(ctx) {
+		log.Info("received the stop signal, stop the purge job")
+		return nil
+	}
 	j.parseParams(params)
 	ormCtx := ctx.SystemContext()
 	if j.retentionHour == -1 || j.retentionHour == 0 {
@@ -114,4 +117,12 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Successfully exit
 	return nil
+}
+
+func (j *Job) shouldStop(ctx job.Context) bool {
+	opCmd, exit := ctx.OPCommand()
+	if exit && opCmd.IsStop() {
+		return true
+	}
+	return false
 }

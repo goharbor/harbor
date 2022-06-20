@@ -4250,6 +4250,26 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+    put:
+      summary: Stop the specific purge audit log execution
+      description: Stop the purge audit log execution specified by ID
+      tags:
+        - purge
+      operationId: stopPurge
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'        
   /system/purgeaudit/{purge_id}/log:
     get:
       summary: Get purge job log.
