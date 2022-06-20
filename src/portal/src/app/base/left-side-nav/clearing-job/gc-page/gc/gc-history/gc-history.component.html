@@ -4,7 +4,21 @@
 <span class="refresh-btn" (click)="refresh()">
     <clr-icon shape="refresh"></clr-icon>
 </span>
-<clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="getJobs(true, $event)">
+<clr-datagrid
+    [(clrDgSelected)]="selectedRow"
+    [clrDgLoading]="loading"
+    (clrDgRefresh)="getJobs(true, $event)">
+    <clr-dg-action-bar>
+        <div class="btn-group">
+            <button
+                type="button"
+                class="btn btn-secondary"
+                [disabled]="!canStop()"
+                (click)="openStopExecutionsDialog()">
+                {{ 'REPLICATION.STOPJOB' | translate }}
+            </button>
+        </div>
+    </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'id'">{{
         'GC.JOB_ID' | translate
     }}</clr-dg-column>

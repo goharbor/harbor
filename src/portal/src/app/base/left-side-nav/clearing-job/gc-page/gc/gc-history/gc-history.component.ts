@@ -1,7 +1,12 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
-import { Subscription, timer } from 'rxjs';
-import { REFRESH_TIME_DIFFERENCE } from '../../../../../../shared/entities/shared.const';
+import { forkJoin, Subscription, timer } from 'rxjs';
+import {
+    ConfirmationButtons,
+    ConfirmationState,
+    ConfirmationTargets,
+    REFRESH_TIME_DIFFERENCE,
+} from '../../../../../../shared/entities/shared.const';
 import { GcService } from '../../../../../../../../ng-swagger-gen/services/gc.service';
 import {
     CURRENT_BASE_HREF,
@@ -14,13 +19,15 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
 import { GCHistory } from '../../../../../../../../ng-swagger-gen/models/gchistory';
 import { JOB_STATUS, NO, YES } from '../../../clearing-job-interfact';
+import { ConfirmationMessage } from '../../../../../global-confirmation-dialog/confirmation-message';
+import { ConfirmationDialogService } from '../../../../../global-confirmation-dialog/confirmation-dialog.service';
 
 @Component({
     selector: 'gc-history',
     templateUrl: './gc-history.component.html',
     styleUrls: ['./gc-history.component.scss'],
 })
-export class GcHistoryComponent implements OnDestroy {
+export class GcHistoryComponent implements OnInit, OnDestroy {
     jobs: Array<GCHistory> = [];
     loading: boolean = true;
     timerDelay: Subscription;
@@ -31,10 +38,62 @@ export class GcHistoryComponent implements OnDestroy {
     page: number = 1;
     total: number = 0;
     state: ClrDatagridStateInterface;
+    selectedRow: GCHistory[] = [];
+    isStopOnGoing: boolean = false;
+    subscription: Subscription;
     constructor(
         private gcService: GcService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private confirmationDialogService: ConfirmationDialogService
     ) {}
+    ngOnInit() {
+        if (!this.subscription) {
+            this.subscription =
+                this.confirmationDialogService.confirmationConfirm$.subscribe(
+                    message => {
+                        if (
+                            message &&
+                            message.state === ConfirmationState.CONFIRMED &&
+                            message.source === ConfirmationTargets.STOP_GC
+                        ) {
+                            this.stopGc(message.data);
+                        }
+                    }
+                );
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.timerDelay) {
+            this.timerDelay.unsubscribe();
+            this.timerDelay = null;
+        }
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+            this.subscription = null;
+        }
+    }
+
+    stopGc(gCHistory: GCHistory[]) {
+        this.isStopOnGoing = true;
+        forkJoin(
+            gCHistory.map(item => {
+                return this.gcService.stopGC({
+                    gcId: item.id,
+                });
+            })
+        )
+            .pipe(finalize(() => (this.isStopOnGoing = false)))
+            .subscribe({
+                next: res => {
+                    this.errorHandler.info('CLEARANCES.STOP_GC_SUCCESS');
+                },
+                error: err => {
+                    this.errorHandler.error(err);
+                },
+            });
+    }
+
     refresh() {
         this.page = 1;
         this.total = 0;
@@ -82,7 +141,22 @@ export class GcHistoryComponent implements OnDestroy {
                         if (xHeader) {
                             this.total = parseInt(xHeader, 0);
                         }
-                        this.jobs = res.body;
+                        if (!withLoading) {
+                            if (res?.body?.length) {
+                                res.body.forEach(item => {
+                                    this.jobs.forEach(item2 => {
+                                        if (item2.id === item.id) {
+                                            item2.job_status = item.job_status;
+                                            item2.update_time =
+                                                item.update_time;
+                                        }
+                                    });
+                                });
+                            }
+                        } else {
+                            this.selectedRow = [];
+                            this.jobs = res.body;
+                        }
                     }
                     // to avoid some jobs not finished.
                     if (!this.timerDelay) {
@@ -125,14 +199,36 @@ export class GcHistoryComponent implements OnDestroy {
         return NO;
     }
 
-    ngOnDestroy() {
-        if (this.timerDelay) {
-            this.timerDelay.unsubscribe();
-            this.timerDelay = null;
-        }
-    }
-
     getLogLink(id): string {
         return `${CURRENT_BASE_HREF}/system/gc/${id}/log`;
+    }
+    canStop(): boolean {
+        if (this.isStopOnGoing) {
+            return false;
+        }
+        if (this.selectedRow?.length) {
+            return (
+                this.selectedRow.filter(item => {
+                    return (
+                        item.job_status === JOB_STATUS.PENDING ||
+                        item.job_status === JOB_STATUS.RUNNING
+                    );
+                })?.length > 0
+            );
+        }
+        return false;
+    }
+
+    openStopExecutionsDialog() {
+        const executionIds = this.selectedRow.map(robot => robot.id).join(',');
+        let StopExecutionsMessage = new ConfirmationMessage(
+            'REPLICATION.STOP_TITLE',
+            'REPLICATION.STOP_SUMMARY',
+            executionIds,
+            this.selectedRow,
+            ConfirmationTargets.STOP_GC,
+            ConfirmationButtons.CONFIRM_CANCEL
+        );
+        this.confirmationDialogService.openComfirmDialog(StopExecutionsMessage);
     }
 }
