@@ -54,6 +54,7 @@ export const enum ConfirmationTargets {
     WEBHOOK,
     ACCESSORY,
     ALL_ACCESSORIES,
+    STOP_GC,
 }
 
 export const enum ActionType {
