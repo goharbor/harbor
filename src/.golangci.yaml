@@ -12,7 +12,7 @@ linters:
     - gofmt
     - goheader
     - misspell
-    # - typecheck
+    - typecheck
     # - dogsled
     # - dupl
     # - depguard
@@ -36,11 +36,11 @@ linters:
     # - noctx
     # - rowserrcheck
     # - staticcheck
-    # - structcheck
+    - structcheck
     # - stylecheck
     # - unconvert
     # - unparam
-    # - unused
+    - unused
     - varcheck
  
 run:
