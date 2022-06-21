@@ -41,7 +41,7 @@ linters:
     # - unconvert
     # - unparam
     # - unused
-    # - varcheck
+    - varcheck
  
 run:
   skip-files:
