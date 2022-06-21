@@ -478,6 +478,12 @@ func (suite *ManagerTestSuite) TestCleanupErrorForVendor() {
 	suite.NoErrorf(err, "Expected no error, but was %v", err)
 }
 
+func (suite *ManagerTestSuite) TestGetSystemArtifactProjectNames() {
+	reservedProjectNames := suite.mgr.GetSystemArtifactProjectNames()
+	suite.Equalf(1, len(reservedProjectNames), "Expected: %d, Actual: %d", 1, len(reservedProjectNames))
+	suite.Equalf(systemArtifactProjectName, reservedProjectNames[0], "Expected: %s, Actual: %s", systemArtifactProjectName, reservedProjectNames[0])
+}
+
 func (suite *ManagerTestSuite) List(ctx context.Context) ([]*model.SystemArtifact, error) {
 	return make([]*model.SystemArtifact, 0), nil
 }

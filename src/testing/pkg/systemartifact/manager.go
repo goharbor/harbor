@@ -139,6 +139,22 @@ func (_m *Manager) GetStorageSize(ctx context.Context) (int64, error) {
 	return r0, r1
 }
 
+// GetSystemArtifactProjectNames provides a mock function with given fields:
+func (_m *Manager) GetSystemArtifactProjectNames() []string {
+	ret := _m.Called()
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // Read provides a mock function with given fields: ctx, vendor, repository, digest
 func (_m *Manager) Read(ctx context.Context, vendor string, repository string, digest string) (io.ReadCloser, error) {
 	ret := _m.Called(ctx, vendor, repository, digest)

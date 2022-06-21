@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/pkg/systemartifact"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/security/local"
@@ -29,17 +30,19 @@ import (
 
 func newStatisticAPI() *statisticAPI {
 	return &statisticAPI{
-		proCtl:  project.Ctl,
-		repoCtl: repository.Ctl,
-		blobCtl: blob.Ctl,
+		proCtl:            project.Ctl,
+		repoCtl:           repository.Ctl,
+		blobCtl:           blob.Ctl,
+		systemArtifactMgr: systemartifact.Mgr,
 	}
 }
 
 type statisticAPI struct {
 	BaseAPI
-	proCtl  project.Controller
-	repoCtl repository.Controller
-	blobCtl blob.Controller
+	proCtl            project.Controller
+	repoCtl           repository.Controller
+	blobCtl           blob.Controller
+	systemArtifactMgr systemartifact.Manager
 }
 
 func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetStatisticParams) middleware.Responder {
@@ -96,7 +99,13 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetSta
 		if err != nil {
 			return s.SendError(ctx, err)
 		}
-		statistic.TotalStorageConsumption = sum
+
+		sysArtifactStorageSize, err := s.systemArtifactMgr.GetStorageSize(ctx)
+
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+		statistic.TotalStorageConsumption = sum + sysArtifactStorageSize
 	} else {
 		var privProjectIDs []interface{}
 		if sc, ok := securityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
