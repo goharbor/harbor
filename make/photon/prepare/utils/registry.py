@@ -1,6 +1,7 @@
 import copy
 import os
 import subprocess
+import bcrypt
 from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID, data_dir
 from urllib.parse import urlsplit
 from utils.jinja import render_jinja
@@ -79,6 +80,14 @@ def get_storage_provider_info(provider_name, provider_config):
     storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
     return storage_provider_info
 
+# def gen_passwd_file(config_dict):
+#     return subprocess.call(["/usr/bin/htpasswd", "-bcB", registry_passwd_path, config_dict['registry_username'],
+#                             config_dict['registry_password']], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+#
+# python3 -c 'import bcrypt; print(bcrypt.hashpw(b"PASSWORD", bcrypt.gensalt(rounds=16)).decode("utf-8"))'
 def gen_passwd_file(config_dict):
-    return subprocess.call(["/usr/bin/htpasswd", "-bcB", registry_passwd_path, config_dict['registry_username'],
-                            config_dict['registry_password']], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    bytePwd = config_dict['registry_password'].encode("utf-8")
+    hashed = bcrypt.hashpw(bytePwd, bcrypt.gensalt(rounds=15)).decode("utf-8")
+    f = open(registry_passwd_path, 'w')
+    f.write(config_dict['registry_username'] + ':' + hashed + '\r\n')
