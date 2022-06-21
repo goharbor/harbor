@@ -203,6 +203,9 @@ func (t *taskDAO) GetMaxEndTime(ctx context.Context, executionID int64) (time.Ti
 	var endTime time.Time
 	err = ormer.Raw("select max(end_time) from task where execution_id = ?", executionID).
 		QueryRow(&endTime)
+	if err != nil {
+		return time.Time{}, err
+	}
 	return endTime, nil
 }
 

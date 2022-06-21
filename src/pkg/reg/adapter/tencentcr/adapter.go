@@ -121,7 +121,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 			Values: []*string{common.StringPtr(strings.ReplaceAll(registryURL.Host, ".tencentcloudcr.com", ""))},
 		},
 	}
-	var resp = tcr.NewDescribeInstancesResponse()
+	var resp *tcr.DescribeInstancesResponse
 	resp, err = client.DescribeInstances(req)
 	if err != nil {
 		log.Errorf("DescribeInstances error=%s", err.Error())

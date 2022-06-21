@@ -74,7 +74,7 @@ func (c *controller) populateRegistry(ctx context.Context, p *pkgmodel.Policy) (
 	if err != nil {
 		return nil, err
 	}
-	var srcRegistryID, destRegistryID int64 = 0, 0
+	var srcRegistryID, destRegistryID int64
 	if policy.SrcRegistry != nil && policy.SrcRegistry.ID != 0 {
 		srcRegistryID = policy.SrcRegistry.ID
 		destRegistryID = 0

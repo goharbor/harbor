@@ -167,7 +167,7 @@ func getAdapterInfo() *model.AdapterPattern {
 func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) {
 	// list namespaces
 	var nsReq = cr.CreateGetNamespaceListRequest()
-	var nsResp = cr.CreateGetNamespaceListResponse()
+	var nsResp *cr.GetNamespaceListResponse
 	nsReq.SetDomain(a.domain)
 	nsResp, err = c.GetNamespaceList(nsReq)
 	if err != nil {

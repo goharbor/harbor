@@ -121,6 +121,10 @@ func (pm *PolicyMigrator) Migrate() error {
 
 				// Transaction
 				err = conn.Send("MULTI")
+				if err != nil {
+					logger.Errorf("send command MULTI failed with error: %s", err)
+					continue
+				}
 				setArgs := []interface{}{
 					fullID,
 					"status",
@@ -135,6 +139,10 @@ func (pm *PolicyMigrator) Migrate() error {
 				}
 				// Set fields
 				err = conn.Send("HMSET", setArgs...)
+				if err != nil {
+					logger.Errorf("send command HMSET failed with error: %s", err)
+					continue
+				}
 
 				// Remove useless fields
 				rmArgs := []interface{}{
@@ -160,6 +168,10 @@ func (pm *PolicyMigrator) Migrate() error {
 					if rawJSON, er := policy.Serialize(); er == nil {
 						// Remove the old one first
 						err = conn.Send("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(pm.namespace), numbericPolicyID, numbericPolicyID)
+						if err != nil {
+							logger.Errorf("send command ZREMRANGEBYSCORE failed with error: %s", err)
+							continue
+						}
 						// Save back to the rdb
 						err = conn.Send("ZADD", rds.KeyPeriodicPolicy(pm.namespace), numbericPolicyID, rawJSON)
 					} else {
