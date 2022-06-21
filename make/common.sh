@@ -113,6 +113,7 @@ function check_dockercompose {
 	if docker compose version &> /dev/null
 	then
 		note "$(docker compose version)"
+		DOCKER_COMPOSE="docker compose"
 
 	# or docker-compose has been installed, check its version
 	elif [[ $(docker-compose --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
