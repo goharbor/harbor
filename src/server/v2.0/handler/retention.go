@@ -202,12 +202,16 @@ func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.Upd
 	if err := r.checkRuleConflict(p); err != nil {
 		return r.SendError(ctx, errors.ConflictError(err))
 	}
-	err := r.requireAccess(ctx, p, rbac.ActionUpdate)
-	if err != nil {
+
+	if err := r.requireAccess(ctx, p, rbac.ActionUpdate); err != nil {
 		return r.SendError(ctx, err)
 	}
 
-	if err = r.retentionCtl.UpdateRetention(ctx, p); err != nil {
+	if err := r.requirePolicyAccess(ctx, p); err != nil {
+		return r.SendError(ctx, err)
+	}
+
+	if err := r.retentionCtl.UpdateRetention(ctx, p); err != nil {
 		return r.SendError(ctx, err)
 	}
 	return operation.NewUpdateRetentionOK()
@@ -367,4 +371,23 @@ func (r *retentionAPI) requireAccess(ctx context.Context, p *policy.Metadata, ac
 		return err
 	}
 	return r.RequireSystemAccess(ctx, action, rbac.ResourceTagRetention)
+}
+
+// requirePolicyAccess checks the scope reference whether has the permission to
+// the retention policy.
+func (r *retentionAPI) requirePolicyAccess(ctx context.Context, p *policy.Metadata) error {
+	// the id of policy should be consistent with project metadata
+	meta, err := r.proMetaMgr.Get(ctx, p.Scope.Reference, "retention_id")
+	if err != nil {
+		return err
+	}
+	// validate
+	if len(meta["retention_id"]) > 0 {
+		// return err if retention id does not match
+		if meta["retention_id"] != fmt.Sprintf("%d", p.ID) {
+			return errors.NotFoundError(errors.Errorf("the retention policy id %d does not match", p.ID))
+		}
+	}
+
+	return nil
 }
