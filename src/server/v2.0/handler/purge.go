@@ -185,6 +185,9 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 	}
 
 	exec, err := p.executionCtl.Get(ctx, params.PurgeID)
+	if exec.VendorType != pg.VendorType {
+		return p.SendError(ctx, fmt.Errorf("purge job with id %d not found", params.PurgeID))
+	}
 	if err != nil {
 		return p.SendError(ctx, err)
 	}

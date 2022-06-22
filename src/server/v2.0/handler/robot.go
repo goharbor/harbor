@@ -1,3 +1,17 @@
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package handler
 
 import (
@@ -95,7 +109,7 @@ func (rAPI *robotAPI) DeleteRobot(ctx context.Context, params operation.DeleteRo
 	}
 
 	if err := rAPI.robotCtl.Delete(ctx, params.RobotID); err != nil {
-		// for the version 1 robot account, has to ignore the no permissions error.
+		// for the version 1 robot account, has to ignore the no permission error.
 		if !r.Editable && errors.IsNotFoundErr(err) {
 			return operation.NewDeleteRobotOK()
 		}
@@ -177,7 +191,6 @@ func (rAPI *robotAPI) GetRobotByID(ctx context.Context, params operation.GetRobo
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
-
 	if err := rAPI.requireAccess(ctx, r.Level, r.ProjectID, rbac.ActionRead); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -285,11 +298,16 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return err
 	}
-
-	if err := rAPI.requireAccess(ctx, params.Robot.Level, params.Robot.Permissions[0].Namespace, rbac.ActionUpdate); err != nil {
+	projectID, err := getProjectID(ctx, params.Robot.Permissions[0].Namespace)
+	if err != nil {
 		return err
 	}
-
+	if r.Level != robot.LEVELSYSTEM && r.ProjectID != projectID {
+		return errors.BadRequestError(nil).WithMessage("cannot update the project id of robot")
+	}
+	if err := rAPI.requireAccess(ctx, params.Robot.Level, projectID, rbac.ActionUpdate); err != nil {
+		return err
+	}
 	if params.Robot.Level != r.Level || params.Robot.Name != r.Name {
 		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
@@ -333,7 +351,7 @@ func isValidDuration(d int64) bool {
 func isValidSec(sec string) bool {
 	hasLower := regexp.MustCompile(`[a-z]`)
 	hasUpper := regexp.MustCompile(`[A-Z]`)
-	hasNumber := regexp.MustCompile(`[0-9]`)
+	hasNumber := regexp.MustCompile(`\d`)
 	if len(sec) >= 8 && hasLower.MatchString(sec) && hasUpper.MatchString(sec) && hasNumber.MatchString(sec) {
 		return true
 	}
