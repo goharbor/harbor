@@ -4,8 +4,5 @@ RUN tdnf install -y python3 python3-pip python3-PyYAML python3-jinja2 && tdnf cl
 RUN pip3 install pipenv==2020.11.15
 
 #To install only htpasswd binary from photon package httpd
-RUN tdnf install -y rpm
-RUN tdnf -y --downloadonly --downloaddir=/tmp install httpd
-RUN tdnf install -y apr-util
-RUN rpm2cpio /tmp/httpd-*.rpm | cpio -iuvdm /usr/bin/htpasswd
-RUN rm -f /tmp/*
+RUN tdnf install -y rpm cpio apr-util
+RUN tdnf -y --downloadonly --downloaddir=/tmp/ install httpd && rpm2cpio /tmp/httpd-*.rpm | cpio -ivdm ./usr/bin/htpasswd && rm -f /tmp/*
