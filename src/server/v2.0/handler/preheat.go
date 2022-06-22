@@ -278,6 +278,17 @@ func (api *preheatAPI) UpdatePolicy(ctx context.Context, params operation.Update
 		return api.SendError(ctx, err)
 	}
 
+	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+	// override project ID
+	policy.ProjectID = project.ProjectID
+
+	if err := api.requirePolicyAccess(ctx, policy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	err = api.preheatCtl.UpdatePolicy(ctx, policy)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -835,4 +846,20 @@ func (api *preheatAPI) ListProvidersUnderProject(ctx context.Context, params ope
 	}
 
 	return operation.NewListProvidersUnderProjectOK().WithPayload(providers)
+}
+
+// requirePolicyAccess checks the project whether has the permission to the policy.
+func (api *preheatAPI) requirePolicyAccess(ctx context.Context, policy *policy.Schema) error {
+	if policy != nil && policy.ID != 0 {
+		db, err := api.preheatCtl.GetPolicy(ctx, policy.ID)
+		if err != nil {
+			return err
+		}
+		// return err if project id does not match
+		if db.ProjectID != policy.ProjectID {
+			return errors.NotFoundError(errors.Errorf("project id %d does not match", policy.ProjectID))
+		}
+	}
+
+	return nil
 }
