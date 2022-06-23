@@ -384,10 +384,10 @@ func (r *retentionAPI) requirePolicyAccess(ctx context.Context, p *policy.Metada
 	// validate
 	if len(meta["retention_id"]) > 0 {
 		// return err if retention id does not match
-		if meta["retention_id"] != fmt.Sprintf("%d", p.ID) {
-			return errors.NotFoundError(errors.Errorf("the retention policy id %d does not match", p.ID))
+		if meta["retention_id"] == fmt.Sprintf("%d", p.ID) {
+			return nil
 		}
 	}
 
-	return nil
+	return errors.NotFoundError(errors.Errorf("the retention policy id %d does not match", p.ID))
 }
