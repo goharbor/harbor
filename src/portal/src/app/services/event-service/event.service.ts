@@ -13,7 +13,7 @@ export class EventService {
      * @param {function} handler the event handler
      * @return A Subscription to unsubscribe
      */
-    subscribe(topic: string, handler: Function): Subscription {
+    subscribe(topic: HarborEvent, handler: Function): Subscription {
         if (!this._channels[topic]) {
             this._channels[topic] = [];
         }
@@ -30,7 +30,7 @@ export class EventService {
      * @param {function} handler the event handler
      *
      */
-    private unsubscribe(topic: string, handler: Function = null) {
+    private unsubscribe(topic: HarborEvent, handler: Function = null) {
         let t = this._channels[topic];
         if (!t) {
             // Wasn't found, wasn't removed
@@ -60,7 +60,7 @@ export class EventService {
      * @param topic
      * @param data
      */
-    publish(topic: string, data?: any) {
+    publish(topic: HarborEvent, data?: any) {
         const t = this._channels[topic];
         if (!t) {
             return;
