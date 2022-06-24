@@ -710,22 +710,26 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         return filtersArray;
     }
     cronInputShouldShowError(): boolean {
-        return (
-            this.ruleForm &&
-            this.ruleForm.get('trigger') &&
-            this.ruleForm.get('trigger').get('trigger_settings') &&
-            this.ruleForm.get('trigger').get('trigger_settings').get('cron') &&
-            (this.ruleForm.get('trigger').get('trigger_settings').get('cron')
-                .touched ||
-                this.ruleForm.get('trigger').get('trigger_settings').get('cron')
-                    .dirty) &&
-            this.ruleForm.get('trigger').get('trigger_settings').get('cron')
-                .value &&
-            !cronRegex(
-                this.ruleForm.get('trigger').get('trigger_settings').get('cron')
-                    .value
-            )
-        );
+        if (
+            this.ruleForm?.get('trigger')?.get('trigger_settings')?.get('cron')
+                ?.touched ||
+            this.ruleForm?.get('trigger')?.get('trigger_settings')?.get('cron')
+                ?.dirty
+        ) {
+            return (
+                this.ruleForm
+                    ?.get('trigger')
+                    ?.get('trigger_settings')
+                    ?.get('cron')?.invalid ||
+                !cronRegex(
+                    this.ruleForm
+                        .get('trigger')
+                        .get('trigger_settings')
+                        .get('cron').value
+                )
+            );
+        }
+        return false;
     }
     stickLabel(value, index) {
         value.select = !value.select;

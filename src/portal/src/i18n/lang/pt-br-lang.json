@@ -658,7 +658,8 @@
         "BANDWIDTH_ERROR_TIP": "Informe um número inteiro maior que 0 (zero) ou -1",
         "BANDWIDTH_TOOLTIP": "Informe o limite de banda para cada execução. Tome cuidado e observe a relação com o número de execuções simultâneas. Para remover qualquer limite, informe -1",
         "UNLIMITED": "Ilimitado",
-        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}"
+        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
+        "CRON_ERROR_TIP": "Field is required and \"*\"is not allowed for the \"Minutes\" field"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endereço",
