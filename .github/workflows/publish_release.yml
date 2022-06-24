@@ -58,7 +58,7 @@ jobs:
         run: |
           tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
           docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          source tools/release/release_utils.sh && publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_PUSH_USERNAME }} ${{ secrets.DOCKER_HUB_PUSH_PASSWORD }}
+          source tools/release/release_utils.sh && publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }} ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt
