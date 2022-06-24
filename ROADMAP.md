@@ -20,8 +20,7 @@ The following table includes the current roadmap for Harbor. If you have any que
 
 |Theme|Description|Timeline|
 |--|--|--|
-|Harbor for Edge|Create a Harbor virtual appliance for use in bootstrapping edge servers and devices which may have substandard connectivity to their core data center|2022 H2|
-||Optimize data transfer for substandard data center connectivity to edge nodes|2022 H2|
+|Harbor for Edge|Optimize data transfer for substandard data center connectivity to edge nodes|2022 H2|
 ||Create a lightweight Harbor with reduced feature set for minimal footprint|2022 H2|
 |Deployment|Improve Kubernetes Operator for Harbor, enabling improved Day1 and Day2 operations including enterprise grade HA, faster deployments and upgrades, automate backups and restores, and sensible defaults|Future|
 ||Support Notary v2 to deliver persisting image signatures across image replications|Future|
