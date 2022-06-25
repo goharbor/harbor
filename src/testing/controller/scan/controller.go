@@ -65,13 +65,13 @@ func (_m *Controller) GetReport(ctx context.Context, _a1 *artifact.Artifact, mim
 	return r0, r1
 }
 
-// GetScanLog provides a mock function with given fields: ctx, uuid
-func (_m *Controller) GetScanLog(ctx context.Context, uuid string) ([]byte, error) {
-	ret := _m.Called(ctx, uuid)
+// GetScanLog provides a mock function with given fields: ctx, art, uuid
+func (_m *Controller) GetScanLog(ctx context.Context, art *artifact.Artifact, uuid string) ([]byte, error) {
+	ret := _m.Called(ctx, art, uuid)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(context.Context, string) []byte); ok {
-		r0 = rf(ctx, uuid)
+	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, string) []byte); ok {
+		r0 = rf(ctx, art, uuid)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -79,8 +79,8 @@ func (_m *Controller) GetScanLog(ctx context.Context, uuid string) ([]byte, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, uuid)
+	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, string) error); ok {
+		r1 = rf(ctx, art, uuid)
 	} else {
 		r1 = ret.Error(1)
 	}
