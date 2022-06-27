@@ -306,6 +306,7 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 		Status:    exec.Status,
 		Trigger:   exec.Trigger,
 		DryRun:    exec.ExtraAttrs["dry_run"].(bool),
+		Type:      exec.VendorType,
 	}
 }
 
