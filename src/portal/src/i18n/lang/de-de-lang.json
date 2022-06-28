@@ -1751,6 +1751,7 @@
         "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
         "SKIP_DATABASE": "Skip Audit Log Database",
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
-        "STOP_GC_SUCCESS": "Trigger stop GC operation successfully"
+        "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",
+        "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully"
     }
 }

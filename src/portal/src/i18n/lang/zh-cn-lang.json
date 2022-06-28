@@ -1749,6 +1749,7 @@
         "FORWARD_ENDPOINT_TOOLTIP": "将日志转发到指定的 syslog 端点，例如：harbor-log:10514",
         "SKIP_DATABASE": "跳过日志数据库",
         "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点",
-        "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作"
+        "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作",
+        "STOP_PURGE_SUCCESS": "成功触发停止清理日志的操作"
     }
 }

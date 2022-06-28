@@ -55,6 +55,7 @@ export const enum ConfirmationTargets {
     ACCESSORY,
     ALL_ACCESSORIES,
     STOP_GC,
+    STOP_AUDIT_LOG_ROTATION,
 }
 
 export const enum ActionType {
