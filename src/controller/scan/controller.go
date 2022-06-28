@@ -93,7 +93,7 @@ type Controller interface {
 	//   Returns:
 	//     []byte : the log text stream
 	//     error  : non nil error if any errors occurred
-	GetScanLog(ctx context.Context, uuid string) ([]byte, error)
+	GetScanLog(ctx context.Context, art *artifact.Artifact, uuid string) ([]byte, error)
 
 	// Delete the reports related with the specified digests
 	//
