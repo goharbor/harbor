@@ -23,13 +23,13 @@ Switch To P2P Preheat
     Retry Element Click  xpath=${project_p2p_preheat__tag_xpath}
 
 Select Distribution For P2P Preheat
-    [Arguments]    ${provider}
-    Retry Element Click    ${p2p_preheat_provider_select_id}
-    Retry Element Click    ${p2p_preheat_provider_select_id}//option[contains(.,'${provider}')]
+    [Arguments]  ${provider}
+    Retry Element Click  ${p2p_preheat_provider_select_id}
+    Retry Element Click  ${p2p_preheat_provider_select_id}//option[contains(.,'${provider}')]
 
 Select P2P Preheat Policy
-    [Arguments]    ${name}
-    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//clr-radio-wrapper/label
+    [Arguments]  ${name}
+    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-radio-wrapper/label
 
 P2P Preheat Policy Exist
     [Arguments]  ${name}  ${repo}=${null}
@@ -41,31 +41,121 @@ P2P Preheat Policy Not Exist
     Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}')]
 
 Create An New P2P Preheat Policy
-    [Arguments]    ${policy_name}  ${dist_name}  ${repo}  ${tag}  ${trigger_type}=${null}
+    [Arguments]  ${policy_name}  ${dist_name}  ${repo}  ${tag}  ${trigger_type}=Manual
     Switch To P2P Preheat
     Retry Element Click  ${p2p_preheat_new_policy_btn_id}
     Select Distribution For P2P Preheat  ${dist_name}
     Retry Text Input  ${p2p_preheat_name_input_id}  ${policy_name}
     Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
     Retry Text Input  ${p2p_preheat_tag_input_id}  ${tag}
+    Select P2P Preheat Policy Trigger  ${trigger_type}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_add_save_btn_id}
     P2P Preheat Policy Exist  ${policy_name}
 
+Select P2P Preheat Policy Trigger
+    [Arguments]  ${mode}
+    Retry Element Click  ${p2p_preheat_trigger_select}
+    Retry Element Click  ${p2p_preheat_trigger_select}//option[contains(.,'${mode}')]
+
 Edit A P2P Preheat Policy
-    [Arguments]    ${name}  ${repo}  ${trigger_type}=${null}
+    [Arguments]  ${name}  ${repo}  ${trigger_type}=${null}
     Switch To P2P Preheat
     Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
     Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
+    Run Keyword If  '${trigger_type}' != '${null}'  Select P2P Preheat Policy Trigger  ${trigger_type}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_edit_save_btn_id}
     P2P Preheat Policy Exist  ${name}  repo=${repo}
 
-Delete A P2P Preheat Policy
-    [Arguments]    ${name}
-    Switch To P2P Preheat
+Set P2P Preheat Policy Schedule
+    [Arguments]  ${name}  ${type}  ${cron}=${null}
     Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    Retry Double Keywords When Error  Select P2P Preheat Policy Trigger  Scheduled  Retry Element Click  ${p2p_preheat_scheduled_edit_id}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}//option[contains(.,'${type}')]
+    Run Keyword If  '${type}' == 'Custom'  Retry Text Input  ${p2p_preheat_scheduled_cron_input_id}  ${cron}
+    Retry Element Click  ${p2p_preheat_scheduled_save_btn_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_edit_save_btn_id}
+    P2P Preheat Policy Exist  ${name}
+
+Delete A P2P Preheat Policy
+    [Arguments]  ${name}
+    Switch To P2P Preheat
+    Retry Double Keywords When Error  Select P2P Preheat Policy  ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
     P2P Preheat Policy Not Exist  ${name}
+
+Execute P2P Preheat And Verify
+    [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}
+    Go Into Project  ${project_name}
+    Switch To P2P Preheat
+    Execute P2P Preheat  ${policy_name}
+    Verify Latest Execution Result  ${project_name}  ${policy_name}  ${contain}  ${not_contain}
+
+Execute P2P Preheat
+    [Arguments]  ${name}  ${expected_status}=Success
+    Retry Double Keywords When Error  Select P2P Preheat Policy  ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_execute_btn_id}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_execute_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_confirm_execute_btn_id}
+    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_confirm_execute_btn_id}  Wait Until Element Is Visible And Enabled  //clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[2][contains(.,'${expected_status}')]
+
+Verify Latest Execution Result
+    [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
+    Retry Double Keywords When Error  Select P2P Preheat Policy  ${policy_name}  Wait Until Element Is Visible  ${p2p_preheat_executions_refresh_xpath}
+    ${latest_execution_id}=  Get Text  ${p2p_preheat_latest_execute_id_xpath}
+    Retry P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${latest_execution_id}  ${contain}  ${not_contain}
+
+Retry P2P Preheat Be Successful
+    [Arguments]  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
+    Retry Keyword N Times When Error  15  P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}  ${expected_status}
+
+P2P Preheat Be Successful
+    [Arguments]  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project_name}/preheat/policies/${policy_name}/executions/${execution_id}/tasks"
+    Log All  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Should Contain Any  ${output}  ${expected_status}  @{contain}
+    ${out}  Run Keyword And Ignore Error  Get Length  ${not_contain}
+    Run Keyword If  '${out[0]}'=='PASS'  Should Not Contain Any  ${output}  @{not_contain}
+
+Verify Artifact Is Pushed Event
+    [Arguments]  ${project_name}  ${policy_name}  ${image}  ${tag}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}  ${tag}
+    Go Into Project  ${project_name}
+    Switch To P2P Preheat
+    ${contain}  Create List  ${project_name}/${image}:${tag}
+    Verify Latest Execution Result  ${project_name}  ${policy_name}  ${contain}
+
+Verify Artifact Is Scanned Event
+    [Arguments]  ${project_name}  ${policy_name}  ${image}  ${tag}
+    Go Into Project  ${project_name}
+    Scan Artifact  ${project_name}  ${image}  //clr-dg-row[contains(.,'${tag}')]//label[1]
+    Back Project Home  ${project_name}
+    Switch To P2P Preheat
+    ${contain}  Create List  ${project_name}/${image}:${tag}
+    Verify Latest Execution Result  ${project_name}  ${policy_name}  ${contain}
+
+Verify Artifact Is Labeled Event
+    [Arguments]  ${project_name}  ${policy_name}  ${image}  ${tag}  ${label}
+    Go Into Project  ${project_name}
+    Switch To Project Label
+    Create New Labels  ${label}
+    Switch To Project Repo
+    Go Into Repo  ${image}
+    Add Labels To Tag  ${tag}  ${label}
+    Back Project Home  ${project_name}
+    Switch To P2P Preheat
+    ${contain}  Create List  ${project_name}/${image}:${tag}
+    Verify Latest Execution Result  ${project_name}  ${policy_name}  ${contain}
+
+Get P2P Preheat Logs
+    [Arguments]  ${project_name}  ${policy_name}
+    ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project_name}/preheat/policies/${policy_name}/executions"
+    Log All  cmd:${cmd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+    Log All  ${output}
+    [Return]  ${output}

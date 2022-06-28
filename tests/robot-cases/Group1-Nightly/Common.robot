@@ -783,39 +783,6 @@ Test Case - Read Only Mode
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
-Test Case - Distribution CRUD
-    ${d}=    Get Current Date    result_format=%m%s
-    ${name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://32.1.1.2
-    ${endpoint_new}=  Set Variable  https://10.65.65.42
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${name}  ${endpoint}
-    Edit A Distribution  ${name}  ${endpoint}  new_endpoint=${endpoint_new}
-    Delete A Distribution  ${name}  ${endpoint_new}
-    Close Browser
-
-Test Case - P2P Preheat Policy CRUD
-    ${d}=    Get Current Date    result_format=%m%s
-    ${pro_name}=  Set Variable  project_p2p${d}
-    ${dist_name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://20.76.1.2
-    ${policy_name}=  Set Variable  policy${d}
-    ${repo}=  Set Variable  alpine
-    ${repo_new}=  Set Variable  redis*
-    ${tag}=  Set Variable  v1.0
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${endpoint}
-    Create An New Project And Go Into Project  ${pro_name}
-    Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  ${repo}  ${tag}
-    Edit A P2P Preheat Policy  ${policy_name}  ${repo_new}
-    Delete A Distribution  ${dist_name}  ${endpoint}  deletable=${false}
-    Go Into Project  ${pro_name}  has_image=${false}
-    Delete A P2P Preheat Policy  ${policy_name}
-    Delete A Distribution  ${dist_name}  ${endpoint}
-    Close Browser
-
 Test Case - System Robot Account Cover All Projects
     [Tags]  sys_robot_account_cover
     ${d}=  Get Current Date    result_format=%m%s

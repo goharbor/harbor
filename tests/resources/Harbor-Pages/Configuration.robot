@@ -152,9 +152,7 @@ Switch To Project Quotas
     Sleep  1
 
 Switch To Distribution
-    Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
-    Sleep  1
 
 Switch To Robot Account
     Sleep  1
@@ -380,7 +378,6 @@ Delete A Distribution
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Sleep  10
     Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
 
 Edit A Distribution

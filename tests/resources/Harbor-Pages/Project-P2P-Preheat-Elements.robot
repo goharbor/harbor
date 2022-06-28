@@ -28,7 +28,13 @@ ${p2p_preheat_edit_save_btn_id}  //*[@id='edit-policy-save']
 ${p2p_preheat_action_btn_id}  //*[@id='action-policy']
 ${p2p_preheat_del_btn_id}  //*[@id='delete-policy']
 ${p2p_preheat_edit_btn_id}  //*[@id='edit-policy']
+${p2p_preheat_execute_btn_id}  //*[@id='execute-policy']
 ${p2p_execution_header}  //clr-main-container//project-detail//ng-component//h4[contains(.,'Executions')]
-
-
-
+${p2p_preheat_confirm_execute_btn_id}  //button[contains(.,'CONFIRM')]
+${p2p_preheat_latest_execute_id_xpath}  //clr-datagrid[contains(.,'ID')]//div//clr-dg-row[1]//clr-dg-cell[1]//a
+${p2p_preheat_trigger_select}  //select[@id='trigger-type']
+${p2p_preheat_executions_refresh_xpath}  //div[contains(@class,'col-lg-12')]//span[@class='refresh-btn']
+${p2p_preheat_scheduled_type_select_id}  //*[@id='inline-select']
+${p2p_preheat_scheduled_edit_id}  //*[@id='inline-edit']
+${p2p_preheat_scheduled_cron_input_id}  //*[@id='inline-target']
+${p2p_preheat_scheduled_save_btn_xpath}  //button[contains(.,'SAVE')]
