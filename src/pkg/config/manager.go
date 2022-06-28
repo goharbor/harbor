@@ -180,10 +180,10 @@ func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{
 	for key, value := range cfgs {
 		item, exist := metadata.Instance().GetByName(key)
 		if !exist {
-			return errors.New(fmt.Sprintf("invalid config, item not defined in metadatalist, %v", key))
+			return fmt.Errorf("invalid config, item not defined in metadatalist, %v", key)
 		}
 		if item.Scope == metadata.SystemScope {
-			return errors.New(fmt.Sprintf("system config items cannot be updated, item: %v", key))
+			return fmt.Errorf("system config items cannot be updated, item: %v", key)
 		}
 		strVal := utils.GetStrValueOfAnyType(value)
 		_, err := metadata.NewCfgValue(key, strVal)

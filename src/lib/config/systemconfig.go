@@ -47,7 +47,7 @@ var (
 	SecretStore *secret.Store
 	keyProvider encrypt.KeyProvider
 	// Use backgroundCtx to access system scope config
-	backgroundCtx context.Context = context.Background()
+	backgroundCtx = context.Background()
 )
 
 // It contains all system settings

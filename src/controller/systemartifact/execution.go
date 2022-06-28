@@ -51,7 +51,7 @@ type controller struct {
 }
 
 func (c *controller) Start(ctx context.Context, async bool, trigger string) error {
-	execId, err := c.execMgr.Create(ctx, VendorTypeSystemArtifactCleanup, 0, trigger)
+	execID, err := c.execMgr.Create(ctx, VendorTypeSystemArtifactCleanup, 0, trigger)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 	jobParams := job.Parameters{}
 
 	if !async {
-		err := c.createCleanupTask(ctx, jobParams, execId)
+		err := c.createCleanupTask(ctx, jobParams, execID)
 		if err != nil {
 			log.Errorf("failed to create system artifact clean-up task: %v", err)
 			return err
@@ -72,14 +72,14 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 	}
 	go func(ctx context.Context) {
 		err := retry.Retry(func() error {
-			_, err := c.execMgr.Get(ctx, execId)
+			_, err := c.execMgr.Get(ctx, execID)
 			return err
 		})
 		if err != nil {
-			log.Errorf("failed to get the execution %d for the export data cleanup job", execId)
+			log.Errorf("failed to get the execution %d for the export data cleanup job", execID)
 			return
 		}
-		err = c.createCleanupTask(ctx, jobParams, execId)
+		err = c.createCleanupTask(ctx, jobParams, execID)
 		if err != nil {
 			logger.Errorf("Encountered error in scan data artifact cleanup : %v", err)
 			return
@@ -89,7 +89,7 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 	return nil
 }
 
-func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parameters, execId int64) error {
+func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parameters, execID int64) error {
 	j := &task.Job{
 		Name: job.SystemArtifactCleanup,
 		Metadata: &job.Metadata{
@@ -98,11 +98,11 @@ func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parame
 		Parameters: jobParams,
 	}
 
-	_, err := c.taskMgr.Create(ctx, execId, j)
+	_, err := c.taskMgr.Create(ctx, execID, j)
 
 	if err != nil {
 		logger.Errorf("Unable to create a scan data export job in clean-up mode : %v", err)
-		c.markError(ctx, execId, err)
+		c.markError(ctx, execID, err)
 		return err
 	}
 	return nil
@@ -132,12 +132,12 @@ func scheduleSystemArtifactCleanJob(ctx context.Context) {
 		logger.Debugf(" Export data cleanup job already scheduled with ID : %v.", schedule.ID)
 		return
 	}
-	scheduleId, err := sched.Schedule(ctx, VendorTypeSystemArtifactCleanup, 0, cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, nil)
+	scheduleID, err := sched.Schedule(ctx, VendorTypeSystemArtifactCleanup, 0, cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, nil)
 	if err != nil {
 		log.Errorf("Encountered error when scheduling scan data export cleanup job : %v", err)
 		return
 	}
-	log.Infof("Scheduled scan data export cleanup job with ID : %v", scheduleId)
+	log.Infof("Scheduled scan data export cleanup job with ID : %v", scheduleID)
 }
 
 func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule, error) {

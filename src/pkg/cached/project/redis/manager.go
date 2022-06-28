@@ -30,18 +30,18 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
 
-var _ CachedManager = &manager{}
+var _ CachedManager = &Manager{}
 
-// CachedManager is the interface combines raw resource manager and cached manager for better extension.
+// CachedManager is the interface combines raw resource Manager and cached Manager for better extension.
 type CachedManager interface {
-	// Manager is the raw resource manager.
+	// Manager is the raw resource Manager.
 	project.Manager
 	// Manager is the common interface for resource cache.
 	cached.Manager
 }
 
-// manager is the cached manager implemented by redis.
-type manager struct {
+// Manager is the cached Manager implemented by redis.
+type Manager struct {
 	// delegator delegates the raw crud to DAO.
 	delegator project.Manager
 	// client returns the redis cache client.
@@ -52,9 +52,9 @@ type manager struct {
 	lifetime time.Duration
 }
 
-// NewManager returns the redis cache manager.
-func NewManager(m project.Manager) *manager {
-	return &manager{
+// NewManager returns the redis cache Manager.
+func NewManager(m project.Manager) *Manager {
+	return &Manager{
 		delegator:  m,
 		client:     func() libcache.Cache { return libcache.Default() },
 		keyBuilder: cached.NewObjectKey(cached.ResourceTypeProject),
@@ -62,23 +62,23 @@ func NewManager(m project.Manager) *manager {
 	}
 }
 
-func (m *manager) Create(ctx context.Context, project *models.Project) (int64, error) {
+func (m *Manager) Create(ctx context.Context, project *models.Project) (int64, error) {
 	return m.delegator.Create(ctx, project)
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (total int64, err error) {
+func (m *Manager) Count(ctx context.Context, query *q.Query) (total int64, err error) {
 	return m.delegator.Count(ctx, query)
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
+func (m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
 	return m.delegator.List(ctx, query)
 }
 
-func (m *manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
+func (m *Manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
 	return m.delegator.ListRoles(ctx, projectID, userID, groupIDs...)
 }
 
-func (m *manager) Delete(ctx context.Context, id int64) error {
+func (m *Manager) Delete(ctx context.Context, id int64) error {
 	p, err := m.Get(ctx, id)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
+func (m *Manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
 	var (
 		key string
 		err error
@@ -139,7 +139,7 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 }
 
 // cleanUp cleans up data in cache.
-func (m *manager) cleanUp(ctx context.Context, p *models.Project) {
+func (m *Manager) cleanUp(ctx context.Context, p *models.Project) {
 	// clean index by id
 	idIdx, err := m.keyBuilder.Format("id", p.ProjectID)
 	if err != nil {
@@ -162,11 +162,11 @@ func (m *manager) cleanUp(ctx context.Context, p *models.Project) {
 	}
 }
 
-func (m *manager) ResourceType(ctx context.Context) string {
+func (m *Manager) ResourceType(ctx context.Context) string {
 	return cached.ResourceTypeProject
 }
 
-func (m *manager) CountCache(ctx context.Context) (int64, error) {
+func (m *Manager) CountCache(ctx context.Context) (int64, error) {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {
@@ -176,11 +176,11 @@ func (m *manager) CountCache(ctx context.Context) (int64, error) {
 	return int64(len(keys)), nil
 }
 
-func (m *manager) DeleteCache(ctx context.Context, key string) error {
+func (m *Manager) DeleteCache(ctx context.Context, key string) error {
 	return m.client().Delete(ctx, key)
 }
 
-func (m *manager) FlushAll(ctx context.Context) error {
+func (m *Manager) FlushAll(ctx context.Context) error {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {

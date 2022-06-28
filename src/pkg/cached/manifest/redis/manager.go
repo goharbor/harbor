@@ -25,9 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/cached"
 )
 
-var _ CachedManager = &manager{}
+var _ CachedManager = &Manager{}
 
-// ManifestManager is the manager for manifest.
+// ManifestManager is the Manager for manifest.
 type ManifestManager interface {
 	// Save manifest to cache.
 	Save(ctx context.Context, digest string, manifest []byte) error
@@ -37,16 +37,16 @@ type ManifestManager interface {
 	Delete(ctx context.Context, digest string) error
 }
 
-// CachedManager is the interface combines raw resource manager and cached manager for better extension.
+// CachedManager is the interface combines raw resource Manager and cached Manager for better extension.
 type CachedManager interface {
-	// ManifestManager is the manager for manifest.
+	// ManifestManager is the Manager for manifest.
 	ManifestManager
 	// Manager is the common interface for resource cache.
 	cached.Manager
 }
 
-// manager is the cached manager implemented by redis.
-type manager struct {
+// Manager is the cached Manager implemented by redis.
+type Manager struct {
 	// client returns the redis cache client.
 	client func() libcache.Cache
 	// keyBuilder builds cache object key.
@@ -55,16 +55,16 @@ type manager struct {
 	lifetime time.Duration
 }
 
-// NewManager returns the redis cache manager.
-func NewManager() *manager {
-	return &manager{
+// NewManager returns the redis cache Manager.
+func NewManager() *Manager {
+	return &Manager{
 		client:     func() libcache.Cache { return libcache.Default() },
 		keyBuilder: cached.NewObjectKey(cached.ResourceTypeManifest),
 		lifetime:   time.Duration(config.CacheExpireHours()) * time.Hour,
 	}
 }
 
-func (m *manager) Save(ctx context.Context, digest string, manifest []byte) error {
+func (m *Manager) Save(ctx context.Context, digest string, manifest []byte) error {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (m *manager) Save(ctx context.Context, digest string, manifest []byte) erro
 	return m.client().Save(ctx, key, manifest, m.lifetime)
 }
 
-func (m *manager) Get(ctx context.Context, digest string) ([]byte, error) {
+func (m *Manager) Get(ctx context.Context, digest string) ([]byte, error) {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (m *manager) Get(ctx context.Context, digest string) ([]byte, error) {
 	return nil, err
 }
 
-func (m *manager) Delete(ctx context.Context, digest string) error {
+func (m *Manager) Delete(ctx context.Context, digest string) error {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return err
@@ -96,11 +96,11 @@ func (m *manager) Delete(ctx context.Context, digest string) error {
 	return retry.Retry(func() error { return m.client().Delete(ctx, key) })
 }
 
-func (m *manager) ResourceType(ctx context.Context) string {
+func (m *Manager) ResourceType(ctx context.Context) string {
 	return cached.ResourceTypeManifest
 }
 
-func (m *manager) CountCache(ctx context.Context) (int64, error) {
+func (m *Manager) CountCache(ctx context.Context) (int64, error) {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {
@@ -110,11 +110,11 @@ func (m *manager) CountCache(ctx context.Context) (int64, error) {
 	return int64(len(keys)), nil
 }
 
-func (m *manager) DeleteCache(ctx context.Context, key string) error {
+func (m *Manager) DeleteCache(ctx context.Context, key string) error {
 	return m.client().Delete(ctx, key)
 }
 
-func (m *manager) FlushAll(ctx context.Context) error {
+func (m *Manager) FlushAll(ctx context.Context) error {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {
