@@ -654,13 +654,15 @@
                                             name="targetCron"
                                             id="targetCron"
                                             required
+                                            pattern="^0\s(?!(\*\s)).+$"
                                             class="form-control cron-input clr-input"
                                             formControlName="cron" />
                                     </div>
                                     <clr-control-error
                                         *ngIf="cronInputShouldShowError()">
                                         {{
-                                            'TOOLTIP.CRON_REQUIRED' | translate
+                                            'REPLICATION.CRON_ERROR_TIP'
+                                                | translate
                                         }}
                                     </clr-control-error>
                                 </div>

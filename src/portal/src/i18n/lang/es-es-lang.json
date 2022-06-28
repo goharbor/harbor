@@ -660,7 +660,8 @@
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
         "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
         "UNLIMITED": "Unlimited",
-        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}"
+        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
+        "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",

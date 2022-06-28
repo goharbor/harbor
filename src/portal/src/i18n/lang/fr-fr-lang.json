@@ -648,7 +648,8 @@
         "BANDWIDTH_ERROR_TIP": "Veuillez saisir -1 ou un nombre entier supérieur à 0",
         "BANDWIDTH_TOOLTIP": "Définissez la bande passante réseau maximale pour chaque exécution. Veuillez faire attention au nombre d'exécutions simultanées. Pour une bande passante illimitée, veuillez entrer -1",
         "UNLIMITED": "Illimitée",
-        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}"
+        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
+        "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Endpoint",
