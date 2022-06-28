@@ -62,6 +62,7 @@ func (is *instanceSuite) TestGet() {
 	// not exist
 	i, err = is.dao.Get(is.ctx, 0)
 	assert.Nil(t, i)
+	assert.True(t, errors.IsNotFoundErr(err))
 }
 
 // TestCreate tests create instance.
