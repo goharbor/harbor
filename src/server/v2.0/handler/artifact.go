@@ -18,10 +18,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/label"
 
 	"github.com/docker/distribution/reference"
 	"github.com/go-openapi/runtime"
@@ -49,23 +52,25 @@ import (
 
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
-		accMgr:  accessory.Mgr,
-		artCtl:  artifact.Ctl,
-		proCtl:  project.Ctl,
-		repoCtl: repository.Ctl,
-		scanCtl: scan.DefaultController,
-		tagCtl:  tag.Ctl,
+		accMgr:   accessory.Mgr,
+		artCtl:   artifact.Ctl,
+		proCtl:   project.Ctl,
+		repoCtl:  repository.Ctl,
+		scanCtl:  scan.DefaultController,
+		tagCtl:   tag.Ctl,
+		labelMgr: label.Mgr,
 	}
 }
 
 type artifactAPI struct {
 	BaseAPI
-	accMgr  accessory.Manager
-	artCtl  artifact.Controller
-	proCtl  project.Controller
-	repoCtl repository.Controller
-	scanCtl scan.Controller
-	tagCtl  tag.Controller
+	accMgr   accessory.Manager
+	artCtl   artifact.Controller
+	proCtl   project.Controller
+	repoCtl  repository.Controller
+	scanCtl  scan.Controller
+	tagCtl   tag.Controller
+	labelMgr label.Manager
 }
 
 func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
@@ -453,7 +458,14 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 }
 
 func (a *artifactAPI) AddLabel(ctx context.Context, params operation.AddLabelParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+	projectID, err := getProjectID(ctx, params.ProjectName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireProjectAccess(ctx, projectID, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireLabelInProject(ctx, projectID, params.Label.ID); err != nil {
 		return a.SendError(ctx, err)
 	}
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
@@ -478,6 +490,17 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 		return a.SendError(ctx, err)
 	}
 	return operation.NewRemoveLabelOK()
+}
+
+func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labelID int64) error {
+	l, err := a.labelMgr.Get(ctx, labelID)
+	if err != nil {
+		return err
+	}
+	if l.Scope == common.LabelScopeProject && l.ProjectID != projectID {
+		return errors.NotFoundError(nil).WithMessage("project id %d, label %d not found", projectID, labelID)
+	}
+	return nil
 }
 
 func option(withTag, withImmutableStatus, withLabel, withSignature, withAccessory *bool) *artifact.Option {

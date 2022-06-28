@@ -633,11 +633,23 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 }
 
 // GetScanLog ...
-func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte, error) {
+func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact, uuid string) ([]byte, error) {
 	if len(uuid) == 0 {
 		return nil, errors.New("empty uuid to get scan log")
 	}
+	r, err := bc.sc.GetRegistrationByProject(ctx, artifact.ProjectID)
+	if err != nil {
+		return nil, err
+	}
 
+	artifacts, _, err := bc.collectScanningArtifacts(ctx, r, artifact)
+	if err != nil {
+		return nil, err
+	}
+	artifactMap := map[int64]interface{}{}
+	for _, a := range artifacts {
+		artifactMap[a.ID] = struct{}{}
+	}
 	reportUUIDs := vuln.ParseReportIDs(uuid)
 	tasks, err := bc.listScanTasks(ctx, reportUUIDs)
 	if err != nil {
@@ -649,9 +661,12 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	reportUUIDToTasks := map[string]*task.Task{}
-	for _, task := range tasks {
-		for _, reportUUID := range getReportUUIDs(task.ExtraAttrs) {
-			reportUUIDToTasks[reportUUID] = task
+	for _, t := range tasks {
+		if !scanTaskForArtifacts(t, artifactMap) {
+			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
+		}
+		for _, reportUUID := range getReportUUIDs(t.ExtraAttrs) {
+			reportUUIDToTasks[reportUUID] = t
 		}
 	}
 
@@ -717,6 +732,18 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	return b.Bytes(), nil
+}
+
+func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bool {
+	if task == nil {
+		return false
+	}
+	artifactID := int64(task.GetNumFromExtraAttrs(artifactIDKey))
+	if artifactID == 0 {
+		return false
+	}
+	_, exist := artifactMap[artifactID]
+	return exist
 }
 
 // DeleteReports ...
