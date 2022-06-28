@@ -35,6 +35,20 @@ func (_m *Controller) Start(ctx context.Context, policy purge.JobPolicy, trigger
 	return r0, r1
 }
 
+// Stop provides a mock function with given fields: ctx, id
+func (_m *Controller) Stop(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type NewControllerT interface {
 	mock.TestingT
 	Cleanup(func())

@@ -306,3 +306,13 @@ func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronTy
 	}
 	return nil
 }
+
+func (p *purgeAPI) StopPurge(ctx context.Context, params operation.StopPurgeParams) middleware.Responder {
+	if err := p.RequireSystemAccess(ctx, rbac.ActionStop, rbac.ResourcePurgeAuditLog); err != nil {
+		return p.SendError(ctx, err)
+	}
+	if err := p.purgeCtr.Stop(ctx, params.PurgeID); err != nil {
+		return p.SendError(ctx, err)
+	}
+	return operation.NewStopPurgeOK()
+}
