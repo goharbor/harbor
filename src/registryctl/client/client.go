@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
 )
 
 // const definition
@@ -42,8 +43,9 @@ type Client interface {
 }
 
 type client struct {
-	baseURL string
-	client  *common_http.Client
+	baseURL      string
+	client       *common_http.Client
+	interceptors []interceptor.Interceptor
 }
 
 // Config contains configurations needed for client
@@ -52,13 +54,14 @@ type Config struct {
 }
 
 // NewClient return an instance of Registry client
-func NewClient(baseURL string, cfg *Config) Client {
+func NewClient(baseURL string, cfg *Config, interceptors ...interceptor.Interceptor) Client {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.Contains(baseURL, "://") {
 		baseURL = "http://" + baseURL
 	}
 	client := &client{
-		baseURL: baseURL,
+		baseURL:      baseURL,
+		interceptors: interceptors,
 	}
 	if cfg != nil {
 		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
@@ -105,6 +108,11 @@ func (c *client) DeleteManifest(repository, reference string) (err error) {
 }
 
 func (c *client) do(req *http.Request) (*http.Response, error) {
+	for _, interceptor := range c.interceptors {
+		if err := interceptor.Intercept(req); err != nil {
+			return nil, err
+		}
+	}
 	req.Header.Set("User-Agent", UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {

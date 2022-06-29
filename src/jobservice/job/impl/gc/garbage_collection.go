@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	blobModels "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
@@ -289,6 +290,10 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 						gc.logger.Errorf("[%d/%d] failed to call gc.markDeleteFailed() after v2DeleteManifest() error out: %s, %v", idx, total, blob.Digest, err)
 						return err
 					}
+					// if the system is set to read-only mode, return directly
+					if err == readonly.Err {
+						return err
+					}
 					skippedBlob = true
 					continue
 				}
@@ -296,7 +301,12 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				gc.logger.Infof("[%d/%d] delete manifest from storage: %s", idx, total, blob.Digest)
 				if err := retry.Retry(func() error {
 					return ignoreNotFound(func() error {
-						return gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
+						err := gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
+						// if the system is in read-only mode, return an Abort error to skip retrying
+						if err == readonly.Err {
+							return retry.Abort(err)
+						}
+						return err
 					})
 				}, retry.Callback(func(err error, sleep time.Duration) {
 					gc.logger.Infof("[%d/%d] failed to exec DeleteManifest, error: %v, will retry again after: %s", idx, total, err, sleep)
@@ -306,6 +316,10 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 						return gc.markDeleteFailed(ctx, blob)
 					}); err != nil {
 						gc.logger.Errorf("[%d/%d] failed to call gc.markDeleteFailed() after gc.registryCtlClient.DeleteManifest() error out: %s, %s, %v", idx, total, art.RepositoryName, blob.Digest, err)
+						return err
+					}
+					// if the system is set to read-only mode, return directly
+					if err == readonly.Err {
 						return err
 					}
 					skippedBlob = true
@@ -333,7 +347,12 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 			gc.logger.Infof("[%d/%d] delete blob from storage: %s", idx, total, blob.Digest)
 			if err := retry.Retry(func() error {
 				return ignoreNotFound(func() error {
-					return gc.registryCtlClient.DeleteBlob(blob.Digest)
+					err := gc.registryCtlClient.DeleteBlob(blob.Digest)
+					// if the system is in read-only mode, return an Abort error to skip retrying
+					if err == readonly.Err {
+						return retry.Abort(err)
+					}
+					return err
 				})
 			}, retry.Callback(func(err error, sleep time.Duration) {
 				gc.logger.Infof("[%d/%d] failed to exec DeleteBlob, error: %v, will retry again after: %s", idx, total, err, sleep)
@@ -343,6 +362,10 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 					return gc.markDeleteFailed(ctx, blob)
 				}); err != nil {
 					gc.logger.Errorf("[%d/%d] failed to call gc.markDeleteFailed() after gc.registryCtlClient.DeleteBlob() error out: %s, %v", idx, total, blob.Digest, err)
+					return err
+				}
+				// if the system is set to read-only mode, return directly
+				if err == readonly.Err {
 					return err
 				}
 				continue

@@ -1,9 +1,12 @@
 package logger
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/require"
 	"os"
 	"path"
@@ -11,6 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	config.DefaultCfgManager = common.InMemoryCfgManager
 
 	// databases := []string{"mysql", "sqlite"}
 	databases := []string{"postgresql"}
