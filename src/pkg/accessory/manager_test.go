@@ -15,15 +15,17 @@
 package accessory
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/accessory/dao"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {
