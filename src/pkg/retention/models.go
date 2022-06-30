@@ -39,6 +39,7 @@ type Execution struct {
 	Status    string    `json:"status"`
 	Trigger   string    `json:"trigger"`
 	DryRun    bool      `json:"dry_run"`
+	Type      string    `json:"-"`
 }
 
 // Task of retention
