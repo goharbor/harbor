@@ -7,8 +7,7 @@ on:
         branches:
           - main
           - release-*
-        tags:
-          - v*
+
 jobs:
   BUILD_PACKAGE:
     env:
