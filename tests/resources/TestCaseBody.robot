@@ -463,14 +463,21 @@ Body Of Stop Scan And Stop Scan All
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
     # stop scan
-    Scan Artifact  project${d}  ${repo}
-    Stop Scan Artifact
-    Check Scan Artifact Job Status Is Stopped
+    Retry Action Keyword  Stop Scan  project${d}  ${repo}
     # stop scan all
+    Retry Action Keyword  Stop Scan All
+    Close Browser
+
+Stop Scan
+    [Arguments]  ${project_name}  ${repo}
+    Scan Artifact  ${project_name}  ${repo}
+    Stop Scan Artifact
+    Retry Action Keyword  Check Scan Artifact Job Status Is Stopped
+
+Stop Scan All
     Scan All Artifact
     Stop Scan All Artifact
-    Check Scan All Artifact Job Status Is Stopped
-    Close Browser
+    Retry Action Keyword  Check Scan All Artifact Job Status Is Stopped
 
 Prepare Image Package Test Files
     [Arguments]  ${files_path}

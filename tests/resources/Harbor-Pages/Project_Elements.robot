@@ -76,5 +76,5 @@ ${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_
 ${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']
 ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_limit_unit']
 
-${project_proxy_cache_switcher_id}  xpath=//*[@id='proxy-cache']
+${project_proxy_cache_switcher_xpath}  xpath=//form//clr-toggle-wrapper
 ${project_registry_select_id}  xpath=//*[@id='registry']
