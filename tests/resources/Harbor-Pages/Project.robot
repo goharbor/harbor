@@ -34,7 +34,7 @@ Create An New Project And Go Into Project
     Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
-    Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Mouse Down  ${project_proxy_cache_switcher_id}  AND  Mouse Up  ${project_proxy_cache_switcher_id}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
+    Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Retry Element Click  ${project_proxy_cache_switcher_xpath}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
