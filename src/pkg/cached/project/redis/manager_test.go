@@ -43,7 +43,7 @@ func (m *managerTestSuite) SetupTest() {
 	m.cachedManager = NewManager(
 		m.projectMgr,
 	)
-	m.cachedManager.(*manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager.(*Manager).client = func() cache.Cache { return m.cache }
 	m.ctx = context.TODO()
 }
 

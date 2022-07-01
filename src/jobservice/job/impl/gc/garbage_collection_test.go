@@ -207,7 +207,7 @@ func (suite *gcTestSuite) TestStop() {
 		deleteUntagged:    true,
 	}
 
-	suite.Equal(stopErr, gc.mark(ctx))
+	suite.Equal(errGcStop, gc.mark(ctx))
 }
 
 func (suite *gcTestSuite) TestRun() {

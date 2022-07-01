@@ -21,9 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
-
-	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
-	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 )
 
 var (

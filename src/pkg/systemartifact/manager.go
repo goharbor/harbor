@@ -90,7 +90,7 @@ func NewManager() Manager {
 }
 
 func (mgr *systemArtifactManager) Create(ctx context.Context, artifactRecord *model.SystemArtifact, reader io.Reader) (int64, error) {
-	var artifactId int64
+	var artifactID int64
 
 	// the entire create operation is executed within a transaction to ensure that any failures
 	// during the blob creation or tracking record creation result in a rollback of the transaction
@@ -105,11 +105,11 @@ func (mgr *systemArtifactManager) Create(ctx context.Context, artifactRecord *mo
 		if err != nil {
 			return err
 		}
-		artifactId = id
+		artifactID = id
 		return nil
 	})(ctx)
 
-	return artifactId, createError
+	return artifactID, createError
 }
 
 func (mgr *systemArtifactManager) Read(ctx context.Context, vendor string, repository string, digest string) (io.ReadCloser, error) {
@@ -242,7 +242,7 @@ func (mgr *systemArtifactManager) cleanup(ctx context.Context, criteria Selector
 			return totalRecordsDeleted, totalReclaimedSize, err
 		}
 		totalReclaimedSize += record.Size
-		totalRecordsDeleted += 1
+		totalRecordsDeleted++
 	}
 	return totalRecordsDeleted, totalReclaimedSize, nil
 }

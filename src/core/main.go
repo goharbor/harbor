@@ -53,6 +53,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/retry"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/migration"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"

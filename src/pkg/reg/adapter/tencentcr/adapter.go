@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	errInvalidTcrEndpoint error = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
+	errInvalidTcrEndpoint = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
 )
 
 func init() {

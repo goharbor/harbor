@@ -29,18 +29,18 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
-var _ CachedManager = &manager{}
+var _ CachedManager = &Manager{}
 
-// CachedManager is the interface combines raw resource manager and cached manager for better extension.
+// CachedManager is the interface combines raw resource Manager and cached Manager for better extension.
 type CachedManager interface {
-	// Manager is the raw resource manager.
+	// Manager is the raw resource Manager.
 	repository.Manager
 	// Manager is the common interface for resource cache.
 	cached.Manager
 }
 
-// manager is the cached manager implemented by redis.
-type manager struct {
+// Manager is the cached Manager implemented by redis.
+type Manager struct {
 	// delegator delegates the raw crud to DAO.
 	delegator repository.Manager
 	// client returns the redis cache client.
@@ -51,9 +51,9 @@ type manager struct {
 	lifetime time.Duration
 }
 
-// NewManager returns the redis cache manager.
-func NewManager(m repository.Manager) *manager {
-	return &manager{
+// NewManager returns the redis cache Manager.
+func NewManager(m repository.Manager) *Manager {
+	return &Manager{
 		delegator:  m,
 		client:     func() libcache.Cache { return libcache.Default() },
 		keyBuilder: cached.NewObjectKey(cached.ResourceTypeRepository),
@@ -61,23 +61,23 @@ func NewManager(m repository.Manager) *manager {
 	}
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (m *Manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.delegator.Count(ctx, query)
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) ([]*model.RepoRecord, error) {
+func (m *Manager) List(ctx context.Context, query *q.Query) ([]*model.RepoRecord, error) {
 	return m.delegator.List(ctx, query)
 }
 
-func (m *manager) Create(ctx context.Context, repo *model.RepoRecord) (int64, error) {
+func (m *Manager) Create(ctx context.Context, repo *model.RepoRecord) (int64, error) {
 	return m.delegator.Create(ctx, repo)
 }
 
-func (m *manager) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
+func (m *Manager) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 	return m.delegator.NonEmptyRepos(ctx)
 }
 
-func (m *manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) {
+func (m *Manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) {
 	key, err := m.keyBuilder.Format("id", id)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) 
 	return repo, nil
 }
 
-func (m *manager) GetByName(ctx context.Context, name string) (*model.RepoRecord, error) {
+func (m *Manager) GetByName(ctx context.Context, name string) (*model.RepoRecord, error) {
 	key, err := m.keyBuilder.Format("name", name)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (m *manager) GetByName(ctx context.Context, name string) (*model.RepoRecord
 	return repo, nil
 }
 
-func (m *manager) Delete(ctx context.Context, id int64) error {
+func (m *Manager) Delete(ctx context.Context, id int64) error {
 	repo, err := m.Get(ctx, id)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (m *manager) Update(ctx context.Context, repo *model.RepoRecord, props ...string) error {
+func (m *Manager) Update(ctx context.Context, repo *model.RepoRecord, props ...string) error {
 	// pass on update operation
 	if err := m.delegator.Update(ctx, repo, props...); err != nil {
 		return err
@@ -151,7 +151,7 @@ func (m *manager) Update(ctx context.Context, repo *model.RepoRecord, props ...s
 	return nil
 }
 
-func (m *manager) AddPullCount(ctx context.Context, id int64, count uint64) error {
+func (m *Manager) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	repo, err := m.Get(ctx, id)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (m *manager) AddPullCount(ctx context.Context, id int64, count uint64) erro
 }
 
 // cleanUp cleans up data in cache.
-func (m *manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
+func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 	// clean index by id
 	idIdx, err := m.keyBuilder.Format("id", repo.RepositoryID)
 	if err != nil {
@@ -190,7 +190,7 @@ func (m *manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 }
 
 // refreshCache refreshes cache.
-func (m *manager) refreshCache(ctx context.Context, repo *model.RepoRecord) {
+func (m *Manager) refreshCache(ctx context.Context, repo *model.RepoRecord) {
 	// refreshCache used for AddPullCount, because we have a background goroutine to
 	// update per repo's pull_count in period time, in that case, we don't want to lose
 	// cache every fixed interval, so prefer to use refreshCache instead of cleanUp.
@@ -214,11 +214,11 @@ func (m *manager) refreshCache(ctx context.Context, repo *model.RepoRecord) {
 	}
 }
 
-func (m *manager) ResourceType(ctx context.Context) string {
+func (m *Manager) ResourceType(ctx context.Context) string {
 	return cached.ResourceTypeRepository
 }
 
-func (m *manager) CountCache(ctx context.Context) (int64, error) {
+func (m *Manager) CountCache(ctx context.Context) (int64, error) {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {
@@ -228,11 +228,11 @@ func (m *manager) CountCache(ctx context.Context) (int64, error) {
 	return int64(len(keys)), nil
 }
 
-func (m *manager) DeleteCache(ctx context.Context, key string) error {
+func (m *Manager) DeleteCache(ctx context.Context, key string) error {
 	return m.client().Delete(ctx, key)
 }
 
-func (m *manager) FlushAll(ctx context.Context) error {
+func (m *Manager) FlushAll(ctx context.Context) error {
 	// prefix is resource type
 	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
 	if err != nil {

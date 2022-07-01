@@ -15,6 +15,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -137,7 +139,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignature() {
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		SignatureMiddleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
@@ -166,7 +168,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignatureDup() {
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		SignatureMiddleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
