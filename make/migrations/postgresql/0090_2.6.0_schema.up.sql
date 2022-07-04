@@ -18,3 +18,7 @@ Github proposal link : https://github.com/goharbor/community/pull/181
 );
 
 CREATE INDEX IF NOT EXISTS idx_artifact_repository_name ON artifact (repository_name);
+
+CREATE INDEX IF NOT EXISTS idx_execution_vendor_type_vendor_id ON execution (vendor_type, vendor_id);
+CREATE INDEX IF NOT EXISTS idx_execution_start_time ON execution(start_time);
+CREATE INDEX IF NOT EXISTS idx_audit_log_project_id_optime ON audit_log (project_id, op_time);
