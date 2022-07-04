@@ -159,13 +159,6 @@ hbr-tag {
   background-image: linear-gradient(180deg,$selectBox-option-hover-bg-color-start 0,$selectBox-option-hover-bg-color-end) !important;
 }
 
-.btn-tag-integration {
-  .active {
-    background: $btn-tag-integration-active-bg-color;
-    color: $btn-tag-integration-active-color;
-  }
-}
-
 hbr-result-tip-histogram {
   .inner {
     background-color: $hbr-result-tip-histogram-inner-bg-color;

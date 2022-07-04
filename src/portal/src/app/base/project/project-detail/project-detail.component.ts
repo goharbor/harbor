@@ -73,6 +73,7 @@ export class ProjectDetailComponent
     hasConfigurationListPermission: boolean;
     hasRobotListPermission: boolean;
     hasTagRetentionPermission: boolean;
+    hasTagImmutablePermission: boolean;
     hasWebhookListPermission: boolean;
     hasScannerReadPermission: boolean;
     hasP2pProviderReadPermission: boolean;
@@ -128,7 +129,9 @@ export class ProjectDetailComponent
             linkName: 'tag-strategy',
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.POLICY',
-            permissions: () => this.hasTagRetentionPermission,
+            permissions: () =>
+                this.hasTagRetentionPermission ||
+                this.hasTagImmutablePermission,
         },
         {
             linkName: 'robot-account',
@@ -300,6 +303,13 @@ export class ProjectDetailComponent
         permissionsList.push(
             this.userPermissionService.getPermission(
                 projectId,
+                USERSTATICPERMISSION.IMMUTABLE_TAG.KEY,
+                USERSTATICPERMISSION.IMMUTABLE_TAG.VALUE.LIST
+            )
+        );
+        permissionsList.push(
+            this.userPermissionService.getPermission(
+                projectId,
                 USERSTATICPERMISSION.WEBHOOK.KEY,
                 USERSTATICPERMISSION.WEBHOOK.VALUE.LIST
             )
@@ -339,6 +349,7 @@ export class ProjectDetailComponent
                     this.hasRobotListPermission,
                     this.hasLabelCreatePermission,
                     this.hasTagRetentionPermission,
+                    this.hasTagImmutablePermission,
                     this.hasWebhookListPermission,
                     this.hasScannerReadPermission,
                     this.hasP2pProviderReadPermission,
