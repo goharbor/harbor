@@ -17,9 +17,10 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -63,6 +64,9 @@ const (
 	TypeNone = "base"
 	// TypeCosignSignature ...
 	TypeCosignSignature = "signature.cosign"
+
+	// TypeNydusAccelerator ...
+	TypeNydusAccelerator = "accelerator.nydus"
 )
 
 // AccessoryData ...

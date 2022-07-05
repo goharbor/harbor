@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/cosign"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/metric"
+	"github.com/goharbor/harbor/src/server/middleware/nydus"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/middleware/repoproxy"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
@@ -80,6 +81,7 @@ func RegisterRoutes() {
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(cosign.SignatureMiddleware()).
+		Middleware(nydus.AcceleratorMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// blob head
