@@ -536,10 +536,10 @@ trace:
 # enable purge _upload directories
 {% if upload_purging is defined %}
 upload_purging:
-  enabled: {{ trace.enabled | lower}}
-  age: {{ trace.age }}
-  interval: {{ trace.interval }}
-  dryrun: {{ trace.dryrun | lower}}
+  enabled: {{ upload_purging.enabled | lower}}
+  age: {{ upload_purging.age }}
+  interval: {{ upload_purging.interval }}
+  dryrun: {{ upload_purging.dryrun | lower}}
 {% else %}
 upload_purging:
   enabled: true
