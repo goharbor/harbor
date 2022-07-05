@@ -145,7 +145,7 @@ type controller struct {
 
 type ArtOption struct {
 	Tags []string
-	Accs []accessorymodel.AccessoryData
+	Accs []*accessorymodel.AccessoryData
 }
 
 func (c *controller) Ensure(ctx context.Context, repository, digest string, option *ArtOption) (bool, int64, error) {
@@ -457,7 +457,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 }
 
 func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo string) (int64, error) {
-	dstAccs := make([]accessorymodel.AccessoryData, 0)
+	dstAccs := make([]*accessorymodel.AccessoryData, 0)
 	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true, false, &dstAccs)
 }
 
@@ -465,7 +465,7 @@ func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo strin
 // this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
 // these logic must be covered explicitly here.
 // "copyDeeply" iterates the child artifacts and copy them first
-func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]accessorymodel.AccessoryData) (int64, error) {
+func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]*accessorymodel.AccessoryData) (int64, error) {
 	var option *Option
 	option = &Option{WithTag: true, WithAccessory: true}
 	if isAcc {
@@ -503,17 +503,17 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 
 	// copy accessory if contains any
 	for _, acc := range srcArt.Accessories {
+		dstAcc := &accessorymodel.AccessoryData{
+			Digest: acc.GetData().Digest,
+			Type:   acc.GetData().Type,
+			Size:   acc.GetData().Size,
+		}
+		*dstAccs = append(*dstAccs, dstAcc)
 		id, err := c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, false, true, dstAccs)
 		if err != nil {
 			return 0, err
 		}
-		dstAcc := accessorymodel.AccessoryData{
-			ArtifactID: id,
-			Digest:     acc.GetData().Digest,
-			Type:       acc.GetData().Type,
-			Size:       acc.GetData().Size,
-		}
-		*dstAccs = append(*dstAccs, dstAcc)
+		dstAcc.ArtifactID = id
 	}
 
 	// copy the parent artifact into the backend docker registry
@@ -530,7 +530,9 @@ ensureArt:
 	// ensure the parent artifact exist in the database
 	artopt := &ArtOption{
 		Tags: tags,
-		Accs: *dstAccs,
+	}
+	if !isAcc {
+		artopt.Accs = *dstAccs
 	}
 	_, id, err := c.Ensure(ctx, dstRepo, digest, artopt)
 	if err != nil {
