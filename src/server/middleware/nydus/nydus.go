@@ -3,7 +3,6 @@ package nydus
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -79,8 +78,6 @@ func AcceleratorMiddleware() func(http.Handler) http.Handler {
 		if info.Tag == "" {
 			return nil
 		}
-		fmt.Println("info: ", info)
-		fmt.Println("r.URL.Path:", r.URL.Path)
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -89,14 +86,11 @@ func AcceleratorMiddleware() func(http.Handler) http.Handler {
 
 		contentType := r.Header.Get("Content-Type")
 		manifest, desc, err := distribution.UnmarshalManifest(contentType, body)
-		fmt.Println("manifest:", manifest)
-		fmt.Println("descriptor:", desc)
 
 		if err != nil {
 			logger.Errorf("unmarshal manifest failed, error: %v", err)
 			return err
 		}
-		fmt.Println("manifest References", manifest.References())
 
 		var isNydus bool
 		for _, descriptor := range manifest.References() {
@@ -110,7 +104,6 @@ func AcceleratorMiddleware() func(http.Handler) http.Handler {
 				}
 			}
 		}
-		fmt.Println("~~~~~~ isNydus: ", isNydus)
 
 		//
 		_, payload, err := manifest.Payload()

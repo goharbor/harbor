@@ -141,7 +141,6 @@ func (suite *MiddlewareTestSuite) TestNydusAccelerator() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/hello-world", projectName)
 		subArtDigest := suite.DigestString()
-		//ref := fmt.Sprintf("%s.sig", strings.ReplaceAll(subArtDigest, "sha256:", "sha256-"))
 		tag := "latest-nydus"
 		_, descriptor, req := suite.prepare(name, tag)
 
@@ -173,7 +172,6 @@ func (suite *MiddlewareTestSuite) TestNydusAcceleratorDup() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/hello-world", projectName)
 		subArtDigest := suite.DigestString()
-		//ref := fmt.Sprintf("%s.sig", strings.ReplaceAll(subArtDigest, "sha256:", "sha256-"))
 		tag := "latest-nydus"
 		_, descriptor, req := suite.prepare(name, tag)
 
