@@ -8099,7 +8099,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
@@ -8114,7 +8114,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.
