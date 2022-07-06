@@ -38,10 +38,8 @@ type managerTestSuite struct {
 func (m *managerTestSuite) SetupTest() {
 	m.repoMgr = &testRepo.Manager{}
 	m.cache = &testcache.Cache{}
-	m.cachedManager = NewManager(
-		m.repoMgr,
-	)
-	m.cachedManager.(*Manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager = NewManager(m.repoMgr)
+	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
 }
 

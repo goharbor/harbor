@@ -19,9 +19,7 @@ import (
 	"strings"
 	"time"
 
-	libcache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
@@ -39,30 +37,34 @@ type CachedManager interface {
 	cached.Manager
 }
 
-// Manager is the cached Manager implemented by redis.
+// Manager is the cached manager implemented by redis.
 type Manager struct {
+	*cached.BaseManager
 	// delegator delegates the raw crud to DAO.
 	delegator metadata.Manager
-	// client returns the redis cache client.
-	client func() libcache.Cache
 	// keyBuilder builds cache object key.
 	keyBuilder *cached.ObjectKey
 	// lifetime is the cache life time.
 	lifetime time.Duration
 }
 
-// NewManager returns the redis cache Manager.
+// NewManager returns the redis cache manager.
 func NewManager(m metadata.Manager) *Manager {
 	return &Manager{
-		delegator:  m,
-		client:     func() libcache.Cache { return libcache.Default() },
-		keyBuilder: cached.NewObjectKey(cached.ResourceTypeProjectMeta),
-		lifetime:   time.Duration(config.CacheExpireHours()) * time.Hour,
+		BaseManager: cached.NewBaseManager(cached.ResourceTypeProjectMeta),
+		delegator:   m,
+		keyBuilder:  cached.NewObjectKey(cached.ResourceTypeProjectMeta),
+		lifetime:    time.Duration(config.CacheExpireHours()) * time.Hour,
 	}
 }
 
 func (m *Manager) Add(ctx context.Context, projectID int64, meta map[string]string) error {
-	return m.delegator.Add(ctx, projectID, meta)
+	if err := m.delegator.Add(ctx, projectID, meta); err != nil {
+		return err
+	}
+	// should cleanup cache when add metadata to project
+	m.cleanUp(ctx, projectID)
+	return nil
 }
 
 func (m *Manager) List(ctx context.Context, name string, value string) ([]*models.ProjectMetadata, error) {
@@ -76,7 +78,7 @@ func (m *Manager) Get(ctx context.Context, projectID int64, meta ...string) (map
 	}
 
 	result := make(map[string]string)
-	if err = m.client().Fetch(ctx, key, &result); err == nil {
+	if err = m.CacheClient(ctx).Fetch(ctx, key, &result); err == nil {
 		return result, nil
 	}
 
@@ -86,10 +88,12 @@ func (m *Manager) Get(ctx context.Context, projectID int64, meta ...string) (map
 	if err != nil {
 		return nil, err
 	}
-
-	if err = m.client().Save(ctx, key, &result, m.lifetime); err != nil {
-		// log error if save to cache failed
-		log.Debugf("save project metadata %v to cache error: %v", result, err)
+	// only cache when result has attributes
+	if len(result) > 0 {
+		if err = m.CacheClient(ctx).Save(ctx, key, &result, m.lifetime); err != nil {
+			// log error if save to cache failed
+			log.Debugf("save project metadata %v to cache error: %v", result, err)
+		}
 	}
 
 	return result, nil
@@ -115,13 +119,13 @@ func (m *Manager) Update(ctx context.Context, projectID int64, meta map[string]s
 		return err
 	}
 	// lookup all keys with projectID prefix
-	keys, err := m.client().Keys(ctx, prefix)
+	keys, err := m.CacheClient(ctx).Keys(ctx, prefix)
 	if err != nil {
 		return err
 	}
 
 	for _, key := range keys {
-		if err = retry.Retry(func() error { return m.client().Delete(ctx, key) }); err != nil {
+		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) }); err != nil {
 			log.Errorf("delete project metadata cache key %s error: %v", key, err)
 		}
 	}
@@ -136,47 +140,8 @@ func (m *Manager) cleanUp(ctx context.Context, projectID int64, meta ...string) 
 		log.Errorf("format project metadata key error: %v", err)
 	} else {
 		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.client().Delete(ctx, key) }); err != nil {
+		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) }); err != nil {
 			log.Errorf("delete project metadata cache key %s error: %v", key, err)
 		}
 	}
-}
-
-func (m *Manager) ResourceType(ctx context.Context) string {
-	return cached.ResourceTypeProjectMeta
-}
-
-func (m *Manager) CountCache(ctx context.Context) (int64, error) {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return 0, err
-	}
-
-	return int64(len(keys)), nil
-}
-
-func (m *Manager) DeleteCache(ctx context.Context, key string) error {
-	return m.client().Delete(ctx, key)
-}
-
-func (m *Manager) FlushAll(ctx context.Context) error {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return err
-	}
-
-	var errs errors.Errors
-	for _, key := range keys {
-		if err = m.client().Delete(ctx, key); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if errs.Len() > 0 {
-		return errs
-	}
-
-	return nil
 }

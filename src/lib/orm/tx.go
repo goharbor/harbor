@@ -15,12 +15,24 @@
 package orm
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 
 	"github.com/beego/beego/orm"
 	"github.com/google/uuid"
 )
+
+type CommittedKey struct{}
+
+// HasCommittedKey checks whether exist committed key in context.
+func HasCommittedKey(ctx context.Context) bool {
+	if value := ctx.Value(CommittedKey{}); value != nil {
+		return true
+	}
+
+	return false
+}
 
 // ormerTx transaction which support savepoint
 type ormerTx struct {

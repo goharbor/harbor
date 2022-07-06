@@ -19,6 +19,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
+	"os"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -27,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
+	"github.com/goharbor/harbor/src/lib/cache"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -37,6 +40,21 @@ func main() {
 	cfgLib.DefaultCfgManager = common.RestCfgManager
 	if err := cfgLib.DefaultMgr().Load(context.Background()); err != nil {
 		panic(fmt.Sprintf("failed to load configuration, error: %v", err))
+	}
+
+	// init cache if cache layer enabled
+	// gc needs to delete artifact by artifact manager, but the artifact cache store in
+	// core redis db so here require core redis url and init default cache.
+	if cfgLib.CacheEnabled() {
+		cacheURL := os.Getenv("_REDIS_URL_CORE")
+		u, err := url.Parse(cacheURL)
+		if err != nil {
+			panic("bad _REDIS_URL_CORE")
+		}
+
+		if err = cache.Initialize(u.Scheme, cacheURL); err != nil {
+			panic(fmt.Sprintf("failed to initialize cache: %v", err))
+		}
 	}
 
 	// Get parameters

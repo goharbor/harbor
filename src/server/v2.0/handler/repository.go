@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/security/robot"
 	robotCtr "github.com/goharbor/harbor/src/controller/robot"
 	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -233,6 +234,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	}
 	if err := r.repoCtl.Update(ctx, &repomodel.RepoRecord{
 		RepositoryID: repository.RepositoryID,
+		Name:         repository.Name,
 		Description:  params.Repository.Description,
 	}, "Description"); err != nil {
 		return r.SendError(ctx, err)

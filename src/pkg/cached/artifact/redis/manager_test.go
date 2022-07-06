@@ -39,10 +39,8 @@ type managerTestSuite struct {
 func (m *managerTestSuite) SetupTest() {
 	m.artMgr = &testArt.Manager{}
 	m.cache = &testcache.Cache{}
-	m.cachedManager = NewManager(
-		m.artMgr,
-	)
-	m.cachedManager.(*Manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager = NewManager(m.artMgr)
+	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
 }
 

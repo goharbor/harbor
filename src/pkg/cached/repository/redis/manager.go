@@ -18,9 +18,7 @@ import (
 	"context"
 	"time"
 
-	libcache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
@@ -39,25 +37,24 @@ type CachedManager interface {
 	cached.Manager
 }
 
-// Manager is the cached Manager implemented by redis.
+// Manager is the cached manager implemented by redis.
 type Manager struct {
+	*cached.BaseManager
 	// delegator delegates the raw crud to DAO.
 	delegator repository.Manager
-	// client returns the redis cache client.
-	client func() libcache.Cache
 	// keyBuilder builds cache object key.
 	keyBuilder *cached.ObjectKey
 	// lifetime is the cache life time.
 	lifetime time.Duration
 }
 
-// NewManager returns the redis cache Manager.
+// NewManager returns the redis cache manager.
 func NewManager(m repository.Manager) *Manager {
 	return &Manager{
-		delegator:  m,
-		client:     func() libcache.Cache { return libcache.Default() },
-		keyBuilder: cached.NewObjectKey(cached.ResourceTypeRepository),
-		lifetime:   time.Duration(config.CacheExpireHours()) * time.Hour,
+		BaseManager: cached.NewBaseManager(cached.ResourceTypeRepository),
+		delegator:   m,
+		keyBuilder:  cached.NewObjectKey(cached.ResourceTypeRepository),
+		lifetime:    time.Duration(config.CacheExpireHours()) * time.Hour,
 	}
 }
 
@@ -84,7 +81,7 @@ func (m *Manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) 
 	}
 
 	repo := &model.RepoRecord{}
-	if err = m.client().Fetch(ctx, key, repo); err == nil {
+	if err = m.CacheClient(ctx).Fetch(ctx, key, repo); err == nil {
 		return repo, nil
 	}
 
@@ -95,7 +92,7 @@ func (m *Manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) 
 		return nil, err
 	}
 
-	if err = m.client().Save(ctx, key, repo, m.lifetime); err != nil {
+	if err = m.CacheClient(ctx).Save(ctx, key, repo, m.lifetime); err != nil {
 		// log error if save to cache failed
 		log.Debugf("save repository %s to cache error: %v", repo.Name, err)
 	}
@@ -110,7 +107,7 @@ func (m *Manager) GetByName(ctx context.Context, name string) (*model.RepoRecord
 	}
 
 	repo := &model.RepoRecord{}
-	if err = m.client().Fetch(ctx, key, repo); err == nil {
+	if err = m.CacheClient(ctx).Fetch(ctx, key, repo); err == nil {
 		return repo, nil
 	}
 
@@ -119,7 +116,7 @@ func (m *Manager) GetByName(ctx context.Context, name string) (*model.RepoRecord
 		return nil, err
 	}
 
-	if err = m.client().Save(ctx, key, repo, m.lifetime); err != nil {
+	if err = m.CacheClient(ctx).Save(ctx, key, repo, m.lifetime); err != nil {
 		// log error if save to cache failed
 		log.Debugf("save repository %s to cache error: %v", repo.Name, err)
 	}
@@ -173,7 +170,7 @@ func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 		log.Errorf("format repository id key error: %v", err)
 	} else {
 		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.client().Delete(ctx, idIdx) }); err != nil {
+		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) }); err != nil {
 			log.Errorf("delete repository cache key %s error: %v", idIdx, err)
 		}
 	}
@@ -183,7 +180,7 @@ func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 	if err != nil {
 		log.Errorf("format repository name key error: %v", err)
 	} else {
-		if err = retry.Retry(func() error { return m.client().Delete(ctx, nameIdx) }); err != nil {
+		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, nameIdx) }); err != nil {
 			log.Errorf("delete repository cache key %s error: %v", nameIdx, err)
 		}
 	}
@@ -212,43 +209,4 @@ func (m *Manager) refreshCache(ctx context.Context, repo *model.RepoRecord) {
 	if err != nil {
 		log.Errorf("refresh cache by repository name %s error: %v", repo.Name, err)
 	}
-}
-
-func (m *Manager) ResourceType(ctx context.Context) string {
-	return cached.ResourceTypeRepository
-}
-
-func (m *Manager) CountCache(ctx context.Context) (int64, error) {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return 0, err
-	}
-
-	return int64(len(keys)), nil
-}
-
-func (m *Manager) DeleteCache(ctx context.Context, key string) error {
-	return m.client().Delete(ctx, key)
-}
-
-func (m *Manager) FlushAll(ctx context.Context) error {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return err
-	}
-
-	var errs errors.Errors
-	for _, key := range keys {
-		if err = m.client().Delete(ctx, key); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if errs.Len() > 0 {
-		return errs
-	}
-
-	return nil
 }

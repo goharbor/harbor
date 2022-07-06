@@ -148,7 +148,7 @@ func TestMustCommit(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	committableCtx := context.WithValue(ctx, committedKey{}, new(bool))
+	committableCtx := context.WithValue(ctx, orm.CommittedKey{}, new(bool))
 
 	type args struct {
 		r *http.Request
