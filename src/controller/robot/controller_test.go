@@ -292,6 +292,20 @@ func (suite *ControllerTestSuite) TestToScope() {
 
 }
 
+func (suite *ControllerTestSuite) TestIsValidSec() {
+	sec := "1234abcdABCD"
+	suite.True(IsValidSec(sec))
+	sec = "1234abcd"
+	suite.False(IsValidSec(sec))
+	sec = "123abc"
+	suite.False(IsValidSec(sec))
+}
+
+func (suite *ControllerTestSuite) TestCreateSec() {
+	_, pwd, _, err := CreateSec()
+	suite.Nil(err)
+	suite.True(IsValidSec(pwd))
+}
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &ControllerTestSuite{})
 }

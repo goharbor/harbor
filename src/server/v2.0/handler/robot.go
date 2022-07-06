@@ -239,14 +239,17 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 	var secret string
 	robotSec := &models.RobotSec{}
 	if params.RobotSec.Secret != "" {
-		if !isValidSec(params.RobotSec.Secret) {
+		if !robot.IsValidSec(params.RobotSec.Secret) {
 			return rAPI.SendError(ctx, errors.New("the secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number").WithCode(errors.BadRequestCode))
 		}
 		secret = utils.Encrypt(params.RobotSec.Secret, r.Salt, utils.SHA256)
 		robotSec.Secret = ""
 	} else {
-		pwd := utils.GenerateRandomString()
-		secret = utils.Encrypt(pwd, r.Salt, utils.SHA256)
+		sec, pwd, _, err := robot.CreateSec(r.Salt)
+		if err != nil {
+			return rAPI.SendError(ctx, err)
+		}
+		secret = sec
 		robotSec.Secret = pwd
 	}
 
@@ -346,16 +349,6 @@ func isValidLevel(l string) bool {
 
 func isValidDuration(d int64) bool {
 	return d >= int64(-1) && d < math.MaxInt32
-}
-
-func isValidSec(sec string) bool {
-	hasLower := regexp.MustCompile(`[a-z]`)
-	hasUpper := regexp.MustCompile(`[A-Z]`)
-	hasNumber := regexp.MustCompile(`\d`)
-	if len(sec) >= 8 && hasLower.MatchString(sec) && hasUpper.MatchString(sec) && hasNumber.MatchString(sec) {
-		return true
-	}
-	return false
 }
 
 // validateName validates the robot name, especially '+' cannot be a valid character
