@@ -42,7 +42,7 @@ type Manager interface {
 	// List users according to the query
 	List(ctx context.Context, query *q.Query, options ...models.Option) (commonmodels.Users, error)
 	// Count counts the number of users according to the query
-	Count(ctx context.Context, query *q.Query) (int64, error)
+	Count(ctx context.Context, query *q.Query, options ...models.Option) (int64, error)
 	// Create creates the user, the password of input should be plaintext
 	Create(ctx context.Context, user *commonmodels.User) (int, error)
 	// Delete deletes the user by updating user's delete flag and update the name and Email
@@ -131,7 +131,11 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 	return nil, nil
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (m *manager) Count(ctx context.Context, query *q.Query, options ...models.Option) (int64, error) {
+	opts := models.NewOptions(options...)
+	if !opts.IncludeDefaultAdmin {
+		query = excludeDefaultAdmin(query)
+	}
 	return m.dao.Count(ctx, query)
 }
 
@@ -206,9 +210,20 @@ func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Op
 	}
 	opts := models.NewOptions(options...)
 	if !opts.IncludeDefaultAdmin {
-		query.Keywords["user_id__gt"] = 1
+		query = excludeDefaultAdmin(query)
 	}
 	return m.dao.List(ctx, query)
+}
+
+func excludeDefaultAdmin(query *q.Query) (qu *q.Query) {
+	if query == nil {
+		query = q.New(q.KeyWords{})
+	}
+	if query.Keywords == nil {
+		query.Keywords = q.KeyWords{}
+	}
+	query.Keywords["user_id__gt"] = 1
+	return query
 }
 
 func injectPasswd(u *commonmodels.User, password string) {

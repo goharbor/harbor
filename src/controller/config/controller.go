@@ -227,5 +227,5 @@ func (c *controller) authModeCanBeModified(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return cnt == 1, nil // admin user only
+	return cnt == 0, nil
 }
