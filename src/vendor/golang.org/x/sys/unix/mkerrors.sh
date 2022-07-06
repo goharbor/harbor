@@ -205,6 +205,7 @@ struct ltchars {
 #include <linux/bpf.h>
 #include <linux/can.h>
 #include <linux/can/error.h>
+#include <linux/can/netlink.h>
 #include <linux/can/raw.h>
 #include <linux/capability.h>
 #include <linux/cryptouser.h>
@@ -214,6 +215,7 @@ struct ltchars {
 #include <linux/ethtool_netlink.h>
 #include <linux/falloc.h>
 #include <linux/fanotify.h>
+#include <linux/fib_rules.h>
 #include <linux/filter.h>
 #include <linux/fs.h>
 #include <linux/fscrypt.h>
@@ -231,6 +233,7 @@ struct ltchars {
 #include <linux/if_packet.h>
 #include <linux/if_xdp.h>
 #include <linux/input.h>
+#include <linux/kcm.h>
 #include <linux/kexec.h>
 #include <linux/keyctl.h>
 #include <linux/landlock.h>
@@ -239,6 +242,7 @@ struct ltchars {
 #include <linux/magic.h>
 #include <linux/memfd.h>
 #include <linux/module.h>
+#include <linux/mount.h>
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netlink.h>
 #include <linux/net_namespace.h>
@@ -260,6 +264,7 @@ struct ltchars {
 #include <linux/vm_sockets.h>
 #include <linux/wait.h>
 #include <linux/watchdog.h>
+#include <linux/wireguard.h>
 
 #include <mtd/ubi-user.h>
 #include <mtd/mtd-user.h>
@@ -501,6 +506,7 @@ ccflags="$@"
 		$2 ~ /^O?XTABS$/ ||
 		$2 ~ /^TC[IO](ON|OFF)$/ ||
 		$2 ~ /^IN_/ ||
+		$2 ~ /^KCM/ ||
 		$2 ~ /^LANDLOCK_/ ||
 		$2 ~ /^LOCK_(SH|EX|NB|UN)$/ ||
 		$2 ~ /^LO_(KEY|NAME)_SIZE$/ ||
@@ -520,7 +526,7 @@ ccflags="$@"
 		$2 ~ /^HW_MACHINE$/ ||
 		$2 ~ /^SYSCTL_VERS/ ||
 		$2 !~ "MNT_BITS" &&
-		$2 ~ /^(MS|MNT|UMOUNT)_/ ||
+		$2 ~ /^(MS|MNT|MOUNT|UMOUNT)_/ ||
 		$2 ~ /^NS_GET_/ ||
 		$2 ~ /^TUN(SET|GET|ATTACH|DETACH)/ ||
 		$2 ~ /^(O|F|[ES]?FD|NAME|S|PTRACE|PT|TFD)_/ ||
@@ -595,8 +601,10 @@ ccflags="$@"
 		$2 ~ /^DEVLINK_/ ||
 		$2 ~ /^ETHTOOL_/ ||
 		$2 ~ /^LWTUNNEL_IP/ ||
+		$2 ~ /^ITIMER_/ ||
 		$2 !~ "WMESGLEN" &&
 		$2 ~ /^W[A-Z0-9]+$/ ||
+		$2 ~ /^P_/ ||
 		$2 ~/^PPPIOC/ ||
 		$2 ~ /^FAN_|FANOTIFY_/ ||
 		$2 == "HID_MAX_DESCRIPTOR_SIZE" ||
@@ -605,6 +613,8 @@ ccflags="$@"
 		$2 ~ /^MTD/ ||
 		$2 ~ /^OTP/ ||
 		$2 ~ /^MEM/ ||
+		$2 ~ /^WG/ ||
+		$2 ~ /^FIB_RULE_/ ||
 		$2 ~ /^BLK[A-Z]*(GET$|SET$|BUF$|PART$|SIZE)/ {printf("\t%s = C.%s\n", $2, $2)}
 		$2 ~ /^__WCOREFLAG$/ {next}
 		$2 ~ /^__W[A-Z0-9]+$/ {printf("\t%s = C.%s\n", substr($2,3), $2)}
