@@ -227,7 +227,7 @@ var (
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-			
+
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
