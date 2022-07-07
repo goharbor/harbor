@@ -3,6 +3,7 @@ package robot
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -99,9 +101,10 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		expiresAt = time.Now().AddDate(0, 0, duration).Unix()
 	}
 
-	pwd := utils.GenerateRandomString()
-	salt := utils.GenerateRandomString()
-	secret := utils.Encrypt(pwd, salt, utils.SHA256)
+	secret, pwd, salt, err := CreateSec()
+	if err != nil {
+		return 0, "", err
+	}
 
 	name := r.Name
 	// for the project level robot, set the name pattern as projectname+robotname, and + is a illegal character.
@@ -359,4 +362,45 @@ func (d *controller) toScope(ctx context.Context, p *Permission) (string, error)
 		return fmt.Sprintf("/project/%d", pro.ProjectID), nil
 	}
 	return "", errors.New(nil).WithMessage("unknown robot kind").WithCode(errors.BadRequestCode)
+}
+
+func CreateSec(salt ...string) (string, string, string, error) {
+	var secret, pwd string
+	options := []retry.Option{
+		retry.InitialInterval(time.Millisecond * 500),
+		retry.MaxInterval(time.Second * 10),
+		retry.Timeout(time.Minute),
+		retry.Callback(func(err error, sleep time.Duration) {
+			log.Debugf("failed to generate secret for robot, retry after %s : %v", sleep, err)
+		}),
+	}
+
+	if err := retry.Retry(func() error {
+		pwd = utils.GenerateRandomString()
+		if !IsValidSec(pwd) {
+			return errors.New(nil).WithMessage("invalid secret format")
+		}
+		return nil
+	}, options...); err != nil {
+		return "", "", "", errors.Wrap(err, "failed to generate an valid random secret for robot in one minute, please try again")
+	}
+
+	var saltTmp string
+	if len(salt) != 0 {
+		saltTmp = salt[0]
+	} else {
+		saltTmp = utils.GenerateRandomString()
+	}
+	secret = utils.Encrypt(pwd, saltTmp, utils.SHA256)
+	return secret, pwd, saltTmp, nil
+}
+
+func IsValidSec(secret string) bool {
+	hasLower := regexp.MustCompile(`[a-z]`)
+	hasUpper := regexp.MustCompile(`[A-Z]`)
+	hasNumber := regexp.MustCompile(`\d`)
+	if len(secret) >= 8 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret) {
+		return true
+	}
+	return false
 }
