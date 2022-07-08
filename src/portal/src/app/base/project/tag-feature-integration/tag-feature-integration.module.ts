@@ -9,6 +9,8 @@ import { ImmutableTagComponent } from './immutable-tag/immutable-tag.component';
 import { ImmutableTagService } from './immutable-tag/immutable-tag.service';
 import { AddImmutableRuleComponent } from './immutable-tag/add-rule/add-immutable-rule.component';
 import { TagRetentionTasksComponent } from './tag-retention/tag-retention-tasks/tag-retention-tasks/tag-retention-tasks.component';
+import { USERSTATICPERMISSION } from '../../../shared/services';
+import { TagFeatureGuardService } from './tag-feature-guard.service';
 
 const routes: Routes = [
     {
@@ -17,10 +19,24 @@ const routes: Routes = [
         children: [
             {
                 path: 'tag-retention',
+                canActivate: [TagFeatureGuardService],
+                data: {
+                    permissionParam: {
+                        resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
+                        action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ,
+                    },
+                },
                 component: TagRetentionComponent,
             },
             {
                 path: 'immutable-tag',
+                canActivate: [TagFeatureGuardService],
+                data: {
+                    permissionParam: {
+                        resource: USERSTATICPERMISSION.IMMUTABLE_TAG.KEY,
+                        action: USERSTATICPERMISSION.IMMUTABLE_TAG.VALUE.LIST,
+                    },
+                },
                 component: ImmutableTagComponent,
             },
             { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
