@@ -449,7 +449,8 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             (this.artifactDetails.type === ArtifactType.IMAGE ||
                 this.artifactDetails.type === ArtifactType.CHART ||
                 this.artifactDetails.type === ArtifactType.CNAB) &&
-            this.accessoryType !== AccessoryType.COSIGN
+            this.accessoryType !== AccessoryType.COSIGN &&
+            this.accessoryType !== AccessoryType.NYDUS
         );
     }
     getPullCommand(tag: Tag): string {

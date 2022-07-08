@@ -64,6 +64,7 @@ export const mutipleFilter = [
 
 export enum AccessoryType {
     COSIGN = 'signature.cosign',
+    NYDUS = 'accelerator.nydus',
 }
 
 export enum ArtifactType {
