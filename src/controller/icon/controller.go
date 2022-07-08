@@ -56,6 +56,10 @@ var (
 			path:   "./icons/cosign.png",
 			resize: false,
 		},
+		icon.DigestOfIconAccNydus: {
+			path:   "./icons/nydus.png",
+			resize: false,
+		},
 		icon.DigestOfIconDefault: {
 			path:   "./icons/default.png",
 			resize: true,

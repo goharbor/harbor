@@ -16,6 +16,7 @@ package accessory
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -29,7 +30,8 @@ var (
 
 	// icon digests for each known type
 	defaultIcons = map[string]string{
-		model.TypeCosignSignature: icon.DigestOfIconAccCosign,
+		model.TypeCosignSignature:  icon.DigestOfIconAccCosign,
+		model.TypeNydusAccelerator: icon.DigestOfIconAccNydus,
 	}
 )
 
