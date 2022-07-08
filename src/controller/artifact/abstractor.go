@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
@@ -126,6 +127,11 @@ func (a *abstractor) abstractManifestV2Metadata(artifact *artifact.Artifact, con
 	}
 	// use the "manifest.config.mediatype" as the media type of the artifact
 	artifact.MediaType = manifest.Config.MediaType
+
+	if manifest.Annotations[wasm.AnnotationVariantKey] == wasm.AnnotationVariantValue || manifest.Annotations[wasm.AnnotationHandlerKey] == wasm.AnnotationHandlerValue {
+		artifact.MediaType = wasm.MediaType
+	}
+
 	// set size
 	artifact.Size = int64(len(content)) + manifest.Config.Size
 	for _, layer := range manifest.Layers {
