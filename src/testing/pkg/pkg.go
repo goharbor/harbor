@@ -62,3 +62,7 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/ --name Selector --output ./systemartifact/cleanup --outpkg cleanup
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/dao --name DAO --output ./systemartifact/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/cached/manifest/redis --name CachedManager --output ./cached/manifest/redis --outpkg redis
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name FilterProcessor --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name Manager --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name ArtifactDigestCalculator --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/registry --name Client --output ./registry --outpkg registry --filename fake_registry_client.go

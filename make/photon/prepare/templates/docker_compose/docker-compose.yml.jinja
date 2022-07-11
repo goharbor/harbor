@@ -253,6 +253,7 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/job_logs:/var/log/jobs:z
+      - {{data_volume}}/scandata_exports:/var/scandata_exports:z
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml

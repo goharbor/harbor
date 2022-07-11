@@ -17,6 +17,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
 	"os"
 	"os/signal"
 	"strings"
@@ -319,6 +320,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
 			job.P2PPreheat:             (*preheat.Job)(nil),
+			job.ScanDataExport:         (*scandataexport.ScanDataExport)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases

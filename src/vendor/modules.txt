@@ -399,6 +399,9 @@ github.com/go-sql-driver/mysql
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
+# github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
+## explicit
+github.com/gocarina/gocsv
 # github.com/gocraft/work v0.5.1
 ## explicit
 github.com/gocraft/work
