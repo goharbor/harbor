@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Subscription, forkJoin, of } from 'rxjs';
-import { Component, Output, OnDestroy, EventEmitter } from '@angular/core';
+import {
+    Component,
+    Output,
+    OnDestroy,
+    EventEmitter,
+    ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectService, State } from '../../../../shared/services';
 import { TranslateService } from '@ngx-translate/core';
@@ -47,6 +53,8 @@ import {
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
+import { ExportCveComponent } from './export-cve/export-cve.component';
+
 @Component({
     selector: 'list-project',
     templateUrl: 'list-project.component.html',
@@ -73,6 +81,8 @@ export class ListProjectComponent implements OnDestroy {
         1: 'PROJECT.PROXY_CACHE',
     };
     state: ClrDatagridStateInterface;
+    @ViewChild(ExportCveComponent)
+    exportCveComponent: ExportCveComponent;
     constructor(
         private session: SessionService,
         private appConfigService: AppConfigService,
@@ -201,8 +211,26 @@ export class ListProjectComponent implements OnDestroy {
                             this.totalCount = parseInt(xHeader, 0);
                         }
                     }
-
                     this.projects = response.body as Project[];
+                    // When the reference of the projects in "this.projects" is modified, should also modify the
+                    // reference of the projects in "this.selectedRow"
+                    this.projects?.forEach(item => {
+                        if (this.selectedRow?.length) {
+                            for (
+                                let i = this.selectedRow?.length - 1;
+                                i >= 0;
+                                i--
+                            ) {
+                                if (
+                                    this.selectedRow[i].project_id ===
+                                    item.project_id
+                                ) {
+                                    this.selectedRow.splice(i, 1);
+                                    this.selectedRow.push(item);
+                                }
+                            }
+                        }
+                    });
                 },
                 error => {
                     this.msgHandler.handleError(error);
@@ -297,7 +325,7 @@ export class ListProjectComponent implements OnDestroy {
         this.currentPage = 1;
         this.filteredType = 0;
         this.searchKeyword = '';
-
+        this.selectedRow = [];
         this.reload();
         this.statisticHandler.refresh();
     }
@@ -350,5 +378,15 @@ export class ListProjectComponent implements OnDestroy {
         st.page.to = targetPageNumber * this.pageSize - 1;
 
         return st;
+    }
+    exportCVE() {
+        this.exportCveComponent.open(this.selectedRow);
+    }
+
+    getExportButtonText(): string {
+        if (this.selectedRow?.length) {
+            return `CVE_EXPORT.EXPORT_SOME_PROJECTS`;
+        }
+        return 'CVE_EXPORT.EXPORT_ALL_PROJECTS';
     }
 }

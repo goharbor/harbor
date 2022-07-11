@@ -18,6 +18,7 @@ import { ListProjectComponent } from './list-project/list-project.component';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { RouterModule, Routes } from '@angular/router';
 import { StatisticsPanelComponent } from './statictics/statistics-panel.component';
+import { ExportCveComponent } from './list-project/export-cve/export-cve.component';
 
 const routes: Routes = [
     {
@@ -33,6 +34,7 @@ const routes: Routes = [
         ListProjectComponent,
         CreateProjectComponent,
         StatisticsPanelComponent,
+        ExportCveComponent,
     ],
     providers: [],
 })

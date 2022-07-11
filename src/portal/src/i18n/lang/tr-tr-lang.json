@@ -1753,5 +1753,19 @@
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
         "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",
         "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully"
+    },
+    "CVE_EXPORT": {
+        "EXPORT_SOME_PROJECTS": "Export CVEs - {{number}} project(s)",
+        "EXPORT_ALL_PROJECTS": "Export CVEs - All projects",
+        "ALL_PROJECTS": "All projects",
+        "EXPORT_TITLE": "Export CVE",
+        "EXPORT_SUBTITLE": "Set exporting conditions",
+        "EXPORT_CVE_FILTER_HELP_TEXT": "Enter multiple comma separated cveIds",
+        "CVE_IDS": "CVE IDs",
+        "EXPORT_BUTTON": "EXPORT",
+        "JOB_NAME": "Job Name",
+        "JOB_NAME_REQUIRED": "Job name is required",
+        "JOB_NAME_EXISTING": "Job name already exists",
+        "TRIGGER_EXPORT_SUCCESS": "Trigger exporting CVEs successfully!"
     }
 }

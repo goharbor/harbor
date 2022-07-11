@@ -1751,5 +1751,19 @@
         "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点",
         "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作",
         "STOP_PURGE_SUCCESS": "成功触发停止清理日志的操作"
+    },
+    "CVE_EXPORT": {
+        "EXPORT_SOME_PROJECTS": "导出 CVEs - {{number}} 个项目",
+        "EXPORT_ALL_PROJECTS": "导出 CVEs - 全部项目",
+        "ALL_PROJECTS": "全部项目",
+        "EXPORT_TITLE": "导出 CVE",
+        "EXPORT_SUBTITLE": "设置导出条件",
+        "EXPORT_CVE_FILTER_HELP_TEXT": "使用逗号分割 cveIds",
+        "CVE_IDS": "CVE IDs",
+        "EXPORT_BUTTON": "导出",
+        "JOB_NAME": "任务名称",
+        "JOB_NAME_REQUIRED": "任务名称为必填项",
+        "JOB_NAME_EXISTING": "任务名称已存在",
+        "TRIGGER_EXPORT_SUCCESS": "触发导出 CVEs 任务成功！"
     }
 }

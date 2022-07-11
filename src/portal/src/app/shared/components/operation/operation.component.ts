@@ -1,5 +1,10 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { OperationService } from './operation.service';
+import {
+    downloadCVEs,
+    EventState,
+    ExportJobStatus,
+    OperationService,
+} from './operation.service';
 import { forkJoin, Subscription } from 'rxjs';
 import {
     OperateInfo,
@@ -9,11 +14,19 @@ import {
 import { SlideInOutAnimation } from '../../_animations/slide-in-out.animation';
 import { TranslateService } from '@ngx-translate/core';
 import { SessionService } from '../../services/session.service';
-
+import { ScanDataExportService } from '../../../../../ng-swagger-gen/services/scan-data-export.service';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../services/event-service/event.service';
+import { MessageHandlerService } from '../../services/message-handler.service';
+import { HarborDatetimePipe } from '../../pipes/harbor-datetime.pipe';
+const STAY_TIME: number = 5000;
 const OPERATION_KEY: string = 'operation';
 const MAX_NUMBER: number = 500;
 const MAX_SAVING_TIME: number = 1000 * 60 * 60 * 24 * 30; // 30 days
-
+const TIMEOUT = 7000;
+const FILE_NAME_PREFIX: string = 'csv_file_';
 @Component({
     selector: 'hbr-operation-model',
     templateUrl: './operation.component.html',
@@ -21,8 +34,10 @@ const MAX_SAVING_TIME: number = 1000 * 60 * 60 * 24 * 30; // 30 days
     animations: [SlideInOutAnimation],
 })
 export class OperationComponent implements OnInit, OnDestroy {
+    fileNamePrefix: string = FILE_NAME_PREFIX;
     batchInfoSubscription: Subscription;
     resultLists: OperateInfo[] = [];
+    exportJobs: OperateInfo[] = [];
     animationState = 'out';
     private _newMessageCount: number = 0;
     private _timeoutInterval;
@@ -42,12 +57,22 @@ export class OperationComponent implements OnInit, OnDestroy {
             );
         }
     }
-
+    timeout;
     constructor(
         private session: SessionService,
         private operationService: OperationService,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private scanDataExportService: ScanDataExportService,
+        private event: EventService,
+        private msgHandler: MessageHandlerService
     ) {
+        this.event.subscribe(HarborEvent.REFRESH_EXPORT_JOBS, () => {
+            if (this.animationState === 'out') {
+                this._newMessageCount += 1;
+            }
+            this.refreshExportJobs();
+        });
+
         this.batchInfoSubscription = operationService.operationInfo$.subscribe(
             data => {
                 if (this.animationState === 'out') {
@@ -91,7 +116,7 @@ export class OperationComponent implements OnInit, OnDestroy {
         if (!this._timeoutInterval) {
             this._timeoutInterval = setTimeout(() => {
                 this.animationState = 'out';
-            }, 5000);
+            }, STAY_TIME);
         }
     }
 
@@ -117,6 +142,7 @@ export class OperationComponent implements OnInit, OnDestroy {
 
     init() {
         if (this.session.getCurrentUser()) {
+            this.refreshExportJobs();
             const operationInfosString: string = localStorage.getItem(
                 `${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`
             );
@@ -163,6 +189,10 @@ export class OperationComponent implements OnInit, OnDestroy {
             clearInterval(this._timeoutInterval);
             this._timeoutInterval = null;
         }
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+            this.timeout = null;
+        }
     }
 
     toggleTitle(errorSpan: any) {
@@ -207,6 +237,16 @@ export class OperationComponent implements OnInit, OnDestroy {
                 daysAgo
             );
         });
+        this.exportJobs.forEach(data => {
+            const timeDiff: number = new Date().getTime() - +data.timeStamp;
+            data.timeDiff = this.calculateTime(
+                timeDiff,
+                secondsAgo,
+                minutesAgo,
+                hoursAgo,
+                daysAgo
+            );
+        });
     }
 
     calculateTime(
@@ -225,6 +265,94 @@ export class OperationComponent implements OnInit, OnDestroy {
             return Math.floor(dist / 60 / 24) + d;
         } else {
             return s;
+        }
+    }
+    refreshExportJobs() {
+        if (this.session.getCurrentUser()) {
+            this.scanDataExportService
+                .getScanDataExportExecutionList({
+                    userName: this.session?.getCurrentUser()?.username,
+                })
+                .subscribe(res => {
+                    if (res?.items) {
+                        this.exportJobs = [];
+                        let flag: boolean = false;
+                        res.items.forEach(item => {
+                            const info: OperateInfo = {
+                                name: 'CVE_EXPORT.EXPORT_TITLE',
+                                state: this.MapStatus(item.status),
+                                data: {
+                                    hasFile: item.file_present,
+                                    name: `${FILE_NAME_PREFIX}${new HarborDatetimePipe().transform(
+                                        item.start_time,
+                                        'yyyyMMddHHss'
+                                    )}`,
+                                    id: item.id,
+                                    errorInf:
+                                        item.status === ExportJobStatus.ERROR
+                                            ? item.status_text
+                                            : null,
+                                },
+                                timeStamp: new Date(item.start_time).getTime(),
+                                timeDiff: 'OPERATION.SECOND_AGO',
+                            };
+                            this.exportJobs.push(info);
+                            if (this.isRunningState(item.status)) {
+                                flag = true;
+                            }
+                        });
+                        if (flag) {
+                            this.timeout = setTimeout(() => {
+                                this.refreshExportJobs();
+                            }, TIMEOUT);
+                        }
+                    }
+                });
+        }
+    }
+
+    isRunningState(state: string): boolean {
+        if (state) {
+            return (
+                state === ExportJobStatus.RUNNING ||
+                state === ExportJobStatus.PENDING ||
+                state === ExportJobStatus.SCHEDULED
+            );
+        }
+        return false;
+    }
+    MapStatus(originStatus: string): string {
+        if (originStatus) {
+            if (this.isRunningState(originStatus)) {
+                return EventState.PROGRESSING;
+            }
+            if (originStatus === ExportJobStatus.STOPPED) {
+                return EventState.INTERRUPT;
+            }
+            if (originStatus === ExportJobStatus.SUCCESS) {
+                return EventState.SUCCESS;
+            }
+            if (originStatus === ExportJobStatus.ERROR) {
+                return EventState.FAILURE;
+            }
+        }
+        return EventState.FAILURE;
+    }
+    download(info: OperateInfo) {
+        if (info?.data?.id && info?.data?.name) {
+            this.scanDataExportService
+                .downloadScanData({
+                    executionId: +info.data.id,
+                })
+                .subscribe(
+                    res => {
+                        downloadCVEs(res, info.data.name);
+                        this.refreshExportJobs();
+                    },
+                    error => {
+                        this.msgHandler.error(error);
+                    }
+                );
         }
     }
 }
