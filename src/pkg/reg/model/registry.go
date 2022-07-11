@@ -24,6 +24,7 @@ const (
 	RegistryTypeDockerHub        = "docker-hub"
 	RegistryTypeDockerRegistry   = "docker-registry"
 	RegistryTypeHuawei           = "huawei-SWR"
+	RegistryTypeGoogleGar        = "google-gar"
 	RegistryTypeGoogleGcr        = "google-gcr"
 	RegistryTypeAwsEcr           = "aws-ecr"
 	RegistryTypeAzureAcr         = "azure-acr"

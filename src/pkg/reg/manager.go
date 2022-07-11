@@ -16,6 +16,7 @@ package reg
 
 import (
 	"context"
+
 	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/config"
 
@@ -27,6 +28,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
+	// register the Google Gar adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegar"
 	// register the Google Gcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
 	// register the AwsEcr adapter

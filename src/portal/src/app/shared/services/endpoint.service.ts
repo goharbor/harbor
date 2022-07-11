@@ -19,6 +19,7 @@ export const ADAPTERS_MAP = {
     'docker-hub': 'Docker Hub',
     'docker-registry': 'Docker Registry',
     gitlab: 'Gitlab',
+    'google-gar': 'Google GAR',
     'google-gcr': 'Google GCR',
     harbor: 'Harbor',
     'helm-hub': 'Helm Hub',
