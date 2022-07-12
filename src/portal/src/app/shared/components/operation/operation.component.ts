@@ -270,9 +270,7 @@ export class OperationComponent implements OnInit, OnDestroy {
     refreshExportJobs() {
         if (this.session.getCurrentUser()) {
             this.scanDataExportService
-                .getScanDataExportExecutionList({
-                    userName: this.session?.getCurrentUser()?.username,
-                })
+                .getScanDataExportExecutionList()
                 .subscribe(res => {
                     if (res?.items) {
                         this.exportJobs = [];

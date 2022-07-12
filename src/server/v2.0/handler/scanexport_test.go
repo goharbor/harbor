@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	beegoorm "github.com/beego/beego/orm"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -299,6 +300,7 @@ func (suite *ScanExportTestSuite) TestDownloadScanData() {
 		EndTime:          endTime,
 		ExportDataDigest: "datadigest",
 		UserName:         "test-user",
+		FilePresent:      true,
 	}
 	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil)
 	mock.OnAnything(suite.scanExportCtl, "DeleteExecution").Return(nil)
@@ -340,6 +342,7 @@ func (suite *ScanExportTestSuite) TestDownloadScanDataUserNotOwnerofExport() {
 		EndTime:          endTime,
 		ExportDataDigest: "datadigest",
 		UserName:         "test-user",
+		FilePresent:      true,
 	}
 	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil)
 	mock.OnAnything(suite.scanExportCtl, "DeleteExecution").Return(nil)
@@ -353,12 +356,92 @@ func (suite *ScanExportTestSuite) TestDownloadScanDataUserNotOwnerofExport() {
 	mock.OnAnything(suite.sysArtifactMgr, "Delete").Return(nil)
 
 	res, err := suite.DoReq(http.MethodGet, url, nil)
-	suite.Equal(http.StatusUnauthorized, res.StatusCode)
+	suite.Equal(http.StatusForbidden, res.StatusCode)
+	suite.Equal(nil, err)
+}
+
+func (suite *ScanExportTestSuite) TestDownloadScanDataNoCsvFilePresent() {
+	suite.Security.On("GetUsername").Return("test-user1")
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+	url := "/export/cve/download/100"
+	endTime := time.Now()
+	startTime := endTime.Add(-10 * time.Minute)
+
+	execution := &export.Execution{
+		ID:               int64(100),
+		UserID:           int64(3),
+		Status:           "Success",
+		StatusMessage:    "",
+		Trigger:          "MANUAL",
+		StartTime:        startTime,
+		EndTime:          endTime,
+		ExportDataDigest: "datadigest",
+		UserName:         "test-user",
+		FilePresent:      false,
+	}
+	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil)
+	mock.OnAnything(suite.scanExportCtl, "DeleteExecution").Return(nil)
+
+	// all BLOB related operations succeed
+	mock.OnAnything(suite.sysArtifactMgr, "Create").Return(int64(1), nil)
+
+	sampleData := "test,hello,world"
+	data := io.NopCloser(strings.NewReader(sampleData))
+	mock.OnAnything(suite.sysArtifactMgr, "Read").Return(data, nil)
+	mock.OnAnything(suite.sysArtifactMgr, "Delete").Return(nil)
+
+	res, err := suite.DoReq(http.MethodGet, url, nil)
+	suite.Equal(http.StatusNotFound, res.StatusCode)
+	suite.Equal(nil, err)
+}
+
+func (suite *ScanExportTestSuite) TestDownloadScanDataExecutionNotPresent() {
+	suite.Security.On("GetUsername").Return("test-user1")
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+	url := "/export/cve/download/100"
+
+	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(nil, beegoorm.ErrNoRows)
+	mock.OnAnything(suite.scanExportCtl, "DeleteExecution").Return(nil)
+
+	// all BLOB related operations succeed
+	mock.OnAnything(suite.sysArtifactMgr, "Create").Return(int64(1), nil)
+
+	sampleData := "test,hello,world"
+	data := io.NopCloser(strings.NewReader(sampleData))
+	mock.OnAnything(suite.sysArtifactMgr, "Read").Return(data, nil)
+	mock.OnAnything(suite.sysArtifactMgr, "Delete").Return(nil)
+
+	res, err := suite.DoReq(http.MethodGet, url, nil)
+	suite.Equal(http.StatusNotFound, res.StatusCode)
+	suite.Equal(nil, err)
+}
+
+func (suite *ScanExportTestSuite) TestDownloadScanDataExecutionError() {
+	suite.Security.On("GetUsername").Return("test-user1")
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+	url := "/export/cve/download/100"
+
+	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(nil, errors.New("test error"))
+	mock.OnAnything(suite.scanExportCtl, "DeleteExecution").Return(nil)
+
+	// all BLOB related operations succeed
+	mock.OnAnything(suite.sysArtifactMgr, "Create").Return(int64(1), nil)
+
+	sampleData := "test,hello,world"
+	data := io.NopCloser(strings.NewReader(sampleData))
+	mock.OnAnything(suite.sysArtifactMgr, "Read").Return(data, nil)
+	mock.OnAnything(suite.sysArtifactMgr, "Delete").Return(nil)
+
+	res, err := suite.DoReq(http.MethodGet, url, nil)
+	suite.Equal(http.StatusInternalServerError, res.StatusCode)
 	suite.Equal(nil, err)
 }
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionList() {
-
+	suite.Security.On("GetUsername").Return("test-user")
 	suite.Security.On("IsAuthenticated").Return(true).Once()
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 	url, err := url2.Parse("/export/cve/executions")

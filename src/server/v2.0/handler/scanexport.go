@@ -131,8 +131,21 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 		return se.SendError(ctx, err)
 	}
 	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
+
 	if err != nil {
-		se.SendError(ctx, err)
+		if notFound := orm.AsNotFoundError(err, "execution with id: %d not found", params.ExecutionID); notFound != nil {
+			return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+				writer.WriteHeader(http.StatusNotFound)
+			})
+		}
+		return se.SendError(ctx, err)
+	}
+
+	// check if the CSV artifact for the execution exists
+	if !execution.FilePresent {
+		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+			writer.WriteHeader(http.StatusNotFound)
+		})
 	}
 
 	// check if the execution being downloaded is owned by the current user
@@ -143,7 +156,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 
 	if secContext.GetUsername() != execution.UserName {
 		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
-			writer.WriteHeader(http.StatusUnauthorized)
+			writer.WriteHeader(http.StatusForbidden)
 		})
 	}
 
@@ -173,7 +186,12 @@ func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context,
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
-	executions, err := se.scanDataExportCtl.ListExecutions(ctx, params.UserName)
+	secContext, err := se.GetSecurityContext(ctx)
+
+	if err != nil {
+		return se.SendError(ctx, err)
+	}
+	executions, err := se.scanDataExportCtl.ListExecutions(ctx, secContext.GetUsername())
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
