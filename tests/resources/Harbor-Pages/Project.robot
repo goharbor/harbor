@@ -166,6 +166,7 @@ Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  ${project_action_xpath}
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1

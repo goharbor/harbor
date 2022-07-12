@@ -28,6 +28,7 @@ ${project_member_xpath}  //project-detail//a[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
 ${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
+${project_action_xpath}  //projects//span[contains(.,'ACTION')]
 
 ${project_tag_immutability_switch}  //*[@id='btn-immutable']
 
