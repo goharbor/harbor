@@ -17,7 +17,6 @@ package purge
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"os"
 	"strings"
@@ -93,13 +92,13 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	logger.Info("Purge audit job start")
 	logger.Infof("job parameters %+v", params)
 	if j.shouldStop(ctx) {
-		log.Info("received the stop signal, stop the purge job")
+		logger.Info("received the stop signal, stop the purge job")
 		return nil
 	}
 	j.parseParams(params)
 	ormCtx := ctx.SystemContext()
 	if j.retentionHour == -1 || j.retentionHour == 0 {
-		log.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
+		logger.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
 		return nil
 	}
 	n, err := j.auditMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
