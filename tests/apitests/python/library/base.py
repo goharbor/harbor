@@ -31,7 +31,7 @@ def _create_client(server, credential, debug, api_type="products"):
     cfg = None
     if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
                     'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
-                    'configure', 'user', 'member', 'health', 'label', 'webhook'):
+                    'configure', 'user', 'member', 'health', 'label', 'webhook', 'purge'):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -76,7 +76,8 @@ def _create_client(server, credential, debug, api_type="products"):
         "user": v2_swagger_client.UserApi(v2_swagger_client.ApiClient(cfg)),
         "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
         "health": v2_swagger_client.HealthApi(v2_swagger_client.ApiClient(cfg)),
-        "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg))
+        "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg)),
+        "purge": v2_swagger_client.PurgeApi(v2_swagger_client.ApiClient(cfg))
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
