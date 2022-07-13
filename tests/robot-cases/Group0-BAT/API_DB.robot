@@ -180,3 +180,7 @@ Test Case - Webhook CRUD
 Test Case - Cosign Sign Artifact
     [Tags]  cosign
     Harbor API Test  ./tests/apitests/python/test_cosign_sign_artifact.py
+
+Test Case - Log Rotation
+    [Tags]  log_rotation
+    Harbor API Test  ./tests/apitests/python/test_log_rotation.py
