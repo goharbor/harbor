@@ -5662,7 +5662,6 @@ paths:
       operationId: getScanDataExportExecutionList
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/userName'
       responses:
         '200':
           description: Success

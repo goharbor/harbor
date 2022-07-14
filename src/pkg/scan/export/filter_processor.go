@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goharbor/harbor/src/pkg"
 
-	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -137,6 +136,7 @@ func (dfp *DefaultFilterProcessor) getProjectQueryFilter(user *commonmodels.User
 		logger.Infof("User %v is sys admin. Selecting all projects for export.", user.Username)
 		return q.New(q.KeyWords{})
 	}
+
 	logger.Infof("User %v is not sys admin. Selecting projects with admin roles for export.", user.Username)
-	return q.New(q.KeyWords{"member": &models.MemberQuery{UserID: user.UserID, Role: common.RoleProjectAdmin}})
+	return q.New(q.KeyWords{"member": &models.MemberQuery{UserID: user.UserID, GroupIDs: user.GroupIDs}})
 }

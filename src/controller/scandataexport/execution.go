@@ -188,6 +188,8 @@ func (c *controller) isCsvArtifactPresent(ctx context.Context, execID int64, dig
 	repositoryName := fmt.Sprintf("scandata_export_%v", execID)
 	exists, err := c.sysArtifactMgr.Exists(ctx, strings.ToLower(export.Vendor), repositoryName, digest)
 	if err != nil {
+		logger.Errorf("failed to check existence of csv artifact for vendor: %s repository: %s digest: %s",
+			strings.ToLower(export.Vendor), repositoryName, digest)
 		exists = false
 	}
 	return exists
