@@ -378,7 +378,12 @@ Test Case - Delete Multi Project
     Filter Object  project
     Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     @{project_list}  Create List  projecta  projectb
-    Multi-delete Object  ${project_delete_btn}  @{project_list}
+    FOR  ${project}  IN  @{project_list}
+        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label
+    END
+    Retry Element Click  ${project_action_xpath}
+    Retry Element Click  ${project_delete_btn}
+    Retry Element Click  ${repo_delete_on_card_view_btn}
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
     Delete Success  projectb${d}
