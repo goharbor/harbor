@@ -61,7 +61,6 @@ Multi-delete Object
         ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
         Retry Element Click  ${element}
     END
-    Retry Element Click  ${project_action_xpath}
     Sleep  1
     Retry Element Click  ${delete_btn}
     Sleep  1
