@@ -75,20 +75,14 @@ Test Case - Open License Page
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     View About
-    Retry Link Click  ${license_xpath}
-    Sleep  3
-    Switch Window  locator=NEW
-    Retry Wait Until Page Contains  Apache License
+    Retry Double Keywords When Error  Click Link New Tab And Switch  ${license_xpath}  Retry Wait Until Page Contains  Apache License
     Close Browser
 
 Test Case - Open More Info Page
     [Tags]  more_info_page
     Init Chrome Driver
     Go To  ${HARBOR_URL}
-    Retry Link Click  //sign-in//div//a[contains(.,'More info...')]
-    Sleep  3
-    Switch Window  locator=NEW
-    Retry Wait Until Page Contains  An open source trusted cloud native registry project that stores, signs, and scans content.
+    Retry Double Keywords When Error  Click Link New Tab And Switch  ${more_info_link_xpath}  Retry Wait Until Page Contains  An open source trusted cloud native registry project that stores, signs, and scans content.
     Close Browser
 
 Test Case - Open CVE Details Page
@@ -104,18 +98,14 @@ Test Case - Open CVE Details Page
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Artifact  ${sha256}
-    Retry Link Click  //hbr-artifact-vulnerabilities//clr-dg-row//a[contains(.,'${cve}')]
-    Sleep  3
-    Switch Window  locator=NEW
-    Retry Wait Element  //h1[contains(.,'${cve}')]
+    Retry Double Keywords When Error  Click Link New Tab And Switch  //hbr-artifact-vulnerabilities//clr-dg-row//a[contains(.,'${cve}')]  Retry Wait Element  //h1[contains(.,'${cve}')]
     Close Browser
 
 Test Case - Open Image Scanners Documentation Page
     [Tags]  image_scanners_documentation_page
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Open Image Scanners Documentation
-    Sleep  3
-    Switch Window  locator=NEW
-    Retry Wait Until Page Contains  Vulnerability Scanning with Pluggable Scanners
+    Switch To Scanners Page
+    Retry Element Click  ${view_scanner_icon_xpath}
+    Retry Double Keywords When Error  Click Link New Tab And Switch  ${view_scanner_doc_xpath}  Retry Wait Until Page Contains  Vulnerability Scanning with Pluggable Scanners
     Close Browser

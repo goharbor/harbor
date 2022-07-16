@@ -35,4 +35,4 @@ ${about_btn}  //clr-dropdown-menu/a[contains(.,'About')]
 ${header}  xpath=//clr-header[contains(@class,'header-5')]
 ${color_theme_light}  //span[contains(.,'LIGHT')]
 ${close_btn}  //button[contains(.,'CLOSE')]
-
+${more_info_link_xpath}  //sign-in//div//a[contains(.,'More info...')]
