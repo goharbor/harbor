@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
 	// register the Artifact Hub adapter

@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/base64"
 	"image"
+
 	// import the gif format
 	_ "image/gif"
 	// import the jpeg format
