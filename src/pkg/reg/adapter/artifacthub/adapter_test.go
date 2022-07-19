@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
+
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func mockRequest() *gock.Request {

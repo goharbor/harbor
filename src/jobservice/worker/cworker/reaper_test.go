@@ -21,17 +21,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/common/list"
-
+	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
-
+	"github.com/goharbor/harbor/src/jobservice/common/list"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
-	"github.com/gomodule/redigo/redis"
-	"github.com/stretchr/testify/suite"
 )
 
 // ReaperTestSuite is used to test reaper

@@ -17,11 +17,12 @@ package reg
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/reg/dao"
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {

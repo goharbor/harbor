@@ -4,7 +4,6 @@ package export
 
 import (
 	digest "github.com/opencontainers/go-digest"
-
 	mock "github.com/stretchr/testify/mock"
 )
 

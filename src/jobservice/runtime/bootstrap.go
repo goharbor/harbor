@@ -17,7 +17,6 @@ package runtime
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
 	"os"
 	"os/signal"
 	"strings"
@@ -25,7 +24,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/job/impl/systemartifact"
+	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -41,6 +40,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/systemartifact"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -57,7 +58,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/gomodule/redigo/redis"
 )
 
 const (

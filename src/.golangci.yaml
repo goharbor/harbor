@@ -5,6 +5,8 @@ linters-settings:
     simplify: false
   misspell:
     locale: US,UK
+  goimports:
+    local-prefixes: github.com/goharbor/harbor
 
 linters:
   disable-all: true
@@ -32,6 +34,7 @@ linters:
     - errcheck
     # - gosec
     - gosimple
+    - goimports
     - govet
     # - noctx
     # - rowserrcheck

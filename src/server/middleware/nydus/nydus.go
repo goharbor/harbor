@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -15,7 +17,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 var (

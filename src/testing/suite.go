@@ -24,16 +24,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/config"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-
 	o "github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 func init() {

@@ -19,10 +19,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 var testResourceType = "resource-test"

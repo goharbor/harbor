@@ -16,6 +16,10 @@ package purge
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -23,8 +27,6 @@ import (
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/goharbor/harbor/src/testing/mock"
 	mockAudit "github.com/goharbor/harbor/src/testing/pkg/audit"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type PurgeJobTestSuite struct {

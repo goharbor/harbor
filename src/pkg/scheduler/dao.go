@@ -19,6 +19,7 @@ import (
 	"time"
 
 	beegoorm "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"

@@ -20,11 +20,12 @@ import (
 	"time"
 
 	beegorm "github.com/beego/beego/orm"
+	"github.com/golang-migrate/migrate/v4"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/golang-migrate/migrate/v4"
 )
 
 const (

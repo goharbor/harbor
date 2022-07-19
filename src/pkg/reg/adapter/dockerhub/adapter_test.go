@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 const (

@@ -16,10 +16,11 @@ package metadata
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/security"
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"time"
 )
 
 // ArtifactLabeledMetadata is the metadata from which the artifact labeled event can be resolved

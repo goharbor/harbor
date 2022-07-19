@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/beego/beego/validation"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
 func TestAlgorithm(t *testing.T) {

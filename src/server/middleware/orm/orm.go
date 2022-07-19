@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	o "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 )

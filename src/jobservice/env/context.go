@@ -16,8 +16,9 @@ package env
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"sync"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
 // Context keep some sharable materials and system controlling channels.

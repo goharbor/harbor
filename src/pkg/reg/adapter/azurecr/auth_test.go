@@ -19,9 +19,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 var (

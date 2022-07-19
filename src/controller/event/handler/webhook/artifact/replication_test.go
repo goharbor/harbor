@@ -16,27 +16,27 @@ package artifact
 
 import (
 	"context"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	repctl "github.com/goharbor/harbor/src/controller/replication"
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	replicationtesting "github.com/goharbor/harbor/src/testing/controller/replication"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingnotification "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestReplicationHandler_Handle(t *testing.T) {

@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/jobservice/job"
 	job_models "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 

@@ -18,14 +18,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/config/db/dao"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/redis" // redis cache
 	"github.com/goharbor/harbor/src/lib/config/metadata"
-	"github.com/stretchr/testify/assert"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 )
 
 func TestCacheLoadAndSave(t *testing.T) {

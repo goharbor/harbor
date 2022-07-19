@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
+
 	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -28,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/gomodule/redigo/redis"
 )
 
 const (

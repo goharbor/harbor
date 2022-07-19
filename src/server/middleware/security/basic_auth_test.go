@@ -18,10 +18,11 @@ import (
 	"net/http"
 	"testing"
 
-	_ "github.com/goharbor/harbor/src/core/auth/db"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 func TestBasicAuth(t *testing.T) {

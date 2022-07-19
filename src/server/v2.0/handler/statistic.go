@@ -16,14 +16,15 @@ package handler
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/controller/blob"
-	"github.com/goharbor/harbor/src/pkg/systemartifact"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/statistic"
 )

@@ -19,6 +19,10 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -36,8 +40,8 @@ import (
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
-	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
+	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/testing/pkg/blob"
@@ -45,9 +49,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 // TODO find another way to test artifact controller, it's hard to maintain currently

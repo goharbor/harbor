@@ -25,6 +25,7 @@ import (
 
 	"github.com/beego/beego/orm"
 	"github.com/docker/distribution/health"
+
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/cache"

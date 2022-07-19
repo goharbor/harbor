@@ -16,12 +16,13 @@ package config
 
 import (
 	"context"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"strings"
 )
 
 // It contains all user related configurations, each of user related settings requires a context provided

@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/goharbor/harbor/src/pkg/label/model"
-
-	hlog "github.com/goharbor/harbor/src/lib/log"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
 	helm_repo "helm.sh/helm/v3/pkg/repo"
+
+	hlog "github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 const (

@@ -16,12 +16,14 @@ package http
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	openapi "github.com/go-openapi/errors"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"net/http"
-	"strings"
 )
 
 var (

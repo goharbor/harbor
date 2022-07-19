@@ -16,6 +16,8 @@ package dao
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -23,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
-	"time"
 )
 
 func init() {

@@ -3,12 +3,12 @@ package notifier
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 // HandlerIndexer is setup the relationship between the handler type and

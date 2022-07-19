@@ -17,16 +17,18 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/opencontainers/go-digest"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type CacheTestSuite struct {

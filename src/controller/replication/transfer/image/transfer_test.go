@@ -22,12 +22,13 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
-	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type fakeRegistry struct{}

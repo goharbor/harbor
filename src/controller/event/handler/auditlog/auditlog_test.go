@@ -18,6 +18,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -26,8 +29,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	ne "github.com/goharbor/harbor/src/pkg/notifier/event"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type MockAuditLogManager struct {

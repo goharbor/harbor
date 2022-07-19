@@ -2,7 +2,12 @@ package export
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/gogo/protobuf/sortkeys"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/q"
 	artifactDao "github.com/goharbor/harbor/src/pkg/artifact/dao"
@@ -18,9 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	userDao "github.com/goharbor/harbor/src/pkg/user/dao"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 const RegistrationUUID = "scannerIdExportData"

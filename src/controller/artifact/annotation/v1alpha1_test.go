@@ -21,12 +21,12 @@ import (
 	"strings"
 	"testing"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	reg "github.com/goharbor/harbor/src/testing/pkg/registry"
-
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/suite"
 )
 
 var (

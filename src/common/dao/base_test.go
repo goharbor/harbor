@@ -3,8 +3,9 @@ package dao
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func TestMLogger_Verbose(t *testing.T) {

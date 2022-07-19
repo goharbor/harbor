@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
@@ -21,9 +25,6 @@ import (
 	pmocks "github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
 	smocks "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tmocks "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type preheatSuite struct {

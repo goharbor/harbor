@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
-
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )

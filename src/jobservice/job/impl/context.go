@@ -23,6 +23,7 @@ import (
 	"time"
 
 	o "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"

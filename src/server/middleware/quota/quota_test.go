@@ -16,15 +16,17 @@ package quota
 
 import (
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	pquota "github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -32,7 +34,6 @@ import (
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	quotatesting "github.com/goharbor/harbor/src/testing/controller/quota"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type RequestMiddlewareTestSuite struct {

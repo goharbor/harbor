@@ -1,19 +1,20 @@
 package csrf
 
 import (
-	"github.com/goharbor/harbor/src/lib/config"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
 
+	"github.com/gorilla/csrf"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/gorilla/csrf"
 )
 
 const (

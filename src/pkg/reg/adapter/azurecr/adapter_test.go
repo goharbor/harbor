@@ -17,8 +17,9 @@ package azurecr
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func TestInfo(t *testing.T) {

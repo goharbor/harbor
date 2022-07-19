@@ -16,10 +16,12 @@ package logger
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/jobservice/config"
 )
 
 func TestRetrieve(t *testing.T) {

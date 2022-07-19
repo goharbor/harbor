@@ -20,12 +20,12 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/beego/beego/orm"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
 	. "github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/stretchr/testify/suite"
 )
 
 type Foo struct {

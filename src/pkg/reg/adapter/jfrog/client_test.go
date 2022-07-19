@@ -19,9 +19,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type clientTestSuite struct {

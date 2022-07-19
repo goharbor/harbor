@@ -5,9 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
@@ -17,9 +14,11 @@ import (
 	proctl "github.com/goharbor/harbor/src/controller/project"
 	quotactl "github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/user"

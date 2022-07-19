@@ -25,17 +25,17 @@ import (
 	"sync/atomic"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
-
-	gooidc "github.com/coreos/go-oidc/v3/oidc"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib/log"
-	"golang.org/x/oauth2"
 )
 
 const (

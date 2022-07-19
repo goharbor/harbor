@@ -5,9 +5,9 @@ package task
 import (
 	context "context"
 
-	q "github.com/goharbor/harbor/src/lib/q"
 	mock "github.com/stretchr/testify/mock"
 
+	q "github.com/goharbor/harbor/src/lib/q"
 	task "github.com/goharbor/harbor/src/pkg/task"
 )
 

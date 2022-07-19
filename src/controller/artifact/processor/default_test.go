@@ -20,15 +20,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/distribution"
-	"github.com/goharbor/harbor/src/testing/mock"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/parser"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
-
-	"github.com/stretchr/testify/suite"
 )
 
 var (

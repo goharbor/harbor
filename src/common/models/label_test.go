@@ -17,8 +17,9 @@ package models
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 func TestValidOfLabel(t *testing.T) {

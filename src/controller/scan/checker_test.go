@@ -16,17 +16,18 @@ package scan
 
 import (
 	"context"
-	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
-	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 )
 
 type CheckerTestSuite struct {

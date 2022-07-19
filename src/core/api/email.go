@@ -16,13 +16,13 @@ package api
 
 import (
 	"errors"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/utils/email"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 const (

@@ -1,10 +1,12 @@
 package base
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type BaseTestSuite struct {

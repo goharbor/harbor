@@ -20,9 +20,10 @@ import (
 	"time"
 
 	"github.com/docker/distribution/manifest/manifestlist"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // Artifact is the abstract object managed by Harbor. It hides the

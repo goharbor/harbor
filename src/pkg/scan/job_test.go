@@ -19,6 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -28,8 +31,6 @@ import (
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	mocktesting "github.com/goharbor/harbor/src/testing/mock"
 	v1testing "github.com/goharbor/harbor/src/testing/pkg/scan/rest/v1"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // JobTestSuite is a test suite to test the scan job.

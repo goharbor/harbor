@@ -19,10 +19,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
-	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -31,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -48,12 +51,10 @@ import (
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // ControllerTestSuite is the test suite for scan controller.

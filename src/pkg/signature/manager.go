@@ -15,12 +15,13 @@
 package signature
 
 import (
+	"golang.org/x/net/context"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
-	"golang.org/x/net/context"
 )
 
 // Checker checks the signature status of artifact

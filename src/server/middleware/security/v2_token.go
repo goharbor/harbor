@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
 	svc_token "github.com/goharbor/harbor/src/core/service/token"

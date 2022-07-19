@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	goldap "github.com/go-ldap/ldap/v3"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"

@@ -15,10 +15,11 @@
 package handler
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
-	"testing"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {

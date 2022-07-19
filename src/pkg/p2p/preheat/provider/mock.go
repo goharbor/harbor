@@ -16,12 +16,13 @@ package provider
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 )
 
 // This is a package to provide mock utilities.

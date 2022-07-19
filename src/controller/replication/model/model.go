@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
-
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"

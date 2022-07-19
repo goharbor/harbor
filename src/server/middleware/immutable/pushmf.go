@@ -2,7 +2,6 @@ package immutable
 
 import (
 	"fmt"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 
 	common_util "github.com/goharbor/harbor/src/common/utils"
@@ -10,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	errors "github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 

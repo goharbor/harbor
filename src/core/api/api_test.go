@@ -25,20 +25,20 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dghubble/sling"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/user"
-
-	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
+	"github.com/goharbor/harbor/src/pkg/user"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (

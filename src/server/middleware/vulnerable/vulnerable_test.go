@@ -16,16 +16,13 @@ package vulnerable
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/accessory"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
-	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -33,13 +30,17 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 )
 
 type MiddlewareTestSuite struct {

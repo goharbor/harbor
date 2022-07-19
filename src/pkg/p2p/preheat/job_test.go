@@ -18,13 +18,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	p "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/testing/jobservice"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // JobTestSuite is test suite of preheating job.

@@ -5,9 +5,9 @@ package scandataexport
 import (
 	context "context"
 
-	export "github.com/goharbor/harbor/src/pkg/scan/export"
 	mock "github.com/stretchr/testify/mock"
 
+	export "github.com/goharbor/harbor/src/pkg/scan/export"
 	task "github.com/goharbor/harbor/src/pkg/task"
 )
 

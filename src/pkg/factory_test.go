@@ -17,6 +17,8 @@ package pkg
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	cachedArtifact "github.com/goharbor/harbor/src/pkg/cached/artifact/redis"
 	cachedProject "github.com/goharbor/harbor/src/pkg/cached/project/redis"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestInitArtifactMgr(t *testing.T) {

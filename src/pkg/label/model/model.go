@@ -3,10 +3,10 @@ package model
 import (
 	"time"
 
+	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/errors"
-
-	"github.com/beego/beego/orm"
 )
 
 func init() {

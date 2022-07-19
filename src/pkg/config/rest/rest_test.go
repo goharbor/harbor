@@ -17,12 +17,14 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func ConfigGetHandler(w http.ResponseWriter, r *http.Request) {

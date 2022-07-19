@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
-	htesting "github.com/goharbor/harbor/src/testing"
 	helm_repo "helm.sh/helm/v3/pkg/repo"
+
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 // The frontend server

@@ -18,9 +18,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
-	"github.com/stretchr/testify/assert"
 )
 
 var l = NewUserLock(2 * time.Second)

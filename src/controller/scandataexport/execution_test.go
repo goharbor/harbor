@@ -2,6 +2,13 @@ package scandataexport
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/pkg/errors"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
@@ -10,11 +17,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/pkg/errors"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type ScanDataExportExecutionTestSuite struct {

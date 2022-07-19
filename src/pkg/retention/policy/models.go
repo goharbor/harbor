@@ -16,6 +16,7 @@ package policy
 
 import (
 	"github.com/beego/beego/validation"
+
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"

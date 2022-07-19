@@ -20,12 +20,13 @@ import (
 	"time"
 
 	beego_orm "github.com/beego/beego/orm"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
-	"github.com/stretchr/testify/suite"
 )
 
 type daoTestSuite struct {

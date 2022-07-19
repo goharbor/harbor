@@ -16,17 +16,17 @@ package util
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/accessory"
-	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"net/http"
 	"path"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/accessory"
+	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 )
 

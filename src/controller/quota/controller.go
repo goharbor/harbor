@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	// quota driver
+	_ "github.com/goharbor/harbor/src/controller/quota/driver"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -27,9 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
-
-	// quota driver
-	_ "github.com/goharbor/harbor/src/controller/quota/driver"
 )
 
 var (

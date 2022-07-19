@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 func TestProjects(t *testing.T) {

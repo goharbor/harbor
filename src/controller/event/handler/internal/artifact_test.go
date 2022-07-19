@@ -20,6 +20,8 @@ import (
 	"time"
 
 	beegoorm "github.com/beego/beego/orm"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -30,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/stretchr/testify/suite"
 )
 
 // ArtifactHandlerTestSuite is test suite for artifact handler.

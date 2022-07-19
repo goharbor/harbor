@@ -16,12 +16,13 @@ package http
 
 import (
 	"crypto/tls"
-	"github.com/goharbor/harbor/src/lib/trace"
 	"net"
 	"net/http"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
+	"github.com/goharbor/harbor/src/lib/trace"
 )
 
 const (

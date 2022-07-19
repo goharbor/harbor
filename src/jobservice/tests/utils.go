@@ -18,11 +18,12 @@ package tests
 import (
 	"errors"
 	"fmt"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"os"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 )
 
 const (

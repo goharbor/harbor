@@ -16,12 +16,13 @@ package config
 
 import (
 	"context"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	testCfg "github.com/goharbor/harbor/src/testing/lib/config"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"testing"
 )
 
 func Test_verifySkipAuditLogCfg(t *testing.T) {

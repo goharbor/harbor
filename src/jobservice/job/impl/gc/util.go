@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
-	"github.com/gomodule/redigo/redis"
 )
 
 // delKeys ...

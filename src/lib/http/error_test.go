@@ -16,13 +16,15 @@ package http
 
 import (
 	std_errors "errors"
-	openapi "github.com/go-openapi/errors"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	openapi "github.com/go-openapi/errors"
+	"github.com/stretchr/testify/assert"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func TestSendError(t *testing.T) {

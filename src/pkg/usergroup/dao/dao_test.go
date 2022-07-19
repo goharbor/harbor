@@ -15,10 +15,12 @@
 package dao
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type DaoTestSuite struct {

@@ -4,12 +4,13 @@ import (
 	"context"
 	"testing"
 
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tdao "github.com/goharbor/harbor/src/testing/pkg/oidc/dao"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 // encrypt "secret1" using key "naa4JtarA1Zsc3uY" (set in helper_test)

@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/models"

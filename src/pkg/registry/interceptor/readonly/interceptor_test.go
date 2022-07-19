@@ -20,13 +20,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestIntercept(t *testing.T) {

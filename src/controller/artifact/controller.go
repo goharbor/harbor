@@ -22,24 +22,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
-	"github.com/goharbor/harbor/src/lib/icon"
-
-	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -53,7 +53,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/opencontainers/go-digest"
 )
 
 var (

@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/beego/beego"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	configCtl "github.com/goharbor/harbor/src/controller/config"

@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/gocarina/gocsv"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -17,7 +19,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/opencontainers/go-digest"
 )
 
 // ScanDataExport is the struct to implement the scan data export.

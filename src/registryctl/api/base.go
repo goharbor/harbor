@@ -16,10 +16,12 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/docker/distribution/registry/storage/driver"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
-	"net/http"
 )
 
 // HandleInternalServerError ...

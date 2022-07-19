@@ -5,9 +5,9 @@ package driver
 import (
 	context "context"
 
-	driver "github.com/goharbor/harbor/src/pkg/quota/driver"
 	mock "github.com/stretchr/testify/mock"
 
+	driver "github.com/goharbor/harbor/src/pkg/quota/driver"
 	types "github.com/goharbor/harbor/src/pkg/quota/types"
 )
 

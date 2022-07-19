@@ -3,10 +3,11 @@ package export
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type DigestCalculatorTestSuite struct {

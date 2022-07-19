@@ -5,13 +5,11 @@ package scanner
 import (
 	context "context"
 
-	controllerscanner "github.com/goharbor/harbor/src/controller/scanner"
 	mock "github.com/stretchr/testify/mock"
 
+	controllerscanner "github.com/goharbor/harbor/src/controller/scanner"
 	q "github.com/goharbor/harbor/src/lib/q"
-
 	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 

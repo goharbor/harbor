@@ -20,12 +20,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testArt "github.com/goharbor/harbor/src/testing/pkg/artifact"
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {

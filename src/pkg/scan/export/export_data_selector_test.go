@@ -2,9 +2,10 @@ package export
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/suite"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ExportDataSelectorTestSuite struct {

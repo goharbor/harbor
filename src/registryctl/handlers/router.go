@@ -15,13 +15,14 @@
 package handlers
 
 import (
-	"github.com/goharbor/harbor/src/registryctl/api/registry/manifest"
 	"net/http"
+
+	"github.com/gorilla/mux"
 
 	"github.com/goharbor/harbor/src/registryctl/api"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/blob"
+	"github.com/goharbor/harbor/src/registryctl/api/registry/manifest"
 	"github.com/goharbor/harbor/src/registryctl/config"
-	"github.com/gorilla/mux"
 )
 
 func newRouter(conf config.Configuration) http.Handler {

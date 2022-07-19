@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/ldap"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"

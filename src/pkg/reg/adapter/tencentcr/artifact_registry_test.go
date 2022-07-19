@@ -4,10 +4,11 @@ import (
 	"reflect"
 	"testing"
 
+	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
 func Test_filterToPatterns(t *testing.T) {

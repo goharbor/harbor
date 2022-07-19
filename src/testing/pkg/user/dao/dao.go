@@ -8,7 +8,6 @@ import (
 	mock "github.com/stretchr/testify/mock"
 
 	models "github.com/goharbor/harbor/src/common/models"
-
 	q "github.com/goharbor/harbor/src/lib/q"
 )
 

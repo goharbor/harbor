@@ -16,17 +16,17 @@ package test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
-
-	"fmt"
 	"os"
 	"sort"
+	"strings"
+
+	"github.com/gorilla/mux"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/gorilla/mux"
 )
 
 // RequestHandlerMapping is a mapping between request and its handler

@@ -22,6 +22,7 @@ import (
 	"unicode"
 
 	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/lib/q"
 )
 

@@ -2,14 +2,15 @@ package blob
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
-	"net/http"
-	"time"
 )
 
 // probeBlob handles config/layer and manifest status in the PUT Blob & Manifest middleware, and update the status before it passed into proxy(distribution).

@@ -1,6 +1,8 @@
 package contenttrust
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
@@ -9,7 +11,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/util"
-	"net/http"
 )
 
 // Cosign handle docker pull content trust check

@@ -15,12 +15,14 @@
 package jobservice
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/purge"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingScheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ScheduleTestSuite struct {

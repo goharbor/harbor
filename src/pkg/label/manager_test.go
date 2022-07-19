@@ -16,11 +16,13 @@ package label
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/label/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {

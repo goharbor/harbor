@@ -16,6 +16,16 @@ package oidc
 
 import (
 	"encoding/json"
+	"net/url"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
@@ -23,15 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"net/url"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

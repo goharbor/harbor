@@ -15,11 +15,13 @@
 package purge
 
 import (
-	"github.com/goharbor/harbor/src/pkg/task"
-	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
+	"testing"
+
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/task"
+	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 type PurgeControllerTestSuite struct {
