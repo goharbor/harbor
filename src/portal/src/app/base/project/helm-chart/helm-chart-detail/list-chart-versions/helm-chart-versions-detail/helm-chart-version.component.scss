@@ -2,6 +2,7 @@
 
 .title-container {
     display: flex;
+
     .chart-name-span {
         border-right: 1px solid gray;
         font-size: 27px;
@@ -13,10 +14,13 @@
 
 .version-tool {
     position: relative;
+
     .toolbar {
         overflow: hidden;
+        /* stylelint-disable */
         .rightPos {
             @include grid-right-top-pos;
+
             .filter-divider {
                 display: inline-block;
                 height: 16px;
@@ -48,41 +52,51 @@ hbr-resource-label-signpost {
 
 .card-container {
     margin-top: 40px;
+
     .card-header {
         .card-media-block {
             img {
                 height: 45px;
                 width: 45px;
             }
+
             .card-media-description {
                 width:80%;
                 height: 45px;
+
                 .card-media-title {
                     overflow: hidden;
                     height: 24px;
                 }
+
                 .card-media-text {
                     font-size:0.8em;
                     color:#007cbb;
                     @include text-overflow;
+
                     height: 20px;
                 }
             }
         }
     }
+
     .card-block {
         font-size:0.9em;
         margin-top: 24px;
         min-height: 100px;
+
         .form-group {
             display: flex;
+
             label {
                 width: 100px;
                 color:#aaa;
             }
         }
-        margin-top: 0px;
+
+        margin-top: 0;
     }
+
     .card-footer {
         padding-top: 6px;
         padding-bottom: 6px;

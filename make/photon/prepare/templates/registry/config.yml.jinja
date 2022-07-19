@@ -9,7 +9,18 @@ storage:
   {{storage_provider_info}}
   maintenance:
     uploadpurging:
+{% if purge_upload.enabled %}
+      enabled: true
+      age: {{ purge_upload.age }}
+      interval: {{ purge_upload.interval }}
+      {% if purge_upload.dryrun %}
+      dryrun: true
+      {% else %}
+      dryrun: false
+      {% endif %}
+{% else %}
       enabled: false
+{% endif %}
   delete:
     enabled: true
 {% if storage_redirect_disabled %}

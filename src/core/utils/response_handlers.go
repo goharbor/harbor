@@ -63,8 +63,8 @@ type JobLogRespHandler struct {
 func (h JobLogRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		h.theAPI.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
-		h.theAPI.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
+		h.theAPI.Ctx.ResponseWriter.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+		h.theAPI.Ctx.ResponseWriter.Header().Set("Content-Type", "text/plain")
 
 		if _, err := io.Copy(h.theAPI.Ctx.ResponseWriter, resp.Body); err != nil {
 			log.Errorf("failed to write log to response; %v", err)

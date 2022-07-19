@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -83,6 +84,7 @@ func NewExecutionManager() ExecutionManager {
 		taskMgr:      Mgr,
 		taskDAO:      dao.NewTaskDAO(),
 		ormCreator:   orm.Crt,
+		wp:           lib.NewWorkerPool(10),
 	}
 }
 
@@ -91,6 +93,7 @@ type executionManager struct {
 	taskMgr      Manager
 	taskDAO      dao.TaskDAO
 	ormCreator   orm.Creator
+	wp           *lib.WorkerPool
 }
 
 func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -125,6 +128,8 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 
 	// sweep the execution records to avoid the execution/task records explosion
 	go func() {
+		e.wp.GetWorker()
+		defer e.wp.ReleaseWorker()
 		// as we start a new transaction here to do the sweep work, the current execution record
 		// may be not visible(when the transaction in which the current execution is created
 		// in isn't committed), this will cause that there are one more execution records than expected

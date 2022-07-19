@@ -33,6 +33,8 @@ type RemoteInterface interface {
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 	// ManifestExist checks manifest exist, if exist, return digest
 	ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error)
+	// ListTags returns all tags of the repo
+	ListTags(repo string) ([]string, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
@@ -54,7 +56,6 @@ func NewRemoteHelper(ctx context.Context, regID int64) (RemoteInterface, error) 
 }
 
 func (r *remoteHelper) init(ctx context.Context) error {
-
 	if r.registry != nil {
 		return nil
 	}
@@ -90,4 +91,8 @@ func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest,
 
 func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
 	return r.registry.ManifestExist(repo, ref)
+}
+
+func (r *remoteHelper) ListTags(repo string) ([]string, error) {
+	return r.registry.ListTags(repo)
 }

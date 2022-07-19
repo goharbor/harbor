@@ -17,7 +17,9 @@ package dao
 import (
 	"context"
 	"fmt"
-	beegoorm "github.com/astaxie/beego/orm"
+	"testing"
+
+	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -25,7 +27,6 @@ import (
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type daoTestSuite struct {
@@ -246,7 +247,11 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Nil(err)
 	d.Require().Len(accs, 2)
 
-	err = d.dao.DeleteOfArtifact(d.ctx, subArtID)
+	_, err = d.dao.DeleteAccessories(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"SubjectArtifactID": subArtID,
+		},
+	})
 	d.Require().Nil(err)
 
 	accs, err = d.dao.List(d.ctx, &q.Query{

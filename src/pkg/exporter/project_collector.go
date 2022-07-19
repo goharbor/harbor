@@ -140,7 +140,10 @@ type artifactInfo struct {
 
 func getQuotaValue(q string) float64 {
 	var quota quotaType
-	json.Unmarshal([]byte(q), &quota)
+	err := json.Unmarshal([]byte(q), &quota)
+	if err != nil {
+		log.Warningf("failed to unmarshal data into quotaType, error: %v", err)
+	}
 	return quota.Storage
 }
 

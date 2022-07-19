@@ -1,3 +1,4 @@
+/* stylelint-disable */
 .select .optionMore {
     background-color: #bfbaba;
     height: 1.6em;
@@ -81,11 +82,11 @@ h4 {
     margin-top: -0.25rem;
     border: 1px solid #ccc;
     background-color: white;
-    border: 1px solid rgba(0, 0, 0, .15);
+    border: 1px solid rgb(0 0 0 / 15%);
     border-right-width: 2px;
     border-bottom-width: 2px;
     border-radius: 6px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
+    box-shadow: 0 5px 10px rgb(0 0 0 / 20%);
     z-index: 100;
 }
 
@@ -110,6 +111,7 @@ h4 {
         font-size: 14px;
         width: 7rem;
     }
+
    .radio {
        label {
            margin-right:10px;
@@ -145,6 +147,7 @@ clr-modal {
     line-height: 14px;
     color: red;
 }
+
 .deletedDiv a{
     margin-left: 10px;
     text-decoration: underline;
@@ -182,6 +185,7 @@ clr-modal {
 
 .override-box {
     flex-direction: row;
+
     .override-tooltip {
         margin: 3px 0 0 5px;
     }
@@ -194,6 +198,7 @@ clr-modal {
 .cron-tooltip {
     color: gray;
     cursor: default;
+
     .table-box {
         width: 20rem;
     }
@@ -202,9 +207,11 @@ clr-modal {
 .display-none{
     display: none;
 }
+
 .width-100 {
     width: 100%;
 }
+
 .label-text {
     text-transform: none;
     letter-spacing: normal;
@@ -217,8 +224,9 @@ clr-modal {
     text-align: left;
     padding-left: 6px;
     outline: none;
-    border-bottom: 1px solid rgb(154, 154, 154);
+    border-bottom: 1px solid rgb(154 154 154);
 }
+
 .ellipsis {
     margin-left: 0.2rem;
     font-size: 16px;
@@ -233,9 +241,11 @@ clr-modal {
 .flex {
     display: flex;
 }
+
 .sub-label {
     flex: 0 0 5rem;
 }
+
 .clr-control-label {
     width: 8.6rem;
 }
@@ -264,31 +274,39 @@ clr-modal {
 .width-tag-label {
     width: 6rem;
 }
+
 .right-align {
     min-width: 204px;
     overflow-y: auto;
     transform: translateX(-4.3rem) translateY(1.25rem)!important;
 }
+
 .dropdown-item {
     min-height: 26px;
 }
+
 .no-labels {
     cursor: default;
     padding: 0 0.5rem;
 }
+
 .unit {
     width: 4.18rem !important;
 }
+
 .speed {
     width: 14rem;
     display: inline-block;
+
     input {
       width: 12rem;
     }
 }
+
 .unit-select {
     width: 3rem;
 }
+
 .ml-10px {
     margin-left: 10px;
 }

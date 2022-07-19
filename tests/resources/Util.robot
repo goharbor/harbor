@@ -55,6 +55,7 @@ Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
 Resource  Harbor-Pages/GC.robot
+Resource  Harbor-Pages/GC_Elements.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
@@ -74,6 +75,9 @@ Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
+Resource  Cosign_Util.robot
+Resource  Imgpkg-Util.robot
+Resource  Webhook-Util.robot
 Resource  TestCaseBody.robot
 
 *** Keywords ***
@@ -294,3 +298,7 @@ Log All
     [Arguments]  ${text}
     Log To Console  ${text}
     Log  ${text}
+
+New Tab
+    Execute Javascript  window.open('')
+    Select Window  title=undefined

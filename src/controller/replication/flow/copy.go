@@ -20,6 +20,7 @@ import (
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -103,12 +104,29 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 }
 
 func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32) error {
-	for i, resource := range srcResources {
-		src, err := json.Marshal(resource)
+	var taskCnt int
+	defer func() {
+		// if no task be created, mark execution done.
+		if taskCnt == 0 {
+			if err := c.executionMgr.MarkDone(ctx, c.executionID, "no resources need to be replicated"); err != nil {
+				logger.Errorf("failed to mark done for the execution %d: %v", c.executionID, err)
+			}
+		}
+	}()
+
+	for i, srcResource := range srcResources {
+		dstResource := dstResources[i]
+		// if dest resource should be skipped, ignore replicate.
+		if dstResource.Skip {
+			log.Warningf("skip create replication task because of dest limitation, src: %s, dst: %s", srcResource.Metadata, dstResource.Metadata)
+			continue
+		}
+
+		src, err := json.Marshal(srcResource)
 		if err != nil {
 			return err
 		}
-		dest, err := json.Marshal(dstResources[i])
+		dest, err := json.Marshal(dstResource)
 		if err != nil {
 			return err
 		}
@@ -127,11 +145,13 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 
 		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]interface{}{
 			"operation":            "copy",
-			"resource_type":        string(resource.Type),
-			"source_resource":      getResourceName(resource),
-			"destination_resource": getResourceName(dstResources[i])}); err != nil {
+			"resource_type":        string(srcResource.Type),
+			"source_resource":      getResourceName(srcResource),
+			"destination_resource": getResourceName(dstResource)}); err != nil {
 			return err
 		}
+
+		taskCnt++
 	}
 	return nil
 }

@@ -91,9 +91,7 @@ func (df *defaultFilter) BuildFrom(pl *policy.Schema) Filter {
 	if pl != nil && len(pl.Filters) > 0 {
 		filters := make([]*policy.Filter, 0)
 		// Copy filters and sort the filter list
-		for _, fl := range pl.Filters {
-			filters = append(filters, fl)
-		}
+		filters = append(filters, pl.Filters...)
 		// Sort
 		sort.SliceStable(filters, func(i, j int) bool {
 			return filterOrder(filters[i].Type) < filterOrder(filters[j].Type)

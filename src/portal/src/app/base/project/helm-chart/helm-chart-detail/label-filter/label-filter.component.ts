@@ -1,23 +1,32 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, ViewChild } from '@angular/core';
-import { ClrDatagridFilterInterface } from "@clr/angular";
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
+import { ClrDatagridFilterInterface } from '@clr/angular';
 import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { HelmChartVersion } from '../helm-chart.interface.service';
-import { Label } from "../../../../../shared/services";
-import { Artifact } from "../../../../../../../ng-swagger-gen/models/artifact";
-import { ResourceType } from "../../../../../shared/entities/shared.const";
+import { Label } from '../../../../../shared/services';
+import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
+import { ResourceType } from '../../../../../shared/entities/shared.const';
 
 @Component({
-    selector: "hbr-chart-version-label-filter",
+    selector: 'hbr-chart-version-label-filter',
     templateUrl: './label-filter.component.html',
-    styleUrls: ['./label-filter.component.scss']
+    styleUrls: ['./label-filter.component.scss'],
 })
-export class LabelFilterComponent implements ClrDatagridFilterInterface<any>, OnInit {
-
+export class LabelFilterComponent
+    implements ClrDatagridFilterInterface<any>, OnInit
+{
     @Input() labels: Label[] = [];
     @Input() resourceType: ResourceType;
 
-    @ViewChild('filterInput', {static: true}) filterInputRef: ElementRef;
+    @ViewChild('filterInput', { static: true }) filterInputRef: ElementRef;
 
     selectedLabels: Map<number, boolean> = new Map<number, boolean>();
 
@@ -27,27 +36,33 @@ export class LabelFilterComponent implements ClrDatagridFilterInterface<any>, On
 
     ngOnInit(): void {
         fromEvent(this.filterInputRef.nativeElement, 'keyup')
-        .pipe(debounceTime(500))
-        .subscribe(() => {
-            let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-            setTimeout(() => clearInterval(hnd), 2000);
-        });
+            .pipe(debounceTime(500))
+            .subscribe(() => {
+                let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+                setTimeout(() => clearInterval(hnd), 2000);
+            });
     }
     constructor(private cdr: ChangeDetectorRef) {}
 
     get filteredLabels() {
-        return this.labels.filter(label => label.name.includes(this.labelFilter));
+        return this.labels.filter(label =>
+            label.name.includes(this.labelFilter)
+        );
     }
 
     isActive(): boolean {
         return this.selectedLabels.size > 0;
-     }
+    }
 
     accepts(cv: any): boolean {
         if (this.resourceType === ResourceType.CHART_VERSION) {
-            return (cv as HelmChartVersion).labels.some(label => this.selectedLabels.get(label.id));
+            return (cv as HelmChartVersion).labels.some(label =>
+                this.selectedLabels.get(label.id)
+            );
         } else if (this.resourceType === ResourceType.REPOSITORY_TAG) {
-            return (cv as Artifact).labels.some(label => this.selectedLabels.get(label.id));
+            return (cv as Artifact).labels.some(label =>
+                this.selectedLabels.get(label.id)
+            );
         } else {
             return true;
         }

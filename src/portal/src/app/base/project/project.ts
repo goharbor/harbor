@@ -29,15 +29,15 @@ export class Project {
     role_name: string;
     registry_id: number;
     metadata: {
-      public: string | boolean;
-      enable_content_trust: string | boolean;
-      prevent_vul: string | boolean;
-      severity: string;
-      auto_scan: string | boolean;
-      retention_id: number;
+        public: string | boolean;
+        enable_content_trust: string | boolean;
+        prevent_vul: string | boolean;
+        severity: string;
+        auto_scan: string | boolean;
+        retention_id: number;
     };
-    constructor () {
-      this.metadata = <any>{};
-      this.metadata.public = false;
+    constructor() {
+        this.metadata = <any>{};
+        this.metadata.public = false;
     }
 }

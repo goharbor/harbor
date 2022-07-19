@@ -132,7 +132,10 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 			w.Header().Set(dockerContentDigest, man.Digest)
 			w.Header().Set(etag, man.Digest)
 			if r.Method == http.MethodGet {
-				w.Write(man.Content)
+				_, err = w.Write(man.Content)
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}
@@ -229,7 +232,6 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
-		return
 	})
 }
 

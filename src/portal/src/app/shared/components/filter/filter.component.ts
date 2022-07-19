@@ -11,67 +11,74 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from "@angular/core";
-import { Subject } from "rxjs";
+import {
+    Component,
+    Input,
+    Output,
+    OnInit,
+    EventEmitter,
+    ViewChild,
+    ElementRef,
+    ChangeDetectorRef,
+} from '@angular/core';
+import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 @Component({
-  selector: "hbr-filter",
-  templateUrl: "./filter.component.html",
-  styleUrls: ["./filter.component.scss"]
+    selector: 'hbr-filter',
+    templateUrl: './filter.component.html',
+    styleUrls: ['./filter.component.scss'],
 })
 export class FilterComponent implements OnInit {
-  placeHolder: string = "";
-  filterTerms = new Subject<string>();
-  isExpanded: boolean = false;
+    placeHolder: string = '';
+    filterTerms = new Subject<string>();
+    isExpanded: boolean = false;
 
-  @Output() private filterEvt = new EventEmitter<string>();
-  @Output() private openFlag = new EventEmitter<boolean>();
-  @Input() readonly: string = null;
-  @Input() currentValue: string;
-  @Input("filterPlaceholder")
-  public set flPlaceholder(placeHolder: string) {
-    this.placeHolder = placeHolder;
-  }
-  @Input() expandMode: boolean = false;
-  @Input() withDivider: boolean = false;
-  @Input() width: number;
-  @ViewChild("inputElement")
-  inputElement: ElementRef;
-  constructor(private cd: ChangeDetectorRef) {
-  }
-
-  ngOnInit(): void {
-    this.filterTerms
-      .pipe(debounceTime(500))
-      .subscribe(terms => {
-        this.filterEvt.emit(terms);
-      });
-  }
-
-  valueChange(): void {
-    // Send out filter terms
-    this.filterTerms.next(this.currentValue && this.currentValue.trim());
-  }
-
-  inputFocus(): void {
-    this.openFlag.emit(this.isExpanded);
-  }
-
-  onClick(): void {
-    // Only enabled when expandMode is set to false
-    if (this.expandMode) {
-      return;
+    @Output() private filterEvt = new EventEmitter<string>();
+    @Output() private openFlag = new EventEmitter<boolean>();
+    @Input() readonly: string = null;
+    @Input() currentValue: string;
+    @Input()
+    public set filterPlaceholder(placeHolder: string) {
+        this.placeHolder = placeHolder;
     }
-    this.isExpanded = !this.isExpanded;
-    if (this.isExpanded) {// Be focused when open search
-      this.cd.detectChanges();
-      this.inputElement.nativeElement.focus();
-    }
-    this.openFlag.emit(this.isExpanded);
-  }
+    @Input() expandMode: boolean = false;
+    @Input() withDivider: boolean = false;
+    @Input() width: number;
+    @ViewChild('inputElement')
+    inputElement: ElementRef;
+    constructor(private cd: ChangeDetectorRef) {}
 
-  public get isShowSearchBox(): boolean {
-    return this.expandMode || (!this.expandMode && this.isExpanded);
-  }
+    ngOnInit(): void {
+        this.filterTerms.pipe(debounceTime(500)).subscribe(terms => {
+            this.filterEvt.emit(terms);
+        });
+    }
+
+    valueChange(): void {
+        // Send out filter terms
+        this.filterTerms.next(this.currentValue && this.currentValue.trim());
+    }
+
+    inputFocus(): void {
+        this.openFlag.emit(this.isExpanded);
+    }
+
+    onClick(): void {
+        // Only enabled when expandMode is set to false
+        if (this.expandMode) {
+            return;
+        }
+        this.isExpanded = !this.isExpanded;
+        if (this.isExpanded) {
+            // Be focused when open search
+            this.cd.detectChanges();
+            this.inputElement.nativeElement.focus();
+        }
+        this.openFlag.emit(this.isExpanded);
+    }
+
+    public get isShowSearchBox(): boolean {
+        return this.expandMode || (!this.expandMode && this.isExpanded);
+    }
 }

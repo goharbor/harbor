@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
+	"hash/crc32"
 	"strings"
 )
 
@@ -41,11 +42,13 @@ type Manager interface {
 	// List users according to the query
 	List(ctx context.Context, query *q.Query, options ...models.Option) (commonmodels.Users, error)
 	// Count counts the number of users according to the query
-	Count(ctx context.Context, query *q.Query) (int64, error)
+	Count(ctx context.Context, query *q.Query, options ...models.Option) (int64, error)
 	// Create creates the user, the password of input should be plaintext
 	Create(ctx context.Context, user *commonmodels.User) (int, error)
 	// Delete deletes the user by updating user's delete flag and update the name and Email
 	Delete(ctx context.Context, id int) error
+	// DeleteGDPR deletes the user by updating user's delete flag and replace identifiable data with its crc
+	DeleteGDPR(ctx context.Context, id int) error
 	// SetSysAdminFlag sets the system admin flag of the user in local DB
 	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
 	// UpdateProfile updates the user's profile
@@ -102,6 +105,18 @@ func (m *manager) Delete(ctx context.Context, id int) error {
 	return m.dao.Update(ctx, u, "username", "email", "deleted")
 }
 
+func (m *manager) DeleteGDPR(ctx context.Context, id int) error {
+	u, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	u.Username = fmt.Sprintf("%s#%d", checkSum(u.Username), u.UserID)
+	u.Email = fmt.Sprintf("%s#%d", checkSum(u.Email), u.UserID)
+	u.Realname = fmt.Sprintf("%s#%d", checkSum(u.Realname), u.UserID)
+	u.Deleted = true
+	return m.dao.Update(ctx, u, "username", "email", "realname", "deleted")
+}
+
 func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, password string) (*commonmodels.User, error) {
 	l, err := m.dao.List(ctx, q.New(q.KeyWords{"username_or_email": usernameOrEmail}))
 	if err != nil {
@@ -116,12 +131,16 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 	return nil, nil
 }
 
-func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+func (m *manager) Count(ctx context.Context, query *q.Query, options ...models.Option) (int64, error) {
+	opts := models.NewOptions(options...)
+	if !opts.IncludeDefaultAdmin {
+		query = excludeDefaultAdmin(query)
+	}
 	return m.dao.Count(ctx, query)
 }
 
 func (m *manager) UpdateProfile(ctx context.Context, user *commonmodels.User, cols ...string) error {
-	if cols == nil || len(cols) == 0 {
+	if len(cols) == 0 {
 		cols = []string{"Email", "Realname", "Comment"}
 	}
 	return m.dao.Update(ctx, user, cols...)
@@ -191,9 +210,20 @@ func (m *manager) List(ctx context.Context, query *q.Query, options ...models.Op
 	}
 	opts := models.NewOptions(options...)
 	if !opts.IncludeDefaultAdmin {
-		query.Keywords["user_id__gt"] = 1
+		query = excludeDefaultAdmin(query)
 	}
 	return m.dao.List(ctx, query)
+}
+
+func excludeDefaultAdmin(query *q.Query) (qu *q.Query) {
+	if query == nil {
+		query = q.New(q.KeyWords{})
+	}
+	if query.Keywords == nil {
+		query.Keywords = q.KeyWords{}
+	}
+	query.Keywords["user_id__gt"] = 1
+	return query
 }
 
 func injectPasswd(u *commonmodels.User, password string) {
@@ -201,4 +231,8 @@ func injectPasswd(u *commonmodels.User, password string) {
 	u.Password = utils.Encrypt(password, salt, utils.SHA256)
 	u.Salt = salt
 	u.PasswordVersion = utils.SHA256
+}
+
+func checkSum(str string) string {
+	return fmt.Sprintf("%08x", crc32.Checksum([]byte(str), crc32.IEEETable))
 }

@@ -54,7 +54,7 @@ func (a *adapter) createRepository(namespace, repository string) (err error) {
 	repoReq.RegistryId = a.registryID
 	repoReq.NamespaceName = &namespace
 	repoReq.RepositoryName = &repository
-	var repoResp = tcr.NewDescribeRepositoriesResponse()
+	var repoResp *tcr.DescribeRepositoriesResponse
 	repoResp, err = a.tcrClient.DescribeRepositories(repoReq)
 	if err != nil {
 		return
@@ -69,7 +69,7 @@ func (a *adapter) createRepository(namespace, repository string) (err error) {
 	req.NamespaceName = &namespace
 	req.RepositoryName = &repository
 	req.RegistryId = a.registryID
-	var resp = tcr.NewCreateRepositoryResponse()
+	var resp *tcr.CreateRepositoryResponse
 	resp, err = a.tcrClient.CreateRepository(req)
 	if err != nil {
 		log.Debugf("[tencent-tcr.PrepareForPush.createRepository] error=%v", err)
@@ -124,17 +124,25 @@ func (a *adapter) isNamespaceExist(namespace string) (exist bool, err error) {
 	var req = tcr.NewDescribeNamespacesRequest()
 	req.NamespaceName = &namespace
 	req.RegistryId = a.registryID
-	var resp = tcr.NewDescribeNamespacesResponse()
+	var resp *tcr.DescribeNamespacesResponse
 	resp, err = a.tcrClient.DescribeNamespaces(req)
 	if err != nil {
 		return
 	}
 
 	log.Warningf("[tencent-tcr.PrepareForPush.isNamespaceExist] namespace=%s, total=%d", namespace, *resp.Response.TotalCount)
-	if int(*resp.Response.TotalCount) != 1 {
-		return
+	exist = isTcrNsExist(namespace, resp.Response.NamespaceList)
+
+	return
+}
+
+func isTcrNsExist(name string, list []*tcr.TcrNamespaceInfo) (exist bool) {
+	for _, ns := range list {
+		if *ns.Name == name {
+			exist = true
+			return
+		}
 	}
-	exist = true
 	return
 }
 

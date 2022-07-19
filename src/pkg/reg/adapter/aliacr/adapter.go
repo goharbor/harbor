@@ -34,7 +34,7 @@ func init() {
 // example:
 // https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-var regRegion = regexp.MustCompile("https://(registry|cr)\\.([\\w\\-]+)\\.aliyuncs\\.com")
+var regRegion = regexp.MustCompile(`https://(registry|cr)\.([\w\-]+)\.aliyuncs\.com`)
 
 func getRegion(url string) (region string, err error) {
 	if url == "" {
@@ -167,7 +167,7 @@ func getAdapterInfo() *model.AdapterPattern {
 func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) {
 	// list namespaces
 	var nsReq = cr.CreateGetNamespaceListRequest()
-	var nsResp = cr.CreateGetNamespaceListResponse()
+	var nsResp *cr.GetNamespaceListResponse
 	nsReq.SetDomain(a.domain)
 	nsResp, err = c.GetNamespaceList(nsReq)
 	if err != nil {
@@ -352,7 +352,10 @@ func (a *adapter) getTags(repo aliRepo, c *cr.Client) (tags []string, err error)
 		}
 
 		var resp = &aliTagResp{}
-		json.Unmarshal(tagsResp.GetHttpContentBytes(), resp)
+		err = json.Unmarshal(tagsResp.GetHttpContentBytes(), resp)
+		if err != nil {
+			return
+		}
 		for _, tag := range resp.Data.Tags {
 			tags = append(tags, tag.Tag)
 		}

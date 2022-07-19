@@ -108,8 +108,8 @@ func (m *managerTestSuite) TestUpdate() {
 }
 
 func (m *managerTestSuite) TestAddPullCount() {
-	m.dao.On("AddPullCount", mock.Anything, mock.Anything).Return(nil)
-	err := m.mgr.AddPullCount(context.Background(), 1)
+	m.dao.On("AddPullCount", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err := m.mgr.AddPullCount(context.Background(), 1, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

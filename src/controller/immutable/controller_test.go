@@ -1,11 +1,12 @@
 package immutable
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"testing"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
@@ -39,12 +40,12 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 	var err error
 	ctx := s.Context()
 
-	projectID, err := project.Mgr.Create(ctx, &proModels.Project{
+	projectID, err := pkg.ProjectMgr.Create(ctx, &proModels.Project{
 		Name:    "testimmutablerule",
 		OwnerID: 1,
 	})
 	if s.Nil(err) {
-		defer project.Mgr.Delete(ctx, projectID)
+		defer pkg.ProjectMgr.Delete(ctx, projectID)
 	}
 
 	rule := &model.Metadata{

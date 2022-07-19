@@ -87,11 +87,13 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 		if len(chartData.Values) > 0 {
 			c := chartutil.Values(chartData.Values)
 			ValYaml, err := c.YAML()
-
 			if err != nil {
 				return nil, err
 			}
-			c.Encode(&buf)
+			err = c.Encode(&buf)
+			if err != nil {
+				return nil, err
+			}
 			values = parseRawValues(buf.Bytes())
 			// Append values.yaml file
 			files[valuesFileName] = ValYaml
@@ -117,7 +119,7 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 
 // GetChartList returns a reorganized chart list
 func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
@@ -158,7 +160,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 
 // GetChartData returns raw data of chart
 func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
@@ -173,7 +175,7 @@ func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
 
 // GetChartVersions returns the chart versions
 func (cho *ChartOperator) GetChartVersions(content []byte) (ChartVersions, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 

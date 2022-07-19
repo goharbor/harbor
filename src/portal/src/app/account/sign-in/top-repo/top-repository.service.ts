@@ -13,12 +13,15 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
-import { Repository } from "../../../../../ng-swagger-gen/models/repository";
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../shared/units/utils";
+import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from 'rxjs';
+import { Repository } from '../../../../../ng-swagger-gen/models/repository';
+import {
+    CURRENT_BASE_HREF,
+    HTTP_GET_OPTIONS,
+} from '../../../shared/units/utils';
 
-export const topRepoEndpoint = CURRENT_BASE_HREF + "/repositories/top";
+export const topRepoEndpoint = CURRENT_BASE_HREF + '/repositories/top';
 /**
  * Declare service to handle the top repositories
  *
@@ -28,8 +31,7 @@ export const topRepoEndpoint = CURRENT_BASE_HREF + "/repositories/top";
  */
 @Injectable()
 export class TopRepoService {
-
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
     /**
      * Get top popular repositories
@@ -40,8 +42,9 @@ export class TopRepoService {
      * @memberOf GlobalSearchService
      */
     getTopRepos(): Observable<Repository[]> {
-        return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => response as Repository[])
-            , catchError(error => observableThrowError(error)));
+        return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS).pipe(
+            map(response => response as Repository[]),
+            catchError(error => observableThrowError(error))
+        );
     }
 }

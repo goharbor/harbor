@@ -38,6 +38,7 @@ src/portal/src/**/*.js.map
 src/portal/src/lib/coverage
 src/portal/ng-swagger-gen
 src/portal/docker-build/nginx.conf
+src/portal/.angular
 **/npm*.log
 
 **/*ngsummary.json

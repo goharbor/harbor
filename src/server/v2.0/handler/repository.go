@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/security/robot"
 	robotCtr "github.com/goharbor/harbor/src/controller/robot"
 	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -118,9 +119,9 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 		Keywords: map[string]interface{}{},
 	}
 	if secCtx.IsAuthenticated() {
-		switch secCtx.(type) {
+		switch v := secCtx.(type) {
 		case *local.SecurityContext:
-			currentUser := secCtx.(*local.SecurityContext).User()
+			currentUser := v.User()
 			query.Keywords["member"] = &project.MemberQuery{
 				UserID:     currentUser.UserID,
 				GroupIDs:   currentUser.GroupIDs,
@@ -130,7 +131,7 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 			// for the system level robot that covers all the project, see it as the system admin.
 			var coverAll bool
 			var names []string
-			r := secCtx.(*robot.SecurityContext).User()
+			r := v.User()
 			for _, p := range r.Permissions {
 				if p.Scope == robotCtr.SCOPEALLPROJECT {
 					coverAll = true
@@ -233,6 +234,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	}
 	if err := r.repoCtl.Update(ctx, &repomodel.RepoRecord{
 		RepositoryID: repository.RepositoryID,
+		Name:         repository.Name,
 		Description:  params.Repository.Description,
 	}, "Description"); err != nil {
 		return r.SendError(ctx, err)

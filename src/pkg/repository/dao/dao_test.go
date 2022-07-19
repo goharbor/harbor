@@ -17,7 +17,10 @@ package dao
 import (
 	"context"
 	"fmt"
-	beegoorm "github.com/astaxie/beego/orm"
+	"testing"
+	"time"
+
+	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -28,8 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 var (
@@ -179,7 +180,7 @@ func (d *daoTestSuite) TestAddPullCount() {
 	id, err := d.dao.Create(d.ctx, repository)
 	d.Require().Nil(err)
 
-	err = d.dao.AddPullCount(d.ctx, id)
+	err = d.dao.AddPullCount(d.ctx, id, 1)
 	d.Require().Nil(err)
 
 	repository, err = d.dao.Get(d.ctx, id)

@@ -16,10 +16,11 @@ package models
 
 // keys of project metadata and severity values
 const (
-	ProMetaPublic               = "public"
-	ProMetaEnableContentTrust   = "enable_content_trust"
-	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity             = "severity"
-	ProMetaAutoScan             = "auto_scan"
-	ProMetaReuseSysCVEAllowlist = "reuse_sys_cve_allowlist"
+	ProMetaPublic                   = "public"
+	ProMetaEnableContentTrust       = "enable_content_trust"
+	ProMetaEnableContentTrustCosign = "enable_content_trust_cosign"
+	ProMetaPreventVul               = "prevent_vul" // prevent vulnerable images from being pulled
+	ProMetaSeverity                 = "severity"
+	ProMetaAutoScan                 = "auto_scan"
+	ProMetaReuseSysCVEAllowlist     = "reuse_sys_cve_allowlist"
 )

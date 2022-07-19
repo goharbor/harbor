@@ -17,12 +17,13 @@ package test
 import (
 	"context"
 	"errors"
-	. "github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/lib/q"
 	"sync"
 	"testing"
 
-	"github.com/astaxie/beego/orm"
+	. "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/stretchr/testify/suite"
 )

@@ -274,7 +274,6 @@ func (c *Configuration) loadEnvs() {
 			}
 		}
 	}
-
 }
 
 // Check if the configurations are valid settings.

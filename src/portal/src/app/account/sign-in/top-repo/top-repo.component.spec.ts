@@ -1,51 +1,36 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TopRepoComponent } from './top-repo.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ClarityModule } from '@clr/angular';
-import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { TopRepoService } from './top-repository.service';
+import { SharedTestingModule } from '../../../shared/shared.module';
 
 describe('TopRepoComponent', () => {
     let component: TopRepoComponent;
     let fixture: ComponentFixture<TopRepoComponent>;
     const mockMessageHandlerService = {
-        showSuccess: () => { },
-        handleError: () => { },
-        isAppLevel: () => { },
+        showSuccess: () => {},
+        handleError: () => {},
+        isAppLevel: () => {},
     };
     const mockTopRepoService = {
-        getTopRepos: () => of([])
+        getTopRepos: () => of([]),
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                BrowserAnimationsModule,
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule,
-                RouterTestingModule,
-                NoopAnimationsModule,
-                HttpClientTestingModule
-            ],
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [TopRepoComponent],
             providers: [
-                TranslateService,
                 { provide: TopRepoService, useValue: mockTopRepoService },
-                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
-
-            ]
-        })
-            .compileComponents();
-    }));
+                {
+                    provide: MessageHandlerService,
+                    useValue: mockMessageHandlerService,
+                },
+            ],
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(TopRepoComponent);

@@ -10,11 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	contentTypeHeader = "content-type"
-	contentTypeJSON   = "application/json"
-)
-
 // Extract error object '{"error": "****---***"}' from the content if existing
 // nil error will be returned if it does exist
 func extractError(content []byte) (text string, err error) {
@@ -46,7 +41,7 @@ func parseRedisConfig(redisConfigV string) (map[string]string, error) {
 	redisConfig := make(map[string]string)
 	redisConfig["key"] = cacheCollectionName
 
-	if strings.Index(redisConfigV, "//") < 0 {
+	if !strings.Contains(redisConfigV, "//") {
 		redisConfigV = "redis://" + redisConfigV
 	}
 	u, err := url.Parse(redisConfigV)

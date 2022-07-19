@@ -1,14 +1,17 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HelmChartComponent } from './helm-chart.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { of } from 'rxjs';
-import { HelmChartService } from "../../helm-chart-detail/helm-chart.service";
-import { ErrorHandler } from "../../../../../shared/units/error-handler";
-import { SystemInfoService, UserPermissionService } from "../../../../../shared/services";
-import { OperationService } from "../../../../../shared/components/operation/operation.service";
+import { HelmChartService } from '../../helm-chart-detail/helm-chart.service';
+import { ErrorHandler } from '../../../../../shared/units/error-handler';
+import {
+    SystemInfoService,
+    UserPermissionService,
+} from '../../../../../shared/services';
+import { OperationService } from '../../../../../shared/components/operation/operation.service';
 
 describe('HelmChartComponent', () => {
     let component: HelmChartComponent;
@@ -16,47 +19,45 @@ describe('HelmChartComponent', () => {
     const mockErrorHandler = null;
     const mockSystemInfoService = {
         getSystemInfo: () => {
-            return of(
-                {
-                    "with_notary": false,
-                    "with_admiral": false,
-                    "admiral_endpoint": "",
-                    "auth_mode": "oidc_auth",
-                    "registry_url": "nightly-oidc.harbor.io",
-                    "external_url": "https://nightly-oidc.harbor.io",
-                    "project_creation_restriction": "everyone",
-                    "self_registration": false,
-                    "has_ca_root": false,
-                    "harbor_version": "dev",
-                    "registry_storage_provider_name": "filesystem",
-                    "read_only": false,
-                    "with_chartmuseum": true,
-                    "notification_enable": true
-                }
-            );
-        }
+            return of({
+                with_notary: false,
+                with_admiral: false,
+                admiral_endpoint: '',
+                auth_mode: 'oidc_auth',
+                registry_url: 'nightly-oidc.harbor.io',
+                external_url: 'https://nightly-oidc.harbor.io',
+                project_creation_restriction: 'everyone',
+                self_registration: false,
+                has_ca_root: false,
+                harbor_version: 'dev',
+                registry_storage_provider_name: 'filesystem',
+                read_only: false,
+                with_chartmuseum: true,
+                notification_enable: true,
+            });
+        },
     };
     const mockHelmChartService = {
         getChartVersions() {
-            return of(
-                [{
-                    name: "string",
-                    home: "string",
+            return of([
+                {
+                    name: 'string',
+                    home: 'string',
                     sources: [],
-                    version: "string",
-                    description: "string",
+                    version: 'string',
+                    description: 'string',
                     keywords: [],
                     maintainers: [],
-                    engine: "string",
-                    icon: "string",
-                    appVersion: "string",
-                    apiVersion: "string",
+                    engine: 'string',
+                    icon: 'string',
+                    appVersion: 'string',
+                    apiVersion: 'string',
                     urls: [],
-                    created: "string",
-                    digest: "string",
-                    labels: []
-                }]
-            );
+                    created: 'string',
+                    digest: 'string',
+                    labels: [],
+                },
+            ]);
         },
         getHelmCharts() {
             return of([]);
@@ -65,36 +66,31 @@ describe('HelmChartComponent', () => {
     const mockUserPermissionService = {
         getPermission() {
             return of(true);
-        }
+        },
     };
     const mockOperationService = {
         publishInfo: () => {
             return of([]);
         },
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                ClarityModule,
-                TranslateModule.forRoot(),
-                FormsModule
-            ],
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [ClarityModule, TranslateModule.forRoot(), FormsModule],
             declarations: [HelmChartComponent],
             providers: [
                 TranslateService,
                 { provide: ErrorHandler, useValue: mockErrorHandler },
                 { provide: SystemInfoService, useValue: mockSystemInfoService },
                 { provide: HelmChartService, useValue: mockHelmChartService },
-                { provide: UserPermissionService, useValue: mockUserPermissionService },
+                {
+                    provide: UserPermissionService,
+                    useValue: mockUserPermissionService,
+                },
                 { provide: OperationService, useValue: mockOperationService },
-
-            ]
-        })
-            .compileComponents();
-    }));
+            ],
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(HelmChartComponent);

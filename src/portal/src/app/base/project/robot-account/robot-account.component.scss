@@ -7,7 +7,7 @@
   clr-icon.red-position {
     margin-left: 2px;
   }
-
+  /* stylelint-disable */
   .rightPos {
     @include grid-right-top-pos;
 
@@ -26,11 +26,13 @@
     }
   }
 }
+
 .permissions {
   height: 16px;
   display: flex;
   align-items: center;
 }
+
 .datagrid-host {
   position: inherit;
 }

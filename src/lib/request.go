@@ -31,7 +31,7 @@ type nopCloser struct {
 func (n nopCloser) Read(p []byte) (int, error) {
 	num, err := n.ReadSeeker.Read(p)
 	if err == io.EOF { // move to start to have it ready for next read cycle
-		n.Seek(0, io.SeekStart)
+		_, _ = n.Seek(0, io.SeekStart)
 	}
 	return num, err
 }
@@ -44,14 +44,14 @@ func (n nopCloser) Close() error {
 func copyBody(body io.ReadCloser) io.ReadCloser {
 	// check if body was already read and converted into our nopCloser
 	if nc, ok := body.(nopCloser); ok {
-		nc.Seek(0, io.SeekStart)
+		_, _ = nc.Seek(0, io.SeekStart)
 		return body
 	}
 
 	defer body.Close()
 
 	var buf bytes.Buffer
-	io.Copy(&buf, body)
+	_, _ = io.Copy(&buf, body)
 
 	return nopCloser{bytes.NewReader(buf.Bytes())}
 }

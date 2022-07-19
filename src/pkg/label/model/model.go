@@ -1,11 +1,12 @@
 package model
 
 import (
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/errors"
+
+	"github.com/beego/beego/orm"
 )
 
 func init() {

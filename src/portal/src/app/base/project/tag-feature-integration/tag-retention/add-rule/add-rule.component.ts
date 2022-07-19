@@ -13,25 +13,25 @@
 // limitations under the License.
 import {
     Component,
-    OnInit,
-    OnDestroy,
     Output,
-    EventEmitter, ViewChild, Input,
-} from "@angular/core";
-import { Retention, Rule, RuleMetadate } from "../retention";
-import { TagRetentionService } from "../tag-retention.service";
-import { compareValue } from "../../../../../shared/units/utils";
-import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
+    EventEmitter,
+    ViewChild,
+    Input,
+} from '@angular/core';
+import { Retention, Rule, RuleMetadate } from '../retention';
+import { TagRetentionService } from '../tag-retention.service';
+import { compareValue } from '../../../../../shared/units/utils';
+import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
 
-const EXISTING_RULE = "TAG_RETENTION.EXISTING_RULE";
-const INVALID_RULE = "TAG_RETENTION.INVALID_RULE";
+const EXISTING_RULE = 'TAG_RETENTION.EXISTING_RULE';
+const INVALID_RULE = 'TAG_RETENTION.INVALID_RULE';
 const MAX = 2100000000;
 @Component({
-    selector: "add-rule",
-    templateUrl: "./add-rule.component.html",
-    styleUrls: ["./add-rule.component.scss"]
+    selector: 'add-rule',
+    templateUrl: './add-rule.component.html',
+    styleUrls: ['./add-rule.component.scss'],
 })
-export class AddRuleComponent implements OnInit, OnDestroy {
+export class AddRuleComponent {
     addRuleOpened: boolean = false;
     @Output() clickAdd = new EventEmitter<Rule>();
     @Input() retention: Retention;
@@ -41,15 +41,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     editRuleOrigin: Rule;
     onGoing: boolean = false;
     @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-    constructor(private tagRetentionService: TagRetentionService) {
-
-    }
-
-    ngOnInit(): void {
-    }
-
-    ngOnDestroy(): void {
-    }
+    constructor(private tagRetentionService: TagRetentionService) {}
 
     set template(template) {
         this.rule.template = template;
@@ -60,7 +52,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     get unit(): string {
-        let str = "";
+        let str = '';
         this.metadata.templates.forEach(t => {
             if (t.rule_template === this.rule.template) {
                 str = t.params[0].unit;
@@ -92,9 +84,13 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set repositories(repositories) {
-        if (repositories.indexOf(",") !== -1
-        && repositories.indexOf("{") === -1 && repositories.indexOf("}") === -1) {
-            this.rule.scope_selectors.repository[0].pattern = "{" + repositories + "}";
+        if (
+            repositories.indexOf(',') !== -1 &&
+            repositories.indexOf('{') === -1 &&
+            repositories.indexOf('}') === -1
+        ) {
+            this.rule.scope_selectors.repository[0].pattern =
+                '{' + repositories + '}';
         } else {
             this.rule.scope_selectors.repository[0].pattern = repositories;
         }
@@ -117,9 +113,12 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set tagsInput(tagsInput) {
-        if (tagsInput.indexOf(",") !== -1
-            && tagsInput.indexOf("{") === -1 && tagsInput.indexOf("}") === -1) {
-            this.rule.tag_selectors[0].pattern = "{" + tagsInput + "}";
+        if (
+            tagsInput.indexOf(',') !== -1 &&
+            tagsInput.indexOf('{') === -1 &&
+            tagsInput.indexOf('}') === -1
+        ) {
+            this.rule.tag_selectors[0].pattern = '{' + tagsInput + '}';
         } else {
             this.rule.tag_selectors[0].pattern = tagsInput;
         }
@@ -148,7 +147,6 @@ export class AddRuleComponent implements OnInit, OnDestroy {
         } else {
             return false;
         }
-
     }
 
     get labelsSelect() {
@@ -175,20 +173,30 @@ export class AddRuleComponent implements OnInit, OnDestroy {
             return true;
         }
         if (!this.hasParam()) {
-            return !(this.rule.template
-              && this.rule.scope_selectors.repository[0].pattern
-              && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
-              && this.rule.tag_selectors[0].pattern
-              && this.rule.tag_selectors[0].pattern.replace(/[{}]/g, ""));
+            return !(
+                this.rule.template &&
+                this.rule.scope_selectors.repository[0].pattern &&
+                this.rule.scope_selectors.repository[0].pattern.replace(
+                    /[{}]/g,
+                    ''
+                ) &&
+                this.rule.tag_selectors[0].pattern &&
+                this.rule.tag_selectors[0].pattern.replace(/[{}]/g, '')
+            );
         } else {
-            return !(this.rule.template
-              && this.rule.params[this.template]
-              && parseInt(this.rule.params[this.template], 10) >= 0
-              && parseInt(this.rule.params[this.template], 10) < MAX
-              && this.rule.scope_selectors.repository[0].pattern
-              && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
-              && this.rule.tag_selectors[0].pattern
-              && this.rule.tag_selectors[0].pattern.replace(/[{}]/g, ""));
+            return !(
+                this.rule.template &&
+                this.rule.params[this.template] &&
+                parseInt(this.rule.params[this.template], 10) >= 0 &&
+                parseInt(this.rule.params[this.template], 10) < MAX &&
+                this.rule.scope_selectors.repository[0].pattern &&
+                this.rule.scope_selectors.repository[0].pattern.replace(
+                    /[{}]/g,
+                    ''
+                ) &&
+                this.rule.tag_selectors[0].pattern &&
+                this.rule.tag_selectors[0].pattern.replace(/[{}]/g, '')
+            );
         }
     }
 
@@ -208,15 +216,20 @@ export class AddRuleComponent implements OnInit, OnDestroy {
 
     add() {
         // remove whitespaces
-        this.rule.scope_selectors.repository[0].pattern = this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, "");
-        this.rule.tag_selectors[0].pattern = this.rule.tag_selectors[0].pattern.replace(/\s+/g, "");
-        if (this.rule.scope_selectors.repository[0].decoration !== "repoMatches"
-        && this.rule.scope_selectors.repository[0].pattern) {
+        this.rule.scope_selectors.repository[0].pattern =
+            this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, '');
+        this.rule.tag_selectors[0].pattern =
+            this.rule.tag_selectors[0].pattern.replace(/\s+/g, '');
+        if (
+            this.rule.scope_selectors.repository[0].decoration !==
+                'repoMatches' &&
+            this.rule.scope_selectors.repository[0].pattern
+        ) {
             let str = this.rule.scope_selectors.repository[0].pattern;
-            str = str.replace(/[{}]/g, "");
+            str = str.replace(/[{}]/g, '');
             const arr = str.split(',');
             for (let i = 0; i < arr.length; i++) {
-                if (arr[i] && arr[i].trim() && arr[i] === "**") {
+                if (arr[i] && arr[i].trim() && arr[i] === '**') {
                     this.inlineAlert.showInlineError(INVALID_RULE);
                     return;
                 }
@@ -229,7 +242,11 @@ export class AddRuleComponent implements OnInit, OnDestroy {
         this.clickAdd.emit(this.rule);
     }
     isExistingRule(): boolean {
-        if (this.retention && this.retention.rules && this.retention.rules.length > 0) {
+        if (
+            this.retention &&
+            this.retention.rules &&
+            this.retention.rules.length > 0
+        ) {
             for (let i = 0; i < this.retention.rules.length; i++) {
                 if (this.isSameRule(this.retention.rules[i])) {
                     return true;
@@ -239,25 +256,41 @@ export class AddRuleComponent implements OnInit, OnDestroy {
         return false;
     }
     isSameRule(rule: Rule): boolean {
-        if (this.rule.scope_selectors.repository[0].decoration !== rule.scope_selectors.repository[0].decoration) {
+        if (
+            this.rule.scope_selectors.repository[0].decoration !==
+            rule.scope_selectors.repository[0].decoration
+        ) {
             return false;
         }
-        if (this.rule.scope_selectors.repository[0].pattern !== rule.scope_selectors.repository[0].pattern) {
+        if (
+            this.rule.scope_selectors.repository[0].pattern !==
+            rule.scope_selectors.repository[0].pattern
+        ) {
             return false;
         }
         if (this.rule.template !== rule.template) {
             return false;
         }
-        if (this.hasParam() && JSON.stringify(this.rule.params) !== JSON.stringify(rule.params)) {
+        if (
+            this.hasParam() &&
+            JSON.stringify(this.rule.params) !== JSON.stringify(rule.params)
+        ) {
             return false;
         }
-        if (this.rule.tag_selectors[0].decoration !== rule.tag_selectors[0].decoration) {
+        if (
+            this.rule.tag_selectors[0].decoration !==
+            rule.tag_selectors[0].decoration
+        ) {
             return false;
         }
-        if (this.rule.tag_selectors[0].extras !== rule.tag_selectors[0].extras) {
+        if (
+            this.rule.tag_selectors[0].extras !== rule.tag_selectors[0].extras
+        ) {
             return false;
         }
-        return this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern;
+        return (
+            this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern
+        );
     }
 
     getI18nKey(str: string) {
@@ -268,7 +301,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
             let flag: boolean = false;
             this.metadata.templates.forEach(t => {
                 if (t.rule_template === this.template) {
-                    if ( t.params && t.params.length > 0) {
+                    if (t.params && t.params.length > 0) {
                         flag = true;
                     }
                 }

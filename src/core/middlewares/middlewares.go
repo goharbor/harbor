@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/trace"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
+	"github.com/goharbor/harbor/src/server/middleware/url"
 )
 
 var (
@@ -79,6 +80,7 @@ var (
 // MiddleWares returns global middlewares
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
+		url.Middleware(),
 		mergeslash.Middleware(),
 		trace.Middleware(),
 		metric.Middleware(),

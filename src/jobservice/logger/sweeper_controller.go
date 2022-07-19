@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 const (
@@ -87,6 +88,15 @@ func (c *SweeperController) startSweeper(s sweeper.Interface) {
 
 func (c *SweeperController) doSweeping(sid string, s sweeper.Interface) {
 	Debugf("Sweeper %s is under working", sid)
+
+	if err := config.Load(context.Background()); err != nil {
+		c.errChan <- fmt.Errorf("failed to load configurations: %v", err)
+		return
+	}
+	if config.ReadOnly(context.Background()) {
+		c.errChan <- fmt.Errorf("the system is in read only mode, cancel the sweeping")
+		return
+	}
 
 	count, err := s.Sweep()
 	if err != nil {

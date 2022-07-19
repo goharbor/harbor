@@ -73,13 +73,13 @@ func (id ObjectID) IsZero() bool {
 // ObjectIDFromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
 // valid ObjectID.
 func ObjectIDFromHex(s string) (ObjectID, error) {
+	if len(s) != 24 {
+		return NilObjectID, ErrInvalidHex
+	}
+
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return NilObjectID, err
-	}
-
-	if len(b) != 12 {
-		return NilObjectID, ErrInvalidHex
 	}
 
 	var oid [12]byte

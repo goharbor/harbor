@@ -23,10 +23,12 @@ import (
 	"net/http"
 	"strings"
 
+	"net/url"
+
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"net/url"
 )
 
 type label struct {
@@ -179,7 +181,7 @@ func (a *Adapter) DownloadChart(name, version, contentURL string) (io.ReadCloser
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("failed to download the chart %s: %d %s", req.URL.String(), resp.StatusCode, string(body))
+		return nil, errors.Errorf("failed to download the chart %q: %d %s", req.URL.String(), resp.StatusCode, string(body))
 	}
 	return resp.Body, nil
 }

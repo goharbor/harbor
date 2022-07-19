@@ -72,7 +72,6 @@ func NewSession(basicCfg models.LdapConf, groupCfg models.GroupConf) *Session {
 }
 
 func formatURL(ldapURL string) (string, error) {
-
 	var protocol, hostport string
 	_, err := url.Parse(ldapURL)
 	if err != nil {
@@ -98,7 +97,6 @@ func formatURL(ldapURL string) (string, error) {
 		if port == "636" {
 			protocol = "ldaps"
 		}
-
 	} else {
 		switch protocol {
 		case "ldap":
@@ -111,7 +109,6 @@ func formatURL(ldapURL string) (string, error) {
 	fLdapURL := protocol + "://" + hostport
 
 	return fLdapURL, nil
-
 }
 
 // TestConfig - test ldap session connection, out of the scope of normal session create/close
@@ -184,7 +181,6 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 	}
 
 	return ldapUsers, nil
-
 }
 
 // Bind with specified DN and password, used in authentication
@@ -225,7 +221,6 @@ func (s *Session) Open() error {
 	}
 
 	return nil
-
 }
 
 // SearchLdap to search ldap with the provide filter
@@ -247,7 +242,6 @@ func (s *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
 
 // SearchLdapAttribute - to search ldap with the provide filter, with specified attributes
 func (s *Session) SearchLdapAttribute(baseDN, filter string, attributes []string) (*goldap.SearchResult, error) {
-
 	if err := s.Bind(s.basicCfg.SearchDn, s.basicCfg.SearchPassword); err != nil {
 		return nil, fmt.Errorf("can not bind search dn, error: %v", err)
 	}
@@ -285,7 +279,6 @@ func (s *Session) SearchLdapAttribute(baseDN, filter string, attributes []string
 	}
 
 	return result, nil
-
 }
 
 // createUserSearchFilter - create filter to search user with specified username

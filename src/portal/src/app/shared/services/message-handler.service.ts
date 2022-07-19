@@ -15,20 +15,19 @@ import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { MessageService } from '../components/global-message/message.service';
 import { SessionService } from './session.service';
-import { ErrorHandler } from "../units/error-handler";
-import { AlertType, httpStatusCode } from "../entities/shared.const";
-import { errorHandler } from "../units/shared.utils";
-
+import { ErrorHandler } from '../units/error-handler';
+import { AlertType, httpStatusCode } from '../entities/shared.const';
+import { errorHandler } from '../units/shared.utils';
 
 @Injectable({
     providedIn: 'root',
 })
 export class MessageHandlerService implements ErrorHandler {
-
     constructor(
         private msgService: MessageService,
         private translate: TranslateService,
-        private session: SessionService) { }
+        private session: SessionService
+    ) {}
 
     // Handle the error and map it to the suitable message
     // base on the status code of error.
@@ -44,7 +43,11 @@ export class MessageHandlerService implements ErrorHandler {
         } else {
             let code = error.statusCode || error.status;
             if (code === httpStatusCode.Unauthorized) {
-                this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
+                this.msgService.announceAppLevelMessage(
+                    code,
+                    msg,
+                    AlertType.DANGER
+                );
                 // Session is invalid now, clare session cache
                 this.session.clear();
             } else {
@@ -53,21 +56,28 @@ export class MessageHandlerService implements ErrorHandler {
         }
     }
     public handleErrorPopupUnauthorized(error: any | string): void {
-
         if (!(error.statusCode || error.status)) {
             return;
         }
         let msg = errorHandler(error);
         let code = error.statusCode || error.status;
         if (code === httpStatusCode.Unauthorized) {
-            this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
+            this.msgService.announceAppLevelMessage(
+                code,
+                msg,
+                AlertType.DANGER
+            );
             // Session is invalid now, clare session cache
             this.session.clear();
         }
     }
 
     public handleReadOnly(): void {
-        this.msgService.announceAppLevelMessage(503, 'REPO_READ_ONLY', AlertType.WARNING);
+        this.msgService.announceAppLevelMessage(
+            503,
+            'REPO_READ_ONLY',
+            AlertType.WARNING
+        );
     }
 
     public showError(message: string, params: any): void {
@@ -80,19 +90,19 @@ export class MessageHandlerService implements ErrorHandler {
     }
 
     public showSuccess(message: string): void {
-        if (message && message.trim() !== "") {
+        if (message && message.trim() !== '') {
             this.msgService.announceMessage(200, message, AlertType.SUCCESS);
         }
     }
 
     public showInfo(message: string): void {
-        if (message && message.trim() !== "") {
+        if (message && message.trim() !== '') {
             this.msgService.announceMessage(200, message, AlertType.INFO);
         }
     }
 
     public showWarning(message: string): void {
-        if (message && message.trim() !== "") {
+        if (message && message.trim() !== '') {
             this.msgService.announceMessage(400, message, AlertType.WARNING);
         }
     }

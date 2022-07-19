@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
@@ -46,6 +47,7 @@ func (e *executionManagerTestSuite) SetupTest() {
 		taskMgr:      e.taskMgr,
 		taskDAO:      e.taskDAO,
 		ormCreator:   e.ormCreator,
+		wp:           lib.NewWorkerPool(10),
 	}
 }
 

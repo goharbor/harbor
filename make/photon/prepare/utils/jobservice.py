@@ -15,9 +15,12 @@ def prepare_job_service(config_dict):
 
     log_level = config_dict['log_level'].upper()
 
-    # Job log is stored in data dir
+    # Job log and exported reports are stored in data dir
     job_log_dir = os.path.join('/data', "job_logs")
     prepare_dir(job_log_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
+    job_log_dir = os.path.join('/data', "scandata_exports")
+    prepare_dir(job_log_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
+
     # Render Jobservice env
     render_jinja(
         job_service_env_template_path,

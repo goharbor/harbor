@@ -11,7 +11,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: .541667rem;
+  font-size: .5417rem;
 }
 
 .ml-5 {
@@ -43,6 +43,7 @@
   opacity: 0;
   z-index: 999;
 }
+
 .cron-selection {
   margin-top: 30px;
   display: flex;
@@ -53,20 +54,25 @@
   height: 48px;
   line-height: 48px;
 }
+
 .font-size-54 {
-  font-size: .541667rem;
+  font-size: .5417rem;
 }
+
 .flex-150 {
   flex: 0 0 150px;
   max-width: 150px;
 }
+
 .padding-left-0 {
   padding-left: 0;
 }
+
 .flex-8p {
   flex: 0 0 8.3%;
   padding-left: 0.5rem;
 }
+
 :host::ng-deep {
   .datagrid-row-flex {
     .datagrid-row-detail {

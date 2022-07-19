@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -72,7 +72,7 @@ func (ia *InternalAPI) RenameAdmin() {
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	if !config.QuotaPerProjectEnable(orm.Context()) {
-		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is disabled"))
+		ia.SendError(errors.ForbiddenError(nil).WithMessage("quota per project is deactivated"))
 		return
 	}
 	ctx := orm.Context()
@@ -80,14 +80,20 @@ func (ia *InternalAPI) SyncQuota() {
 	cfgMgr := config.GetCfgManager(ctx)
 	if !cur {
 		cfgMgr.Set(ctx, common.ReadOnly, true)
-		cfgMgr.Save(ctx)
+		err := cfgMgr.Save(ctx)
+		if err != nil {
+			log.Warningf("failed to save context into config manager, error: %v", err)
+		}
 	}
 	// For api call, to avoid the timeout, it should be asynchronous
 	go func() {
 		defer func() {
 			ctx := orm.Context()
 			cfgMgr.Set(ctx, common.ReadOnly, cur)
-			cfgMgr.Save(ctx)
+			err := cfgMgr.Save(ctx)
+			if err != nil {
+				log.Warningf("failed to save context into config manager asynchronously, error: %v", err)
+			}
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
 		ctx := orm.NewContext(context.TODO(), o.NewOrm())
@@ -98,5 +104,4 @@ func (ia *InternalAPI) SyncQuota() {
 		}
 		log.Info("success to sync quota(API).")
 	}()
-	return
 }

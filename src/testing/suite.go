@@ -17,9 +17,6 @@ package testing
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/config"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io"
 	"math/rand"
 	"net/http"
@@ -27,7 +24,11 @@ import (
 	"sync"
 	"time"
 
-	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/config"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"

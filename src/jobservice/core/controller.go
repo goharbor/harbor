@@ -16,10 +16,7 @@ package core
 
 import (
 	"fmt"
-
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/robfig/cron"
-
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/errs"
@@ -27,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // basicController implement the core interface and provides related job handle methods.
@@ -201,8 +199,7 @@ func validJobReq(req *job.Request) error {
 		if utils.IsEmptyStr(req.Job.Metadata.Cron) {
 			return fmt.Errorf("'cron_spec' must be specified for the %s job", job.KindPeriodic)
 		}
-
-		if _, err := cron.Parse(req.Job.Metadata.Cron); err != nil {
+		if _, err := comUtils.CronParser().Parse(req.Job.Metadata.Cron); err != nil {
 			return fmt.Errorf("'cron_spec' is not correctly set: %s: %s", req.Job.Metadata.Cron, err)
 		}
 	}

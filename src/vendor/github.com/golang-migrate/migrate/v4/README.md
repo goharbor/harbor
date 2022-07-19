@@ -1,9 +1,9 @@
-[![Build Status](https://img.shields.io/travis/com/golang-migrate/migrate/master.svg)](https://travis-ci.com/golang-migrate/migrate)
-[![GoDoc](https://godoc.org/github.com/golang-migrate/migrate?status.svg)](https://godoc.org/github.com/golang-migrate/migrate)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/golang-migrate/migrate/CI/master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
+[![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
 [![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
 [![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
 [![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.13%2C%201.14-lightgrey.svg)
+![Supported Go Versions](https://img.shields.io/badge/Go-1.16%2C%201.17-lightgrey.svg)
 [![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate)](https://goreportcard.com/report/github.com/golang-migrate/migrate)
 
@@ -24,10 +24,13 @@ Forked from [mattes/migrate](https://github.com/mattes/migrate)
 Database drivers run migrations. [Add a new database?](database/driver.go)
 
 * [PostgreSQL](database/postgres)
+* [PGX](database/pgx)
 * [Redshift](database/redshift)
 * [Ql](database/ql)
 * [Cassandra](database/cassandra)
-* [SQLite](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
+* [SQLite](database/sqlite)
+* [SQLite3](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
+* [SQLCipher](database/sqlcipher)
 * [MySQL/ MariaDB](database/mysql)
 * [Neo4j](database/neo4j)
 * [MongoDB](database/mongodb)
@@ -41,7 +44,7 @@ Database drivers run migrations. [Add a new database?](database/driver.go)
 
 ### Database URLs
 
-Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?option1=true&option2=false`
+Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?param1=true&param2=false`
 
 Any [reserved URL characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) need to be escaped. Note, the `%` character also [needs to be escaped](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_the_percent_character)
 
@@ -66,8 +69,9 @@ Source drivers read migrations from local or remote sources. [Add a new source?]
 
 * [Filesystem](source/file) - read from filesystem
 * [Go-Bindata](source/go_bindata) - read from embedded binary data ([jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata))
-* [Github](source/github) - read from remote Github repositories
-* [Github Enterprise](source/github_ee) - read from remote Github Enterprise repositories
+* [GitHub](source/github) - read from remote GitHub repositories
+* [GitHub Enterprise](source/github_ee) - read from remote GitHub Enterprise repositories
+* [Bitbucket](source/bitbucket) - read from remote Bitbucket repositories
 * [Gitlab](source/gitlab) - read from remote Gitlab repositories
 * [AWS S3](source/aws_s3) - read from Amazon Web Services S3
 * [Google Cloud Storage](source/google_cloud_storage) - read from Google Cloud Platform Storage

@@ -92,6 +92,8 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 			assert.Nil(res.Protected)
 			assert.Equal(exp, *res)
 		} else {
+			// skip comparing exp.Protected.CurrentTime with res.Protected.CurrentTime
+			exp.Protected.CurrentTime = res.Protected.CurrentTime
 			assert.Equal(*exp.Protected, *res.Protected)
 			exp.Protected = nil
 			res.Protected = nil

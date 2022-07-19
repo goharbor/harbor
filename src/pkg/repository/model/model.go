@@ -19,9 +19,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/lib/pq"
 )
 
 func init() {
@@ -53,7 +52,7 @@ func (r *RepoRecord) FilterByBlobDigest(ctx context.Context, qs orm.QuerySeter, 
 				from artifact as a
 				join artifact_blob as ab
 				on a.digest = ab.digest_af
-				where ab.digest_blob = %s`, pq.QuoteLiteral(digest))
+				where ab.digest_blob = %s`, orm.QuoteLiteral(digest))
 	return qs.FilterRaw("repository_id", fmt.Sprintf("in (%s)", sql))
 }
 

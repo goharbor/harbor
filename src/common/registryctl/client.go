@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
@@ -42,5 +43,5 @@ func initRegistryCtlClient() {
 	cfg := &client.Config{
 		Secret: os.Getenv("JOBSERVICE_SECRET"),
 	}
-	RegistryCtlClient = client.NewClient(registryCtlURL, cfg)
+	RegistryCtlClient = client.NewClient(registryCtlURL, cfg, readonly.NewInterceptor())
 }

@@ -43,6 +43,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
@@ -62,7 +63,7 @@ const defaultDaysToRetentionForProxyCacheProject = 7
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
-		metadataMgr:   metadata.Mgr,
+		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
@@ -147,6 +148,13 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
+	// validate metadata.public value, should only be "true" or "false"
+	if p := req.Metadata.Public; p != "" {
+		if p != "true" && p != "false" {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+		}
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
@@ -196,7 +204,9 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		OwnerID:    ownerID,
 		RegistryID: lib.Int64Value(req.RegistryID),
 	}
-	lib.JSONCopy(&p.Metadata, req.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, req.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when CreateProject, error: %v", err)
+	}
 
 	projectID, err := a.projectCtl.Create(ctx, p)
 	if err != nil {
@@ -493,10 +503,9 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		wg.Add(1)
 		go func(p *project.Project) {
 			defer wg.Done()
-			// due to the issue https://github.com/lib/pq/issues/81 of lib/pg or postgres,
-			// simultaneous queries in transaction may failed, so clone a ctx with new ormer here
+			// simultaneous queries in transaction will fail, so clone a ctx with new ormer here
 			if err := a.populateProperties(orm.Clone(ctx), p); err != nil {
-				log.G(ctx).Errorf("failed to populate propertites for project %s, error: %v", p.Name, err)
+				log.G(ctx).Errorf("failed to populate properties for project %s, error: %v", p.Name, err)
 			}
 		}(p)
 	}
@@ -543,7 +552,9 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
 	}
-	lib.JSONCopy(&p.Metadata, params.Project.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
+	}
 
 	if err := a.projectCtl.Update(ctx, p); err != nil {
 		return a.SendError(ctx, err)
@@ -736,7 +747,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable(ctx) {
-		log.Debug("Quota per project disabled")
+		log.Debug("Quota per project deactivated")
 		return
 	}
 
@@ -794,7 +805,9 @@ func getProjectRegistrySummary(ctx context.Context, p *project.Project, summary 
 		log.Warningf("failed to get registry %d: %v", p.RegistryID, err)
 	} else if registry != nil {
 		registry.Credential = nil
-		lib.JSONCopy(&summary.Registry, registry)
+		if err := lib.JSONCopy(&summary.Registry, registry); err != nil {
+			log.Warningf("failed to call JSONCopy on project registry summary, error: %v", err)
+		}
 	}
 }
 

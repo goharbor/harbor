@@ -1,7 +1,6 @@
 package system
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"strings"
 )
@@ -21,7 +20,7 @@ func (ns *systemNamespace) Kind() string {
 }
 
 func (ns *systemNamespace) Resource(subresources ...types.Resource) types.Resource {
-	return types.Resource(fmt.Sprintf("/system/")).Subresource(subresources...)
+	return types.Resource("/system/").Subresource(subresources...)
 }
 
 func (ns *systemNamespace) Identity() interface{} {

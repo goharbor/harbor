@@ -19,7 +19,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -51,5 +51,4 @@ func (h *Handler) Get() {
 	}
 	h.Data["json"] = token
 	h.ServeJSON()
-
 }

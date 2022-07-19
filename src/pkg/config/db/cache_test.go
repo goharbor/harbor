@@ -16,9 +16,10 @@ package db
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
-	"testing"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -68,7 +69,7 @@ func BenchmarkCacheLoad(b *testing.B) {
 		}
 	})
 
-	if err := cache.Delete(cacheKey); err != nil {
+	if err := cache.Delete(ctx, cacheKey); err != nil {
 		fmt.Printf("Delete cache failed, %v\n", err)
 	}
 }

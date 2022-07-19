@@ -15,7 +15,7 @@
 package rule
 
 import (
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 )
 
 // Metadata of the retention rule

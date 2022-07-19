@@ -3,7 +3,7 @@ set +e
 
 usage(){
   echo "Usage: compile.sh <code path> <code tag> <main.go path> <binary name>"
-  echo "e.g: compile.sh github.com/helm/chartmuseum v0.5.1 cmd/chartmuseum chartm"
+  echo "e.g: compile.sh github.com/helm/chartmuseum v0.14.0 cmd/chartmuseum chartm"
   exit 1
 }
 

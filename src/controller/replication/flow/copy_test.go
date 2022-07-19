@@ -51,6 +51,17 @@ func (c *copyFlowTestSuite) TestRun() {
 			},
 			Override: false,
 		},
+		{
+			Type: model.ResourceTypeArtifact,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "proxy/hello-world",
+				},
+				Vtags: []string{"latest"},
+			},
+			Override: false,
+			Skip:     true,
+		},
 	}, nil)
 	adp.On("PrepareForPush", mock.Anything).Return(nil)
 
@@ -60,7 +71,7 @@ func (c *copyFlowTestSuite) TestRun() {
 	}, nil)
 
 	taskMgr := &testingTask.Manager{}
-	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil).Once()
 	policy := &repctlmodel.Policy{
 		SrcRegistry: &model.Registry{
 			Type: "TEST_FOR_COPY_FLOW",

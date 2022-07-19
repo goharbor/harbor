@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -45,8 +47,9 @@ func (h *GCHistory) ToSwagger() *models.GCHistory {
 		Schedule: &models.ScheduleObj{
 			// covert MANUAL to Manual because the type of the ScheduleObj
 			// must be 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'
-			Type: strings.Title(strings.ToLower(h.Schedule.Type)),
-			Cron: h.Schedule.Cron,
+			Type:              strings.Title(strings.ToLower(h.Schedule.Type)),
+			Cron:              h.Schedule.Cron,
+			NextScheduledTime: strfmt.DateTime(utils.NextSchedule(h.Schedule.Cron, time.Now())),
 		},
 		CreationTime: strfmt.DateTime(h.CreationTime),
 		UpdateTime:   strfmt.DateTime(h.UpdateTime),
@@ -77,8 +80,9 @@ func (s *GCSchedule) ToSwagger() *models.GCHistory {
 		Deleted:       false,
 		JobStatus:     s.Status,
 		Schedule: &models.ScheduleObj{
-			Cron: s.CRON,
-			Type: s.CRONType,
+			Cron:              s.CRON,
+			Type:              s.CRONType,
+			NextScheduledTime: strfmt.DateTime(utils.NextSchedule(s.CRON, time.Now())),
 		},
 		CreationTime: strfmt.DateTime(s.CreationTime),
 		UpdateTime:   strfmt.DateTime(s.UpdateTime),

@@ -55,6 +55,7 @@ const (
 	ResourceScanner               = Resource("scanner")
 	ResourceArtifact              = Resource("artifact")
 	ResourceTag                   = Resource("tag")
+	ResourceAccessory             = Resource("accessory")
 	ResourceArtifactAddition      = Resource("artifact-addition")
 	ResourceArtifactLabel         = Resource("artifact-label")
 	ResourcePreatPolicy           = Resource("preheat-policy")
@@ -74,4 +75,5 @@ const (
 	ResourceReplicationPolicy  = Resource("replication-policy")
 	ResourceScanAll            = Resource("scan-all")
 	ResourceSystemVolumes      = Resource("system-volumes")
+	ResourcePurgeAuditLog      = Resource("purge-audit")
 )

@@ -21,13 +21,14 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/gomodule/redigo/redis"
-	"github.com/robfig/cron"
 )
 
 const (
@@ -157,13 +158,12 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 	// Follow UTC time spec
 	nowTime := time.Unix(time.Now().UTC().Unix(), 0).UTC()
 	horizon := nowTime.Add(enqueuerHorizon)
-
-	schedule, err := cron.Parse(p.CronSpec)
+	schedule, err := comUtils.CronParser().Parse(p.CronSpec)
 	if err != nil {
 		// The cron spec should be already checked at upper layers.
 		// Just in cases, if error occurred, ignore it
 		e.lastEnqueueErr = err
-		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", p.JobName, p.ID, err)
+		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", lib.TrimLineBreaks(p.JobName), p.ID, err)
 	} else {
 		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
@@ -222,7 +222,7 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 				break // Probably redis connection is broken
 			}
 
-			logger.Debugf("Scheduled execution for periodic job %s:%s at %d", j.Name, p.ID, epoch)
+			logger.Debugf("Scheduled execution for periodic job %s:%s at %d", lib.TrimLineBreaks(j.Name), p.ID, epoch)
 		}
 	}
 }

@@ -7,27 +7,34 @@ import { SearchTriggerService } from '../components/global-search/search-trigger
 import { AuthCheckGuard } from './auth-user-activate.service';
 
 describe('AuthCheckGuard', () => {
-  const fakeSessionService = null;
-  const fakeAppConfigService = null;
-  const fakeMessageHandlerService = null;
-  const fakeSearchTriggerService = null;
+    const fakeSessionService = null;
+    const fakeAppConfigService = null;
+    const fakeMessageHandlerService = null;
+    const fakeSearchTriggerService = null;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule
-      ],
-      providers: [
-        AuthCheckGuard,
-        { provide: SessionService, useValue: fakeSessionService },
-        { provide: AppConfigService, useValue: fakeAppConfigService },
-        { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-        { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
-      ]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [RouterTestingModule],
+            providers: [
+                AuthCheckGuard,
+                { provide: SessionService, useValue: fakeSessionService },
+                { provide: AppConfigService, useValue: fakeAppConfigService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakeMessageHandlerService,
+                },
+                {
+                    provide: SearchTriggerService,
+                    useValue: fakeSearchTriggerService,
+                },
+            ],
+        });
     });
-  });
 
-  it('should be created', inject([AuthCheckGuard], (service: AuthCheckGuard) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should be created', inject(
+        [AuthCheckGuard],
+        (service: AuthCheckGuard) => {
+            expect(service).toBeTruthy();
+        }
+    ));
 });

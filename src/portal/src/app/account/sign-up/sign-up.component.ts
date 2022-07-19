@@ -17,12 +17,12 @@ import { NewUserFormComponent } from '../../shared/components/new-user-form/new-
 import { User } from '../../base/left-side-nav/user/user';
 import { SessionService } from '../../shared/services/session.service';
 import { UserService } from '../../base/left-side-nav/user/user.service';
-import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'sign-up',
-    templateUrl: "sign-up.component.html",
-    styleUrls: ['../../common.scss']
+    templateUrl: 'sign-up.component.html',
+    styleUrls: ['../../common.scss'],
 })
 export class SignUpComponent {
     opened: boolean = false;
@@ -35,9 +35,10 @@ export class SignUpComponent {
 
     constructor(
         private session: SessionService,
-        private userService: UserService) { }
+        private userService: UserService
+    ) {}
 
-    @ViewChild(NewUserFormComponent, {static: true})
+    @ViewChild(NewUserFormComponent, { static: true })
     newUserForm: NewUserFormComponent;
 
     @ViewChild(InlineAlertComponent)
@@ -86,7 +87,7 @@ export class SignUpComponent {
             } else {
                 // Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
-                    message: "ALERT.FORM_CHANGE_CONFIRMATION"
+                    message: 'ALERT.FORM_CHANGE_CONFIRMATION',
                 });
             }
         } else {
@@ -116,16 +117,18 @@ export class SignUpComponent {
         // Start process
         this.onGoing = true;
 
-        this.userService.addUser(u)
-            .subscribe(() => {
+        this.userService.addUser(u).subscribe(
+            () => {
                 this.onGoing = false;
                 this.opened = false;
                 this.modal.close();
                 this.userCreation.emit(u);
-            }, error => {
+            },
+            error => {
                 this.onGoing = false;
                 this.error = error;
                 this.inlineAlert.showInlineError(error);
-            });
+            }
+        );
     }
 }

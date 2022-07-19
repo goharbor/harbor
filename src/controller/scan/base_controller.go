@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
+	"github.com/goharbor/harbor/src/pkg/accessory"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
@@ -94,6 +95,8 @@ type basicController struct {
 	manager report.Manager
 	// Artifact controller
 	ar ar.Controller
+	// Accessory manager
+	acc accessory.Manager
 	// Scanner controller
 	sc sc.Controller
 	// Robot account controller
@@ -121,6 +124,8 @@ func NewController() Controller {
 		manager: report.NewManager(),
 		// Refer to the default artifact controller
 		ar: ar.Ctl,
+		// Refer to the default accessory manager
+		acc: accessory.Mgr,
 		// Refer to the default scanner controller
 		sc: sc.DefaultController,
 		// Refer to the default robot account controller
@@ -171,6 +176,14 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 	)
 
 	walkFn := func(a *ar.Artifact) error {
+		ok, err := bc.isAccessory(ctx, a)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		}
+
 		supported := hasCapability(r, a)
 
 		if !supported && a.IsImageIndex() {
@@ -213,7 +226,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is disabled", r.Name)
+		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is deactivated", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -349,7 +362,8 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 				return
 			}
 
-			bc.startScanAll(ctx, executionID)
+			err = bc.startScanAll(ctx, executionID)
+			log.Errorf("failed to start scan all, executionID=%d, error: %v", executionID, err)
 		}(bc.makeCtx())
 	} else {
 		if err := bc.startScanAll(ctx, executionID); err != nil {
@@ -438,7 +452,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		message := fmt.Sprintf("%d artifact(s) found", summary.TotalCount)
 
 		if summary.PreconditionCount > 0 {
-			message = fmt.Sprintf("%s, scanner not found or disabled for %d of them", message, summary.PreconditionCount)
+			message = fmt.Sprintf("%s, scanner not found or deactivated for %d of them", message, summary.PreconditionCount)
 		}
 
 		if summary.UnknowCount > 0 {
@@ -619,11 +633,23 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 }
 
 // GetScanLog ...
-func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte, error) {
+func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact, uuid string) ([]byte, error) {
 	if len(uuid) == 0 {
 		return nil, errors.New("empty uuid to get scan log")
 	}
+	r, err := bc.sc.GetRegistrationByProject(ctx, artifact.ProjectID)
+	if err != nil {
+		return nil, err
+	}
 
+	artifacts, _, err := bc.collectScanningArtifacts(ctx, r, artifact)
+	if err != nil {
+		return nil, err
+	}
+	artifactMap := map[int64]interface{}{}
+	for _, a := range artifacts {
+		artifactMap[a.ID] = struct{}{}
+	}
 	reportUUIDs := vuln.ParseReportIDs(uuid)
 	tasks, err := bc.listScanTasks(ctx, reportUUIDs)
 	if err != nil {
@@ -635,9 +661,12 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	reportUUIDToTasks := map[string]*task.Task{}
-	for _, task := range tasks {
-		for _, reportUUID := range getReportUUIDs(task.ExtraAttrs) {
-			reportUUIDToTasks[reportUUID] = task
+	for _, t := range tasks {
+		if !scanTaskForArtifacts(t, artifactMap) {
+			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
+		}
+		for _, reportUUID := range getReportUUIDs(t.ExtraAttrs) {
+			reportUUIDToTasks[reportUUID] = t
 		}
 	}
 
@@ -703,6 +732,18 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	return b.Bytes(), nil
+}
+
+func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bool {
+	if task == nil {
+		return false
+	}
+	artifactID := int64(task.GetNumFromExtraAttrs(artifactIDKey))
+	if artifactID == 0 {
+		return false
+	}
+	_, exist := artifactMap[artifactID]
+	return exist
 }
 
 // DeleteReports ...
@@ -1047,6 +1088,17 @@ func (bc *basicController) getLatestTagOfArtifact(ctx context.Context, artifactI
 	}
 
 	return tags[0].Name, nil
+}
+
+func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (bool, error) {
+	ac, err := bc.acc.List(ctx, q.New(q.KeyWords{"ArtifactID": art.Artifact.ID, "digest": art.Artifact.Digest}))
+	if err != nil {
+		return false, err
+	}
+	if len(ac) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 func getArtifactID(extraAttrs map[string]interface{}) int64 {

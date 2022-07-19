@@ -46,7 +46,7 @@ def get_alias(path):
 
 @stat_decorator
 def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
-   rc = subprocess.call(["/usr/bin/openssl", "genrsa", "-out", key_path, "4096"], stdout=DEVNULL, stderr=subprocess.STDOUT)
+   rc = subprocess.call(["/usr/bin/openssl", "genrsa", "-traditional", "-out", key_path, "4096"], stdout=DEVNULL, stderr=subprocess.STDOUT)
    if rc != 0:
         return rc
    return subprocess.call(["/usr/bin/openssl", "req", "-new", "-x509", "-key", key_path,\

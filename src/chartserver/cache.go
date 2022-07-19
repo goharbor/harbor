@@ -6,11 +6,11 @@ import (
 	"math"
 	"time"
 
-	beego_cache "github.com/astaxie/beego/cache"
+	beego_cache "github.com/beego/beego/cache"
 	hlog "github.com/goharbor/harbor/src/lib/log"
 
 	// Enable redis cache adaptor
-	_ "github.com/astaxie/beego/cache/redis"
+	_ "github.com/beego/beego/cache/redis"
 )
 
 const (

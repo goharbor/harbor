@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	beego_orm "github.com/astaxie/beego/orm"
+	beego_orm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -62,6 +62,7 @@ func (is *instanceSuite) TestGet() {
 	// not exist
 	i, err = is.dao.Get(is.ctx, 0)
 	assert.Nil(t, i)
+	assert.True(t, errors.IsNotFoundErr(err))
 }
 
 // TestCreate tests create instance.

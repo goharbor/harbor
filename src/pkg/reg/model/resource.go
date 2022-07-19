@@ -14,6 +14,11 @@
 
 package model
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // the resource type
 const (
 	ResourceTypeArtifact = "artifact"
@@ -33,6 +38,9 @@ type Resource struct {
 	IsDeleteTag bool `json:"is_delete_tag"`
 	// indicate whether the resource can be overridden
 	Override bool `json:"override"`
+	// Skip is a flag for resource which satisfies replication rules but should
+	// be skipped because of other limits like when dest project's type is proxy cache.
+	Skip bool `json:"-"`
 }
 
 // ResourceMetadata of resource
@@ -50,8 +58,19 @@ type Repository struct {
 
 // Artifact is the individual unit that can be replicated
 type Artifact struct {
-	Type   string   `json:"type"`
-	Digest string   `json:"digest"`
-	Labels []string `json:"labels"`
-	Tags   []string `json:"tags"`
+	Type       string   `json:"type"`
+	Digest     string   `json:"digest"`
+	Labels     []string `json:"labels"`
+	Tags       []string `json:"tags"`
+	IsAcc      bool     `json:"-"` // indicate whether it is an accessory artifact
+	ParentTags []string `json:"-"` // the tags belong to the artifact which the accessory is attached.
+}
+
+func (r *ResourceMetadata) String() string {
+	data, err := json.Marshal(r)
+	if err == nil {
+		return string(data)
+	}
+
+	return fmt.Sprintf("repository: %+v, artifacts: %+v, tags: %+v", r.Repository, r.Artifacts, r.Vtags)
 }

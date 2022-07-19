@@ -22,7 +22,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/stretchr/testify/assert"
@@ -148,7 +148,7 @@ func TestMustCommit(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	committableCtx := context.WithValue(ctx, committedKey{}, new(bool))
+	committableCtx := context.WithValue(ctx, orm.CommittedKey{}, new(bool))
 
 	type args struct {
 		r *http.Request

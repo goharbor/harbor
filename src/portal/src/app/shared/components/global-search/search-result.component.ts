@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subscription } from "rxjs";
+import { Observable, Subscription } from 'rxjs';
 
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
@@ -20,21 +20,20 @@ import { SearchTriggerService } from './search-trigger.service';
 
 import { AppConfigService } from '../../../services/app-config.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
-import { filter, switchMap } from "rxjs/operators";
+import { filter, switchMap } from 'rxjs/operators';
 
 @Component({
-    selector: "search-result",
-    templateUrl: "search-result.component.html",
-    styleUrls: ["search.component.scss"],
+    selector: 'search-result',
+    templateUrl: 'search-result.component.html',
+    styleUrls: ['search.component.scss'],
 
-    providers: [GlobalSearchService]
+    providers: [GlobalSearchService],
 })
-
 export class SearchResultComponent implements OnInit, OnDestroy {
     searchResults: SearchResults = new SearchResults();
     originalCopy: SearchResults;
 
-    currentTerm: string = "";
+    currentTerm: string = '';
 
     // Open or close
     stateIndicator: boolean = false;
@@ -52,12 +51,14 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         private search: GlobalSearchService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
-        private appConfigService: AppConfigService) { }
+        private appConfigService: AppConfigService
+    ) {}
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$
-            .pipe(filter(term => {
-                    if (term === "") {
+            .pipe(
+                filter(term => {
+                    if (term === '') {
                         this.searchResults.project = [];
                         this.searchResults.repository = [];
                         if (this.withHelmChart) {
@@ -75,18 +76,24 @@ export class SearchResultComponent implements OnInit, OnDestroy {
                     // Show spinner
                     this.onGoing = true;
                     return this.search.doSearch(term);
-                }))
-            .subscribe(searchResults => {
-                this.onGoing = false;
-                this.originalCopy = searchResults; // Keep the original data
-                this.searchResults = this.clone(searchResults);
-            }, error => {
-                this.onGoing = false;
-                this.msgHandler.handleError(error);
-            });
-        this.closeSearchSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
-            this.close();
-        });
+                })
+            )
+            .subscribe(
+                searchResults => {
+                    this.onGoing = false;
+                    this.originalCopy = searchResults; // Keep the original data
+                    this.searchResults = this.clone(searchResults);
+                },
+                error => {
+                    this.onGoing = false;
+                    this.msgHandler.handleError(error);
+                }
+            );
+        this.closeSearchSub = this.searchTrigger.searchCloseChan$.subscribe(
+            close => {
+                this.close();
+            }
+        );
     }
 
     ngOnDestroy() {
@@ -103,10 +110,16 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         let res: SearchResults = new SearchResults();
 
         if (src) {
-            src.project.forEach(pro => res.project.push(Object.assign({}, pro)));
-            src.repository.forEach(repo => res.repository.push(Object.assign({}, repo)));
+            src.project.forEach(pro =>
+                res.project.push(Object.assign({}, pro))
+            );
+            src.repository.forEach(repo =>
+                res.repository.push(Object.assign({}, repo))
+            );
             if (this.withHelmChart) {
-                src.chart.forEach(chart => res.chart.push(JSON.parse(JSON.stringify(chart))));
+                src.chart.forEach(chart =>
+                    res.chart.push(JSON.parse(JSON.stringify(chart)))
+                );
             }
             return res;
         }
@@ -138,10 +151,10 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     }
 
     // Call search service to complete the search request
-    doSearch(term: string): void  {
+    doSearch(term: string): void {
         // Only search none empty term
         // If term is empty, then clear the results
-        if (!term || term.trim() === "") {
+        if (!term || term.trim() === '') {
             this.searchResults.project = [];
             this.searchResults.repository = [];
             if (this.withHelmChart) {
@@ -163,15 +176,17 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         // Show spinner
         this.onGoing = true;
 
-        this.search.doSearch(term)
-            .subscribe(searchResults => {
+        this.search.doSearch(term).subscribe(
+            searchResults => {
                 this.onGoing = false;
                 this.originalCopy = searchResults; // Keep the original data
                 this.searchResults = this.clone(searchResults);
-            }, error => {
+            },
+            error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
-            });
+            }
+        );
     }
     get withHelmChart(): boolean {
         return this.appConfigService.getConfig().with_chartmuseum;

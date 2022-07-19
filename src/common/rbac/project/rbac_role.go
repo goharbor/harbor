@@ -80,6 +80,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
@@ -112,6 +113,8 @@ var (
 			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
@@ -159,6 +162,8 @@ var (
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
+			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
+
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
@@ -176,6 +181,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
@@ -224,6 +230,13 @@ var (
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
+
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
@@ -234,6 +247,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
@@ -251,6 +265,8 @@ var (
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
+
+			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
@@ -289,6 +305,7 @@ var (
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
+			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
@@ -316,6 +333,7 @@ var (
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
+			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},

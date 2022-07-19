@@ -36,12 +36,14 @@
 .hide-create {
     visibility: hidden !important;
 }
+/* stylelint-disable */
 .rightPos {
     position: absolute;
     right: 20px;
     height:32px;
     z-index: 100;
 }
+
 .relative {
     position: relative;
 }

@@ -255,7 +255,9 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 
 	for _, policy := range params.Robot.Access {
 		p := &types.Policy{}
-		lib.JSONCopy(p, policy)
+		if err := lib.JSONCopy(p, policy); err != nil {
+			log.Warningf("failed to call JSONCopy on robot access policy when validate, error: %v", err)
+		}
 		if !mp[p.String()] {
 			return errors.New(nil).WithMessage("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, projectNameOrID).WithCode(errors.BadRequestCode)
 		}

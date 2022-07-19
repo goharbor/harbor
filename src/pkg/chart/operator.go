@@ -83,7 +83,7 @@ func (cho *operator) GetDetails(content []byte) (*VersionDetails, error) {
 
 // GetData returns raw data of chart
 func (cho *operator) GetData(content []byte) (*helm_chart.Chart, error) {
-	if content == nil || len(content) == 0 {
+	if len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 

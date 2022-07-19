@@ -1,3 +1,17 @@
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package handler
 
 import (
@@ -244,6 +258,12 @@ func (api *preheatAPI) CreatePolicy(ctx context.Context, params operation.Create
 	// override project ID
 	policy.ProjectID = project.ProjectID
 
+	// validate provider whether exist
+	_, err = api.preheatCtl.GetInstance(ctx, policy.ProviderID)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	_, err = api.preheatCtl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -260,6 +280,23 @@ func (api *preheatAPI) UpdatePolicy(ctx context.Context, params operation.Update
 	}
 
 	policy, err := convertParamPolicyToModelPolicy(params.Policy)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	project, err := api.projectCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+	// override project ID
+	policy.ProjectID = project.ProjectID
+
+	if err := api.requirePolicyAccess(ctx, policy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	// validate provider whether exist
+	_, err = api.preheatCtl.GetInstance(ctx, policy.ProviderID)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
@@ -578,6 +615,10 @@ func (api *preheatAPI) GetExecution(ctx context.Context, params operation.GetExe
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireExecutionInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	execution, err := api.executionCtl.Get(ctx, params.ExecutionID)
 	if err != nil {
 		return api.SendError(ctx, err)
@@ -646,6 +687,10 @@ func (api *preheatAPI) StopExecution(ctx context.Context, params operation.StopE
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireExecutionInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	if params.Execution.Status == "Stopped" {
 		err := api.executionCtl.Stop(ctx, params.ExecutionID)
 		if err != nil {
@@ -681,6 +726,10 @@ func convertTaskToPayload(model *task.Task) (*models.Task, error) {
 // ListTasks lists tasks.
 func (api *preheatAPI) ListTasks(ctx context.Context, params operation.ListTasksParams) middleware.Responder {
 	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourcePreatPolicy); err != nil {
+		return api.SendError(ctx, err)
+	}
+
+	if err := api.requireExecutionInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -722,12 +771,62 @@ func (api *preheatAPI) GetPreheatLog(ctx context.Context, params operation.GetPr
 		return api.SendError(ctx, err)
 	}
 
+	if err := api.requireTaskInProject(ctx, params.ProjectName, params.PreheatPolicyName, params.ExecutionID, params.TaskID); err != nil {
+		return api.SendError(ctx, err)
+	}
+
 	l, err := api.taskCtl.GetLog(ctx, params.TaskID)
 	if err != nil {
 		return api.SendError(ctx, err)
 	}
 
 	return operation.NewGetPreheatLogOK().WithPayload(string(l))
+}
+
+func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID, taskID int64) error {
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	notFoundErr := fmt.Errorf("project id %d, task id %d not found", projectID, taskID)
+	if err != nil {
+		return err
+	}
+	// require execution before require task
+	if err := api.requireExecutionInProject(ctx, projectID, policyName, executionID); err != nil {
+		return err
+	}
+
+	task, err := api.taskCtl.Get(ctx, taskID)
+	if err != nil {
+		return err
+	}
+
+	if task != nil && task.ExecutionID == executionID {
+		return nil
+	}
+
+	return errors.NotFoundError(notFoundErr)
+}
+
+func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID int64) error {
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	notFoundErr := fmt.Errorf("project id %d, execution id %d not found", projectID, executionID)
+	if err != nil {
+		return err
+	}
+	plc, err := api.preheatCtl.GetPolicyByName(ctx, projectID, policyName)
+	if err != nil {
+		return err
+	}
+
+	exec, err := api.executionCtl.Get(ctx, executionID)
+	if err != nil {
+		return err
+	}
+
+	if exec != nil && exec.VendorType == job.P2PPreheat && exec.VendorID == plc.ID {
+		return nil
+	}
+
+	return errors.NotFoundError(notFoundErr)
 }
 
 // ListProvidersUnderProject is Get all providers at project level
@@ -752,4 +851,20 @@ func (api *preheatAPI) ListProvidersUnderProject(ctx context.Context, params ope
 	}
 
 	return operation.NewListProvidersUnderProjectOK().WithPayload(providers)
+}
+
+// requirePolicyAccess checks the project whether has the permission to the policy.
+func (api *preheatAPI) requirePolicyAccess(ctx context.Context, policy *policy.Schema) error {
+	if policy != nil && policy.ID != 0 {
+		db, err := api.preheatCtl.GetPolicy(ctx, policy.ID)
+		if err != nil {
+			return err
+		}
+		// return err if project id does not match
+		if db.ProjectID != policy.ProjectID {
+			return errors.NotFoundError(errors.Errorf("project id %d does not match", policy.ProjectID))
+		}
+	}
+
+	return nil
 }

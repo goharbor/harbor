@@ -22,12 +22,12 @@ import { ChartDetailValueComponent } from './chart-detail/chart-detail-value.com
 import { ChartDetailComponent } from './chart-detail/chart-detail.component';
 import { HelmChartDetailComponent } from './chart-detail.component';
 import { SharedModule } from '../../../../shared/shared.module';
-import { RouterModule, Routes } from "@angular/router";
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
     {
         path: ':chart/versions',
-        component: ListChartVersionsComponent
+        component: ListChartVersionsComponent,
     },
     {
         path: ':chart/versions/:version',
@@ -35,10 +35,7 @@ const routes: Routes = [
     },
 ];
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes)
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
     declarations: [
         LabelFilterComponent,
         LabelMarkerComponent,
@@ -51,4 +48,4 @@ const routes: Routes = [
         HelmChartDetailComponent,
     ],
 })
-export class HelmChartListModule { }
+export class HelmChartListModule {}

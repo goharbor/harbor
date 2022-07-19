@@ -13,48 +13,66 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
-import { Configuration } from "../base/left-side-nav/config/config";
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../shared/units/utils";
+import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from 'rxjs';
+import { Configuration } from '../base/left-side-nav/config/config';
+import {
+    CURRENT_BASE_HREF,
+    HTTP_GET_OPTIONS,
+    HTTP_JSON_OPTIONS,
+} from '../shared/units/utils';
 
-const configEndpoint = CURRENT_BASE_HREF + "/configurations";
-const emailEndpoint = CURRENT_BASE_HREF + "/email/ping";
-const ldapEndpoint = CURRENT_BASE_HREF + "/ldap/ping";
-const oidcEndpoint = CURRENT_BASE_HREF + "/system/oidc/ping";
+const configEndpoint = CURRENT_BASE_HREF + '/configurations';
+const emailEndpoint = CURRENT_BASE_HREF + '/email/ping';
+const ldapEndpoint = CURRENT_BASE_HREF + '/ldap/ping';
+const oidcEndpoint = CURRENT_BASE_HREF + '/system/oidc/ping';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ConfigurationService {
-
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
     public getConfiguration(): Observable<Configuration> {
-        return this.http.get(configEndpoint, HTTP_GET_OPTIONS)
-        .pipe(map(response => response as Configuration)
-        , catchError(error => observableThrowError(error)));
+        return this.http.get(configEndpoint, HTTP_GET_OPTIONS).pipe(
+            map(response => response as Configuration),
+            catchError(error => observableThrowError(error))
+        );
     }
 
     public saveConfiguration(values: any): Observable<any> {
-        return this.http.put(configEndpoint, JSON.stringify(values), HTTP_JSON_OPTIONS)
-        .pipe(map(response => response)
-        , catchError(error => observableThrowError(error)));
+        return this.http
+            .put(configEndpoint, JSON.stringify(values), HTTP_JSON_OPTIONS)
+            .pipe(
+                map(response => response),
+                catchError(error => observableThrowError(error))
+            );
     }
 
     public testMailServer(mailSettings: any): Observable<any> {
-        return this.http.post(emailEndpoint, JSON.stringify(mailSettings), HTTP_JSON_OPTIONS)
-        .pipe(map(response => response)
-        , catchError(error => observableThrowError(error)));
+        return this.http
+            .post(
+                emailEndpoint,
+                JSON.stringify(mailSettings),
+                HTTP_JSON_OPTIONS
+            )
+            .pipe(
+                map(response => response),
+                catchError(error => observableThrowError(error))
+            );
     }
 
     public testLDAPServer(ldapSettings: any): Observable<any> {
-         return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
-        .pipe(map(response => response)
-        , catchError(error => observableThrowError(error)));
+        return this.http
+            .post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
+            .pipe(
+                map(response => response),
+                catchError(error => observableThrowError(error))
+            );
     }
     public testOIDCServer(oidcSettings: any): Observable<any> {
-         return this.http.post(oidcEndpoint, JSON.stringify(oidcSettings), HTTP_JSON_OPTIONS)
-         .pipe(catchError(error => observableThrowError(error)));
+        return this.http
+            .post(oidcEndpoint, JSON.stringify(oidcSettings), HTTP_JSON_OPTIONS)
+            .pipe(catchError(error => observableThrowError(error)));
     }
 }

@@ -22,6 +22,7 @@ ${artifact_action_copy_xpath}  //clr-dropdown-menu//div[contains(.,'Copy') and @
 ${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a
 ${artifact_rows}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]
 ${archive_rows}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a
+${artifact_list_refresh_btn}  //artifact-list-tab//div//span[@class='refresh-btn']
 
 ${artifact_list_spinner}   xpath=//clr-datagrid//clr-spinner
 ${artifact_tag_component}   xpath=//artifact-tag

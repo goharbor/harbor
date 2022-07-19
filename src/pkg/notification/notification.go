@@ -112,5 +112,4 @@ func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
 		e.MustNotify = notify[0]
 	}
 	e.Events.PushBack(m)
-	return
 }

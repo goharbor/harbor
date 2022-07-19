@@ -39,7 +39,6 @@ func (d *Database) Load(ctx context.Context) (map[string]interface{}, error) {
 		return resultMap, err
 	}
 	for _, item := range configEntries {
-
 		itemMetadata, ok := metadata.Instance().GetByName(item.Key)
 		if !ok {
 			log.Debugf("failed to get metadata, key:%v, error:%v, skip to load item", item.Key, err)

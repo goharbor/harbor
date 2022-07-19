@@ -58,6 +58,10 @@ func (f *fakeDao) Update(ctx context.Context, artifact *dao.Artifact, props ...s
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) error {
+	args := f.Called()
+	return args.Error(0)
+}
 func (f *fakeDao) CreateReference(ctx context.Context, reference *dao.ArtifactReference) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
@@ -229,6 +233,13 @@ func (m *managerTestSuite) TestUpdate() {
 		ID:       1,
 		PullTime: time.Now(),
 	}, "PullTime")
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestUpdatePullTime() {
+	m.dao.On("UpdatePullTime", mock.Anything).Return(nil)
+	err := m.mgr.UpdatePullTime(nil, 1, time.Now())
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

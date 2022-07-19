@@ -110,6 +110,9 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
+	if params.GroupName != nil && len(*params.GroupName) > 0 {
+		query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: *params.GroupName}
+	}
 	switch authMode {
 	case common.LDAPAuth:
 		query.Keywords["GroupType"] = common.LDAPGroupType

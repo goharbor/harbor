@@ -46,24 +46,24 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "~12.2.11",
-    "@angular/common": "~12.2.11",
-    "@angular/compiler": "~12.2.11",
-    "@angular/core": "~12.2.11",
-    "@angular/forms": "~12.2.11",
-    "@angular/localize": "~12.2.11",
-    "@angular/platform-browser": "~12.2.11",
-    "@angular/platform-browser-dynamic": "~12.2.11",
-    "@angular/router": "~12.2.11",
-    "rxjs": "^6.6.7",
+    "@angular/animations": "~13.3.0",
+    "@angular/common": "~13.3.0",
+    "@angular/compiler": "~13.3.0",
+    "@angular/core": "~13.3.0",
+    "@angular/forms": "~13.3.0",
+    "@angular/localize": "~13.3.0",
+    "@angular/platform-browser": "~13.3.0",
+    "@angular/platform-browser-dynamic": "~13.3.0",
+    "@angular/router": "~13.2.2",
+    "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
     
     // Clarity UI. Required
-    "@cds/core": "~5.5.8",
-    "@clr/angular": "~12.0.6",
-    "@clr/icons": "~12.0.6",
-    "@clr/ui": "~12.0.6",
+    "@clr/angular": "13.0.2",
+    "@cds/core": "5.6.4",
+    "@clr/icons": "13.0.2",
+    "@clr/ui": "13.0.2",
     
     // For Harbor i18n functionality. Required
     "@ngx-translate/core": "^13.0.0",
@@ -79,32 +79,33 @@
     "ngx-cookie": "^5.0.2",
     
     // To render markdown data. Required
-    "ngx-markdown": "~12.0.1",
+    "ngx-markdown": "~13.0.0",
     
     // For swagger API center. Required
-    "swagger-ui": "^3.52.5",
+    "swagger-ui": "~4.9.0",
     "buffer": "^6.0.3",
+    "stream-browserify": "^3.0.0",
     
     // To convert yaml to json. Required
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "~12.2.11",
-    "@angular/cli": "~12.2.11",
-    "@angular/compiler-cli": "~12.2.11",
+    "@angular-devkit/build-angular": "~13.3.0",
+    "@angular/cli": "~13.3.0",
+    "@angular/compiler-cli": "~13.3.0",
     "@types/jasmine": "~3.10.1",
     "@types/node": "^16.11.6",
-    "typescript": "~4.3.5",
+    "typescript": "~4.5.4",
     
     // For unit test. Required
-    "jasmine-core": "^3.7.1",
+    "jasmine-core": "^4.0.0",
     "jasmine-spec-reporter": "~7.0.0",
-    "karma": "^6.3.3",
+    "karma": "^6.3.17",
     "karma-chrome-launcher": "~3.1.0",
-    "karma-coverage": "^2.0.3",
-    "karma-jasmine": "~4.0.0",
-    "karma-jasmine-html-reporter": "^1.5.0",
+    "karma-coverage": "^2.2.0",
+    "karma-jasmine": "~4.0.1",
+    "karma-jasmine-html-reporter": "^1.7.0",
    
     // To run a local mocked API server. Required
     "@types/express": "^4.17.12",
@@ -118,10 +119,24 @@
     "protractor": "^7.0.0",
     
     // For code grammar checking. Optional
-    "eslint": "8.1.0",
+    "eslint": "^8.12.0",
+    "@angular-eslint/eslint-plugin": "13.2.1",
+    "@angular-eslint/eslint-plugin-template": "13.2.1",
+    "@angular-eslint/schematics": "13.2.1",
+    "@angular-eslint/template-parser": "13.2.1",
+    "@typescript-eslint/eslint-plugin": "5.17.0",
+    "@typescript-eslint/parser": "5.17.0",
     
-    // For code checking. Optional
-    "codelyzer": "^6.0.2",
+    // For code format
+    "prettier": "^2.6.2",
+    "prettier-eslint": "^14.0.2",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "stylelint": "^14.8.5",
+    "stylelint-config-prettier": "^9.0.3",
+    "stylelint-config-prettier-scss": "^0.0.1",
+    "stylelint-config-standard": "^25.0.0",
+    "stylelint-config-standard-scss": "^4.0.0",
   }
 }
 ```

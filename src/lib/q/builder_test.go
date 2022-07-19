@@ -75,6 +75,7 @@ func TestParseRange(t *testing.T) {
 	// valid value
 	value = "[~2]"
 	v, err = parseRange(value)
+	require.NoError(t, err)
 	assert.Equal(t, int64(2), v.Max.(int64))
 	assert.Nil(t, v.Min)
 

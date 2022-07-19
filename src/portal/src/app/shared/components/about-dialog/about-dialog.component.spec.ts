@@ -1,52 +1,47 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from "@ngx-translate/core";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppConfigService } from '../../../services/app-config.service';
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SkinableConfig } from '../../../services/skinable-config.service';
 import { AboutDialogComponent } from './about-dialog.component';
-import { ClarityModule } from "@clr/angular";
+import { SharedTestingModule } from '../../shared.module';
 
 describe('AboutDialogComponent', () => {
     let component: AboutDialogComponent;
     let fixture: ComponentFixture<AboutDialogComponent>;
     let fakeAppConfigService = {
-        getConfig: function() {
+        getConfig: function () {
             return {
-                harbor_version: '1.10'
+                harbor_version: '1.10',
             };
-        }
+        },
     };
     let fakeSkinableConfig = {
         getSkinConfig: function () {
             return {
-                "headerBgColor": {
-                    "darkMode": "",
-                    "lightMode": ""
+                headerBgColor: {
+                    darkMode: '',
+                    lightMode: '',
                 },
-                "loginBgImg": "",
-                "loginTitle": "",
-                "product": {
-                    "name": "",
-                    "logo": "",
-                    "introduction": ""
-                }
+                loginBgImg: '',
+                loginTitle: '',
+                product: {
+                    name: '',
+                    logo: '',
+                    introduction: '',
+                },
             };
-        }
+        },
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [AboutDialogComponent],
-            imports: [
-                TranslateModule.forRoot(),
-                ClarityModule
-            ],
+            imports: [SharedTestingModule],
             providers: [
-                TranslateService,
                 { provide: AppConfigService, useValue: fakeAppConfigService },
-                { provide: SkinableConfig, useValue: fakeSkinableConfig }
-            ]
+                { provide: SkinableConfig, useValue: fakeSkinableConfig },
+            ],
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(AboutDialogComponent);

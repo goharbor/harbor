@@ -14,23 +14,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../../shared/shared.module';
-import { EndpointComponent } from "./endpoint.component";
-import { CreateEditEndpointComponent } from "./create-edit-endpoint/create-edit-endpoint.component";
+import { EndpointComponent } from './endpoint.component';
+import { CreateEditEndpointComponent } from './create-edit-endpoint/create-edit-endpoint.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: EndpointComponent
-  },
+    {
+        path: '',
+        component: EndpointComponent,
+    },
 ];
 @NgModule({
-  imports: [
-    SharedModule,
-    RouterModule.forChild(routes),
-  ],
-  declarations: [
-    EndpointComponent,
-    CreateEditEndpointComponent
-  ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
+    declarations: [EndpointComponent, CreateEditEndpointComponent],
 })
-export class EndpointModule { }
+export class EndpointModule {}

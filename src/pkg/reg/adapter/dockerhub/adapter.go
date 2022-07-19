@@ -379,6 +379,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

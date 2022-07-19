@@ -182,15 +182,19 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 		return errors.Wrapf(err, "list projects with query %s", q)
 	}
 
-	existProjects := make(map[string]*Project)
+	proxyCacheProjects := make(map[string]bool)
+	existProjects := make(map[string]bool)
 	for _, p := range queryProjects {
-		existProjects[p.Name] = p
+		existProjects[p.Name] = true
+		// if project with registry_id, that means this is a proxy cache project.
+		if p.RegistryID > 0 {
+			proxyCacheProjects[p.Name] = true
+		}
 	}
 
 	var notExistProjects []*Project
 	for _, p := range projects {
-		_, exist := existProjects[p.Name]
-		if !exist {
+		if !existProjects[p.Name] {
 			notExistProjects = append(notExistProjects, p)
 		}
 	}
@@ -205,6 +209,17 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 		log.Debugf("project %s created", project.Name)
 	}
+
+	// do filter for proxy cache projects.
+	for _, res := range resources {
+		paths := strings.Split(res.Metadata.Repository.Name, "/")
+		projectName := paths[0]
+		if proxyCacheProjects[projectName] {
+			// set resource skip flag to true if it's a proxy cache project.
+			res.Skip = true
+		}
+	}
+
 	return nil
 }
 
@@ -295,9 +310,10 @@ func parsePublic(metadata map[string]interface{}) bool {
 
 // Project model
 type Project struct {
-	ID       int64                  `json:"project_id"`
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
+	ID         int64                  `json:"project_id"`
+	Name       string                 `json:"name"`
+	Metadata   map[string]interface{} `json:"metadata"`
+	RegistryID int64                  `json:"registry_id"`
 }
 
 func isLocalHarbor(url string) bool {

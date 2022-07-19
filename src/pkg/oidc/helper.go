@@ -55,7 +55,7 @@ type providerHelper struct {
 
 func (p *providerHelper) get() (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
-		if time.Now().Sub(p.creationTime) > 3*time.Second {
+		if time.Since(p.creationTime) > 3*time.Second {
 			if err := p.create(); err != nil {
 				return nil, err
 			}
@@ -355,7 +355,10 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		}
 
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
-			res.autoOnboardUsername = username
+			// res.Username and autoOnboardUsername both need to be set to create a fallback when mergeUserInfo has not been successfully called.
+			// This can for example occur when remote fails and only a local token is available for onboarding.
+			// Otherwise the onboard flow only has a fallback when "name" is set in the token, which is not always the case as a custom Username Claim could be configured.
+			res.autoOnboardUsername, res.Username = username, username
 		} else {
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
@@ -435,7 +438,6 @@ type Conn struct {
 // TestEndpoint tests whether the endpoint is a valid OIDC endpoint.
 // The nil return value indicates the success of the test
 func TestEndpoint(conn Conn) error {
-
 	// gooidc will try to call the discovery api when creating the provider and that's all we need to check
 	ctx := clientCtx(context.Background(), conn.VerifyCert)
 	_, err := gooidc.NewProvider(ctx, conn.URL)

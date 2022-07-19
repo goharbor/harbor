@@ -74,12 +74,11 @@ import '@angular/localize/init';
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
-import 'zone.js';  // Included with Angular CLI.
-
+import 'zone.js'; // Included with Angular CLI.
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
-
-
-
+(window as any).global = window; // this is for swagger UI
+// @ts-ignore
+window.Buffer = window.Buffer || require('buffer').Buffer; // this is for swagger UI

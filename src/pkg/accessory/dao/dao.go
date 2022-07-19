@@ -33,8 +33,8 @@ type DAO interface {
 	Create(ctx context.Context, accessory *Accessory) (id int64, err error)
 	// Delete the accessory specified by ID
 	Delete(ctx context.Context, id int64) (err error)
-	// DeleteOfArtifact deletes all accessory attached to the artifact
-	DeleteOfArtifact(ctx context.Context, subArtifactID int64) (err error)
+	// DeleteAccessories deletes accessories by query
+	DeleteAccessories(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // New returns an instance of the default DAO
@@ -45,6 +45,12 @@ func New() DAO {
 type dao struct{}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
+	if query != nil {
+		// ignore the page number and size
+		query = &q.Query{
+			Keywords: query.Keywords,
+		}
+	}
 	qs, err := orm.QuerySetterForCount(ctx, &Accessory{}, query)
 	if err != nil {
 		return 0, err
@@ -116,15 +122,10 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (d *dao) DeleteOfArtifact(ctx context.Context, subArtifactID int64) error {
-	qs, err := orm.QuerySetter(ctx, &Accessory{}, &q.Query{
-		Keywords: map[string]interface{}{
-			"SubjectArtifactID": subArtifactID,
-		},
-	})
+func (d *dao) DeleteAccessories(ctx context.Context, query *q.Query) (int64, error) {
+	qs, err := orm.QuerySetter(ctx, &Accessory{}, query)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = qs.Delete()
-	return err
+	return qs.Delete()
 }

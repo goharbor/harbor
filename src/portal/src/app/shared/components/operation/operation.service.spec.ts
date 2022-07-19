@@ -18,6 +18,6 @@ describe('OperationService', () => {
             operateInfo = res;
         });
         operationService.publishInfo(new OperateInfo());
-        expect(operateInfo.timeDiff).toEqual("OPERATION.SECOND_AGO");
+        expect(operateInfo.timeDiff).toEqual('OPERATION.SECOND_AGO');
     });
 });

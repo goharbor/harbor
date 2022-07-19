@@ -28,8 +28,9 @@ ${project_member_xpath}  //project-detail//a[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
 ${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
+${project_action_xpath}  //projects//span[contains(.,'ACTION')]
 
-${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label[contains(.,'Tag Immutability')]
+${project_tag_immutability_switch}  //*[@id='btn-immutable']
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
@@ -76,5 +77,5 @@ ${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_
 ${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']
 ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_limit_unit']
 
-${project_proxy_cache_switcher_id}  xpath=//*[@id='proxy-cache']
+${project_proxy_cache_switcher_xpath}  xpath=//form//clr-toggle-wrapper
 ${project_registry_select_id}  xpath=//*[@id='registry']

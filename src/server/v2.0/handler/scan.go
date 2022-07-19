@@ -17,7 +17,6 @@ package handler
 import (
 	"context"
 	"fmt"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -93,14 +92,13 @@ func (s *scanAPI) GetReportLog(ctx context.Context, params operation.GetReportLo
 	if err := s.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceScan); err != nil {
 		return s.SendError(ctx, err)
 	}
-
 	repository := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
-	_, err := s.artCtl.GetByReference(ctx, repository, params.Reference, nil)
+	a, err := s.artCtl.GetByReference(ctx, repository, params.Reference, nil)
 	if err != nil {
 		return s.SendError(ctx, err)
 	}
 
-	bytes, err := s.scanCtl.GetScanLog(ctx, params.ReportID)
+	bytes, err := s.scanCtl.GetScanLog(ctx, a, params.ReportID)
 	if err != nil {
 		return s.SendError(ctx, err)
 	}

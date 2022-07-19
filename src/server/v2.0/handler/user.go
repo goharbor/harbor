@@ -94,7 +94,6 @@ func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserPa
 	}
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), uid)
 	return operation.NewCreateUserCreated().WithLocation(location)
-
 }
 
 func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersParams) middleware.Responder {
@@ -197,7 +196,6 @@ func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params operation.GetC
 	}
 	resp, err := u.getUserByID(ctx, lsc.User().UserID)
 	if err != nil {
-
 		return u.SendError(ctx, err)
 	}
 	return operation.NewGetCurrentUserInfoOK().WithPayload(resp)
@@ -421,7 +419,6 @@ func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
 func modifiable(ctx context.Context, authMode string, id int) bool {
 	sctx, _ := security.FromContext(ctx)
 	if authMode == common.DBAuth {
-
 		// In db auth, admin can update anyone's info, and regular user can update his own
 		return sctx.Can(ctx, rbac.ActionUpdate, userResource) || matchUserID(sctx, id)
 	}

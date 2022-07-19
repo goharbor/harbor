@@ -135,5 +135,4 @@ func (c *Configuration) loadEnvs() {
 	if len(registryConf) != 0 {
 		c.RegistryConfig = registryConf
 	}
-
 }

@@ -103,6 +103,10 @@ func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) er
 	return nil
 }
 
+func (f *fakeRegistry) ListTags(repository string) (tags []string, err error) {
+	return nil, nil
+}
+
 func TestFactory(t *testing.T) {
 	tr, err := factory(nil, nil)
 	require.Nil(t, err)

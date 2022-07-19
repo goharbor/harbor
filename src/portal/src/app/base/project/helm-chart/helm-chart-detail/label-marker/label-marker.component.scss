@@ -26,25 +26,27 @@
         padding-right: 12px;
 
         .mark-label-div {
-            @include icon-span();
-            @include flex-item();
+            @include icon-span;
+            @include flex-item;
+
             float: left;
             margin-right: 9px;
         }
 
         .spinner {
-            @include flex-item();
+            @include flex-item;
         }
 
         .label-div {
-            @include flex-item();
+            @include flex-item;
 
             margin-top: 4px;
         }
 
         .unmark-label-div {
-            @include icon-span();
-            @include flex-item();
+            @include icon-span;
+            @include flex-item;
+
             float: right;
         }
     }

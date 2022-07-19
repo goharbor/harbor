@@ -16,9 +16,10 @@ package flow
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"path"
 	"strings"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -138,6 +139,7 @@ func assembleDestinationResources(resources []*model.Resource,
 			Deleted:      resource.Deleted,
 			IsDeleteTag:  resource.IsDeleteTag,
 			Override:     policy.Override,
+			Skip:         resource.Skip,
 		}
 		res.Metadata = &model.ResourceMetadata{
 			Repository: &model.Repository{

@@ -55,3 +55,14 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/joblog/dao --name DAO --output ./joblog/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/accessory/model --name Accessory --output ./accessory/model --outpkg model
 //go:generate mockery --case snake --dir ../../pkg/accessory/dao --name DAO --output ./accessory/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/accessory --name Manager --output ./accessory --outpkg accessory
+//go:generate mockery --case snake --dir ../../pkg/audit/dao --name DAO --output ./audit/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/audit --name Manager --output ./audit --outpkg audit
+//go:generate mockery --case snake --dir ../../pkg/systemartifact --name Manager --output ./systemartifact --outpkg systemartifact
+//go:generate mockery --case snake --dir ../../pkg/systemartifact/ --name Selector --output ./systemartifact/cleanup --outpkg cleanup
+//go:generate mockery --case snake --dir ../../pkg/systemartifact/dao --name DAO --output ./systemartifact/dao --outpkg dao
+//go:generate mockery --case snake --dir ../../pkg/cached/manifest/redis --name CachedManager --output ./cached/manifest/redis --outpkg redis
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name FilterProcessor --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name Manager --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name ArtifactDigestCalculator --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/registry --name Client --output ./registry --outpkg registry --filename fake_registry_client.go

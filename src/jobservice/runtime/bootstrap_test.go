@@ -20,11 +20,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	libcfg "github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -41,6 +44,8 @@ type BootStrapTestSuite struct {
 // SetupSuite prepares test suite
 func (suite *BootStrapTestSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
+
+	libcfg.DefaultCfgManager = common.InMemoryCfgManager
 
 	// Load configurations
 	err := config.DefaultConfig.Load("../config_test.yml", true)

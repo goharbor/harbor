@@ -38,16 +38,13 @@ func (p *Handler) Name() string {
 
 // Handle ...
 func (p *Handler) Handle(ctx context.Context, value interface{}) error {
-	switch value.(type) {
+	switch v := value.(type) {
 	case *event.PushArtifactEvent:
-		pushArtEvent, _ := value.(*event.PushArtifactEvent)
-		return p.handlePushArtifact(ctx, pushArtEvent)
+		return p.handlePushArtifact(ctx, v)
 	case *event.ScanImageEvent:
-		scanImageEvent, _ := value.(*event.ScanImageEvent)
-		return p.handleImageScanned(ctx, scanImageEvent)
+		return p.handleImageScanned(ctx, v)
 	case *event.ArtifactLabeledEvent:
-		artifactLabeledEvent, _ := value.(*event.ArtifactLabeledEvent)
-		return p.handleArtifactLabeled(ctx, artifactLabeledEvent)
+		return p.handleArtifactLabeled(ctx, v)
 	default:
 		return errors.New("unsupported type")
 	}

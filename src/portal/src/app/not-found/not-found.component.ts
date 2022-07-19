@@ -19,8 +19,8 @@ const defaultLeftTime = 5;
 
 @Component({
     selector: 'page-not-found',
-    templateUrl: "not-found.component.html",
-    styleUrls: ['not-found.component.scss']
+    templateUrl: 'not-found.component.html',
+    styleUrls: ['not-found.component.scss'],
 })
 export class PageNotFoundComponent implements OnInit, OnDestroy {
     leftSeconds: number = defaultLeftTime;
@@ -42,7 +42,7 @@ export class PageNotFoundComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.timeInterval) {
-             clearInterval(this.timeInterval);
+            clearInterval(this.timeInterval);
         }
     }
 }

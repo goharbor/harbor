@@ -20,15 +20,15 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/q"
+	libredis "github.com/goharbor/harbor/src/lib/redis"
 
 	"github.com/docker/distribution"
+	"github.com/go-redis/redis/v8"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
-	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -77,10 +77,10 @@ type Controller interface {
 	Sync(ctx context.Context, references []distribution.Descriptor) error
 
 	// SetAcceptedBlobSize update the accepted size of stream upload blob.
-	SetAcceptedBlobSize(sessionID string, size int64) error
+	SetAcceptedBlobSize(ctx context.Context, sessionID string, size int64) error
 
 	// GetAcceptedBlobSize returns the accepted size of stream upload blob.
-	GetAcceptedBlobSize(sessionID string) (int64, error)
+	GetAcceptedBlobSize(ctx context.Context, sessionID string) (int64, error)
 
 	// Touch updates the blob status to StatusNone and increase version every time.
 	Touch(ctx context.Context, blob *blob.Blob) error
@@ -295,7 +295,7 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 	}
 
 	if len(updating) > 0 {
-		orm.WithTransaction(func(ctx context.Context) error {
+		err := orm.WithTransaction(func(ctx context.Context) error {
 			for _, blob := range updating {
 				if err := c.Update(ctx, blob); err != nil {
 					log.G(ctx).Warningf("Failed to update blob %s, error: %v", blob.Digest, err)
@@ -305,6 +305,9 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 
 			return nil
 		})(orm.SetTransactionOpNameToContext(ctx, "tx-sync-blob"))
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(missing) > 0 {
@@ -318,34 +321,22 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 	return nil
 }
 
-func (c *controller) SetAcceptedBlobSize(sessionID string, size int64) error {
-	conn := redislib.DefaultPool().Get()
-	defer conn.Close()
-
+func (c *controller) SetAcceptedBlobSize(ctx context.Context, sessionID string, size int64) error {
 	key := blobSizeKey(sessionID)
-	reply, err := redis.String(conn.Do("SET", key, size, "EX", int64(c.blobSizeExpiration/time.Second)))
+	err := libredis.Instance().Set(ctx, key, size, c.blobSizeExpiration).Err()
 	if err != nil {
 		log.Errorf("failed to set accepted blob size for session %s in redis, error: %v", sessionID, err)
-		return err
-	}
-
-	if reply != "OK" {
-		err := fmt.Errorf("failed to set accepted blob size for session %s in redis, error: expected reply is 'OK' but actual it is '%s'", sessionID, reply)
-		log.Errorf("%s", err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (c *controller) GetAcceptedBlobSize(sessionID string) (int64, error) {
-	conn := redislib.DefaultPool().Get()
-	defer conn.Close()
-
+func (c *controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) (int64, error) {
 	key := blobSizeKey(sessionID)
-	size, err := redis.Int64(conn.Do("GET", key))
+	size, err := libredis.Instance().Get(ctx, key).Int64()
 	if err != nil {
-		if err == redis.ErrNil {
+		if err == redis.Nil {
 			return 0, nil
 		}
 

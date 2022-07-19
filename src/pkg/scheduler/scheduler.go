@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
-	cronlib "github.com/robfig/cron"
 )
 
 var (
@@ -90,7 +90,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
-	if _, err := cronlib.Parse(cron); err != nil {
+	if _, err := utils.CronParser().Parse(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("invalid cron %s: %v", cron, err)
 	}
@@ -114,7 +114,13 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 	sched.CallbackFuncParam = string(paramsData)
-
+	params := map[string]interface{}{}
+	if len(paramsData) > 0 {
+		err = json.Unmarshal(paramsData, &params)
+		if err != nil {
+			log.Debugf("current paramsData is not a json string")
+		}
+	}
 	extrasData, err := json.Marshal(extraAttrs)
 	if err != nil {
 		return 0, err
@@ -129,7 +135,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 
-	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual)
+	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual, params)
 	if err != nil {
 		return 0, err
 	}

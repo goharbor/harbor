@@ -1,7 +1,7 @@
 .result-row {
   position: relative;
 }
-
+/* stylelint-disable */
 .rightPos{
   position: absolute;
   z-index: 100;
@@ -17,6 +17,7 @@
 .center {
   align-items: center;
 }
+
 .label-critical {
   background:red;
   color:#621501;
@@ -27,27 +28,34 @@
   background:#e64524!important;
   color:#621501!important;
 }
+
 .label-medium {
   background-color: orange;
   color:#621501;
 }
+
 .label-low {
   background: #007CBB;
   color:#cab6b1;
 }
+
 .label-none {
   background-color: grey;
   color:#bad7ba;
 }
+
 .no-border {
   border: none;
 }
+
 .ml-05 {
   margin-left: 0.5rem;
 }
+
 .report {
   text-align: left;
 }
+
 .mt-5px {
   margin-top: 5px;
 }

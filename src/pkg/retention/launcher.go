@@ -123,7 +123,7 @@ func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID
 
 	for _, rule := range ply.Rules {
 		if rule.Disabled {
-			log.Infof("Policy %d rule %d %s is disabled", ply.ID, rule.ID, rule.Template)
+			log.Infof("Policy %d rule %d %s is deactivated", ply.ID, rule.ID, rule.Template)
 			continue
 		}
 		projectCandidates := allProjects
@@ -154,9 +154,7 @@ func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID
 			if err != nil {
 				return 0, launcherError(err)
 			}
-			for _, repository := range repositories {
-				repositoryCandidates = append(repositoryCandidates, repository)
-			}
+			repositoryCandidates = append(repositoryCandidates, repositories...)
 		}
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {

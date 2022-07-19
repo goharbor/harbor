@@ -87,7 +87,7 @@ func Open(url string) (Driver, error) {
 	d, ok := drivers[u.Scheme]
 	driversMu.RUnlock()
 	if !ok {
-		return nil, fmt.Errorf("source driver: unknown driver %v (forgotten import?)", u.Scheme)
+		return nil, fmt.Errorf("source driver: unknown driver '%s' (forgotten import?)", u.Scheme)
 	}
 
 	return d.Open(url)

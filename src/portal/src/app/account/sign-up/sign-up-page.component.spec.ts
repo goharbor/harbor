@@ -1,4 +1,4 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { UserService } from '../../base/left-side-nav/user/user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -15,13 +15,13 @@ describe('SignUpPageComponent', () => {
     let fakeUserService = null;
     let fakeSessionService = null;
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             declarations: [SignUpPageComponent, NewUserFormComponent],
             imports: [
                 FormsModule,
                 RouterTestingModule,
-                TranslateModule.forRoot()
+                TranslateModule.forRoot(),
             ],
             providers: [
                 MessageService,
@@ -29,15 +29,15 @@ describe('SignUpPageComponent', () => {
                 { provide: UserService, useValue: fakeUserService },
                 { provide: SessionService, useValue: fakeSessionService },
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(SignUpPageComponent);
         component = fixture.componentInstance;
         component.newUserForm =
-        TestBed.createComponent(NewUserFormComponent).componentInstance;
+            TestBed.createComponent(NewUserFormComponent).componentInstance;
         fixture.detectChanges();
     });
 

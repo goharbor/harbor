@@ -60,6 +60,10 @@ func (suite *CosignTestSuite) TestIsHard() {
 	suite.True(suite.accessory.IsHard())
 }
 
+func (suite *CosignTestSuite) TestDisplay() {
+	suite.False(suite.accessory.Display())
+}
+
 func TestCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CosignTestSuite))
 }

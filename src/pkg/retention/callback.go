@@ -12,11 +12,9 @@ import (
 )
 
 func init() {
-
 	if err := task.RegisterCheckInProcessor(job.Retention, retentionTaskCheckInProcessor); err != nil {
 		log.Fatalf("failed to register the checkin processor for the retention job, error %v", err)
 	}
-
 }
 
 func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, sc *job.StatusChange) (err error) {

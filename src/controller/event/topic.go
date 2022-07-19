@@ -16,6 +16,7 @@ package event
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common/rbac"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"time"
 
@@ -65,7 +66,7 @@ func (c *CreateProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    c.ProjectID,
 		OpTime:       c.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     c.Operator,
 		ResourceType: "project",
 		Resource:     c.Project}
@@ -91,7 +92,7 @@ func (d *DeleteProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "project",
 		Resource:     d.Project}
@@ -117,7 +118,7 @@ func (d *DeleteRepositoryEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "repository",
 		Resource:     d.Repository,
@@ -156,7 +157,7 @@ func (p *PushArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    p.Artifact.ProjectID,
 		OpTime:       p.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     p.Operator,
 		ResourceType: "artifact"}
 
@@ -185,7 +186,7 @@ func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    p.Artifact.ProjectID,
 		OpTime:       p.OccurAt,
-		Operation:    "pull",
+		Operation:    rbac.ActionPull.String(),
 		Username:     p.Operator,
 		ResourceType: "artifact"}
 
@@ -221,7 +222,7 @@ func (d *DeleteArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.Artifact.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "artifact",
 		Resource:     fmt.Sprintf("%s:%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
@@ -247,7 +248,7 @@ func (c *CreateTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    c.AttachedArtifact.ProjectID,
 		OpTime:       c.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     c.Operator,
 		ResourceType: "tag",
 		Resource:     fmt.Sprintf("%s:%s", c.Repository, c.Tag)}
@@ -275,7 +276,7 @@ func (d *DeleteTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.AttachedArtifact.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "tag",
 		Resource:     fmt.Sprintf("%s:%s", d.Repository, d.Tag)}

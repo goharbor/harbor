@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -52,16 +53,16 @@ type Controller interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update the repository. Specify the properties or all properties will be updated
 	Update(ctx context.Context, repository *model.RepoRecord, properties ...string) (err error)
-	// AddPullCount increase one pull count for the specified repository
-	AddPullCount(ctx context.Context, id int64) error
+	// AddPullCount increase pull count for the specified repository
+	AddPullCount(ctx context.Context, id int64, count uint64) error
 }
 
 // NewController creates an instance of the default repository controller
 func NewController() Controller {
 	return &controller{
-		proMgr:  project.Mgr,
-		repoMgr: repository.Mgr,
-		artMgr:  art.Mgr,
+		proMgr:  pkg.ProjectMgr,
+		repoMgr: pkg.RepositoryMgr,
+		artMgr:  pkg.ArtifactMgr,
 		artCtl:  artifact.Ctl,
 	}
 }
@@ -182,6 +183,6 @@ func (c *controller) Update(ctx context.Context, repository *model.RepoRecord, p
 	return c.repoMgr.Update(ctx, repository, properties...)
 }
 
-func (c *controller) AddPullCount(ctx context.Context, id int64) error {
-	return c.repoMgr.AddPullCount(ctx, id)
+func (c *controller) AddPullCount(ctx context.Context, id int64, count uint64) error {
+	return c.repoMgr.AddPullCount(ctx, id, count)
 }

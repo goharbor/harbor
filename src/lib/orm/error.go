@@ -15,9 +15,9 @@
 package orm
 
 import (
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/lib/pq"
+	"github.com/jackc/pgconn"
 )
 
 var (
@@ -52,7 +52,7 @@ func AsNotFoundError(err error, messageFormat string, args ...interface{}) *erro
 	if errors.Is(err, orm.ErrNoRows) {
 		e := errors.NotFoundError(nil)
 		if len(messageFormat) > 0 {
-			e.WithMessage(messageFormat, args...)
+			_ = e.WithMessage(messageFormat, args...)
 		}
 		return e
 	}
@@ -85,8 +85,8 @@ func AsForeignKeyError(err error, messageFormat string, args ...interface{}) *er
 
 // IsDuplicateKeyError check the duplicate key error
 func IsDuplicateKeyError(err error) bool {
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		return true
 	}
 
@@ -94,8 +94,8 @@ func IsDuplicateKeyError(err error) bool {
 }
 
 func isViolatingForeignKeyConstraintError(err error) bool {
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) && pqErr.Code == "23503" {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23503" {
 		return true
 	}
 

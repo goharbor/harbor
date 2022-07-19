@@ -48,7 +48,6 @@ func (qa *quotaAPI) GetQuota(ctx context.Context, params operation.GetQuotaParam
 	quota, err := qa.quotaCtl.Get(ctx, params.ID, quota.WithReferenceObject())
 	if err != nil {
 		return qa.SendError(ctx, err)
-
 	}
 	return operation.NewGetQuotaOK().WithPayload(model.NewQuota(quota).ToSwagger(ctx))
 }

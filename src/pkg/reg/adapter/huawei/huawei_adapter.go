@@ -283,7 +283,6 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 			Transport: transport,
 		},
 	}, nil
-
 }
 
 type hwNamespaceList struct {

@@ -50,14 +50,17 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 		}
 
 		var tokenRequest = cr.CreateGetAuthorizationTokenRequest()
-		var tokenResponse = cr.CreateGetAuthorizationTokenResponse()
+		var tokenResponse *cr.GetAuthorizationTokenResponse
 		tokenRequest.SetDomain(fmt.Sprintf(endpointTpl, a.region))
 		tokenResponse, err = client.GetAuthorizationToken(tokenRequest)
 		if err != nil {
 			return
 		}
 		var v authorizationToken
-		json.Unmarshal(tokenResponse.GetHttpContentBytes(), &v)
+		err = json.Unmarshal(tokenResponse.GetHttpContentBytes(), &v)
+		if err != nil {
+			return
+		}
 		a.cacheTokenExpiredAt = v.Data.ExpireDate.ToTime()
 		a.cacheToken.user = v.Data.TempUserName
 		a.cacheToken.password = v.Data.AuthorizationToken
@@ -70,7 +73,7 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 }
 
 func (a *aliyunAuthCredential) isCacheTokenValid() bool {
-	if &a.cacheTokenExpiredAt == nil {
+	if a.cacheTokenExpiredAt.IsZero() {
 		return false
 	}
 	if a.cacheToken == nil {

@@ -284,7 +284,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				Issuer:              "",
 				Subject:             "",
 				autoOnboardUsername: "airadier@gmail.com",
-				Username:            "Alvaro",
+				Username:            "airadier@gmail.com", // Set Username based on configured UserClaim
 				Email:               "airadier@gmail.com",
 				Groups:              []string{},
 				hasGroupClaim:       false,

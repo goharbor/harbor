@@ -1,0 +1,74 @@
+<clr-datagrid
+    #datagrid
+    class="ml-8"
+    (clrDgRefresh)="clrLoad()"
+    [clrDgLoading]="loading">
+    <clr-dg-column>{{ 'ACCESSORY.ACCESSORY' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'PROJECT.TYPE' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'REPOSITORY.SIZE' | translate }}</clr-dg-column>
+    <clr-dg-column>{{ 'ROBOT_ACCOUNT.CREATETION' | translate }}</clr-dg-column>
+    <clr-dg-row
+        *ngFor="let a of displayedAccessories; let i = index"
+        [clrDgItem]="a">
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="delete(a)">
+                {{ 'REPOSITORY.DELETE' | translate }}
+            </button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell class="relative">
+            <hr
+                class="y-dash-line"
+                *ngIf="i === displayedAccessories?.length - 1 && viewInit"
+                [style.height.px]="dashLineHeight" />
+            <hr class="x-dash-line" />
+            <div class="cell">
+                <div
+                    title="{{ a?.digest }}"
+                    class="artifact-icon-div clr-display-inline-block">
+                    <img
+                        *ngIf="getIcon(a.icon)"
+                        class="artifact-icon"
+                        [title]="a.type"
+                        [src]="getIcon(a.icon)"
+                        (error)="showDefaultIcon($event)" />
+                </div>
+                <a
+                    href="javascript:void(0)"
+                    (click)="goIntoArtifactSummaryPage(a)"
+                    class="margin-left-5"
+                    >{{ a?.digest?.slice(0, 15) }}</a
+                >
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell>
+            <div class="cell">
+                {{ a.type }}
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell>
+            <div class="cell">
+                {{ size(a.size) }}
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell>
+            <div class="cell">
+                {{ a.creation_time | harborDatetime: 'short' }}
+            </div>
+        </clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer *ngIf="total > pageSize">
+        <clr-dg-pagination
+            #pagination
+            [clrDgPageSize]="pageSize"
+            [(clrDgPage)]="currentPage"
+            [clrDgTotalItems]="total">
+            <span *ngIf="total"
+                >{{ pagination.firstItem + 1 }}
+                -
+                {{ pagination.lastItem + 1 }}
+                {{ 'ROBOT_ACCOUNT.OF' | translate }}
+            </span>
+            {{ total }} {{ 'ROBOT_ACCOUNT.ITEMS' | translate }}
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

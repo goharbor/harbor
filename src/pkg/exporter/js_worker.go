@@ -13,7 +13,6 @@ const (
 	dialConnectionTimeout = 30 * time.Second
 	dialReadTimeout       = 10 * time.Second
 	dialWriteTimeout      = 10 * time.Second
-	pageItemNum           = 20.0
 )
 
 var (
@@ -45,7 +44,6 @@ func InitBackendWorker(redisPoolConfig *RedisPoolConfig) {
 	jsNamespace = fmt.Sprintf("{%s}", redisPoolConfig.Namespace)
 	// Start the backend worker
 	jsClient = work.NewClient(jsNamespace, pool)
-
 }
 
 // GetBackendWorker ...

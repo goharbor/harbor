@@ -1,30 +1,28 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ConfigurationService } from '../../../../services/config.service';
 import { ConfigurationAuthComponent } from './config-auth.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
-import { SystemInfoService } from "../../../../shared/services";
-import { clone } from '../../../../shared/units/utils';
-import { CONFIG_AUTH_MODE } from '../../../../shared/entities/shared.const';
-import { ConfigService } from "../config.service";
+import { SystemInfoService } from '../../../../shared/services';
+import { ConfigService } from '../config.service';
 import { Configuration } from '../config';
-import { SharedTestingModule } from "../../../../shared/shared.module";
+import { SharedTestingModule } from '../../../../shared/shared.module';
 
 describe('ConfigurationAuthComponent', () => {
     let component: ConfigurationAuthComponent;
     let fixture: ComponentFixture<ConfigurationAuthComponent>;
     let fakeMessageHandlerService = {
-        showSuccess: () => null
+        showSuccess: () => null,
     };
     let fakeConfigurationService = {
         saveConfiguration: () => of(null),
         testLDAPServer: () => of(null),
-        testOIDCServer: () => of(null)
+        testOIDCServer: () => of(null),
     };
     let fakeAppConfigService = {
-        load: () => of(null)
+        load: () => of(null),
     };
     const fakeConfigService = {
         config: new Configuration(),
@@ -40,35 +38,37 @@ describe('ConfigurationAuthComponent', () => {
         getLoadingConfigStatus() {
             return false;
         },
-        updateConfig() {
-        },
-        resetConfig() {
-        }
+        updateConfig() {},
+        resetConfig() {},
     };
     let fakeSystemInfoService = {
         getSystemInfo: function () {
             return of({
-                external_url: "expectedUrl"
+                external_url: 'expectedUrl',
             });
-        }
+        },
     };
 
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [SharedTestingModule],
             declarations: [ConfigurationAuthComponent],
             providers: [
-                { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-                { provide: ConfigurationService, useValue: fakeConfigurationService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakeMessageHandlerService,
+                },
+                {
+                    provide: ConfigurationService,
+                    useValue: fakeConfigurationService,
+                },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
                 { provide: ConfigService, useValue: fakeConfigService },
-                { provide: SystemInfoService, useValue: fakeSystemInfoService }
+                { provide: SystemInfoService, useValue: fakeSystemInfoService },
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
-    }));
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ConfigurationAuthComponent);

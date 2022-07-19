@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	beegoorm "github.com/astaxie/beego/orm"
+	beegoorm "github.com/beego/beego/orm"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"

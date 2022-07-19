@@ -1,12 +1,14 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NewUserFormComponent } from './new-user-form.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {
+    BrowserAnimationsModule,
+    NoopAnimationsModule,
+} from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SessionService } from '../../services/session.service';
 
@@ -14,13 +16,11 @@ describe('NewUserFormComponent', () => {
     let component: NewUserFormComponent;
     let fixture: ComponentFixture<NewUserFormComponent>;
     const mockSessionService = {
-        getCurrentUser: () => { }
+        getCurrentUser: () => {},
     };
-    beforeEach(waitForAsync(() => {
-        TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -28,16 +28,15 @@ describe('NewUserFormComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule
+                HttpClientTestingModule,
             ],
             declarations: [NewUserFormComponent],
             providers: [
                 { provide: SessionService, useValue: mockSessionService },
-                TranslateService
-            ]
-        })
-            .compileComponents();
-    }));
+                TranslateService,
+            ],
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(NewUserFormComponent);

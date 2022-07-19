@@ -116,7 +116,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 		suite.onGetReport(v1.MimeTypeNativeReport)
 
 		var body map[string]interface{}
-		res, err := suite.GetJSON(url, &body)
+		res, err := suite.GetJSON(url, &body, map[string]string{"X-Accept-Vulnerabilities": v1.MimeTypeNativeReport})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.Empty(body)
@@ -127,7 +127,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 		suite.onGetReport(v1.MimeTypeNativeReport, suite.report1)
 
 		var body map[string]interface{}
-		res, err := suite.GetJSON(url, &body)
+		res, err := suite.GetJSON(url, &body, map[string]string{"X-Accept-Vulnerabilities": v1.MimeTypeNativeReport})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.NotEmpty(body)

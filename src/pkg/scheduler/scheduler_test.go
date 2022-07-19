@@ -66,7 +66,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 
 	// failed to submit to jobservice
 	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{
 		ID:          1,
@@ -84,7 +84,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 	s.SetupTest()
 
 	// pass
-	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{

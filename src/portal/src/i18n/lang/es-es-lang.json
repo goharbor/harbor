@@ -162,6 +162,9 @@
         "PLACEHOLDER": "Buscar en {{param}}...",
         "PLACEHOLDER_VIC": "Buscar en el registro..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "Default"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "Panel",
         "PROJECTS": "Proyectos",
@@ -253,7 +256,7 @@
         "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "NO_PROJECT": "We couldn't find any projects"
@@ -656,7 +659,9 @@
         "BANDWIDTH": "Bandwidth",
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
         "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
-        "UNLIMITED": "Unlimited"
+        "UNLIMITED": "Unlimited",
+        "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
+        "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -924,16 +929,16 @@
             "SCOPE": "LDAP Ámbito",
             "VERIFY_CERT": "LDAP Verify Cert",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
-            "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
+            "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
-            "LDAP_GROUP_FILTER_INFO": "The filter to look up an LDAP/AD group, use objectclass=groupOfNames by default.",
+            "LDAP_GROUP_FILTER_INFO": "The filter to search for LDAP/AD groups. For OpenLDAP: objectclass=groupOfNames. For Active Directory: objectclass=group. This field cannot be empty if you need the LDAP group-related feature.",
             "LDAP_GROUP_GID": "LDAP Group GID",
-            "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default.",
+            "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default. This field cannot be empty if you need to enable the LDAP group related feature.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
-            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
-            "GROUP_SCOPE": "LDAP Group Scope",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
+            "GROUP_SCOPE": "LDAP Group Search Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
         },
         "UAA": {
@@ -1089,7 +1094,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "Tag a chart for this project:",
+        "TAG_COMMAND_CHART": "Package a chart for this project:",
         "PUSH_COMMAND_CHART": "Push a chart to this project:",
         "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
         "TOOLTIP": "Command references for pushing an artifact to this project.",
@@ -1703,6 +1708,63 @@
         "STOP": "Stop",
         "LIST": "List",
         "REPOSITORY": "Repository",
-        "HELM_LABEL": "Helm Chart label"
+        "HELM_LABEL": "Helm Chart label",
+        "EXPIRES_IN": "Expires in",
+        "EXPIRED": "Expired"
+    },
+    "ACCESSORY": {
+        "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
+        "DELETION_SUMMARY_ACCESSORY": "Do you want to delete all the accessories of the artifact {{param}}?",
+        "DELETION_SUMMARY_ONE_ACCESSORY": "Do you want to delete the accessory(s) {{param}}?",
+        "DELETE_ACCESSORY": "Delete Accessory",
+        "DELETED_SUCCESS": "Accessory deleted successfully",
+        "DELETED_FAILED": "Deleting accessory failed",
+        "CO_SIGNED": "Signed by Cosign",
+        "NOTARY_SIGNED": "Signed by Notary",
+        "ACCESSORY": "Accessory",
+        "ACCESSORIES": "Accessories",
+        "SUBJECT_ARTIFACT": "Subject Artifact",
+        "CO_SIGN": "Cosign",
+        "NOTARY": "Notary",
+        "PLACEHOLDER": "We couldn't find any accessories!"
+    },
+    "CLEARANCES": {
+        "CLEARANCES": "Clean Up",
+        "AUDIT_LOG": "Log Rotation",
+        "LAST_COMPLETED": "Last completed",
+        "NEXT_SCHEDULED_TIME": "Next scheduled time",
+        "SCHEDULE_TO_PURGE": "Schedule to purge",
+        "KEEP_IN": "Keep records in",
+        "KEEP_IN_TOOLTIP": "Keep the records in this interval",
+        "KEEP_IN_ERROR": "This filed is required",
+        "DAYS": "Days",
+        "HOURS": "Hours",
+        "INCLUDED_OPERATIONS": "Included operations",
+        "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
+        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+        "PURGE_NOW": "PURGE NOW",
+        "PURGE_NOW_SUCCESS": "Purge triggered successfully",
+        "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
+        "PURGE_HISTORY": "Purge History",
+        "FORWARD_ENDPOINT": "Audit Log Forward Endpoint",
+        "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+        "SKIP_DATABASE": "Skip Audit Log Database",
+        "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
+        "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",
+        "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully"
+    },
+    "CVE_EXPORT": {
+        "EXPORT_SOME_PROJECTS": "Export CVEs - {{number}} project(s)",
+        "EXPORT_ALL_PROJECTS": "Export CVEs - All projects",
+        "ALL_PROJECTS": "All projects",
+        "EXPORT_TITLE": "Export CVE",
+        "EXPORT_SUBTITLE": "Set exporting conditions",
+        "EXPORT_CVE_FILTER_HELP_TEXT": "Enter multiple comma separated cveIds",
+        "CVE_IDS": "CVE IDs",
+        "EXPORT_BUTTON": "EXPORT",
+        "JOB_NAME": "Job Name",
+        "JOB_NAME_REQUIRED": "Job name is required",
+        "JOB_NAME_EXISTING": "Job name already exists",
+        "TRIGGER_EXPORT_SUCCESS": "Trigger exporting CVEs successfully!"
     }
 }

@@ -9,7 +9,7 @@ import (
 	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest/ocischema"
 	"github.com/opencontainers/go-digest"
-	"github.com/opencontainers/image-spec/specs-go/v1"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 //ocischemaManifestHandler is a ManifestHandler that covers ocischema manifests.

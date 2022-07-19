@@ -39,7 +39,7 @@ func PatchBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 		sessionID := distribution.ParseSessionID(r.URL.Path)
 
-		return blobController.SetAcceptedBlobSize(sessionID, size)
+		return blobController.SetAcceptedBlobSize(r.Context(), sessionID, size)
 	})
 }
 

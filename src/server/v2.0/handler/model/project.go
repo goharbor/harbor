@@ -40,7 +40,10 @@ func (p *Project) ToSwagger() *models.Project {
 	var md *models.ProjectMetadata
 	if p.Metadata != nil {
 		var m models.ProjectMetadata
-		lib.JSONCopy(&m, p.Metadata)
+		err := lib.JSONCopy(&m, p.Metadata)
+		if err != nil {
+			log.Warningf("failed to copy Metadata %T, error: %v", p.Metadata, err)
+		}
 
 		// Transform the severity to severity of CVSS v3.0 Ratings
 		if m.Severity != nil {

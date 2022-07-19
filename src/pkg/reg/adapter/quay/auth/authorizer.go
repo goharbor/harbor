@@ -47,7 +47,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 			// resume path
 			req.URL.Path = oldPath
 		}()
-		req.URL.Path = strings.TrimRight(req.URL.Path, "_catalog")
+		req.URL.Path = strings.TrimSuffix(req.URL.Path, "_catalog")
 	}
 
 	return a.innerAuthorizer.Modify(req)

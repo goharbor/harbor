@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -91,7 +91,11 @@ func (c *Context) Init() error {
 	}
 
 	// Initialize DB finished
-	initDBCompleted()
+	err = initDBCompleted()
+	if err != nil {
+		logger.Errorf("failed to call initDBCompleted(), error: %v", err)
+		return err
+	}
 	return nil
 }
 
@@ -216,6 +220,5 @@ func createLoggers(jobID string) (logger.Interface, error) {
 }
 
 func initDBCompleted() error {
-	sweeper.PrepareDBSweep()
-	return nil
+	return sweeper.PrepareDBSweep()
 }

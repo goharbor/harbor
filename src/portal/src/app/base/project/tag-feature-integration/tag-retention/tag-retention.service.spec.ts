@@ -3,16 +3,17 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TagRetentionService } from './tag-retention.service';
 
 describe('TagRetentionService', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ],
-      providers: [TagRetentionService]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule],
+            providers: [TagRetentionService],
+        });
     });
-  });
 
-  it('should be created', inject([TagRetentionService], (service: TagRetentionService) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should be created', inject(
+        [TagRetentionService],
+        (service: TagRetentionService) => {
+            expect(service).toBeTruthy();
+        }
+    ));
 });

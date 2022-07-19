@@ -194,7 +194,6 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		}
 
 		logger.Infof("Retrying job %s:%s, revision: %d", j.Name, j.ID, tracker.Job().Info.Revision)
-		break
 	case job.SuccessStatus:
 		// do nothing
 		return nil

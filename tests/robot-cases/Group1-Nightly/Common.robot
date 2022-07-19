@@ -378,7 +378,12 @@ Test Case - Delete Multi Project
     Filter Object  project
     Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     @{project_list}  Create List  projecta  projectb
-    Multi-delete Object  ${project_delete_btn}  @{project_list}
+    FOR  ${project}  IN  @{project_list}
+        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label
+    END
+    Retry Element Click  ${project_action_xpath}
+    Retry Element Click  ${project_delete_btn}
+    Retry Element Click  ${repo_delete_on_card_view_btn}
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
     Delete Success  projectb${d}
@@ -410,7 +415,7 @@ Test Case - Delete Multi Artifacts
     Go Into Project  project${d}
     Go Into Repo  redis
     @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
-    Multi-delete Artifact  ${tag_delete_btn}  @{tag_list}
+    Multi-delete Artifact  @{tag_list}
     # Verify
     Delete Success  sha256:dd179737  sha256:28a85227
     Close Browser
@@ -518,6 +523,36 @@ Test Case - Copy A Image
     Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
+Test Case - Copy A Image And Accessory
+    [Tags]  copy_image_and_accessory
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${source_project}=  Set Variable  source_project${d}
+    ${target_project}=  Set Variable  target_project${d}
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${image}=  Set Variable  redis
+    ${tag}=  Set Variable  latest
+
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  ${target_project}
+    Create An New Project And Go Into Project  ${source_project}
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Sign  ${ip}/${source_project}/${image}:${tag}
+    Docker Logout  ${ip}
+    Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
+    
+    Copy Image  ${tag}  ${target_project}  ${image}
+    Retry Wait Until Page Contains  Copy artifact successfully
+
+    Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
+    Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed By Cosign  ${tag}
+    Close Browser
+
 Test Case - Create An New Project With Quotas Set
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
@@ -585,20 +620,6 @@ Test Case - Project Quotas Control Under Copy
     Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
-    Close Browser
-
-Test Case - Webhook CRUD
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Switch To Project Webhooks
-    # create more than one webhooks
-    Create A New Webhook   webhook${d}   https://test.com
-    Create A New Webhook   webhook2${d}   https://test2.com
-    Update A Webhook    webhook${d}  newWebhook${d}   https://new-test.com
-    Enable/Disable State of Same Webhook   newWebhook${d}
-    Delete A Webhook  newWebhook${d}
     Close Browser
 
 Test Case - Tag CRUD
@@ -717,7 +738,7 @@ Test Case - Push Helm Chart and Display
     Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
     Create An New Project And Go Into Project  test${d}
 
-    Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
+    Retry Action Keyword  Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/${repo_name}
@@ -767,39 +788,6 @@ Test Case - Read Only Mode
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
-Test Case - Distribution CRUD
-    ${d}=    Get Current Date    result_format=%m%s
-    ${name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://32.1.1.2
-    ${endpoint_new}=  Set Variable  https://10.65.65.42
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${name}  ${endpoint}
-    Edit A Distribution  ${name}  ${endpoint}  new_endpoint=${endpoint_new}
-    Delete A Distribution  ${name}  ${endpoint_new}
-    Close Browser
-
-Test Case - P2P Preheat Policy CRUD
-    ${d}=    Get Current Date    result_format=%m%s
-    ${pro_name}=  Set Variable  project_p2p${d}
-    ${dist_name}=  Set Variable  distribution${d}
-    ${endpoint}=  Set Variable  https://20.76.1.2
-    ${policy_name}=  Set Variable  policy${d}
-    ${repo}=  Set Variable  alpine
-    ${repo_new}=  Set Variable  redis*
-    ${tag}=  Set Variable  v1.0
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${endpoint}
-    Create An New Project And Go Into Project  ${pro_name}
-    Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  ${repo}  ${tag}
-    Edit A P2P Preheat Policy  ${policy_name}  ${repo_new}
-    Delete A Distribution  ${dist_name}  ${endpoint}  deletable=${false}
-    Go Into Project  ${pro_name}  has_image=${false}
-    Delete A P2P Preheat Policy  ${policy_name}
-    Delete A Distribution  ${dist_name}  ${endpoint}
-    Close Browser
-
 Test Case - System Robot Account Cover All Projects
     [Tags]  sys_robot_account_cover
     ${d}=  Get Current Date    result_format=%m%s
@@ -829,7 +817,7 @@ Test Case - Go To Harbor Api Page
     [Tags]  go_to_harbor_api_page
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Retry Keyword N Times When Error  4  Check Harbor Api Page 
+    Retry Keyword N Times When Error  4  Check Harbor Api Page
     Close Browser
 
 Test Case - WASM Push And Pull To Harbor
@@ -850,16 +838,47 @@ Test Case - WASM Push And Pull To Harbor
 Test Case - Carvel Imgpkg Push And Pull To Harbor
     [Tags]  imgpkg_push_and_pull
     Init Chrome Driver
-    ${user}=    Set Variable    user004
-    ${pwd}=    Set Variable    Test1@34
-    ${out_path}=    Set Variable    /tmp/my-bundle
+    ${user}=  Set Variable  user004
+    ${pwd}=  Set Variable  Test1@34
+    ${out_path}=  Set Variable  /tmp/my-bundle
+    ${repository}=  Set Variable  my-bundle
+    ${tag}=  Set Variable  v1.0.0
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
-    ${d}=   Get Current Date    result_format=%m%s
+    ${d}=  Get Current Date  result_format=%m%s
     Create An New Project And Go Into Project  project${d}
     Prepare Image Package Test Files  ${EXECDIR}/config
-    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  imgpkg push -b ${ip}/project${d}/my-bundle:v1.0.0 -f config/
-    Wait Unitl Command Success  imgpkg pull -b ${ip}/project${d}/my-bundle:v1.0.0 -o ${out_path}
-    Wait Unitl Command Success  docker logout ${ip}
+    Docker Login  ${ip}  ${user}  ${pwd}
+    Imgpkg Push  ${ip}  project${d}  ${repository}  ${tag}  ${EXECDIR}/config
+    Imgpkg Pull  ${ip}  project${d}  ${repository}  ${tag}  ${out_path}
+    Docker Logout  ${ip}
     Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
     Retry File Should Exist  ${out_path}/.imgpkg/images.yml
+
+Test Case - Cosign And Cosign Deployment Security Policy
+    [Tags]  cosign
+    Init Chrome Driver
+    ${user}=  Set Variable  user006
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
+    Go Into Project  project${d}
+    Retry Double Keywords When Error  Go Into Repo  project${d}/${image}  Should Not Be Signed By Cosign  ${tag}
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
+    Cosign Generate Key Pair
+    Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
+
+    Cosign Sign  ${ip}/project${d}/${image}:${tag}
+    Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${true}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
+
+    Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}

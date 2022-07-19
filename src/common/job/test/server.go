@@ -14,6 +14,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	job_models "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -68,7 +69,6 @@ func NewJobServiceServer() *httptest.Server {
 				panic(err)
 			}
 			rw.WriteHeader(http.StatusOK)
-			return
 		})
 	mux.HandleFunc(fmt.Sprintf("%s/%s", jobsPrefix, jobUUID),
 		func(rw http.ResponseWriter, req *http.Request) {
@@ -89,9 +89,8 @@ func NewJobServiceServer() *httptest.Server {
 				return
 			}
 			rw.WriteHeader(http.StatusNoContent)
-			return
 		})
-	mux.HandleFunc(fmt.Sprintf("%s", jobsPrefix),
+	mux.HandleFunc(jobsPrefix,
 		func(rw http.ResponseWriter, req *http.Request) {
 			if req.Method == http.MethodPost {
 				data, err := ioutil.ReadAll(req.Body)
@@ -99,7 +98,10 @@ func NewJobServiceServer() *httptest.Server {
 					panic(err)
 				}
 				jobReq := models.JobRequest{}
-				json.Unmarshal(data, &jobReq)
+				err = json.Unmarshal(data, &jobReq)
+				if err != nil {
+					log.Warningf("failed to unmarshal json to models.JobRequest, error: %v", err)
+				}
 				if jobReq.Job.Name == "replication" {
 					respData := models.JobStats{
 						Stats: &models.StatsInfo{
@@ -115,7 +117,6 @@ func NewJobServiceServer() *httptest.Server {
 						panic(err)
 					}
 					return
-
 				}
 			}
 		})

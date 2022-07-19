@@ -5,15 +5,8 @@ functionsDir: "./tools/spectral/functions"
 functions: [requireRequestId]
 
 rules:
-  info-contact: false
-  info-license: false
-  license-url: false
   no-$ref-siblings: false
-  oas2-valid-definition-example: false
-  oas2-valid-response-schema-example: false
-  openapi-tags: false
-  operation-default-response: false
-  operation-tag-defined: false
+  oas2-valid-schema-example: false
 
   required-operationId:
     description: must have a operationId.
@@ -33,7 +26,7 @@ rules:
         type: camel
 
   requestId-required:
-    description: must have a requestId paramaters.
+    description: must have a requestId parameters.
     given: $.paths[*][*]
     severity: error
     then:

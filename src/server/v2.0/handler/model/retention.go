@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -16,7 +17,9 @@ type RetentionPolicy struct {
 // ToSwagger ...
 func (s *RetentionPolicy) ToSwagger() *models.RetentionPolicy {
 	var result models.RetentionPolicy
-	lib.JSONCopy(&result, s)
+	if err := lib.JSONCopy(&result, s); err != nil {
+		log.Warningf("failed to do JSONCopy on RetentionPolicy, error: %v", err)
+	}
 	return &result
 }
 
@@ -47,7 +50,9 @@ type RetentionExec struct {
 // ToSwagger ...
 func (e *RetentionExec) ToSwagger() *models.RetentionExecution {
 	var result models.RetentionExecution
-	lib.JSONCopy(&result, e)
+	if err := lib.JSONCopy(&result, e); err != nil {
+		log.Warningf("failed to do JSONCopy on RetentionExecution, error: %v", err)
+	}
 	return &result
 }
 
@@ -64,7 +69,9 @@ type RetentionTask struct {
 // ToSwagger ...
 func (e *RetentionTask) ToSwagger() *models.RetentionExecutionTask {
 	var result models.RetentionExecutionTask
-	lib.JSONCopy(&result, e)
+	if err := lib.JSONCopy(&result, e); err != nil {
+		log.Warningf("failed to do JSONCopy on RetentionExecutionTask, error: %v", err)
+	}
 	return &result
 }
 

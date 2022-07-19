@@ -15,16 +15,17 @@
 package session
 
 import (
-	"github.com/astaxie/beego"
-	beegosession "github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+
+	"github.com/beego/beego"
+	beegosession "github.com/beego/beego/session"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSession(t *testing.T) {

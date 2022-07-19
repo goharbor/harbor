@@ -47,5 +47,5 @@ func (ul *UserLock) Lock(username string) {
 func (ul *UserLock) IsLocked(username string) bool {
 	ul.rw.RLock()
 	defer ul.rw.RUnlock()
-	return time.Now().Sub(ul.failures[username]) <= ul.d
+	return time.Since(ul.failures[username]) <= ul.d
 }

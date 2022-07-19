@@ -93,7 +93,7 @@ func parseParams(params map[string]interface{}) (*model.Resource, *model.Resourc
 	if err := parseParam(params, "dst_resource", dst); err != nil {
 		return nil, nil, 0, err
 	}
-	var speed int32 = 0
+	var speed int32
 	value, exist := params["speed"]
 	if !exist {
 		speed = 0

@@ -14,7 +14,18 @@
             "allowedCommonJsDependencies": [
               "swagger-ui",
               "buffer",
-              "js-yaml"
+              "js-yaml",
+              "hoist-non-react-statics",
+              "lodash",
+              "core-js-pure",
+              "prop-types",
+              "randexp",
+              "react-copy-to-clipboard",
+              "react-debounce-input",
+              "react-immutable-proptypes",
+              "redux-immutable",
+              "url-parse",
+              "xml-but-prettier"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
@@ -46,7 +57,7 @@
             ],
             "scripts": [
               "node_modules/@clr/icons/clr-icons.min.js",
-              "node_modules/marked/lib/marked.js",
+              "node_modules/marked/marked.min.js",
               "node_modules/prismjs/prism.js",
               "node_modules/prismjs/components/prism-yaml.min.js"
             ],
@@ -121,6 +132,15 @@
               "src/i18n"
             ]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -137,10 +157,12 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [],
-            "exclude": []
+            "lintFilePatterns": [
+              "e2e/**/*.ts",
+              "e2e/**/*.html"
+            ]
           }
         }
       }

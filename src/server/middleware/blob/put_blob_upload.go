@@ -31,7 +31,6 @@ import (
 // 1, As Put blob will always happen after head blob gets a 404, but the 404 could be caused by blob status is deleting, which is marked by GC.
 // 2, It has to deal with the concurrence blob push.
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
-
 	before := middleware.BeforeRequest(func(r *http.Request) error {
 		v := r.URL.Query()
 		digest := v.Get("digest")
@@ -50,7 +49,7 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 			size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
 			if err != nil || size == 0 {
-				size, err = blobController.GetAcceptedBlobSize(distribution.ParseSessionID(r.URL.Path))
+				size, err = blobController.GetAcceptedBlobSize(ctx, distribution.ParseSessionID(r.URL.Path))
 			}
 			if err != nil {
 				logger.Errorf("get blob size failed, error: %v", err)

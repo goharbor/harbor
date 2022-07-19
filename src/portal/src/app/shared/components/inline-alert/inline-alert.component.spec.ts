@@ -1,22 +1,17 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InlineAlertComponent } from './inline-alert.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { SharedTestingModule } from "../../shared.module";
+import { SharedTestingModule } from '../../shared.module';
 describe('InlineAlertComponent', () => {
     let component: InlineAlertComponent;
     let fixture: ComponentFixture<InlineAlertComponent>;
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                SharedTestingModule
-            ],
-        })
-            .compileComponents();
-    }));
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
+        }).compileComponents();
+    });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(InlineAlertComponent);

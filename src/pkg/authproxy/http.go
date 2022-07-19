@@ -22,7 +22,6 @@ import (
 
 // TokenReview ...
 func TokenReview(rawToken string, authProxyConfig *cfgModels.HTTPAuthProxy) (k8s_api_v1beta1.TokenReviewStatus, error) {
-
 	emptyStatus := k8s_api_v1beta1.TokenReviewStatus{}
 	// Init auth client with the auth proxy endpoint.
 	authClientCfg := &rest.Config{
@@ -67,7 +66,6 @@ func TokenReview(rawToken string, authProxyConfig *cfgModels.HTTPAuthProxy) (k8s
 		return emptyStatus, err
 	}
 	return tokenReviewResponse.Status, nil
-
 }
 
 func getTLSConfig(config *cfgModels.HTTPAuthProxy) rest.TLSClientConfig {

@@ -16,14 +16,16 @@ package registry
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type catalogTestSuite struct {
@@ -33,19 +35,19 @@ type catalogTestSuite struct {
 }
 
 func (c *catalogTestSuite) SetupSuite() {
-	c.originalRepoMgr = repository.Mgr
+	c.originalRepoMgr = pkg.RepositoryMgr
 }
 
 func (c *catalogTestSuite) SetupTest() {
 	c.repoMgr = &repotesting.Manager{}
-	repository.Mgr = c.repoMgr
+	pkg.RepositoryMgr = c.repoMgr
 }
 
 func (c *catalogTestSuite) TearDownTest() {
 }
 
 func (c *catalogTestSuite) TearDownSuite() {
-	repository.Mgr = c.originalRepoMgr
+	pkg.RepositoryMgr = c.originalRepoMgr
 }
 
 func (c *catalogTestSuite) TestCatalog() {

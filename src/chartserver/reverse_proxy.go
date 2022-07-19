@@ -29,7 +29,6 @@ const (
 
 	defaultRepo             = "library"
 	rootUploadingEndpoint   = "/api/chartrepo/charts"
-	rootIndexEndpoint       = "/chartrepo/index.yaml"
 	chartRepoHealthEndpoint = "/api/chartrepo/health"
 )
 

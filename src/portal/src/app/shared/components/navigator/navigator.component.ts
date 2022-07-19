@@ -21,27 +21,38 @@ import { SessionService } from '../../services/session.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SkinableConfig } from '../../../services/skinable-config.service';
 import {
     CommonRoutes,
+    DATETIME_RENDERINGS,
+    DatetimeRendering,
+    DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
     DEFAULT_LANG_LOCALSTORAGE_KEY,
+    DefaultDatetimeRendering,
     DeFaultLang,
-    languageNames,
-} from "../../entities/shared.const";
-import { CustomStyle, HAS_STYLE_MODE, StyleMode } from "../../../services/theme";
-
+    LANGUAGES,
+    SupportedLanguage,
+} from '../../entities/shared.const';
+import {
+    CustomStyle,
+    HAS_STYLE_MODE,
+    StyleMode,
+} from '../../../services/theme';
+import { getDatetimeRendering } from '../../units/shared.utils';
 
 @Component({
     selector: 'navigator',
-    templateUrl: "navigator.component.html",
-    styleUrls: ["navigator.component.scss"]
+    templateUrl: 'navigator.component.html',
+    styleUrls: ['navigator.component.scss'],
 })
-
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
     @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
-    selectedLang: string = DeFaultLang;
+    readonly guiLanguages = Object.entries(LANGUAGES);
+    readonly guiDatetimeRenderings = Object.entries(DATETIME_RENDERINGS);
+    selectedLang: SupportedLanguage = DeFaultLang;
+    selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: CustomStyle;
     constructor(
@@ -52,13 +63,14 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
-        private skinableConfig: SkinableConfig) {
-    }
+        private skinableConfig: SkinableConfig
+    ) {}
 
     ngOnInit(): void {
         // custom skin
         this.customStyle = this.skinableConfig.getSkinConfig();
-        this.selectedLang = this.translate.currentLang;
+        this.selectedLang = this.translate.currentLang as SupportedLanguage;
+        this.selectedDatetimeRendering = getDatetimeRendering();
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
         }
@@ -73,11 +85,17 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get accountName(): string {
-        return this.session.getCurrentUser() ? this.session.getCurrentUser().username : "N/A";
+        return this.session.getCurrentUser()
+            ? this.session.getCurrentUser().username
+            : 'N/A';
     }
 
     public get currentLang(): string {
-        return languageNames[this.selectedLang];
+        return LANGUAGES[this.selectedLang];
+    }
+
+    public get currentDatetimeRendering(): string {
+        return DATETIME_RENDERINGS[this.selectedDatetimeRendering];
     }
 
     public get admiralLink(): string {
@@ -89,29 +107,43 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get canDownloadCert(): boolean {
-        return this.session.getCurrentUser() &&
+        return (
+            this.session.getCurrentUser() &&
             this.session.getCurrentUser().has_admin_role &&
             this.appConfigService.getConfig() &&
-            this.appConfigService.getConfig().has_ca_root;
+            this.appConfigService.getConfig().has_ca_root
+        );
     }
 
     public get canChangePassword(): boolean {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
 
-        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth"
-        || config.auth_mode === "oidc_auth")) || (user.user_id === 1 && user.username === "admin"));
+        return (
+            user &&
+            ((config &&
+                !(
+                    config.auth_mode === 'ldap_auth' ||
+                    config.auth_mode === 'uaa_auth' ||
+                    config.auth_mode === 'oidc_auth'
+                )) ||
+                (user.user_id === 1 && user.username === 'admin'))
+        );
     }
 
-    matchLang(lang: string): boolean {
-        return lang.trim() === this.selectedLang;
+    matchLang(lang: SupportedLanguage): boolean {
+        return lang === this.selectedLang;
+    }
+
+    matchDatetimeRendering(datetime: DatetimeRendering): boolean {
+        return datetime === this.selectedDatetimeRendering;
     }
 
     // Open the account setting dialog
     openAccountSettingsModal(): void {
         this.showAccountSettingsModal.emit({
             modalName: modalEvents.USER_PROFILE,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -119,7 +151,7 @@ export class NavigatorComponent implements OnInit {
     openChangePwdModal(): void {
         this.showDialogModalAction.emit({
             modalName: modalEvents.CHANGE_PWD,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -127,7 +159,7 @@ export class NavigatorComponent implements OnInit {
     openAboutDialog(): void {
         this.showDialogModalAction.emit({
             modalName: modalEvents.ABOUT,
-            modalFlag: true
+            modalFlag: true,
         });
     }
 
@@ -138,7 +170,7 @@ export class NavigatorComponent implements OnInit {
         let signout = true;
         let redirect_url = this.location.pathname;
         let navigatorExtra: NavigationExtras = {
-            queryParams: {signout, redirect_url}
+            queryParams: { signout, redirect_url },
         };
         this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
         // Confirm search result panel is close
@@ -146,12 +178,22 @@ export class NavigatorComponent implements OnInit {
     }
 
     // Switch languages
-    switchLanguage(lang: string): void {
+    switchLanguage(lang: SupportedLanguage): void {
         this.selectedLang = lang;
         localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, lang);
         // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
         // have to reload
         this.translate.use(lang).subscribe(() => window.location.reload());
+    }
+
+    switchDatetimeRendering(datetime: DatetimeRendering): void {
+        this.selectedDatetimeRendering = datetime;
+        localStorage.setItem(
+            DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
+            datetime
+        );
+        // have to reload,as HarborDatetimePipe is pure pipe
+        window.location.reload();
     }
 
     // Handle the home action
@@ -173,7 +215,11 @@ export class NavigatorComponent implements OnInit {
     }
 
     getBgColor(): string {
-        if (this.customStyle && this.customStyle.headerBgColor && localStorage) {
+        if (
+            this.customStyle &&
+            this.customStyle.headerBgColor &&
+            localStorage
+        ) {
             if (localStorage.getItem(HAS_STYLE_MODE) === StyleMode.LIGHT) {
                 return `background-color:${this.customStyle.headerBgColor.lightMode} !important`;
             }

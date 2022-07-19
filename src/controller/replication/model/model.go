@@ -20,12 +20,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
+
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
-	"github.com/robfig/cron"
 )
 
 // Policy defines the structure of a replication policy
@@ -103,7 +104,7 @@ func (p *Policy) Validate() error {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("the cron string cannot be empty when the trigger type is %s", model.TriggerTypeScheduled)
 			}
-			if _, err := cron.Parse(p.Trigger.Settings.Cron); err != nil {
+			if _, err := utils.CronParser().Parse(p.Trigger.Settings.Cron); err != nil {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
 			}
