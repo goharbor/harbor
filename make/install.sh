@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
 set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
