@@ -150,9 +150,6 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 		q := u.Query()
 		q.Set("page", strconv.FormatInt(page-1, 10))
 		u.RawQuery = q.Encode()
-		if len(link) != 0 {
-			link += ", "
-		}
 		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
 	}
 
