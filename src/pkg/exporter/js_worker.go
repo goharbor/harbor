@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
-	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/gomodule/redigo/redis"
+
+	redislib "github.com/goharbor/harbor/src/lib/redis"
 )
 
 const (

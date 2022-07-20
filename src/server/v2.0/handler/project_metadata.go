@@ -16,7 +16,11 @@ package handler
 
 import (
 	"context"
+	"strconv"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/project/metadata"
@@ -24,8 +28,6 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project_metadata"
-	"strconv"
-	"strings"
 )
 
 func newProjectMetadaAPI() *projectMetadataAPI {

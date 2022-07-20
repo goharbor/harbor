@@ -5,7 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	url2 "net/url"
+	"strings"
+	"testing"
+	"time"
+
 	beegoorm "github.com/beego/beego/orm"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -16,14 +26,6 @@ import (
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/testing/pkg/user"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"io"
-	"net/http"
-	url2 "net/url"
-	"strings"
-	"testing"
-	"time"
 )
 
 type ScanExportTestSuite struct {

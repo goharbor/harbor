@@ -16,13 +16,13 @@ package event
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/rbac"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 

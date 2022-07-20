@@ -15,11 +15,13 @@
 package apiversion
 
 import (
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib"
 )
 
 func TestMiddleware(t *testing.T) {

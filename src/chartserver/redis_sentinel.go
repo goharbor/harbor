@@ -5,15 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/FZambia/sentinel"
-
-	"github.com/gomodule/redigo/redis"
-
-	"strings"
-
 	"github.com/beego/beego/cache"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (

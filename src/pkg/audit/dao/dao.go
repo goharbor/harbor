@@ -19,8 +19,8 @@ import (
 	"strings"
 
 	beegorm "github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/common/rbac"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"

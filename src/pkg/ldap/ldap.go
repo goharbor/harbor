@@ -18,15 +18,16 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config/models"
-	"github.com/goharbor/harbor/src/pkg/ldap/model"
 	"net"
 	"net/url"
 	"strings"
 	"time"
 
 	goldap "github.com/go-ldap/ldap/v3"
+
+	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/ldap/model"
 )
 
 // ErrNotFound ...

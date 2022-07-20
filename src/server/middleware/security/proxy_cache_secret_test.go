@@ -16,11 +16,12 @@ package security
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib"
 	ps "github.com/goharbor/harbor/src/pkg/proxy/secret"
 )
 

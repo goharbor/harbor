@@ -16,45 +16,45 @@ package reg
 
 import (
 	"context"
-	commonthttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/config"
 
-	// register the Harbor adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
-	// register the DockerHub adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/dockerhub"
-	// register the Native adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/native"
-	// register the huawei adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
-	// register the Google Gcr adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
+	commonthttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+
+	// register the AliACR adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
+	// register the Artifact Hub adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/artifacthub"
 	// register the AwsEcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/awsecr"
 	// register the AzureAcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/azurecr"
-	// register the AliACR adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
-	// register the Jfrog Artifactory adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/jfrog"
-	// register the Quay.io adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
-	// register the Helm Hub adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/helmhub"
-	// register the GitLab adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/gitlab"
+	// register the DockerHub adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/dockerhub"
 	// register the DTR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/dtr"
-	// register the Artifact Hub adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/artifacthub"
-	// register the TencentCloud TCR adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
 	// register the Github Container Registry adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/githubcr"
-
-	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	// register the GitLab adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/gitlab"
+	// register the Google Gcr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
+	// register the Harbor adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
+	// register the Helm Hub adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/helmhub"
+	// register the huawei adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
+	// register the Jfrog Artifactory adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/jfrog"
+	// register the Native adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/native"
+	// register the Quay.io adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
+	// register the TencentCloud TCR adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )

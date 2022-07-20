@@ -2,11 +2,12 @@ package systemartifact
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/dao"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
-	"time"
 )
 
 var (

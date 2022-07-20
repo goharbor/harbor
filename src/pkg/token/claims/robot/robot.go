@@ -3,8 +3,9 @@ package robot
 import (
 	"errors"
 
-	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/golang-jwt/jwt/v4"
+
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // Claim implements the interface of jwt.Claims

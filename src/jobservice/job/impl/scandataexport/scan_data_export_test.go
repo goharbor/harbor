@@ -9,6 +9,11 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"testing"
+
+	"github.com/opencontainers/go-digest"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -22,12 +27,6 @@ import (
 	export2 "github.com/goharbor/harbor/src/testing/pkg/scan/export"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/opencontainers/go-digest"
-	testifymock "github.com/stretchr/testify/mock"
-
-	"testing"
-
-	"github.com/stretchr/testify/suite"
 )
 
 const JobId = float64(100)

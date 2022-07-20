@@ -16,18 +16,19 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_dao "github.com/goharbor/harbor/src/pkg/label/dao"
 	"github.com/goharbor/harbor/src/pkg/label/model"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var (

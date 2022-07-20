@@ -20,12 +20,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/mock"
 	artifact_testing "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
-	"github.com/stretchr/testify/suite"
 )
 
 var (

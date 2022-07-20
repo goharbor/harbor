@@ -5,6 +5,8 @@ linters-settings:
     simplify: false
   misspell:
     locale: US,UK
+  goimports:
+    local-prefixes: github.com/goharbor/harbor
 
 linters:
   disable-all: true
@@ -32,6 +34,7 @@ linters:
     - errcheck
     # - gosec
     - gosimple
+    - goimports
     - govet
     # - noctx
     # - rowserrcheck
@@ -54,3 +57,17 @@ run:
 issue:
   max-same-issues: 0
   max-per-linter: 0
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - goimports
+    - path: src/testing/*.go
+      linters:
+        - goimports
+    - path: src/jobservice/mgt/mock_manager.go
+      linters:
+        - goimports

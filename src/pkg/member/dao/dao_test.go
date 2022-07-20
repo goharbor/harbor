@@ -18,9 +18,11 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
-	_ "github.com/goharbor/harbor/src/common/dao"
 	testDao "github.com/goharbor/harbor/src/common/dao"
+	_ "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member/models"
@@ -30,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
 )
 
 type DaoTestSuite struct {

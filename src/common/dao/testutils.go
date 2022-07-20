@@ -16,10 +16,10 @@ package dao
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
 	"os"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 

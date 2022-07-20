@@ -17,10 +17,11 @@ package report
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/google/uuid"
 )
 
 var (

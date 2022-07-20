@@ -17,6 +17,7 @@ package artifact
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/encode/repository"

@@ -2,7 +2,6 @@ package redis
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/FZambia/sentinel"
 	"github.com/gomodule/redigo/redis"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var knownPool sync.Map

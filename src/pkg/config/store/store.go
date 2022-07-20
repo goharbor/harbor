@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/config/metadata"
-	"github.com/goharbor/harbor/src/lib/log"
 	"reflect"
 	"strconv"
 	"sync"
+
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config/metadata"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ConfigStore - the config data store

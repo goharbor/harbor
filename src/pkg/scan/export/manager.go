@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	beego_orm "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/orm"
 	q2 "github.com/goharbor/harbor/src/lib/q"
-	"strconv"
-	"strings"
 )
 
 const (

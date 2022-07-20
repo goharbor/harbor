@@ -23,13 +23,14 @@ import (
 	"time"
 
 	"github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/log"
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx" // import pgx driver for migrator
 	_ "github.com/golang-migrate/migrate/v4/source/file"  // import local file driver for migrator
 	_ "github.com/jackc/pgx/v4/stdlib"                    // registry pgx driver
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const defaultMigrationPath = "migrations/postgresql/"

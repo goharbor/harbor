@@ -16,9 +16,9 @@ package server
 
 import (
 	"encoding/json"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/v2.0/route"
 )
 

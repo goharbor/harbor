@@ -22,14 +22,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
-
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 )
 
 func init() {

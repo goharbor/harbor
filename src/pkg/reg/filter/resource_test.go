@@ -1,9 +1,11 @@
 package filter
 
 import (
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func TestArtifactTagFilters(t *testing.T) {

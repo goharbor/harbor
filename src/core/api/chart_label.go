@@ -3,12 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/label/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 const (

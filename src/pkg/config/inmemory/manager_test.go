@@ -16,8 +16,9 @@ package inmemory
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewInMemoryManager(t *testing.T) {

@@ -17,6 +17,9 @@ package user
 import (
 	"context"
 	"fmt"
+	"hash/crc32"
+	"strings"
+
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
@@ -24,8 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
-	"hash/crc32"
-	"strings"
 )
 
 var (

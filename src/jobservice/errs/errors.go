@@ -18,6 +18,7 @@ package errs
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 )
 

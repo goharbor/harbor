@@ -2,17 +2,18 @@ package immutable
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/q"
-	dao_model "github.com/goharbor/harbor/src/pkg/immutable/dao/model"
-	"github.com/goharbor/harbor/src/pkg/immutable/model"
-	"github.com/goharbor/harbor/src/testing/pkg/immutable/dao"
+	"os"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"os"
-	"testing"
+	"github.com/goharbor/harbor/src/lib/q"
+	dao_model "github.com/goharbor/harbor/src/pkg/immutable/dao/model"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/testing/pkg/immutable/dao"
 )
 
 type managerTestingSuite struct {

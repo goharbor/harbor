@@ -19,14 +19,14 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testProject "github.com/goharbor/harbor/src/testing/pkg/project"
-
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {

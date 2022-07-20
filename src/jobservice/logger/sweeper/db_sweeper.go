@@ -2,9 +2,10 @@ package sweeper
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/joblog"
-	"time"
 )
 
 var dbInit = make(chan int, 1)

@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	beego_orm "github.com/beego/beego/orm"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
 )
 
 type HeadBlobUploadMiddlewareTestSuite struct {

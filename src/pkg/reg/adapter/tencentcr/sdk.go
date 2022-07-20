@@ -4,9 +4,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func (a *adapter) createPrivateNamespace(namespace string) (err error) {

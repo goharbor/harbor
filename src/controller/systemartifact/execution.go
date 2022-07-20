@@ -2,6 +2,8 @@ package systemartifact
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -11,7 +13,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"time"
 )
 
 const (

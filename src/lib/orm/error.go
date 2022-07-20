@@ -16,8 +16,9 @@ package orm
 
 import (
 	"github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/jackc/pgconn"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 var (

@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	models2 "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -10,8 +14,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type StatisticsTestSuite struct {

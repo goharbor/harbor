@@ -31,6 +31,9 @@ import (
 	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -38,8 +41,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
-	"github.com/opencontainers/go-digest"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 var (

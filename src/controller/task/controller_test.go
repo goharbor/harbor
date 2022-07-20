@@ -17,12 +17,12 @@ package task
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	model "github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
 )
 
 type controllerTestSuite struct {

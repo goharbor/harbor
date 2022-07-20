@@ -19,9 +19,10 @@ import (
 	"testing"
 
 	"github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 type foo struct {

@@ -3,11 +3,12 @@ package token
 import (
 	"crypto/rsa"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"io/ioutil"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/golang-jwt/jwt/v4"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

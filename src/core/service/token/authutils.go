@@ -17,20 +17,21 @@ package token
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
+	"github.com/golang-jwt/jwt/v4"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 const (

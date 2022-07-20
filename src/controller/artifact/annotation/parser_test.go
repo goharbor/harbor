@@ -3,9 +3,9 @@ package annotation
 import (
 	"testing"
 
-	fp "github.com/goharbor/harbor/src/testing/pkg/parser"
-
 	"github.com/stretchr/testify/suite"
+
+	fp "github.com/goharbor/harbor/src/testing/pkg/parser"
 )
 
 type parserTestSuite struct {

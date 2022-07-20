@@ -13,7 +13,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	job_models "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -55,8 +54,8 @@ func NewJobServiceServer() *httptest.Server {
 				return
 			}
 			var stats []job.Stats
-			stat := job_models.Stats{
-				Info: &job_models.StatsInfo{
+			stat := job.Stats{
+				Info: &job.StatsInfo{
 					JobID:    jobUUID + "@123123",
 					Status:   "Pending",
 					RunAt:    time.Now().Unix(),

@@ -22,6 +22,7 @@ import (
 	"net/url"
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"

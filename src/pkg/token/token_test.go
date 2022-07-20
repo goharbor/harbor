@@ -1,15 +1,16 @@
 package token
 
 import (
-	"github.com/goharbor/harbor/src/lib/config"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/permission/types"
-	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 )
 
 func TestMain(m *testing.M) {

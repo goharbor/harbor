@@ -3,9 +3,9 @@ package immutable
 import (
 	"context"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/immutable"
-
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 )
 

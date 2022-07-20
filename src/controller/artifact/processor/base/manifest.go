@@ -17,11 +17,13 @@ package base
 import (
 	"context"
 	"encoding/json"
+
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // NewManifestProcessor creates a new base manifest processor.

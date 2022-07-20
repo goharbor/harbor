@@ -22,10 +22,11 @@ import (
 
 	"github.com/beego/beego"
 	beegosession "github.com/beego/beego/session"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 func TestSession(t *testing.T) {

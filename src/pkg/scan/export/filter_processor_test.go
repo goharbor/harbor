@@ -3,6 +3,13 @@ package export
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+	"time"
+
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	project3 "github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -14,11 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/goharbor/harbor/src/testing/pkg/user"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"reflect"
-	"testing"
-	"time"
 )
 
 type FilterProcessorTestSuite struct {

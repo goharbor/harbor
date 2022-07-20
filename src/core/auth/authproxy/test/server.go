@@ -23,8 +23,9 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils"
 	"k8s.io/api/authentication/v1beta1"
+
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 type userEntry struct {

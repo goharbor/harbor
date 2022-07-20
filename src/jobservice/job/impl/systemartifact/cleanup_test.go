@@ -2,12 +2,14 @@ package systemartifact
 
 import (
 	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/systemartifact"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type SystemArtifactCleanupSuite struct {

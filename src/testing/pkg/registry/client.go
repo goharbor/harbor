@@ -15,10 +15,11 @@
 package registry
 
 import (
-	"github.com/docker/distribution"
-	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"
+
+	"github.com/docker/distribution"
+	"github.com/stretchr/testify/mock"
 )
 
 // FakeClient is a fake registry client that implement src/pkg/registry.Client interface

@@ -20,9 +20,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/goharbor/harbor/src/lib/config"
-
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 var proxy = newProxy()

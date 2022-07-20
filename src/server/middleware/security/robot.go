@@ -15,6 +15,10 @@
 package security
 
 import (
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -22,10 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
-	"strings"
-	"time"
-
-	"net/http"
 )
 
 type robot struct{}

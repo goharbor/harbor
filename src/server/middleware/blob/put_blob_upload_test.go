@@ -16,16 +16,17 @@ package blob
 
 import (
 	"fmt"
-	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
-	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/blob"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/controller/blob"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type PutBlobUploadMiddlewareTestSuite struct {

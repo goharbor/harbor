@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-
 	"github.com/beego/beego/orm"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func init() {

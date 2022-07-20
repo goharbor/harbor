@@ -2,10 +2,11 @@ package dao
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/joblog/models"
-	"time"
 )
 
 // DAO is the data access object for job log

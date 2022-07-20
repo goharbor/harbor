@@ -19,13 +19,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
-	_ "github.com/goharbor/harbor/src/pkg/config/db"
-	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -34,10 +27,18 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/security"
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 func TestMain(m *testing.M) {

@@ -16,24 +16,25 @@ package quota
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/testing/mock"
-	"testing"
-	"time"
-
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/testing/mock"
 	testing_notification "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // QuotaPreprocessHandlerSuite ...

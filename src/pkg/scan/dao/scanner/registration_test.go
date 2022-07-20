@@ -17,12 +17,13 @@ package scanner
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/q"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/q"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 // RegistrationDAOTestSuite is test suite of testing registration DAO

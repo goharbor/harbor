@@ -17,6 +17,8 @@ package accessory
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
@@ -25,7 +27,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/accessory/dao"
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {

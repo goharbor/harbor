@@ -16,14 +16,15 @@ package ldap
 
 import (
 	"context"
+	"os"
+	"reflect"
+	"testing"
+
 	goldap "github.com/go-ldap/ldap/v3"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
-	"github.com/stretchr/testify/assert"
-	"reflect"
-
-	"os"
-	"testing"
 )
 
 var ldapCfg = models.LdapConf{

@@ -19,6 +19,7 @@ import (
 	"sync"
 
 	"github.com/go-redis/redis/v8"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	libredis "github.com/goharbor/harbor/src/lib/cache/redis"
 )

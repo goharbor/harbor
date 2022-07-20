@@ -16,15 +16,16 @@ package proxy
 
 import (
 	"context"
-	distribution2 "github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/mock"
 	"testing"
 
-	testregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
+	distribution2 "github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/lib"
+	testregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
 type mockManifest struct {

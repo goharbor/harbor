@@ -4,6 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
@@ -12,12 +20,6 @@ import (
 	registrytesting "github.com/goharbor/harbor/src/testing/pkg/registry"
 	"github.com/goharbor/harbor/src/testing/pkg/systemartifact/cleanup"
 	sysartifactdaotesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact/dao"
-	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"os"
-	"strings"
-	"testing"
-	"time"
 )
 
 type ManagerTestSuite struct {

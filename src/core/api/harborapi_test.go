@@ -25,6 +25,7 @@ import (
 
 	"github.com/beego/beego"
 	"github.com/dghubble/sling"
+
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"

@@ -2,6 +2,12 @@ package systemartifact
 
 import (
 	"context"
+	"testing"
+
+	"github.com/pkg/errors"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	scheduler2 "github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -10,10 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/pkg/errors"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type SystemArtifactCleanupTestSuite struct {

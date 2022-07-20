@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-
 	bcontext "github.com/beego/beego/context"
+
 	"github.com/goharbor/harbor/src/chartserver"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
 )

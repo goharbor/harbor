@@ -1,9 +1,10 @@
 package metadata
 
 import (
+	"time"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"time"
 )
 
 // ChartMetaData defines meta data of chart event

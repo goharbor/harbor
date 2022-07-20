@@ -3,6 +3,7 @@ package retention
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"

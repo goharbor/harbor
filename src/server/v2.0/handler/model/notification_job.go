@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/pkg/notification/job/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )

@@ -16,11 +16,12 @@ package audit
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/log"
 	"io"
 	"log/syslog"
 	"os"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // LogMgr manage the audit log forward operations

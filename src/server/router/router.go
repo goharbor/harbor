@@ -21,6 +21,7 @@ import (
 
 	"github.com/beego/beego"
 	beegocontext "github.com/beego/beego/context"
+
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 

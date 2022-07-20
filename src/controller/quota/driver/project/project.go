@@ -17,17 +17,18 @@ package project
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/pkg/config/db"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strconv"
+
+	"github.com/graph-gophers/dataloader"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/config/db"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	dr "github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
-	"github.com/graph-gophers/dataloader"
 )
 
 func init() {

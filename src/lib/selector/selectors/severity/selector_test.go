@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	sl "github.com/goharbor/harbor/src/lib/selector"
-	"github.com/stretchr/testify/suite"
 )
 
 // SeveritySelectorTestSuite is a test suite of testing severity selector

@@ -16,10 +16,11 @@ package bearer
 
 import (
 	"fmt"
-	"github.com/docker/distribution/reference"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/docker/distribution/reference"
 )
 
 const (

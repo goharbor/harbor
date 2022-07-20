@@ -2,9 +2,10 @@ package export
 
 import (
 	"crypto/sha256"
-	"github.com/opencontainers/go-digest"
 	"io"
 	"os"
+
+	"github.com/opencontainers/go-digest"
 )
 
 // ArtifactDigestCalculator is an interface to be implemented by all file hash calculators

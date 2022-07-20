@@ -2,14 +2,14 @@ package chartserver
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"path"
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	"helm.sh/helm/v3/cmd/helm/search"
 
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 

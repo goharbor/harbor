@@ -20,6 +20,9 @@ import (
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
@@ -41,8 +44,6 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func init() {

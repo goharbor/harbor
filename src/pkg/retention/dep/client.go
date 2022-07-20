@@ -17,11 +17,12 @@ package dep
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/clients/core"
-	"net/http"
 )
 
 // DefaultClient for the retention

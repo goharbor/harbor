@@ -15,11 +15,12 @@
 package gc
 
 import (
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"os"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/suite"
+
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -27,6 +28,7 @@ import (
 	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	htesting "github.com/goharbor/harbor/src/testing"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
@@ -35,7 +37,6 @@ import (
 	trashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/testing/pkg/blob"
 	"github.com/goharbor/harbor/src/testing/registryctl"
-	"github.com/stretchr/testify/suite"
 )
 
 type gcTestSuite struct {

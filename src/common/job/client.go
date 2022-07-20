@@ -10,12 +10,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/config"
-
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 var (

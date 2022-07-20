@@ -1,8 +1,9 @@
 package system
 
 import (
-	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 const (

@@ -17,13 +17,14 @@ package quota
 import (
 	"context"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/stretchr/testify/mock"
+
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/testing/controller/project"
 )
 
 func Test_projectReferenceObject(t *testing.T) {

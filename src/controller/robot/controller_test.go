@@ -2,7 +2,12 @@ package robot
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -17,9 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/rbac"
 	"github.com/goharbor/harbor/src/testing/pkg/robot"
-	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 )
 
 type ControllerTestSuite struct {

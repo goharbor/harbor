@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	beegorm "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"

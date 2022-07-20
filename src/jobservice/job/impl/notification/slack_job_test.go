@@ -1,14 +1,16 @@
 package notification
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/job"
-	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
+	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 )
 
 func TestSlackJobMaxFails(t *testing.T) {

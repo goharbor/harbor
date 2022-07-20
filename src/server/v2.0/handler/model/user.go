@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	comModels "github.com/goharbor/harbor/src/common/models"
 	svrmodels "github.com/goharbor/harbor/src/server/v2.0/models"
 )

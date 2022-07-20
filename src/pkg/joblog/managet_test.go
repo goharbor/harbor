@@ -2,16 +2,17 @@ package joblog
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/joblog/models"
-	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/goharbor/harbor/src/testing/pkg/joblog/dao"
+	"os"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/joblog/models"
+	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/joblog/dao"
 )
 
 type managerTestingSuite struct {

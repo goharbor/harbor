@@ -26,12 +26,13 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	common_http "github.com/goharbor/harbor/src/common/http"
 	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 var (

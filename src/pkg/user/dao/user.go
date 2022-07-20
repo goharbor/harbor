@@ -17,10 +17,11 @@ package dao
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/user/models"
-	"time"
 )
 
 // User holds the details of a user.

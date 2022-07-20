@@ -17,15 +17,17 @@ package db
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/orm"
 	cfgPkg "github.com/goharbor/harbor/src/pkg/config"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 	"github.com/goharbor/harbor/src/pkg/config/store"
-	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 var TestDBConfig = map[string]interface{}{

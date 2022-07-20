@@ -2,8 +2,9 @@ package errors
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type stackTestSuite struct {

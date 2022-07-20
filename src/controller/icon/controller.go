@@ -29,13 +29,14 @@ import (
 	"os"
 	"sync"
 
+	"github.com/nfnt/resize"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"github.com/nfnt/resize"
 )
 
 var (

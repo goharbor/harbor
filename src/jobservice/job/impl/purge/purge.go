@@ -15,11 +15,12 @@
 package purge
 
 import (
+	"os"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/audit"
-	"os"
-	"strings"
 )
 
 // Job defines the purge job

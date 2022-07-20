@@ -17,6 +17,8 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/store"
 	"github.com/goharbor/harbor/src/pkg/config/validate"
-	"os"
 )
 
 // CfgManager ... Configure Manager
