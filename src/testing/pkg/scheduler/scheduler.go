@@ -5,9 +5,9 @@ package scheduler
 import (
 	context "context"
 
+	q "github.com/goharbor/harbor/src/lib/q"
 	mock "github.com/stretchr/testify/mock"
 
-	q "github.com/goharbor/harbor/src/lib/q"
 	scheduler "github.com/goharbor/harbor/src/pkg/scheduler"
 )
 

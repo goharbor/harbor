@@ -5,11 +5,13 @@ package user
 import (
 	context "context"
 
+	models "github.com/goharbor/harbor/src/common/models"
 	mock "github.com/stretchr/testify/mock"
 
-	models "github.com/goharbor/harbor/src/common/models"
-	user "github.com/goharbor/harbor/src/controller/user"
 	q "github.com/goharbor/harbor/src/lib/q"
+
+	user "github.com/goharbor/harbor/src/controller/user"
+
 	usermodels "github.com/goharbor/harbor/src/pkg/user/models"
 )
 

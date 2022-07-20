@@ -3,9 +3,10 @@
 package flow
 
 import (
+	distribution "github.com/docker/distribution"
+
 	io "io"
 
-	distribution "github.com/docker/distribution"
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/goharbor/harbor/src/pkg/reg/model"

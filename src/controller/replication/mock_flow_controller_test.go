@@ -8,6 +8,7 @@ import (
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/goharbor/harbor/src/controller/replication/model"
+
 	regmodel "github.com/goharbor/harbor/src/pkg/reg/model"
 )
 

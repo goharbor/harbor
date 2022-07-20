@@ -5,11 +5,13 @@ package quota
 import (
 	context "context"
 
+	models "github.com/goharbor/harbor/src/pkg/quota/models"
 	mock "github.com/stretchr/testify/mock"
 
-	quota "github.com/goharbor/harbor/src/controller/quota"
 	q "github.com/goharbor/harbor/src/lib/q"
-	models "github.com/goharbor/harbor/src/pkg/quota/models"
+
+	quota "github.com/goharbor/harbor/src/controller/quota"
+
 	types "github.com/goharbor/harbor/src/pkg/quota/types"
 )
 

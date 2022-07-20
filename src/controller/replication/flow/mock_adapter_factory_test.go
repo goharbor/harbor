@@ -3,9 +3,9 @@
 package flow
 
 import (
+	adapter "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	mock "github.com/stretchr/testify/mock"
 
-	adapter "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	model "github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
