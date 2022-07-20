@@ -102,6 +102,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		logger.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
 		return nil
 	}
+	// cap the retentionHour
+	if j.retentionHour > common.MaxAuditRetentionHour {
+		j.retentionHour = common.MaxAuditRetentionHour
+	}
 	n, err := j.auditMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
 	if err != nil {
 		logger.Errorf("failed to purge audit log, error: %v", err)

@@ -81,10 +81,29 @@ func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
 		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
 	}
+	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
+		return err
+	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
 		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
 	}
 	return nil
+}
+
+func retentionHour(m map[string]interface{}) (int, error) {
+	if ret, ok := m[common.PurgeAuditRetentionHour]; ok {
+		if rh, ok := ret.(json.Number); ok {
+			ret, err := rh.Int64()
+			if err != nil {
+				return 0, errors.BadRequestError(fmt.Errorf("audit_retention_hour should be integer format"))
+			}
+			if int(ret) > common.MaxAuditRetentionHour {
+				return 0, errors.BadRequestError(fmt.Errorf("audit_retention_hour should be less than %d", common.MaxAuditRetentionHour))
+			}
+			return int(ret), nil
+		}
+	}
+	return 0, nil
 }
 
 func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
@@ -103,15 +122,11 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 	if includeOperations, ok := parameters[common.PurgeAuditIncludeOperations].(string); ok {
 		policy.IncludeOperations = includeOperations
 	}
-	if retentionHour, ok := parameters[common.PurgeAuditRetentionHour]; ok {
-		if rh, ok := retentionHour.(json.Number); ok {
-			ret, err := rh.Int64()
-			if err != nil {
-				return 0, errors.BadRequestError(fmt.Errorf("failed to convert audit_retention_hour, error: %v", err))
-			}
-			policy.RetentionHour = int(ret)
-		}
+	retHour, err := retentionHour(parameters)
+	if err != nil {
+		return 0, err
 	}
+	policy.RetentionHour = retHour
 
 	switch scheType {
 	case ScheduleManual:
@@ -289,6 +304,9 @@ func verifyUpdateRequest(params operation.UpdatePurgeScheduleParams) error {
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
 		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
+	}
+	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
+		return err
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
 		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
