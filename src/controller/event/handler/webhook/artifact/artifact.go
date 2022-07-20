@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
@@ -91,7 +90,7 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *proModels.Project) (*model.Payload, error) {
+func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *proModels.Project) (*notifyModel.Payload, error) {
 	repoName := event.Repository
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
