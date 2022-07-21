@@ -302,3 +302,9 @@ Log All
 New Tab
     Execute Javascript  window.open('')
     Select Window  title=undefined
+
+Click Link New Tab And Switch
+    [Arguments]  ${element_xpath}
+    Retry Link Click  ${element_xpath}
+    ${handles}=  Get Window Handles
+    Retry Action Keyword  Switch Window  ${handles}[-1]
