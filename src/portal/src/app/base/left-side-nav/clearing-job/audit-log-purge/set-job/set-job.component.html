@@ -75,7 +75,7 @@
                 [class.clr-error]="
                     (retentionTimeNgModel.dirty ||
                         retentionTimeNgModel.touched) &&
-                    retentionTimeNgModel.invalid
+                    (retentionTimeNgModel.invalid || !isRetentionTimeValid())
                 ">
                 <div class="flex">
                     <div class="clr-input-wrapper">
@@ -95,15 +95,25 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                         <clr-control-error
+                            class="max-width-2rem"
                             *ngIf="
                                 (retentionTimeNgModel.dirty ||
                                     retentionTimeNgModel.touched) &&
-                                retentionTimeNgModel.invalid
+                                (retentionTimeNgModel.invalid ||
+                                    !isRetentionTimeValid())
                             ">
                             {{ 'CLEARANCES.KEEP_IN_ERROR' | translate }}
                         </clr-control-error>
                     </div>
-                    <div class="clr-select-wrapper unit-select">
+                    <div
+                        class="clr-select-wrapper unit-select"
+                        [ngClass]="{
+                            pt:
+                                (retentionTimeNgModel.dirty ||
+                                    retentionTimeNgModel.touched) &&
+                                (retentionTimeNgModel.invalid ||
+                                    !isRetentionTimeValid())
+                        }">
                         <select
                             [(ngModel)]="retentionUnit"
                             [ngModelOptions]="{ standalone: true }"
