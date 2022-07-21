@@ -1735,7 +1735,7 @@
         "SCHEDULE_TO_PURGE": "当前定时任务",
         "KEEP_IN": "保留记录",
         "KEEP_IN_TOOLTIP": "保留指定时间内的日志记录",
-        "KEEP_IN_ERROR": "此项为必填项",
+        "KEEP_IN_ERROR": "该项的数值需为整数，且时间值必须大于0且小于10000天",
         "DAYS": "天",
         "HOURS": "小时",
         "INCLUDED_OPERATIONS": "包含操作",

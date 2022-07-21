@@ -134,33 +134,33 @@
                 'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate
             }}</clr-control-error>
         </clr-input-container>
-        <label
-            *ngIf="canDownloadCert"
-            class="clr-control-label cert-down-label mt-1"
-            >{{ 'CONFIG.ROOT_CERT' | translate }}
-            <clr-tooltip>
-                <clr-icon
-                    clrTooltipTrigger
-                    shape="info-circle"
-                    size="24"></clr-icon>
-                <clr-tooltip-content
-                    clrPosition="top-right"
-                    clrSize="lg"
-                    *clrIfOpen>
-                    <span>{{
-                        'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate
-                    }}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
-            <a
-                rel="noopener noreferrer"
-                #certDownloadLink
-                class="cert-down"
-                [href]="downloadLink"
-                target="_blank"
-                >{{ 'CONFIG.ROOT_CERT_LINK' | translate }}</a
-            >
-        </label>
+        <div *ngIf="canDownloadCert" class="clr-form-control">
+            <label class="clr-control-label"
+                >{{ 'CONFIG.ROOT_CERT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <div class="clr-control-container cert-down">
+                <a
+                    rel="noopener noreferrer"
+                    [href]="downloadLink"
+                    target="_blank"
+                    >{{ 'CONFIG.ROOT_CERT_LINK' | translate }}</a
+                >
+            </div>
+        </div>
         <clr-checkbox-container>
             <label id="repo_read_only_lbl" for="repoReadOnly"
                 >{{ 'CONFIG.REPO_READ_ONLY' | translate }}
