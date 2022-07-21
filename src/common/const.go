@@ -215,4 +215,7 @@ const (
 	AuditLogForwardEndpoint = "audit_log_forward_endpoint"
 	// SkipAuditLogDatabase skip to log audit log in database
 	SkipAuditLogDatabase = "skip_audit_log_database"
+
+	// DatabaseHealthCheckerDisabled option to disable database health checks
+	DatabaseHealthCheckerDisabled = "database_health_checker_disabled"
 )

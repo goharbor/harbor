@@ -287,3 +287,11 @@ func Database() (*models.Database, error) {
 
 	return database, nil
 }
+
+func DatabaseHealthCheckerDisabled() bool {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(backgroundCtx, common.DatabaseHealthCheckerDisabled).GetBool()
+	}
+	// backoff read from env.
+	return os.Getenv("HARBOR_DATABASE_DISABLE_HEALTHCHECK") == "true"
+}

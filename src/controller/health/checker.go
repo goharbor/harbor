@@ -200,7 +200,9 @@ func RegisterHealthCheckers() {
 	registry["jobservice"] = jobserviceHealthChecker()
 	registry["registry"] = registryHealthChecker()
 	registry["registryctl"] = registryCtlHealthChecker()
-	registry["database"] = databaseHealthChecker()
+	if !config.DatabaseHealthCheckerDisabled() {
+		registry["database"] = databaseHealthChecker()
+	}
 	registry["redis"] = redisHealthChecker()
 	if config.WithChartMuseum() {
 		registry["chartmuseum"] = chartmuseumHealthChecker()

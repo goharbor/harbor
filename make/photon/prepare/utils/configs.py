@@ -287,6 +287,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_disable_healthcheck'] = external_db_configs['harbor'].get("disable_healthcheck", False)
 
         if with_notary:
             # notary signer
