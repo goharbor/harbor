@@ -15,11 +15,13 @@
 package handler
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {
@@ -65,6 +67,32 @@ func Test_verifyCreateRequest(t *testing.T) {
 			if tt.wantErr != (err != nil) {
 				t.Error("test failed")
 			}
+		})
+	}
+}
+
+func Test_checkRetentionHour(t *testing.T) {
+	type args struct {
+		m map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{"normal", args{map[string]interface{}{common.PurgeAuditRetentionHour: 24}}, 24, func(t assert.TestingT, err error, i ...interface{}) bool { return false }},
+		{"overflow", args{map[string]interface{}{common.PurgeAuditRetentionHour: 250000}}, 0, func(t assert.TestingT, err error, i ...interface{}) bool { return true }},
+		{"equal", args{map[string]interface{}{common.PurgeAuditRetentionHour: 240000}}, 240000, func(t assert.TestingT, err error, i ...interface{}) bool { return false }},
+		{"wrong type", args{map[string]interface{}{common.PurgeAuditRetentionHour: "wrong type"}}, 0, func(t assert.TestingT, err error, i ...interface{}) bool { return true }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := retentionHour(tt.args.m)
+			if !tt.wantErr(t, err, fmt.Sprintf("retentionHour(%v)", tt.args.m)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "retentionHour(%v)", tt.args.m)
 		})
 	}
 }
