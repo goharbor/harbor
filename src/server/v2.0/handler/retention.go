@@ -230,7 +230,7 @@ func (r *retentionAPI) checkRuleConflict(p *policy.Metadata) error {
 func (r *retentionAPI) TriggerRetentionExecution(ctx context.Context, params operation.TriggerRetentionExecutionParams) middleware.Responder {
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {
-		return r.SendError(ctx, errors.BadRequestError((err)))
+		return r.SendError(ctx, errors.BadRequestError(err))
 	}
 	err = r.requireAccess(ctx, p, rbac.ActionUpdate)
 	if err != nil {
@@ -248,7 +248,7 @@ func (r *retentionAPI) TriggerRetentionExecution(ctx context.Context, params ope
 
 func (r *retentionAPI) OperateRetentionExecution(ctx context.Context, params operation.OperateRetentionExecutionParams) middleware.Responder {
 	if params.Body.Action != "stop" {
-		return r.SendError(ctx, errors.BadRequestError((fmt.Errorf("action should be 'stop'"))))
+		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("action should be 'stop'")))
 	}
 	p, err := r.retentionCtl.GetRetention(ctx, params.ID)
 	if err != nil {

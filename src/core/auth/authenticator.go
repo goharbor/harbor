@@ -27,7 +27,7 @@ import (
 )
 
 // 1.5 seconds
-const frozenTime time.Duration = 1500 * time.Millisecond
+const frozenTime = 1500 * time.Millisecond
 
 var lock = NewUserLock(frozenTime)
 

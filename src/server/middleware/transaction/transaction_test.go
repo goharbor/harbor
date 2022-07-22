@@ -136,7 +136,7 @@ func TestTransaction(t *testing.T) {
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), key{}, "value")))
 	})
 
-	Middleware()(m1((txMustCommit(http.StatusBadRequest)))).ServeHTTP(rec5, req5)
+	Middleware()(m1(txMustCommit(http.StatusBadRequest))).ServeHTTP(rec5, req5)
 	assert.Equal(http.StatusBadRequest, rec2.Code)
 	assert.NotEmpty(mo.records)
 }
