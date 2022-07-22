@@ -72,7 +72,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.AuditLog, error) {
 func (m *manager) Create(ctx context.Context, audit *model.AuditLog) (int64, error) {
 	if len(config.AuditLogForwardEndpoint(ctx)) > 0 {
 		LogMgr.DefaultLogger(ctx).WithField("operator", audit.Username).
-			WithField("time", audit.OpTime).
+			WithField("time", audit.OpTime).WithField("resourceType", audit.ResourceType).
 			Infof("action:%s, resource:%s", audit.Operation, audit.Resource)
 	}
 	if config.SkipAuditLogDatabase(ctx) {
