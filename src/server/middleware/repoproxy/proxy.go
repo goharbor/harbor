@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/security"
@@ -60,6 +61,17 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if err != nil {
 		return err
 	}
+
+	// Handle dockerhub request without library prefix
+	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+	if err != nil {
+		return err
+	}
+	if isDefault {
+		http.Redirect(w, r, defaultBlobURL(p.Name, name, art.Digest), http.StatusMovedPermanently)
+		return nil
+	}
+
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
@@ -106,12 +118,51 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
+func defaultLibrary(ctx context.Context, registryID int64, a lib.ArtifactInfo) (bool, string, error) {
+	if registryID <= 0 {
+		return false, "", nil
+	}
+	reg, err := registry.Ctl.Get(ctx, registryID)
+	if err != nil {
+		return false, "", err
+	}
+	if reg.Type != model.RegistryTypeDockerHub {
+		return false, "", err
+	}
+	name := strings.TrimPrefix(a.Repository, a.ProjectName+"/")
+	if strings.Contains(name, "/") {
+		return false, "", nil
+	}
+	return true, name, nil
+}
+
+// defaultManifestURL return the real url for request with default project
+func defaultManifestURL(projectName string, name string, a lib.ArtifactInfo) string {
+	return fmt.Sprintf("/v2/%s/library/%s/manifests/%s", projectName, name, a.Reference)
+}
+
+// defaultManifestURL return the real url for request with default project
+func defaultBlobURL(projectName string, name string, digest string) string {
+	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
+}
+
 func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
 	art, p, proxyCtl, err := preCheck(ctx)
 	if err != nil {
 		return err
 	}
+
+	// Handle dockerhub request without library prefix
+	defaultProj, name, err := defaultLibrary(ctx, p.RegistryID, art)
+	if err != nil {
+		return err
+	}
+	if defaultProj {
+		http.Redirect(w, r, defaultManifestURL(p.Name, name, art), http.StatusMovedPermanently)
+		return nil
+	}
+
 	if !canProxy(r.Context(), p) {
 		next.ServeHTTP(w, r)
 		return nil
