@@ -9,20 +9,21 @@ import (
 // Data models a single row of the exported scan vulnerability data
 
 type Data struct {
-	ID             int64  `orm:"column(result_row_id)" csv:"RowId"`
-	ProjectName    string `orm:"column(project_name)" csv:"Project"`
-	ProjectOwner   string `orm:"column(project_owner)" csv:"Owner"`
-	ScannerName    string `orm:"column(scanner_name)" csv:"Scanner"`
-	Repository     string `orm:"column(repository_name)" csv:"Repository"`
-	ArtifactDigest string `orm:"column(artifact_digest)" csv:"Artifact Digest"`
-	CVEId          string `orm:"column(cve_id)" csv:"CVE"`
-	Package        string `orm:"column(package)" csv:"Package"`
-	Severity       string `orm:"column(severity)" csv:"Severity"`
-	CVSSScoreV3    string `orm:"column(cvss_score_v3)" csv:"CVSS V3 Score"`
-	CVSSScoreV2    string `orm:"column(cvss_score_v2)" csv:"CVSS V2 Score"`
-	CVSSVectorV3   string `orm:"column(cvss_vector_v3)" csv:"CVSS V3 Vector"`
-	CVSSVectorV2   string `orm:"column(cvss_vector_v2)" csv:"CVSS V2 Vector"`
-	CWEIds         string `orm:"column(cwe_ids)" csv:"CWE Ids"`
+	ID           int64  `orm:"column(result_row_id)" csv:"RowId"`
+	ProjectName  string `orm:"column(project_name)" csv:"Project"`
+	ProjectOwner string `orm:"column(project_owner)" csv:"Owner"`
+	ScannerName  string `orm:"column(scanner_name)" csv:"Scanner"`
+	Repository   string `orm:"column(repository_name)" csv:"Repository"`
+	CVEId        string `orm:"column(cve_id)" csv:"CVE"`
+	Package      string `orm:"column(package)" csv:"Package"`
+	Version      string `orm:"column(package_version)" csv:"Current Version"`
+	FixVersion   string `orm:"column(fixed_version)" csv:"Fixed in version"`
+	Severity     string `orm:"column(severity)" csv:"Severity"`
+	CVSSScoreV3  string `orm:"column(cvss_score_v3)" csv:"CVSS V3 Score"`
+	CVSSScoreV2  string `orm:"column(cvss_score_v2)" csv:"CVSS V2 Score"`
+	CVSSVectorV3 string `orm:"column(cvss_vector_v3)" csv:"CVSS V3 Vector"`
+	CVSSVectorV2 string `orm:"column(cvss_vector_v2)" csv:"CVSS V2 Vector"`
+	CWEIds       string `orm:"column(cwe_ids)" csv:"CWE Ids"`
 }
 
 // Request encapsulates the filters to be provided when exporting the data for a scan.

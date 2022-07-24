@@ -20,7 +20,7 @@ const (
 	VulnScanReportQuery = `select row_number() over() as result_row_id, project.project_id as project_id, project."name" as project_name, harbor_user.user_id as user_id, harbor_user.username as project_owner, repository.repository_id, repository.name as repository_name, 
 scanner_registration.id as scanner_id, scanner_registration."name" as scanner_name, 
 vulnerability_record.cve_id, vulnerability_record.package, vulnerability_record.severity,
-vulnerability_record.cvss_score_v3, vulnerability_record.cvss_score_v2, vulnerability_record.cvss_vector_v3, vulnerability_record.cvss_vector_v2, vulnerability_record.cwe_ids from report_vulnerability_record inner join  scan_report on report_vulnerability_record.report_uuid = scan_report.uuid
+vulnerability_record.cvss_score_v3, vulnerability_record.cvss_score_v2, vulnerability_record.cvss_vector_v3, vulnerability_record.cvss_vector_v2, vulnerability_record.cwe_ids, vulnerability_record.package_version, vulnerability_record.fixed_version from report_vulnerability_record inner join  scan_report on report_vulnerability_record.report_uuid = scan_report.uuid
 inner join  artifact on  scan_report.digest = artifact.digest
 left outer join artifact_reference on artifact.id = artifact_reference.child_id
 inner join  vulnerability_record on  report_vulnerability_record.vuln_record_id = vulnerability_record.id
@@ -29,19 +29,20 @@ inner join repository on artifact.repository_id = repository.repository_id
 inner join tag on tag.repository_id = repository.repository_id
 inner join harbor_user on project.owner_id = harbor_user.user_id
 inner join scanner_registration on scan_report.registration_uuid = scanner_registration.uuid `
-	ArtifactBylabelQueryTemplate = "select distinct artifact.id from artifact inner join label_reference on artifact.id = label_reference.artifact_id inner join harbor_label on label_reference.label_id = harbor_label.id and harbor_label.id in (%s)"
-	SQLAnd                       = " and "
-	SQLOr                        = " or "
-	RepositoryIDColumn           = "repository.repository_id"
-	ProjectIDColumn              = "project.project_id"
-	TagIDColumn                  = "tag.id"
-	ArtifactParentIDColumn       = "artifact_reference.parent_id"
-	ArtifactIDColumn             = "artifact.id"
-	GroupBy                      = " group by "
-	GroupByCols                  = `package, vulnerability_record.severity, vulnerability_record.cve_id, project.project_id, harbor_user.user_id , 
+	ArtifactBylabelQueryTemplate      = "select distinct artifact.id from artifact inner join label_reference on artifact.id = label_reference.artifact_id inner join harbor_label on label_reference.label_id = harbor_label.id and harbor_label.id in (%s)"
+	ArtifactByLabelRepoFilterTemplate = " and artifact.repository_id in (%s)"
+	SQLAnd                            = " and "
+	SQLOr                             = " or "
+	RepositoryIDColumn                = "repository.repository_id"
+	ProjectIDColumn                   = "project.project_id"
+	TagIDColumn                       = "tag.id"
+	ArtifactParentIDColumn            = "artifact_reference.parent_id"
+	ArtifactIDColumn                  = "artifact.id"
+	GroupBy                           = " group by "
+	GroupByCols                       = `package, vulnerability_record.severity, vulnerability_record.cve_id, project.project_id, harbor_user.user_id , 
 repository.repository_id, scanner_registration.id, vulnerability_record.cvss_score_v3, 
 vulnerability_record.cvss_score_v2, vulnerability_record.cvss_vector_v3, vulnerability_record.cvss_vector_v2, 
-vulnerability_record.cwe_ids`
+vulnerability_record.cwe_ids, vulnerability_record.package_version, vulnerability_record.fixed_version`
 	JobModeExport = "export"
 	JobModeKey    = "mode"
 )
@@ -107,7 +108,7 @@ func NewManager() Manager {
 
 func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, error) {
 	exportData := make([]Data, 0)
-	artifactIdsWithLabel, err := em.getArtifactsWithLabel(ctx, params.Labels)
+	artifactIdsWithLabel, err := em.getArtifactsWithLabel(ctx, params.Labels, params.Repositories)
 	if err != nil {
 		return nil, err
 	}
@@ -226,24 +227,38 @@ func (em *exportManager) buildIDFilterFragmentWithInForMultipleCols(ids []int64,
 // the specified label ids.
 // Within Harbor, labels are attached to the root artifact whereas scan results
 // are associated with the child artifact.
-func (em *exportManager) getArtifactsWithLabel(ctx context.Context, ids []int64) ([]int64, error) {
+func (em *exportManager) getArtifactsWithLabel(ctx context.Context, ids []int64, repositoryIds []int64) ([]int64, error) {
 	artifactIds := make([]int64, 0)
 
 	if len(ids) == 0 {
 		return artifactIds, nil
 	}
+	artifactQueryBuilder := strings.Builder{}
+
 	strIds := make([]string, 0)
 	for _, id := range ids {
 		strIds = append(strIds, strconv.FormatInt(id, 10))
 	}
-	artifactQuery := fmt.Sprintf(ArtifactBylabelQueryTemplate, strings.Join(strIds, ","))
-	logger.Infof("Triggering artifact query : %s", artifactQuery)
+	artifactQueryFragment := fmt.Sprintf(ArtifactBylabelQueryTemplate, strings.Join(strIds, ","))
+	artifactQueryBuilder.WriteString(artifactQueryFragment)
+
+	// append any repository filters
+	strRepoIds := make([]string, 0)
+	for _, repoID := range repositoryIds {
+		strRepoIds = append(strRepoIds, strconv.FormatInt(repoID, 10))
+	}
+	if len(repositoryIds) > 0 {
+		repoFilterFragment := fmt.Sprintf(ArtifactByLabelRepoFilterTemplate, strings.Join(strRepoIds, ","))
+		artifactQueryBuilder.WriteString(repoFilterFragment)
+	}
+
+	logger.Infof("Triggering artifact query : %s", artifactQueryBuilder.String())
 
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	numRows, err := ormer.Raw(artifactQuery).QueryRows(&artifactIds)
+	numRows, err := ormer.Raw(artifactQueryFragment).QueryRows(&artifactIds)
 	if err != nil {
 		return nil, err
 	}
