@@ -237,16 +237,6 @@ export class OperationComponent implements OnInit, OnDestroy {
                 daysAgo
             );
         });
-        this.exportJobs.forEach(data => {
-            const timeDiff: number = new Date().getTime() - +data.timeStamp;
-            data.timeDiff = this.calculateTime(
-                timeDiff,
-                secondsAgo,
-                minutesAgo,
-                hoursAgo,
-                daysAgo
-            );
-        });
     }
 
     calculateTime(
@@ -299,6 +289,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                                 flag = true;
                             }
                         });
+                        this.refreshTimestampForExportJob();
                         if (flag) {
                             this.timeout = setTimeout(() => {
                                 this.refreshExportJobs();
@@ -351,6 +342,32 @@ export class OperationComponent implements OnInit, OnDestroy {
                         this.msgHandler.error(error);
                     }
                 );
+        }
+    }
+    refreshTimestampForExportJob() {
+        let secondsAgo: string,
+            minutesAgo: string,
+            hoursAgo: string,
+            daysAgo: string;
+        forkJoin([
+            this.translate.get('OPERATION.SECOND_AGO'),
+            this.translate.get('OPERATION.MINUTE_AGO'),
+            this.translate.get('OPERATION.HOUR_AGO'),
+            this.translate.get('OPERATION.DAY_AGO'),
+        ]).subscribe(res => {
+            [secondsAgo, minutesAgo, hoursAgo, daysAgo] = res;
+        });
+        if (this.exportJobs?.length) {
+            this.exportJobs.forEach(data => {
+                const timeDiff: number = new Date().getTime() - +data.timeStamp;
+                data.timeDiff = this.calculateTime(
+                    timeDiff,
+                    secondsAgo,
+                    minutesAgo,
+                    hoursAgo,
+                    daysAgo
+                );
+            });
         }
     }
 }
