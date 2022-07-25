@@ -7,6 +7,10 @@ linters-settings:
     locale: US,UK
   goimports:
     local-prefixes: github.com/goharbor/harbor
+  stylecheck:
+    checks: [
+      "ST1019",  # Importing the same package multiple times.
+    ]
 
 linters:
   disable-all: true
@@ -40,7 +44,7 @@ linters:
     # - rowserrcheck
     # - staticcheck
     - structcheck
-    # - stylecheck
+    - stylecheck
     # - unconvert
     # - unparam
     - unused

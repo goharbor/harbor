@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
@@ -82,7 +81,7 @@ func (qp *Handler) IsStateful() bool {
 	return false
 }
 
-func constructQuotaPayload(event *event.QuotaEvent) (*model.Payload, error) {
+func constructQuotaPayload(event *event.QuotaEvent) (*notifyModel.Payload, error) {
 	repoName := event.RepoName
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
