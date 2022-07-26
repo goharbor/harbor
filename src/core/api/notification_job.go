@@ -63,6 +63,14 @@ func (w *NotificationJobAPI) List() {
 		return
 	}
 	if policy == nil {
+		w.SendBadRequestError(fmt.Errorf("invalid policy_id: %s", w.GetString("policy_id")))
+		return
+	}
+	if policy.ProjectID != w.project.ProjectID {
+		w.SendNotFoundError(fmt.Errorf("policy id:%d not found in project id: %d", policyID, w.project.ProjectID))
+		return
+	}
+	if policy == nil {
 		w.SendBadRequestError(fmt.Errorf("policy %d not found", policyID))
 		return
 	}
