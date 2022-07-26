@@ -119,8 +119,10 @@ func (a *authorizer) isTarget(req *http.Request) bool {
 		return false
 	}
 
-	// handle /artifacts-uploads, used to upload blobs, by authorizer
-	if strings.HasPrefix(req.URL.Path, "/artifacts-uploads") {
+	// handle /artifacts-uploads, used to upload blobs, and
+	// /artifacts-downloads, used to download blobs, by authorizer
+	if strings.HasPrefix(req.URL.Path, "/artifacts-uploads") ||
+		strings.HasPrefix(req.URL.Path, "/artifacts-downloads") {
 		return true
 	}
 

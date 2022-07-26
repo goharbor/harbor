@@ -78,6 +78,17 @@ func TestAuthorizer_AddAuthorization(t *testing.T) {
 	if authHeader != "Bearer "+token.Token {
 		t.Errorf("unexpected token - expected: %s, got: %s", token.Token, authHeader)
 	}
+
+	// we are expecting a Authorization header to be added
+	req, _ = http.NewRequest(http.MethodGet, server.URL+"/artifacts-downloads", nil)
+	auth.Modify(req)
+	authHeader = req.Header.Get("Authorization")
+	if authHeader == "" {
+		t.Errorf("expected authorization header")
+	}
+	if authHeader != "Bearer "+token.Token {
+		t.Errorf("unexpected token - expected: %s, got: %s", token.Token, authHeader)
+	}
 }
 
 func TestAuthorizer_NoAuthorization(t *testing.T) {
