@@ -63,10 +63,13 @@ func (d *dao) Get(ctx context.Context, id int64) (*provider.Instance, error) {
 	}
 
 	di := provider.Instance{ID: id}
-	err = o.Read(&di, "ID")
-	if err == beego_orm.ErrNoRows {
-		return nil, nil
+	if err = o.Read(&di, "ID"); err != nil {
+		if e := orm.AsNotFoundError(err, "instance %d not found", id); e != nil {
+			err = e
+		}
+		return nil, err
 	}
+
 	return &di, err
 }
 
