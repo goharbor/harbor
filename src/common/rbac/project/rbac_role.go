@@ -80,6 +80,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
@@ -176,6 +177,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
@@ -234,6 +236,7 @@ var (
 
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 

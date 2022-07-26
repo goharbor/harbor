@@ -25,6 +25,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -35,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
@@ -46,21 +48,23 @@ import (
 
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
-		artCtl:  artifact.Ctl,
-		proCtl:  project.Ctl,
-		repoCtl: repository.Ctl,
-		scanCtl: scan.DefaultController,
-		tagCtl:  tag.Ctl,
+		artCtl:   artifact.Ctl,
+		proCtl:   project.Ctl,
+		repoCtl:  repository.Ctl,
+		scanCtl:  scan.DefaultController,
+		tagCtl:   tag.Ctl,
+		labelMgr: label.Mgr,
 	}
 }
 
 type artifactAPI struct {
 	BaseAPI
-	artCtl  artifact.Controller
-	proCtl  project.Controller
-	repoCtl repository.Controller
-	scanCtl scan.Controller
-	tagCtl  tag.Controller
+	artCtl   artifact.Controller
+	proCtl   project.Controller
+	repoCtl  repository.Controller
+	scanCtl  scan.Controller
+	tagCtl   tag.Controller
+	labelMgr label.Manager
 }
 
 func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
@@ -397,7 +401,14 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 }
 
 func (a *artifactAPI) AddLabel(ctx context.Context, params operation.AddLabelParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+	projectID, err := getProjectID(ctx, params.ProjectName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireProjectAccess(ctx, projectID, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireLabelInProject(ctx, projectID, params.Label.ID); err != nil {
 		return a.SendError(ctx, err)
 	}
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
@@ -422,6 +433,17 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 		return a.SendError(ctx, err)
 	}
 	return operation.NewRemoveLabelOK()
+}
+
+func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labelID int64) error {
+	l, err := a.labelMgr.Get(ctx, labelID)
+	if err != nil {
+		return err
+	}
+	if l.Scope == common.LabelScopeProject && l.ProjectID != projectID {
+		return errors.NotFoundError(nil).WithMessage("project id %d, label %d not found", projectID, labelID)
+	}
+	return nil
 }
 
 func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artifact.Option {
