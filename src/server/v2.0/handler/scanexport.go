@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/goharbor/harbor/src/lib/errors"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
@@ -107,6 +109,20 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 		return se.SendError(ctx, err)
 	}
 	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
+	if err != nil {
+		return se.SendError(ctx, err)
+	}
+
+	// check if the execution being fetched is owned by the current user
+	secContext, err := se.GetSecurityContext(ctx)
+	if err != nil {
+		return se.SendError(ctx, err)
+	}
+	if secContext.GetUsername() != execution.UserName {
+		err = errors.New(nil).WithCode(errors.ForbiddenCode)
+		return se.SendError(ctx, err)
+	}
+
 	if err != nil {
 		return se.SendError(ctx, err)
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/opencontainers/go-digest"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
@@ -76,12 +75,13 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	mode := params[export.JobModeKey].(string)
+	logger := ctx.GetLogger()
 	logger.Infof("Scan data export job started in mode : %v", mode)
 	sde.init()
 	fileName := fmt.Sprintf("%s/scandata_export_%v.csv", sde.scanDataExportDirPath, params["JobId"])
 
 	// ensure that CSV files are cleared post the completion of the Run.
-	defer sde.cleanupCsvFile(fileName, params)
+	defer sde.cleanupCsvFile(ctx, fileName, params)
 	err := sde.writeCsvFile(ctx, params, fileName)
 	if err != nil {
 		logger.Errorf("error when writing data to CSV: %v", err)
@@ -133,6 +133,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, err error, hash digest.Digest) error {
 	execID := int64(params["JobId"].(float64))
 	exec, err := sde.execMgr.Get(ctx.SystemContext(), execID)
+	logger := ctx.GetLogger()
 	if err != nil {
 		logger.Errorf("Export Job Id = %v. Error when fetching execution record for update : %v", params["JobId"], err)
 		return err
@@ -153,6 +154,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 	systemContext := ctx.SystemContext()
 	defer csvFile.Close()
 
+	logger := ctx.GetLogger()
 	if err != nil {
 		logger.Errorf("Failed to create CSV export file %s. Error : %v", fileName, err)
 		return err
@@ -329,7 +331,8 @@ func (sde *ScanDataExport) init() {
 	}
 }
 
-func (sde *ScanDataExport) cleanupCsvFile(fileName string, params job.Parameters) {
+func (sde *ScanDataExport) cleanupCsvFile(ctx job.Context, fileName string, params job.Parameters) {
+	logger := ctx.GetLogger()
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		logger.Infof("Export Job Id = %v, CSV Export File = %s does not exist. Nothing to do", params["JobId"], fileName)
 		return

@@ -252,7 +252,7 @@ func (suite *ScanExportTestSuite) TestExportScanDataNoPrivileges() {
 }
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
-
+	suite.Security.On("GetUsername").Return("test-user")
 	suite.Security.On("IsAuthenticated").Return(true).Once()
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 	url := "/export/cve/execution/100"
@@ -282,6 +282,33 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	suite.Equal("test-job", respData.JobName)
 	suite.Equal(false, respData.FilePresent)
 
+}
+
+func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionUserNotOwnerOfExport() {
+	suite.Security.On("GetUsername").Return("test-user")
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	url := "/export/cve/execution/100"
+	endTime := time.Now()
+	startTime := endTime.Add(-10 * time.Minute)
+
+	execution := &export.Execution{
+		ID:               100,
+		UserID:           3,
+		Status:           "Success",
+		StatusMessage:    "",
+		Trigger:          "MANUAL",
+		StartTime:        startTime,
+		EndTime:          endTime,
+		ExportDataDigest: "datadigest",
+		UserName:         "test-user1",
+		JobName:          "test-job",
+		FilePresent:      false,
+	}
+	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil).Once()
+	res, err := suite.DoReq(http.MethodGet, url, nil)
+	suite.Equal(http.StatusForbidden, res.StatusCode)
+	suite.Equal(nil, err)
 }
 
 func (suite *ScanExportTestSuite) TestDownloadScanData() {
@@ -467,6 +494,41 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionList() {
 	}
 	fmt.Println("URL string : ", url.String())
 	mock.OnAnything(suite.scanExportCtl, "ListExecutions").Return([]*export.Execution{execution}, nil).Once()
+	res, err := suite.DoReq(http.MethodGet, url.String(), nil)
+	suite.Equal(200, res.StatusCode)
+	suite.Equal(nil, err)
+	respData := models.ScanDataExportExecutionList{}
+	json.NewDecoder(res.Body).Decode(&respData)
+	suite.Equal(1, len(respData.Items))
+	suite.Equal(int64(100), respData.Items[0].ID)
+}
+
+func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionListFilterNotOwned() {
+	suite.Security.On("GetUsername").Return("test-user")
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	url, err := url2.Parse("/export/cve/executions")
+	params := url2.Values{}
+	params.Add("user_name", "test-user")
+	url.RawQuery = params.Encode()
+	endTime := time.Now()
+	startTime := endTime.Add(-10 * time.Minute)
+
+	executionOwned := &export.Execution{
+		ID:               100,
+		UserID:           3,
+		Status:           "Success",
+		StatusMessage:    "",
+		Trigger:          "MANUAL",
+		StartTime:        startTime,
+		EndTime:          endTime,
+		ExportDataDigest: "datadigest",
+		JobName:          "test-job",
+		UserName:         "test-user",
+	}
+
+	fmt.Println("URL string : ", url.String())
+	mock.OnAnything(suite.scanExportCtl, "ListExecutions").Return([]*export.Execution{executionOwned}, nil).Once()
 	res, err := suite.DoReq(http.MethodGet, url.String(), nil)
 	suite.Equal(200, res.StatusCode)
 	suite.Equal(nil, err)

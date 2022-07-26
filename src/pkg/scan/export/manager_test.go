@@ -217,7 +217,7 @@ func (suite *ExportManagerSuite) generateVulnerabilityRecordsForReport(registrat
 		vulnV2 := new(daoscan.VulnerabilityRecord)
 		vulnV2.CVEID = fmt.Sprintf("CVE-ID%d", i)
 		vulnV2.Package = fmt.Sprintf("Package%d", i)
-		vulnV2.PackageVersion = "NotAvailable"
+		vulnV2.PackageVersion = "Package-0.9.0"
 		vulnV2.PackageType = "Unknown"
 		vulnV2.Fix = "1.0.0"
 		vulnV2.URLs = "url1"
