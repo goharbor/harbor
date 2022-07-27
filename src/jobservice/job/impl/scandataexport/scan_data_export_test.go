@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -15,8 +14,10 @@ import (
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/selector"
+	artpkg "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -155,11 +156,12 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
 
-		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
-		repoCandidates := []*selector.Candidate{repoCandidate1}
+		repoCandidates := []int64{1}
+		artCandidates := []*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1, Digest: "digest1"}}}
 		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{1}, nil).Once()
 		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
+		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(artCandidates, nil)
+		mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return(artCandidates, nil)
 
 		criteria := export.Request{
 			CVEIds:       "CVE-123",
@@ -198,7 +200,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		_, err = os.Stat("/tmp/scandata_export_100.csv")
 
 		exportParamsMatcher := testifymock.MatchedBy(func(params export.Params) bool {
-			return reflect.DeepEqual(params.Labels, criteria.Labels) && reflect.DeepEqual(params.CVEIds, criteria.CVEIds) && reflect.DeepEqual(params.Repositories, []int64{1}) && reflect.DeepEqual(params.Projects, criteria.Projects)
+			return reflect.DeepEqual(params.CVEIds, criteria.CVEIds)
 		})
 		suite.exportMgr.AssertCalled(suite.T(), "Fetch", mock.Anything, exportParamsMatcher)
 
@@ -260,7 +262,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		_, err = os.Stat("/tmp/scandata_export_100.csv")
 
 		exportParamsMatcher := testifymock.MatchedBy(func(params export.Params) bool {
-			return reflect.DeepEqual(params.Labels, criteria.Labels) && reflect.DeepEqual(params.CVEIds, criteria.CVEIds) && reflect.DeepEqual(params.Repositories, []int64{1}) && reflect.DeepEqual(params.Projects, criteria.Projects)
+			return reflect.DeepEqual(params.CVEIds, criteria.CVEIds)
 		})
 		suite.exportMgr.AssertCalled(suite.T(), "Fetch", mock.Anything, exportParamsMatcher)
 
@@ -626,18 +628,20 @@ func (suite *ScanDataExportJobTestSuite) createDataRecords(numRecs int, ownerId 
 	data := make([]export.Data, 0)
 	for i := 1; i <= numRecs; i++ {
 		dataRec := export.Data{
-			ID:           int64(i),
-			ProjectName:  fmt.Sprintf("TestProject%d", i),
-			ProjectOwner: strconv.FormatInt(ownerId, 10),
-			ScannerName:  fmt.Sprintf("TestScanner%d", i),
-			CVEId:        fmt.Sprintf("CVEId-%d", i),
-			Package:      fmt.Sprintf("Package%d", i),
-			Severity:     fmt.Sprintf("Severity%d", i),
-			CVSSScoreV3:  fmt.Sprintf("3.0"),
-			CVSSScoreV2:  fmt.Sprintf("2.0"),
-			CVSSVectorV3: fmt.Sprintf("TestCVSSVectorV3%d", i),
-			CVSSVectorV2: fmt.Sprintf("TestCVSSVectorV2%d", i),
-			CWEIds:       "",
+			ID:             int64(i),
+			ScannerName:    fmt.Sprintf("TestScanner%d", i),
+			Repository:     fmt.Sprintf("Repository%d", i),
+			ArtifactDigest: fmt.Sprintf("Digest%d", i),
+			CVEId:          fmt.Sprintf("CVEId-%d", i),
+			Package:        fmt.Sprintf("Package%d", i),
+			Version:        fmt.Sprintf("Version%d", i),
+			FixVersion:     fmt.Sprintf("FixVersion%d", i),
+			Severity:       fmt.Sprintf("Severity%d", i),
+			CVSSScoreV3:    fmt.Sprintf("3.0"),
+			CVSSScoreV2:    fmt.Sprintf("2.0"),
+			CVSSVectorV3:   fmt.Sprintf("TestCVSSVectorV3%d", i),
+			CVSSVectorV2:   fmt.Sprintf("TestCVSSVectorV2%d", i),
+			CWEIds:         "",
 		}
 		data = append(data, dataRec)
 	}

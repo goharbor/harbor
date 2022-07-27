@@ -2,7 +2,6 @@ package export
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -105,18 +104,20 @@ func (suite *ExportDataSelectorTestSuite) createDataRecords(numRecs int, ownerId
 	data := make([]Data, 0)
 	for i := 1; i <= numRecs; i++ {
 		dataRec := Data{
-			ID:           int64(i),
-			ProjectName:  fmt.Sprintf("TestProject%d", i),
-			ProjectOwner: strconv.FormatInt(ownerId, 10),
-			ScannerName:  fmt.Sprintf("TestScanner%d", i),
-			CVEId:        fmt.Sprintf("CVEId-%d", i),
-			Package:      fmt.Sprintf("Package%d", i),
-			Severity:     fmt.Sprintf("Severity%d", i),
-			CVSSScoreV3:  fmt.Sprintf("3.0"),
-			CVSSScoreV2:  fmt.Sprintf("2.0"),
-			CVSSVectorV3: fmt.Sprintf("TestCVSSVectorV3%d", i),
-			CVSSVectorV2: fmt.Sprintf("TestCVSSVectorV2%d", i),
-			CWEIds:       "",
+			ID:             int64(i),
+			ScannerName:    fmt.Sprintf("TestScanner%d", i),
+			Repository:     fmt.Sprintf("Repository%d", i),
+			ArtifactDigest: fmt.Sprintf("Digest%d", i),
+			CVEId:          fmt.Sprintf("CVEId-%d", i),
+			Package:        fmt.Sprintf("Package%d", i),
+			Version:        fmt.Sprintf("Version%d", i),
+			FixVersion:     fmt.Sprintf("FixVersion%d", i),
+			Severity:       fmt.Sprintf("Severity%d", i),
+			CVSSScoreV3:    fmt.Sprintf("3.0"),
+			CVSSScoreV2:    fmt.Sprintf("2.0"),
+			CVSSVectorV3:   fmt.Sprintf("TestCVSSVectorV3%d", i),
+			CVSSVectorV2:   fmt.Sprintf("TestCVSSVectorV2%d", i),
+			CWEIds:         "",
 		}
 		data = append(data, dataRec)
 	}

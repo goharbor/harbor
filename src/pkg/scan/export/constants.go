@@ -7,7 +7,8 @@ const (
 	JobNameAttribute   = "job_name"
 	UserNameAttribute  = "user_name"
 	ScanDataExportDir  = "/var/scandata_exports"
-	QueryPageSize      = 100
+	QueryPageSize      = 100000
+	ArtifactGroupSize  = 10000
 	DigestKey          = "artifact_digest"
 	CreateTimestampKey = "create_ts"
 	Vendor             = "SCAN_DATA_EXPORT"
