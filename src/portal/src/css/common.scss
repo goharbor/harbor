@@ -332,3 +332,9 @@ hbr-copy-input {
 .select-all-for-dropdown {
   color: $select-all-for-dropdown-color !important;
 }
+
+hbr-create-edit-rule {
+  .label-text {
+    border-bottom-color: $normal-border-color !important;
+  }
+}

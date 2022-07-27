@@ -58,6 +58,7 @@ export class OperationComponent implements OnInit, OnDestroy {
         }
     }
     timeout;
+    refreshExportJobSub: Subscription;
     constructor(
         private session: SessionService,
         private operationService: OperationService,
@@ -66,29 +67,34 @@ export class OperationComponent implements OnInit, OnDestroy {
         private event: EventService,
         private msgHandler: MessageHandlerService
     ) {
-        this.event.subscribe(HarborEvent.REFRESH_EXPORT_JOBS, () => {
-            if (this.animationState === 'out') {
-                this._newMessageCount += 1;
-            }
-            this.refreshExportJobs();
-        });
-
-        this.batchInfoSubscription = operationService.operationInfo$.subscribe(
-            data => {
-                if (this.animationState === 'out') {
-                    this._newMessageCount += 1;
-                }
-                if (data) {
-                    if (this.resultLists.length >= MAX_NUMBER) {
-                        this.resultLists.splice(
-                            MAX_NUMBER - 1,
-                            this.resultLists.length + 1 - MAX_NUMBER
-                        );
+        if (!this.refreshExportJobSub) {
+            this.refreshExportJobSub = this.event.subscribe(
+                HarborEvent.REFRESH_EXPORT_JOBS,
+                () => {
+                    if (this.animationState === 'out') {
+                        this._newMessageCount += 1;
                     }
-                    this.resultLists.unshift(data);
+                    this.refreshExportJobs();
                 }
-            }
-        );
+            );
+        }
+        if (!this.batchInfoSubscription) {
+            this.batchInfoSubscription =
+                operationService.operationInfo$.subscribe(data => {
+                    if (this.animationState === 'out') {
+                        this._newMessageCount += 1;
+                    }
+                    if (data) {
+                        if (this.resultLists.length >= MAX_NUMBER) {
+                            this.resultLists.splice(
+                                MAX_NUMBER - 1,
+                                this.resultLists.length + 1 - MAX_NUMBER
+                            );
+                        }
+                        this.resultLists.unshift(data);
+                    }
+                });
+        }
     }
 
     getNewMessageCountStr(): string {
@@ -184,6 +190,7 @@ export class OperationComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.batchInfoSubscription) {
             this.batchInfoSubscription.unsubscribe();
+            this.batchInfoSubscription = null;
         }
         if (this._timeoutInterval) {
             clearInterval(this._timeoutInterval);
@@ -192,6 +199,10 @@ export class OperationComponent implements OnInit, OnDestroy {
         if (this.timeout) {
             clearTimeout(this.timeout);
             this.timeout = null;
+        }
+        if (this.refreshExportJobSub) {
+            this.refreshExportJobSub.unsubscribe();
+            this.refreshExportJobSub = null;
         }
     }
 
@@ -273,7 +284,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                                     hasFile: item.file_present,
                                     name: `${FILE_NAME_PREFIX}${new HarborDatetimePipe().transform(
                                         item.start_time,
-                                        'yyyyMMddHHss'
+                                        'yyyyMMddHHmmss'
                                     )}`,
                                     id: item.id,
                                     errorInf:

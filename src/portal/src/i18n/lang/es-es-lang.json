@@ -1754,8 +1754,7 @@
         "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully"
     },
     "CVE_EXPORT": {
-        "EXPORT_SOME_PROJECTS": "Export CVEs - {{number}} project(s)",
-        "EXPORT_ALL_PROJECTS": "Export CVEs - All projects",
+        "EXPORT_SOME_PROJECTS": "Export CVEs",
         "ALL_PROJECTS": "All projects",
         "EXPORT_TITLE": "Export CVE",
         "EXPORT_SUBTITLE": "Set exporting conditions",

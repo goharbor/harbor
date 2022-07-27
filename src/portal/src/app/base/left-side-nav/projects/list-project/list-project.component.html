@@ -1,7 +1,8 @@
 <clr-datagrid
     (clrDgRefresh)="clrLoad($event)"
     [clrDgLoading]="loading"
-    [(clrDgSelected)]="selectedRow">
+    [(clrDgSelected)]="selectedRow"
+    (clrDgSelectedChange)="selectionChanged()">
     <clr-dg-action-bar>
         <button
             type="button"
@@ -23,11 +24,14 @@
             down"></clr-icon
             ></span>
             <clr-dropdown-menu *clrIfOpen>
-                <button clrDropdownItem (click)="exportCVE()">
+                <button
+                    [disabled]="!hasPermission || !canClickExport"
+                    [clrLoading]="checkingPermission"
+                    clrDropdownItem
+                    (click)="exportCVE()">
                     <clr-icon shape="export" size="16"></clr-icon>&nbsp;
                     <span id="export-cve">{{
-                        getExportButtonText()
-                            | translate: { number: selectedRow?.length }
+                        'CVE_EXPORT.EXPORT_SOME_PROJECTS' | translate
                     }}</span>
                 </button>
                 <div class="dropdown-divider"></div>
@@ -102,4 +106,4 @@
         </clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
-<export-cve></export-cve>
+<export-cve (triggerExportSuccess)="triggerExportSuccess()"></export-cve>
