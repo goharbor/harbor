@@ -303,14 +303,16 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return err
 	}
-	projectID, err := getProjectID(ctx, params.Robot.Permissions[0].Namespace)
-	if err != nil {
-		return err
+	if r.Level != robot.LEVELSYSTEM {
+		projectID, err := getProjectID(ctx, params.Robot.Permissions[0].Namespace)
+		if err != nil {
+			return err
+		}
+		if r.ProjectID != projectID {
+			return errors.BadRequestError(nil).WithMessage("cannot update the project id of robot")
+		}
 	}
-	if r.Level != robot.LEVELSYSTEM && r.ProjectID != projectID {
-		return errors.BadRequestError(nil).WithMessage("cannot update the project id of robot")
-	}
-	if err := rAPI.requireAccess(ctx, params.Robot.Level, projectID, rbac.ActionUpdate); err != nil {
+	if err := rAPI.requireAccess(ctx, params.Robot.Level, params.Robot.Permissions[0].Namespace, rbac.ActionUpdate); err != nil {
 		return err
 	}
 	if params.Robot.Level != r.Level || params.Robot.Name != r.Name {
