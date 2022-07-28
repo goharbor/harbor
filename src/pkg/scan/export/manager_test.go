@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gogo/protobuf/sortkeys"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -119,78 +118,18 @@ func (suite *ExportManagerSuite) clearTestData() {
 }
 
 func (suite *ExportManagerSuite) TestExport() {
-	// no label based filtering
 	{
-		data, err := suite.exportManager.Fetch(suite.Context(), Params{})
+		data, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
 		suite.NoError(err)
 		suite.Equal(10, len(data))
-	}
-
-	// with label based filtering. all 10 records should be got back since there is a
-	// label associated with the artifact
-	{
-		p := Params{
-			Labels: suite.testDataId.labelId,
-		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
-		suite.NoError(err)
-		suite.Equal(10, len(data))
-	}
-
-	// with label based filtering and specifying a non-existent label Id.
-	// should return 0 records
-	{
-		allLabels, err := suite.labelDao.List(suite.Context(), &q.Query{})
-		suite.NoError(err)
-		allLabelIds := make([]int64, 0)
-		for _, lbl := range allLabels {
-			allLabelIds = append(allLabelIds, lbl.ID)
-		}
-		sortkeys.Int64s(allLabelIds)
-
-		p := Params{
-			Labels: []int64{allLabelIds[len(allLabelIds)-1] + int64(1)},
-		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
-		suite.NoError(err)
-		suite.Equal(0, len(data))
-	}
-
-	// specify a project id that does not exist in the system.
-	{
-		p := Params{
-			Projects: []int64{int64(-1)},
-		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
-		suite.NoError(err)
-		suite.Equal(0, len(data))
-	}
-
-	// specify a non existent repository
-	{
-		p := Params{
-			Repositories: []int64{int64(-1)},
-		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
-		suite.NoError(err)
-		suite.Equal(0, len(data))
-	}
-
-	// specify a non-existent tag
-	{
-		p := Params{
-			Tags: []int64{int64(-1)},
-		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
-		suite.NoError(err)
-		suite.Equal(0, len(data))
 	}
 }
 
 func (suite *ExportManagerSuite) TestExportWithCVEFilter() {
 	{
 		p := Params{
-			CVEIds: "CVE-ID2",
+			ArtifactIDs: []int64{1},
+			CVEIds:      "CVE-ID2",
 		}
 		data, err := suite.exportManager.Fetch(suite.Context(), p)
 		suite.NoError(err)
@@ -273,6 +212,7 @@ func (suite *ExportManagerSuite) setupTestData() {
 
 	// create artifacts for repositories
 	art := &artifactDao.Artifact{
+		ID:                1,
 		Type:              "IMAGE",
 		MediaType:         "application/vnd.docker.container.image.v1+json",
 		ManifestMediaType: "application/vnd.docker.distribution.manifest.v2+json",

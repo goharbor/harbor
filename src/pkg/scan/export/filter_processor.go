@@ -6,6 +6,7 @@ import (
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -14,19 +15,19 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 type FilterProcessor interface {
 	ProcessProjectFilter(ctx context.Context, userName string, projectsToFilter []int64) ([]int64, error)
-	ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]*selector.Candidate, error)
-	ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*selector.Candidate, error)
+	ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error)
+	ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error)
+	ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error)
 }
 
 type DefaultFilterProcessor struct {
+	artCtl     artifact.Controller
 	repoMgr    repository.Manager
-	tagMgr     tag.Manager
 	usrMgr     user.Manager
 	projectMgr project.Manager
 }
@@ -34,8 +35,8 @@ type DefaultFilterProcessor struct {
 // NewFilterProcessor constructs an instance of a FilterProcessor
 func NewFilterProcessor() FilterProcessor {
 	return &DefaultFilterProcessor{
+		artCtl:     artifact.Ctl,
 		repoMgr:    pkg.RepositoryMgr,
-		tagMgr:     tag.Mgr,
 		usrMgr:     user.Mgr,
 		projectMgr: pkg.ProjectMgr,
 	}
@@ -85,9 +86,10 @@ func (dfp *DefaultFilterProcessor) ProcessProjectFilter(ctx context.Context, use
 	return filtered, nil
 }
 
-func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]*selector.Candidate, error) {
+func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error) {
 	sel := doublestar.New(doublestar.RepoMatches, filter, "")
 	candidates := make([]*selector.Candidate, 0)
+	allRepoIDs := make([]int64, 0)
 
 	for _, projectID := range projectIds {
 		query := q.New(q.KeyWords{"ProjectID": projectID})
@@ -96,38 +98,114 @@ func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, 
 			return nil, err
 		}
 		for _, repository := range allRepos {
+			allRepoIDs = append(allRepoIDs, repository.RepositoryID)
 			namespace, repo := utils.ParseRepository(repository.Name)
 			candidates = append(candidates, &selector.Candidate{NamespaceID: repository.RepositoryID, Namespace: namespace, Repository: repo, Kind: "image"})
 		}
 	}
 	// no repo filter specified then return all repos across all projects
 	if filter == "" {
-		return candidates, nil
+		return allRepoIDs, nil
 	}
-	return sel.Select(candidates)
+	// select candidates by filter
+	candidates, err := sel.Select(candidates)
+	if err != nil {
+		return nil, err
+	}
+	// extract repository id from candidate
+	repoIDs := make([]int64, 0)
+	for _, c := range candidates {
+		repoIDs = append(repoIDs, c.NamespaceID)
+	}
+
+	return repoIDs, nil
 }
 
-func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*selector.Candidate, error) {
-	sel := doublestar.New(doublestar.Matches, filter, "")
-	candidates := make([]*selector.Candidate, 0)
-
+func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error) {
+	arts := make([]*artifact.Artifact, 0)
+	opts := &artifact.Option{
+		WithTag:   true,
+		WithLabel: true,
+		// if accessory support scan in the future, just add withAccessory here.
+		// WithAccessory: true
+	}
+	// list all artifacts by repository id
 	for _, repoID := range repositoryIds {
-		query := q.New(q.KeyWords{"RepositoryID": repoID})
-		allTags, err := dfp.tagMgr.List(ctx, query)
+		repoArts, err := dfp.artCtl.List(ctx, q.New(q.KeyWords{"RepositoryID": repoID}), opts)
 		if err != nil {
 			return nil, err
 		}
-		cand := &selector.Candidate{NamespaceID: repoID, Kind: "image"}
-		for _, tag := range allTags {
-			cand.Tags = append(cand.Tags, tag.Name)
-		}
-		candidates = append(candidates, cand)
+
+		arts = append(arts, repoArts...)
 	}
-	// no tags specified then simply return all the candidates
+	// return earlier if no tag filter
 	if filter == "" {
-		return candidates, nil
+		return arts, nil
 	}
-	return sel.Select(candidates)
+
+	// filter by tag
+	sel := doublestar.New(doublestar.Matches, filter, "")
+	candidates := make([]*selector.Candidate, 0)
+	for _, art := range arts {
+		tags := make([]string, 0, len(art.Tags))
+		for _, tag := range art.Tags {
+			tags = append(tags, tag.Name)
+		}
+		candidates = append(candidates, &selector.Candidate{
+			Kind: selector.Image,
+			Tags: tags,
+			// keep digest for later match
+			Digest: art.Digest,
+		})
+	}
+
+	candidates, err := sel.Select(candidates)
+	if err != nil {
+		return nil, err
+	}
+
+	candidateDigests := make(map[string]bool)
+	for _, c := range candidates {
+		candidateDigests[c.Digest] = true
+	}
+
+	filteredArts := make([]*artifact.Artifact, 0, len(candidateDigests))
+	for _, art := range arts {
+		if candidateDigests[art.Digest] {
+			filteredArts = append(filteredArts, art)
+		}
+	}
+
+	return filteredArts, nil
+}
+
+func (dfp *DefaultFilterProcessor) ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error) {
+	// return all artifacts if no label need to be filtered
+	if len(labelIDs) == 0 {
+		return arts, nil
+	}
+	// matchLabel check whether the artifact match the label filter
+	matchLabel := func(art *artifact.Artifact) bool {
+		// TODO (as now there should not have many labels, so here just use
+		// for^2, we can convert to use map to reduce the time complex if needed. )
+		for _, label := range art.Labels {
+			for _, labelID := range labelIDs {
+				if labelID == label.ID {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	filteredArts := make([]*artifact.Artifact, 0)
+	for _, art := range arts {
+		if matchLabel(art) {
+			filteredArts = append(filteredArts, art)
+		}
+	}
+
+	return filteredArts, nil
 }
 
 func (dfp *DefaultFilterProcessor) getProjectQueryFilter(user *commonmodels.User) *q.Query {
