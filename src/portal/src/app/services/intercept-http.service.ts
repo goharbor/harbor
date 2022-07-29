@@ -8,8 +8,14 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { errorHandler } from '../shared/units/shared.utils';
 
 export const SAFE_METHODS: string[] = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
+
+enum INVALID_CSRF_TOKEN {
+    CODE = 403,
+    MESSAGE = 'CSRF token invalid',
+}
 
 @Injectable({
     providedIn: 'root',
@@ -75,7 +81,10 @@ export class InterceptHttpService implements HttpInterceptor {
                             })
                         );
                     }
-                    if (error.status === 403) {
+                    if (
+                        error.status === INVALID_CSRF_TOKEN.CODE &&
+                        errorHandler(error) === INVALID_CSRF_TOKEN.MESSAGE
+                    ) {
                         const csrfToken = localStorage.getItem('__csrf');
                         if (csrfToken) {
                             request = request.clone({

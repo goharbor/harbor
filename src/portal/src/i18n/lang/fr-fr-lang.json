@@ -1726,8 +1726,7 @@
         "NO_PURGE_RECORDS": "We couldn't find any purge histories!"
     },
     "CVE_EXPORT": {
-        "EXPORT_SOME_PROJECTS": "Export CVEs - {{number}} project(s)",
-        "EXPORT_ALL_PROJECTS": "Export CVEs - All projects",
+        "EXPORT_SOME_PROJECTS": "Export CVEs",
         "ALL_PROJECTS": "All projects",
         "EXPORT_TITLE": "Export CVE",
         "EXPORT_SUBTITLE": "Set exporting conditions",

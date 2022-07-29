@@ -11,16 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Subscription, forkJoin, of } from 'rxjs';
+import { forkJoin, Observable, of, Subscription } from 'rxjs';
 import {
     Component,
-    Output,
-    OnDestroy,
     EventEmitter,
+    OnDestroy,
+    Output,
     ViewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProjectService, State } from '../../../../shared/services';
+import {
+    ProjectService,
+    State,
+    UserPermissionService,
+    USERSTATICPERMISSION,
+} from '../../../../shared/services';
 import { TranslateService } from '@ngx-translate/core';
 import { SessionService } from '../../../../shared/services/session.service';
 import { StatisticHandler } from '../statictics/statistic-handler.service';
@@ -28,7 +33,7 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
 import { SearchTriggerService } from '../../../../shared/components/global-search/search-trigger.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { Project } from '../../../project/project';
-import { map, catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, map } from 'rxjs/operators';
 import {
     calculatePage,
     getPageSizeFromLocalStorage,
@@ -55,6 +60,8 @@ import { errorHandler } from '../../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
 import { ExportCveComponent } from './export-cve/export-cve.component';
 
+const MAX_PROJECTS_NUM: number = 1;
+const INTERVAL: number = 30000;
 @Component({
     selector: 'list-project',
     templateUrl: 'list-project.component.html',
@@ -83,6 +90,9 @@ export class ListProjectComponent implements OnDestroy {
     state: ClrDatagridStateInterface;
     @ViewChild(ExportCveComponent)
     exportCveComponent: ExportCveComponent;
+    hasPermission: boolean = false;
+    checkingPermission: boolean = false;
+    canClickExport: boolean = true;
     constructor(
         private session: SessionService,
         private appConfigService: AppConfigService,
@@ -94,7 +104,8 @@ export class ListProjectComponent implements OnDestroy {
         private translate: TranslateService,
         private deletionDialogService: ConfirmationDialogService,
         private operationService: OperationService,
-        private translateService: TranslateService
+        private translateService: TranslateService,
+        private permissionService: UserPermissionService
     ) {
         this.subscription =
             deletionDialogService.confirmationConfirm$.subscribe(message => {
@@ -382,11 +393,36 @@ export class ListProjectComponent implements OnDestroy {
     exportCVE() {
         this.exportCveComponent.open(this.selectedRow);
     }
-
-    getExportButtonText(): string {
-        if (this.selectedRow?.length) {
-            return `CVE_EXPORT.EXPORT_SOME_PROJECTS`;
+    selectionChanged() {
+        this.hasPermission = false;
+        if (
+            this.selectedRow?.length &&
+            this.selectedRow?.length <= MAX_PROJECTS_NUM
+        ) {
+            const obs: Observable<boolean>[] = [];
+            this.selectedRow.forEach(item => {
+                obs.push(
+                    this.permissionService.getPermission(
+                        item.project_id,
+                        USERSTATICPERMISSION.EXPORT_CVE.KEY,
+                        USERSTATICPERMISSION.EXPORT_CVE.VALUE.CREATE
+                    )
+                );
+            });
+            this.checkingPermission = true;
+            forkJoin(obs)
+                .pipe(finalize(() => (this.checkingPermission = false)))
+                .subscribe(res => {
+                    if (res?.length) {
+                        this.hasPermission = res.every(item => item);
+                    }
+                });
         }
-        return 'CVE_EXPORT.EXPORT_ALL_PROJECTS';
+    }
+    triggerExportSuccess() {
+        this.canClickExport = false;
+        setTimeout(() => {
+            this.canClickExport = true;
+        }, INTERVAL);
     }
 }

@@ -1755,8 +1755,7 @@
         "NO_PURGE_RECORDS": "未发现任何清理记录！"
     },
     "CVE_EXPORT": {
-        "EXPORT_SOME_PROJECTS": "导出 CVEs - {{number}} 个项目",
-        "EXPORT_ALL_PROJECTS": "导出 CVEs - 全部项目",
+        "EXPORT_SOME_PROJECTS": "导出 CVEs",
         "ALL_PROJECTS": "全部项目",
         "EXPORT_TITLE": "导出 CVE",
         "EXPORT_SUBTITLE": "设置导出条件",

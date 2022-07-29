@@ -213,18 +213,12 @@ clr-modal {
 }
 
 .label-text {
-    text-transform: none;
-    letter-spacing: normal;
-    font-size: 13px;
-    font-weight: 400;
-    color: #000;
+    position: relative;
     height: 1.2rem;
-    margin: 0 !important;
-    line-height: 1rem;
-    text-align: left;
-    padding-left: 6px;
-    outline: none;
-    border-bottom: 1px solid rgb(154 154 154);
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    border-bottom: 0.05rem solid;
 }
 
 .ellipsis {
@@ -311,3 +305,13 @@ clr-modal {
     margin-left: 10px;
 }
 
+.label-piece {
+    display: flex;
+    left: .25rem;
+}
+
+.label-container{
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
