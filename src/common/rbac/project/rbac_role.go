@@ -124,6 +124,10 @@ var (
 			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionUpdate},
 			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
 		},
 
 		"maintainer": {
@@ -208,6 +212,10 @@ var (
 
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
 		},
 
 		"developer": {
@@ -270,6 +278,10 @@ var (
 
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
 		},
 
 		"guest": {

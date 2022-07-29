@@ -75,6 +75,7 @@ func (suite *ScanExportTestSuite) TestAuthorization() {
 			{http.MethodGet, "/export/cve/download/100", nil, nil},
 		}
 
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Times(3)
 		suite.Security.On("IsAuthenticated").Return(false).Times(3)
 		for _, req := range reqs {
 
@@ -134,6 +135,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 
 	// user authenticated but incorrect/unsupported header sent across
 	{
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
 		suite.Security.On("IsAuthenticated").Return(true).Once()
 		url := "/export/cve"
 
@@ -150,6 +152,32 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 
 		headers := make(map[string]string)
 		headers["X-Scan-Data-Type"] = "test"
+
+		mock.OnAnything(suite.scanExportCtl, "Start").Return(int64(100), nil).Once()
+		res, err := suite.DoReq(http.MethodPost, url, buffer, headers)
+		suite.Equal(400, res.StatusCode)
+		suite.Equal(nil, err)
+	}
+
+	// should return 400 if project id number is not one
+	{
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+		suite.Security.On("IsAuthenticated").Return(true).Once()
+		url := "/export/cve"
+
+		criteria := models.ScanDataExportRequest{
+			CVEIds:       "CVE-123",
+			Labels:       []int64{100},
+			Projects:     []int64{200, 300},
+			Repositories: "test-repo",
+			Tags:         "{test-tag1, test-tag2}",
+		}
+
+		data, err := json.Marshal(criteria)
+		buffer := bytes.NewBuffer(data)
+
+		headers := make(map[string]string)
+		headers["X-Scan-Data-Type"] = v1.MimeTypeGenericVulnerabilityReport
 
 		mock.OnAnything(suite.scanExportCtl, "Start").Return(int64(100), nil).Once()
 		res, err := suite.DoReq(http.MethodPost, url, buffer, headers)
@@ -279,7 +307,6 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	respData := models.ScanDataExportExecution{}
 	json.NewDecoder(res.Body).Decode(&respData)
 	suite.Equal("test-user", respData.UserName)
-	suite.Equal("test-job", respData.JobName)
 	suite.Equal(false, respData.FilePresent)
 
 }

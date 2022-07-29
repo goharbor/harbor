@@ -114,6 +114,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	logger := log.GetLogger(ctx)
 	vendorID := int64(ctx.Value(export.CsvJobVendorIDKey).(int))
 	extraAttrs := make(map[string]interface{})
+	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
 	extraAttrs[export.UserNameAttribute] = request.UserName
 	id, err := c.execMgr.Create(ctx, job.ScanDataExport, vendorID, task.ExecutionTriggerManual, extraAttrs)
@@ -169,6 +170,11 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 		Trigger:       exec.Trigger,
 		StartTime:     exec.StartTime,
 		EndTime:       exec.EndTime,
+	}
+	if pids, ok := exec.ExtraAttrs[export.ProjectIDsAttribute]; ok {
+		for _, pid := range pids.([]interface{}) {
+			execStatus.ProjectIDs = append(execStatus.ProjectIDs, int64(pid.(float64)))
+		}
 	}
 	if digest, ok := exec.ExtraAttrs[export.DigestKey]; ok {
 		execStatus.ExportDataDigest = digest.(string)
