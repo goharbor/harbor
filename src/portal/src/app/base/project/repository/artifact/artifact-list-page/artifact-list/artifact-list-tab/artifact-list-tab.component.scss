@@ -95,7 +95,6 @@
   position: absolute;
   z-index: 1;
   right: 35px;
-  margin-top: 34px;
   display: flex;
 }
 
@@ -484,4 +483,9 @@ clr-datagrid {
 
 .width-p-75 {
   width: 75%;
+}
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

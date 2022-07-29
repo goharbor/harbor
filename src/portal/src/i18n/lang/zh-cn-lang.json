@@ -1750,7 +1750,9 @@
         "SKIP_DATABASE": "跳过日志数据库",
         "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点",
         "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作",
-        "STOP_PURGE_SUCCESS": "成功触发停止清理日志的操作"
+        "STOP_PURGE_SUCCESS": "成功触发停止清理日志的操作",
+        "NO_GC_RECORDS": "未发现任何清理记录！",
+        "NO_PURGE_RECORDS": "未发现任何清理记录！"
     },
     "CVE_EXPORT": {
         "EXPORT_SOME_PROJECTS": "导出 CVEs - {{number}} 个项目",

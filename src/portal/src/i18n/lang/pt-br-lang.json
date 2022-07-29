@@ -1748,7 +1748,9 @@
         "SKIP_DATABASE": "Skip Audit Log Database",
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
         "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",
-        "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully"
+        "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully",
+        "NO_GC_RECORDS": "We couldn't find any GC histories!",
+        "NO_PURGE_RECORDS": "We couldn't find any purge histories!"
     },
     "CVE_EXPORT": {
         "EXPORT_SOME_PROJECTS": "Export CVEs - {{number}} project(s)",

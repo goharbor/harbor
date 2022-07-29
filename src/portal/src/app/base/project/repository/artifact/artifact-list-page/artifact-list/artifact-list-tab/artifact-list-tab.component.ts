@@ -197,11 +197,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onSendingStopScanCommand: boolean = false;
     onStopScanArtifactsLength: number = 0;
     scanStoppedArtifactLength: number = 0;
-
     artifactDigest: string;
     depth: string;
-    hasInit: boolean = false;
-    triggerSub: Subscription;
     labelNameFilterSub: Subscription;
     stickLabelNameFilterSub: Subscription;
     mutipleFilter = clone(mutipleFilter);
@@ -209,7 +206,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     openSelectFilterPiece = false;
     // could Pagination filter
     filters: string[];
-
     scanFinishedArtifactLength: number = 0;
     onScanArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
@@ -226,38 +222,33 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService,
         public artifactListPageService: ArtifactListPageService
     ) {}
-
-    ngOnInit() {
-        this.artifactListPageService.resetClonedLabels();
+    initRouterData() {
         this.projectId =
             this.activatedRoute.snapshot?.parent?.parent?.params['id'];
-        let resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
+        if (!this.projectId) {
+            this.errorHandlerService.error('Project ID cannot be unset.');
+            return;
+        }
+        const resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
         if (resolverData) {
             this.projectName = (<Project>resolverData['projectResolver']).name;
         }
         this.repoName = this.activatedRoute.snapshot?.parent?.params['repo'];
+        if (!this.repoName) {
+            this.errorHandlerService.error('Repo name cannot be unset.');
+            return;
+        }
+        this.depth = this.activatedRoute.snapshot.params['depth'];
+        if (this.depth) {
+            const arr: string[] = this.depth.split('-');
+            this.artifactDigest = this.depth.split('-')[arr.length - 1];
+        }
+        this.lastFilteredTagName = '';
+    }
+    ngOnInit() {
+        this.artifactListPageService.resetClonedLabels();
         this.registryUrl = this.appConfigService.getConfig().registry_url;
-        this.activatedRoute.params?.subscribe(params => {
-            this.depth =
-                this.activatedRoute.snapshot?.firstChild?.params['depth'];
-            if (this.depth) {
-                const arr: string[] = this.depth.split('-');
-                this.artifactDigest = this.depth.split('-')[arr.length - 1];
-            }
-            if (this.hasInit) {
-                this.currentPage = 1;
-                this.totalCount = 0;
-                const st: ClrDatagridStateInterface = {
-                    page: {
-                        from: 0,
-                        to: this.pageSize - 1,
-                        size: this.pageSize,
-                    },
-                };
-                this.clrLoad(st);
-            }
-            this.init();
-        });
+        this.initRouterData();
         if (!this.updateArtifactSub) {
             this.updateArtifactSub = this.eventService.subscribe(
                 HarborEvent.UPDATE_VULNERABILITY_INFO,
@@ -272,48 +263,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             );
         }
-    }
-
-    ngOnDestroy() {
-        if (this.triggerSub) {
-            this.triggerSub.unsubscribe();
-            this.triggerSub = null;
-        }
-        if (this.labelNameFilterSub) {
-            this.labelNameFilterSub.unsubscribe();
-            this.labelNameFilterSub = null;
-        }
-        if (this.stickLabelNameFilterSub) {
-            this.stickLabelNameFilterSub.unsubscribe();
-            this.stickLabelNameFilterSub = null;
-        }
-        if (this.updateArtifactSub) {
-            this.updateArtifactSub.unsubscribe();
-            this.updateArtifactSub = null;
-        }
-    }
-
-    init() {
-        this.hasInit = true;
-        this.depth = this.activatedRoute.snapshot.params['depth'];
-        if (this.depth) {
-            const arr: string[] = this.depth.split('-');
-            this.artifactDigest = this.depth.split('-')[arr.length - 1];
-        }
-        if (!this.projectId) {
-            this.errorHandlerService.error('Project ID cannot be unset.');
-            return;
-        }
-        const resolverData = this.activatedRoute.snapshot.params.data;
-        if (resolverData) {
-            const pro: Project = <Project>resolverData['projectResolver'];
-            this.projectName = pro.name;
-        }
-        if (!this.repoName) {
-            this.errorHandlerService.error('Repo name cannot be unset.');
-            return;
-        }
-        this.lastFilteredTagName = '';
         if (!this.labelNameFilterSub) {
             this.labelNameFilterSub = this.labelNameFilter
                 .pipe(debounceTime(500))
@@ -349,7 +298,20 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 });
         }
     }
-
+    ngOnDestroy() {
+        if (this.labelNameFilterSub) {
+            this.labelNameFilterSub.unsubscribe();
+            this.labelNameFilterSub = null;
+        }
+        if (this.stickLabelNameFilterSub) {
+            this.stickLabelNameFilterSub.unsubscribe();
+            this.stickLabelNameFilterSub = null;
+        }
+        if (this.updateArtifactSub) {
+            this.updateArtifactSub.unsubscribe();
+            this.updateArtifactSub = null;
+        }
+    }
     public get filterLabelPieceWidth() {
         let len = this.lastFilteredTagName.length
             ? this.lastFilteredTagName.length * 6 + 60
@@ -381,11 +343,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         this.clrLoad(st);
     }
 
-    // todo
     clrDgRefresh(state: ClrDatagridStateInterface) {
         setTimeout(() => {
+            //add setTimeout to avoid ng check error
             this.clrLoad(state);
-        });
+        }, 0);
     }
 
     clrLoad(state: ClrDatagridStateInterface): void {
