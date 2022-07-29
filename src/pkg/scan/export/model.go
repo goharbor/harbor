@@ -78,6 +78,8 @@ type Execution struct {
 	ID int64
 	// UserID triggering the execution
 	UserID int64
+	// ProjectIDs contains projects ids
+	ProjectIDs []int64
 	// Status provides the status of the execution
 	Status string
 	// StatusMessage contains the human-readable status message for the execution

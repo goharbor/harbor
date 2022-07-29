@@ -15,7 +15,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/scandataexport"
-	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
@@ -46,7 +46,19 @@ func (se *scanDataExportAPI) Prepare(ctx context.Context, operation string, para
 }
 
 func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operation.ExportScanDataParams) middleware.Responder {
-	if err := se.RequireAuthenticated(ctx); err != nil {
+	// validate project id, currently we only support single project
+	criteria := params.Criteria
+	if criteria == nil {
+		err := errors.New(errors.Errorf("criteria is invalid: %v", criteria)).WithCode(errors.BadRequestCode)
+		return se.SendError(ctx, err)
+	}
+
+	if len(criteria.Projects) != 1 {
+		err := errors.New(errors.Errorf("only support export single project, invalid value: %v", criteria.Projects)).WithCode(errors.BadRequestCode)
+		return se.SendError(ctx, err)
+	}
+
+	if err := se.RequireProjectAccess(ctx, criteria.Projects[0], rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
 		return se.SendError(ctx, err)
 	}
 
@@ -55,17 +67,6 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 		error := &models.Error{Message: fmt.Sprintf("Unsupported MIME type : %s", params.XScanDataType)}
 		errors := &models.Errors{Errors: []*models.Error{error}}
 		return operation.NewExportScanDataBadRequest().WithPayload(errors)
-	}
-
-	// loop through the list of projects and validate that scan privilege and create privilege
-	// is available for all projects
-	// TODO : Should we just ignore projects that do not have the required level of access?
-
-	projects := params.Criteria.Projects
-	for _, project := range projects {
-		if err := se.RequireProjectAccess(ctx, project, rbac.ActionCreate, rbac.ResourceScan); err != nil {
-			return se.SendError(ctx, err)
-		}
 	}
 
 	scanDataExportJob := new(models.ScanDataExportJob)
@@ -104,12 +105,17 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 }
 
 func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, params operation.GetScanDataExportExecutionParams) middleware.Responder {
-	err := se.RequireAuthenticated(ctx)
+	if err := se.RequireAuthenticated(ctx); err != nil {
+		return se.SendError(ctx, err)
+	}
+
+	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
-	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
-	if err != nil {
+
+	// check the permission by project ids in execution
+	if err = se.requireProjectsAccess(ctx, execution.ProjectIDs, rbac.ActionRead, rbac.ResourceExportCVE); err != nil {
 		return se.SendError(ctx, err)
 	}
 
@@ -134,7 +140,6 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 		StatusText:  execution.StatusMessage,
 		Trigger:     execution.Trigger,
 		UserID:      execution.UserID,
-		JobName:     execution.JobName,
 		UserName:    execution.UserName,
 		FilePresent: execution.FilePresent,
 	}
@@ -143,18 +148,22 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 }
 
 func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operation.DownloadScanDataParams) middleware.Responder {
-	err := se.RequireAuthenticated(ctx)
-	if err != nil {
+	if err := se.RequireAuthenticated(ctx); err != nil {
 		return se.SendError(ctx, err)
 	}
-	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
 
+	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
 	if err != nil {
 		if notFound := orm.AsNotFoundError(err, "execution with id: %d not found", params.ExecutionID); notFound != nil {
 			return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
 				writer.WriteHeader(http.StatusNotFound)
 			})
 		}
+		return se.SendError(ctx, err)
+	}
+
+	// check the permission by project ids in execution
+	if err = se.requireProjectsAccess(ctx, execution.ProjectIDs, rbac.ActionRead, rbac.ResourceExportCVE); err != nil {
 		return se.SendError(ctx, err)
 	}
 
@@ -182,7 +191,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
-	logger.Infof("reading data from file : %s", repositoryName)
+	log.Infof("reading data from file : %s", repositoryName)
 
 	return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
 		defer se.cleanUpArtifact(ctx, repositoryName, execution.ExportDataDigest, params.ExecutionID, file)
@@ -191,27 +200,29 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 		writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", fmt.Sprintf("%s.csv", repositoryName)))
 		nbytes, err := io.Copy(writer, file)
 		if err != nil {
-			logger.Errorf("Encountered error while copying data: %v", err)
+			log.Errorf("Encountered error while copying data: %v", err)
 		} else {
-			logger.Debugf("Copied %v bytes from file to client", nbytes)
+			log.Debugf("Copied %v bytes from file to client", nbytes)
 		}
 	})
 }
 
 func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context, params operation.GetScanDataExportExecutionListParams) middleware.Responder {
-	err := se.RequireAuthenticated(ctx)
-	if err != nil {
+	if err := se.RequireAuthenticated(ctx); err != nil {
 		return se.SendError(ctx, err)
 	}
-	secContext, err := se.GetSecurityContext(ctx)
 
+	secContext, err := se.GetSecurityContext(ctx)
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
+
 	executions, err := se.scanDataExportCtl.ListExecutions(ctx, secContext.GetUsername())
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
+	// projectSet store the unrepeated project ids
+	projectSet := make(map[int64]struct{})
 	execs := make([]*models.ScanDataExportExecution, 0)
 	for _, execution := range executions {
 		sdeExec := &models.ScanDataExportExecution{
@@ -223,11 +234,30 @@ func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context,
 			Trigger:     execution.Trigger,
 			UserID:      execution.UserID,
 			UserName:    execution.UserName,
-			JobName:     execution.JobName,
 			FilePresent: execution.FilePresent,
 		}
+		// add human friendly message when status is error
+		if sdeExec.Status == job.ErrorStatus.String() {
+			sdeExec.StatusText = "Please contact the system administrator to check the logs of jobservice."
+		}
+		// store project ids
+		for _, pid := range execution.ProjectIDs {
+			projectSet[pid] = struct{}{}
+		}
+
 		execs = append(execs, sdeExec)
 	}
+
+	// convert projectSet to pids
+	var pids []int64
+	for pid := range projectSet {
+		pids = append(pids, pid)
+	}
+	// check the permission by project ids in execution
+	if err = se.requireProjectsAccess(ctx, pids, rbac.ActionRead, rbac.ResourceExportCVE); err != nil {
+		return se.SendError(ctx, err)
+	}
+
 	sdeExecList := models.ScanDataExportExecutionList{Items: execs}
 	return operation.NewGetScanDataExportExecutionListOK().WithPayload(&sdeExecList)
 }
@@ -247,7 +277,7 @@ func (se *scanDataExportAPI) convertToCriteria(requestCriteria *models.ScanDataE
 
 func (se *scanDataExportAPI) cleanUpArtifact(ctx context.Context, repositoryName, digest string, execID int64, file io.ReadCloser) {
 	file.Close()
-	logger.Infof("Deleting report artifact : %v:%v", repositoryName, digest)
+	log.Infof("Deleting report artifact : %v:%v", repositoryName, digest)
 
 	// the entire delete operation is executed within a transaction to ensure that any failures
 	// during the blob creation or tracking record creation result in a rollback of the transaction
@@ -269,4 +299,16 @@ func (se *scanDataExportAPI) cleanUpArtifact(ctx context.Context, repositoryName
 	if err != nil {
 		log.Errorf("Error deleting system artifact record for %s/%s/%s: %v", vendor, repositoryName, digest, err)
 	}
+}
+
+func (se *scanDataExportAPI) requireProjectsAccess(ctx context.Context, pids []int64, action rbac.Action, subresource ...rbac.Resource) error {
+	// check project permission one by one, return error if any project cannot
+	// access permission.
+	for _, pid := range pids {
+		if err := se.RequireProjectAccess(ctx, pid, action, subresource...); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

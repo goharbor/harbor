@@ -9228,10 +9228,6 @@ definitions:
         type: string
         x-omitempty: false
         description: The status text
-      job_name:
-        type: string
-        x-omitempty: false
-        description: The name of the job as specified by the user
       user_name:
         type: string
         x-omitempty: false
