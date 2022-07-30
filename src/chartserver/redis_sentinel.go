@@ -10,7 +10,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/astaxie/beego/cache"
+	"github.com/beego/beego/cache"
 	"strings"
 )
 

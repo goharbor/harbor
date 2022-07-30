@@ -16,7 +16,10 @@ package dao
 
 import (
 	"context"
-	beegoorm "github.com/astaxie/beego/orm"
+	"testing"
+	"time"
+
+	beegoorm "github.com/beego/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -25,8 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type daoTestSuite struct {

@@ -2,7 +2,7 @@ package blob
 
 import (
 	"fmt"
-	beego_orm "github.com/astaxie/beego/orm"
+	beego_orm "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"

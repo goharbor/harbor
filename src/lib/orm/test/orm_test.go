@@ -22,7 +22,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/stretchr/testify/suite"
 )

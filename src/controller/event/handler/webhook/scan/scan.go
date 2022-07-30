@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"

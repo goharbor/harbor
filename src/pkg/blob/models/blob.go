@@ -17,7 +17,7 @@ package models
 import (
 	"context"
 	"fmt"
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"

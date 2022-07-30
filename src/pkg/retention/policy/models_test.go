@@ -2,7 +2,7 @@ package policy
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
 	"testing"

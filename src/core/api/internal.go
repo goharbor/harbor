@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"

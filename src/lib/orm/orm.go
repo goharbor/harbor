@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"

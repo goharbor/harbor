@@ -15,7 +15,7 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 func init() {

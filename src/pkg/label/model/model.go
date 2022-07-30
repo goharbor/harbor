@@ -5,7 +5,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 func init() {
