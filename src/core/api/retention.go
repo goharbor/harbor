@@ -226,6 +226,10 @@ func (r *RetentionAPI) UpdateRetention() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
+	if err := r.requirePolicyAccess(p); err != nil {
+		r.SendPermissionError()
+		return
+	}
 	if err = retentionController.UpdateRetention(p); err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -307,6 +311,14 @@ func (r *RetentionAPI) OperateRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
+	if err := r.requirePolicyAccess(p); err != nil {
+		r.SendPermissionError()
+		return
+	}
+	if err := r.requireExecutionInProject(p, eid); err != nil {
+		r.SendPermissionError()
+		return
+	}
 	if err = retentionController.OperateRetentionExec(eid, a.Action); err != nil {
 		r.SendInternalServerError(err)
 		return
@@ -377,7 +389,19 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 		r.SendBadRequestError(err)
 		return
 	}
+	if p == nil {
+		r.SendNotFoundError(errors.New("retention policy is not found"))
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionList) {
+		return
+	}
+	if err := r.requirePolicyAccess(p); err != nil {
+		r.SendNotFoundError(err)
+		return
+	}
+	if err := r.requireExecutionInProject(p, eid); err != nil {
+		r.SendNotFoundError(err)
 		return
 	}
 	his, err := retentionController.ListRetentionExecTasks(eid, query)
@@ -401,6 +425,11 @@ func (r *RetentionAPI) GetRetentionExecTaskLog() {
 		r.SendBadRequestError(err)
 		return
 	}
+	eid, err := r.GetInt64FromPath(":eid")
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
 	tid, err := r.GetInt64FromPath(":tid")
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -411,7 +440,19 @@ func (r *RetentionAPI) GetRetentionExecTaskLog() {
 		r.SendBadRequestError(err)
 		return
 	}
+	if p == nil {
+		r.SendNotFoundError(errors.New("retention policy is not found"))
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionRead) {
+		return
+	}
+	if err := r.requirePolicyAccess(p); err != nil {
+		r.SendForbiddenError(err)
+		return
+	}
+	if err := r.requireTaskInProject(p, eid, tid); err != nil {
+		r.SendForbiddenError(err)
 		return
 	}
 	log, err := retentionController.GetRetentionExecTaskLog(tid)
@@ -448,4 +489,56 @@ func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, sub
 	}
 
 	return true
+}
+
+// requirePolicyAccess checks the scope reference whether has the permission to
+// the retention policy.
+func (r *RetentionAPI) requirePolicyAccess(p *policy.Metadata) error {
+	// the id of policy should be consistent with project metadata
+	meta, err := r.pm.GetMetadataManager().Get(p.Scope.Reference, "retention_id")
+	if err != nil {
+		return err
+	}
+	// validate
+	if len(meta["retention_id"]) > 0 {
+		// return err if retention id does not match
+		if meta["retention_id"] == fmt.Sprintf("%d", p.ID) {
+			return nil
+		}
+	}
+	return fmt.Errorf("the project id:%d, its retention policy is not policy: %d", p.Scope.Reference, p.ID)
+}
+
+func (r *RetentionAPI) requireExecutionInProject(p *policy.Metadata, executionID int64) error {
+	exec, err := retentionMgr.GetExecution(executionID)
+	if err != nil {
+		return err
+	}
+	if exec == nil {
+		return fmt.Errorf("project: %d, execution id %d not found", p.Scope.Reference, executionID)
+	}
+	if exec.PolicyID != p.ID {
+		return fmt.Errorf("project: %d, execution id %d not found", p.Scope.Reference, executionID)
+	}
+	return nil
+}
+
+func (r *RetentionAPI) requireTaskInProject(p *policy.Metadata, executionID, taskID int64) error {
+	notFoundError := fmt.Errorf("task %d not found", taskID)
+	if err := r.requireExecutionInProject(p, executionID); err != nil {
+		return fmt.Errorf("execution %d not found", executionID)
+	}
+	tasks, err := retentionController.ListRetentionExecTasks(executionID, nil)
+	if err != nil {
+		return notFoundError
+	}
+	for _, t := range tasks {
+		if t.ID == taskID {
+			if t.ExecutionID != executionID {
+				return notFoundError
+			}
+			return nil
+		}
+	}
+	return notFoundError
 }
