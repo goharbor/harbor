@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/semver v1.4.2
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/aws/aws-sdk-go v1.19.47
-	github.com/beego/beego v1.12.8
+	github.com/beego/beego v1.12.11
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/casbin/casbin v1.7.0
