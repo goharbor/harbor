@@ -524,6 +524,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   setFilterAndTrigger(adapter) {
     this.supportedFilters = adapter.supported_resource_filters;
+    this.filters.clear(); // clear before init
     this.supportedFilters.forEach(element => {
       this.filters.push(this.initFilter(element.type));
     });
