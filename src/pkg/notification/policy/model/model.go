@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	"time"
 )
 

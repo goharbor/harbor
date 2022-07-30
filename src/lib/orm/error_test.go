@@ -15,12 +15,13 @@
 package orm
 
 import (
-	"github.com/astaxie/beego/orm"
+	"testing"
+
+	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestIsNotFoundError(t *testing.T) {

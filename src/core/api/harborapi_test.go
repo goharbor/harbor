@@ -19,7 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"

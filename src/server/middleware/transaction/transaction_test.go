@@ -22,7 +22,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/stretchr/testify/assert"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	beego_orm "github.com/astaxie/beego/orm"
+	beego_orm "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"

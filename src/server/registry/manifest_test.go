@@ -16,7 +16,7 @@ package registry
 
 import (
 	"context"
-	beegocontext "github.com/astaxie/beego/context"
+	beegocontext "github.com/beego/beego/context"
 	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
 	"net/http/httptest"

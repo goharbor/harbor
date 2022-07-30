@@ -2,7 +2,7 @@ package dao
 
 import (
 	"context"
-	beegoorm "github.com/astaxie/beego/orm"
+	beegoorm "github.com/beego/beego/orm"
 	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"

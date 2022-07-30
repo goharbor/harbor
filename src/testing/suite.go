@@ -27,7 +27,7 @@ import (
 	"sync"
 	"time"
 
-	o "github.com/astaxie/beego/orm"
+	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"

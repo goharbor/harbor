@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 )
 
 // Metadata of the immutable rule

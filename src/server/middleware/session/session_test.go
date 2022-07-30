@@ -15,8 +15,8 @@
 package session
 
 import (
-	"github.com/astaxie/beego"
-	beegosession "github.com/astaxie/beego/session"
+	"github.com/beego/beego"
+	beegosession "github.com/beego/beego/session"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/stretchr/testify/assert"

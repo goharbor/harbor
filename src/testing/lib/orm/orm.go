@@ -17,7 +17,7 @@ package orm
 import (
 	"context"
 	"database/sql"
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 // FakeOrmer ...

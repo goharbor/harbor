@@ -15,8 +15,8 @@
 package security
 
 import (
-	"github.com/astaxie/beego"
-	beegosession "github.com/astaxie/beego/session"
+	"github.com/beego/beego"
+	beegosession "github.com/beego/beego/session"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

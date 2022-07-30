@@ -3,12 +3,13 @@ package api
 import (
 	"context"
 	"errors"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	bcontext "github.com/astaxie/beego/context"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+
+	bcontext "github.com/beego/beego/context"
 	"github.com/goharbor/harbor/src/chartserver"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"

@@ -17,7 +17,7 @@ package models
 import (
 	"context"
 	"fmt"
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/lib/pq"
 	"strconv"
