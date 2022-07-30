@@ -91,7 +91,6 @@ export class ListProjectComponent implements OnDestroy {
     @ViewChild(ExportCveComponent)
     exportCveComponent: ExportCveComponent;
     hasPermission: boolean = false;
-    checkingPermission: boolean = false;
     canClickExport: boolean = true;
     constructor(
         private session: SessionService,
@@ -409,14 +408,11 @@ export class ListProjectComponent implements OnDestroy {
                     )
                 );
             });
-            this.checkingPermission = true;
-            forkJoin(obs)
-                .pipe(finalize(() => (this.checkingPermission = false)))
-                .subscribe(res => {
-                    if (res?.length) {
-                        this.hasPermission = res.every(item => item);
-                    }
-                });
+            forkJoin(obs).subscribe(res => {
+                if (res?.length) {
+                    this.hasPermission = res.every(item => item);
+                }
+            });
         }
     }
     triggerExportSuccess() {
