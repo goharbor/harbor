@@ -47,4 +47,11 @@ func TestIDToken(t *testing.T) {
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	ctx = idToken.Generate(req)
 	assert.Nil(t, ctx)
+
+	// contains no authorization header
+	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token?service=harbor-registry&scope=repository:foo/bar:pull", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	ctx = idToken.Generate(req)
+	assert.Nil(t, ctx)
 }
