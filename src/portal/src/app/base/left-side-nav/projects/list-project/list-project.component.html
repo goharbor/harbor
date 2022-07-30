@@ -26,7 +26,6 @@
             <clr-dropdown-menu *clrIfOpen>
                 <button
                     [disabled]="!hasPermission || !canClickExport"
-                    [clrLoading]="checkingPermission"
                     clrDropdownItem
                     (click)="exportCVE()">
                     <clr-icon shape="export" size="16"></clr-icon>&nbsp;
