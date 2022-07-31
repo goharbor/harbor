@@ -65,7 +65,7 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/ecr
 github.com/aws/aws-sdk-go/service/sts
-# github.com/beego/beego v1.12.8
+# github.com/beego/beego v1.12.11
 ## explicit; go 1.13
 github.com/beego/beego
 github.com/beego/beego/cache
