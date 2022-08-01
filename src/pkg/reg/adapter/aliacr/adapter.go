@@ -33,18 +33,22 @@ func init() {
 // example:
 // https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-var regRegion = regexp.MustCompile(`https://(registry|cr)\.([\w\-]+)\.aliyuncs\.com`)
+// https://abc-registry.%s.cr.aliyuncs.com
+// https://abc-registry-vpc.%s.cr.aliyuncs.com
+var regRegion = regexp.MustCompile(`([\w\-]+)\.[cr.]{0,3}aliyuncs\.com`)
 
 func getRegion(url string) (region string, err error) {
 	if url == "" {
 		return "", errors.New("empty url")
 	}
+	if !strings.Contains(url, "https://") {
+		return "", errors.New("invalid https url")
+	}
 	rs := regRegion.FindStringSubmatch(url)
 	if rs == nil {
 		return "", errors.New("invalid Rgistry|CR service url")
 	}
-	// fmt.Println(rs)
-	return rs[2], nil
+	return rs[1], nil
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
@@ -52,14 +56,19 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	// fix url (allow user input cr service url)
-	registry.URL = fmt.Sprintf(registryEndpointTpl, region)
 	realm, service, err := util.Ping(registry)
 	if err != nil {
 		return nil, err
 	}
-	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
-	authorizer := bearer.NewAuthorizer(realm, service, credential, commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
+	serviceSplit := strings.Split(service, ":")
+	instanceId := serviceSplit[len(serviceSplit)-1]
+	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret, instanceId)
+	authorizer := bearer.NewAuthorizer(
+		realm,
+		service,
+		credential,
+		commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)),
+	)
 	return &adapter{
 		region:   region,
 		registry: registry,
@@ -205,7 +214,11 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	log.Debugf("FetchArtifacts.filters: %#v\n", filters)
 
 	var client *cr.Client
-	client, err = cr.NewClientWithAccessKey(a.region, a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
+	client, err = cr.NewClientWithAccessKey(
+		a.region,
+		a.registry.Credential.AccessKey,
+		a.registry.Credential.AccessSecret,
+	)
 	if err != nil {
 		return
 	}

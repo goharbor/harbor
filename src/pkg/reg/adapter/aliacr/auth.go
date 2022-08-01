@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -20,6 +21,7 @@ type aliyunAuthCredential struct {
 	region              string
 	accessKey           string
 	secretKey           string
+	instanceId          string
 	cacheToken          *registryTemporaryToken
 	cacheTokenExpiredAt time.Time
 }
@@ -32,12 +34,13 @@ type registryTemporaryToken struct {
 var _ Credential = &aliyunAuthCredential{}
 
 // NewAuth will get a temporary docker registry username and password via aliyun cr service API.
-func NewAuth(region, accessKey, secretKey string) Credential {
+func NewAuth(region, accessKey, secretKey, instanceId string) Credential {
 	return &aliyunAuthCredential{
 		region:     region,
 		accessKey:  accessKey,
 		secretKey:  secretKey,
 		cacheToken: &registryTemporaryToken{},
+		instanceId: instanceId,
 	}
 }
 
@@ -47,24 +50,29 @@ func (a *aliyunAuthCredential) Modify(r *http.Request) (err error) {
 		var client *cr.Client
 		client, err = cr.NewClientWithAccessKey(a.region, a.accessKey, a.secretKey)
 		if err != nil {
-			return
+			return err
 		}
 
-		var tokenRequest = cr.CreateGetAuthorizationTokenRequest()
-		var tokenResponse *cr.GetAuthorizationTokenResponse
-		tokenRequest.SetDomain(fmt.Sprintf(endpointTpl, a.region))
-		tokenResponse, err = client.GetAuthorizationToken(tokenRequest)
+		request := requests.NewCommonRequest()
+		request.Method = "GET"
+		request.Scheme = "https" // https | http
+		request.Domain = fmt.Sprintf(endpointTpl, a.region)
+		request.Version = "2018-12-01"
+		request.ApiName = "GetAuthorizationToken"
+		request.QueryParams["RegionId"] = a.region
+		request.QueryParams["InstanceId"] = a.instanceId
+		tokenResponse, err := client.ProcessCommonRequest(request)
 		if err != nil {
-			return
+			return err
 		}
 		var v authorizationToken
 		err = json.Unmarshal(tokenResponse.GetHttpContentBytes(), &v)
 		if err != nil {
-			return
+			return err
 		}
-		a.cacheTokenExpiredAt = v.Data.ExpireDate.ToTime()
-		a.cacheToken.user = v.Data.TempUserName
-		a.cacheToken.password = v.Data.AuthorizationToken
+		a.cacheTokenExpiredAt = v.ExpireTime.ToTime()
+		a.cacheToken.user = v.TempUserName
+		a.cacheToken.password = v.AuthorizationToken
 	} else {
 		log.Debug("[aliyunAuthCredential] USE CACHE TOKEN!!!")
 	}

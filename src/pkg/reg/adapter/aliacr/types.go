@@ -8,12 +8,9 @@ const (
 )
 
 type authorizationToken struct {
-	Data struct {
-		ExpireDate         timeUnix `json:"expireDate"`
-		AuthorizationToken string   `json:"authorizationToken"`
-		TempUserName       string   `json:"tempUserName"`
-	} `json:"data"`
-	RequestID string `json:"requestId"`
+	ExpireTime         timeUnix `json:"expireTime"`
+	AuthorizationToken string   `json:"authorizationToken"`
+	TempUserName       string   `json:"tempUserName"`
 }
 
 type timeUnix int64
