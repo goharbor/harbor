@@ -17,17 +17,18 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/gomodule/redigo/redis"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

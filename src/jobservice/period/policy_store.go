@@ -19,11 +19,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gomodule/redigo/redis"
+
 	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/gomodule/redigo/redis"
 )
 
 // Policy ...

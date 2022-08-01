@@ -10,11 +10,10 @@ import (
 	"net/url"
 	"reflect"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
 // Client is a client to interact with GitLab

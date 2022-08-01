@@ -1,9 +1,10 @@
 package dao
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/joblog/models"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"time"
 )
 
 type DaoTestSuite struct {

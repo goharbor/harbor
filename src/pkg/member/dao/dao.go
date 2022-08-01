@@ -17,10 +17,10 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/q"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 )
 

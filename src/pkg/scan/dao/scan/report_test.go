@@ -15,14 +15,15 @@
 package scan
 
 import (
-	htesting "github.com/goharbor/harbor/src/testing"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 // ReportTestSuite is test suite of testing report DAO.

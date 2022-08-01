@@ -2,9 +2,11 @@ package tag
 
 import (
 	"context"
+
+	"github.com/stretchr/testify/mock"
+
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/stretchr/testify/mock"
 )
 
 // FakeController is a fake artifact controller that implement src/api/tag.Controller interface

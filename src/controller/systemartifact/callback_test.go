@@ -3,12 +3,14 @@ package systemartifact
 import (
 	"context"
 	"errors"
+	"testing"
+
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/controller/systemartifact"
 	"github.com/goharbor/harbor/src/testing/mock"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type CallbackTestSuite struct {

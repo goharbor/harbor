@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/pkg/oidc/dao"
-
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/oidc/dao"
 )
 
 // SecretVerifyError wraps the different errors happened when verifying a secret for OIDC user.  When seeing this error,

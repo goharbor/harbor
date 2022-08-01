@@ -10,13 +10,13 @@ import (
 
 type Data struct {
 	ID             int64  `orm:"column(result_row_id)" csv:"RowId"`
-	ProjectName    string `orm:"column(project_name)" csv:"Project"`
-	ProjectOwner   string `orm:"column(project_owner)" csv:"Owner"`
 	ScannerName    string `orm:"column(scanner_name)" csv:"Scanner"`
 	Repository     string `orm:"column(repository_name)" csv:"Repository"`
 	ArtifactDigest string `orm:"column(artifact_digest)" csv:"Artifact Digest"`
 	CVEId          string `orm:"column(cve_id)" csv:"CVE"`
 	Package        string `orm:"column(package)" csv:"Package"`
+	Version        string `orm:"column(package_version)" csv:"Current Version"`
+	FixVersion     string `orm:"column(fixed_version)" csv:"Fixed in version"`
 	Severity       string `orm:"column(severity)" csv:"Severity"`
 	CVSSScoreV3    string `orm:"column(cvss_score_v3)" csv:"CVSS V3 Score"`
 	CVSSScoreV2    string `orm:"column(cvss_score_v2)" csv:"CVSS V2 Score"`
@@ -78,6 +78,8 @@ type Execution struct {
 	ID int64
 	// UserID triggering the execution
 	UserID int64
+	// ProjectIDs contains projects ids
+	ProjectIDs []int64
 	// Status provides the status of the execution
 	Status string
 	// StatusMessage contains the human-readable status message for the execution

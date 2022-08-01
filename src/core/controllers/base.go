@@ -22,6 +22,7 @@ import (
 
 	"github.com/beego/beego"
 	"github.com/beego/i18n"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"

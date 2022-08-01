@@ -18,12 +18,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	// import chart transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/chart"
 	// import image transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/image"
-
-	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )

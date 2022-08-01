@@ -23,6 +23,8 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -33,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/opencontainers/go-digest"
 )
 
 const (

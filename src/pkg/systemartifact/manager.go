@@ -3,15 +3,16 @@ package systemartifact
 import (
 	"context"
 	"fmt"
+	"io"
+	"sync"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/dao"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
-	"io"
-	"sync"
-	"time"
 )
 
 var (

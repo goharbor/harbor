@@ -8,7 +8,9 @@
     <span class="back-icon"><</span>
     <a (click)="goBack()">{{ repositoryName }}</a>
 
-    <span *ngFor="let digest of referArtifactNameArray; let i = index">
+    <span
+        class="back-icon"
+        *ngFor="let digest of referArtifactNameArray; let i = index">
         &lt;<a (click)="jumpDigest(i)">{{ digest | slice: 0:15 }}</a></span
     >
 </div>

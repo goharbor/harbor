@@ -22,19 +22,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
-
-	"github.com/goharbor/harbor/src/pkg/reg/filter"
-	"github.com/goharbor/harbor/src/pkg/reg/util"
-	"github.com/goharbor/harbor/src/pkg/registry"
-
-	"github.com/goharbor/harbor/src/common/utils"
-
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/reg/util"
+	"github.com/goharbor/harbor/src/pkg/registry"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 )
 
 func init() {

@@ -17,12 +17,13 @@ package handler
 import (
 	"context"
 	"fmt"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"regexp"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"

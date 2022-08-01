@@ -20,9 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
-	lib_http "github.com/goharbor/harbor/src/lib/http"
-
 	"github.com/goharbor/harbor/src/lib"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"

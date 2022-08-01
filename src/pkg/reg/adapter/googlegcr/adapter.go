@@ -17,14 +17,16 @@ package googlegcr
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/opencontainers/go-digest"
-	"io/ioutil"
-	"net/http"
 )
 
 func init() {

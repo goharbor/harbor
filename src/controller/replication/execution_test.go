@@ -20,6 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
@@ -31,7 +33,6 @@ import (
 	testingrep "github.com/goharbor/harbor/src/testing/pkg/replication"
 	testingscheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
 )
 
 type replicationTestSuite struct {

@@ -2,10 +2,10 @@ package oidc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 )
-import "errors"
 
 // This is for testing only
 type fakeVerifier struct {

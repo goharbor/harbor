@@ -235,56 +235,60 @@
                             {{ 'OPERATION.FAILED' | translate }}
                         </button>
                         <clr-tab-content id="contentFailed" *clrIfActive>
-                            <div
-                                class="eventInfo"
-                                *ngFor="let item of exportJobs">
+                            <ng-container *ngFor="let item of exportJobs">
                                 <div
-                                    class="iconsArea"
-                                    *ngIf="item.state === 'failure'">
-                                    <i
-                                        class="spinner spinner-inline spinner-pos"
-                                        [hidden]="
-                                            item.state !== 'progressing'
-                                        "></i>
-                                    <clr-icon
-                                        [hidden]="item.state !== 'success'"
-                                        size="18"
-                                        shape="success-standard"
-                                        class="color-green"></clr-icon>
-                                    <clr-icon
-                                        [hidden]="item.state !== 'failure'"
-                                        size="18"
-                                        shape="error-standard"
-                                        class="color-red"></clr-icon>
-                                    <clr-icon
-                                        [hidden]="item.state !== 'interrupt'"
-                                        size="18"
-                                        shape="unlink"
-                                        class="color-orange"></clr-icon>
+                                    *ngIf="item.state === 'failure'"
+                                    class="eventInfo">
+                                    <div class="iconsArea">
+                                        <i
+                                            class="spinner spinner-inline spinner-pos"
+                                            [hidden]="
+                                                item.state !== 'progressing'
+                                            "></i>
+                                        <clr-icon
+                                            [hidden]="item.state !== 'success'"
+                                            size="18"
+                                            shape="success-standard"
+                                            class="color-green"></clr-icon>
+                                        <clr-icon
+                                            [hidden]="item.state !== 'failure'"
+                                            size="18"
+                                            shape="error-standard"
+                                            class="color-red"></clr-icon>
+                                        <clr-icon
+                                            [hidden]="
+                                                item.state !== 'interrupt'
+                                            "
+                                            size="18"
+                                            shape="unlink"
+                                            class="color-orange"></clr-icon>
+                                    </div>
+                                    <div class="infoArea">
+                                        <label
+                                            class="eventName"
+                                            (click)="
+                                                toggleTitle(spanErrorInfo)
+                                            ">
+                                            <span class="flex">
+                                                <span class="job-name">{{
+                                                    item.name | translate
+                                                }}</span>
+                                            </span>
+                                        </label>
+                                        <span class="eventTarget">{{
+                                            item.data.name
+                                        }}</span
+                                        ><span class="eventTime">{{
+                                            item.timeDiff | translate
+                                        }}</span>
+                                        <span
+                                            #spanErrorInfo
+                                            class="eventErrorInf hidden-info"
+                                            >{{ item.data.errorInf }}</span
+                                        >
+                                    </div>
                                 </div>
-                                <div class="infoArea">
-                                    <label
-                                        class="eventName"
-                                        (click)="toggleTitle(spanErrorInfo)">
-                                        <span class="flex">
-                                            <span class="job-name">{{
-                                                item.name | translate
-                                            }}</span>
-                                        </span>
-                                    </label>
-                                    <span class="eventTarget">{{
-                                        item.data.name
-                                    }}</span
-                                    ><span class="eventTime">{{
-                                        item.timeDiff | translate
-                                    }}</span>
-                                    <span
-                                        #spanErrorInfo
-                                        class="eventErrorInf hidden-info"
-                                        >{{ item.data.errorInf }}</span
-                                    >
-                                </div>
-                            </div>
+                            </ng-container>
                             <div
                                 class="eventInfo"
                                 *ngFor="let list of failLists">

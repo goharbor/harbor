@@ -18,8 +18,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/http/modifier"
 )
 
 func TestAPIKeyAuthorizer(t *testing.T) {

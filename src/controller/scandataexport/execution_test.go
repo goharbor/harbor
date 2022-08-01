@@ -2,6 +2,13 @@ package scandataexport
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/pkg/errors"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
@@ -10,11 +17,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/pkg/errors"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type ScanDataExportExecutionTestSuite struct {
@@ -239,6 +241,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestStart() {
 	{
 		// get execution succeeds
 		attrs := make(map[string]interface{})
+		attrs[export.ProjectIDsAttribute] = []int64{1}
 		attrs[export.JobNameAttribute] = "test-job"
 		attrs[export.UserNameAttribute] = "test-user"
 		suite.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, attrs).Return(int64(10), nil)
@@ -246,6 +249,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestStart() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, export.CsvJobVendorIDKey, int(-1))
 		criteria := export.Request{}
+		criteria.Projects = []int64{1}
 		criteria.UserName = "test-user"
 		criteria.JobName = "test-job"
 		executionId, err := suite.ctl.Start(ctx, criteria)
@@ -301,13 +305,14 @@ func (suite *ScanDataExportExecutionTestSuite) TestStartWithTaskManagerError() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, export.CsvJobVendorIDKey, int(-1))
 		attrs := make(map[string]interface{})
+		attrs[export.ProjectIDsAttribute] = []int64{1}
 		attrs[export.JobNameAttribute] = "test-job"
 		attrs[export.UserNameAttribute] = "test-user"
 		suite.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, attrs).Return(int64(10), nil)
 		suite.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(-1), errors.New("Test Error"))
 		mock.OnAnything(suite.execMgr, "StopAndWait").Return(nil)
 		mock.OnAnything(suite.execMgr, "MarkError").Return(nil)
-		_, err := suite.ctl.Start(ctx, export.Request{JobName: "test-job", UserName: "test-user"})
+		_, err := suite.ctl.Start(ctx, export.Request{JobName: "test-job", UserName: "test-user", Projects: []int64{1}})
 		suite.Error(err)
 	}
 }

@@ -18,18 +18,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/orm"
-	_ "github.com/goharbor/harbor/src/pkg/config/db"
-	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
 	userModels "github.com/goharbor/harbor/src/pkg/user/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

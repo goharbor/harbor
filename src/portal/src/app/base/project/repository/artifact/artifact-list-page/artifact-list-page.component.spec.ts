@@ -32,7 +32,11 @@ describe('ArtifactListPageComponent', () => {
         }),
         params: {
             subscribe: () => {
-                return of(null);
+                return {
+                    unsubscribe() {
+                        return null;
+                    },
+                };
             },
         },
     };

@@ -23,9 +23,10 @@ import (
 	"testing"
 
 	o "github.com/beego/beego/orm"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/stretchr/testify/assert"
 )
 
 type mockOrmer struct {

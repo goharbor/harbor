@@ -16,14 +16,15 @@ package flow
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"testing"
 
-	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/testing/pkg/task"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 type deletionFlowTestSuite struct {

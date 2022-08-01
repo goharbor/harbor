@@ -18,10 +18,11 @@ import (
 	"testing"
 
 	"github.com/beego/beego/orm"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/jackc/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func TestIsNotFoundError(t *testing.T) {

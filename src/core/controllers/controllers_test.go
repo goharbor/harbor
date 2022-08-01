@@ -23,17 +23,17 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/beego/beego"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common"
+	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
-
-	"github.com/beego/beego"
-	"github.com/goharbor/harbor/src/common"
-	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"github.com/stretchr/testify/assert"
 )
 
 func init() {

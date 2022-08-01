@@ -19,8 +19,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 )
 
 // HTTPClientTestSuite is a test suite for testing the HTTP client.

@@ -202,4 +202,12 @@ export const USERSTATICPERMISSION = {
             DELETE: 'delete',
         },
     },
+    EXPORT_CVE: {
+        KEY: 'export-cve',
+        VALUE: {
+            READ: 'read',
+            CREATE: 'create',
+            LIST: 'list',
+        },
+    },
 };

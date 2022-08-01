@@ -17,9 +17,10 @@ package signature
 import (
 	"testing"
 
-	sl "github.com/goharbor/harbor/src/lib/selector"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	sl "github.com/goharbor/harbor/src/lib/selector"
 )
 
 // SignatureSelectorTestSuite is a test suite for testing the signature selector

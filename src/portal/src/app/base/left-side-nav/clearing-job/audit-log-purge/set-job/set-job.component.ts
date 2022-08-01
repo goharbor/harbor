@@ -20,6 +20,7 @@ import { NgForm } from '@angular/forms';
 
 const ONE_MINUTE: number = 60000;
 const ONE_DAY: number = 24;
+const MAX_RETENTION_DAYS: number = 10000;
 
 @Component({
     selector: 'app-set-job',
@@ -311,6 +312,18 @@ export class SetJobComponent implements OnInit, OnDestroy {
         }
         return !(
             this.purgeForm?.invalid || !(this.selectedOperations?.length > 0)
+        );
+    }
+    isRetentionTimeValid() {
+        if (this.retentionUnit === RetentionTimeUnit.DAYS) {
+            return (
+                this.retentionTime > 0 &&
+                this.retentionTime <= MAX_RETENTION_DAYS
+            );
+        }
+        return (
+            this.retentionTime > 0 &&
+            this.retentionTime <= MAX_RETENTION_DAYS * ONE_DAY
         );
     }
 }

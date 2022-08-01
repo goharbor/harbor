@@ -19,6 +19,7 @@ import (
 	"errors"
 
 	o "github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/orm"

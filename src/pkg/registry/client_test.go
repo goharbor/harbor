@@ -16,14 +16,16 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"testing"
+
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 type clientTestSuite struct {

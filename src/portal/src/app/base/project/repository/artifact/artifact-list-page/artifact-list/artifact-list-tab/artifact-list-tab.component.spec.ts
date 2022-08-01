@@ -20,10 +20,6 @@ import {
     USERSTATICPERMISSION,
 } from '../../../../../../../shared/services';
 import { ArtifactFront as Artifact } from '../../../artifact';
-import { LabelPieceComponent } from '../../../../../../../shared/components/label/label-piece/label-piece.component';
-import { ConfirmationDialogComponent } from '../../../../../../../shared/components/confirmation-dialog';
-import { ImageNameInputComponent } from '../../../../../../../shared/components/image-name-input/image-name-input.component';
-import { CopyInputComponent } from '../../../../../../../shared/components/push-image/copy-input.component';
 import { ErrorHandler } from '../../../../../../../shared/units/error-handler';
 import { OperationService } from '../../../../../../../shared/components/operation/operation.service';
 import { ArtifactService as NewArtifactService } from '../../../../../../../../../ng-swagger-gen/services/artifact.service';
@@ -43,19 +39,16 @@ describe('ArtifactListTabComponent (inline template)', () => {
     let spyLabels: jasmine.Spy;
     let spyLabels1: jasmine.Spy;
     let spyScanner: jasmine.Spy;
-    let scannerMock = {
+    const scannerMock = {
         disabled: false,
         name: 'Trivy',
     };
-    let mockActivatedRoute = {
+    const mockActivatedRoute = {
         snapshot: {
             params: {
                 id: 1,
                 repo: 'test',
                 digest: 'ABC',
-                subscribe: () => {
-                    return of(null);
-                },
             },
             data: {
                 projectResolver: {
@@ -70,13 +63,8 @@ describe('ArtifactListTabComponent (inline template)', () => {
                 name: 'library',
             },
         }),
-        params: {
-            subscribe: () => {
-                return of(null);
-            },
-        },
     };
-    let mockArtifacts: Artifact[] = [
+    const mockArtifacts: Artifact[] = [
         {
             id: 1,
             type: 'image',
@@ -266,6 +254,11 @@ describe('ArtifactListTabComponent (inline template)', () => {
         },
     ];
     const mockRouter = {
+        events: {
+            subscribe: () => {
+                return of(null);
+            },
+        },
         navigate: () => {},
     };
     const mockOperationService = {
@@ -351,13 +344,7 @@ describe('ArtifactListTabComponent (inline template)', () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
-            declarations: [
-                ArtifactListTabComponent,
-                LabelPieceComponent,
-                ConfirmationDialogComponent,
-                ImageNameInputComponent,
-                CopyInputComponent,
-            ],
+            declarations: [ArtifactListTabComponent],
             providers: [
                 {
                     provide: ArtifactListPageService,

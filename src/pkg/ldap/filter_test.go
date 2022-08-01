@@ -15,8 +15,9 @@
 package ldap
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFilterBuilder(t *testing.T) {

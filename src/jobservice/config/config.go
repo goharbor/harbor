@@ -23,9 +23,10 @@ import (
 	"strconv"
 	"strings"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (

@@ -19,6 +19,10 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -45,9 +49,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 // TODO find another way to test artifact controller, it's hard to maintain currently
@@ -263,26 +264,10 @@ func (c *controllerTestSuite) TestEnsure() {
 }
 
 func (c *controllerTestSuite) TestCount() {
-	c.artMgr.On("List", mock.Anything, mock.Anything).Return([]*artifact.Artifact{
-		{
-			ID:           1,
-			RepositoryID: 1,
-		},
-	}, nil)
-	acc := &basemodel.Default{
-		Data: accessorymodel.AccessoryData{
-			ID:            1,
-			ArtifactID:    2,
-			SubArtifactID: 1,
-			Type:          accessorymodel.TypeCosignSignature,
-		},
-	}
-	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
-		acc,
-	}, nil)
+	c.artMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
 	total, err := c.ctl.Count(nil, nil)
 	c.Require().Nil(err)
-	c.Equal(int64(0), total)
+	c.Equal(int64(1), total)
 }
 
 func (c *controllerTestSuite) TestList() {

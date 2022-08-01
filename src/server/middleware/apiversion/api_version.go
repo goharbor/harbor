@@ -15,9 +15,10 @@
 package apiversion
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"net/http"
 )
 
 // Middleware returns a middleware that set the API version into the context

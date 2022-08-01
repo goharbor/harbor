@@ -21,6 +21,7 @@ import (
 	"sort"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 

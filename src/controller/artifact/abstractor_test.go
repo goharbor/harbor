@@ -17,6 +17,12 @@ package artifact
 import (
 	"testing"
 
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -25,12 +31,6 @@ import (
 	tblob "github.com/goharbor/harbor/src/testing/pkg/blob"
 	tpro "github.com/goharbor/harbor/src/testing/pkg/processor"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
-
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/suite"
 )
 
 var (

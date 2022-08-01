@@ -2,9 +2,10 @@ package joblog
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/joblog/dao"
 	"github.com/goharbor/harbor/src/pkg/joblog/models"
-	"time"
 )
 
 // Mgr is the global job log manager instance

@@ -15,13 +15,14 @@
 package rest
 
 import (
+	"os"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/config"
 	"github.com/goharbor/harbor/src/pkg/config/store"
-	"os"
-	"strings"
 )
 
 func init() {

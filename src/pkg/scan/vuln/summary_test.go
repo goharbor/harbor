@@ -17,8 +17,9 @@ package vuln
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
 func TestMergeNativeReportSummary(t *testing.T) {

@@ -19,10 +19,10 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // GetHTTPTransport can be used to share the common HTTP transport

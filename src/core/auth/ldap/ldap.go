@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	goldap "github.com/go-ldap/ldap/v3"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"

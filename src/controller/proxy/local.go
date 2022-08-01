@@ -16,7 +16,10 @@ package proxy
 
 import (
 	"context"
+	"io"
+
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib"
@@ -27,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"io"
 )
 
 // TrimmedManifestlist - key prefix for trimmed manifest

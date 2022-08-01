@@ -17,10 +17,11 @@ package policy
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 )
 
 // FilterTestSuite is a test suite of testing policy filter

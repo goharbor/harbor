@@ -16,9 +16,10 @@
 package utils
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/lib/config"
-	"sync"
 )
 
 var (

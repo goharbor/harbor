@@ -15,11 +15,12 @@
 package purge
 
 import (
+	"os"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/audit"
-	"os"
-	"strings"
 )
 
 // Job defines the purge job
@@ -100,6 +101,10 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	if j.retentionHour == -1 || j.retentionHour == 0 {
 		logger.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
 		return nil
+	}
+	// cap the retentionHour
+	if j.retentionHour > common.MaxAuditRetentionHour {
+		j.retentionHour = common.MaxAuditRetentionHour
 	}
 	n, err := j.auditMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
 	if err != nil {

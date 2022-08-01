@@ -2,6 +2,9 @@ package blob
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -11,8 +14,6 @@ import (
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
-	"net/http"
-	"time"
 )
 
 // HeadBlobMiddleware intercept the head blob request

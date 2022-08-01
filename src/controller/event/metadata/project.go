@@ -15,9 +15,10 @@
 package metadata
 
 import (
+	"time"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"time"
 )
 
 // CreateProjectEventMetadata is the metadata from which the create project event can be resolved

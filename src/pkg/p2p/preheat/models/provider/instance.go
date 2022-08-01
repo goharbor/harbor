@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 
 	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 

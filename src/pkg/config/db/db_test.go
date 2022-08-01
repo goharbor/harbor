@@ -17,10 +17,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDatabase_Load(t *testing.T) {

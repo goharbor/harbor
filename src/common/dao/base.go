@@ -20,12 +20,12 @@ import (
 	"strconv"
 	"sync"
 
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	userModels "github.com/goharbor/harbor/src/pkg/user/models"
-
 	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 )
 
 const (

@@ -18,6 +18,22 @@ export enum RouteConfigId {
     P2P_POLICIES_PAGE = 'PolicyComponent',
     P2P_TASKS_PAGE = 'P2pTaskListComponent',
 }
+// should not reuse the routes that meet these RegExps
+const ShouldNotReuseRouteRegExps: RegExp[] = [
+    /\/harbor\/projects\/(\d+)\/repositories$/,
+    /\/harbor\/projects\/(\d+)\/repositories\/(\S+)\/artifacts-tab$/,
+    /\/harbor\/projects\/(\d+)\/helm-charts\/(\S+)\/versions\/(\S+)/,
+];
+
+function testRoute(url: string) {
+    let flag: boolean = false;
+    ShouldNotReuseRouteRegExps.forEach(item => {
+        if (item.test(url)) {
+            flag = true;
+        }
+    });
+    return flag;
+}
 
 export class HarborRouteReuseStrategy implements RouteReuseStrategy {
     /**
@@ -73,6 +89,12 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
         curr: ActivatedRouteSnapshot
     ): boolean {
         this.shouldKeepCache(future, curr);
+        if (
+            testRoute(curr['_routerState']?.url) &&
+            testRoute(future['_routerState']?.url)
+        ) {
+            return false;
+        }
         return future.routeConfig === curr.routeConfig;
     }
 

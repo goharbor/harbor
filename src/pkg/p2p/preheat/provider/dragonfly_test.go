@@ -18,10 +18,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 )
 
 // DragonflyTestSuite is a test suite of testing Dragonfly driver.

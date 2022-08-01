@@ -16,17 +16,18 @@ package artifactinfo
 
 import (
 	"fmt"
-	"github.com/docker/distribution/reference"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 
+	"github.com/docker/distribution/reference"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/opencontainers/go-digest"
 )
 
 const (

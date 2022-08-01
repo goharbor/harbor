@@ -18,10 +18,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/repository/model"
-	"github.com/goharbor/harbor/src/testing/pkg/repository/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/repository/model"
+	"github.com/goharbor/harbor/src/testing/pkg/repository/dao"
 )
 
 type managerTestSuite struct {

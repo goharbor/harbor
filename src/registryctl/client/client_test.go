@@ -16,10 +16,11 @@ package client
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
 )

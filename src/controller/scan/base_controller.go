@@ -22,6 +22,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	ar "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
@@ -46,7 +48,6 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/google/uuid"
 )
 
 // DefaultController is a default singleton scan API controller.

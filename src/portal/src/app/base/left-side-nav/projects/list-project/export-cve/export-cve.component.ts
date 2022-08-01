@@ -1,7 +1,11 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    EventEmitter,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import { Label } from 'ng-swagger-gen/models/label';
-import { LabelService } from 'ng-swagger-gen/services/label.service';
-import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { Project } from 'src/app/base/project/project';
 import { NgForm } from '@angular/forms';
@@ -13,8 +17,8 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../../services/event-service/event.service';
+import { LabelService } from 'src/app/shared/services/label.service';
 
-const PAGE_SIZE: number = 100;
 const SUPPORTED_MIME_TYPE: string =
     'application/vnd.security.vulnerability.report; version=1.1';
 @Component({
@@ -23,6 +27,7 @@ const SUPPORTED_MIME_TYPE: string =
     styleUrls: ['./export-cve.component.scss'],
 })
 export class ExportCveComponent {
+    @Output() triggerExportSuccess = new EventEmitter<void>();
     selectedProjects: Project[] = [];
     opened: boolean = false;
     loading: boolean = false;
@@ -92,6 +97,7 @@ export class ExportCveComponent {
             )
             .subscribe(
                 res => {
+                    this.triggerExportSuccess.emit();
                     this.msgHandler.showSuccess(
                         'CVE_EXPORT.TRIGGER_EXPORT_SUCCESS'
                     );
@@ -107,7 +113,7 @@ export class ExportCveComponent {
     isSelected(l: Label): boolean {
         let flag: boolean = false;
         this.selectedLabels.forEach(item => {
-            if (item.name === l.name) {
+            if (item.id === l.id) {
                 flag = true;
             }
         });
@@ -116,7 +122,7 @@ export class ExportCveComponent {
     selectOrUnselect(l: Label) {
         if (this.isSelected(l)) {
             this.selectedLabels = this.selectedLabels.filter(
-                item => item.name !== l.name
+                item => item.id !== l.id
             );
         } else {
             this.selectedLabels.push(l);
@@ -144,54 +150,12 @@ export class ExportCveComponent {
         // get all global labels
         this.loadingAllLabels = true;
         this.labelService
-            .ListLabelsResponse({
-                pageSize: PAGE_SIZE,
-                page: 1,
-                scope: 'g',
-            })
+            .getAllGlobalAndSpecificProjectLabels(
+                this.selectedProjects[0].project_id
+            )
             .pipe(finalize(() => (this.loadingAllLabels = false)))
             .subscribe(res => {
-                if (res.headers) {
-                    const xHeader: string = res.headers.get('X-Total-Count');
-                    const totalCount = parseInt(xHeader, 0);
-                    let arr = res.body || [];
-                    if (totalCount <= 100) {
-                        // already gotten all global labels
-                        if (arr && arr.length) {
-                            arr.forEach(data => {
-                                this.allLabels.push(data);
-                            });
-                        }
-                    } else {
-                        // get all the global labels in specified times
-                        const times: number = Math.ceil(totalCount / PAGE_SIZE);
-                        const observableList: Observable<Label[]>[] = [];
-                        for (let i = 2; i <= times; i++) {
-                            observableList.push(
-                                this.labelService.ListLabels({
-                                    page: i,
-                                    pageSize: PAGE_SIZE,
-                                    scope: 'g',
-                                })
-                            );
-                        }
-                        this.loadingAllLabels = true;
-                        forkJoin(observableList)
-                            .pipe(
-                                finalize(() => (this.loadingAllLabels = false))
-                            )
-                            .subscribe(response => {
-                                if (response && response.length) {
-                                    response.forEach(item => {
-                                        arr = arr.concat(item);
-                                    });
-                                    arr.forEach(data => {
-                                        this.allLabels.push(data);
-                                    });
-                                }
-                            });
-                    }
-                }
+                this.allLabels = res;
             });
     }
     handleBrace(originStr: string): string {

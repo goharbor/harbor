@@ -16,9 +16,11 @@ package tag
 
 import (
 	"context"
+
+	"github.com/stretchr/testify/mock"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/stretchr/testify/mock"
 )
 
 // FakeManager is a fake tag manager that implement the src/pkg/tag.Manager interface

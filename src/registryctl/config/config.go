@@ -16,14 +16,15 @@ package config
 
 import (
 	"fmt"
-	"github.com/docker/distribution/configuration"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/factory"
-	"github.com/goharbor/harbor/src/lib/log"
 	"io/ioutil"
 	"os"
 
+	"github.com/docker/distribution/configuration"
+	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/docker/distribution/registry/storage/driver/factory"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // DefaultConfig ...

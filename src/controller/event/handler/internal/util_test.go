@@ -17,6 +17,8 @@ package internal
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -29,7 +31,6 @@ import (
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type AutoScanTestSuite struct {

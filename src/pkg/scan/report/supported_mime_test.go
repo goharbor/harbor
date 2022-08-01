@@ -19,10 +19,11 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
 // SupportedMimesSuite is a suite to test SupportedMimes.

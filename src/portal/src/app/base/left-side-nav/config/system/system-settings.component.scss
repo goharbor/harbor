@@ -112,15 +112,8 @@
   margin: 0;
 }
 
-.cert-down-label {
-  position: relative;
-
-  .cert-down {
-    position: absolute;
-      left: 240px;
-      top: 50%;
-      transform: translateY(-50%);
-  }
+.cert-down {
+  margin-top: 0.15rem;
 }
 
 .info-tips-icon {

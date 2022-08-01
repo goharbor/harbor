@@ -23,18 +23,18 @@ import (
 	"path"
 	"strings"
 
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	tokenutil "github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/log"
-	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
-
 	"github.com/docker/distribution/registry/auth/token"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/theupdateframework/notary"
 	"github.com/theupdateframework/notary/client"
 	"github.com/theupdateframework/notary/trustpinning"
 	"github.com/theupdateframework/notary/tuf/data"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	tokenutil "github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
+	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 )
 
 var (

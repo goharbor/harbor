@@ -21,6 +21,11 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -29,10 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"github.com/goharbor/harbor/src/jobservice/tests"
-	"github.com/gomodule/redigo/redis"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // RedisRunnerTestSuite tests functions of redis runner

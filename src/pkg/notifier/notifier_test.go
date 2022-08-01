@@ -2,11 +2,12 @@ package notifier
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/dao"
 	"reflect"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/common/dao"
 )
 
 var statefulData int32

@@ -1,7 +1,6 @@
 package scandataexport
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,15 +8,15 @@ import (
 	"strings"
 
 	"github.com/gocarina/gocsv"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
 	"github.com/goharbor/harbor/src/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/opencontainers/go-digest"
 )
 
 // ScanDataExport is the struct to implement the scan data export.
@@ -75,12 +74,13 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	mode := params[export.JobModeKey].(string)
+	logger := ctx.GetLogger()
 	logger.Infof("Scan data export job started in mode : %v", mode)
 	sde.init()
 	fileName := fmt.Sprintf("%s/scandata_export_%v.csv", sde.scanDataExportDirPath, params["JobId"])
 
 	// ensure that CSV files are cleared post the completion of the Run.
-	defer sde.cleanupCsvFile(fileName, params)
+	defer sde.cleanupCsvFile(ctx, fileName, params)
 	err := sde.writeCsvFile(ctx, params, fileName)
 	if err != nil {
 		logger.Errorf("error when writing data to CSV: %v", err)
@@ -132,6 +132,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, err error, hash digest.Digest) error {
 	execID := int64(params["JobId"].(float64))
 	exec, err := sde.execMgr.Get(ctx.SystemContext(), execID)
+	logger := ctx.GetLogger()
 	if err != nil {
 		logger.Errorf("Export Job Id = %v. Error when fetching execution record for update : %v", params["JobId"], err)
 		return err
@@ -152,6 +153,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 	systemContext := ctx.SystemContext()
 	defer csvFile.Close()
 
+	logger := ctx.GetLogger()
 	if err != nil {
 		logger.Errorf("Failed to create CSV export file %s. Error : %v", fileName, err)
 		return err
@@ -159,6 +161,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 	logger.Infof("Created CSV export file %s", csvFile.Name())
 
 	var exportParams export.Params
+	var artIDGroups [][]int64
 
 	if criteira, ok := params["Request"]; ok {
 		logger.Infof("Request for export : %v", criteira)
@@ -180,7 +183,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 		}
 
 		// extract the repository ids if any repositories have been specified
-		repoIds, err := sde.getRepositoryIds(systemContext, filterCriteria.Repositories, projectIds)
+		repoIds, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIds)
 		if err != nil {
 			return err
 		}
@@ -190,86 +193,83 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			return nil
 		}
 
-		// filter the specified repositories further using the specified tags
-		repoIds, err = sde.getRepositoriesWithTags(systemContext, filterCriteria, repoIds)
-
+		// filter artifacts by tags
+		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIds)
 		if err != nil {
 			return err
 		}
 
-		if len(repoIds) == 0 {
-			logger.Infof("No repositories found with specified names: %v and tags: %v", filterCriteria.Repositories, filterCriteria.Tags)
+		if len(arts) == 0 {
+			logger.Infof("No artifacts found with specified names: %v and tags: %v", filterCriteria.Repositories, filterCriteria.Tags)
 			return nil
+		}
+
+		// filter artifacts by labels
+		arts, err = sde.filterProcessor.ProcessLabelFilter(systemContext, filterCriteria.Labels, arts)
+		if err != nil {
+			return err
+		}
+
+		if len(arts) == 0 {
+			logger.Infof("No artifacts found with specified labels: %v", filterCriteria.Labels)
+			return nil
+		}
+
+		size := export.ArtifactGroupSize
+		artIDGroups = make([][]int64, len(arts)/size+1)
+		for i, art := range arts {
+			// group artIDs to improve performance and avoid spliced sql over
+			// max length
+			artIDGroups[i/size] = append(artIDGroups[i/size], art.ID)
 		}
 
 		exportParams = export.Params{
-			Projects:     filterCriteria.Projects,
-			Repositories: repoIds,
-			CVEIds:       filterCriteria.CVEIds,
-			Labels:       filterCriteria.Labels,
+			CVEIds: filterCriteria.CVEIds,
 		}
 	}
 
-	exportParams.PageNumber = 1
-	exportParams.PageSize = export.QueryPageSize
+	for groupID, artIDGroup := range artIDGroups {
+		// fetch data by group
+		if len(artIDGroup) == 0 {
+			continue
+		}
 
-	for {
-		data, err := sde.exportMgr.Fetch(systemContext, exportParams)
-		if err != nil {
-			logger.Error("Encountered error reading from the report table", err)
-			return err
-		}
-		if len(data) == 0 {
-			logger.Infof("No more data to fetch. Exiting...")
-			break
-		}
-		logger.Infof("Export Job Id = %v, Page Number = %d, Page Size = %d Num Records = %d", params["JobId"], exportParams.PageNumber, exportParams.PageSize, len(data))
+		exportParams.ArtifactIDs = artIDGroup
+		exportParams.PageNumber = 1
+		exportParams.PageSize = export.QueryPageSize
 
-		// for the first page write the CSV with the headers
-		if exportParams.PageNumber == 1 {
-			err = gocsv.Marshal(data, csvFile)
-		} else {
-			err = gocsv.MarshalWithoutHeaders(data, csvFile)
+		for {
+			data, err := sde.exportMgr.Fetch(systemContext, exportParams)
+			if err != nil {
+				logger.Error("Encountered error reading from the report table", err)
+				return err
+			}
+			if len(data) == 0 {
+				logger.Infof("No more data to fetch. Exiting...")
+				break
+			}
+			logger.Infof("Export Group Id = %d, Job Id = %v, Page Number = %d, Page Size = %d Num Records = %d", groupID, params["JobId"], exportParams.PageNumber, exportParams.PageSize, len(data))
+
+			// for the first page write the CSV with the headers
+			if exportParams.PageNumber == 1 && groupID == 0 {
+				err = gocsv.Marshal(data, csvFile)
+			} else {
+				err = gocsv.MarshalWithoutHeaders(data, csvFile)
+			}
+			if err != nil {
+				return nil
+			}
+
+			exportParams.PageNumber = exportParams.PageNumber + 1
+			exportParams.RowNumOffset = exportParams.RowNumOffset + int64(len(data))
+
+			// break earlier if this is last page
+			if len(data) < int(exportParams.PageSize) {
+				break
+			}
 		}
-		if err != nil {
-			return nil
-		}
-		exportParams.PageNumber = exportParams.PageNumber + 1
 	}
 	return nil
-}
-
-func (sde *ScanDataExport) getRepositoryIds(ctx context.Context, filter string, projectIds []int64) ([]int64, error) {
-	repositoryIds := make([]int64, 0)
-	candidates, err := sde.filterProcessor.ProcessRepositoryFilter(ctx, filter, projectIds)
-	if err != nil {
-		return nil, err
-	}
-	if candidates == nil {
-		return repositoryIds, nil
-	}
-	for _, cand := range candidates {
-		repositoryIds = append(repositoryIds, cand.NamespaceID)
-	}
-	return repositoryIds, nil
-}
-
-func (sde *ScanDataExport) getRepositoriesWithTags(ctx context.Context, filterCriteria *export.Request, repositoryIds []int64) ([]int64, error) {
-	if filterCriteria.Tags == "" {
-		return repositoryIds, nil
-	}
-	candidates, err := sde.filterProcessor.ProcessTagFilter(ctx, filterCriteria.Tags, repositoryIds)
-	if err != nil {
-		return nil, err
-	}
-	if candidates == nil {
-		return make([]int64, 0), nil
-	}
-	filteredCandidates := make([]int64, 0)
-	for _, cand := range candidates {
-		filteredCandidates = append(filteredCandidates, cand.NamespaceID)
-	}
-	return filteredCandidates, nil
 }
 
 func (sde *ScanDataExport) extractCriteria(params job.Parameters) (*export.Request, error) {
@@ -328,7 +328,8 @@ func (sde *ScanDataExport) init() {
 	}
 }
 
-func (sde *ScanDataExport) cleanupCsvFile(fileName string, params job.Parameters) {
+func (sde *ScanDataExport) cleanupCsvFile(ctx job.Context, fileName string, params job.Parameters) {
+	logger := ctx.GetLogger()
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		logger.Infof("Export Job Id = %v, CSV Export File = %s does not exist. Nothing to do", params["JobId"], fileName)
 		return

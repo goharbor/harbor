@@ -5,6 +5,12 @@ linters-settings:
     simplify: false
   misspell:
     locale: US,UK
+  goimports:
+    local-prefixes: github.com/goharbor/harbor
+  stylecheck:
+    checks: [
+      "ST1019",  # Importing the same package multiple times.
+    ]
 
 linters:
   disable-all: true
@@ -32,12 +38,13 @@ linters:
     - errcheck
     # - gosec
     - gosimple
+    - goimports
     - govet
     # - noctx
     # - rowserrcheck
-    # - staticcheck
+    - staticcheck
     - structcheck
-    # - stylecheck
+    - stylecheck
     # - unconvert
     # - unparam
     - unused
@@ -54,3 +61,17 @@ run:
 issue:
   max-same-issues: 0
   max-per-linter: 0
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - goimports
+    - path: src/testing/*.go
+      linters:
+        - goimports
+    - path: src/jobservice/mgt/mock_manager.go
+      linters:
+        - goimports

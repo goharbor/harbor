@@ -58,6 +58,7 @@ export class OperationComponent implements OnInit, OnDestroy {
         }
     }
     timeout;
+    refreshExportJobSub: Subscription;
     constructor(
         private session: SessionService,
         private operationService: OperationService,
@@ -66,29 +67,34 @@ export class OperationComponent implements OnInit, OnDestroy {
         private event: EventService,
         private msgHandler: MessageHandlerService
     ) {
-        this.event.subscribe(HarborEvent.REFRESH_EXPORT_JOBS, () => {
-            if (this.animationState === 'out') {
-                this._newMessageCount += 1;
-            }
-            this.refreshExportJobs();
-        });
-
-        this.batchInfoSubscription = operationService.operationInfo$.subscribe(
-            data => {
-                if (this.animationState === 'out') {
-                    this._newMessageCount += 1;
-                }
-                if (data) {
-                    if (this.resultLists.length >= MAX_NUMBER) {
-                        this.resultLists.splice(
-                            MAX_NUMBER - 1,
-                            this.resultLists.length + 1 - MAX_NUMBER
-                        );
+        if (!this.refreshExportJobSub) {
+            this.refreshExportJobSub = this.event.subscribe(
+                HarborEvent.REFRESH_EXPORT_JOBS,
+                () => {
+                    if (this.animationState === 'out') {
+                        this._newMessageCount += 1;
                     }
-                    this.resultLists.unshift(data);
+                    this.refreshExportJobs();
                 }
-            }
-        );
+            );
+        }
+        if (!this.batchInfoSubscription) {
+            this.batchInfoSubscription =
+                operationService.operationInfo$.subscribe(data => {
+                    if (this.animationState === 'out') {
+                        this._newMessageCount += 1;
+                    }
+                    if (data) {
+                        if (this.resultLists.length >= MAX_NUMBER) {
+                            this.resultLists.splice(
+                                MAX_NUMBER - 1,
+                                this.resultLists.length + 1 - MAX_NUMBER
+                            );
+                        }
+                        this.resultLists.unshift(data);
+                    }
+                });
+        }
     }
 
     getNewMessageCountStr(): string {
@@ -184,6 +190,7 @@ export class OperationComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.batchInfoSubscription) {
             this.batchInfoSubscription.unsubscribe();
+            this.batchInfoSubscription = null;
         }
         if (this._timeoutInterval) {
             clearInterval(this._timeoutInterval);
@@ -192,6 +199,10 @@ export class OperationComponent implements OnInit, OnDestroy {
         if (this.timeout) {
             clearTimeout(this.timeout);
             this.timeout = null;
+        }
+        if (this.refreshExportJobSub) {
+            this.refreshExportJobSub.unsubscribe();
+            this.refreshExportJobSub = null;
         }
     }
 
@@ -237,16 +248,6 @@ export class OperationComponent implements OnInit, OnDestroy {
                 daysAgo
             );
         });
-        this.exportJobs.forEach(data => {
-            const timeDiff: number = new Date().getTime() - +data.timeStamp;
-            data.timeDiff = this.calculateTime(
-                timeDiff,
-                secondsAgo,
-                minutesAgo,
-                hoursAgo,
-                daysAgo
-            );
-        });
     }
 
     calculateTime(
@@ -283,7 +284,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                                     hasFile: item.file_present,
                                     name: `${FILE_NAME_PREFIX}${new HarborDatetimePipe().transform(
                                         item.start_time,
-                                        'yyyyMMddHHss'
+                                        'yyyyMMddHHmmss'
                                     )}`,
                                     id: item.id,
                                     errorInf:
@@ -299,6 +300,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                                 flag = true;
                             }
                         });
+                        this.refreshTimestampForExportJob();
                         if (flag) {
                             this.timeout = setTimeout(() => {
                                 this.refreshExportJobs();
@@ -351,6 +353,32 @@ export class OperationComponent implements OnInit, OnDestroy {
                         this.msgHandler.error(error);
                     }
                 );
+        }
+    }
+    refreshTimestampForExportJob() {
+        let secondsAgo: string,
+            minutesAgo: string,
+            hoursAgo: string,
+            daysAgo: string;
+        forkJoin([
+            this.translate.get('OPERATION.SECOND_AGO'),
+            this.translate.get('OPERATION.MINUTE_AGO'),
+            this.translate.get('OPERATION.HOUR_AGO'),
+            this.translate.get('OPERATION.DAY_AGO'),
+        ]).subscribe(res => {
+            [secondsAgo, minutesAgo, hoursAgo, daysAgo] = res;
+        });
+        if (this.exportJobs?.length) {
+            this.exportJobs.forEach(data => {
+                const timeDiff: number = new Date().getTime() - +data.timeStamp;
+                data.timeDiff = this.calculateTime(
+                    timeDiff,
+                    secondsAgo,
+                    minutesAgo,
+                    hoursAgo,
+                    daysAgo
+                );
+            });
         }
     }
 }

@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
-
-	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
@@ -15,10 +12,12 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	rpModel "github.com/goharbor/harbor/src/pkg/reg/model"
 )

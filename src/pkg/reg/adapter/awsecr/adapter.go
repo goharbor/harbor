@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"

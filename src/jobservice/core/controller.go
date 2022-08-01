@@ -16,6 +16,7 @@ package core
 
 import (
 	"fmt"
+
 	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"

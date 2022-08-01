@@ -9,13 +9,14 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	helm_repo "helm.sh/helm/v3/pkg/repo"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	rep_event "github.com/goharbor/harbor/src/controller/event/handler/replication/event"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	helm_repo "helm.sh/helm/v3/pkg/repo"
 )
 
 // ListCharts gets the chart list under the namespace

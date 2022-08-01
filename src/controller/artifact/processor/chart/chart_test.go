@@ -20,15 +20,16 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
+	helm_chart "helm.sh/helm/v3/pkg/chart"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/suite"
-	helm_chart "helm.sh/helm/v3/pkg/chart"
 )
 
 var (

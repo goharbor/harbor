@@ -17,6 +17,8 @@ package repository
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -28,7 +30,6 @@ import (
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
-	"github.com/stretchr/testify/suite"
 )
 
 type controllerTestSuite struct {

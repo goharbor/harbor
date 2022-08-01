@@ -16,9 +16,11 @@ package processor
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
 type fakeProcessor struct{}

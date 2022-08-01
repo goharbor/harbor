@@ -15,9 +15,10 @@
 package filter
 
 import (
+	"strings"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
-	"strings"
 )
 
 // DoFilterArtifacts filter the artifacts according to the filters

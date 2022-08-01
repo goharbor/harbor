@@ -3,10 +3,10 @@ package getter
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/joblog"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/joblog"
 )
 
 // DBGetter is responsible for retrieving DB log data

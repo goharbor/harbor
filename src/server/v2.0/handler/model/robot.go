@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"

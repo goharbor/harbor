@@ -15,9 +15,9 @@
 package migration
 
 import (
-	"github.com/Masterminds/semver"
 	"reflect"
 
+	"github.com/Masterminds/semver"
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"

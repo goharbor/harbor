@@ -17,8 +17,12 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
@@ -33,8 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
-	"strings"
-	"time"
 )
 
 func newNotificationPolicyAPI() *notificationPolicyAPI {

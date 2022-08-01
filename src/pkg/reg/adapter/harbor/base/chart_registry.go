@@ -21,9 +21,8 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"strings"
-
 	"net/url"
+	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/errors"

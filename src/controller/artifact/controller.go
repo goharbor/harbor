@@ -22,24 +22,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
-	"github.com/goharbor/harbor/src/lib/icon"
-
-	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -53,7 +53,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/opencontainers/go-digest"
 )
 
 var (
@@ -241,17 +240,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	arts, err := c.List(ctx, query, nil)
-	if err != nil {
-		return int64(0), err
-	}
-	return int64(len(arts)), nil
+	return c.artMgr.Count(ctx, query)
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {
@@ -261,15 +250,8 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 	}
 
 	var res []*Artifact
-	// Only the displayed accessory will in the artifact list
 	for _, art := range arts {
-		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "digest": art.Digest}))
-		if err != nil {
-			return nil, err
-		}
-		if len(accs) == 0 || (len(accs) > 0 && accs[0].Display()) {
-			res = append(res, c.assembleArtifact(ctx, art, option))
-		}
+		res = append(res, c.assembleArtifact(ctx, art, option))
 	}
 	return res, nil
 }

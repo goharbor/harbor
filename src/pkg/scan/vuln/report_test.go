@@ -19,8 +19,9 @@ import (
 	"reflect"
 	"testing"
 
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 func TestReport_Merge(t *testing.T) {

@@ -15,15 +15,16 @@
 package registry
 
 import (
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/goharbor/harbor/src/testing/mock"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/testing/mock"
 	testingproject "github.com/goharbor/harbor/src/testing/pkg/project"
 	testingreg "github.com/goharbor/harbor/src/testing/pkg/reg"
 	testingadapter "github.com/goharbor/harbor/src/testing/pkg/reg/adapter"
 	testingrep "github.com/goharbor/harbor/src/testing/pkg/replication"
-	"github.com/stretchr/testify/suite"
 )
 
 type registryTestSuite struct {

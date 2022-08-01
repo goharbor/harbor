@@ -16,14 +16,15 @@ package artifactinfo
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func TestParseURL(t *testing.T) {

@@ -17,11 +17,11 @@ package readonly
 import (
 	"context"
 	"errors"
-	"github.com/goharbor/harbor/src/lib/cache/memory"
 	"net/http"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/config"
 	itcp "github.com/goharbor/harbor/src/pkg/registry/interceptor"
 )

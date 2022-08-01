@@ -19,17 +19,17 @@ import (
 	"regexp"
 
 	"github.com/docker/distribution"
-	"github.com/opencontainers/go-digest"
-
-	// docker schema1 manifest
-	_ "github.com/docker/distribution/manifest/schema1"
-	// docker schema2 manifest
-	_ "github.com/docker/distribution/manifest/schema2"
 	// manifestlist
 	_ "github.com/docker/distribution/manifest/manifestlist"
 	// oci schema
 	_ "github.com/docker/distribution/manifest/ocischema"
+	// docker schema1 manifest
+	_ "github.com/docker/distribution/manifest/schema1"
+	// docker schema2 manifest
+	_ "github.com/docker/distribution/manifest/schema2"
 	ref "github.com/docker/distribution/reference"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/common/utils"
 )
 

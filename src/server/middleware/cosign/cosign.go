@@ -3,7 +3,13 @@ package cosign
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+
 	"github.com/docker/distribution/reference"
+	digest "github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -13,10 +19,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
-	digest "github.com/opencontainers/go-digest"
-	"io/ioutil"
-	"net/http"
-	"regexp"
 )
 
 var (

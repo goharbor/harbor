@@ -7,10 +7,10 @@ import (
 	"time"
 
 	beego_cache "github.com/beego/beego/cache"
-	hlog "github.com/goharbor/harbor/src/lib/log"
-
 	// Enable redis cache adaptor
 	_ "github.com/beego/beego/cache/redis"
+
+	hlog "github.com/goharbor/harbor/src/lib/log"
 )
 
 const (

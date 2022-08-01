@@ -16,12 +16,14 @@ package label
 
 import (
 	"fmt"
-	iselector "github.com/goharbor/harbor/src/lib/selector"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
+
+	iselector "github.com/goharbor/harbor/src/lib/selector"
 )
 
 // LabelSelectorTestSuite is a suite for testing the label selector

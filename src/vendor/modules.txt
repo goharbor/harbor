@@ -45,10 +45,6 @@ github.com/Masterminds/semver
 # github.com/Masterminds/semver/v3 v3.1.1
 ## explicit; go 1.12
 github.com/Masterminds/semver/v3
-# github.com/Microsoft/go-winio v0.5.0
-## explicit; go 1.12
-# github.com/Microsoft/hcsshim v0.8.24
-## explicit; go 1.13
 # github.com/PuerkitoBio/purell v1.1.1
 ## explicit
 github.com/PuerkitoBio/purell
@@ -129,7 +125,7 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/beego/beego v1.12.9
+# github.com/beego/beego v1.12.11
 ## explicit; go 1.13
 github.com/beego/beego
 github.com/beego/beego/cache
@@ -150,8 +146,6 @@ github.com/beego/i18n
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
-# github.com/bits-and-blooms/bitset v1.2.0
-## explicit; go 1.14
 # github.com/bmatcuk/doublestar v1.1.1
 ## explicit
 github.com/bmatcuk/doublestar
@@ -179,8 +173,6 @@ github.com/cenkalti/backoff/v4
 github.com/cespare/xxhash/v2
 # github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
 ## explicit
-# github.com/containerd/cgroups v1.0.3
-## explicit; go 1.16
 # github.com/containerd/containerd v1.5.13
 ## explicit; go 1.17
 github.com/containerd/containerd/archive/compression
@@ -199,14 +191,6 @@ github.com/containerd/containerd/remotes/docker/auth
 github.com/containerd/containerd/remotes/docker/schema1
 github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/version
-# github.com/containerd/continuity v0.1.0
-## explicit; go 1.13
-# github.com/containerd/fifo v1.0.0
-## explicit; go 1.13
-# github.com/containerd/ttrpc v1.1.0
-## explicit; go 1.13
-# github.com/containerd/typeurl v1.0.2
-## explicit; go 1.13
 # github.com/coreos/go-oidc/v3 v3.0.0
 ## explicit; go 1.14
 github.com/coreos/go-oidc/v3/oidc
@@ -306,8 +290,6 @@ github.com/docker/go/canonical/json
 ## explicit
 github.com/docker/go-connections/nat
 github.com/docker/go-connections/tlsconfig
-# github.com/docker/go-events v0.0.0-20190806004212-e31b211e4f1c
-## explicit
 # github.com/docker/go-metrics v0.0.1
 ## explicit; go 1.11
 github.com/docker/go-metrics
@@ -400,13 +382,11 @@ github.com/go-sql-driver/mysql
 ## explicit
 github.com/go-stack/stack
 # github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
-## explicit
+## explicit; go 1.13
 github.com/gocarina/gocsv
 # github.com/gocraft/work v0.5.1
 ## explicit
 github.com/gocraft/work
-# github.com/gogo/googleapis v1.4.0
-## explicit; go 1.12
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
@@ -424,8 +404,6 @@ github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4/source/iofs
-# github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
-## explicit
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/descriptor
@@ -645,12 +623,6 @@ github.com/opencontainers/go-digest
 ## explicit
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
-# github.com/opencontainers/runc v1.0.2
-## explicit; go 1.13
-# github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-## explicit
-# github.com/opencontainers/selinux v1.8.2
-## explicit; go 1.13
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit; go 1.14
 github.com/opentracing/opentracing-go
@@ -784,8 +756,6 @@ go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
 go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-# go.opencensus.io v0.23.0
-## explicit; go 1.13
 # go.opentelemetry.io/contrib v0.22.0
 ## explicit; go 1.15
 go.opentelemetry.io/contrib

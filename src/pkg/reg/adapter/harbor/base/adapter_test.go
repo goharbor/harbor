@@ -19,10 +19,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func TestGetAPIVersion(t *testing.T) {
