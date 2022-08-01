@@ -122,14 +122,14 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 	now := time.Now().UTC()
 
 	claims := &v2.Claims{
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    options.Issuer,
 			Subject:   username,
-			Audience:  service,
-			ExpiresAt: now.Add(time.Duration(expiration) * time.Minute).Unix(),
-			NotBefore: now.Unix(),
-			IssuedAt:  now.Unix(),
-			Id:        utils.GenerateRandomStringWithLen(16),
+			Audience:  jwt.ClaimStrings([]string{service}),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(expiration) * time.Minute)),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ID:        utils.GenerateRandomStringWithLen(16),
 		},
 		Access: access,
 	}

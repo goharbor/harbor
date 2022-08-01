@@ -15,7 +15,7 @@ func TestValid(t *testing.T) {
 	}{
 		{
 			claims: Claims{
-				StandardClaims: jwt.StandardClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer: "anonymous",
 				},
 				Access: []*token.ResourceActions{},
@@ -24,7 +24,7 @@ func TestValid(t *testing.T) {
 		},
 		{
 			claims: Claims{
-				StandardClaims: jwt.StandardClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
 					Issuer: Issuer,
 				},
 				Access: []*token.ResourceActions{},

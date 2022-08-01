@@ -123,7 +123,7 @@ func getPublicKey(crtPath string) (*rsa.PublicKey, error) {
 }
 
 type harborClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	// Private claims
 	Access []*token.ResourceActions `json:"access"`
 }
@@ -160,7 +160,7 @@ func TestMakeToken(t *testing.T) {
 	}
 	claims := tok.Claims.(*harborClaims)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
-	assert.Equal(t, claims.Audience, svc, "Audience mismatch")
+	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch")
 }
 
 type parserTestRec struct {

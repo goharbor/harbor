@@ -33,13 +33,13 @@ func TestNew(t *testing.T) {
 	tokenID := int64(123)
 	projectID := int64(321)
 	tokenExpiration := time.Duration(10) * 24 * time.Hour
-	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	expiresAt := time.Now().UTC().Add(tokenExpiration)
 	robot := robot_claim.Claim{
 		TokenID:   tokenID,
 		ProjectID: projectID,
 		Access:    policies,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expiresAt,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
 	defaultOpt := DefaultTokenOptions()
@@ -60,20 +60,20 @@ func TestRaw(t *testing.T) {
 		Resource: "/project/library/repository",
 		Action:   "pull",
 	}
-	policies := []*types.Policy{}
+	var policies []*types.Policy
 	policies = append(policies, rbacPolicy)
 
 	tokenID := int64(123)
 	projectID := int64(321)
 
 	tokenExpiration := time.Duration(10) * 24 * time.Hour
-	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	expiresAt := time.Now().UTC().Add(tokenExpiration)
 	robot := robot_claim.Claim{
 		TokenID:   tokenID,
 		ProjectID: projectID,
 		Access:    policies,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expiresAt,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
 	defaultOpt := DefaultTokenOptions()
