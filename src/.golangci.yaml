@@ -42,7 +42,7 @@ linters:
     - govet
     # - noctx
     # - rowserrcheck
-    # - staticcheck
+    - staticcheck
     - structcheck
     - stylecheck
     # - unconvert
