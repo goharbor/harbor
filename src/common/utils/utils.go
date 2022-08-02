@@ -284,10 +284,13 @@ func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 // the cron string could contain 6 tokens
 // if the cron string is invalid, it returns a zero time
 func NextSchedule(cron string, curTime time.Time) time.Time {
+	if len(cron) == 0 {
+		return time.Time{}
+	}
 	cr := strings.TrimSpace(cron)
 	s, err := CronParser().Parse(cr)
 	if err != nil {
-		log.Errorf("the cron string %v is invalid, error: %v", cron, err)
+		log.Debugf("the cron string %v is invalid, error: %v", cron, err)
 		return time.Time{}
 	}
 	return s.Next(curTime)
