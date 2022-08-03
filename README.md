@@ -105,6 +105,30 @@ positively or negatively.
 
 For further details please see our complete [security release process](SECURITY.md).
 
+## To start developing harbor
+
+If you want to build harbor right away there are two options:
+
+You have a working [Go environment](https://golang.org/doc/install).
+```
+mkdir -p $GOPATH/src/github.com/goharbor
+cd $GOPATH/src/github.com/goharbor
+git clone https://github.com/goharbor/harbor.git
+cd harbor
+make gen_apis
+make compile
+```
+
+You have a working Docker environment.
+```
+cd $GOPATH/src/github.com/goharbor
+git clone https://github.com/goharbor/harbor.git
+cd harbor
+make install
+```
+
+For the full story, head over to the [developer's documentation](https://github.com/goharbor/harbor/blob/main/docs/developement.md).
+
 ## License
 
 Harbor is available under the [Apache 2 license](LICENSE).
