@@ -6,7 +6,7 @@ import {
     tick,
 } from '@angular/core/testing';
 import { NewScannerFormComponent } from './new-scanner-form.component';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
@@ -41,7 +41,7 @@ describe('NewScannerFormComponent', () => {
             ],
             declarations: [NewScannerFormComponent],
             providers: [
-                FormBuilder,
+                UntypedFormBuilder,
                 TranslateService,
                 {
                     provide: ScannerService,

@@ -9,7 +9,7 @@ import { ClrLoadingState } from '@clr/angular';
 import { NewScannerModalComponent } from './new-scanner-modal.component';
 import { MessageHandlerService } from '../../../../../shared/services/message-handler.service';
 import { NewScannerFormComponent } from '../new-scanner-form/new-scanner-form.component';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { of, Subscription } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
@@ -50,7 +50,7 @@ describe('NewScannerModalComponent', () => {
                     provide: ScannerService,
                     useValue: fakedConfigScannerService,
                 },
-                FormBuilder,
+                UntypedFormBuilder,
                 // open auto detect
                 { provide: ComponentFixtureAutoDetect, useValue: true },
             ],

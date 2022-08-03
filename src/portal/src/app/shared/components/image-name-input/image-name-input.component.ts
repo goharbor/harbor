@@ -3,8 +3,8 @@ import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import {
     AbstractControl,
-    FormBuilder,
-    FormGroup,
+    UntypedFormBuilder,
+    UntypedFormGroup,
     Validators,
 } from '@angular/forms';
 import { ErrorHandler } from '../../units/error-handler';
@@ -20,13 +20,13 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     noProjectInfo = '';
     selectedProjectList: Project[] = [];
     proNameChecker: Subject<string> = new Subject<string>();
-    imageNameForm: FormGroup;
+    imageNameForm: UntypedFormGroup;
     public project: string;
     public repo: string;
     public tag: string;
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private errorHandler: ErrorHandler,
         private proService: ProjectService
     ) {

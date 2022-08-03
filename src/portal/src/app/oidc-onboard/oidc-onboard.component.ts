@@ -1,7 +1,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { OidcOnboardService } from './oidc-onboard.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { CommonRoutes } from '../shared/entities/shared.const';
 import { errorHandler } from '../shared/units/shared.utils';
 
@@ -13,7 +13,7 @@ import { errorHandler } from '../shared/units/shared.utils';
 export class OidcOnboardComponent implements OnInit {
     url: string;
     errorMessage: string = '';
-    oidcUsername = new FormControl('');
+    oidcUsername = new UntypedFormControl('');
     errorOpen: boolean = false;
     constructor(
         private oidcOnboardService: OidcOnboardService,
