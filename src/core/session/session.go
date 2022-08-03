@@ -139,7 +139,7 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 	if !rp.SessionExist(oldsid) {
 		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
 		if err != nil {
-			log.Warningf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
+			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
 		}
 	} else {
 		if rdb, ok := rp.c.(*redis.Cache); ok {
@@ -155,11 +155,11 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 
 			err = rp.c.Delete(ctx, oldsid)
 			if err != nil {
-				log.Warningf("failed to delete oldsid=%s, error: %s", oldsid, err)
+				log.Debugf("failed to delete oldsid=%s, error: %s", oldsid, err)
 			}
 			err = rp.c.Save(ctx, sid, kv)
 			if err != nil {
-				log.Warningf("failed to save sid=%s, error: %s", sid, err)
+				log.Debugf("failed to save sid=%s, error: %s", sid, err)
 			}
 		}
 	}
