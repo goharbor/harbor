@@ -168,7 +168,6 @@
       }
     }
   },
-  "defaultProject": "harbor-portal",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app"
