@@ -9,7 +9,9 @@
         <div
             class="clr-control-container"
             [class.clr-error]="
-                noProjectInfo && (projectName.dirty || projectName.touched)
+                (projectName.invalid &&
+                    (projectName.dirty || projectName.touched)) ||
+                notExist
             ">
             <div class="clr-input-wrapper">
                 <input
@@ -22,6 +24,9 @@
                 <clr-icon
                     class="clr-validate-icon"
                     shape="exclamation-circle"></clr-icon>
+                <span
+                    class="spinner spinner-inline"
+                    [hidden]="!checkingName"></span>
                 <div
                     class="selectBox"
                     [style.display]="
@@ -38,10 +43,17 @@
             </div>
             <clr-control-error
                 *ngIf="
-                    noProjectInfo && (projectName.dirty || projectName.touched)
+                    (projectName.invalid &&
+                        (projectName.dirty || projectName.touched)) ||
+                    notExist
                 "
                 class="tooltip-content">
-                {{ noProjectInfo | translate }}
+                <ng-container *ngIf="projectName.invalid">
+                    {{ 'PROJECT.NAME_TOOLTIP' | translate }}
+                </ng-container>
+                <ng-container *ngIf="notExist">
+                    {{ 'REPLICATION.NO_PROJECT_INFO' | translate }}
+                </ng-container>
             </clr-control-error>
         </div>
     </div>
