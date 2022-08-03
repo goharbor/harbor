@@ -163,7 +163,7 @@ func (c *controller) List(ctx context.Context, query *q.Query, options ...Option
 	return quotas, nil
 }
 
-func (c *controller) updateUsageWithRetry(ctx context.Context, reference, referenceID string, op func(hardLimits, used types.ResourceList) (types.ResourceList, error)) error {
+func (c *controller) updateUsageWithRetry(ctx context.Context, reference, referenceID string, op func(hardLimits, used types.ResourceList) (types.ResourceList, error), retryOpts ...retry.Option) error {
 	f := func() error {
 		q, err := c.quotaMgr.GetByRef(ctx, reference, referenceID)
 		if err != nil {
@@ -202,6 +202,11 @@ func (c *controller) updateUsageWithRetry(ctx context.Context, reference, refere
 			log.G(ctx).Debugf("failed to update the quota usage for %s %s, error: %v", reference, referenceID, err)
 		}),
 	}
+	// append for override default retry options
+	if len(retryOpts) > 0 {
+		options = append(options, retryOpts...)
+	}
+
 	return retry.Retry(f, options...)
 }
 
@@ -223,7 +228,7 @@ func (c *controller) Refresh(ctx context.Context, reference, referenceID string,
 		return newUsed, err
 	}
 
-	return c.updateUsageWithRetry(ctx, reference, referenceID, refreshResources(calculateUsage, opts.IgnoreLimitation))
+	return c.updateUsageWithRetry(ctx, reference, referenceID, refreshResources(calculateUsage, opts.IgnoreLimitation), opts.RetryOptions...)
 }
 
 func (c *controller) Request(ctx context.Context, reference, referenceID string, resources types.ResourceList, f func() error) error {

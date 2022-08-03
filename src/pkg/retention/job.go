@@ -16,6 +16,7 @@ package retention
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -23,9 +24,11 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 
+	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -114,6 +117,14 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	results, err := processor.Process(ctx.SystemContext(), allCandidates)
 	if err != nil {
 		return logError(myLogger, err)
+	}
+
+	// refreshQuota after the deleting candidates
+	if !isDryRun {
+		if err = refreshQuota(ctx.SystemContext(), results); err != nil {
+			// just log error if refresh quota error
+			myLogger.Errorf("Refresh quota error after deleting candidates, error: %v", err)
+		}
 	}
 
 	// Log stage: results with table view
@@ -287,4 +298,30 @@ func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
 	}
 
 	return meta, nil
+}
+
+// refreshQuota refreshes quota by deleted results.
+func refreshQuota(ctx context.Context, results []*selector.Result) error {
+	projects := make(map[int64]struct{})
+	for _, res := range results {
+		if res != nil && res.Target != nil {
+			projects[res.Target.NamespaceID] = struct{}{}
+		}
+	}
+
+	// refresh quota by project
+	for pid := range projects {
+		// retry options, enable backoff to reduce the db CPU resource usage.
+		opts := []retry.Option{
+			retry.Backoff(true),
+			// the interval value was determined based on experimental results as a way to achieve a faster total time with less cpu.
+			retry.InitialInterval(5 * time.Second),
+			retry.MaxInterval(10 * time.Second),
+		}
+		if err := quota.Ctl.Refresh(ctx, quota.ProjectReference, fmt.Sprintf("%d", pid), quota.WithRetryOptions(opts)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
