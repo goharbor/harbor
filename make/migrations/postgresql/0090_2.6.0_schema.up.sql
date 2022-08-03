@@ -51,3 +51,7 @@ BEGIN
         END IF;
     END LOOP;
 END $$;
+
+/* Add indexes to improve the performance of tag retention */
+CREATE INDEX IF NOT EXISTS idx_artifact_blob_digest_blob ON artifact_blob (digest_blob);
+CREATE INDEX IF NOT EXISTS idx_artifact_digest_project_id ON artifact (digest,project_id);
