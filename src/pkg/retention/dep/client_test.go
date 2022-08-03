@@ -15,6 +15,7 @@
 package dep
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -141,6 +142,17 @@ func (c *clientTestSuite) TestDelete() {
 	candidate.Kind = "unsupported"
 	err = client.Delete(candidate)
 	require.NotNil(c.T(), err)
+}
+
+func (c *clientTestSuite) TestInjectVendorType() {
+	injector := &injectVendorType{}
+	req, err := http.NewRequest("GET", "http://localhost:8080/api", nil)
+	assert.NoError(c.T(), err)
+	assert.Equal(c.T(), "", req.Header.Get("VendorType"))
+	// after injecting should appear vendor type in header
+	err = injector.Modify(req)
+	assert.NoError(c.T(), err)
+	assert.Equal(c.T(), "RETENTION", req.Header.Get("VendorType"))
 }
 
 func TestClientTestSuite(t *testing.T) {
