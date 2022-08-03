@@ -24,11 +24,11 @@ import { Filter } from '../../../../../shared/services';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import {
-    FormArray,
-    FormBuilder,
-    FormGroup,
+    UntypedFormArray,
+    UntypedFormBuilder,
+    UntypedFormGroup,
     Validators,
-    FormControl,
+    UntypedFormControl,
 } from '@angular/forms';
 import {
     clone,
@@ -86,7 +86,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     nameChecker: Subject<string> = new Subject<string>();
     policyId: number;
     confirmSub: Subscription;
-    ruleForm: FormGroup;
+    ruleForm: UntypedFormGroup;
     copyUpdateForm: ReplicationPolicy;
     cronString: string;
     supportedTriggers: string[];
@@ -117,7 +117,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     selectedUnit: string = BandwidthUnit.KB;
     copySpeedUnit: string = BandwidthUnit.KB;
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private repService: ReplicationService,
         private endpointService: RegistryService,
         private errorHandler: ErrorHandler,
@@ -301,8 +301,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         this.ruleForm = this.fb.group({
             name: ['', Validators.required],
             description: '',
-            src_registry: new FormControl(),
-            dest_registry: new FormControl(),
+            src_registry: new UntypedFormControl(),
+            dest_registry: new UntypedFormControl(),
             dest_namespace: '',
             dest_namespace_replace_count: -1,
             trigger: this.fb.group({
@@ -391,8 +391,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         // end of reset the filter list.
     }
 
-    get filters(): FormArray {
-        return this.ruleForm.get('filters') as FormArray;
+    get filters(): UntypedFormArray {
+        return this.ruleForm.get('filters') as UntypedFormArray;
     }
     setFilter(filters: Filter[]) {
         const filterFGs = filters.map(filter => {
@@ -733,8 +733,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     stickLabel(value, index) {
         value.select = !value.select;
-        let filters = this.ruleForm.get('filters') as FormArray;
-        let fromIndex = filters.controls[index] as FormGroup;
+        let filters = this.ruleForm.get('filters') as UntypedFormArray;
+        let fromIndex = filters.controls[index] as UntypedFormGroup;
         let labelValue = this.supportedFilterLabels.reduce(
             (cumulatedSelectedArrs, currentValue) => {
                 if (currentValue.select) {
