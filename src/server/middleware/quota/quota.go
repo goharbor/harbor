@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/security"
 )
 
 var (
@@ -216,6 +217,15 @@ func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func
 
 		if !enabled {
 			logger.Debugf("quota is deactivated for %s %s, so return directly", reference, referenceID)
+			return nil
+		}
+
+		// if the request is from jobservice and is retention job, ignore refresh as tag retention
+		// delete artifact, and if the number of artifact is large that will
+		// cause huge db CPU resource for refresh quota, so ignore here and let
+		// task call the refresh on the own initiative.
+		if security.FromJobservice(r) && security.FromJobRetention(r) {
+			logger.Debugf("quota is skipped for %s %s, because this request is from jobservice retention job", reference, referenceID)
 			return nil
 		}
 
