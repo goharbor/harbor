@@ -18,11 +18,8 @@ type Data struct {
 	Version        string `orm:"column(package_version)" csv:"Current Version"`
 	FixVersion     string `orm:"column(fixed_version)" csv:"Fixed in version"`
 	Severity       string `orm:"column(severity)" csv:"Severity"`
-	CVSSScoreV3    string `orm:"column(cvss_score_v3)" csv:"CVSS V3 Score"`
-	CVSSScoreV2    string `orm:"column(cvss_score_v2)" csv:"CVSS V2 Score"`
-	CVSSVectorV3   string `orm:"column(cvss_vector_v3)" csv:"CVSS V3 Vector"`
-	CVSSVectorV2   string `orm:"column(cvss_vector_v2)" csv:"CVSS V2 Vector"`
 	CWEIds         string `orm:"column(cwe_ids)" csv:"CWE Ids"`
+	AdditionalData string `orm:"column(vendor_attributes)" csv:"Additional Data"`
 }
 
 // Request encapsulates the filters to be provided when exporting the data for a scan.

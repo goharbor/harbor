@@ -637,10 +637,6 @@ func (suite *ScanDataExportJobTestSuite) createDataRecords(numRecs int, ownerId 
 			Version:        fmt.Sprintf("Version%d", i),
 			FixVersion:     fmt.Sprintf("FixVersion%d", i),
 			Severity:       fmt.Sprintf("Severity%d", i),
-			CVSSScoreV3:    fmt.Sprintf("3.0"),
-			CVSSScoreV2:    fmt.Sprintf("2.0"),
-			CVSSVectorV3:   fmt.Sprintf("TestCVSSVectorV3%d", i),
-			CVSSVectorV2:   fmt.Sprintf("TestCVSSVectorV2%d", i),
 			CWEIds:         "",
 		}
 		data = append(data, dataRec)
