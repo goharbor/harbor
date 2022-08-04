@@ -157,7 +157,8 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 
 	var prjName, nameAndTag string
 	// remote(src) -> local harbor(dest)
-	if rpPolicy.SrcRegistry != nil {
+	// if the dest registry is local harbor, that is pull-mode replication.
+	if isLocalRegistry(rpPolicy.DestRegistry) {
 		payload.EventData.Replication.SrcResource = remoteRes
 		payload.EventData.Replication.DestResource = localRes
 		prjName = destNamespace
@@ -165,7 +166,8 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 
 	// local harbor(src) -> remote(dest)
-	if rpPolicy.DestRegistry != nil {
+	// if the src registry is local harbor, that is push-mode replication.
+	if isLocalRegistry(rpPolicy.SrcRegistry) {
 		payload.EventData.Replication.DestResource = remoteRes
 		payload.EventData.Replication.SrcResource = localRes
 		prjName = srcNamespace
@@ -205,4 +207,15 @@ func getMetadataFromResource(resource string) (namespace, nameAndTag string) {
 		return "", meta[0]
 	}
 	return meta[0], meta[1]
+}
+
+// isLocalRegistry checks whether the registry is local harbor.
+func isLocalRegistry(registry *rpModel.Registry) bool {
+	if registry != nil {
+		return registry.Type == rpModel.RegistryTypeHarbor &&
+			registry.Name == "Local" &&
+			registry.URL == config.InternalCoreURL()
+	}
+
+	return false
 }
