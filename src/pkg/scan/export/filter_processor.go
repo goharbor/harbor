@@ -12,6 +12,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg"
+	artpkg "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -136,7 +137,22 @@ func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter 
 			return nil, err
 		}
 
-		arts = append(arts, repoArts...)
+		for _, art := range repoArts {
+			if art.IsImageIndex() {
+				for _, ref := range art.References {
+					arts = append(arts, &artifact.Artifact{
+						Artifact: artpkg.Artifact{
+							ID:     ref.ChildID,
+							Digest: ref.ChildDigest,
+						},
+						Tags:   art.Tags,
+						Labels: art.Labels,
+					})
+				}
+			}
+
+			arts = append(arts, art)
+		}
 	}
 	// return earlier if no tag filter
 	if filter == "" {

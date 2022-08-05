@@ -9,8 +9,6 @@ import (
 // Data models a single row of the exported scan vulnerability data
 
 type Data struct {
-	ID             int64  `orm:"column(result_row_id)" csv:"RowId"`
-	ScannerName    string `orm:"column(scanner_name)" csv:"Scanner"`
 	Repository     string `orm:"column(repository_name)" csv:"Repository"`
 	ArtifactDigest string `orm:"column(artifact_digest)" csv:"Artifact Digest"`
 	CVEId          string `orm:"column(cve_id)" csv:"CVE"`
@@ -20,6 +18,7 @@ type Data struct {
 	Severity       string `orm:"column(severity)" csv:"Severity"`
 	CWEIds         string `orm:"column(cwe_ids)" csv:"CWE Ids"`
 	AdditionalData string `orm:"column(vendor_attributes)" csv:"Additional Data"`
+	ScannerName    string `orm:"column(scanner_name)" csv:"Scanner"`
 }
 
 // Request encapsulates the filters to be provided when exporting the data for a scan.
