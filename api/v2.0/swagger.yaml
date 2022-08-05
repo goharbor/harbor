@@ -5656,7 +5656,7 @@ paths:
   /export/cve/executions:
     get:
       summary: Get a list of specific scan data export execution jobs for a specified user
-      description: Get the scan data export execution specified by ID
+      description: Get a list of specific scan data export execution jobs for a specified user
       tags:
         - scan data export
       operationId: getScanDataExportExecutionList

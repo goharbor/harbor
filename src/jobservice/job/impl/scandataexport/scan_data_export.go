@@ -261,8 +261,6 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			}
 
 			exportParams.PageNumber = exportParams.PageNumber + 1
-			exportParams.RowNumOffset = exportParams.RowNumOffset + int64(len(data))
-
 			// break earlier if this is last page
 			if len(data) < int(exportParams.PageSize) {
 				break
