@@ -14,15 +14,13 @@ import (
 
 const (
 	// This sql template aims to select vuln data from database,
-	// which receive two parameters:
-	// 1. rowNum offset
-	// 2. artifacts id sets
+	// which receive one parameter:
+	// 1. artifacts id sets
 	// consider for performance, the caller will slice the artifact ids to multi
 	// groups if it's length over limit, so rowNum offset is designed to ensure the
 	// final row id is sequence in the final output csv file.
 	VulnScanReportQueryTemplate = `
 select
-    row_number() over() + %d as result_row_id,
     artifact.digest as artifact_digest,
     artifact.repository_id,
     artifact.repository_name,
@@ -66,9 +64,6 @@ var (
 
 // Params specifies the filters for controlling the scan data export process
 type Params struct {
-	// rowNumber offset
-	RowNumOffset int64
-
 	// cve ids
 	CVEIds string
 
@@ -139,7 +134,7 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		}
 	}
 
-	sql := fmt.Sprintf(VulnScanReportQueryTemplate, params.RowNumOffset, artIDs)
+	sql := fmt.Sprintf(VulnScanReportQueryTemplate, artIDs)
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err

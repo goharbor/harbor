@@ -72,7 +72,6 @@ func (suite *ExportDataSelectorTestSuite) createDataRecords(numRecs int, ownerId
 	data := make([]Data, 0)
 	for i := 1; i <= numRecs; i++ {
 		dataRec := Data{
-			ID:             int64(i),
 			ScannerName:    fmt.Sprintf("TestScanner%d", i),
 			Repository:     fmt.Sprintf("Repository%d", i),
 			ArtifactDigest: fmt.Sprintf("Digest%d", i),
