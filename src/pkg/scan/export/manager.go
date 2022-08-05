@@ -29,13 +29,10 @@ select
     vulnerability_record.cve_id,
     vulnerability_record.package,
     vulnerability_record.severity,
-    vulnerability_record.cvss_score_v3,
-    vulnerability_record.cvss_score_v2,
-    vulnerability_record.cvss_vector_v3,
-    vulnerability_record.cvss_vector_v2,
     vulnerability_record.cwe_ids,
     vulnerability_record.package_version,
     vulnerability_record.fixed_version,
+    to_jsonb(vulnerability_record.vendor_attributes)  as vendor_attributes,
     scanner_registration."name" as scanner_name
 from
     report_vulnerability_record
@@ -53,13 +50,10 @@ group by
     artifact.digest,
     artifact.repository_id,
     artifact.repository_name,
-    vulnerability_record.cvss_score_v3,
-    vulnerability_record.cvss_score_v2,
-    vulnerability_record.cvss_vector_v3,
-    vulnerability_record.cvss_vector_v2,
     vulnerability_record.cwe_ids,
     vulnerability_record.package_version,
     vulnerability_record.fixed_version,
+    to_jsonb(vulnerability_record.vendor_attributes),
     scanner_registration.id
 	`
 	JobModeExport = "export"

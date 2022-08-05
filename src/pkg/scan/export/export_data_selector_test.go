@@ -64,38 +64,6 @@ func (suite *ExportDataSelectorTestSuite) TestScannerNameFilter() {
 	}
 }
 
-func (suite *ExportDataSelectorTestSuite) TestCVE2VectorMatches() {
-	{
-		dataRecords := suite.createDataRecords(10, 1)
-		filtered, err := suite.exportDataSelector.Select(dataRecords, CVE2VectorMatches, "TestCVSSVectorV21")
-		suite.NoError(err)
-		suite.Equal(1, len(filtered))
-		suite.Equal("TestCVSSVectorV21", filtered[0].CVSSVectorV2)
-	}
-	{
-		dataRecords := suite.createDataRecords(10, 1)
-		filtered, err := suite.exportDataSelector.Select(dataRecords, CVE2VectorMatches, "")
-		suite.NoError(err)
-		suite.Equal(10, len(filtered))
-	}
-}
-
-func (suite *ExportDataSelectorTestSuite) TestCVE3VectorMatches() {
-	{
-		dataRecords := suite.createDataRecords(10, 1)
-		filtered, err := suite.exportDataSelector.Select(dataRecords, CVE3VectorMatches, "TestCVSSVectorV31")
-		suite.NoError(err)
-		suite.Equal(1, len(filtered))
-		suite.Equal("TestCVSSVectorV31", filtered[0].CVSSVectorV3)
-	}
-	{
-		dataRecords := suite.createDataRecords(10, 1)
-		filtered, err := suite.exportDataSelector.Select(dataRecords, CVE3VectorMatches, "")
-		suite.NoError(err)
-		suite.Equal(10, len(filtered))
-	}
-}
-
 func TestExportDataSelectorTestSuite(t *testing.T) {
 	suite.Run(t, &ExportDataSelectorTestSuite{})
 }
@@ -113,10 +81,6 @@ func (suite *ExportDataSelectorTestSuite) createDataRecords(numRecs int, ownerId
 			Version:        fmt.Sprintf("Version%d", i),
 			FixVersion:     fmt.Sprintf("FixVersion%d", i),
 			Severity:       fmt.Sprintf("Severity%d", i),
-			CVSSScoreV3:    fmt.Sprintf("3.0"),
-			CVSSScoreV2:    fmt.Sprintf("2.0"),
-			CVSSVectorV3:   fmt.Sprintf("TestCVSSVectorV3%d", i),
-			CVSSVectorV2:   fmt.Sprintf("TestCVSSVectorV2%d", i),
 			CWEIds:         "",
 		}
 		data = append(data, dataRec)

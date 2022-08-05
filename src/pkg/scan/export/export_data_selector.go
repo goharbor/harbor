@@ -36,10 +36,6 @@ func (vds *defaultVulnerabilitySelector) Select(vulnDataRecords []Data, decorati
 			value = vulnDataRecord.Package
 		case ScannerMatches:
 			value = vulnDataRecord.ScannerName
-		case CVE2VectorMatches:
-			value = vulnDataRecord.CVSSVectorV2
-		case CVE3VectorMatches:
-			value = vulnDataRecord.CVSSVectorV3
 		}
 		matched, err := vds.match(pattern, value)
 		if err != nil {
