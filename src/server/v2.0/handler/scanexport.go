@@ -46,19 +46,12 @@ func (se *scanDataExportAPI) Prepare(ctx context.Context, operation string, para
 }
 
 func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operation.ExportScanDataParams) middleware.Responder {
-	// validate project id, currently we only support single project
-	criteria := params.Criteria
-	if criteria == nil {
-		err := errors.New(errors.Errorf("criteria is invalid: %v", criteria)).WithCode(errors.BadRequestCode)
+	// validate the request params
+	if err := validateScanExportParams(params); err != nil {
 		return se.SendError(ctx, err)
 	}
 
-	if len(criteria.Projects) != 1 {
-		err := errors.New(errors.Errorf("only support export single project, invalid value: %v", criteria.Projects)).WithCode(errors.BadRequestCode)
-		return se.SendError(ctx, err)
-	}
-
-	if err := se.RequireProjectAccess(ctx, criteria.Projects[0], rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
+	if err := se.RequireProjectAccess(ctx, params.Criteria.Projects[0], rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
 		return se.SendError(ctx, err)
 	}
 
@@ -307,6 +300,35 @@ func (se *scanDataExportAPI) requireProjectsAccess(ctx context.Context, pids []i
 	for _, pid := range pids {
 		if err := se.RequireProjectAccess(ctx, pid, action, subresource...); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// validateScanExportParams validates scan data export request parameters by
+// following policies.
+// rules:
+//   1. the criteria should not be empty
+//   2. currently only the export of single project is open
+//   3. do not allow to input space in the repo/tag/cve_id (space will lead to misjudge for doublestar filter)
+func validateScanExportParams(params operation.ExportScanDataParams) error {
+	criteria := params.Criteria
+	if criteria == nil {
+		return errors.BadRequestError(errors.Errorf("criteria is invalid: %v", criteria))
+	}
+
+	// validate project id, currently we only support single project
+	if len(criteria.Projects) != 1 {
+		return errors.BadRequestError(errors.Errorf("only support export single project, invalid value: %v", criteria.Projects))
+	}
+
+	// check spaces
+	space := " "
+	inspectList := []string{criteria.Repositories, criteria.Tags, criteria.CVEIds}
+	for _, s := range inspectList {
+		if strings.Contains(s, space) {
+			return errors.BadRequestError(errors.Errorf("invalid criteria value, please remove additional spaces for input: %s", s))
 		}
 	}
 
