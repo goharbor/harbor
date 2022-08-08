@@ -16,6 +16,8 @@ package cache
 
 import (
 	"fmt"
+	"net/url"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -89,4 +91,18 @@ func (suite *CacheTestSuite) TestInitialize() {
 
 func TestCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheTestSuite))
+}
+
+func TestRedisClusterInitialize(t *testing.T) {
+	redisClusterAddr := "redis+cluster://localhost:6379,127.0.0.1:6379"
+	os.Setenv("_REDIS_URL_CORE", redisClusterAddr)
+	redisURL := os.Getenv("_REDIS_URL_CORE")
+	u, err := url.Parse(redisURL)
+	if err != nil {
+		t.Fatal("bad _REDIS_URL")
+	}
+	t.Log("initializing cache ...")
+	if u.Scheme != RedisCluster || u.Host != "localhost:6379,127.0.0.1:6379" {
+		t.Fatal("redisClusterAddr parse fail,address is ", redisClusterAddr)
+	}
 }

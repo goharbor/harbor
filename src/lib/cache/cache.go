@@ -33,6 +33,8 @@ const (
 	Redis = "redis"
 	// RedisSentinel the cache name of redis sentinel
 	RedisSentinel = "redis+sentinel"
+	// RedisCluster the cache name of redis cluster
+	RedisCluster = "redis+cluster"
 )
 
 var (

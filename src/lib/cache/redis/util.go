@@ -187,3 +187,51 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 
 	return o, nil
 }
+
+// ParseClusterURL parses redis cluster url to redis ClusterOptions.
+func ParseClusterURL(redisClusterURL string) (*redis.ClusterOptions, error) {
+	u, err := url.Parse(redisClusterURL)
+	if err != nil {
+		return nil, err
+	}
+
+	o := &redis.ClusterOptions{}
+
+	o.Username, o.Password = getUserPassword(u)
+	o.Addrs = strings.Split(u.Host, Separator)
+
+	return setupRedisClusterConnParams(u, o)
+}
+
+// setupConnParams converts query parameters in u to option value in o.
+func setupRedisClusterConnParams(u *url.URL, o *redis.ClusterOptions) (*redis.ClusterOptions, error) {
+	q := queryOptions{q: u.Query()}
+
+	o.MaxRetries = q.int("max_retries")
+	o.MinRetryBackoff = q.duration("min_retry_backoff")
+	o.MaxRetryBackoff = q.duration("max_retry_backoff")
+	o.DialTimeout = q.duration("dial_timeout")
+	o.ReadTimeout = q.duration("read_timeout")
+	o.WriteTimeout = q.duration("write_timeout")
+	o.PoolFIFO = q.bool("pool_fifo")
+	o.PoolSize = q.int("pool_size")
+	o.MinIdleConns = q.int("min_idle_conns")
+	o.MaxConnAge = q.duration("max_conn_age")
+	o.PoolTimeout = q.duration("pool_timeout")
+	o.IdleTimeout = q.duration("idle_timeout")
+	// For compatibility
+	if t := q.duration("idle_timeout_seconds"); t != 0 {
+		o.IdleTimeout = t
+	}
+	o.IdleCheckFrequency = q.duration("idle_check_frequency")
+	if q.err != nil {
+		return nil, q.err
+	}
+
+	// any parameters left?
+	if r := q.remaining(); len(r) > 0 {
+		return nil, errors.Errorf("redis: unexpected option: %s", strings.Join(r, ", "))
+	}
+
+	return o, nil
+}
