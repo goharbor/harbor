@@ -246,7 +246,17 @@ upload_purging:
   interval: 24h
   dryrun: false
 
-# Cache related config
+# cache layer configurations
+# If this feature enabled, harbor will cache the resource
+# `project/project_metadata/repository/artifact/manifest` in the redis
+# which can especially help to improve the performance of high concurrent
+# manifest pulling.
+# NOTICE
+# If you are deploying Harbor in HA mode, make sure that all the harbor
+# instances have the same behaviour, all with caching enabled or disabled,
+# otherwise it can lead to potential data inconsistency.
 cache:
+  # not enabled by default
   enabled: false
+  # keep cache for one day by default
   expire_hours: 24

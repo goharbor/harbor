@@ -14,28 +14,23 @@ import (
 
 const (
 	// This sql template aims to select vuln data from database,
-	// which receive two parameters:
-	// 1. rowNum offset
-	// 2. artifacts id sets
+	// which receive one parameter:
+	// 1. artifacts id sets
 	// consider for performance, the caller will slice the artifact ids to multi
 	// groups if it's length over limit, so rowNum offset is designed to ensure the
 	// final row id is sequence in the final output csv file.
 	VulnScanReportQueryTemplate = `
 select
-    row_number() over() + %d as result_row_id,
     artifact.digest as artifact_digest,
     artifact.repository_id,
     artifact.repository_name,
     vulnerability_record.cve_id,
     vulnerability_record.package,
     vulnerability_record.severity,
-    vulnerability_record.cvss_score_v3,
-    vulnerability_record.cvss_score_v2,
-    vulnerability_record.cvss_vector_v3,
-    vulnerability_record.cvss_vector_v2,
     vulnerability_record.cwe_ids,
     vulnerability_record.package_version,
     vulnerability_record.fixed_version,
+    to_jsonb(vulnerability_record.vendor_attributes)  as vendor_attributes,
     scanner_registration."name" as scanner_name
 from
     report_vulnerability_record
@@ -53,13 +48,10 @@ group by
     artifact.digest,
     artifact.repository_id,
     artifact.repository_name,
-    vulnerability_record.cvss_score_v3,
-    vulnerability_record.cvss_score_v2,
-    vulnerability_record.cvss_vector_v3,
-    vulnerability_record.cvss_vector_v2,
     vulnerability_record.cwe_ids,
     vulnerability_record.package_version,
     vulnerability_record.fixed_version,
+    to_jsonb(vulnerability_record.vendor_attributes),
     scanner_registration.id
 	`
 	JobModeExport = "export"
@@ -72,9 +64,6 @@ var (
 
 // Params specifies the filters for controlling the scan data export process
 type Params struct {
-	// rowNumber offset
-	RowNumOffset int64
-
 	// cve ids
 	CVEIds string
 
@@ -145,7 +134,7 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		}
 	}
 
-	sql := fmt.Sprintf(VulnScanReportQueryTemplate, params.RowNumOffset, artIDs)
+	sql := fmt.Sprintf(VulnScanReportQueryTemplate, artIDs)
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
