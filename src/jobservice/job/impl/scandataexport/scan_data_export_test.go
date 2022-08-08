@@ -144,6 +144,25 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 
 }
 
+func (suite *ScanDataExportJobTestSuite) TestExtractCriteria() {
+	// empty request should return error
+	_, err := suite.job.extractCriteria(job.Parameters{})
+	suite.Error(err)
+	// invalid request should return error
+	_, err = suite.job.extractCriteria(job.Parameters{"Request": ""})
+	suite.Error(err)
+	// valid request should not return error and trim space
+	c, err := suite.job.extractCriteria(job.Parameters{"Request": map[string]interface{}{
+		"CVEIds":       "CVE-123, CVE-456 ",
+		"Repositories": " test-repo1 ",
+		"Tags":         "test-tag1, test-tag2",
+	}})
+	suite.NoError(err)
+	suite.Equal("CVE-123,CVE-456", c.CVEIds)
+	suite.Equal("test-repo1", c.Repositories)
+	suite.Equal("test-tag1,test-tag2", c.Tags)
+}
+
 func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 	{
 		data := suite.createDataRecords(3, 1)
