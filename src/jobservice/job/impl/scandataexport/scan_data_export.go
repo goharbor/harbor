@@ -285,7 +285,20 @@ func (sde *ScanDataExport) extractCriteria(params job.Parameters) (*export.Reque
 	if err != nil {
 		return nil, err
 	}
-	return criteria, nil
+
+	// sterilize trim spaces for some fields.
+	sterilize := func(c *export.Request) *export.Request {
+		if c != nil {
+			space, empty := " ", ""
+			c.Repositories = strings.ReplaceAll(c.Repositories, space, empty)
+			c.Tags = strings.ReplaceAll(c.Tags, space, empty)
+			c.CVEIds = strings.ReplaceAll(c.CVEIds, space, empty)
+		}
+
+		return c
+	}
+
+	return sterilize(criteria), nil
 }
 
 func (sde *ScanDataExport) calculateFileHash(fileName string) (digest.Digest, error) {
