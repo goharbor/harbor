@@ -8,10 +8,10 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
-	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -149,7 +149,7 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 func getTaskExistedFromErrMsg(msg string) (string, error) {
 	begin := strings.Index(msg, "preheat task already exists, id:") + 32
 	end := strings.LastIndex(msg, "\"}")
-	if end - begin <= 0 {
+	if end-begin <= 0 {
 		return "", errors.Errorf("can't find existed task id by error msg:%s", msg)
 	}
 	return msg[begin:end], nil
