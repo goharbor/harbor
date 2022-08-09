@@ -1184,7 +1184,8 @@
         "UNLIMITED": "unlimitiert",
         "INVALID_INPUT": "ungültige Eingabe",
         "PLACEHOLDER": "Es konnten keine Begrenzungen gefunden werden",
-        "FILTER_PLACEHOLDER": "Suche nach Name (genaue Übereinstimmung)"
+        "FILTER_PLACEHOLDER": "Suche nach Name (genaue Übereinstimmung)",
+        "QUOTA_USED": "Quota used"
     },
     "WEEKLY": {
         "MONDAY": "Montag",

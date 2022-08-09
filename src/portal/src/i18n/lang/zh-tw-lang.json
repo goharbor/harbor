@@ -1180,7 +1180,8 @@
     "UNLIMITED": "不設限",
     "INVALID_INPUT": "輸入錯誤",
     "PLACEHOLDER": "我們找不到任何可以配置定額的項目",
-    "FILTER_PLACEHOLDER": "Search by name(exact match)"
+    "FILTER_PLACEHOLDER": "Search by name(exact match)",
+    "QUOTA_USED": "Quota used"
   },
   "WEEKLY":{
     "MONDAY": "週一",
