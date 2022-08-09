@@ -1186,7 +1186,8 @@
         "UNLIMITED": "unlimited",
         "INVALID_INPUT": "invalid input",
         "PLACEHOLDER": "We couldn't find any project quotas",
-        "FILTER_PLACEHOLDER": "Search by name(exact match)"
+        "FILTER_PLACEHOLDER": "Search by name(exact match)",
+        "QUOTA_USED": "Quota used"
     },
     "WEEKLY": {
         "MONDAY": "Monday",
