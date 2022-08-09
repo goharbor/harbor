@@ -1185,7 +1185,8 @@
         "UNLIMITED": "不设限",
         "INVALID_INPUT": "输入错误",
         "PLACEHOLDER": "我们找不到任何可以配置定额的项目",
-        "FILTER_PLACEHOLDER": "按名称查找（完全匹配）"
+        "FILTER_PLACEHOLDER": "按名称查找（完全匹配）",
+        "QUOTA_USED": "已使用的配额"
     },
     "WEEKLY": {
         "MONDAY": "周一",
