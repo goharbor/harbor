@@ -355,7 +355,7 @@ func (c *controller) loadOwners(ctx context.Context, projects models.Projects) e
 	for _, p := range projects {
 		owner, ok := m[p.OwnerID]
 		if !ok {
-			log.G(ctx).Warningf("the owner of project %s is not found, owner id is %d", p.Name, p.OwnerID)
+			log.G(ctx).Debugf("the owner of project %s is not found, owner id is %d", p.Name, p.OwnerID)
 			continue
 		}
 
