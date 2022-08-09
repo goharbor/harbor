@@ -849,7 +849,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.retagDialogOpened = true;
             this.imageNameInput.imageNameForm.reset({
                 repoName: this.repoName,
+                projectName: null,
             });
+            this.imageNameInput.notExist = false;
             this.retagSrcImage =
                 this.repoName + ':' + this.selectedRow[0].digest;
         }
