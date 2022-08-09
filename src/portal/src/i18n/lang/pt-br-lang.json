@@ -1177,7 +1177,8 @@
         "UNLIMITED": "∞",
         "INVALID_INPUT": "valor inválido",
         "PLACEHOLDER": "Nenhuma limite encontrado nos projetos",
-        "FILTER_PLACEHOLDER": "Buscar pelo nome (exato)"
+        "FILTER_PLACEHOLDER": "Buscar pelo nome (exato)",
+        "QUOTA_USED": "Quota used"
     },
     "WEEKLY": {
         "MONDAY": "Segunda Feira",
