@@ -61,9 +61,9 @@ Select Filter Label Model
 
 Select Filter Label
     [Arguments]    ${label}
-    Retry Element Click  ${filter_label_button}
+    Retry Element Click  ${filter_label_xpath}
     Retry Element Click  //div[@class='filterSelect ng-star-inserted'][3]//label[contains(text(), '${label}')]
-    Retry Element Click  ${filter_label_button}
+    Retry Element Click  ${filter_label_xpath}
 
 Select Bandwidth Unit
     [Arguments]    ${unit}
