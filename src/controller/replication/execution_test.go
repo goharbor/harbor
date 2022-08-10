@@ -16,15 +16,16 @@ package replication
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/suite"
-
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/goharbor/harbor/src/testing/lib/orm"
@@ -33,6 +34,9 @@ import (
 	testingrep "github.com/goharbor/harbor/src/testing/pkg/replication"
 	testingscheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
+
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
 type replicationTestSuite struct {
@@ -102,6 +106,25 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
+
+	// reset the mocks
+	r.SetupTest()
+
+	// watch stop and quit
+	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
+		ExtraAttrs: map[string]interface{}{
+			job.Stopping: job.Stopping,
+		},
+	}, nil)
+	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(args testifymock.Arguments) {
+		r.T().Logf("flowCtl.Start start")
+		time.Sleep(time.Second * 3)
+	}).Return(nil)
+	r.ormCreator.On("Create").Return(nil)
+	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
+	r.Require().Nil(err)
+	r.Equal(int64(1), id)
 }
 
 func (r *replicationTestSuite) TestStop() {
@@ -236,6 +259,86 @@ func (r *replicationTestSuite) TestGetTaskLog() {
 	r.Require().Nil(err)
 	r.Equal([]byte{'a'}, data)
 	r.taskMgr.AssertExpectations(r.T())
+}
+
+func (r *replicationTestSuite) TestWatchExecutionStoppingLabel() {
+	// 0
+	r.execMgr.On("Get", context.Background(), int64(0)).Return(nil, errors.New("record not find"))
+	stop, err := watchExecutionStoppingLabel(context.Background(), 0, r.ctl)
+	r.Require().Error(err)
+	r.Require().Equal(false, stop)
+	// 1
+	r.execMgr.On("Get", context.Background(), int64(1)).Return(&task.Execution{
+		ID:     1,
+		Status: job.SuccessStatus.String(),
+	}, nil)
+	stop, err = watchExecutionStoppingLabel(context.Background(), 1, r.ctl)
+	r.Require().Nil(err)
+	r.Require().Equal(true, stop)
+
+	// 2
+	r.execMgr.On("Get", mock.Anything, int64(2)).Return(&task.Execution{
+		ID:     2,
+		Status: job.RunningStatus.String(),
+	}, nil)
+	stop, err = watchExecutionStoppingLabel(context.Background(), 2, r.ctl)
+	r.Require().Nil(err)
+	r.Require().Equal(false, stop)
+
+	// 3
+	r.execMgr.On("Get", mock.Anything, int64(3)).Return(&task.Execution{
+		ID:     3,
+		Status: job.RunningStatus.String(),
+		ExtraAttrs: map[string]interface{}{
+			job.Stopping: job.Stopping,
+		},
+	}, nil)
+	stop, err = watchExecutionStoppingLabel(context.Background(), 3, r.ctl)
+	r.Require().Nil(err)
+	r.Require().Equal(true, stop)
+}
+
+func (r *replicationTestSuite) TestIsEnableWatchExecutionStoppingLabel() {
+	policy := &replicationmodel.Policy{
+		Trigger: &model.Trigger{
+			Type: model.TriggerTypeManual,
+		},
+	}
+	enable := isEnableWatchExecutionStoppingLabel(context.Background(), policy)
+	r.Require().Equal(true, enable)
+
+	policy = &replicationmodel.Policy{
+		Trigger: &model.Trigger{
+			Type: model.TriggerTypeScheduled,
+			Settings: &model.TriggerSettings{
+				Cron: "* * *",
+			},
+		},
+	}
+	enable = isEnableWatchExecutionStoppingLabel(context.Background(), policy)
+	r.Require().Equal(true, enable)
+
+	policy = &replicationmodel.Policy{
+		Trigger: &model.Trigger{
+			Type: model.TriggerTypeScheduled,
+			Settings: &model.TriggerSettings{
+				Cron: "*/3 * * * * *",
+			},
+		},
+	}
+	enable = isEnableWatchExecutionStoppingLabel(context.Background(), policy)
+	r.Require().Equal(false, enable)
+
+	policy = &replicationmodel.Policy{
+		Trigger: &model.Trigger{
+			Type: model.TriggerTypeScheduled,
+			Settings: &model.TriggerSettings{
+				Cron: "*/10 * * * * *",
+			},
+		},
+	}
+	enable = isEnableWatchExecutionStoppingLabel(context.Background(), policy)
+	r.Require().Equal(true, enable)
 }
 
 func TestReplicationTestSuite(t *testing.T) {

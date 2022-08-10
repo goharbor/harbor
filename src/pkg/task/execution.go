@@ -280,7 +280,10 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 			EndTime:    now,
 		}, "Status", "Revision", "UpdateTime", "EndTime")
 	}
-
+	if err = addStoppingLabel(ctx, e, execution, id); err != nil {
+		log.Errorf("failed to addStoppingLabel: %+v", err)
+		return err
+	}
 	for _, task := range tasks {
 		if err = e.taskMgr.Stop(ctx, task.ID); err != nil {
 			log.Errorf("failed to stop task %d: %v", task.ID, err)
@@ -452,4 +455,32 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 // The sweeper retains the latest created #count execution records for the specified vendor
 func SetExecutionSweeperCount(vendorType string, count uint8) {
 	executionSweeperCount[vendorType] = count
+}
+
+// addStoppingLabel save Stopping label
+func addStoppingLabel(ctx context.Context, e *executionManager, execution *dao.Execution, id int64) error {
+	if execution == nil || e == nil || id < 0 {
+		return errors.New("param is invalid")
+	}
+	log.Debugf("start addStoppingLabel for %d id and attrs %s", id, execution.ExtraAttrs)
+	var extras map[string]interface{}
+	if execution.ExtraAttrs != "" {
+		if err := json.Unmarshal([]byte(execution.ExtraAttrs), &extras); err != nil {
+			return err
+		}
+	}
+	if extras == nil {
+		extras = make(map[string]interface{})
+	}
+	extras[job.Stopping] = job.Stopping
+	data, err := json.Marshal(extras)
+	if err != nil {
+		return err
+	}
+	now := time.Now()
+	return e.executionDAO.Update(ctx, &dao.Execution{
+		ID:         id,
+		ExtraAttrs: string(data),
+		UpdateTime: now,
+	}, "ExtraAttrs", "UpdateTime")
 }

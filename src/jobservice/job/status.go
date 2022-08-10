@@ -31,6 +31,11 @@ const (
 	ScheduledStatus Status = "Scheduled"
 )
 
+const (
+	// Stopping is execution table extra_attrs field key
+	Stopping string = "Stopping"
+)
+
 // Status of job
 type Status string
 

@@ -33,6 +33,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/replication"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
+
+	"github.com/gorhill/cronexpr"
 )
 
 func init() {
@@ -113,6 +115,28 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if err != nil {
 		return 0, err
 	}
+
+	// watch stopping attr or execution status is StoppedStatus|ErrorStatus|SuccessStatus
+	ctx, channelFn := context.WithCancel(context.Background())
+	if isEnableWatchExecutionStoppingLabel(ctx, policy) {
+		go func() {
+			c.wp.GetWorker()
+			defer c.wp.ReleaseWorker()
+			ticker := time.NewTicker(time.Second * 3)
+			for _ = range ticker.C {
+				stop, err := watchExecutionStoppingLabel(ctx, id, c)
+				log.Debugf("watchExecutionStoppingLabel stop is %+v,err is %+v", stop, err)
+				if err != nil {
+					return
+				}
+				if stop {
+					channelFn()
+					return
+				}
+			}
+		}()
+	}
+
 	// start the replication flow in background
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context
@@ -120,8 +144,9 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	go func() {
 		c.wp.GetWorker()
 		defer c.wp.ReleaseWorker()
+		defer channelFn()
 
-		ctx := orm.NewContext(context.Background(), c.ormCreator.Create())
+		ctx = orm.NewContext(ctx, c.ormCreator.Create())
 		// recover in case panic during the adapter process
 		defer func() {
 			if err := recover(); err != nil {
@@ -291,4 +316,50 @@ func convertTask(task *task.Task) *Task {
 		UpdateTime:          task.UpdateTime,
 		EndTime:             task.EndTime,
 	}
+}
+
+// isEnableWatchExecutionStoppingLabel when trigger type is schedule and cron let every 3 second run once disable
+func isEnableWatchExecutionStoppingLabel(ctx context.Context, policy *replicationmodel.Policy) bool {
+	if policy == nil || policy.Trigger == nil || policy.Trigger.Settings == nil {
+		return false
+	}
+	if policy.Trigger.Type != model.TriggerTypeScheduled {
+		return true
+	}
+	cron := policy.Trigger.Settings.Cron
+	if cron == "" {
+		return true
+	}
+	// Because harbor's cron has only 6 bits, the standard cron has 7 bits, and the previous year is added by default.
+	cron += " *"
+	expr, err := cronexpr.Parse(cron)
+	if err != nil {
+		log.Errorf("cron parse error,cron is %s,error is %+v", cron, err)
+		return true
+	}
+	// Calculate whether the time interval between the next two executions is less than 3s
+	nextN := expr.NextN(time.Now(), 2)
+	return !(nextN[1].Sub(nextN[0]).Seconds() <= 3)
+}
+
+// watchExecutionStoppingLabel watch stopping attr or execution status is StoppedStatus|ErrorStatus|SuccessStatus
+func watchExecutionStoppingLabel(ctx context.Context, executionID int64, c *controller) (bool, error) {
+	execution, err := c.execMgr.Get(ctx, executionID)
+	if err != nil {
+		return false, err
+	}
+	if execution == nil {
+		return true, nil
+	}
+	if job.Status(execution.Status).Equal(job.StoppedStatus) ||
+		job.Status(execution.Status).Equal(job.ErrorStatus) ||
+		job.Status(execution.Status).Equal(job.SuccessStatus) {
+		return true, nil
+	}
+	if execution.ExtraAttrs != nil {
+		if stopping, ok := execution.ExtraAttrs[job.Stopping]; ok && stopping != nil && stopping.(string) == job.Stopping {
+			return true, nil
+		}
+	}
+	return false, nil
 }

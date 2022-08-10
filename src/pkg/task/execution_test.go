@@ -15,6 +15,7 @@
 package task
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -115,10 +116,9 @@ func (e *executionManagerTestSuite) TestStop() {
 	// the execution contains no tasks and the status isn't final
 	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 		ID:     1,
-		Status: job.RunningStatus.String(),
+		Status: job.StoppedStatus.String(),
 	}, nil)
 	e.taskDAO.On("List", mock.Anything, mock.Anything).Return(nil, nil)
-	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
 	e.taskDAO.AssertExpectations(e.T())
@@ -138,6 +138,7 @@ func (e *executionManagerTestSuite) TestStop() {
 			ExecutionID: 1,
 		},
 	}, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	err = e.execMgr.Stop(nil, 1)
 	e.Require().Nil(err)
@@ -158,6 +159,7 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 			ExecutionID: 1,
 		},
 	}, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	err := e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().NotNil(err)
@@ -179,6 +181,7 @@ func (e *executionManagerTestSuite) TestStopAndWait() {
 			ExecutionID: 1,
 		},
 	}, nil)
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	e.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	err = e.execMgr.StopAndWait(nil, 1, 1*time.Second)
 	e.Require().Nil(err)
@@ -256,6 +259,20 @@ func (e *executionManagerTestSuite) TestList() {
 	e.Equal(int64(1), execs[0].Metrics.TaskCount)
 	e.Equal(int64(1), execs[0].Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
+}
+
+func (e *executionManagerTestSuite) TestAddStoppingLabel() {
+	err := addStoppingLabel(context.Background(), e.execMgr, nil, 1)
+	e.Require().Error(err)
+
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("update error"))
+	err = addStoppingLabel(context.Background(), e.execMgr, &dao.Execution{}, 1)
+	e.Require().Error(err)
+
+	e.SetupTest()
+	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = addStoppingLabel(context.Background(), e.execMgr, &dao.Execution{}, 1)
+	e.Require().Nil(err)
 }
 
 func TestExecutionManagerSuite(t *testing.T) {

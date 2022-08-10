@@ -13,6 +13,7 @@ package flow
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -91,6 +92,73 @@ func (c *copyFlowTestSuite) TestRun() {
 	c.Require().Nil(err)
 }
 
+func (c *copyFlowTestSuite) TestRunCtxDone() {
+	adp := &mockAdapter{}
+	factory := &mockFactory{}
+	factory.On("AdapterPattern").Return(nil)
+	factory.On("Create", mock.Anything).Return(adp, nil)
+	adapter.RegisterFactory("TEST_FOR_COPY_FLOW", factory)
+
+	adp.On("Info").Return(&model.RegistryInfo{
+		SupportedResourceTypes: []string{
+			model.ResourceTypeArtifact,
+		},
+	}, nil)
+	adp.On("FetchArtifacts", mock.Anything).Return([]*model.Resource{
+		{
+			Type: model.ResourceTypeChart,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "library/hello-world",
+				},
+				Vtags: []string{"latest"},
+			},
+			Override: false,
+		},
+		{
+			Type: model.ResourceTypeArtifact,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "proxy/hello-world",
+				},
+				Vtags: []string{"latest"},
+			},
+			Override: false,
+			Skip:     false,
+		},
+	}, nil)
+	adp.On("PrepareForPush", mock.Anything).Return(nil)
+
+	execMgr := &testingTask.ExecutionManager{}
+	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
+		Status: job.RunningStatus.String(),
+	}, nil)
+
+	taskMgr := &testingTask.Manager{}
+	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).After(time.Second*1).Return(int64(1), nil)
+	policy := &repctlmodel.Policy{
+		SrcRegistry: &model.Registry{
+			Type: "TEST_FOR_COPY_FLOW",
+		},
+		DestRegistry: &model.Registry{
+			Type: "TEST_FOR_COPY_FLOW",
+		},
+	}
+	execMgr.On("MarkDone", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	flow := &copyFlow{
+		executionID:  1,
+		policy:       policy,
+		executionMgr: execMgr,
+		taskMgr:      taskMgr,
+	}
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(1 * time.Second)
+		cancelFunc()
+	}()
+	err := flow.Run(ctx)
+	c.Require().Nil(err)
+}
 func TestCopyFlowTestSuite(t *testing.T) {
 	suite.Run(t, &copyFlowTestSuite{})
 }

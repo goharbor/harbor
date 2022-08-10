@@ -113,45 +113,50 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			}
 		}
 	}()
-
 	for i, srcResource := range srcResources {
-		dstResource := dstResources[i]
-		// if dest resource should be skipped, ignore replicate.
-		if dstResource.Skip {
-			log.Warningf("skip create replication task because of dest limitation, src: %s, dst: %s", srcResource.Metadata, dstResource.Metadata)
-			continue
-		}
+		select {
+		case <-ctx.Done():
+			logger.Info("createTasks ctx done")
+			return nil
+		default:
+			dstResource := dstResources[i]
+			// if dest resource should be skipped, ignore replicate.
+			if dstResource.Skip {
+				log.Warningf("skip create replication task because of dest limitation, src: %s, dst: %s", srcResource.Metadata, dstResource.Metadata)
+				continue
+			}
 
-		src, err := json.Marshal(srcResource)
-		if err != nil {
-			return err
-		}
-		dest, err := json.Marshal(dstResource)
-		if err != nil {
-			return err
-		}
+			src, err := json.Marshal(srcResource)
+			if err != nil {
+				return err
+			}
+			dest, err := json.Marshal(dstResource)
+			if err != nil {
+				return err
+			}
 
-		job := &task.Job{
-			Name: job.Replication,
-			Metadata: &job.Metadata{
-				JobKind: job.KindGeneric,
-			},
-			Parameters: map[string]interface{}{
-				"src_resource": string(src),
-				"dst_resource": string(dest),
-				"speed":        speed,
-			},
-		}
+			job := &task.Job{
+				Name: job.Replication,
+				Metadata: &job.Metadata{
+					JobKind: job.KindGeneric,
+				},
+				Parameters: map[string]interface{}{
+					"src_resource": string(src),
+					"dst_resource": string(dest),
+					"speed":        speed,
+				},
+			}
 
-		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]interface{}{
-			"operation":            "copy",
-			"resource_type":        string(srcResource.Type),
-			"source_resource":      getResourceName(srcResource),
-			"destination_resource": getResourceName(dstResource)}); err != nil {
-			return err
-		}
+			if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]interface{}{
+				"operation":            "copy",
+				"resource_type":        string(srcResource.Type),
+				"source_resource":      getResourceName(srcResource),
+				"destination_resource": getResourceName(dstResource)}); err != nil {
+				return err
+			}
 
-		taskCnt++
+			taskCnt++
+		}
 	}
 	return nil
 }
