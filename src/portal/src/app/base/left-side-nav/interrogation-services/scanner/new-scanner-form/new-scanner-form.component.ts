@@ -8,7 +8,7 @@ import {
 import {
     UntypedFormBuilder,
     UntypedFormGroup,
-    Validators
+    Validators,
 } from '@angular/forms';
 import { fromEvent } from 'rxjs';
 import {
