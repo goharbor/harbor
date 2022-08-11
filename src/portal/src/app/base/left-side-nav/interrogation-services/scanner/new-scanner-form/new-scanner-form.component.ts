@@ -5,7 +5,11 @@ import {
     OnDestroy,
     ViewChild,
 } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+    UntypedFormBuilder,
+    UntypedFormGroup,
+    Validators
+} from '@angular/forms';
 import { fromEvent } from 'rxjs';
 import {
     debounceTime,
