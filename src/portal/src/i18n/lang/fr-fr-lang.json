@@ -1158,7 +1158,8 @@
         "UNLIMITED": "Illimité",
         "INVALID_INPUT": "Saisie non valide",
         "PLACEHOLDER": "Nous n'avons trouvé aucun quota de projet !",
-        "FILTER_PLACEHOLDER": "Chercher par nom (correspondance exacte)"
+        "FILTER_PLACEHOLDER": "Chercher par nom (correspondance exacte)",
+        "QUOTA_USED": "Quota used"
     },
     "WEEKLY": {
         "MONDAY": "Lundi",

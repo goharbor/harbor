@@ -5,7 +5,6 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    REFRESH_TIME_DIFFERENCE,
 } from '../../../../../../shared/entities/shared.const';
 import { GcService } from '../../../../../../../../ng-swagger-gen/services/gc.service';
 import {
@@ -18,7 +17,12 @@ import {
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
 import { GCHistory } from '../../../../../../../../ng-swagger-gen/models/gchistory';
-import { JOB_STATUS, NO, YES } from '../../../clearing-job-interfact';
+import {
+    JOB_STATUS,
+    NO,
+    REFRESH_STATUS_TIME_DIFFERENCE,
+    YES,
+} from '../../../clearing-job-interfact';
 import { ConfirmationMessage } from '../../../../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationDialogService } from '../../../../../global-confirmation-dialog/confirmation-dialog.service';
 
@@ -161,8 +165,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                     // to avoid some jobs not finished.
                     if (!this.timerDelay) {
                         this.timerDelay = timer(
-                            REFRESH_TIME_DIFFERENCE,
-                            REFRESH_TIME_DIFFERENCE
+                            REFRESH_STATUS_TIME_DIFFERENCE,
+                            REFRESH_STATUS_TIME_DIFFERENCE
                         ).subscribe(() => {
                             let count: number = 0;
                             this.jobs.forEach(job => {

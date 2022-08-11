@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	rpModel "github.com/goharbor/harbor/src/pkg/reg/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	replicationtesting "github.com/goharbor/harbor/src/testing/controller/replication"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -127,4 +128,21 @@ func TestReplicationHandler_IsStateful(t *testing.T) {
 func TestReplicationHandler_Name(t *testing.T) {
 	handler := &ReplicationHandler{}
 	assert.Equal(t, "ReplicationWebhook", handler.Name())
+}
+
+func TestIsLocalRegistry(t *testing.T) {
+	// local registry should return true
+	reg1 := &rpModel.Registry{
+		Type: "harbor",
+		Name: "Local",
+		URL:  config.InternalCoreURL(),
+	}
+	assert.True(t, isLocalRegistry(reg1))
+	// non-local registry should return false
+	reg2 := &rpModel.Registry{
+		Type: "docker-registry",
+		Name: "distribution",
+		URL:  "http://127.0.0.1:5000",
+	}
+	assert.False(t, isLocalRegistry(reg2))
 }

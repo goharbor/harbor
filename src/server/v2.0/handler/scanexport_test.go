@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	beegoorm "github.com/beego/beego/orm"
+	"github.com/goharbor/harbor/src/lib/errors"
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -21,6 +21,7 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/scan_data_export"
 	"github.com/goharbor/harbor/src/testing/controller/scandataexport"
 	"github.com/goharbor/harbor/src/testing/mock"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
@@ -61,7 +62,7 @@ func (suite *ScanExportTestSuite) TestAuthorization() {
 			Labels:       []int64{100},
 			Projects:     []int64{200},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		reqs := []struct {
@@ -92,6 +93,45 @@ func (suite *ScanExportTestSuite) TestAuthorization() {
 		}
 	}
 }
+
+func (suite *ScanExportTestSuite) TestValidateScanExportParams() {
+	// empty criteria should return error
+	err := validateScanExportParams(operation.ExportScanDataParams{})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
+
+	// multiple projects in input should return error
+	criteria := models.ScanDataExportRequest{
+		Projects: []int64{200, 300},
+	}
+	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
+
+	// spaces in input should return error
+	criteria = models.ScanDataExportRequest{
+		CVEIds:       "CVE-123, CVE-456",
+		Labels:       []int64{100},
+		Projects:     []int64{200},
+		Repositories: "test-repo1, test-repo2",
+		Tags:         "{test-tag1, test-tag2}",
+	}
+	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
+
+	// valid params should pass validator
+	criteria = models.ScanDataExportRequest{
+		CVEIds:       "CVE-123,CVE-456",
+		Labels:       []int64{100},
+		Projects:     []int64{200},
+		Repositories: "test-repo1,test-repo2",
+		Tags:         "{test-tag1,test-tag2}",
+	}
+	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	suite.NoError(err)
+}
+
 func (suite *ScanExportTestSuite) TestExportScanData() {
 	suite.Security.On("GetUsername").Return("test-user")
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
@@ -107,7 +147,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 			Labels:       []int64{100},
 			Projects:     []int64{200},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		data, err := json.Marshal(criteria)
@@ -128,7 +168,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 
 		// validate job name and user name set in the request for job execution
 		jobRequestMatcher := testifymock.MatchedBy(func(req export.Request) bool {
-			return req.UserName == "test-user" && req.JobName == "test-job" && req.Tags == "{test-tag1, test-tag2}" && req.UserID == 1000
+			return req.UserName == "test-user" && req.JobName == "test-job" && req.Tags == "{test-tag1,test-tag2}" && req.UserID == 1000
 		})
 		suite.scanExportCtl.AssertCalled(suite.T(), "Start", mock.Anything, jobRequestMatcher)
 	}
@@ -144,7 +184,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 			Labels:       []int64{100},
 			Projects:     []int64{200},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		data, err := json.Marshal(criteria)
@@ -170,7 +210,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 			Labels:       []int64{100},
 			Projects:     []int64{200, 300},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		data, err := json.Marshal(criteria)
@@ -201,7 +241,7 @@ func (suite *ScanExportTestSuite) TestExportScanDataGetUserIdError() {
 			Labels:       []int64{100},
 			Projects:     []int64{200},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		data, err := json.Marshal(criteria)
@@ -234,7 +274,7 @@ func (suite *ScanExportTestSuite) TestExportScanDataGetUserIdNotFound() {
 			Labels:       []int64{100},
 			Projects:     []int64{200},
 			Repositories: "test-repo",
-			Tags:         "{test-tag1, test-tag2}",
+			Tags:         "{test-tag1,test-tag2}",
 		}
 
 		data, err := json.Marshal(criteria)
@@ -264,7 +304,7 @@ func (suite *ScanExportTestSuite) TestExportScanDataNoPrivileges() {
 		Labels:       []int64{100},
 		Projects:     []int64{200},
 		Repositories: "test-repo",
-		Tags:         "{test-tag1, test-tag2}",
+		Tags:         "{test-tag1,test-tag2}",
 	}
 
 	data, err := json.Marshal(criteria)

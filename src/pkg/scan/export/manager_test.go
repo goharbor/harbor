@@ -1,6 +1,7 @@
 package export
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -122,6 +123,9 @@ func (suite *ExportManagerSuite) TestExport() {
 		data, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
 		suite.NoError(err)
 		suite.Equal(10, len(data))
+		for _, datum := range data {
+			suite.Equal("{\"CVSS\": {\"nvd\": {\"V2Score\": \"4.3\"}}}", datum.AdditionalData)
+		}
 	}
 }
 
@@ -170,6 +174,10 @@ func (suite *ExportManagerSuite) generateVulnerabilityRecordsForReport(registrat
 		} else {
 			vulnV2.Severity = "Low"
 		}
+		var vendorAttributes = make(map[string]interface{})
+		vendorAttributes["CVSS"] = map[string]interface{}{"nvd": map[string]interface{}{"V2Score": "4.3"}}
+		data, _ := json.Marshal(vendorAttributes)
+		vulnV2.VendorAttributes = string(data)
 		vulns = append(vulns, vulnV2)
 	}
 

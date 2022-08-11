@@ -9,6 +9,7 @@ import {
     ArtifactDefaultService,
     ArtifactService,
 } from '../../../../artifact.service';
+import { delay } from 'rxjs';
 
 describe('SubAccessoriesComponent', () => {
     const mockedAccessories: Accessory[] = [
@@ -61,7 +62,7 @@ describe('SubAccessoriesComponent', () => {
 
     const mockedArtifactService = {
         listAccessories() {
-            return of(page2);
+            return of(page2).pipe(delay(0));
         },
     };
 
