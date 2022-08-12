@@ -38,8 +38,8 @@ func postInitiateBlobUploadResources(r *http.Request, reference, referenceID str
 	query := r.URL.Query()
 	mount := query.Get("mount")
 	if mount == "" {
-		// it is not mount blob http request, skip to request the resources
-		return nil, nil
+		// it is not mount blob http request, create length is zero resource to check quota is full
+		return types.ResourceList{types.ResourceStorage: 0}, nil
 	}
 
 	ctx := r.Context()

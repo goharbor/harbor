@@ -32,7 +32,7 @@ func IsSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUs
 			continue
 		}
 
-		if hardLimit == types.UNLIMITED || value == currentUsed[resource] {
+		if hardLimit == types.UNLIMITED {
 			continue
 		}
 
