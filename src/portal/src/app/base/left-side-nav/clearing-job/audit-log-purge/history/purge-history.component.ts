@@ -5,7 +5,6 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    REFRESH_TIME_DIFFERENCE,
 } from 'src/app/shared/entities/shared.const';
 import { ErrorHandler } from 'src/app/shared/units/error-handler/error-handler';
 import {
@@ -16,7 +15,12 @@ import {
     setPageSizeToLocalStorage,
 } from 'src/app/shared/units/utils';
 import { PurgeService } from '../../../../../../../ng-swagger-gen/services/purge.service';
-import { JOB_STATUS, NO, YES } from '../../clearing-job-interfact';
+import {
+    JOB_STATUS,
+    NO,
+    REFRESH_STATUS_TIME_DIFFERENCE,
+    YES,
+} from '../../clearing-job-interfact';
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationDialogService } from '../../../../global-confirmation-dialog/confirmation-dialog.service';
 import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-history';
@@ -159,8 +163,8 @@ export class PurgeHistoryComponent implements OnInit, OnDestroy {
                     // to avoid some jobs not finished.
                     if (!this.timerDelay) {
                         this.timerDelay = timer(
-                            REFRESH_TIME_DIFFERENCE,
-                            REFRESH_TIME_DIFFERENCE
+                            REFRESH_STATUS_TIME_DIFFERENCE,
+                            REFRESH_STATUS_TIME_DIFFERENCE
                         ).subscribe(() => {
                             let count: number = 0;
                             this.jobs.forEach(job => {

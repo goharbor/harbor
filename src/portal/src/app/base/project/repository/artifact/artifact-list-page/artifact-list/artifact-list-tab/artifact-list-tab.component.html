@@ -46,7 +46,8 @@
             [disabled]="
                 imageNameInput.projectName.invalid ||
                 imageNameInput.repoName.invalid ||
-                imageNameInput.noProjectInfo !== ''
+                imageNameInput.notExist ||
+                imageNameInput.checkingName
             "
             class="btn btn-primary"
             (click)="onRetag()">
