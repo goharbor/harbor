@@ -197,6 +197,8 @@ func (e *executionManager) sweep(ctx context.Context, vendorType string, vendorI
 			if !job.Status(execution.Status).Final() {
 				continue
 			}
+
+			log.Debugf("delete execution %d by sweeper", execution.ID)
 			if err = e.Delete(ctx, execution.ID); err != nil {
 				// the execution may be deleted by the other sweep operation, ignore the not found error
 				if errors.IsNotFoundErr(err) {
@@ -352,6 +354,8 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
 				WithMessage("the execution %d has tasks that aren't in final status, stop the tasks first", id)
 		}
+
+		log.Debugf("delete task %d as execution %d has been deleted", task.ID, task.ExecutionID)
 		if err = e.taskDAO.Delete(ctx, task.ID); err != nil {
 			// the tasks may be deleted by the other execution deletion operation in the same time(e.g. execution sweeper),
 			// ignore the not found error for the tasks

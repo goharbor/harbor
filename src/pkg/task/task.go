@@ -95,6 +95,7 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	jobID, err := m.submitJob(ctx, id, jb)
 	if err != nil {
 		// failed to submit job to jobservice, delete the task record
+		log.Errorf("delete task %d from db due to failed to submit job %v, error: %v", id, jb.Name, err)
 		if err := m.dao.Delete(ctx, id); err != nil {
 			log.Errorf("failed to delete the task %d: %v", id, err)
 		}
