@@ -99,6 +99,20 @@ fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
+if [ $with_chartmuseum ]
+then
+    warn "
+    Chartmusuem will be deprecated as of Harbor v2.6.0 and start to be removed in v2.8.0 or later.
+    Please see discussion here for more details. https://github.com/goharbor/harbor/discussions/15057"
+fi
+if [ $with_notary ]
+then
+    warn "
+    Notary will be deprecated as of Harbor v2.6.0 and start to be removed in v2.8.0 or later.
+    You can use cosign for signature instead since Harbor v2.5.0.
+    Please see discussion here for more details. https://github.com/goharbor/harbor/discussions/16612"
+fi
+
 $DOCKER_COMPOSE up -d
 
 success $"----Harbor has been installed and started successfully.----"
