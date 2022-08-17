@@ -19,10 +19,15 @@ RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json
 
 COPY LICENSE /build_dir/dist
 
+RUN cd app-swagger-ui && npm install --unsafe-perm
+RUN cd app-swagger-ui && npm run build
 
 FROM nginx:1.17
 
+
+
 COPY --from=builder /build_dir/dist /usr/share/nginx/html
+COPY --from=builder /build_dir/app-swagger-ui/dist /usr/share/nginx/html
 COPY src/portal/docker-build/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8080

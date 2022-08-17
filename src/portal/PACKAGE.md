@@ -1,7 +1,7 @@
 ```text
 {
   "name": "harbor",
-  "version": "2.5.0",
+  "version": "2.7.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
@@ -54,16 +54,16 @@
     "@angular/localize": "~14.1.0",
     "@angular/platform-browser": "~14.1.0",
     "@angular/platform-browser-dynamic": "~14.1.0",
-    "@angular/router": "~13.2.2",
+    "@angular/router": "~14.1.0",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
 
     // Clarity UI. Required
-    "@clr/angular": "13.0.2",
-    "@cds/core": "5.6.4",
+    "@clr/angular": "13.7.0",
+    "@cds/core": "6.0.0",
     "@clr/icons": "13.0.2",
-    "@clr/ui": "13.0.2",
+    "@clr/ui": "13.7.0",
 
     // For Harbor i18n functionality. Required
     "@ngx-translate/core": "^13.0.0",
@@ -80,11 +80,6 @@
 
     // To render markdown data. Required
     "ngx-markdown": "~13.0.0",
-
-    // For swagger API center. Required
-    "swagger-ui": "~4.9.0",
-    "buffer": "^6.0.3",
-    "stream-browserify": "^3.0.0",
 
     // To convert yaml to json. Required
     "js-yaml": "^4.1.0"
