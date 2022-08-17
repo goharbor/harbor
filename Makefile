@@ -532,7 +532,8 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-# go get -u github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
+# golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
