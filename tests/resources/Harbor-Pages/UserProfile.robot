@@ -27,7 +27,7 @@ Change Password
     Retry Text Input  ${new_password_xpath}   ${new_pw}
     Retry Text Input  ${renew_password_xpath}  ${new_pw}
     Retry Element Click  ${change_password_confirm_btn_xpath}
-    Retry Element Click  xpath=${log_xpath}
+    Retry Element Click  xpath=${logs_xpath}
     Sleep  1
 
 Update User Comment
