@@ -3,8 +3,8 @@ import { Subject } from 'rxjs';
 import { debounceTime, finalize, switchMap } from 'rxjs/operators';
 import {
     AbstractControl,
-    FormBuilder,
-    FormGroup,
+    UntypedFormBuilder,
+    UntypedFormGroup,
     Validators,
 } from '@angular/forms';
 import { ErrorHandler } from '../../units/error-handler';
@@ -19,7 +19,7 @@ import { Project } from 'ng-swagger-gen/models/project';
 export class ImageNameInputComponent implements OnInit, OnDestroy {
     selectedProjectList: Project[] = [];
     proNameChecker: Subject<string> = new Subject<string>();
-    imageNameForm: FormGroup;
+    imageNameForm: UntypedFormGroup;
     notExist: boolean = false;
     checkingName: boolean = false;
     public project: string;
@@ -27,7 +27,7 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     public tag: string;
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private errorHandler: ErrorHandler,
         private proService: ProjectService
     ) {

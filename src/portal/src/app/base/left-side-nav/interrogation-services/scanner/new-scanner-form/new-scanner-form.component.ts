@@ -5,7 +5,11 @@ import {
     OnDestroy,
     ViewChild,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+    UntypedFormBuilder,
+    UntypedFormGroup,
+    Validators,
+} from '@angular/forms';
 import { fromEvent } from 'rxjs';
 import {
     debounceTime,
@@ -24,7 +28,7 @@ import { ScannerService } from '../../../../../../../ng-swagger-gen/services/sca
 })
 export class NewScannerFormComponent implements AfterViewInit, OnDestroy {
     checkOnGoing: boolean = false;
-    newScannerForm: FormGroup = this.fb.group({
+    newScannerForm: UntypedFormGroup = this.fb.group({
         name: this.fb.control('', [Validators.required]),
         description: this.fb.control(''),
         url: this.fb.control('', [
@@ -54,7 +58,7 @@ export class NewScannerFormComponent implements AfterViewInit, OnDestroy {
     @ViewChild('name') scannerName: ElementRef;
     @ViewChild('endpointUrl') scannerEndpointUrl: ElementRef;
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private scannerService: ScannerService
     ) {}
     ngAfterViewInit(): void {
