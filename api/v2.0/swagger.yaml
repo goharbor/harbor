@@ -9176,7 +9176,7 @@ definitions:
         items:
           type: integer
           format: int64
-        description: A list of one or more projects for which to export the scan data, defaults to all if empty
+        description: A list of one or more projects for which to export the scan data, currently only one project is supported due to performance concerns, but define as array for extension in the future.
       labels:
         type: array
         items:
