@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scandataexport"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -29,6 +30,7 @@ import (
 func newScanDataExportAPI() *scanDataExportAPI {
 	return &scanDataExportAPI{
 		scanDataExportCtl: scandataexport.Ctl,
+		proCtl:            project.Ctl,
 		sysArtifactMgr:    systemartifact.Mgr,
 		userMgr:           user.Mgr,
 	}
@@ -37,6 +39,7 @@ func newScanDataExportAPI() *scanDataExportAPI {
 type scanDataExportAPI struct {
 	BaseAPI
 	scanDataExportCtl scandataexport.Controller
+	proCtl            project.Controller
 	sysArtifactMgr    systemartifact.Manager
 	userMgr           user.Manager
 }
@@ -47,19 +50,12 @@ func (se *scanDataExportAPI) Prepare(ctx context.Context, operation string, para
 
 func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operation.ExportScanDataParams) middleware.Responder {
 	// validate the request params
-	if err := validateScanExportParams(params); err != nil {
+	if err := se.validateScanExportParams(ctx, params); err != nil {
 		return se.SendError(ctx, err)
 	}
 
 	if err := se.RequireProjectAccess(ctx, params.Criteria.Projects[0], rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
 		return se.SendError(ctx, err)
-	}
-
-	// check if the MIME type for the export is the Generic vulnerability data
-	if params.XScanDataType != v1.MimeTypeGenericVulnerabilityReport {
-		error := &models.Error{Message: fmt.Sprintf("Unsupported MIME type : %s", params.XScanDataType)}
-		errors := &models.Errors{Errors: []*models.Error{error}}
-		return operation.NewExportScanDataBadRequest().WithPayload(errors)
 	}
 
 	scanDataExportJob := new(models.ScanDataExportJob)
@@ -309,10 +305,17 @@ func (se *scanDataExportAPI) requireProjectsAccess(ctx context.Context, pids []i
 // validateScanExportParams validates scan data export request parameters by
 // following policies.
 // rules:
-//   1. the criteria should not be empty
-//   2. currently only the export of single project is open
-//   3. do not allow to input space in the repo/tag/cve_id (space will lead to misjudge for doublestar filter)
-func validateScanExportParams(params operation.ExportScanDataParams) error {
+//   1. check the scan data type
+//   2. the criteria should not be empty
+//   3. currently only the export of single project is open
+//   4. check the existence of project
+//   5. do not allow to input space in the repo/tag/cve_id (space will lead to misjudge for doublestar filter)
+func (se *scanDataExportAPI) validateScanExportParams(ctx context.Context, params operation.ExportScanDataParams) error {
+	// check if the MIME type for the export is the Generic vulnerability data
+	if params.XScanDataType != v1.MimeTypeGenericVulnerabilityReport {
+		return errors.BadRequestError(errors.Errorf("Unsupported MIME type : %s", params.XScanDataType))
+	}
+
 	criteria := params.Criteria
 	if criteria == nil {
 		return errors.BadRequestError(errors.Errorf("criteria is invalid: %v", criteria))
@@ -321,6 +324,16 @@ func validateScanExportParams(params operation.ExportScanDataParams) error {
 	// validate project id, currently we only support single project
 	if len(criteria.Projects) != 1 {
 		return errors.BadRequestError(errors.Errorf("only support export single project, invalid value: %v", criteria.Projects))
+	}
+
+	// check whether the project exists
+	exist, err := se.proCtl.Exists(ctx, criteria.Projects[0])
+	if err != nil {
+		return errors.UnknownError(errors.Errorf("check the existence of project error: %v", err))
+	}
+
+	if !exist {
+		return errors.NotFoundError(errors.Errorf("project %d not found", criteria.Projects[0]))
 	}
 
 	// check spaces
