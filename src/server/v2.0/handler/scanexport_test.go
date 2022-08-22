@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/scan_data_export"
+	"github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/controller/scandataexport"
 	"github.com/goharbor/harbor/src/testing/mock"
 	systemartifacttesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact"
@@ -32,6 +34,7 @@ import (
 type ScanExportTestSuite struct {
 	htesting.Suite
 	scanExportCtl  *scandataexport.Controller
+	proCtl         *project.Controller
 	sysArtifactMgr *systemartifacttesting.Manager
 	userMgr        *user.Manager
 }
@@ -43,15 +46,18 @@ func (suite *ScanExportTestSuite) SetupSuite() {
 func (suite *ScanExportTestSuite) SetupTest() {
 
 	suite.scanExportCtl = &scandataexport.Controller{}
+	suite.proCtl = &project.Controller{}
 	suite.sysArtifactMgr = &systemartifacttesting.Manager{}
 	suite.userMgr = &user.Manager{}
 	suite.Config = &restapi.Config{
 		ScanDataExportAPI: &scanDataExportAPI{
 			scanDataExportCtl: suite.scanExportCtl,
+			proCtl:            suite.proCtl,
 			sysArtifactMgr:    suite.sysArtifactMgr,
 			userMgr:           suite.userMgr,
 		},
 	}
+	mock.OnAnything(suite.proCtl, "Exists").Return(true, nil)
 	suite.Suite.SetupSuite()
 }
 
@@ -95,8 +101,17 @@ func (suite *ScanExportTestSuite) TestAuthorization() {
 }
 
 func (suite *ScanExportTestSuite) TestValidateScanExportParams() {
-	// empty criteria should return error
-	err := validateScanExportParams(operation.ExportScanDataParams{})
+	api := newScanDataExportAPI()
+	api.proCtl = suite.proCtl
+	ctx := context.TODO()
+	// no scan data type should return error
+	err := api.validateScanExportParams(ctx, operation.ExportScanDataParams{})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
+
+	xScanDataType := v1.MimeTypeGenericVulnerabilityReport
+	// empty params should return error
+	err = api.validateScanExportParams(ctx, operation.ExportScanDataParams{XScanDataType: xScanDataType})
 	suite.Error(err)
 	suite.True(errors.IsErr(err, errors.BadRequestCode))
 
@@ -104,7 +119,7 @@ func (suite *ScanExportTestSuite) TestValidateScanExportParams() {
 	criteria := models.ScanDataExportRequest{
 		Projects: []int64{200, 300},
 	}
-	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	err = api.validateScanExportParams(ctx, operation.ExportScanDataParams{XScanDataType: xScanDataType, Criteria: &criteria})
 	suite.Error(err)
 	suite.True(errors.IsErr(err, errors.BadRequestCode))
 
@@ -116,7 +131,7 @@ func (suite *ScanExportTestSuite) TestValidateScanExportParams() {
 		Repositories: "test-repo1, test-repo2",
 		Tags:         "{test-tag1, test-tag2}",
 	}
-	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	err = api.validateScanExportParams(ctx, operation.ExportScanDataParams{XScanDataType: xScanDataType, Criteria: &criteria})
 	suite.Error(err)
 	suite.True(errors.IsErr(err, errors.BadRequestCode))
 
@@ -128,8 +143,22 @@ func (suite *ScanExportTestSuite) TestValidateScanExportParams() {
 		Repositories: "test-repo1,test-repo2",
 		Tags:         "{test-tag1,test-tag2}",
 	}
-	err = validateScanExportParams(operation.ExportScanDataParams{Criteria: &criteria})
+	err = api.validateScanExportParams(ctx, operation.ExportScanDataParams{XScanDataType: xScanDataType, Criteria: &criteria})
 	suite.NoError(err)
+
+	// none exist project should return error
+	api.proCtl = &project.Controller{}
+	mock.OnAnything(api.proCtl, "Exists").Return(false, nil)
+	criteria = models.ScanDataExportRequest{
+		CVEIds:       "CVE-123,CVE-456",
+		Labels:       []int64{100},
+		Projects:     []int64{200},
+		Repositories: "test-repo1,test-repo2",
+		Tags:         "{test-tag1,test-tag2}",
+	}
+	err = api.validateScanExportParams(ctx, operation.ExportScanDataParams{XScanDataType: xScanDataType, Criteria: &criteria})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
 func (suite *ScanExportTestSuite) TestExportScanData() {
