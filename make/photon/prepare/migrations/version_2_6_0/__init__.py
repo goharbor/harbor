@@ -1,5 +1,5 @@
 import os
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from utils.migration import read_conf
 
 revision = '2.6.0'
@@ -11,7 +11,8 @@ def migrate(input_cfg, output_cfg):
         loader=FileSystemLoader(current_dir),
         undefined=StrictUndefined,
         trim_blocks=True,
-        lstrip_blocks=True
+        lstrip_blocks=True,
+        autoescape = select_autoescape()
         ).get_template('harbor.yml.jinja')
 
     config_dict = read_conf(input_cfg)
