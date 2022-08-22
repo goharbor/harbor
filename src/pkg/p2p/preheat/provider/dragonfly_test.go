@@ -113,4 +113,30 @@ func (suite *DragonflyTestSuite) TestCheckProgress() {
 	st, err := suite.driver.CheckProgress("dragonfly-id")
 	require.NoError(suite.T(), err, "get preheat status")
 	suite.Equal(provider.PreheatingStatusSuccess, st.Status, "preheat status")
+
+	// preheat job exit but returns no id
+	st, err = suite.driver.CheckProgress("preheat-job-exist-with-no-id")
+	require.Error(suite.T(), err, "get preheat status")
+
+	// preheat job exit returns id but get info with that failed
+	st, err = suite.driver.CheckProgress("preheat-job-exist-with-id-1")
+	require.Error(suite.T(), err, "get preheat status")
+
+	// preheat job normal failed
+	st, err = suite.driver.CheckProgress("preheat-job-normal-failed")
+	require.NoError(suite.T(), err, "get preheat status")
+	suite.Equal(provider.PreheatingStatusFail, st.Status, "preheat status")
+
+	// instance is empty
+	testDriver := &DragonflyDriver{}
+	st, err = testDriver.CheckProgress("")
+	require.Error(suite.T(), err, "get preheat status")
+
+	// preheat job with no task id
+	st, err = suite.driver.CheckProgress("")
+	require.Error(suite.T(), err, "get preheat status")
+
+	// preheat job with err json response
+	st, err = suite.driver.CheckProgress("preheat-job-err-body-json")
+	require.Error(suite.T(), err, "get preheat status")
 }
