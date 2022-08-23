@@ -1084,6 +1084,7 @@
         "IMAGE": "IMAGE",
         "CHART": "CHART",
         "CNAB": "CNAB",
+        "WASM": "WASM",
         "TAGGED": "Taggué",
         "UNTAGGED": "Non taggué",
         "ALL": "Tous",

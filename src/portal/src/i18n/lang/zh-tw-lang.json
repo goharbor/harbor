@@ -1105,6 +1105,7 @@
     "IMAGE": "鏡像",
     "CHART":"CHART",
     "CNAB":"CNAB",
+    "WASM": "WASM",
     "TAGGED":"包含標籤",
     "UNTAGGED": "不含有Tag",
     "ALL": "所有",
