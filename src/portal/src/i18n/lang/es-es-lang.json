@@ -1110,6 +1110,7 @@
         "IMAGE": "IMAGE",
         "CHART": "CHART",
         "CNAB": "CNAB",
+        "WASM": "WASM",
         "TAGGED": "Tagged",
         "UNTAGGED": "Untagged",
         "ALL": "All",
