@@ -1,9 +1,9 @@
 import json
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from .misc import mark_file
 
-jinja_env = Environment(loader=FileSystemLoader('/'), trim_blocks=True, lstrip_blocks=True)
+jinja_env = Environment(loader=FileSystemLoader('/'), trim_blocks=True, lstrip_blocks=True, autoescape = select_autoescape())
 
 def to_json(value):
     return json.dumps(value)
