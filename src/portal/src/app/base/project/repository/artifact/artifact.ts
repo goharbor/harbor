@@ -35,6 +35,10 @@ export const mutipleFilter = [
                 filterText: 'CNAB',
                 showItem: 'ARTIFACT.CNAB',
             },
+            {
+                filterText: 'WASM',
+                showItem: 'ARTIFACT.WASM',
+            },
         ],
     },
     {
