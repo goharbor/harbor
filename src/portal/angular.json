@@ -12,20 +12,8 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "swagger-ui",
-              "buffer",
-              "js-yaml",
-              "hoist-non-react-statics",
-              "lodash",
-              "core-js-pure",
-              "prop-types",
-              "randexp",
-              "react-copy-to-clipboard",
-              "react-debounce-input",
-              "react-immutable-proptypes",
-              "redux-immutable",
-              "url-parse",
-              "xml-but-prettier"
+              "cron-validator",
+              "js-yaml"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
@@ -41,7 +29,6 @@
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
               "node_modules/@clr/ui/clr-ui.min.css",
-              "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
               "src/global.scss",
               {

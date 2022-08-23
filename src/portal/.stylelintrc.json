@@ -17,6 +17,8 @@
     "no-empty-source": null
   },
   "ignoreFiles": [
-    "src/**/*.html"
+    "**/*.md",
+    "src/**/*.html",
+    "app-swagger-ui/**/*.html"
   ]
 }

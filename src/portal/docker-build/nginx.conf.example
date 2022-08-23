@@ -26,6 +26,10 @@ http {
         gzip_proxied expired no-cache no-store private auth;
         gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 
+        location /devcenter-api-2.0 {
+            try_files $uri $uri/ /swagger-ui-index.html;
+        }
+
         location / {
             try_files $uri $uri/ /index.html;
         }

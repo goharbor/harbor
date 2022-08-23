@@ -31,13 +31,6 @@ const harborRoutes: Routes = [
             import('./account/account.module').then(m => m.AccountModule),
     },
     {
-        path: 'devcenter-api-2.0',
-        loadChildren: () =>
-            import('./dev-center/dev-center.module').then(
-                m => m.DeveloperCenterModule
-            ),
-    },
-    {
         path: 'oidc-onboard',
         canActivate: [OidcGuard, SignInGuard],
         loadChildren: () =>
