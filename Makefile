@@ -74,8 +74,6 @@ PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 
 # parameters
-# default is true
-BUILD_PG96=true
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
@@ -438,7 +436,7 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e BUILD_PG96=$(BUILD_PG96)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
@@ -452,24 +450,11 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
-		if [ $$name == "db" ]; then \
-		    make _build_base_db ; \
-		else \
-			$(DOCKERBUILD) --build-arg BUILD_PG96=$(BUILD_PG96) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
-		fi ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
 	done
-
-_build_base_db:
-	@if [ "$(BUILD_PG96)" = "true" ] ; then \
-		echo "build pg96 rpm package." ; \
-		cd $(MAKEFILEPATH_PHOTON)/db && $(MAKEFILEPATH_PHOTON)/db/rpm_builder.sh && cd - ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.pg96 -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
-  	else \
- 		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/db/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
-  	fi
 
 pull_base_docker:
 	@for name in $(BUILDBASETARGET); do \
