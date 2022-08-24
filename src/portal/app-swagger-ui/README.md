@@ -9,7 +9,7 @@ Start
 1. npm install
 2. change `webpack.dev.js.temp` to `webpack.dev.js`, 
 ```shell
-mv webpack.dev.js.temp webpack.dev.js
+cp webpack.dev.js.temp webpack.dev.js
 ```
 3. modify `webpack.dev.js`, replace `https://example.com` with an available Harbor server
 4. npm run start
