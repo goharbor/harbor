@@ -20,7 +20,6 @@ ${create_project_button_xpath}  //clr-main-container//button[contains(., 'New Pr
 ${project_name_xpath}  //*[@id='create_project_name']
 ${project_public_xpath}  //input[@name='public']/..//label
 ${project_save_css}  html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
-${log_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Logs')]
 ${projects_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Projects')]
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//a[contains(.,'Logs')]

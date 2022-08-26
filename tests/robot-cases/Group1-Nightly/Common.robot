@@ -266,7 +266,7 @@ Test Case - User View Projects
     Create An New Project And Go Into Project  test${d}1
     Create An New Project And Go Into Project  test${d}2
     Create An New Project And Go Into Project  test${d}3
-    Switch To Log
+    Switch To Logs
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
@@ -834,6 +834,7 @@ Test Case - WASM Push And Pull To Harbor
     Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
     Wait Unitl Command Success  docker logout ${ip}
     Retry file should exist  test.wasm
+    Close Browser
 
 Test Case - Carvel Imgpkg Push And Pull To Harbor
     [Tags]  imgpkg_push_and_pull
@@ -853,6 +854,7 @@ Test Case - Carvel Imgpkg Push And Pull To Harbor
     Docker Logout  ${ip}
     Retry File Should Exist  ${out_path}/.imgpkg/bundle.yml
     Retry File Should Exist  ${out_path}/.imgpkg/images.yml
+    Close Browser
 
 Test Case - Cosign And Cosign Deployment Security Policy
     [Tags]  cosign
@@ -882,3 +884,61 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
 
     Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
+    Close Browser
+
+Test Case - Audit Log And Purge
+    [Tags]  audit_log_and_purge
+    Init Chrome Driver
+    ${user}=  Set Variable  user003
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  alpine
+    ${tag1}=  Set Variable  3.10
+    ${tag2}=  Set Variable  test
+    ${sha256}=  Set Variable  sha256:de78803598bc4c940fc4591d412bffe488205d5d953f94751c6308deeaaa7eb8
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    # create project
+    Create An New Project And Go Into Project  project${d}
+    Switch To Logs
+    Verify Log  ${user}  project${d}  project  create
+    # create artifact
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag1}  ${tag1}
+    Clean All Local Images
+    Refresh Logs
+    Verify Log  ${user}  project${d}/${image}:${tag1}  artifact  create
+    Go Into Project  project${d}
+    Go Into Repo  ${image}
+    Go Into Artifact  ${tag1}
+    # create tag
+    Add A New Tag   ${tag2}
+    # delete tag
+    Delete A Tag  ${tag2}
+    Switch To Logs
+    Verify Log  ${user}  project${d}/${image}:${tag2}  tag  delete
+    Verify Log  ${user}  project${d}/${image}:${tag2}  tag  create  2
+    Docker Login  ${ip}  ${user}  ${pwd}
+    # pull artifact
+    Docker Pull  ${ip}/project${d}/${image}:${tag1}
+    Docker Logout  ${ip}
+    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  pull
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/${image}
+    # delete artifact
+    @{tag_list}  Create List  ${tag1}
+    Multi-delete Artifact  @{tag_list}
+    Switch To Logs
+    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  delete
+    Go Into Project  project${d}
+    # delete repository
+    Delete Repo  project${d}  ${image}
+    Switch To Logs
+    Verify Log  ${user}  project${d}/${image}  repository  delete
+    # delete project
+    Delete Project  project${d}
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Logs
+    Verify Log  ${user}  project${d}  project  delete
+    Switch To Log Rotation
+    Purge Now  1  Hours
+    Close Browser

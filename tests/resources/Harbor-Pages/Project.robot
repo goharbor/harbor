@@ -61,10 +61,6 @@ Switch To Member
     Retry Element Click  xpath=${project_member_xpath}
     Sleep  1
 
-Switch To Log
-    Retry Element Click  xpath=${log_xpath}
-    Sleep  1
-
 Switch To Replication
     Retry Element Click  xpath=${project_replication_xpath}
     Sleep  1
