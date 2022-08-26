@@ -1,0 +1,473 @@
+From b42e05c0c4d6f417280d3270902a4b42e1e192f3 Mon Sep 17 00:00:00 2001
+From: duanhongyi <duanhongyi@doopai.com>
+Date: Tue, 19 Apr 2022 19:49:19 +0500
+Subject: [PATCH] Add forcepathstyle parameter for s3
+
+Signed-off-by: duanhongyi <duanhongyi@doopai.com>
+---
+ docs/configuration.md                     |  65 +++++++--
+ docs/storage-drivers/s3.md                | 163 ++++++++++++++++++++++
+ registry/storage/driver/s3-aws/s3.go      |  21 ++-
+ registry/storage/driver/s3-aws/s3_test.go |   9 ++
+ 4 files changed, 247 insertions(+), 11 deletions(-)
+ create mode 100644 docs/storage-drivers/s3.md
+
+diff --git a/docs/configuration.md b/docs/configuration.md
+index 75f52dea..af50a6a5 100644
+--- a/docs/configuration.md
++++ b/docs/configuration.md
+@@ -55,7 +55,7 @@ $ docker run -d -p 5000:5000 --restart=always --name registry \
+ ```
+ 
+ Use this
+-[example YAML file](https://github.com/docker/distribution/blob/master/cmd/registry/config-example.yml)
++[example YAML file](https://github.com/distribution/distribution/blob/master/cmd/registry/config-example.yml)
+ as a starting point.
+ 
+ ## List of configuration options
+@@ -118,6 +118,8 @@ storage:
+     secretkey: awssecretkey
+     region: us-west-1
+     regionendpoint: http://myobjects.local
++    forcepathstyle: true
++    accelerate: false
+     bucket: bucketname
+     encrypt: true
+     keyid: mykeyid
+@@ -128,6 +130,7 @@ storage:
+     multipartcopymaxconcurrency: 100
+     multipartcopythresholdsize: 33554432
+     rootdirectory: /s3/object/name/prefix
++    usedualstack: false
+   swift:
+     username: username
+     password: password
+@@ -147,7 +150,8 @@ storage:
+     endpoint: optional endpoints
+     internal: optional internal endpoint
+     bucket: OSS bucket
+-    encrypt: optional data encryption setting
++    encrypt: optional enable server-side encryption
++    encryptionkeyid: optional KMS key id for encryption
+     secure: optional ssl setting
+     chunksize: optional size valye
+     rootdirectory: optional root directory
+@@ -197,7 +201,7 @@ middleware:
+         duration: 3000s
+         ipfilteredby: awsregion
+         awsregion: us-east-1, use-east-2
+-        updatefrenquency: 12h
++        updatefrequency: 12h
+         iprangesurl: https://ip-ranges.amazonaws.com/ip-ranges.json
+   storage:
+     - name: redirect
+@@ -267,6 +271,8 @@ redis:
+     maxidle: 16
+     maxactive: 64
+     idletimeout: 300s
++  tls:
++    enabled: false
+ health:
+   storagedriver:
+     enabled: true
+@@ -418,6 +424,8 @@ storage:
+     secretkey: awssecretkey
+     region: us-west-1
+     regionendpoint: http://myobjects.local
++    forcepathstyle: true
++    accelerate: false
+     bucket: bucketname
+     encrypt: true
+     keyid: mykeyid
+@@ -447,7 +455,8 @@ storage:
+     endpoint: optional endpoints
+     internal: optional internal endpoint
+     bucket: OSS bucket
+-    encrypt: optional data encryption setting
++    encrypt: optional enable server-side encryption
++    encryptionkeyid: optional KMS key id for encryption
+     secure: optional ssl setting
+     chunksize: optional size valye
+     rootdirectory: optional root directory
+@@ -683,7 +692,7 @@ middleware:
+         duration: 3000s
+         ipfilteredby: awsregion
+         awsregion: us-east-1, use-east-2
+-        updatefrenquency: 12h
++        updatefrequency: 12h
+         iprangesurl: https://ip-ranges.amazonaws.com/ip-ranges.json
+ ```
+ 
+@@ -706,7 +715,7 @@ interpretation of the options.
+ | `duration` | no      | An integer and unit for the duration of the Cloudfront session. Valid time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, or `h`. For example, `3000s` is valid, but `3000 s` is not. If you do not specify a `duration` or you specify an integer without a time unit, the duration defaults to `20m` (20 minutes). |
+ | `ipfilteredby` | no     | A string with the following value `none`, `aws` or `awsregion`. |
+ | `awsregion` | no        | A comma separated string of AWS regions, only available when `ipfilteredby` is `awsregion`. For example, `us-east-1, us-west-2` |
+-| `updatefrenquency` | no | The frequency to update AWS IP regions, default: `12h` |
++| `updatefrequency`  | no | The frequency to update AWS IP regions, default: `12h` |
+ | `iprangesurl` | no      | The URL contains the AWS IP ranges information, default: `https://ip-ranges.amazonaws.com/ip-ranges.json` |
+ 
+ 
+@@ -718,6 +727,17 @@ Value of `ipfilteredby` can be:
+ | `aws`       | IP from AWS goes to S3 directly    |
+ | `awsregion` | IP from certain AWS regions goes to S3 directly, use together with `awsregion`. |
+ 
++### `alicdn`
++
++`alicdn` storage middleware allows the registry to serve layers via a content delivery network provided by Alibaba Cloud. Alicdn requires the OSS storage driver.
++
++| Parameter    | Required | Description                                                             |
++|--------------|----------|-------------------------------------------------------------------------|
++| `baseurl`    | yes      | The `SCHEME://HOST` at which Alicdn is served.                          |
++| `authtype`   | yes      | The URL authentication type for Alicdn, which should be `a`, `b` or `c`. See the [Authentication configuration](https://www.alibabacloud.com/help/doc-detail/85117.htm).|
++| `privatekey` | yes      | The URL authentication key for Alicdn.                                  |
++| `duration`   | no       | An integer and unit for the duration of the Alicdn session. Valid time units are `ns`, `us` (or `µs`), `ms`, `s`, `m`, or `h`.|
++
+ ### `redirect`
+ 
+ You can use the `redirect` storage middleware to specify a custom URL to a
+@@ -877,7 +897,9 @@ TLS certificates provided by
+ > to the `docker run` command or using a similar setting in a cloud
+ > configuration. You should also set the `hosts` option to the list of hostnames
+ > that are valid for this registry to avoid trying to get certificates for random
+-> hostnames due to malicious clients connecting with bogus SNI hostnames.
++> hostnames due to malicious clients connecting with bogus SNI hostnames. Please
++> ensure that you have the `ca-certificates` package installed in order to verify
++> letsencrypt certificates.
+ 
+ | Parameter | Required | Description                                           |
+ |-----------|----------|-------------------------------------------------------|
+@@ -896,11 +918,17 @@ access to the debug endpoint is locked down in a production environment.
+ The `debug` section takes a single required `addr` parameter, which specifies
+ the `HOST:PORT` on which the debug server should accept connections.
+ 
++If the registry is configured as a pull-through cache, the `debug` server can be used
++to access proxy statistics. These statistics are exposed at `/debug/vars` in JSON format.
++
+ ## `prometheus`
+ 
+ The `prometheus` option defines whether the prometheus metrics is enable, as well
+ as the path to access the metrics.
+ 
++>**NOTE**: The prometheus metrics do **not** cover pull-through cache statistics.
++> Proxy statistics are exposed via `expvar` only.
++
+ | Parameter | Required | Description                                           |
+ |-----------|----------|-------------------------------------------------------|
+ | `enabled` | no       | Set `true` to enable the prometheus server            |
+@@ -1003,13 +1031,16 @@ redis:
+     maxidle: 16
+     maxactive: 64
+     idletimeout: 300s
++  tls:
++    enabled: false
+ ```
+ 
+ Declare parameters for constructing the `redis` connections. Registry instances
+ may use the Redis instance for several applications. Currently, it caches
+ information about immutable blobs. Most of the `redis` options control
+ how the registry connects to the `redis` instance. You can control the pool's
+-behavior with the [pool](#pool) subsection.
++behavior with the [pool](#pool) subsection. Additionally, you can control
++TLS connection settings with the [tls](#tls) subsection (in-transit encryption).
+ 
+ You should configure Redis with the **allkeys-lru** eviction policy, because the
+ registry does not set an expiration value on keys.
+@@ -1040,6 +1071,20 @@ Use these settings to configure the behavior of the Redis connection pool.
+ | `maxactive`| no      | The maximum number of connections which can be open before blocking a connection request. |
+ | `idletimeout`| no    | How long to wait before closing inactive connections. |
+ 
++### `tls`
++
++```none
++tls:
++  enabled: false
++```
++
++Use these settings to configure Redis TLS.
++
++| Parameter | Required | Description                           |
++|-----------|----------|-------------------------------------- |
++| `enabled` | no       | Whether or not to use TLS in-transit. |
++
++
+ ## `health`
+ 
+ ```none
+@@ -1197,7 +1242,7 @@ Use the `manifests` subsection to configure validation of manifests. If
+ #### `urls`
+ 
+ The `allow` and `deny` options are each a list of
+-[regular expressions](https://godoc.org/regexp/syntax) that restrict the URLs in
++[regular expressions](https://pkg.go.dev/regexp/syntax) that restrict the URLs in
+ pushed manifests.
+ 
+ If `allow` is unset, pushing a manifest containing URLs fails.
+@@ -1233,7 +1278,7 @@ This example configures the registry instance to run on port `5000`, binding to
+ verbose.
+ 
+ See
+-[config-example.yml](https://github.com/docker/distribution/blob/master/cmd/registry/config-example.yml)
++[config-example.yml](https://github.com/distribution/distribution/blob/master/cmd/registry/config-example.yml)
+ for another simple configuration. Both examples are generally useful for local
+ development.
+ 
+diff --git a/docs/storage-drivers/s3.md b/docs/storage-drivers/s3.md
+new file mode 100644
+index 00000000..3122a897
+--- /dev/null
++++ b/docs/storage-drivers/s3.md
+@@ -0,0 +1,163 @@
++---
++description: Explains how to use the S3 storage drivers
++keywords: registry, service, driver, images, storage,  S3
++title: S3 storage driver
++---
++
++An implementation of the `storagedriver.StorageDriver` interface which uses
++Amazon S3 or S3 compatible services for object storage.
++
++## Parameters
++
++| Parameter     | Required | Description                                                                                                                                                                                                                                                         |
++|:--------------|:---------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
++| `accesskey` | no     | Your AWS Access Key. If you use [IAM roles](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html), omit to fetch temporary credentials from IAM. |
++| `secretkey`  | no   | Your AWS Secret Key. If you use [IAM roles](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html), omit to fetch temporary credentials from IAM. |
++| `region` |  yes  | The AWS region in which your bucket exists. |
++| `regionendpoint` | no | Endpoint for S3 compatible storage services (Minio, etc). |
++| `forcepathstyle` | no | To enable path-style addressing when the value is set to `true`. The default is `true`. |
++| `bucket`  | yes | The bucket name in which you want to store the registry's data. |
++| `encrypt`  | no | Specifies whether the registry stores the image in encrypted format or not. A boolean value. The default is `false`. |
++| `keyid`  | no | Optional KMS key ID to use for encryption (encrypt must be true, or this parameter is ignored). The default is `none`. |
++| `secure`  | no | Indicates whether to use HTTPS instead of HTTP. A boolean value. The default is `true`. |
++| `skipverify`  | no  | Skips TLS verification when the value is set to `true`. The default is `false`. |
++| `v4auth`  | no | Indicates whether the registry uses Version 4 of AWS's authentication. The default is `true`. |
++| `chunksize`  | no | The S3 API requires multipart upload chunks to be at least 5MB. This value should be a number that is larger than 5 * 1024 * 1024.|
++| `rootdirectory`  | no | This is a prefix that is applied to all S3 keys to allow you to segment data in your bucket if necessary. |
++| `storageclass`  | no | The S3 storage class applied to each registry file. The default is `STANDARD`. |
++| `objectacl`  | no | The S3 Canned ACL for objects. The default value is "private". |
++
++> **Note** You can provide empty strings for your access and secret keys to run the driver
++> on an ec2 instance and handles authentication with the instance's credentials. If you
++> use [IAM roles](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html),
++> omit these keys to fetch temporary credentials from IAM.
++
++`region`: The name of the aws region in which you would like to store objects (for example `us-east-1`). For a list of regions, see [Regions, Availability Zones, and Local Zones](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html).
++
++`regionendpoint`: (optional) Endpoint URL for S3 compatible APIs. This should not be provided when using Amazon S3.
++
++`forcepathstyle`: (optional) The force path style for S3 compatible APIs. Some manufacturers only support force path style, while others only support DNS based bucket routing. Amazon S3 supports both.
++
++`bucket`: The name of your S3 bucket where you wish to store objects. The bucket must exist prior to the driver initialization.
++
++`encrypt`: (optional) Whether you would like your data encrypted on the server side (defaults to false if not specified).
++
++`keyid`: (optional) Whether you would like your data encrypted with this KMS key ID (defaults to none if not specified, is ignored if encrypt is not true).
++
++`secure`: (optional) Whether you would like to transfer data to the bucket over ssl or not. Defaults to true (meaning transferring over ssl) if not specified. While setting this to false improves performance, it is not recommended due to security concerns.
++
++`v4auth`: (optional) Whether you would like to use aws signature version 4 with your requests. This defaults to `false` if not specified. The `eu-central-1` region does not work with version 2 signatures, so the driver errors out if initialized with this region and v4auth set to `false`.
++
++`chunksize`: (optional) The default part size for multipart uploads (performed by WriteStream) to S3. The default is 10 MB. Keep in mind that the minimum part size for S3 is 5MB. Depending on the speed of your connection to S3, a larger chunk size may result in better performance; faster connections benefit from larger chunk sizes.
++
++`rootdirectory`: (optional) The root directory tree in which all registry files are stored. Defaults to the empty string (bucket root).
++
++`storageclass`: (optional) The storage class applied to each registry file. Defaults to STANDARD. Valid options are STANDARD and REDUCED_REDUNDANCY.
++
++`objectacl`: (optional) The canned object ACL to be applied to each registry object. Defaults to `private`. If you are using a bucket owned by another AWS account, it is recommended that you set this to `bucket-owner-full-control` so that the bucket owner can access your objects. Other valid options are available in the [AWS S3 documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
++
++
++## S3 permission scopes
++
++The following AWS policy is required by the registry for push and pull. Make sure to replace `S3_BUCKET_NAME` with the name of your bucket.
++
++```
++{
++  "Version": "2012-10-17",
++  "Statement": [
++    {
++      "Effect": "Allow",
++      "Action": [
++        "s3:ListBucket",
++        "s3:GetBucketLocation",
++        "s3:ListBucketMultipartUploads"
++      ],
++      "Resource": "arn:aws:s3:::S3_BUCKET_NAME"
++    },
++    {
++      "Effect": "Allow",
++      "Action": [
++        "s3:PutObject",
++        "s3:GetObject",
++        "s3:DeleteObject",
++        "s3:ListMultipartUploadParts",
++        "s3:AbortMultipartUpload"
++      ],
++      "Resource": "arn:aws:s3:::S3_BUCKET_NAME/*"
++    }
++  ]
++}
++```
++
++See [the S3 policy documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/mpuAndPermissions.html) for more details.
++
++# CloudFront as Middleware with S3 backend
++
++## Use Case
++
++Adding CloudFront as a middleware for your S3 backed registry can dramatically
++improve pull times. Your registry can retrieve your images
++from edge servers, rather than the geographically limited location of your S3
++bucket. The farther your registry is from your bucket, the more improvements are
++possible. See [Amazon CloudFront](https://aws.amazon.com/cloudfront/details/).
++
++An alternative method for CloudFront that requires less configuration and will use
++the same edge servers is [S3 Transfer Acceleration](https://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html).
++Please check acceleration [Requirements](https://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html#transfer-acceleration-requirements)
++to see whether you need CloudFront or S3 Transfer Acceleration.
++
++## Configuring CloudFront for Distribution
++
++If you are unfamiliar with creating a CloudFront distribution, see [Getting
++Started with
++Cloudfront](http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GettingStarted.html).
++
++Defaults can be kept in most areas except:
++
++### Origin:
++
++  - The CloudFront distribution must be created such that the `Origin Path` is set
++    to the directory level of the root "docker" key in S3. If your registry exists
++    on the root of the bucket, this path should be left blank.
++
++  - For private S3 buckets, you must set `Restrict Bucket Access` to `Yes`. See
++    the [CloudFront documentation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html).
++
++
++### Behaviors:
++
++  - Viewer Protocol Policy: HTTPS Only
++  - Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
++  - Cached HTTP Methods: OPTIONS (checked)
++  - Restrict Viewer Access (Use Signed URLs or Signed Cookies): Yes
++    - Trusted Signers: Self (Can add other accounts as long as you have access to CloudFront Key Pairs for those additional accounts)
++
++## Registry configuration
++
++Here the `middleware` option is used. It is still important to keep the
++`storage` option, because CloudFront only handles `pull` actions; `push` actions
++are still directly written to S3.
++
++The following example shows a minimum configuration:
++
++```yaml
++...
++storage:
++  s3:
++    region: us-east-1
++    bucket: docker.myregistry.com
++middleware:
++  storage:
++    - name: cloudfront
++      options:
++        baseurl: https://abcdefghijklmn.cloudfront.net/
++        privatekey: /etc/docker/cloudfront/pk-ABCEDFGHIJKLMNOPQRST.pem
++        keypairid: ABCEDFGHIJKLMNOPQRST
++...
++```
++
++## CloudFront Key-Pair
++
++A CloudFront key-pair is required for all AWS accounts needing access to your
++CloudFront distribution. You must have access to your AWS account's root credentials to create the required Cloudfront keypair. For information, see [Creating CloudFront Key
++Pairs](http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-trusted-signers.html#private-content-creating-cloudfront-key-pairs).
+diff --git a/registry/storage/driver/s3-aws/s3.go b/registry/storage/driver/s3-aws/s3.go
+index d9c1a826..ff308ca3 100644
+--- a/registry/storage/driver/s3-aws/s3.go
++++ b/registry/storage/driver/s3-aws/s3.go
+@@ -89,6 +89,7 @@ type DriverParameters struct {
+ 	Bucket                      string
+ 	Region                      string
+ 	RegionEndpoint              string
++	ForcePathStyle              bool
+ 	Encrypt                     bool
+ 	KeyID                       string
+ 	Secure                      bool
+@@ -186,6 +187,23 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
+ 		regionEndpoint = ""
+ 	}
+ 
++	forcePathStyleBool := true
++	forcePathStyle := parameters["forcepathstyle"]
++	switch forcePathStyle := forcePathStyle.(type) {
++	case string:
++		b, err := strconv.ParseBool(forcePathStyle)
++		if err != nil {
++			return nil, fmt.Errorf("the forcePathStyle parameter should be a boolean")
++		}
++		forcePathStyleBool = b
++	case bool:
++		forcePathStyleBool = forcePathStyle
++	case nil:
++		// do nothing
++	default:
++		return nil, fmt.Errorf("the forcePathStyle parameter should be a boolean")
++	}
++
+ 	regionName := parameters["region"]
+ 	if regionName == nil || fmt.Sprint(regionName) == "" {
+ 		return nil, fmt.Errorf("no region parameter provided")
+@@ -347,6 +365,7 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
+ 		fmt.Sprint(bucket),
+ 		region,
+ 		fmt.Sprint(regionEndpoint),
++		forcePathStyleBool,
+ 		encryptBool,
+ 		fmt.Sprint(keyID),
+ 		secureBool,
+@@ -423,8 +442,8 @@ func New(params DriverParameters) (*Driver, error) {
+ 	})
+ 
+ 	if params.RegionEndpoint != "" {
+-		awsConfig.WithS3ForcePathStyle(true)
+ 		awsConfig.WithEndpoint(params.RegionEndpoint)
++		awsConfig.WithS3ForcePathStyle(params.ForcePathStyle)
+ 	}
+ 
+ 	awsConfig.WithCredentials(creds)
+diff --git a/registry/storage/driver/s3-aws/s3_test.go b/registry/storage/driver/s3-aws/s3_test.go
+index be02772e..d24cf499 100644
+--- a/registry/storage/driver/s3-aws/s3_test.go
++++ b/registry/storage/driver/s3-aws/s3_test.go
+@@ -37,6 +37,7 @@ func init() {
+ 	objectACL := os.Getenv("S3_OBJECT_ACL")
+ 	root, err := ioutil.TempDir("", "driver-")
+ 	regionEndpoint := os.Getenv("REGION_ENDPOINT")
++	forcePathStyle := os.Getenv("AWS_S3_FORCE_PATH_STYLE")
+ 	sessionToken := os.Getenv("AWS_SESSION_TOKEN")
+ 	if err != nil {
+ 		panic(err)
+@@ -75,6 +76,13 @@ func init() {
+ 				return nil, err
+ 			}
+ 		}
++		forcePathStyleBool := true
++		if forcePathStyle != "" {
++			forcePathStyleBool, err = strconv.ParseBool(forcePathStyle)
++			if err != nil {
++				return nil, err
++			}
++		}
+ 
+ 		parameters := DriverParameters{
+ 			accessKey,
+@@ -82,6 +90,7 @@ func init() {
+ 			bucket,
+ 			region,
+ 			regionEndpoint,
++			forcePathStyleBool,
+ 			encryptBool,
+ 			keyID,
+ 			secureBool,
+-- 
+2.28.0
+
