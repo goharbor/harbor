@@ -1628,7 +1628,7 @@
         "PREHEAT_EXPLAIN": "预热功能可加载镜像至 P2P 网络",
         "CRITERIA_EXPLAIN": "由项目设置下的'部署安全'项所指定",
         "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
-        "DESTINATION_NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
+        "NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "NEED_HELP": "请先让您的系统管理员添加提供商"
     },
     "PAGINATION": {
