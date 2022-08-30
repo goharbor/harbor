@@ -229,3 +229,30 @@ Test Case - P2P Preheat Schedule Job
     Delete A P2P Preheat Policy  ${policy_name}
     Delete A Distribution  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
     Close Browser
+
+Test Case - Log Rotation Schedule Job
+    [Tags]  log_rotation_schedule
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Log Rotation
+    ${exclude_operations}  Create List  Pull
+    Set Log Rotation Schedule  2  Days  Custom  0 */2 * * * *  ${exclude_operations}
+    Sleep  480
+    Set Log Rotation Schedule  2  Days  None
+    Sleep  180
+    ${logs}=  Get Purge Job Results
+    ${logs}=  Replace String  ${logs}  "{  {  count=-1
+    ${logs}=  Replace String  ${logs}  }"  }  count=-1
+    ${logs}=  Evaluate  json.loads("""${logs}""")  json
+    ${len}=  Get Length  ${logs}
+    FOR  ${log}  IN  @{logs}
+        Log  ${log}
+        Should Be Equal As Strings  ${log["job_name"]}  PURGE_AUDIT_LOG
+        Should Be Equal As Strings  ${log["job_kind"]}  SCHEDULE
+        Should Be Equal As Strings  ${log["job_status"]}  Success
+        Should Be Equal As Strings  ${log["job_parameters"]["audit_retention_hour"]}  48
+        Should Be Equal As Strings  ${log["job_parameters"]["dry_run"]}  False
+        Should Not Contain Any  ${log["job_parameters"]["include_operations"]}  @{exclude_operations}  ignore_case=True
+    END
+    Should Be True  ${len} > 3 and ${len} < 6
+    Close Browser
