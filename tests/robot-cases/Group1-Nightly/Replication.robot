@@ -56,15 +56,6 @@ Test Case - Harbor Endpoint Verification
     Endpoint Is Unpingable
     Close Browser
 
-##Test Case - DockerHub Endpoint Add
-    #This case need vailid info and selfsign cert
-    ##Init Chrome Driver
-    ##${d}=    Get Current Date    result_format=%m%s
-    ##Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    ##Switch To Registries
-    ##Create A New Endpoint    docker-hub    edp1${d}    https://hub.docker.com/    ${DOCKER_USER}    ${DOCKER_PWD}    Y
-    ##Close Browser
-
 Test Case - Harbor Endpoint Add
     #This case need vailid info and selfsign cert
     Init Chrome Driver
@@ -297,14 +288,13 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
 
 Test Case - Replication Of Pull Images from AWS-ECR To Self
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project    project${d}
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
     Switch To Registries
-    Create A New Endpoint    aws-ecr    e${d}    us-east-2    ${ecr_ac_id}    ${ecr_ac_key}    Y
+    Create A New Endpoint  aws-ecr  e${d}  us-east-2  ${ecr_ac_id}  ${ecr_ac_key}  Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
+    Create A Rule With Existing Endpoint  rule${d}  pull  a/*  image  e${d}  project${d}
     Select Rule And Replicate  rule${d}
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  alpine
@@ -356,7 +346,7 @@ Test Case - Replication Of Pull Manifest List and CNAB from Harbor To Self
     ${image2}=  Get From Dictionary  ${image2_with_tag}  image
     ${image3}=  Get From Dictionary  ${image3_with_tag}  image
     @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'  '&{image3_with_tag}'
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  admin  qA5ZgV  nightly/{${image1},${image2},${image3}}  ${null}  Y  Flatten 1 Level  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/{${image1},${image2},${image3}}  ${null}  Y  Flatten 1 Level  @{target_images}
 
 Test Case - Image Namespace Level Flattening
     [tags]  flattening
