@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	beegoorm "github.com/beego/beego/orm"
+	beegoorm "github.com/beego/beego/v2/client/orm"
 	"github.com/goharbor/harbor/src/lib/errors"
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

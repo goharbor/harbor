@@ -20,7 +20,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/dao"

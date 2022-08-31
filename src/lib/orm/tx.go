@@ -19,7 +19,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/google/uuid"
 )
 

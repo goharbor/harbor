@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/beego/beego/validation"
+	"github.com/beego/beego/v2/core/validation"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"

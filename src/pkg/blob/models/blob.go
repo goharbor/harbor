@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"

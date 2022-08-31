@@ -14,7 +14,7 @@
 
 package orm
 
-import "github.com/beego/beego/orm"
+import "github.com/beego/beego/v2/client/orm"
 
 var (
 	// Crt is a global instance of ORM creator

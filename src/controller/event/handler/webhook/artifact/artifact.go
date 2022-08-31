@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 
-	beegorm "github.com/beego/beego/orm"
+	beegorm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"

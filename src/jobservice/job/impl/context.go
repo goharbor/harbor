@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"

@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	beegoorm "github.com/beego/beego/orm"
+	beegoorm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"

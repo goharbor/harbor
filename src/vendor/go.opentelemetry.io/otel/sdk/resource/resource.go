@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -36,32 +37,18 @@ type Resource struct {
 }
 
 var (
-	emptyResource Resource
-
-	defaultResource = func(r *Resource, err error) *Resource {
-		if err != nil {
-			otel.Handle(err)
-		}
-		return r
-	}(
-		Detect(
-			context.Background(),
-			defaultServiceNameDetector{},
-			fromEnv{},
-			telemetrySDK{},
-		),
-	)
+	emptyResource       Resource
+	defaultResource     *Resource
+	defaultResourceOnce sync.Once
 )
 
-var (
-	errMergeConflictSchemaURL = errors.New("cannot merge resource due to conflicting Schema URL")
-)
+var errMergeConflictSchemaURL = errors.New("cannot merge resource due to conflicting Schema URL")
 
 // New returns a Resource combined from the user-provided detectors.
 func New(ctx context.Context, opts ...Option) (*Resource, error) {
 	cfg := config{}
 	for _, opt := range opts {
-		opt.apply(&cfg)
+		cfg = opt.apply(cfg)
 	}
 
 	resource, err := Detect(ctx, cfg.detectors...)
@@ -122,6 +109,17 @@ func (r *Resource) String() string {
 	return r.attrs.Encoded(attribute.DefaultEncoder())
 }
 
+// MarshalLog is the marshaling function used by the logging system to represent this exporter.
+func (r *Resource) MarshalLog() interface{} {
+	return struct {
+		Attributes attribute.Set
+		SchemaURL  string
+	}{
+		Attributes: r.attrs,
+		SchemaURL:  r.schemaURL,
+	}
+}
+
 // Attributes returns a copy of attributes from the resource in a sorted order.
 // To avoid allocating a new slice, use an iterator.
 func (r *Resource) Attributes() []attribute.KeyValue {
@@ -131,6 +129,7 @@ func (r *Resource) Attributes() []attribute.KeyValue {
 	return r.attrs.ToSlice()
 }
 
+// SchemaURL returns the schema URL associated with Resource r.
 func (r *Resource) SchemaURL() string {
 	if r == nil {
 		return ""
@@ -181,13 +180,14 @@ func Merge(a, b *Resource) (*Resource, error) {
 
 	// Merge the schema URL.
 	var schemaURL string
-	if a.schemaURL == "" {
+	switch true {
+	case a.schemaURL == "":
 		schemaURL = b.schemaURL
-	} else if b.schemaURL == "" {
+	case b.schemaURL == "":
 		schemaURL = a.schemaURL
-	} else if a.schemaURL == b.schemaURL {
+	case a.schemaURL == b.schemaURL:
 		schemaURL = a.schemaURL
-	} else {
+	default:
 		return Empty(), errMergeConflictSchemaURL
 	}
 
@@ -196,7 +196,7 @@ func Merge(a, b *Resource) (*Resource, error) {
 	mi := attribute.NewMergeIterator(b.Set(), a.Set())
 	combine := make([]attribute.KeyValue, 0, a.Len()+b.Len())
 	for mi.Next() {
-		combine = append(combine, mi.Label())
+		combine = append(combine, mi.Attribute())
 	}
 	merged := NewWithAttributes(schemaURL, combine...)
 	return merged, nil
@@ -211,6 +211,22 @@ func Empty() *Resource {
 // Default returns an instance of Resource with a default
 // "service.name" and OpenTelemetrySDK attributes.
 func Default() *Resource {
+	defaultResourceOnce.Do(func() {
+		var err error
+		defaultResource, err = Detect(
+			context.Background(),
+			defaultServiceNameDetector{},
+			fromEnv{},
+			telemetrySDK{},
+		)
+		if err != nil {
+			otel.Handle(err)
+		}
+		// If Detect did not return a valid resource, fall back to emptyResource.
+		if defaultResource == nil {
+			defaultResource = &emptyResource
+		}
+	})
 	return defaultResource
 }
 

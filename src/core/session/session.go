@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/beego/beego/session"
+	"github.com/beego/beego/v2/server/web/session"
 	goredis "github.com/go-redis/redis/v8"
 
 	"github.com/goharbor/harbor/src/lib/cache"

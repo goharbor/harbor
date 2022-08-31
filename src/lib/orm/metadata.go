@@ -21,7 +21,7 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/q"
 )

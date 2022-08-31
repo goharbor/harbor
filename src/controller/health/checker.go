@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution/health"
 
 	httputil "github.com/goharbor/harbor/src/common/http"

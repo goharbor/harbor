@@ -6,9 +6,9 @@ import (
 	"math"
 	"time"
 
-	beego_cache "github.com/beego/beego/cache"
+	beego_cache "github.com/beego/beego/v2/client/cache"
 	// Enable redis cache adaptor
-	_ "github.com/beego/beego/cache/redis"
+	_ "github.com/beego/beego/v2/client/cache/redis"
 
 	hlog "github.com/goharbor/harbor/src/lib/log"
 )

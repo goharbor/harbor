@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	beego_orm "github.com/beego/beego/orm"
+	beego_orm "github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"

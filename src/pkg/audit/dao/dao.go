@@ -18,7 +18,7 @@ import (
 	"context"
 	"strings"
 
-	beegorm "github.com/beego/beego/orm"
+	beegorm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/errors"

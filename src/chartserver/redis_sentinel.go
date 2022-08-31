@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/FZambia/sentinel"
-	"github.com/beego/beego/cache"
+	"github.com/beego/beego/v2/client/cache"
 	"github.com/gomodule/redigo/redis"
 )
 

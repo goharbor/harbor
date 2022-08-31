@@ -18,7 +18,7 @@ import (
 	"context"
 	"testing"
 
-	beegoorm "github.com/beego/beego/orm"
+	beegoorm "github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"

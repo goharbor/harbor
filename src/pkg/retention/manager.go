@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"

@@ -19,8 +19,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/beego/beego"
-	beegocontext "github.com/beego/beego/context"
+	"github.com/beego/beego/v2"
+	beegocontext "github.com/beego/beego/v2/server/web/context"
 
 	"github.com/goharbor/harbor/src/server/middleware"
 )
