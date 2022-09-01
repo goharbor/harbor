@@ -1,6 +1,7 @@
 package chartserver
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
@@ -106,12 +107,12 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 		switch chc.driverType {
 		case cacheDriverMem:
 			// Directly put object in
-			err = chc.cache.Put(chart.Metadata.Digest, chart, standardExpireTime)
+			err = chc.cache.Put(context.TODO(), chart.Metadata.Digest, chart, standardExpireTime)
 		case cacheDriverRedis, cacheDriverRedisSentinel:
 			// Marshal to json data before saving
 			var jsonData []byte
 			if jsonData, err = json.Marshal(chart); err == nil {
-				err = chc.cache.Put(chart.Metadata.Digest, jsonData, standardExpireTime)
+				err = chc.cache.Put(nil, chart.Metadata.Digest, jsonData, standardExpireTime)
 			}
 		default:
 			// Should not reach here, but still put guard code here
@@ -135,7 +136,7 @@ func (chc *ChartCache) GetChart(chartDigest string) *ChartVersionDetails {
 		return nil
 	}
 
-	object := chc.cache.Get(chartDigest)
+	object, _ := chc.cache.Get(context.TODO(), chartDigest)
 	if object != nil {
 		// Try to convert data
 		// First try the normal way
