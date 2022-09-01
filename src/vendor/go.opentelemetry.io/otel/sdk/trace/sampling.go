@@ -53,17 +53,17 @@ type SamplingParameters struct {
 // SamplingDecision indicates whether a span is dropped, recorded and/or sampled.
 type SamplingDecision uint8
 
-// Valid sampling decisions
+// Valid sampling decisions.
 const (
-	// Drop will not record the span and all attributes/events will be dropped
+	// Drop will not record the span and all attributes/events will be dropped.
 	Drop SamplingDecision = iota
 
 	// Record indicates the span's `IsRecording() == true`, but `Sampled` flag
-	// *must not* be set
+	// *must not* be set.
 	RecordOnly
 
 	// RecordAndSample has span's `IsRecording() == true` and `Sampled` flag
-	// *must* be set
+	// *must* be set.
 	RecordAndSample
 )
 
@@ -187,7 +187,7 @@ func configureSamplersForParentBased(samplers []ParentBasedSamplerOption) sample
 	}
 
 	for _, so := range samplers {
-		so.apply(&c)
+		c = so.apply(c)
 	}
 
 	return c
@@ -201,7 +201,7 @@ type samplerConfig struct {
 
 // ParentBasedSamplerOption configures the sampler for a particular sampling case.
 type ParentBasedSamplerOption interface {
-	apply(*samplerConfig)
+	apply(samplerConfig) samplerConfig
 }
 
 // WithRemoteParentSampled sets the sampler for the case of sampled remote parent.
@@ -213,8 +213,9 @@ type remoteParentSampledOption struct {
 	s Sampler
 }
 
-func (o remoteParentSampledOption) apply(config *samplerConfig) {
+func (o remoteParentSampledOption) apply(config samplerConfig) samplerConfig {
 	config.remoteParentSampled = o.s
+	return config
 }
 
 // WithRemoteParentNotSampled sets the sampler for the case of remote parent
@@ -227,8 +228,9 @@ type remoteParentNotSampledOption struct {
 	s Sampler
 }
 
-func (o remoteParentNotSampledOption) apply(config *samplerConfig) {
+func (o remoteParentNotSampledOption) apply(config samplerConfig) samplerConfig {
 	config.remoteParentNotSampled = o.s
+	return config
 }
 
 // WithLocalParentSampled sets the sampler for the case of sampled local parent.
@@ -240,8 +242,9 @@ type localParentSampledOption struct {
 	s Sampler
 }
 
-func (o localParentSampledOption) apply(config *samplerConfig) {
+func (o localParentSampledOption) apply(config samplerConfig) samplerConfig {
 	config.localParentSampled = o.s
+	return config
 }
 
 // WithLocalParentNotSampled sets the sampler for the case of local parent
@@ -254,8 +257,9 @@ type localParentNotSampledOption struct {
 	s Sampler
 }
 
-func (o localParentNotSampledOption) apply(config *samplerConfig) {
+func (o localParentNotSampledOption) apply(config samplerConfig) samplerConfig {
 	config.localParentNotSampled = o.s
+	return config
 }
 
 func (pb parentBased) ShouldSample(p SamplingParameters) SamplingResult {

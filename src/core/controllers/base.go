@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 	"github.com/beego/i18n"
 
 	"github.com/goharbor/harbor/src/common"

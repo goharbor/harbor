@@ -15,7 +15,7 @@
 package controllers
 
 import (
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 )
 
 // ErrorController handles beego error pages

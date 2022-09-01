@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"

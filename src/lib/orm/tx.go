@@ -19,7 +19,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/google/uuid"
 )
 
@@ -37,6 +37,7 @@ func HasCommittedKey(ctx context.Context) bool {
 // ormerTx transaction which support savepoint
 type ormerTx struct {
 	orm.Ormer
+	txOrmer   orm.TxOrmer
 	savepoint string
 }
 
@@ -63,12 +64,12 @@ func (o *ormerTx) rollbackToSavepoint() error {
 }
 
 func (o *ormerTx) Begin() error {
-	err := o.Ormer.Begin()
-	if err == orm.ErrTxHasBegan {
-		// transaction has began for the ormer, so begin nested transaction by savepoint
+	txOrmer, err := o.Ormer.Begin()
+	if err != nil {
 		return o.createSavepoint()
 	}
 
+	o.txOrmer = txOrmer
 	return err
 }
 
@@ -77,7 +78,7 @@ func (o *ormerTx) Commit() error {
 		return o.releaseSavepoint()
 	}
 
-	return o.Ormer.Commit()
+	return o.txOrmer.Commit()
 }
 
 func (o *ormerTx) Rollback() error {
@@ -85,5 +86,5 @@ func (o *ormerTx) Rollback() error {
 		return o.rollbackToSavepoint()
 	}
 
-	return o.Ormer.Rollback()
+	return o.txOrmer.Rollback()
 }

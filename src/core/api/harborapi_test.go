@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 	"github.com/dghubble/sling"
 
 	"github.com/goharbor/harbor/src/common/api"

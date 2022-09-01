@@ -18,7 +18,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 // FakeOrmer ...

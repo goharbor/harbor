@@ -26,7 +26,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"

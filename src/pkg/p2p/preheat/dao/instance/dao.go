@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	beego_orm "github.com/beego/beego/orm"
+	beego_orm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"

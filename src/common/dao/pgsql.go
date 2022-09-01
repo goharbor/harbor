@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx" // import pgx driver for migrator
 	_ "github.com/golang-migrate/migrate/v4/source/file"  // import local file driver for migrator

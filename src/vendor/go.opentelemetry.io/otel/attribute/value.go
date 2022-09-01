@@ -25,7 +25,7 @@ import (
 //go:generate stringer -type=Type
 
 // Type describes the type of the data Value holds.
-type Type int
+type Type int // nolint: revive  // redefines builtin Type.
 
 // Value represents the value part in key-value pairs.
 type Value struct {
@@ -187,7 +187,7 @@ func (v Value) AsFloat64() float64 {
 }
 
 // AsFloat64Slice returns the []float64 value. Make sure that the Value's type is
-// INT64SLICE.
+// FLOAT64SLICE.
 func (v Value) AsFloat64Slice() []float64 {
 	if s, ok := v.slice.(*[]float64); ok {
 		return *s
@@ -202,7 +202,7 @@ func (v Value) AsString() string {
 }
 
 // AsStringSlice returns the []string value. Make sure that the Value's type is
-// INT64SLICE.
+// STRINGSLICE.
 func (v Value) AsStringSlice() []string {
 	if s, ok := v.slice.(*[]string); ok {
 		return *s

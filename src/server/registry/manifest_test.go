@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	beegocontext "github.com/beego/beego/context"
+	beegocontext "github.com/beego/beego/v2/server/web/context"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
