@@ -17,7 +17,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"

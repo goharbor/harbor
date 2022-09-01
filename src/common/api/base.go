@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/beego/beego"
-	"github.com/beego/beego/validation"
+	"github.com/beego/beego/v2"
+	"github.com/beego/beego/v2/core/validation"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	lib_http "github.com/goharbor/harbor/src/lib/http"

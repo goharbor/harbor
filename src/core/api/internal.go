@@ -17,7 +17,7 @@ package api
 import (
 	"context"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"

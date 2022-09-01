@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"

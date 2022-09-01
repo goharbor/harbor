@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	bcontext "github.com/beego/beego/context"
+	bcontext "github.com/beego/beego/v2/server/web/context"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"

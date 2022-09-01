@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2"
 
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"

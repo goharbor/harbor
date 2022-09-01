@@ -22,12 +22,5 @@ For more information see
 package instrumentation // import "go.opentelemetry.io/otel/sdk/instrumentation"
 
 // Library represents the instrumentation library.
-type Library struct {
-	// Name is the name of the instrumentation library. This should be the
-	// Go package name of that library.
-	Name string
-	// Version is the version of the instrumentation library.
-	Version string
-	// SchemaURL of the telemetry emitted by the library.
-	SchemaURL string
-}
+// Deprecated: please use Scope instead.
+type Library = Scope

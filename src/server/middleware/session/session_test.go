@@ -20,8 +20,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/beego/beego"
-	beegosession "github.com/beego/beego/session"
+	"github.com/beego/beego/v2"
+	beegosession "github.com/beego/beego/v2/server/web/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

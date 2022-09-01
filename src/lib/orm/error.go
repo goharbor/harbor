@@ -15,7 +15,7 @@
 package orm
 
 import (
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/jackc/pgconn"
 
 	"github.com/goharbor/harbor/src/lib/errors"
