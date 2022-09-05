@@ -240,10 +240,15 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     else:
         config_dict['chart_absolute_url'] = False
 
+    # core config
+    core_config = configs.get('core') or {}
+    config_dict['core_secret'] = core_config.get('secret') or generate_random_string(16)
+    config_dict['csrf_key'] = core_config.get('xsrf_key') or generate_random_string(32)
+
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
-    config_dict['jobservice_secret'] = generate_random_string(16)
+    config_dict['jobservice_secret'] = js_config.get('secret') or generate_random_string(16)
 
     # notification config
     notification_config = configs.get('notification') or {}
@@ -308,9 +313,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
 
     # update redis configs
     config_dict.update(get_redis_configs(configs.get("external_redis", None), with_trivy))
-
-    # auto generated secret string for core
-    config_dict['core_secret'] = generate_random_string(16)
 
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}

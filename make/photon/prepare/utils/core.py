@@ -31,7 +31,6 @@ def prepare_core(config_dict, with_notary, with_trivy, with_chartmuseum):
         with_notary=with_notary,
         with_trivy=with_trivy,
         with_chartmuseum=with_chartmuseum,
-        csrf_key=generate_random_string(32),
         **config_dict)
 
     render_jinja(
