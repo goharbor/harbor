@@ -53,8 +53,13 @@ def push_special_image_to_project(project_name, registry, username, password, im
     _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
     if expected_login_error_message in [None, ""]:
-        return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=int(size), expected_error_message=expected_error_message)
+        return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=int(size), expected_error_message=expected_error_message, clean_images=False)
 
+def push_local_image_to_project(registry, username, password, original_image, original_tag, target_image, target_tag):
+    _docker_api = DockerAPI()
+    _docker_api.docker_login(registry, username, password)
+    new_harbor_registry, new_tag = _docker_api.docker_image_tag(r'{}:{}'.format(original_image, original_tag), target_image, tag = target_tag)
+    _docker_api.docker_image_push(new_harbor_registry, new_tag)
 
 class Repository(base.Base, object):
     def __init__(self):

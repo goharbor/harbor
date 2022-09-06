@@ -14,9 +14,8 @@ Setup API Test
 Harbor API Test
     [Arguments]  ${testcase_name}
     ${current_dir}=  Run  pwd
-    Log To Console  ${current_dir}
-    Log To Console  ${ip}
+    ${prev_lvl}  Set Log Level  NONE
     ${rc}  ${output}=  Run And Return Rc And Output  SWAGGER_CLIENT_PATH=${current_dir}/harborclient HARBOR_HOST=${ip} DOCKER_USER=${DOCKER_USER} DOCKER_PWD=${DOCKER_PWD} python ${testcase_name}
-    Log To Console  ${output}
+    ${prev_lvl}  Set Log Level  ${prev_lvl}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
