@@ -212,13 +212,17 @@ Clean All Local Images
 Docker Login Fail
     [Arguments]  ${ip}  ${user}  ${pwd}
     Log To Console  \nRunning docker login ${ip} ...
+    ${prev_lvl}  Set Log Level  NONE
     ${output}=  Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
+    ${prev_lvl}  Set Log Level  ${prev_lvl}
     Should Contain  ${output}  unauthorized
     Should Not Contain  ${output}  500 Internal Server Error
 
 Docker Login
     [Arguments]  ${server}  ${username}  ${password}
+    ${prev_lvl}  Set Log Level  NONE
     Wait Unitl Command Success  docker login -u ${username} -p ${password} ${server}
+    ${prev_lvl}  Set Log Level  ${prev_lvl}
 
 Docker Logout
     [Arguments]  ${server}

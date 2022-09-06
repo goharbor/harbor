@@ -94,6 +94,12 @@ Retry Action Keyword
     [Arguments]  ${keyword}  @{param}
     Retry Keyword N Times When Error  4  ${keyword}  @{param}
 
+Retry Action Keyword And No Output
+    [Arguments]  ${keyword}  @{param}
+    ${prev_lvl}  Set Log Level  NONE
+    Retry Keyword N Times When Error  4  ${keyword}  @{param}
+    ${prev_lvl}  Set Log Level  ${prev_lvl}
+
 Retry Wait Element
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
@@ -128,6 +134,10 @@ Retry Text Input
     [Arguments]  ${element_xpath}  ${text}
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
+
+Retry Password Input
+    [Arguments]  ${element_xpath}  ${text}
+    Retry Action Keyword And No Output  Text Input  ${element_xpath}  ${text}
 
 Retry Clear Element Text
     [Arguments]  ${element_xpath}
@@ -242,9 +252,7 @@ Command Should be Failed
 Retry Keyword N Times When Error
     [Arguments]  ${times}  ${keyword}  @{elements}
     FOR  ${n}  IN RANGE  1  ${times}
-        Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
         ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
-        Log To Console  Return value is ${out} and ${out[0]}
         Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
         ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  10

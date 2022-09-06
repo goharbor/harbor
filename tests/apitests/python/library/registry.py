@@ -16,7 +16,6 @@ class Registry(base.Base, object):
         registry = v2_swagger_client.Registry(name=name, url=url,
                                            description= description, type=registry_type,
                                            insecure=insecure, credential=registryCredential)
-        print("registry:", registry)
         _, status_code, header = client.create_registry_with_http_info(registry)
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header), _

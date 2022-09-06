@@ -43,8 +43,6 @@ Nightly Test Setup In Photon
     Log To Console  wget mariadb ...
     Run  wget ${prometheus_chart_file_url}
     Prepare Helm Plugin
-    #Prepare docker image for push special image keyword in replication test
-    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
 Nightly Test Setup In Ubuntu
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
@@ -53,8 +51,6 @@ Nightly Test Setup In Ubuntu
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
     Prepare Helm Plugin
-    #Docker login
-    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
 Nightly Test Setup In Ubuntu For Upgrade
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
@@ -65,8 +61,6 @@ Nightly Test Setup In Ubuntu For Upgrade
     Prepare Helm Plugin
     #For upgrade pipeline: get notary targets key from last execution.
     ${rc}  ${output}=  Run And Return Rc And Output  [ -f "/key_store/private_keys_backup.tar.gz" ] && tar -zxvf /key_store/private_keys_backup.tar.gz -C /
-    #Docker login
-    Run Keyword If  '${DOCKER_USER}' != '${EMPTY}'  Docker Login  ""  ${DOCKER_USER}  ${DOCKER_PWD}
 
 CA Setup In ubuntu
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}

@@ -130,38 +130,28 @@ def restart_process(process):
     run_command_with_popen("ps aux |grep " + full_process_name)
 
 def run_command_with_popen(command):
-    print("Command: ", command)
-
     try:
         proc = subprocess.Popen(command, universal_newlines=True, shell=True,
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         output, errors = proc.communicate()
     except Exception as e:
-        print("Run command caught exception:", e)
         output = None
-    else:
-        print(proc.returncode, errors, output)
     finally:
         proc.stdout.close()
-        print("output: ", output)
         return output
 
 def run_command(command, expected_error_message = None):
-    print("Command: ", subprocess.list2cmdline(command))
     try:
         output = subprocess.check_output(command,
                                          stderr=subprocess.STDOUT,
                                          universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        print("Run command error:", str(e))
-        print("expected_error_message:", expected_error_message)
         if expected_error_message is not None:
             if str(e.output).lower().find(expected_error_message.lower()) < 0:
-                raise Exception(r"Error message {} is not as expected {}".format(str(e.output), expected_error_message))
+                raise Exception(r"Error message is not as expected {}".format(expected_error_message))
         else:
-            raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
+            raise Exception('Error: Exited with error code: %s.'% (e.returncode))
     else:
-        print("output:", output)
         return output
 
 class Base(object):
