@@ -22,8 +22,15 @@ import (
 )
 
 func TestParseSentinelURL(t *testing.T) {
-	url := "redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1?idle_timeout_seconds=30&max_retries=10&min_retry_backoff=1&max_retry_backoff=10&dial_timeout=30&read_timeout=5&write_timeout=5&pool_fifo=true&pool_size=1000&min_idle_conns=100&max_conn_age=10&pool_timeout=10"
+	// db index should be set to 0 if not specified
+	url := "redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/?idle_timeout_seconds=30"
 	o, err := ParseSentinelURL(url)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, o.DB)
+
+	// test options from query
+	url = "redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1?idle_timeout_seconds=30&max_retries=10&min_retry_backoff=1&max_retry_backoff=10&dial_timeout=30&read_timeout=5&write_timeout=5&pool_fifo=true&pool_size=1000&min_idle_conns=100&max_conn_age=10&pool_timeout=10"
+	o, err = ParseSentinelURL(url)
 	assert.NoError(t, err)
 	assert.Equal(t, "anonymous", o.Username)
 	assert.Equal(t, "password", o.Password)
@@ -44,7 +51,7 @@ func TestParseSentinelURL(t *testing.T) {
 	assert.Equal(t, 10*time.Second, o.PoolTimeout)
 
 	// invalid url should return err
-	url = "invalid"
+	url = "###"
 	_, err = ParseSentinelURL(url)
 	assert.Error(t, err, "invalid url should return err")
 
