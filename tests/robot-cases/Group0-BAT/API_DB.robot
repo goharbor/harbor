@@ -184,3 +184,7 @@ Test Case - Cosign Sign Artifact
 Test Case - Log Rotation
     [Tags]  log_rotation
     Harbor API Test  ./tests/apitests/python/test_log_rotation.py
+
+Test Case - Log Forward
+    [Tags]  log_forward
+    Harbor API Test  ./tests/apitests/python/test_audit_log_forward.py
