@@ -109,8 +109,10 @@
         <h3 class="modal-title">{{ 'P2P_PROVIDER.TASKS' | translate }}</h3>
         <div class="row flex-items-xs-between flex-items-xs-bottom">
             <div class="action-select">
-                <div class="select filter-tag" [hidden]="!isOpenFilterTag">
-                    <select (change)="selectFilter($event)">
+                <div
+                    class="select filter-tag clr-select-wrapper"
+                    [hidden]="!isOpenFilterTag">
+                    <select class="clr-select" (change)="selectFilter($event)">
                         <option value="resourceType">
                             {{ 'REPLICATION.RESOURCE_TYPE' | translate }}
                         </option>
