@@ -16,6 +16,8 @@ package metadata
 
 import (
 	"context"
+
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 )
 
@@ -40,7 +42,7 @@ type Controller interface {
 // NewController creates an instance of the default controller
 func NewController() Controller {
 	return &controller{
-		mgr: metadata.Mgr,
+		mgr: pkg.ProjectMetaMgr,
 	}
 }
 

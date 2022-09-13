@@ -32,7 +32,7 @@ func contains(t *testing.T, str string, lvl string, line, msg string) bool {
 
 func TestSetx(t *testing.T) {
 	logger := New(nil, nil, WarningLevel)
-	logger.setOutput(os.Stdout)
+	logger.SetOutput(os.Stdout)
 	fmt := NewTextFormatter()
 	logger.setFormatter(fmt)
 	logger.setLevel(DebugLevel)
@@ -223,11 +223,11 @@ func enter() *bytes.Buffer {
 	b := make([]byte, 0, 32)
 	buf := bytes.NewBuffer(b)
 
-	logger.setOutput(buf)
+	logger.SetOutput(buf)
 
 	return buf
 }
 
 func exit() {
-	logger.setOutput(os.Stdout)
+	logger.SetOutput(os.Stdout)
 }

@@ -76,6 +76,16 @@ Start
     "secure": false,
     "logLevel": "debug"
   },
+  "/chartrepo/*": {
+    "target": "https://hostname",
+    "secure": false,
+    "logLevel": "debug"
+  },
+  "/LICENSE": {
+    "target": "https://hostname",
+    "secure": false,
+    "logLevel": "debug"
+  },
   "/swagger.json": {
     "target": "https://hostname",
     "secure": false,
@@ -86,12 +96,12 @@ Start
     "secure": false,
     "logLevel": "debug"
   },
-  "/chartrepo/*": {
+  "/devcenter-api-2.0": {
     "target": "https://hostname",
     "secure": false,
     "logLevel": "debug"
   },
-  "/LICENSE": {
+  "/swagger-ui.bundle.js": {
     "target": "https://hostname",
     "secure": false,
     "logLevel": "debug"

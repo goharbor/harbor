@@ -17,6 +17,8 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/store"
 	"github.com/goharbor/harbor/src/pkg/config/validate"
-	"os"
 )
 
 // CfgManager ... Configure Manager
@@ -48,7 +49,7 @@ func (c *CfgManager) LoadDefault() {
 				log.Errorf("LoadDefault failed, config item, key: %v,  err: %v", item.Name, err)
 				continue
 			}
-			c.Store.Set(item.Name, *cfgValue)
+			_ = c.Store.Set(item.Name, *cfgValue)
 		}
 	}
 }
@@ -65,7 +66,7 @@ func (c *CfgManager) LoadSystemConfigFromEnv() {
 					log.Errorf("LoadSystemConfigFromEnv failed, config item, key: %v,  err: %v", item.Name, err)
 					continue
 				}
-				c.Store.Set(item.Name, *configValue)
+				_ = c.Store.Set(item.Name, *configValue)
 			}
 		}
 	}
@@ -149,7 +150,7 @@ func (c *CfgManager) Set(ctx context.Context, key string, value interface{}) {
 		log.Errorf("error when setting key: %v,  error %v", key, err)
 		return
 	}
-	c.Store.Set(key, *configValue)
+	_ = c.Store.Set(key, *configValue)
 }
 
 // GetDatabaseCfg - Get database configurations
@@ -180,10 +181,10 @@ func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{
 	for key, value := range cfgs {
 		item, exist := metadata.Instance().GetByName(key)
 		if !exist {
-			return errors.New(fmt.Sprintf("invalid config, item not defined in metadatalist, %v", key))
+			return fmt.Errorf("invalid config, item not defined in metadatalist, %v", key)
 		}
 		if item.Scope == metadata.SystemScope {
-			return errors.New(fmt.Sprintf("system config items cannot be updated, item: %v", key))
+			return fmt.Errorf("system config items cannot be updated, item: %v", key)
 		}
 		strVal := utils.GetStrValueOfAnyType(value)
 		_, err := metadata.NewCfgValue(key, strVal)

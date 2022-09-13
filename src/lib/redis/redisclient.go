@@ -2,7 +2,6 @@ package redis
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/FZambia/sentinel"
 	"github.com/gomodule/redigo/redis"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var knownPool sync.Map
@@ -81,7 +82,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 		knownPool.Store(name, pool)
 		return pool, nil
 	} else if u.Scheme == "redis+sentinel" {
-		pool, err := getSentinelPool(u, param, err, name)
+		pool, err := getSentinelPool(u, param, name)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +93,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 	}
 }
 
-func getSentinelPool(u *url.URL, param *PoolParam, err error, name string) (*redis.Pool, error) {
+func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, error) {
 	ps := strings.Split(u.Path, "/")
 	if len(ps) < 2 {
 		return nil, fmt.Errorf("bad redis sentinel url: no master name, %s %s", name, u)
@@ -126,7 +127,7 @@ func getSentinelPool(u *url.URL, param *PoolParam, err error, name string) (*red
 	// sentinel doesn't need select db
 	db := 0
 	if len(ps) > 2 {
-		db, err = strconv.Atoi(ps[2])
+		db, err := strconv.Atoi(ps[2])
 		if err != nil {
 			return nil, fmt.Errorf("invalid redis db: %s, %s", ps[1], name)
 		}

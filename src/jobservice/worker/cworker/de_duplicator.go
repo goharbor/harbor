@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/gomodule/redigo/redis"
 )
 
 // DeDuplicator is designed to handle the uniqueness of the job.

@@ -16,21 +16,26 @@ package contenttrust
 
 import (
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
+	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 )
 
 type MiddlewareTestSuite struct {
@@ -45,6 +50,9 @@ type MiddlewareTestSuite struct {
 	artifact *artifact.Artifact
 	project  *proModels.Project
 
+	originalAccessMgr accessory.Manager
+	accessMgr         *accessorytesting.Manager
+
 	isArtifactSigned func(req *http.Request, art lib.ArtifactInfo) (bool, error)
 	next             http.Handler
 }
@@ -57,6 +65,10 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 	suite.originalProjectController = project.Ctl
 	suite.projectController = &projecttesting.Controller{}
 	project.Ctl = suite.projectController
+
+	suite.originalAccessMgr = accessory.Mgr
+	suite.accessMgr = &accessorytesting.Manager{}
+	accessory.Mgr = suite.accessMgr
 
 	suite.isArtifactSigned = isArtifactSigned
 	suite.artifact = &artifact.Artifact{}
@@ -85,6 +97,7 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 func (suite *MiddlewareTestSuite) TearDownTest() {
 	artifact.Ctl = suite.originalArtifactController
 	project.Ctl = suite.originalProjectController
+	accessory.Mgr = suite.originalAccessMgr
 }
 
 func (suite *MiddlewareTestSuite) makeRequest() *http.Request {
@@ -143,6 +156,7 @@ func (suite *MiddlewareTestSuite) TestNoneArtifact() {
 func (suite *MiddlewareTestSuite) TestAuthenticatedUserPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("local")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
@@ -159,6 +173,7 @@ func (suite *MiddlewareTestSuite) TestAuthenticatedUserPulling() {
 func (suite *MiddlewareTestSuite) TestScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("v2token")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
@@ -176,6 +191,7 @@ func (suite *MiddlewareTestSuite) TestScannerPulling() {
 func (suite *MiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("local")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
@@ -186,6 +202,29 @@ func (suite *MiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 
 	Notary()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+}
+
+// pull cosign signature when policy checker is enabled.
+func (suite *MiddlewareTestSuite) TestSignaturePulling() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    2,
+			SubArtifactID: 1,
+			Type:          accessorymodel.TypeCosignSignature,
+		},
+	}
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
+		acc,
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Notary()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
 }
 
 func TestMiddlewareTestSuite(t *testing.T) {

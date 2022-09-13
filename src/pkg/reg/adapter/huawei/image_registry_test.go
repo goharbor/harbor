@@ -19,9 +19,10 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	gock "gopkg.in/h2non/gock.v1"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func mockRequest() *gock.Request {

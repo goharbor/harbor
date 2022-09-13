@@ -29,7 +29,6 @@ import (
 func Send(addr, identity, username, password string,
 	timeout int, tls, insecure bool, from string,
 	to []string, subject, message string) error {
-
 	client, err := newClient(addr, identity, username,
 		password, timeout, tls, insecure)
 	if err != nil {

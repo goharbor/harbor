@@ -15,7 +15,8 @@
 package route
 
 import (
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
+
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib/config"
 )

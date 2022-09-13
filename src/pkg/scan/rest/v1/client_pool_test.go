@@ -19,10 +19,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 )
 
 // ClientPoolTestSuite is a test suite to test the client pool.

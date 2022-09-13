@@ -1,23 +1,26 @@
 import {
     Component,
-    OnInit,
-    OnDestroy,
     Output,
-    EventEmitter, ViewChild, Input,
-} from "@angular/core";
-import { ImmutableRetentionRule, RuleMetadate } from "../../tag-retention/retention";
-import { ImmutableTagService } from "../immutable-tag.service";
-import { compareValue } from "../../../../../shared/units/utils";
-import { InlineAlertComponent } from "../../../../../shared/components/inline-alert/inline-alert.component";
+    EventEmitter,
+    ViewChild,
+    Input,
+} from '@angular/core';
+import {
+    ImmutableRetentionRule,
+    RuleMetadate,
+} from '../../tag-retention/retention';
+import { ImmutableTagService } from '../immutable-tag.service';
+import { compareValue } from '../../../../../shared/units/utils';
+import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
 
-const EXISTING_RULE = "TAG_RETENTION.EXISTING_RULE";
-const INVALID_RULE = "TAG_RETENTION.INVALID_RULE";
+const EXISTING_RULE = 'TAG_RETENTION.EXISTING_RULE';
+const INVALID_RULE = 'TAG_RETENTION.INVALID_RULE';
 @Component({
     selector: 'app-add-immutable-rule',
     templateUrl: './add-immutable-rule.component.html',
-    styleUrls: ['./add-immutable-rule.component.scss']
+    styleUrls: ['./add-immutable-rule.component.scss'],
 })
-export class AddImmutableRuleComponent implements OnInit, OnDestroy {
+export class AddImmutableRuleComponent {
     addRuleOpened: boolean = false;
     @Output() clickAdd = new EventEmitter<ImmutableRetentionRule>();
     @Input() rules: ImmutableRetentionRule[];
@@ -32,31 +35,41 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
         this.rule = new ImmutableRetentionRule(this.projectId);
     }
 
-    ngOnInit(): void {
-    }
-
-    ngOnDestroy(): void {
-    }
-
     get repoSelect() {
-        if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository[0]) {
+        if (
+            this.rule &&
+            this.rule.scope_selectors &&
+            this.rule.scope_selectors.repository[0]
+        ) {
             return this.rule.scope_selectors.repository[0].decoration;
         }
-        return "";
+        return '';
     }
 
     set repoSelect(repoSelect) {
-        if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository[0]) {
+        if (
+            this.rule &&
+            this.rule.scope_selectors &&
+            this.rule.scope_selectors.repository[0]
+        ) {
             this.rule.scope_selectors.repository[0].decoration = repoSelect;
         }
     }
 
     set repositories(repositories) {
-        if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository
-            && this.rule.scope_selectors.repository[0]) {
-            if (repositories.indexOf(",") !== -1
-                && repositories.indexOf("{") === -1 && repositories.indexOf("}") === -1) {
-                this.rule.scope_selectors.repository[0].pattern = "{" + repositories + "}";
+        if (
+            this.rule &&
+            this.rule.scope_selectors &&
+            this.rule.scope_selectors.repository &&
+            this.rule.scope_selectors.repository[0]
+        ) {
+            if (
+                repositories.indexOf(',') !== -1 &&
+                repositories.indexOf('{') === -1 &&
+                repositories.indexOf('}') === -1
+            ) {
+                this.rule.scope_selectors.repository[0].pattern =
+                    '{' + repositories + '}';
             } else {
                 this.rule.scope_selectors.repository[0].pattern = repositories;
             }
@@ -64,35 +77,55 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
     }
 
     get repositories() {
-        if (this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository
-            && this.rule.scope_selectors.repository[0] && this.rule.scope_selectors.repository[0].pattern) {
+        if (
+            this.rule &&
+            this.rule.scope_selectors &&
+            this.rule.scope_selectors.repository &&
+            this.rule.scope_selectors.repository[0] &&
+            this.rule.scope_selectors.repository[0].pattern
+        ) {
             let str: string = this.rule.scope_selectors.repository[0].pattern;
             if (/^{\S+}$/.test(str)) {
                 return str.slice(1, str.length - 1);
             }
             return str;
         }
-        return "";
+        return '';
     }
 
     get tagsSelect() {
-        if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0]) {
+        if (
+            this.rule &&
+            this.rule.tag_selectors &&
+            this.rule.tag_selectors[0]
+        ) {
             return this.rule.tag_selectors[0].decoration;
         }
-        return "";
+        return '';
     }
 
     set tagsSelect(tagsSelect) {
-        if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0]) {
+        if (
+            this.rule &&
+            this.rule.tag_selectors &&
+            this.rule.tag_selectors[0]
+        ) {
             this.rule.tag_selectors[0].decoration = tagsSelect;
         }
     }
 
     set tagsInput(tagsInput) {
-        if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0]) {
-            if (tagsInput.indexOf(",") !== -1
-                && tagsInput.indexOf("{") === -1 && tagsInput.indexOf("}") === -1) {
-                this.rule.tag_selectors[0].pattern = "{" + tagsInput + "}";
+        if (
+            this.rule &&
+            this.rule.tag_selectors &&
+            this.rule.tag_selectors[0]
+        ) {
+            if (
+                tagsInput.indexOf(',') !== -1 &&
+                tagsInput.indexOf('{') === -1 &&
+                tagsInput.indexOf('}') === -1
+            ) {
+                this.rule.tag_selectors[0].pattern = '{' + tagsInput + '}';
             } else {
                 this.rule.tag_selectors[0].pattern = tagsInput;
             }
@@ -100,14 +133,19 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
     }
 
     get tagsInput() {
-        if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0] && this.rule.tag_selectors[0].pattern) {
+        if (
+            this.rule &&
+            this.rule.tag_selectors &&
+            this.rule.tag_selectors[0] &&
+            this.rule.tag_selectors[0].pattern
+        ) {
             let str: string = this.rule.tag_selectors[0].pattern;
             if (/^{\S+}$/.test(str)) {
                 return str.slice(1, str.length - 1);
             }
             return str;
         }
-        return "";
+        return '';
     }
 
     canNotAdd(): boolean {
@@ -118,11 +156,20 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
             return true;
         }
         return !(
-            this.rule && this.rule.scope_selectors && this.rule.scope_selectors.repository
-            && this.rule.scope_selectors.repository[0] && this.rule.scope_selectors.repository[0].pattern
-            && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
-            && this.rule.tag_selectors && this.rule.tag_selectors[0] && this.rule.tag_selectors[0].pattern
-            && this.rule.tag_selectors[0].pattern.replace(/[{}]/g, ""));
+            this.rule &&
+            this.rule.scope_selectors &&
+            this.rule.scope_selectors.repository &&
+            this.rule.scope_selectors.repository[0] &&
+            this.rule.scope_selectors.repository[0].pattern &&
+            this.rule.scope_selectors.repository[0].pattern.replace(
+                /[{}]/g,
+                ''
+            ) &&
+            this.rule.tag_selectors &&
+            this.rule.tag_selectors[0] &&
+            this.rule.tag_selectors[0].pattern &&
+            this.rule.tag_selectors[0].pattern.replace(/[{}]/g, '')
+        );
     }
 
     open() {
@@ -141,15 +188,20 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
 
     add() {
         // remove whitespaces
-        this.rule.scope_selectors.repository[0].pattern = this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, "");
-        this.rule.tag_selectors[0].pattern = this.rule.tag_selectors[0].pattern.replace(/\s+/g, "");
-        if (this.rule.scope_selectors.repository[0].decoration !== "repoMatches"
-            && this.rule.scope_selectors.repository[0].pattern) {
+        this.rule.scope_selectors.repository[0].pattern =
+            this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, '');
+        this.rule.tag_selectors[0].pattern =
+            this.rule.tag_selectors[0].pattern.replace(/\s+/g, '');
+        if (
+            this.rule.scope_selectors.repository[0].decoration !==
+                'repoMatches' &&
+            this.rule.scope_selectors.repository[0].pattern
+        ) {
             let str = this.rule.scope_selectors.repository[0].pattern;
-            str = str.replace(/[{}]/g, "");
+            str = str.replace(/[{}]/g, '');
             const arr = str.split(',');
             for (let i = 0; i < arr.length; i++) {
-                if (arr[i] && arr[i].trim() && arr[i] === "**") {
+                if (arr[i] && arr[i].trim() && arr[i] === '**') {
                     this.inlineAlert.showInlineError(INVALID_RULE);
                     return;
                 }
@@ -172,21 +224,31 @@ export class AddImmutableRuleComponent implements OnInit, OnDestroy {
         return false;
     }
     isSameRule(rule: ImmutableRetentionRule): boolean {
-        if (this.rule.scope_selectors.repository[0].decoration !== rule.scope_selectors.repository[0].decoration) {
+        if (
+            this.rule.scope_selectors.repository[0].decoration !==
+            rule.scope_selectors.repository[0].decoration
+        ) {
             return false;
         }
-        if (this.rule.scope_selectors.repository[0].pattern !== rule.scope_selectors.repository[0].pattern) {
+        if (
+            this.rule.scope_selectors.repository[0].pattern !==
+            rule.scope_selectors.repository[0].pattern
+        ) {
             return false;
         }
 
-        if (this.rule.tag_selectors[0].decoration !== rule.tag_selectors[0].decoration) {
+        if (
+            this.rule.tag_selectors[0].decoration !==
+            rule.tag_selectors[0].decoration
+        ) {
             return false;
         }
-        return this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern;
+        return (
+            this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern
+        );
     }
 
     getI18nKey(str: string) {
         return this.immutableTagService.getI18nKey(str);
     }
 }
-

@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -29,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/gomodule/redigo/redis"
 )
 
 // Manager defies the related operations to handle the management of job stats.

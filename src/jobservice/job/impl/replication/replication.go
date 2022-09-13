@@ -18,12 +18,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	// import chart transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/chart"
 	// import image transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/image"
-
-	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -93,7 +92,7 @@ func parseParams(params map[string]interface{}) (*model.Resource, *model.Resourc
 	if err := parseParam(params, "dst_resource", dst); err != nil {
 		return nil, nil, 0, err
 	}
-	var speed int32 = 0
+	var speed int32
 	value, exist := params["speed"]
 	if !exist {
 		speed = 0

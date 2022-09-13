@@ -14,7 +14,7 @@
 
 package orm
 
-import "github.com/astaxie/beego/orm"
+import "github.com/beego/beego/orm"
 
 var (
 	// Crt is a global instance of ORM creator

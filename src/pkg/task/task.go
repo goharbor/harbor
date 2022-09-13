@@ -18,12 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"time"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
@@ -95,6 +95,7 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	jobID, err := m.submitJob(ctx, id, jb)
 	if err != nil {
 		// failed to submit job to jobservice, delete the task record
+		log.Errorf("delete task %d from db due to failed to submit job %v, error: %v", id, jb.Name, err)
 		if err := m.dao.Delete(ctx, id); err != nil {
 			log.Errorf("failed to delete the task %d: %v", id, err)
 		}

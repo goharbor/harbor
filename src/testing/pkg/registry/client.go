@@ -15,10 +15,11 @@
 package registry
 
 import (
-	"github.com/docker/distribution"
-	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"
+
+	"github.com/docker/distribution"
+	"github.com/stretchr/testify/mock"
 )
 
 // FakeClient is a fake registry client that implement src/pkg/registry.Client interface
@@ -114,7 +115,7 @@ func (f *FakeClient) MountBlob(srcRepository, digest, dstRepository string) (err
 
 // DeleteBlob ...
 func (f *FakeClient) DeleteBlob(repository, digest string) (err error) {
-	args := f.Called()
+	args := f.Called(repository, digest)
 	return args.Error(0)
 }
 

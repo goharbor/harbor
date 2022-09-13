@@ -11,10 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ConfirmationState, ConfirmationTargets } from '../../shared/entities/shared.const';
+import {
+    ConfirmationState,
+    ConfirmationTargets,
+} from '../../shared/entities/shared.const';
 
 export class ConfirmationAcknowledgement {
-    constructor(state: ConfirmationState, data: any, source: ConfirmationTargets) {
+    constructor(
+        state: ConfirmationState,
+        data: any,
+        source: ConfirmationTargets
+    ) {
         this.state = state;
         this.data = data;
         this.source = source;

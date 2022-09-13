@@ -17,6 +17,10 @@ package handler
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -26,9 +30,6 @@ import (
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 func TestParse(t *testing.T) {
@@ -116,7 +117,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 		suite.onGetReport(v1.MimeTypeNativeReport)
 
 		var body map[string]interface{}
-		res, err := suite.GetJSON(url, &body)
+		res, err := suite.GetJSON(url, &body, map[string]string{"X-Accept-Vulnerabilities": v1.MimeTypeNativeReport})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.Empty(body)
@@ -127,7 +128,7 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 		suite.onGetReport(v1.MimeTypeNativeReport, suite.report1)
 
 		var body map[string]interface{}
-		res, err := suite.GetJSON(url, &body)
+		res, err := suite.GetJSON(url, &body, map[string]string{"X-Accept-Vulnerabilities": v1.MimeTypeNativeReport})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.NotEmpty(body)

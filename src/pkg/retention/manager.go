@@ -18,12 +18,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
 )
 
 // Manager defines operations of managing policy

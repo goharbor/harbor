@@ -5,17 +5,17 @@ import { UserService } from '../../base/left-side-nav/user/user.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NewUserFormComponent } from '../../shared/components/new-user-form/new-user-form.component';
 import { of } from 'rxjs';
-import { InlineAlertComponent } from "../../shared/components/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { SharedTestingModule } from '../../shared/shared.module';
 
 describe('SignUpComponent', () => {
     let component: SignUpComponent;
     let fixture: ComponentFixture<SignUpComponent>;
     let fakeSessionService = {
-        checkUserExisting: () => of(true)
+        checkUserExisting: () => of(true),
     };
     let fakeUserService = {
-        addUser: () => of(null)
+        addUser: () => of(null),
     };
     const mockUser = {
         user_id: 1,
@@ -34,15 +34,17 @@ describe('SignUpComponent', () => {
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [SignUpComponent, NewUserFormComponent, InlineAlertComponent],
-            imports: [
-                SharedTestingModule
+            declarations: [
+                SignUpComponent,
+                NewUserFormComponent,
+                InlineAlertComponent,
             ],
+            imports: [SharedTestingModule],
             providers: [
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: UserService, useValue: fakeUserService },
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
     });
 
@@ -64,13 +66,14 @@ describe('SignUpComponent', () => {
     it('should close when no form change', async () => {
         component.open();
         await fixture.whenStable();
-        const closeBtn: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        const closeBtn: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#close-btn');
         expect(closeBtn).toBeTruthy();
         closeBtn.dispatchEvent(new Event('click'));
         await fixture.whenStable();
-        const closeBtn1: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        const closeBtn1: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#close-btn');
         expect(closeBtn1).toBeNull();
-
     });
     it('should create new user', async () => {
         component.open();
@@ -80,8 +83,8 @@ describe('SignUpComponent', () => {
         createBtn.dispatchEvent(new Event('click'));
 
         await fixture.whenStable();
-        const closeBtn1: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        const closeBtn1: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#close-btn');
         expect(closeBtn1).toBeNull();
-
     });
 });

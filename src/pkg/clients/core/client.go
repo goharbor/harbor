@@ -16,12 +16,12 @@ package core
 
 import (
 	"fmt"
-	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	chttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 )
 
 // Client defines the methods that a core client should implement
@@ -47,10 +47,10 @@ type ChartClient interface {
 }
 
 // New returns an instance of the client which is a default implement for Client
-func New(url string, httpclient *http.Client, authorizer modifier.Modifier) Client {
+func New(url string, httpclient *http.Client, modifiers ...modifier.Modifier) Client {
 	return &client{
 		url:        url,
-		httpclient: chttp.NewClient(httpclient, authorizer),
+		httpclient: chttp.NewClient(httpclient, modifiers...),
 	}
 }
 

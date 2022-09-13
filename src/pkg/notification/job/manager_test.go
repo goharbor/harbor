@@ -2,11 +2,13 @@ package job
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/notification/job/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/notification/job/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {

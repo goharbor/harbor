@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"strings"
-
-	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
@@ -15,10 +12,12 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/replication"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	rpModel "github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -158,7 +157,8 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 
 	var prjName, nameAndTag string
 	// remote(src) -> local harbor(dest)
-	if rpPolicy.SrcRegistry != nil {
+	// if the dest registry is local harbor, that is pull-mode replication.
+	if isLocalRegistry(rpPolicy.DestRegistry) {
 		payload.EventData.Replication.SrcResource = remoteRes
 		payload.EventData.Replication.DestResource = localRes
 		prjName = destNamespace
@@ -166,7 +166,8 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 	}
 
 	// local harbor(src) -> remote(dest)
-	if rpPolicy.DestRegistry != nil {
+	// if the src registry is local harbor, that is push-mode replication.
+	if isLocalRegistry(rpPolicy.SrcRegistry) {
 		payload.EventData.Replication.DestResource = remoteRes
 		payload.EventData.Replication.SrcResource = localRes
 		prjName = srcNamespace
@@ -206,4 +207,15 @@ func getMetadataFromResource(resource string) (namespace, nameAndTag string) {
 		return "", meta[0]
 	}
 	return meta[0], meta[1]
+}
+
+// isLocalRegistry checks whether the registry is local harbor.
+func isLocalRegistry(registry *rpModel.Registry) bool {
+	if registry != nil {
+		return registry.Type == rpModel.RegistryTypeHarbor &&
+			registry.Name == "Local" &&
+			registry.URL == config.InternalCoreURL()
+	}
+
+	return false
 }

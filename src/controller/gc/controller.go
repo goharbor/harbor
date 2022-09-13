@@ -218,7 +218,7 @@ func convertExecution(exec *task.Execution) *Execution {
 		Trigger:       exec.Trigger,
 		ExtraAttrs:    exec.ExtraAttrs,
 		StartTime:     exec.StartTime,
-		EndTime:       exec.EndTime,
+		UpdateTime:    exec.UpdateTime,
 	}
 }
 

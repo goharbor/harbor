@@ -15,20 +15,23 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { ConfigurationService } from '../../../../services/config.service';
-import { Configuration } from "../config";
-import { isEmpty, getChanges as getChangesFunc } from "../../../../shared/units/utils";
-import { errorHandler } from "../../../../shared/units/shared.utils";
-import { ConfigService } from "../config.service";
+import { Configuration } from '../config';
+import {
+    isEmpty,
+    getChanges as getChangesFunc,
+} from '../../../../shared/units/utils';
+import { errorHandler } from '../../../../shared/units/shared.utils';
+import { ConfigService } from '../config.service';
 
 @Component({
     selector: 'config-email',
-    templateUrl: "config-email.component.html",
-    styleUrls: ['./config-email.component.scss', '../config.component.scss']
+    templateUrl: 'config-email.component.html',
+    styleUrls: ['./config-email.component.scss', '../config.component.scss'],
 })
-export class ConfigurationEmailComponent  implements OnInit {
+export class ConfigurationEmailComponent implements OnInit {
     testingMailOnGoing = false;
     onGoing = false;
-    @ViewChild("mailConfigFrom", {static: true}) mailForm: NgForm;
+    @ViewChild('mailConfigFrom', { static: true }) mailForm: NgForm;
     get currentConfig(): Configuration {
         return this.conf.getConfig();
     }
@@ -40,8 +43,8 @@ export class ConfigurationEmailComponent  implements OnInit {
     constructor(
         private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
-        private conf: ConfigService) {
-    }
+        private conf: ConfigService
+    ) {}
 
     ngOnInit(): void {
         this.conf.resetConfig();
@@ -64,11 +67,14 @@ export class ConfigurationEmailComponent  implements OnInit {
     }
 
     public hasChanges(): boolean {
-        return  !isEmpty(this.getChanges());
+        return !isEmpty(this.getChanges());
     }
 
     public getChanges() {
-        let allChanges = getChangesFunc(this.conf.getOriginalConfig(), this.currentConfig);
+        let allChanges = getChangesFunc(
+            this.conf.getOriginalConfig(),
+            this.currentConfig
+        );
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('email_')) {
@@ -77,7 +83,7 @@ export class ConfigurationEmailComponent  implements OnInit {
         }
         return changes;
     }
-       /**
+    /**
      *
      * Test the connection of specified mail server
      *
@@ -105,18 +111,22 @@ export class ConfigurationEmailComponent  implements OnInit {
         }
 
         this.testingMailOnGoing = true;
-        this.configService.testMailServer(mailSettings)
-            .subscribe(response => {
+        this.configService.testMailServer(mailSettings).subscribe(
+            response => {
                 this.testingMailOnGoing = false;
                 this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
-            }, error => {
+            },
+            error => {
                 this.testingMailOnGoing = false;
-                let err =  errorHandler(error);
+                let err = errorHandler(error);
                 if (!err) {
                     err = 'UNKNOWN';
                 }
-                this.msgHandler.showError('CONFIG.TEST_MAIL_FAILED', { 'param': err });
-            });
+                this.msgHandler.showError('CONFIG.TEST_MAIL_FAILED', {
+                    param: err,
+                });
+            }
+        );
     }
 
     public get hideMailTestingSpinner(): boolean {
@@ -124,8 +134,7 @@ export class ConfigurationEmailComponent  implements OnInit {
     }
 
     public isMailConfigValid(): boolean {
-        return this.isValid() &&
-            !this.testingMailOnGoing && !this.inProgress();
+        return this.isValid() && !this.testingMailOnGoing && !this.inProgress();
     }
 
     /**
@@ -138,16 +147,18 @@ export class ConfigurationEmailComponent  implements OnInit {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
             this.onGoing = true;
-            this.configService.saveConfiguration(changes)
-                .subscribe(response => {
+            this.configService.saveConfiguration(changes).subscribe(
+                response => {
                     this.onGoing = false;
                     // refresh allConfig
                     this.conf.updateConfig();
                     this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                }, error => {
+                },
+                error => {
                     this.onGoing = false;
                     this.msgHandler.handleError(error);
-                });
+                }
+            );
         } else {
             // Inprop situation, should not come here
             console.error('Save abort because nothing changed');

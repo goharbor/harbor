@@ -1,11 +1,20 @@
 <div [class.alert-app-level]="!isAppLevel" *ngIf="globalMessageOpened">
-    <clr-alert  [clrAlertType]="globalMessage.type" [clrAlertClosable]="!needAuth" [clrAlertAppLevel]="isAppLevel" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
+    <clr-alert
+        [clrAlertType]="globalMessage.type"
+        [clrAlertClosable]="!needAuth"
+        [clrAlertAppLevel]="isAppLevel"
+        [(clrAlertClosed)]="!globalMessageOpened"
+        (clrAlertClosedChange)="onClose()">
         <div class="alert-item">
-            <span class="alert-text">{{message}}</span>
+            <span class="alert-text">{{ message }}</span>
             <div class="alert-actions alert-style" *ngIf="needAuth">
-                <button class="btn alert-action" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
+                <button class="btn alert-action" (click)="signIn()">
+                    {{ 'BUTTON.LOG_IN' | translate }}
+                </button>
             </div>
         </div>
     </clr-alert>
 </div>
-<div *ngIf="globalMessageOpened && needAuth && !isFromGlobalSearch()" class="mask-layer"></div>
+<div
+    *ngIf="globalMessageOpened && needAuth && !isFromGlobalSearch()"
+    class="mask-layer"></div>

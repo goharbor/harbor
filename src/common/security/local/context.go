@@ -16,10 +16,10 @@ package local
 
 import (
 	"context"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/models"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"

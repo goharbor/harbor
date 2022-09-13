@@ -8,9 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
 // FileGetter is responsible for retrieving file log data

@@ -15,8 +15,9 @@
 package basic
 
 import (
-	"github.com/goharbor/harbor/src/lib"
 	"net/http"
+
+	"github.com/goharbor/harbor/src/lib"
 )
 
 // NewAuthorizer return a basic authorizer

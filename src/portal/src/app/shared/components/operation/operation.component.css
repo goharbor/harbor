@@ -7,6 +7,7 @@
     padding-top: 20px;
     border-left: 1px solid #e0e0e0;
 }
+/* stylelint-disable */
 .eventInfo {display: flex; justify-content: flex-start; align-content: flex-start;
     padding: 8px 5px 8px 10px; border-bottom: 1px solid #ccc;}
 .iconsArea{ flex-shrink: 1;}
@@ -42,6 +43,7 @@
     text-decoration: none;
 }
 .freshIcon{float: right;     margin-right: 20px;  margin-top: -10px;cursor: pointer;}
+
 :host::ng-deep#contentAll{
     position: absolute;
     top: 115px;
@@ -49,6 +51,7 @@
     width: 100%;
     overflow-y: auto;
 }
+
 :host::ng-deep#contentFailed{
     position: absolute;
     top: 115px;
@@ -56,6 +59,7 @@
     width: 100%;
     overflow-y: auto;
 }
+
 :host::ng-deep#contentRun{
     position: absolute;
     top: 115px;
@@ -87,6 +91,12 @@
 .hidden-info {
     display: none;
 }
+
 .margin-left-5 {
     margin-left: 5px;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
 }

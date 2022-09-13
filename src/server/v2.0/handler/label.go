@@ -3,7 +3,10 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -11,13 +14,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/label"
 	pkg_model "github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/label"
-	"strings"
 )
 
 func newLabelAPI() *labelAPI {
@@ -35,7 +38,9 @@ type labelAPI struct {
 
 func (lAPI *labelAPI) CreateLabel(ctx context.Context, params operation.CreateLabelParams) middleware.Responder {
 	label := &pkg_model.Label{}
-	lib.JSONCopy(label, params.Label)
+	if err := lib.JSONCopy(label, params.Label); err != nil {
+		log.Warningf("failed to call JSONCopy on Label when CreateLabel, error: %v", err)
+	}
 
 	label.Level = common.LabelLevelUser
 	if label.Scope == common.LabelScopeGlobal {
@@ -122,7 +127,9 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 
 func (lAPI *labelAPI) UpdateLabel(ctx context.Context, params operation.UpdateLabelParams) middleware.Responder {
 	labelData := &pkg_model.Label{}
-	lib.JSONCopy(labelData, params.Label)
+	if err := lib.JSONCopy(labelData, params.Label); err != nil {
+		log.Warningf("failed to call JSONCopy on Label when UpdateLabel, error: %v", err)
+	}
 
 	label, err := lAPI.labelMgr.Get(ctx, params.LabelID)
 	if err != nil {

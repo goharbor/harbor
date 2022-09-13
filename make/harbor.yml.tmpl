@@ -137,7 +137,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.5.0
+_version: 2.6.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -245,3 +245,18 @@ upload_purging:
   # the interval of the purge operations
   interval: 24h
   dryrun: false
+
+# cache layer configurations
+# If this feature enabled, harbor will cache the resource
+# `project/project_metadata/repository/artifact/manifest` in the redis
+# which can especially help to improve the performance of high concurrent
+# manifest pulling.
+# NOTICE
+# If you are deploying Harbor in HA mode, make sure that all the harbor
+# instances have the same behaviour, all with caching enabled or disabled,
+# otherwise it can lead to potential data inconsistency.
+cache:
+  # not enabled by default
+  enabled: false
+  # keep cache for one day by default
+  expire_hours: 24

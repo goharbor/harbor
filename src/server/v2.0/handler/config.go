@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/config"
@@ -108,6 +109,9 @@ func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetI
 		return c.SendError(ctx, err)
 	}
 	cfg, err := c.controller.AllConfigs(ctx)
+	if err != nil {
+		return c.SendError(ctx, err)
+	}
 	resultCfg, err := c.controller.ConvertForGet(ctx, cfg, true)
 	if err != nil {
 		return c.SendError(ctx, err)

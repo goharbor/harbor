@@ -17,9 +17,10 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -63,6 +64,9 @@ const (
 	TypeNone = "base"
 	// TypeCosignSignature ...
 	TypeCosignSignature = "signature.cosign"
+
+	// TypeNydusAccelerator ...
+	TypeNydusAccelerator = "accelerator.nydus"
 )
 
 // AccessoryData ...
@@ -74,6 +78,7 @@ type AccessoryData struct {
 	Size          int64     `json:"size"`
 	Digest        string    `json:"digest"`
 	CreatTime     time.Time `json:"creation_time"`
+	Icon          string    `json:"icon"`
 }
 
 // Accessory Independent, but linked to an existing subject artifact, which enabling the extensibility of an OCI artifact

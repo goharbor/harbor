@@ -10,15 +10,10 @@ import (
 	"net/url"
 	"reflect"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
-
-	common_http "github.com/goharbor/harbor/src/common/http"
-)
-
-const (
-	scheme = "bearer"
 )
 
 // Client is a client to interact with GitLab
@@ -31,7 +26,6 @@ type Client struct {
 
 // NewClient creates a new GitLab client.
 func NewClient(registry *model.Registry) (*Client, error) {
-
 	realm, _, err := util.Ping(registry)
 	if err != nil && !liberrors.IsChallengesUnsupportedErr(err) {
 		return nil, err
@@ -55,9 +49,6 @@ func NewClient(registry *model.Registry) (*Client, error) {
 	return client, nil
 }
 
-func buildPingURL(endpoint string) string {
-	return fmt.Sprintf("%s/v2/", endpoint)
-}
 func (c *Client) newRequest(method, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {

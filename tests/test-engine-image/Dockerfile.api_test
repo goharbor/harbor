@@ -22,7 +22,7 @@ RUN tdnf install -y \
     gzip && \
     tdnf erase -y toybox && \
     tdnf install -y python3 python3-pip python3-setuptools httpd && \
-    pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
+    pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil python-dateutil \
     robotframework==3.2.1 robotframework-sshlibrary robotframework-httplibrary \
     requests dbbot robotframework-seleniumlibrary==4.3.0 robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \

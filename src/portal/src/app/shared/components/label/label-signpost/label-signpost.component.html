@@ -3,7 +3,9 @@
         <button class="btn btn-link" clrSignpostTrigger>...</button>
         <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
             <div *ngFor="let label of labels">
-                <hbr-label-piece [label]="label" [labelWidth]="130"></hbr-label-piece>
+                <hbr-label-piece
+                    [label]="label"
+                    [labelWidth]="130"></hbr-label-piece>
             </div>
         </clr-signpost-content>
     </clr-signpost>

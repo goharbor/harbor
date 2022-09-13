@@ -25,3 +25,4 @@ ${push_image_command_btn}  //hbr-push-image-button//button
 ${scan_artifact_btn}  //button[@id='scan-btn']
 ${stop_scan_artifact_btn}  //button[@id='stop-scan']
 ${stopped_label}  //span[@class='label stopped']
+${refresh_repositories_xpath}  //hbr-repository-gridview//span[contains(@class,'refresh-btn')]

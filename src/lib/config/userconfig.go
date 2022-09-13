@@ -16,19 +16,20 @@ package config
 
 import (
 	"context"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"strings"
 )
 
 // It contains all user related configurations, each of user related settings requires a context provided
 
 // GetSystemCfg returns the all configurations
 func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
-	sysCfg := defaultMgr().GetAll(ctx)
+	sysCfg := DefaultMgr().GetAll(ctx)
 	if len(sysCfg) == 0 {
 		return nil, errors.New("can not load system config, the database might be down")
 	}
@@ -37,7 +38,7 @@ func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
 
 // AuthMode ...
 func AuthMode(ctx context.Context) (string, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		log.Errorf("failed to load config, error %v", err)
@@ -48,7 +49,7 @@ func AuthMode(ctx context.Context) (string, error) {
 
 // LDAPConf returns the setting of ldap server
 func LDAPConf(ctx context.Context) (*cfgModels.LdapConf, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -68,7 +69,7 @@ func LDAPConf(ctx context.Context) (*cfgModels.LdapConf, error) {
 
 // LDAPGroupConf returns the setting of ldap group search
 func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -85,31 +86,31 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration(ctx context.Context) (int, error) {
-	return defaultMgr().Get(ctx, common.TokenExpiration).GetInt(), nil
+	return DefaultMgr().Get(ctx, common.TokenExpiration).GetInt(), nil
 }
 
 // RobotTokenDuration returns the token expiration time of robot account (in minute)
 func RobotTokenDuration(ctx context.Context) int {
-	return defaultMgr().Get(ctx, common.RobotTokenDuration).GetInt()
+	return DefaultMgr().Get(ctx, common.RobotTokenDuration).GetInt()
 }
 
 // SelfRegistration returns the enablement of self registration
 func SelfRegistration(ctx context.Context) (bool, error) {
-	return defaultMgr().Get(ctx, common.SelfRegistration).GetBool(), nil
+	return DefaultMgr().Get(ctx, common.SelfRegistration).GetBool(), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject(ctx context.Context) (bool, error) {
-	err := defaultMgr().Load(ctx)
+	err := DefaultMgr().Load(ctx)
 	if err != nil {
 		return true, err
 	}
-	return defaultMgr().Get(ctx, common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
+	return DefaultMgr().Get(ctx, common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
 }
 
 // Email returns email server settings
 func Email(ctx context.Context) (*cfgModels.Email, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -128,7 +129,7 @@ func Email(ctx context.Context) (*cfgModels.Email, error) {
 
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings(ctx context.Context) (*models.UAASettings, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	err := mgr.Load(ctx)
 	if err != nil {
 		return nil, err
@@ -144,13 +145,13 @@ func UAASettings(ctx context.Context) (*models.UAASettings, error) {
 
 // ReadOnly returns a bool to indicates if Harbor is in read only mode.
 func ReadOnly(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.ReadOnly).GetBool()
+	return DefaultMgr().Get(ctx, common.ReadOnly).GetBool()
 }
 
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting(ctx context.Context) (*cfgModels.HTTPAuthProxy, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	if err := mgr.Load(ctx); err != nil {
 		return nil, err
 	}
@@ -168,12 +169,12 @@ func HTTPAuthProxySetting(ctx context.Context) (*cfgModels.HTTPAuthProxy, error)
 // OIDCSetting returns the setting of OIDC provider, currently there's only one OIDC provider allowed for Harbor and it's
 // only effective when auth_mode is set to oidc_auth
 func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
-	mgr := defaultMgr()
+	mgr := DefaultMgr()
 	if err := mgr.Load(ctx); err != nil {
 		return nil, err
 	}
 	scopeStr := mgr.Get(ctx, common.OIDCScope).GetString()
-	extEndpoint := strings.TrimSuffix(mgr.Get(nil, common.ExtEndpoint).GetString(), "/")
+	extEndpoint := strings.TrimSuffix(mgr.Get(context.Background(), common.ExtEndpoint).GetString(), "/")
 	scope := SplitAndTrim(scopeStr, ",")
 	return &cfgModels.OIDCSetting{
 		Name:               mgr.Get(ctx, common.OIDCName).GetString(),
@@ -191,29 +192,39 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 	}, nil
 }
 
+// GDPRSetting returns the setting of GDPR
+func GDPRSetting(ctx context.Context) (*cfgModels.GDPRSetting, error) {
+	if err := DefaultMgr().Load(ctx); err != nil {
+		return nil, err
+	}
+	return &cfgModels.GDPRSetting{
+		DeleteUser: DefaultMgr().Get(ctx, common.GDPRDeleteUser).GetBool(),
+	}, nil
+}
+
 // NotificationEnable returns a bool to indicates if notification enabled in harbor
 func NotificationEnable(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.NotificationEnable).GetBool()
+	return DefaultMgr().Get(ctx, common.NotificationEnable).GetBool()
 }
 
 // QuotaPerProjectEnable returns a bool to indicates if quota per project enabled in harbor
 func QuotaPerProjectEnable(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.QuotaPerProjectEnable).GetBool()
+	return DefaultMgr().Get(ctx, common.QuotaPerProjectEnable).GetBool()
 }
 
 // QuotaSetting returns the setting of quota.
 func QuotaSetting(ctx context.Context) (*cfgModels.QuotaSetting, error) {
-	if err := defaultMgr().Load(ctx); err != nil {
+	if err := DefaultMgr().Load(ctx); err != nil {
 		return nil, err
 	}
 	return &cfgModels.QuotaSetting{
-		StoragePerProject: defaultMgr().Get(ctx, common.StoragePerProject).GetInt64(),
+		StoragePerProject: DefaultMgr().Get(ctx, common.StoragePerProject).GetInt64(),
 	}, nil
 }
 
 // RobotPrefix user defined robot name prefix.
 func RobotPrefix(ctx context.Context) string {
-	return defaultMgr().Get(ctx, common.RobotNamePrefix).GetString()
+	return DefaultMgr().Get(ctx, common.RobotNamePrefix).GetString()
 }
 
 // SplitAndTrim ...
@@ -229,15 +240,25 @@ func SplitAndTrim(s, sep string) []string {
 
 // PullCountUpdateDisable returns a bool to indicate if pull count is disable for pull request.
 func PullCountUpdateDisable(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.PullCountUpdateDisable).GetBool()
+	return DefaultMgr().Get(ctx, common.PullCountUpdateDisable).GetBool()
 }
 
 // PullTimeUpdateDisable returns a bool to indicate if pull time is disable for pull request.
 func PullTimeUpdateDisable(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.PullTimeUpdateDisable).GetBool()
+	return DefaultMgr().Get(ctx, common.PullTimeUpdateDisable).GetBool()
 }
 
 // PullAuditLogDisable returns a bool to indicate if pull audit log is disable for pull request.
 func PullAuditLogDisable(ctx context.Context) bool {
-	return defaultMgr().Get(ctx, common.PullAuditLogDisable).GetBool()
+	return DefaultMgr().Get(ctx, common.PullAuditLogDisable).GetBool()
+}
+
+// AuditLogForwardEndpoint returns the audit log forward endpoint
+func AuditLogForwardEndpoint(ctx context.Context) string {
+	return DefaultMgr().Get(ctx, common.AuditLogForwardEndpoint).GetString()
+}
+
+// SkipAuditLogDatabase returns the audit log forward endpoint
+func SkipAuditLogDatabase(ctx context.Context) bool {
+	return DefaultMgr().Get(ctx, common.SkipAuditLogDatabase).GetBool()
 }

@@ -17,20 +17,21 @@ package token
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
+	"github.com/golang-jwt/jwt/v4"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
@@ -121,14 +122,14 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 	now := time.Now().UTC()
 
 	claims := &v2.Claims{
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    options.Issuer,
 			Subject:   username,
-			Audience:  service,
-			ExpiresAt: now.Add(time.Duration(expiration) * time.Minute).Unix(),
-			NotBefore: now.Unix(),
-			IssuedAt:  now.Unix(),
-			Id:        utils.GenerateRandomStringWithLen(16),
+			Audience:  jwt.ClaimStrings([]string{service}),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(expiration) * time.Minute)),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ID:        utils.GenerateRandomStringWithLen(16),
 		},
 		Access: access,
 	}

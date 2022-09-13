@@ -10,6 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions"
+	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -17,15 +22,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions"
-	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
 var (
-	errInvalidTcrEndpoint    error = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
-	errPingTcrEndpointFailed error = errors.New("[tencent-tcr.newAdapter] Ping TCR instance endpoint failed")
+	errInvalidTcrEndpoint = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
 )
 
 func init() {
@@ -90,7 +90,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 
 	// only validate registryURL.Host in non-UT scenario
 	if os.Getenv("UTTEST") != "true" {
-		if strings.Index(registryURL.Host, ".tencentcloudcr.com") < 0 {
+		if !strings.Contains(registryURL.Host, ".tencentcloudcr.com") {
 			log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
 			return nil, errInvalidTcrEndpoint
 		}
@@ -121,7 +121,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 			Values: []*string{common.StringPtr(strings.ReplaceAll(registryURL.Host, ".tencentcloudcr.com", ""))},
 		},
 	}
-	var resp = tcr.NewDescribeInstancesResponse()
+	var resp *tcr.DescribeInstancesResponse
 	resp, err = client.DescribeInstances(req)
 	if err != nil {
 		log.Errorf("DescribeInstances error=%s", err.Error())
@@ -219,7 +219,6 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) (err error) {
 		if err != nil {
 			return
 		}
-		return
 	}
 
 	return

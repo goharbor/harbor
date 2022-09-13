@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 func TestAccessList(t *testing.T) {

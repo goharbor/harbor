@@ -70,8 +70,11 @@ func (c *controller) ListPolicies(ctx context.Context, query *q.Query) ([]*model
 
 func (c *controller) populateRegistry(ctx context.Context, p *pkgmodel.Policy) (*model.Policy, error) {
 	policy := &model.Policy{}
-	policy.From(p)
-	var srcRegistryID, destRegistryID int64 = 0, 0
+	err := policy.From(p)
+	if err != nil {
+		return nil, err
+	}
+	var srcRegistryID, destRegistryID int64
 	if policy.SrcRegistry != nil && policy.SrcRegistry.ID != 0 {
 		srcRegistryID = policy.SrcRegistry.ID
 		destRegistryID = 0

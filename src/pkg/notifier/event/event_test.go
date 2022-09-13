@@ -1,11 +1,13 @@
 package event
 
 import (
-	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
-	notifierModel "github.com/goharbor/harbor/src/pkg/notifier/model"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
+
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	notifierModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 func TestHookEvent_Build(t *testing.T) {

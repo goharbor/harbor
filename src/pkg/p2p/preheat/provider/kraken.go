@@ -3,12 +3,14 @@ package provider
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
+
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
@@ -44,7 +46,11 @@ func (kd *KrakenDriver) GetHealth() (*DriverStatus, error) {
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(kd.instance.Endpoint, "/"), krakenHealthPath)
-	_, err := client.GetHTTPClient(kd.instance.Insecure).Get(url, kd.getCred(), nil, nil)
+	url, err := lib.ValidateHTTPURL(url)
+	if err != nil {
+		return nil, err
+	}
+	_, err = client.GetHTTPClient(kd.instance.Insecure).Get(url, kd.getCred(), nil, nil)
 	if err != nil {
 		// Unhealthy
 		return nil, err

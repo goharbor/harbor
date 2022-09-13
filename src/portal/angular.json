@@ -12,8 +12,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "swagger-ui",
-              "buffer",
+              "cron-validator",
               "js-yaml"
             ],
             "outputPath": "dist",
@@ -30,7 +29,6 @@
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
               "node_modules/@clr/ui/clr-ui.min.css",
-              "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
               "src/global.scss",
               {
@@ -121,6 +119,15 @@
               "src/i18n"
             ]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -137,16 +144,17 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [],
-            "exclude": []
+            "lintFilePatterns": [
+              "e2e/**/*.ts",
+              "e2e/**/*.html"
+            ]
           }
         }
       }
     }
   },
-  "defaultProject": "harbor-portal",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app"

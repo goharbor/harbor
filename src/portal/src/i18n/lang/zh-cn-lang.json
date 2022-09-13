@@ -68,7 +68,7 @@
     },
     "TOOLTIP": {
         "NAME_FILTER": "过滤资源的名字。不填或者填写“**”匹配所有资源；“library/**”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
-        "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
+        "TAG_FILTER": "过滤资源的tag/version。不填或者“**”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
         "LABEL_FILTER": "根据标签筛选资源。",
         "RESOURCE_FILTER": "过滤资源的类型。",
         "PUSH_BASED": "把资源由本地Harbor推送到远端仓库。",
@@ -161,6 +161,9 @@
         "PLACEHOLDER": "搜索 {{param}}...",
         "PLACEHOLDER_VIC": "搜索 Registry..."
     },
+    "TOP_NAV": {
+        "DATETIME_RENDERING_DEFAULT": "默认"
+    },
     "SIDE_NAV": {
         "DASHBOARD": "仪表板",
         "PROJECTS": "项目",
@@ -251,7 +254,7 @@
         "QUOTA_UNLIMIT_TIP": "如果您想要对存储不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay 和 Google GCR 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR 和 Github GHCR 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址",
         "NO_PROJECT": "未发现任何项目"
@@ -656,7 +659,9 @@
         "BANDWIDTH": "带宽",
         "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
         "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
-        "UNLIMITED": "无限制"
+        "UNLIMITED": "无限制",
+        "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}",
+        "CRON_ERROR_TIP": "此项必填且\"分钟\"项不能为\"*\""
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -1089,7 +1094,7 @@
         "DOCKER": "Docker",
         "HELM": "Helm",
         "CNAB": "CNAB",
-        "TAG_COMMAND_CHART": "在项目中标记 chart",
+        "TAG_COMMAND_CHART": "在项目中打包 chart",
         "PUSH_COMMAND_CHART": "推送 chart 到当前项目",
         "PUSH_COMMAND_CNAB": "推送 CNAB 到当前项目",
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
@@ -1105,6 +1110,7 @@
         "IMAGE": "镜像",
         "CHART": "CHART",
         "CNAB": "CNAB",
+        "WASM": "WASM",
         "TAGGED": "含有 Tag",
         "UNTAGGED": "不含有 Tag",
         "ALL": "所有",
@@ -1180,7 +1186,8 @@
         "UNLIMITED": "不设限",
         "INVALID_INPUT": "输入错误",
         "PLACEHOLDER": "我们找不到任何可以配置定额的项目",
-        "FILTER_PLACEHOLDER": "按名称查找（完全匹配）"
+        "FILTER_PLACEHOLDER": "按名称查找（完全匹配）",
+        "QUOTA_USED": "已使用的配额"
     },
     "WEEKLY": {
         "MONDAY": "周一",
@@ -1621,7 +1628,7 @@
         "PREHEAT_EXPLAIN": "预热功能可加载镜像至 P2P 网络",
         "CRITERIA_EXPLAIN": "由项目设置下的'部署安全'项所指定",
         "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
-        "DESTINATION_NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
+        "NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
         "NEED_HELP": "请先让您的系统管理员添加提供商"
     },
     "PAGINATION": {
@@ -1721,5 +1728,45 @@
         "CO_SIGN": "Cosign",
         "NOTARY": "Notary",
         "PLACEHOLDER": "未发现任何附件！"
+    },
+    "CLEARANCES": {
+        "CLEARANCES": "清理服务",
+        "AUDIT_LOG": "日志轮替",
+        "LAST_COMPLETED": "最近完成时间",
+        "NEXT_SCHEDULED_TIME": "下次执行时间",
+        "SCHEDULE_TO_PURGE": "当前定时任务",
+        "KEEP_IN": "保留记录",
+        "KEEP_IN_TOOLTIP": "保留指定时间内的日志记录",
+        "KEEP_IN_ERROR": "该项的数值需为整数，且时间值必须大于0且小于10000天",
+        "DAYS": "天",
+        "HOURS": "小时",
+        "INCLUDED_OPERATIONS": "包含操作",
+        "INCLUDED_OPERATION_TOOLTIP": "删除指定操作类型的日志",
+        "INCLUDED_OPERATION_ERROR": "请至少选择一种操作类型",
+        "PURGE_NOW": "立即清理",
+        "PURGE_NOW_SUCCESS": "触发清理成功",
+        "PURGE_SCHEDULE_RESET": "清理计划已被重置",
+        "PURGE_HISTORY": "清理历史",
+        "FORWARD_ENDPOINT": "日志转发端点",
+        "FORWARD_ENDPOINT_TOOLTIP": "将日志转发到指定的 syslog 端点，例如：harbor-log:10514",
+        "SKIP_DATABASE": "跳过日志数据库",
+        "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点",
+        "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作",
+        "STOP_PURGE_SUCCESS": "成功触发停止清理日志的操作",
+        "NO_GC_RECORDS": "未发现任何清理记录！",
+        "NO_PURGE_RECORDS": "未发现任何清理记录！"
+    },
+    "CVE_EXPORT": {
+        "EXPORT_SOME_PROJECTS": "导出 CVEs",
+        "ALL_PROJECTS": "全部项目",
+        "EXPORT_TITLE": "导出 CVE",
+        "EXPORT_SUBTITLE": "设置导出条件",
+        "EXPORT_CVE_FILTER_HELP_TEXT": "使用逗号分割 cveIds",
+        "CVE_IDS": "CVE IDs",
+        "EXPORT_BUTTON": "导出",
+        "JOB_NAME": "任务名称",
+        "JOB_NAME_REQUIRED": "任务名称为必填项",
+        "JOB_NAME_EXISTING": "任务名称已存在",
+        "TRIGGER_EXPORT_SUCCESS": "触发导出 CVEs 任务成功！"
     }
 }

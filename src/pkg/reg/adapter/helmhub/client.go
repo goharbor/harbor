@@ -104,7 +104,10 @@ func (c *Client) checkHealthy() error {
 	}
 	defer resp.Body.Close()
 
-	ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return nil
 	}

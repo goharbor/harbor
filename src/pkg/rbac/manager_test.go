@@ -2,11 +2,13 @@ package rbac
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/rbac/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/rbac/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {

@@ -15,9 +15,10 @@
 package main
 
 import (
-	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"os"
 	"text/template"
+
+	"github.com/goharbor/harbor/src/lib/config/metadata"
 )
 
 const cfgTemplate = `  Configurations:

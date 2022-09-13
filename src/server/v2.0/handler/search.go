@@ -22,6 +22,8 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"helm.sh/helm/v3/cmd/helm/search"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -37,7 +39,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/search"
-	"helm.sh/helm/v3/cmd/helm/search"
 )
 
 func newSearchAPI() *searchAPI {

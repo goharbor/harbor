@@ -19,11 +19,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
 )
 
 type schedulerTestSuite struct {
@@ -66,7 +67,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 
 	// failed to submit to jobservice
 	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{
 		ID:          1,
@@ -84,7 +85,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 	s.SetupTest()
 
 	// pass
-	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	s.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.taskMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Task{

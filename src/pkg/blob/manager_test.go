@@ -16,14 +16,15 @@ package blob
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/q"
-	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type ManagerTestSuite struct {

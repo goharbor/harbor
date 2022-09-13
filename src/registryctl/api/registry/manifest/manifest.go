@@ -3,17 +3,17 @@ package manifest
 import (
 	"net/http"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/registryctl/api"
-
 	"github.com/docker/distribution/registry/storage"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/gorilla/mux"
 	"github.com/opencontainers/go-digest"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	"github.com/goharbor/harbor/src/registryctl/api"
 )
 
 const tracerName = "goharbor/harbor/src/registryctl/api/registry/manifest"

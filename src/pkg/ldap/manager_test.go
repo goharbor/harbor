@@ -15,11 +15,13 @@
 package ldap
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ManagerTestSuite struct {

@@ -22,12 +22,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/security"
 	lib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
-	"github.com/stretchr/testify/suite"
 )
 
 // Suite ...

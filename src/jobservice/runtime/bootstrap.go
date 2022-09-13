@@ -24,6 +24,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -35,8 +37,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/systemartifact"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -53,7 +58,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -131,7 +135,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Create stats manager
 		manager = mgt.NewManager(ctx, namespace, redisPool)
 		// Create hook agent, it's a singleton object
-		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
+		// the retryConcurrency keep same with worker num
+		hookAgent := hook.NewAgent(rootContext, namespace, redisPool, workerNum)
 		hookCallback := func(URL string, change *job.StatusChange) error {
 			msg := fmt.Sprintf(
 				"status change: job=%s, status=%s, revision=%d",
@@ -219,7 +224,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Listen to the system signals
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	terminated := false
 	go func(errChan chan error) {
 		defer func() {
@@ -307,6 +312,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJob:           (*scan.Job)(nil),
+			job.PurgeAudit:             (*purge.Job)(nil),
 			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.Retention:              (*retention.Job)(nil),
@@ -314,12 +320,14 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.WebhookJob:             (*notification.WebhookJob)(nil),
 			job.SlackJob:               (*notification.SlackJob)(nil),
 			job.P2PPreheat:             (*preheat.Job)(nil),
+			job.ScanDataExport:         (*scandataexport.ScanDataExport)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases
-			"IMAGE_REPLICATE": (*legacy.ReplicationScheduler)(nil),
-			"IMAGE_GC":        (*legacy.GarbageCollectionScheduler)(nil),
-			"IMAGE_SCAN_ALL":  (*legacy.ScanAllScheduler)(nil),
+			"IMAGE_REPLICATE":         (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":                (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":          (*legacy.ScanAllScheduler)(nil),
+			job.SystemArtifactCleanup: (*systemartifact.Cleanup)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

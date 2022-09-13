@@ -18,9 +18,10 @@ import (
 	"net/http"
 	"testing"
 
-	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	commonsecret "github.com/goharbor/harbor/src/common/secret"
 )
 
 func TestSecret(t *testing.T) {

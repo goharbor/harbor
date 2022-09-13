@@ -152,16 +152,6 @@ func (bs *blobStore) readlink(ctx context.Context, path string) (digest.Digest, 
 	return linked, nil
 }
 
-// resolve reads the digest link at path and returns the blob store path.
-func (bs *blobStore) resolve(ctx context.Context, path string) (string, error) {
-	dgst, err := bs.readlink(ctx, path)
-	if err != nil {
-		return "", err
-	}
-
-	return bs.path(dgst)
-}
-
 type blobStatter struct {
 	driver driver.StorageDriver
 }

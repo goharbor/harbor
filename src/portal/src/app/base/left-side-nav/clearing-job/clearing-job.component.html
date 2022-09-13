@@ -1,0 +1,21 @@
+<h2 class="custom-h2" sub-header-title>
+    {{ 'CLEARANCES.CLEARANCES' | translate }}
+</h2>
+<nav class="mt-1">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link" routerLink="gc" routerLinkActive="active">{{
+                'CONFIG.GC' | translate
+            }}</a>
+        </li>
+        <li class="nav-item">
+            <a
+                class="nav-link"
+                routerLink="audit-log-purge"
+                routerLinkActive="active"
+                >{{ 'CLEARANCES.AUDIT_LOG' | translate }}</a
+            >
+        </li>
+    </ul>
+</nav>
+<router-outlet></router-outlet>

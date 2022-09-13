@@ -17,11 +17,12 @@ package metadata
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/stretchr/testify/suite"
 )
 
 type scanEventTestSuite struct {

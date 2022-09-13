@@ -7,11 +7,14 @@
   padding-top: 0.8rem;
   overflow-y: visible;
   overflow-x: visible;
+
 .body-label {
   font-size: 14px
 }
+
   .clr-form {
     padding-left: 0;
+
     .left-label {
       width: 11.5rem;
       font-weight: 100;
@@ -23,7 +26,7 @@
     }
 
     .quota-input {
-      width: 1.5rem;
+      width: 2.25rem;
       margin-left: 1rem;
       margin-right: 0.2rem;
     }
@@ -38,8 +41,8 @@
 
     .clr-select-wrapper {
       position: absolute;
-      right: -5rem;
-      top: -0.08rem;
+      right: -8rem;
+      top: -0.11rem;
     }
 
   }
@@ -50,7 +53,7 @@
     }
 
     .quota-input {
-      margin-left: 0rem;
+      margin-left: 0;
     }
 
     .select-div {
@@ -58,13 +61,15 @@
     }
 
     .clr-select-wrapper {
-      right: -4rem;
+      right: -5.5rem;
     }
   }
 }
+
 select {
   font-weight: 100;
 }
+
 .progress-block {
   width: 8rem;
 }
@@ -72,20 +77,20 @@ select {
 .progress-div {
   position: absolute;
   padding-right: 0.6rem;
-  width: 9rem;
+  width: 7.5rem;
   top: 0.2rem;
   right: -13.3rem;
 }
 
 .progress-label {
   position: absolute;
-  right: -3rem;
+  right: -4rem;
   margin-top: 0;
-  width: 4rem;
+  width: 5rem;
   font-weight: 100;
   font-size: 10px;
 }
-
+/* stylelint-disable */
 ::ng-deep {
   .clr-error {
     .clr-validate-icon {

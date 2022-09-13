@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/config/metadata"
-	"github.com/goharbor/harbor/src/lib/log"
 	"reflect"
 	"strconv"
 	"sync"
+
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config/metadata"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // ConfigStore - the config data store
@@ -112,7 +113,10 @@ func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]interface{})
 			delete(cfgMap, key)
 			continue
 		}
-		c.Set(key, *configValue)
+		if err := c.Set(key, *configValue); err != nil {
+			log.Warningf("failed to update configure item, key=%s, error: %v", key, err)
+			continue
+		}
 	}
 	// Update to driver
 	return c.cfgDriver.Save(ctx, cfgMap)

@@ -1,12 +1,12 @@
 package api
 
 import (
-	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/label"
+	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 

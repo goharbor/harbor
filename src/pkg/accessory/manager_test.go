@@ -15,13 +15,18 @@
 package accessory
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/accessory/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {
@@ -102,6 +107,16 @@ func (m *managerTestSuite) TestDeleteOfArtifact() {
 	err := m.mgr.DeleteAccessories(nil, q.New(q.KeyWords{"ArtifactID": 1}))
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestGetIcon() {
+	var icon string
+	icon = m.mgr.GetIcon("")
+	m.Require().Empty(icon, "empty icon")
+	icon = m.mgr.GetIcon("signature.cosign")
+	m.Require().Equal("sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882", icon)
+	icon = m.mgr.GetIcon("unknown")
+	m.Require().Empty(icon, "empty icon")
 }
 
 func TestManager(t *testing.T) {

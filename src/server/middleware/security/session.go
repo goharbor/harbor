@@ -18,7 +18,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"

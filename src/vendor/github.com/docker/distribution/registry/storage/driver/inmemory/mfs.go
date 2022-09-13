@@ -252,20 +252,6 @@ func (d *dir) delete(p string) error {
 	return nil
 }
 
-// dump outputs a primitive directory structure to stdout.
-func (d *dir) dump(indent string) {
-	fmt.Println(indent, d.name()+"/")
-
-	for _, child := range d.children {
-		if child.isdir() {
-			child.(*dir).dump(indent + "\t")
-		} else {
-			fmt.Println(indent, child.name())
-		}
-
-	}
-}
-
 func (d *dir) String() string {
 	return fmt.Sprintf("&dir{path: %v, children: %v}", d.p, d.children)
 }

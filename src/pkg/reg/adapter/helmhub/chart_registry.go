@@ -21,10 +21,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/reg/filter"
-
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 

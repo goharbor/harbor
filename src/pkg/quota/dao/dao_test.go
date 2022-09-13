@@ -17,11 +17,12 @@ package dao
 import (
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/suite"
 )
 
 type DaoTestSuite struct {

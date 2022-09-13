@@ -16,11 +16,12 @@ package metadata
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/security"
 	event2 "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
-	"time"
 )
 
 // CreateTagEventMetadata is the metadata from which the create tag event can be resolved

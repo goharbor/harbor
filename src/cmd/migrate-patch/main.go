@@ -47,7 +47,6 @@ func main() {
 	case <-c:
 	case <-time.After(30 * time.Second):
 		log.Fatal("Failed to connect DB after 30 seconds, time out. \n")
-
 	}
 	row := db.QueryRow(pgSQLCheckColStmt)
 	var tblCount, colCount int

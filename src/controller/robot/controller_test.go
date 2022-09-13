@@ -2,7 +2,12 @@ package robot
 
 import (
 	"context"
+	"os"
+	"testing"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -17,9 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/rbac"
 	"github.com/goharbor/harbor/src/testing/pkg/robot"
-	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -292,6 +294,20 @@ func (suite *ControllerTestSuite) TestToScope() {
 
 }
 
+func (suite *ControllerTestSuite) TestIsValidSec() {
+	sec := "1234abcdABCD"
+	suite.True(IsValidSec(sec))
+	sec = "1234abcd"
+	suite.False(IsValidSec(sec))
+	sec = "123abc"
+	suite.False(IsValidSec(sec))
+}
+
+func (suite *ControllerTestSuite) TestCreateSec() {
+	_, pwd, _, err := CreateSec()
+	suite.Nil(err)
+	suite.True(IsValidSec(pwd))
+}
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &ControllerTestSuite{})
 }

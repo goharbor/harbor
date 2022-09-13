@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/FZambia/sentinel"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/FZambia/sentinel"
+	"github.com/beego/beego/cache"
 	"github.com/gomodule/redigo/redis"
-
-	"github.com/astaxie/beego/cache"
-	"strings"
 )
 
 var (
@@ -130,7 +129,10 @@ func (rc *Cache) ClearAll() error {
 // so no gc operation.
 func (rc *Cache) StartAndGC(config string) error {
 	var cf map[string]string
-	json.Unmarshal([]byte(config), &cf)
+	err := json.Unmarshal([]byte(config), &cf)
+	if err != nil {
+		return err
+	}
 
 	if _, ok := cf["key"]; !ok {
 		cf["key"] = DefaultKey

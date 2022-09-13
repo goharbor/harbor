@@ -15,9 +15,10 @@
 package orm
 
 import (
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/beego/beego/orm"
 	"github.com/jackc/pgconn"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 var (
@@ -52,7 +53,7 @@ func AsNotFoundError(err error, messageFormat string, args ...interface{}) *erro
 	if errors.Is(err, orm.ErrNoRows) {
 		e := errors.NotFoundError(nil)
 		if len(messageFormat) > 0 {
-			e.WithMessage(messageFormat, args...)
+			_ = e.WithMessage(messageFormat, args...)
 		}
 		return e
 	}

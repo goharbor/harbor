@@ -34,7 +34,7 @@ Create An New Project And Go Into Project
     Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
-    Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Mouse Down  ${project_proxy_cache_switcher_id}  AND  Mouse Up  ${project_proxy_cache_switcher_id}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
+    Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Retry Element Click  ${project_proxy_cache_switcher_xpath}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
@@ -59,10 +59,6 @@ Go To Project Log
 Switch To Member
     Sleep  3
     Retry Element Click  xpath=${project_member_xpath}
-    Sleep  1
-
-Switch To Log
-    Retry Element Click  xpath=${log_xpath}
     Sleep  1
 
 Switch To Replication
@@ -166,6 +162,7 @@ Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  ${project_action_xpath}
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1
@@ -376,19 +373,27 @@ Select Storage Quota unit
     [Arguments]  ${unit}
     Select From List By Value  ${project_add_storage_quota_unit_id}  ${unit}
 
+Back Project Home
+    [Arguments]  ${project_name}
+    Retry Link Click  //a[contains(.,'${project_name}')]
+
 Should Not Be Signed By Cosign
     [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'latest')]//clr-icon[contains(@class,'color-red')]
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
 
 Should Be Signed By Cosign
     [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]// clr-icon[contains(@class,'signed')]
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+
+Should Be Signed By Notary
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-green')]
 
 Delete Accessory
     [Arguments]  ${tag}
     Retry Button Click  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-expandable-caret-button')]
     Retry Button Click  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-action-toggle')]
-    Retry Button Click  //div[@id='clr-action-menu1']/button[@class='action-item']
+    Retry Button Click  //button[contains(.,'Delete')]
     Retry Button Click  //div[contains(@class,'modal-content')]//button[contains(@class,'btn-danger')]
 
 Should be Accessory deleted

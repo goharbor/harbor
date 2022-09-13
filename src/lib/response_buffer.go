@@ -61,6 +61,11 @@ func (r *ResponseBuffer) Header() http.Header {
 	return r.header
 }
 
+// Buffer returns the buffer of ResponseBuffer
+func (r *ResponseBuffer) Buffer() []byte {
+	return r.buffer.Bytes()
+}
+
 // Flush the status code, header and data into the underlying response writer
 func (r *ResponseBuffer) Flush() (int, error) {
 	r.flushed = true

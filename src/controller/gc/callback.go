@@ -51,7 +51,10 @@ func gcCallback(ctx context.Context, p string) error {
 func gcTaskStatusChange(ctx context.Context, taskID int64, status string) error {
 	if status == job.SuccessStatus.String() && config.QuotaPerProjectEnable(ctx) {
 		go func() {
-			quota.RefreshForProjects(orm.Context())
+			err := quota.RefreshForProjects(orm.Context())
+			if err != nil {
+				log.Warningf("failed to refresh project quota, error: %v", err)
+			}
 		}()
 	}
 

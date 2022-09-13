@@ -19,9 +19,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/project"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
-	"github.com/stretchr/testify/suite"
 )
 
 var (

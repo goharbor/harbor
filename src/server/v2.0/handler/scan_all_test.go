@@ -24,6 +24,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -38,7 +40,6 @@ import (
 	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
-	"github.com/stretchr/testify/suite"
 )
 
 type ScanAllTestSuite struct {

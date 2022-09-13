@@ -11,9 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy, ElementRef, ChangeDetectorRef } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    ViewChild,
+    OnDestroy,
+    ElementRef,
+    ChangeDetectorRef,
+} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { forkJoin, Observable, Subscription } from "rxjs";
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
@@ -22,15 +29,18 @@ import { NavigatorComponent } from '../../shared/components/navigator/navigator.
 import { SessionService } from '../../shared/services/session.service';
 import { AboutDialogComponent } from '../../shared/components/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
-import { CommonRoutes } from "../../shared/entities/shared.const";
-import { THEME_ARRAY, ThemeInterface } from "../../services/theme";
-import { clone, DEFAULT_PAGE_SIZE } from "../../shared/units/utils";
-import { ThemeService } from "../../services/theme.service";
-import { AccountSettingsModalComponent } from "../account-settings/account-settings-modal.component";
-import { EventService, HarborEvent } from "../../services/event-service/event.service";
-import { SCANNERS_DOC } from "../left-side-nav/interrogation-services/scanner/scanner";
-import { ScannerService } from "../../../../ng-swagger-gen/services/scanner.service";
-import { Project } from "../../../../ng-swagger-gen/models/project";
+import { CommonRoutes } from '../../shared/entities/shared.const';
+import { THEME_ARRAY, ThemeInterface } from '../../services/theme';
+import { clone, DEFAULT_PAGE_SIZE } from '../../shared/units/utils';
+import { ThemeService } from '../../services/theme.service';
+import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
+import {
+    EventService,
+    HarborEvent,
+} from '../../services/event-service/event.service';
+import { SCANNERS_DOC } from '../left-side-nav/interrogation-services/scanner/scanner';
+import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
+import { Project } from '../../../../ng-swagger-gen/models/project';
 
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
@@ -39,11 +49,9 @@ const HAS_STYLE_MODE: string = 'styleModeLocal';
 @Component({
     selector: 'harbor-shell',
     templateUrl: 'harbor-shell.component.html',
-    styleUrls: ["harbor-shell.component.scss"]
+    styleUrls: ['harbor-shell.component.scss'],
 })
-
 export class HarborShellComponent implements OnInit, OnDestroy {
-
     @ViewChild(AccountSettingsModalComponent)
     accountSettingsModal: AccountSettingsModalComponent;
 
@@ -82,16 +90,19 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         public theme: ThemeService,
         private event: EventService,
         private cd: ChangeDetectorRef
-    ) { }
+    ) {}
 
     ngOnInit() {
         if (!this.scrollToPositionSub) {
-            this.scrollToPositionSub = this.event.subscribe( HarborEvent.SCROLL_TO_POSITION, scrollTop => {
-                if (this.scrollDiv && this.scrollDiv.nativeElement) {
-                    this.cd.detectChanges();
-                    this.scrollDiv.nativeElement.scrollTop = scrollTop;
+            this.scrollToPositionSub = this.event.subscribe(
+                HarborEvent.SCROLL_TO_POSITION,
+                scrollTop => {
+                    if (this.scrollDiv && this.scrollDiv.nativeElement) {
+                        this.cd.detectChanges();
+                        this.scrollDiv.nativeElement.scrollTop = scrollTop;
+                    }
                 }
-            });
+            );
         }
         if (this.appConfigService.isLdapMode()) {
             this.isLdapMode = true;
@@ -100,16 +111,25 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         } else if (this.appConfigService.isOidcMode()) {
             this.isOidcMode = true;
         }
-        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
-            if (searchEvt && searchEvt.trim() !== "") {
-                this.isSearchResultsOpened = true;
+        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(
+            searchEvt => {
+                if (searchEvt && searchEvt.trim() !== '') {
+                    this.isSearchResultsOpened = true;
+                }
             }
-        });
+        );
 
-        this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
-            this.isSearchResultsOpened = false;
-        });
-        if (!(localStorage && localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES)) {
+        this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(
+            close => {
+                this.isSearchResultsOpened = false;
+            }
+        );
+        if (
+            !(
+                localStorage &&
+                localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES
+            )
+        ) {
             if (this.isSystemAdmin) {
                 this.getDefaultScanner();
             }
@@ -123,7 +143,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         if (this.scrollDiv && this.scrollDiv.nativeElement) {
             this.event.publish(HarborEvent.SCROLL, {
                 url: this.router.url,
-                scrollTop: this.scrollDiv.nativeElement.scrollTop
+                scrollTop: this.scrollDiv.nativeElement.scrollTop,
             });
         }
     }
@@ -135,37 +155,49 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     }
 
     getDefaultScanner() {
-        this.scannerService.listScannersResponse({
-            pageSize: DEFAULT_PAGE_SIZE,
-            page: 1
-        }).subscribe(res => {
+        this.scannerService
+            .listScannersResponse({
+                pageSize: DEFAULT_PAGE_SIZE,
+                page: 1,
+            })
+            .subscribe(res => {
                 if (res.headers) {
-                    const xHeader: string = res.headers.get("X-Total-Count");
+                    const xHeader: string = res.headers.get('X-Total-Count');
                     const totalCount = parseInt(xHeader, 0);
                     let arr = res.body || [];
-                    if (totalCount <= DEFAULT_PAGE_SIZE) { // already gotten all scanners
+                    if (totalCount <= DEFAULT_PAGE_SIZE) {
+                        // already gotten all scanners
                         if (arr && arr.length) {
-                            this.showScannerInfo = arr.some(scanner => scanner.is_default);
+                            this.showScannerInfo = arr.some(
+                                scanner => scanner.is_default
+                            );
                         }
-                    } else { // get all the scanners in specified times
-                        const times: number = Math.ceil(totalCount / DEFAULT_PAGE_SIZE);
+                    } else {
+                        // get all the scanners in specified times
+                        const times: number = Math.ceil(
+                            totalCount / DEFAULT_PAGE_SIZE
+                        );
                         const observableList: Observable<Project[]>[] = [];
                         for (let i = 2; i <= times; i++) {
-                            observableList.push(this.scannerService.listScanners({
-                                page: i,
-                                pageSize: DEFAULT_PAGE_SIZE
-                            }));
+                            observableList.push(
+                                this.scannerService.listScanners({
+                                    page: i,
+                                    pageSize: DEFAULT_PAGE_SIZE,
+                                })
+                            );
                         }
                         forkJoin(observableList).subscribe(response => {
                             if (response && response.length) {
                                 response.forEach(item => {
                                     arr = arr.concat(item);
                                 });
-                                this.showScannerInfo = arr.some(scanner => scanner.is_default);
+                                this.showScannerInfo = arr.some(
+                                    scanner => scanner.is_default
+                                );
                             }
                         });
                     }
-                 }
+                }
             });
     }
     ngOnDestroy(): void {
@@ -183,7 +215,9 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     }
 
     public get shouldOverrideContent(): boolean {
-        return this.router.routerState.snapshot.url.toString().startsWith(CommonRoutes.EMBEDDED_SIGN_IN);
+        return this.router.routerState.snapshot.url
+            .toString()
+            .startsWith(CommonRoutes.EMBEDDED_SIGN_IN);
     }
 
     public get showSearch(): boolean {
@@ -200,8 +234,10 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         return account != null;
     }
     public get hasAdminRole(): boolean {
-        return this.session.getCurrentUser() &&
-            this.session.getCurrentUser().has_admin_role;
+        return (
+            this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role
+        );
     }
     public get withAdmiral(): boolean {
         return this.appConfigService.getConfig().with_admiral;

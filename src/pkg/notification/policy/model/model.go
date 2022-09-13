@@ -2,8 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego/orm"
 	"time"
+
+	"github.com/beego/beego/orm"
 )
 
 func init() {

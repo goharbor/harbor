@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 // const definitions

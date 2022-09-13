@@ -3,14 +3,14 @@ package latestps
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"math/rand"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/stretchr/testify/require"
 )
 
 type EvaluatorTestSuite struct {

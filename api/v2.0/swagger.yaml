@@ -2768,7 +2768,7 @@ paths:
   /usergroups:
     get:
       summary: Get all user groups information
-      description: Get all user groups information
+      description: Get all user groups information, it is open for system admin
       operationId: listUserGroups
       tags:
         - usergroup
@@ -2781,6 +2781,11 @@ paths:
           type: string
           required: false
           description: search with ldap group DN
+        - name: group_name
+          in: query
+          type: string
+          required: false
+          description: group name need to search, fuzzy matches
       responses:
         '200':
           description: Get user group successfully.
@@ -4068,6 +4073,26 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+    put:
+      summary: Stop the specific GC execution
+      description: Stop the GC execution specified by ID
+      tags:
+        - gc
+      operationId: stopGC
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/gcId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /system/gc/{gc_id}/log:
     get:
       summary: Get gc job log.
@@ -4169,6 +4194,190 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /system/purgeaudit:
+    get:
+      summary: Get purge job results.
+      description: get purge job execution history.
+      tags:
+        - purge
+      operationId: getPurgeHistory
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Get purge job results successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of history
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /system/purgeaudit/{purge_id}:
+    get:
+      summary: Get purge job status.
+      description: This endpoint let user get purge job status filtered by specific ID.
+      operationId: getPurgeJob
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      tags:
+        - purge
+      responses:
+        '200':
+          description: Get purge job results successfully.
+          schema:
+            $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Stop the specific purge audit log execution
+      description: Stop the purge audit log execution specified by ID
+      tags:
+        - purge
+      operationId: stopPurge
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'        
+  /system/purgeaudit/{purge_id}/log:
+    get:
+      summary: Get purge job log.
+      description: This endpoint let user get purge job logs filtered by specific ID.
+      operationId: getPurgeJobLog
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/purgeId'
+      tags:
+        - purge
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: Get successfully.
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /system/purgeaudit/schedule:
+    get:
+      summary: Get purge's schedule.
+      description: This endpoint is for get schedule of purge job.
+      operationId: getPurgeSchedule
+      tags:
+        - purge
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get purge job's schedule.
+          schema:
+            $ref: '#/definitions/ExecHistory'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a purge job schedule.
+      description: |
+        This endpoint is for update purge job schedule.
+      operationId: createPurgeSchedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: |
+            The purge job's schedule, it is a json object. ｜
+            The sample format is ｜
+            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} ｜
+            the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
+      tags:
+        - purge
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update purge job's schedule.
+      description: |
+        This endpoint is for update purge job schedule.
+      operationId: updatePurgeSchedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Schedule'
+          description: |
+            The purge job's schedule, it is a json object. ｜
+            The sample format is ｜
+            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} ｜
+            the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
+      tags:
+        - purge
+      responses:
+        '200':
+          description: Updated purge's schedule successfully.
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
   /system/CVEAllowlist:
     get:
       summary: Get the system level allowlist of CVE.
@@ -5386,6 +5595,121 @@ paths:
         '500':
           $ref: '#/responses/500'
 
+  /export/cve:
+    post:
+      summary: Export scan data for selected projects
+      description: Export scan data for selected projects
+      tags:
+        - scan data export
+      operationId: exportScanData
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/scanDataType'
+        - name: criteria
+          in: body
+          description: The criteria for the export
+          required: true
+          schema:
+            $ref: '#/definitions/ScanDataExportRequest'
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/ScanDataExportJob'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '405':
+          $ref: '#/responses/405'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/execution/{execution_id}:
+    get:
+      summary: Get the specific scan data export execution
+      description: Get the scan data export execution specified by ID
+      tags:
+        - scan data export
+      operationId: getScanDataExportExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ScanDataExportExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/executions:
+    get:
+      summary: Get a list of specific scan data export execution jobs for a specified user
+      description: Get a list of specific scan data export execution jobs for a specified user
+      tags:
+        - scan data export
+      operationId: getScanDataExportExecutionList
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ScanDataExportExecutionList'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /export/cve/download/{execution_id}:
+    get:
+      summary: Download the scan data export file
+      description: Download the scan data report. Default format is CSV
+      tags:
+        - scan data export
+      operationId: downloadScanData
+      produces:
+        - text/csv
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+        - name: format
+          in: query
+          type: string
+          required: false
+          description: The format of the data to be exported. e.g. CSV or PDF
+      responses:
+        '200':
+          description: Data file containing the export data
+          schema:
+            type: file
+          headers:
+            Content-Disposition:
+              type: string
+              description: Value is a CSV formatted file; filename=export.csv
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
 parameters:
   query:
     name: q
@@ -5441,7 +5765,7 @@ parameters:
     name: X-Accept-Vulnerabilities
     in: header
     type: string
-    default: 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
+    default: 'application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'
     description: |-
       A comma-separated lists of MIME types for the scan report or scan summary. The first mime type will be used when the report found for it.
       Currently the mime type supports 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0' and 'application/vnd.security.vulnerability.report; version=1.1'
@@ -5518,6 +5842,13 @@ parameters:
     required: true
     type: integer
     format: int64
+  purgeId:
+    name: purge_id
+    in: path
+    description: The ID of the purge log
+    required: true
+    type: integer
+    format: int64
   labelId:
     name: label_id
     in: path
@@ -5546,6 +5877,18 @@ parameters:
     required: true
     type: integer
     format: int64
+  scanDataType:
+    name: X-Scan-Data-Type
+    description: The type of scan data to export
+    in: header
+    type: string
+    required: true
+  userName:
+    name: user_name
+    description: The name of the user
+    in: query
+    type: string
+    required: true
 
 responses:
   '200':
@@ -7219,6 +7562,37 @@ definitions:
         type: string
         format: date-time
         description: the update time of gc job.
+  ExecHistory:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: the id of purge job.
+      job_name:
+        type: string
+        description: the job name of purge job.
+      job_kind:
+        type: string
+        description: the job kind of purge job.
+      job_parameters:
+        type: string
+        description: the job parameters of purge job.
+      schedule:
+        $ref: '#/definitions/ScheduleObj'
+      job_status:
+        type: string
+        description: the status of purge job.
+      deleted:
+        type: boolean
+        description: if purge job was deleted.
+      creation_time:
+        type: string
+        format: date-time
+        description: the creation time of purge job.
+      update_time:
+        type: string
+        format: date-time
+        description: the update time of purge job.        
   Schedule:
     type: object
     properties:
@@ -7265,7 +7639,10 @@ definitions:
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
-
+      next_scheduled_time:
+        type: string
+        format: date-time
+        description: The next time to schedule to run the job.
   Stats:
     type: object
     description: Stats provides the overall progress of the scan all process.
@@ -7849,7 +8226,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
@@ -7864,7 +8241,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
   SupportedWebhookEventTypes:
     type: object
     description: Supportted webhook event types and notify types.
@@ -8168,6 +8545,12 @@ definitions:
       storage_per_project:
         $ref: '#/definitions/IntegerConfigItem'
         description: The storage quota per project
+      audit_log_forward_endpoint:
+        $ref: '#/definitions/StringConfigItem'
+        description: The endpoint of the audit log forwarder
+      skip_audit_log_database:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether skip the audit log in database
       scan_all_policy:
         type: object
         properties:
@@ -8459,6 +8842,16 @@ definitions:
         description: The storage quota per project
         x-omitempty: true
         x-isnullable: true
+      audit_log_forward_endpoint:
+        type: string
+        description: The audit log forward endpoint
+        x-omitempty: true
+        x-isnullable: true  
+      skip_audit_log_database:
+        type: boolean
+        description: Skip audit log database
+        x-omitempty: true
+        x-isnullable: true          
   StringConfigItem:
     type: object
     properties:
@@ -8770,3 +9163,85 @@ definitions:
         type: string
         format: date-time
         description: The creation time of the accessory
+
+  ScanDataExportRequest:
+    type: object
+    description: The criteria to select the scan data to export.
+    properties:
+      job_name:
+        type: string
+        description: Name of the scan data export job
+      projects:
+        type: array
+        items:
+          type: integer
+          format: int64
+        description: A list of one or more projects for which to export the scan data, currently only one project is supported due to performance concerns, but define as array for extension in the future.
+      labels:
+        type: array
+        items:
+          type: integer
+          format: int64
+        description: A list of one or more labels for which to export the scan data, defaults to all if empty
+      repositories:
+        type: string
+        description: A list of repositories for which to export the scan data, defaults to all if empty
+      cveIds:
+        type: string
+        description: CVE-IDs for which to export data. Multiple CVE-IDs can be specified by separating using ',' and enclosed between '{}'. Defaults to all if empty
+      tags:
+        type: string
+        description: A list of tags enclosed within '{}'. Defaults to all if empty
+  ScanDataExportJob:
+    type: object
+    description: The metadata associated with the scan data export job
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The id of the scan data export job
+  ScanDataExportExecution:
+    type: object
+    description: The replication execution
+    properties:
+      id:
+        type: integer
+        description: The ID of the execution
+      user_id:
+        type: integer
+        description: The ID if the user triggering the export job
+      status:
+        type: string
+        description: The status of the execution
+      trigger:
+        type: string
+        description: The trigger mode
+      start_time:
+        type: string
+        format: date-time
+        description: The start time
+      end_time:
+        type: string
+        format: date-time
+        description: The end time
+      status_text:
+        type: string
+        x-omitempty: false
+        description: The status text
+      user_name:
+        type: string
+        x-omitempty: false
+        description: The name of the user triggering the job
+      file_present:
+        type: boolean
+        x-omitempty: false
+        description: Indicates whether the export artifact is present in registry
+  ScanDataExportExecutionList:
+    type: object
+    description: The list of scan data export executions
+    properties:
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/ScanDataExportExecution'
+        description: The list of scan data export executions

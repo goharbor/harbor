@@ -1,19 +1,26 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    ViewChild,
+} from '@angular/core';
 import { fromEvent, Subject } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 import { HelmChartVersion } from '../helm-chart.interface.service';
-import { Label, LabelService } from "../../../../../shared/services";
-import { ErrorHandler } from "../../../../../shared/units/error-handler";
-import { ResourceType } from "../../../../../shared/entities/shared.const";
+import { Label, LabelService } from '../../../../../shared/services';
+import { ErrorHandler } from '../../../../../shared/units/error-handler';
+import { ResourceType } from '../../../../../shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-resource-label-marker',
     templateUrl: './label-marker.component.html',
-    styleUrls: ['./label-marker.component.scss']
+    styleUrls: ['./label-marker.component.scss'],
 })
-
 export class LabelMarkerComponent implements OnInit {
-
     @Input() labels: Label[] = [];
     @Input() projectName: string;
     @Input() resource: HelmChartVersion;
@@ -30,7 +37,7 @@ export class LabelMarkerComponent implements OnInit {
 
     labelChangeDebouncer: Subject<any> = new Subject();
 
-    @ViewChild('filterInput', {static: true}) filterInputRef: ElementRef;
+    @ViewChild('filterInput', { static: true }) filterInputRef: ElementRef;
 
     ngOnInit(): void {
         this.sortedLabels = this.labels;
@@ -39,26 +46,36 @@ export class LabelMarkerComponent implements OnInit {
             .pipe(debounceTime(500))
             .subscribe(() => this.refresh());
 
-        this.labelChangeDebouncer.pipe(debounceTime(1000)).subscribe(() => this.changeEvt.emit());
+        this.labelChangeDebouncer
+            .pipe(debounceTime(1000))
+            .subscribe(() => this.changeEvt.emit());
     }
 
     constructor(
         private labelService: LabelService,
         private errorHandler: ErrorHandler,
-        private cdr: ChangeDetectorRef) { }
+        private cdr: ChangeDetectorRef
+    ) {}
 
     refresh() {
         this.loading = true;
         if (this.resourceType === ResourceType.CHART_VERSION) {
-            this.labelService.getChartVersionLabels(
-                this.projectName,
-                this.resource.name,
-                (this.resource as HelmChartVersion).version)
-                .pipe(finalize(() => {
-                    this.loading = false;
-                    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-                    setTimeout(() => clearInterval(hnd), 2000);
-                }))
+            this.labelService
+                .getChartVersionLabels(
+                    this.projectName,
+                    this.resource.name,
+                    (this.resource as HelmChartVersion).version
+                )
+                .pipe(
+                    finalize(() => {
+                        this.loading = false;
+                        let hnd = setInterval(
+                            () => this.cdr.markForCheck(),
+                            100
+                        );
+                        setTimeout(() => clearInterval(hnd), 2000);
+                    })
+                )
                 .subscribe(chartVersionLabels => {
                     for (let label of chartVersionLabels) {
                         this.markedMap.set(label.id, true);
@@ -73,16 +90,20 @@ export class LabelMarkerComponent implements OnInit {
             return;
         }
         this.markingMap.set(label.id, true);
-        this.labelService.markChartLabel(
-            this.projectName,
-            this.resource.name,
-            (this.resource as HelmChartVersion).version,
-            label)
-            .pipe(finalize(() => {
-                this.markingMap.set(label.id, false);
-                let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 5000);
-            }))
+        this.labelService
+            .markChartLabel(
+                this.projectName,
+                this.resource.name,
+                (this.resource as HelmChartVersion).version,
+                label
+            )
+            .pipe(
+                finalize(() => {
+                    this.markingMap.set(label.id, false);
+                    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+                    setTimeout(() => clearInterval(hnd), 5000);
+                })
+            )
             .subscribe(
                 () => {
                     this.markedMap.set(label.id, true);
@@ -100,16 +121,20 @@ export class LabelMarkerComponent implements OnInit {
             return;
         }
         this.markingMap.set(label.id, true);
-        this.labelService.unmarkChartLabel(
-            this.projectName,
-            this.resource.name,
-            (this.resource as HelmChartVersion).version,
-            label)
-            .pipe(finalize(() => {
-                this.markingMap.set(label.id, false);
-                let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 5000);
-            }))
+        this.labelService
+            .unmarkChartLabel(
+                this.projectName,
+                this.resource.name,
+                (this.resource as HelmChartVersion).version,
+                label
+            )
+            .pipe(
+                finalize(() => {
+                    this.markingMap.set(label.id, false);
+                    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+                    setTimeout(() => clearInterval(hnd), 5000);
+                })
+            )
             .subscribe(
                 () => {
                     this.markedMap.set(label.id, false);
@@ -131,7 +156,8 @@ export class LabelMarkerComponent implements OnInit {
     }
 
     getSortedLabels(): Label[] {
-        return this.labels.filter(l => l.name.includes(this.labelFilter))
+        return this.labels
+            .filter(l => l.name.includes(this.labelFilter))
             .sort((a, b) => {
                 if (this.isMarked(a) && !this.isMarked(b)) {
                     return -1;

@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
@@ -78,7 +79,7 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			if authErr == nil {
 				authErr = errors.Errorf("unauthorized: %s", err)
 			}
-			logger.Errorf("Serve http request '%q %q' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
+			logger.Errorf("Serve http request '%s %s' failed with error: %s", lib.TrimLineBreaks(req.Method), req.URL.String(), authErr.Error())
 			w.WriteHeader(http.StatusUnauthorized)
 			writeDate(w, []byte(authErr.Error()))
 			return

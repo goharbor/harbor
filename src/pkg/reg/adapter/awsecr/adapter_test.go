@@ -3,8 +3,6 @@ package awsecr
 import (
 	"errors"
 	"fmt"
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
-	"github.com/stretchr/testify/require"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,11 +11,14 @@ import (
 	"testing"
 	"time"
 
+	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/common/utils/test"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAdapter_NewAdapter(t *testing.T) {

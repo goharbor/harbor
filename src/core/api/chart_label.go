@@ -3,12 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/label/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 const (
@@ -107,5 +107,8 @@ func (cla *ChartLabelAPI) RemoveLabel() {
 
 // GetLabels gets labels for the specified chart version.
 func (cla *ChartLabelAPI) GetLabels() {
+	if !cla.requireAccess(rbac.ActionList) {
+		return
+	}
 	cla.getLabelsOfResource(common.ResourceTypeChart, cla.chartFullName)
 }

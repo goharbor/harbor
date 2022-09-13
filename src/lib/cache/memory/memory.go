@@ -15,12 +15,15 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 type entry struct {
@@ -41,14 +44,15 @@ type Cache struct {
 }
 
 // Contains returns true if key exists
-func (c *Cache) Contains(key string) bool {
+func (c *Cache) Contains(ctx context.Context, key string) bool {
 	e, ok := c.storage.Load(c.opts.Key(key))
 	if !ok {
 		return false
 	}
 
 	if e.(*entry).isExpirated() {
-		c.Delete(c.opts.Key(key))
+		err := c.Delete(ctx, c.opts.Key(key))
+		log.Errorf("failed to delete cache in Contains() method when it's expired, error: %v", err)
 		return false
 	}
 
@@ -56,13 +60,13 @@ func (c *Cache) Contains(key string) bool {
 }
 
 // Delete delete item from cache by key
-func (c *Cache) Delete(key string) error {
+func (c *Cache) Delete(ctx context.Context, key string) error {
 	c.storage.Delete(c.opts.Key(key))
 	return nil
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(key string, value interface{}) error {
+func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
 	v, ok := c.storage.Load(c.opts.Key(key))
 	if !ok {
 		return cache.ErrNotFound
@@ -70,7 +74,10 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		c.Delete(c.opts.Key(key))
+		err := c.Delete(ctx, c.opts.Key(key))
+		if err != nil {
+			log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
+		}
 		return cache.ErrNotFound
 	}
 
@@ -82,12 +89,12 @@ func (c *Cache) Fetch(key string, value interface{}) error {
 }
 
 // Ping ping the cache
-func (c *Cache) Ping() error {
+func (c *Cache) Ping(ctx context.Context) error {
 	return nil
 }
 
 // Save cache the value by key
-func (c *Cache) Save(key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return fmt.Errorf("failed to encode value, key %s, error: %v", key, err)
@@ -108,6 +115,29 @@ func (c *Cache) Save(key string, value interface{}, expiration ...time.Duration)
 	})
 
 	return nil
+}
+
+// Keys returns the key matched by prefixes.
+func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
+	// if no prefix, means match all keys.
+	matchAll := len(prefixes) == 0
+	// range map to get all keys
+	keys := make([]string, 0)
+	c.storage.Range(func(k, v interface{}) bool {
+		ks := k.(string)
+		if matchAll {
+			keys = append(keys, ks)
+		} else {
+			for _, p := range prefixes {
+				if strings.HasPrefix(ks, c.opts.Key(p)) {
+					keys = append(keys, strings.TrimPrefix(ks, c.opts.Prefix))
+				}
+			}
+		}
+		return true
+	})
+
+	return keys, nil
 }
 
 // New returns memory cache

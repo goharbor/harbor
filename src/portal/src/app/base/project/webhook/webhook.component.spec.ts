@@ -2,58 +2,55 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WebhookComponent } from './webhook.component';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectWebhookService } from './webhook.service';
-import { MessageHandlerService } from "../../../shared/services/message-handler.service";
+import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { delay } from "rxjs/operators";
-import { AddWebhookFormComponent } from "./add-webhook-form/add-webhook-form.component";
-import { AddWebhookComponent } from "./add-webhook/add-webhook.component";
-import { ConfirmationDialogComponent } from "../../../shared/components/confirmation-dialog";
+import { delay } from 'rxjs/operators';
+import { AddWebhookFormComponent } from './add-webhook-form/add-webhook-form.component';
+import { AddWebhookComponent } from './add-webhook/add-webhook.component';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog';
 import { UserPermissionService } from '../../../shared/services';
-import { InlineAlertComponent } from "../../../shared/components/inline-alert/inline-alert.component";
-import { SharedTestingModule } from "../../../shared/shared.module";
-import { WebhookPolicy } from "../../../../../ng-swagger-gen/models/webhook-policy";
-import { WebhookService } from "../../../../../ng-swagger-gen/services/webhook.service";
-import { HttpHeaders, HttpResponse } from "@angular/common/http";
-import { Registry } from "../../../../../ng-swagger-gen/models/registry";
+import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
+import { SharedTestingModule } from '../../../shared/shared.module';
+import { WebhookPolicy } from '../../../../../ng-swagger-gen/models/webhook-policy';
+import { WebhookService } from '../../../../../ng-swagger-gen/services/webhook.service';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Registry } from '../../../../../ng-swagger-gen/models/registry';
 
 describe('WebhookComponent', () => {
     let component: WebhookComponent;
     let fixture: ComponentFixture<WebhookComponent>;
     const mockMessageHandlerService = {
-        handleError: () => { }
+        handleError: () => {},
     };
     const mockedMetadata = {
-        "event_type": [
-            "projectQuota",
-            "pullImage",
-            "scanningFailed",
-            "uploadChart",
-            "deleteChart",
-            "downloadChart",
-            "scanningCompleted",
-            "pushImage",
-            "deleteImage"
+        event_type: [
+            'projectQuota',
+            'pullImage',
+            'scanningFailed',
+            'uploadChart',
+            'deleteChart',
+            'downloadChart',
+            'scanningCompleted',
+            'pushImage',
+            'deleteImage',
         ],
-        "notify_type": [
-            "http",
-            "slack"
-        ]
+        notify_type: ['http', 'slack'],
     };
     const mockedWehook: WebhookPolicy = {
         id: 1,
         project_id: 1,
         name: 'test',
         description: 'just a test webhook',
-        targets: [{
-            address: 'https://test.com',
-            type: 'http',
-            auth_header: null,
-            skip_cert_verify: true,
-        }],
-        event_types: [
-            'projectQuota'
+        targets: [
+            {
+                address: 'https://test.com',
+                type: 'http',
+                auth_header: null,
+                skip_cert_verify: true,
+            },
         ],
+        event_types: ['projectQuota'],
         creator: null,
         creation_time: null,
         update_time: null,
@@ -62,7 +59,7 @@ describe('WebhookComponent', () => {
     const mockProjectWebhookService = {
         eventTypeToText(eventType: string) {
             return eventType;
-        }
+        },
     };
     const mockedWebhookService = {
         GetSupportedEventTypes() {
@@ -72,18 +69,22 @@ describe('WebhookComponent', () => {
             return of([]).pipe(delay(0));
         },
         ListWebhookPoliciesOfProjectResponse() {
-            const response: HttpResponse<Array<Registry>> = new HttpResponse<Array<Registry>>({
-                headers: new HttpHeaders({'x-total-count': [mockedWehook].length.toString()}),
-                body: [mockedWehook]
+            const response: HttpResponse<Array<Registry>> = new HttpResponse<
+                Array<Registry>
+            >({
+                headers: new HttpHeaders({
+                    'x-total-count': [mockedWehook].length.toString(),
+                }),
+                body: [mockedWehook],
             });
             return of(response).pipe(delay(0));
         },
         UpdateWebhookPolicyOfProject() {
             return of(true);
-        }
+        },
     };
     const mockActivatedRoute = {
-        RouterparamMap: of({ get: (key) => 'value' }),
+        RouterparamMap: of({ get: key => 'value' }),
         snapshot: {
             parent: {
                 parent: {
@@ -92,42 +93,46 @@ describe('WebhookComponent', () => {
                         projectResolver: {
                             ismember: true,
                             name: 'library',
-                        }
-                    }
-                }
-            }
-        }
+                        },
+                    },
+                },
+            },
+        },
     };
     const mockUserPermissionService = {
         getPermission() {
             return of(true).pipe(delay(0));
-        }
+        },
     };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                SharedTestingModule
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [
                 WebhookComponent,
                 AddWebhookComponent,
                 AddWebhookFormComponent,
                 InlineAlertComponent,
-                ConfirmationDialogComponent
+                ConfirmationDialogComponent,
             ],
             providers: [
-                { provide: ProjectWebhookService, useValue: mockProjectWebhookService },
+                {
+                    provide: ProjectWebhookService,
+                    useValue: mockProjectWebhookService,
+                },
                 { provide: WebhookService, useValue: mockedWebhookService },
-                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: mockMessageHandlerService,
+                },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
-                { provide: UserPermissionService, useValue: mockUserPermissionService },
-            ]
-        })
-            .compileComponents();
+                {
+                    provide: UserPermissionService,
+                    useValue: mockUserPermissionService,
+                },
+            ],
+        }).compileComponents();
     });
 
     beforeEach(async () => {
@@ -148,9 +153,11 @@ describe('WebhookComponent', () => {
         component.newWebhook();
         fixture.detectChanges();
         await fixture.whenStable();
-        const body: HTMLElement = fixture.nativeElement.querySelector(".modal-body");
+        const body: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(body).toBeTruthy();
-        const title: HTMLElement = fixture.nativeElement.querySelector(".modal-title");
+        const title: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-title');
         expect(title.innerText).toEqual('WEBHOOK.ADD_WEBHOOK');
     });
     it('should open edit modal', async () => {
@@ -159,11 +166,14 @@ describe('WebhookComponent', () => {
         component.editWebhook();
         fixture.detectChanges();
         await fixture.whenStable();
-        const body: HTMLElement = fixture.nativeElement.querySelector(".modal-body");
+        const body: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(body).toBeTruthy();
-        const title: HTMLElement = fixture.nativeElement.querySelector(".modal-title");
+        const title: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-title');
         expect(title.innerText).toEqual('WEBHOOK.EDIT_WEBHOOK');
-        const nameInput: HTMLInputElement = fixture.nativeElement.querySelector("#name");
+        const nameInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#name');
         expect(nameInput.value).toEqual('test');
     });
     it('should disable webhook', async () => {
@@ -173,10 +183,13 @@ describe('WebhookComponent', () => {
         component.switchWebhookStatus();
         fixture.detectChanges();
         await fixture.whenStable();
-        const button: HTMLButtonElement = fixture.nativeElement.querySelector("#dialog-action-disable");
+        const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+            '#dialog-action-disable'
+        );
         button.dispatchEvent(new Event('click'));
         await fixture.whenStable();
-        const body: HTMLElement = fixture.nativeElement.querySelector(".modal-body");
+        const body: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(body).toBeFalsy();
     });
     it('should enable webhook', async () => {
@@ -186,13 +199,12 @@ describe('WebhookComponent', () => {
         component.switchWebhookStatus();
         fixture.detectChanges();
         await fixture.whenStable();
-        const buttonEnable: HTMLButtonElement = fixture.nativeElement.querySelector("#dialog-action-enable");
+        const buttonEnable: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#dialog-action-enable');
         buttonEnable.dispatchEvent(new Event('click'));
         await fixture.whenStable();
-        const bodyEnable: HTMLElement = fixture.nativeElement.querySelector(".modal-body");
+        const bodyEnable: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(bodyEnable).toBeFalsy();
     });
 });
-
-
-

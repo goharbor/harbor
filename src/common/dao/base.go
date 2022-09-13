@@ -17,14 +17,15 @@ package dao
 import (
 	"errors"
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 	"strconv"
 	"sync"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 )
 
 const (
@@ -73,7 +74,6 @@ func InitDatabase(database *models.Database) error {
 }
 
 func getDatabase(database *models.Database) (db Database, err error) {
-
 	switch database.Type {
 	case "", "postgresql":
 		db = NewPGSQL(

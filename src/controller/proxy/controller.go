@@ -23,6 +23,8 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -33,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/opencontainers/go-digest"
 )
 
 const (
@@ -98,8 +99,8 @@ func ControllerInstance() Controller {
 func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error {
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
-	err := c.cache.Fetch(TrimmedManifestlist+art.Digest, &trimmedDigest)
-	if err == cache.ErrNotFound {
+	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
+	if errors.Is(err, cache.ErrNotFound) {
 		// skip to update digest, continue
 	} else if err != nil {
 		// for other error, return
@@ -169,23 +170,22 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
 
-	err = c.cache.Fetch(manifestListKey(art.Repository, string(desc.Digest)), &content)
+	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, string(desc.Digest)), &content)
 	if err != nil {
-		if err == cache.ErrNotFound {
+		if errors.Is(err, cache.ErrNotFound) {
 			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
 		} else {
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)
 		}
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil
 	}
-	err = c.cache.Fetch(manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
+	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
 	if err != nil {
 		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
 		return false, nil, nil
 	}
 	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
 	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
-
 }
 
 func manifestListKey(repo, dig string) string {
@@ -217,7 +217,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 
 	// Push manifest in background
 	go func(operator string) {
-		bCtx := orm.Context()
+		bCtx := orm.Copy(ctx)
 		a, err := c.local.GetManifest(bCtx, art)
 		if err != nil {
 			log.Errorf("failed to get manifest, error %v", err)
@@ -228,12 +228,12 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 			if len(artInfo.Digest) == 0 {
 				artInfo.Digest = dig
 			}
-			c.waitAndPushManifest(ctx, remoteRepo, man, artInfo, ct, remote)
+			c.waitAndPushManifest(bCtx, remoteRepo, man, artInfo, ct, remote)
 		}
 
 		// Query artifact after push
 		if a == nil {
-			a, err = c.local.GetManifest(ctx, art)
+			a, err = c.local.GetManifest(bCtx, art)
 			if err != nil {
 				log.Errorf("failed to get manifest, error %v", err)
 			}

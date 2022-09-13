@@ -22,12 +22,13 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
-	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type fakeRegistry struct{}
@@ -101,6 +102,10 @@ func (f *fakeRegistry) CanBeMount(digest string) (bool, string, error) {
 }
 func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) error {
 	return nil
+}
+
+func (f *fakeRegistry) ListTags(repository string) (tags []string, err error) {
+	return nil, nil
 }
 
 func TestFactory(t *testing.T) {

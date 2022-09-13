@@ -13,45 +13,59 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-  CanActivate, Router,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  CanActivateChild
+    CanActivate,
+    Router,
+    ActivatedRouteSnapshot,
+    RouterStateSnapshot,
+    CanActivateChild,
 } from '@angular/router';
 import { AppConfigService } from '../../services/app-config.service';
 import { Observable } from 'rxjs';
-import { CommonRoutes } from "../entities/shared.const";
+import { CommonRoutes } from '../entities/shared.const';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class ModeGuard implements CanActivate, CanActivateChild {
-  constructor(
-    private router: Router,
-    private appConfigService: AppConfigService) { }
+    constructor(
+        private router: Router,
+        private appConfigService: AppConfigService
+    ) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    // Show the right sign-in page for different modes
-    return new Observable((observer) => {
-      if (this.appConfigService.isIntegrationMode()) {
-        if (state.url.startsWith(CommonRoutes.SIGN_IN)) {
-          this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], route.queryParams);
-          observer.next(false);
-        } else {
-          observer.next(true);
-        }
-      } else {
-        if (state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
-          this.router.navigate([CommonRoutes.SIGN_IN], route.queryParams);
-          observer.next(false);
-        } else {
-          observer.next(true);
-        }
-      }
-    });
-  }
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<boolean> | boolean {
+        // Show the right sign-in page for different modes
+        return new Observable(observer => {
+            if (this.appConfigService.isIntegrationMode()) {
+                if (state.url.startsWith(CommonRoutes.SIGN_IN)) {
+                    this.router.navigate(
+                        [CommonRoutes.EMBEDDED_SIGN_IN],
+                        route.queryParams
+                    );
+                    observer.next(false);
+                } else {
+                    observer.next(true);
+                }
+            } else {
+                if (state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+                    this.router.navigate(
+                        [CommonRoutes.SIGN_IN],
+                        route.queryParams
+                    );
+                    observer.next(false);
+                } else {
+                    observer.next(true);
+                }
+            }
+        });
+    }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    return this.canActivate(route, state);
-  }
+    canActivateChild(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<boolean> | boolean {
+        return this.canActivate(route, state);
+    }
 }

@@ -38,9 +38,7 @@ Helm Repo Push
 
 Helm Chart Push
     [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/helm_push_chart.sh ${ip} ${user} ${pwd} ${chart_file} ${archive} ${project} ${repo_name} ${verion}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
+    Wait Unitl Command Success  ./tests/robot-cases/Group0-Util/helm_push_chart.sh ${ip} ${user} ${pwd} ${chart_file} ${archive} ${project} ${repo_name} ${verion}
 
 Helm3.7 Registry Login
     [Arguments]  ${ip}  ${user}  ${password}

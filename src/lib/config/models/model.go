@@ -15,7 +15,7 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/orm"
 )
 
 // Email ...
@@ -105,4 +105,8 @@ type GroupConf struct {
 	SearchScope         int    `json:"ldap_group_search_scope"`
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
+}
+
+type GDPRSetting struct {
+	DeleteUser bool `json:"user_delete,omitempty"`
 }

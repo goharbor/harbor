@@ -21,8 +21,9 @@ import (
 	"time"
 
 	"github.com/docker/distribution/health"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 func TestStringOfHealthy(t *testing.T) {

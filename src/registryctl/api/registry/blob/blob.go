@@ -4,15 +4,15 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/lib/log"
-	tracelib "github.com/goharbor/harbor/src/lib/trace"
-	"github.com/goharbor/harbor/src/registryctl/api"
-
 	"github.com/docker/distribution/registry/storage"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/goharbor/harbor/src/lib/log"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	"github.com/goharbor/harbor/src/registryctl/api"
 )
 
 const tracerName = "goharbor/harbor/src/registryctl/api/registry/blob"

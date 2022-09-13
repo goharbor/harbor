@@ -161,6 +161,9 @@
     "PLACEHOLDER": "搜索{{param}}...",
     "PLACEHOLDER_VIC": "搜索Registry..."
   },
+  "TOP_NAV": {
+    "DATETIME_RENDERING_DEFAULT": "默認"
+  },
   "SIDE_NAV":{
     "DASHBOARD": "儀表板",
     "PROJECTS": "項目",
@@ -249,7 +252,7 @@
     "QUOTA_UNLIMIT_TIP": "如果你想要對存儲不設置上限,請輸入-1。",
     "TYPE": "Type",
     "PROXY_CACHE": "Proxy Cache",
-    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay and Google GCR registries.",
+    "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR and Github GHCR registries.",
     "ENDPOINT": "Endpoint",
     "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
     "NO_PROJECT": "We couldn't find any projects"
@@ -651,7 +654,9 @@
     "BANDWIDTH": "Bandwidth",
     "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
     "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
-    "UNLIMITED": "Unlimited"
+    "UNLIMITED": "Unlimited",
+    "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
+    "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field"
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",
@@ -1081,6 +1086,12 @@
   },
   "PUSH_IMAGE":{
     "TITLE": "推送鏡像的Docker命令",
+    "DOCKER": "Docker",
+    "HELM": "Helm",
+    "CNAB": "CNAB",
+    "TAG_COMMAND_CHART": "Package a chart for this project:",
+    "PUSH_COMMAND_CHART": "Push a chart to this project:",
+    "PUSH_COMMAND_CNAB": "Push a CNAB to this project:",
     "TOOLTIP": "推送一個鏡像到當前項目的參考命令。",
     "TAG_COMMAND": "在項目中標記鏡像：",
     "PUSH_COMMAND": "推送鏡像到當前項目：",
@@ -1094,6 +1105,7 @@
     "IMAGE": "鏡像",
     "CHART":"CHART",
     "CNAB":"CNAB",
+    "WASM": "WASM",
     "TAGGED":"包含標籤",
     "UNTAGGED": "不含有Tag",
     "ALL": "所有",
@@ -1169,7 +1181,8 @@
     "UNLIMITED": "不設限",
     "INVALID_INPUT": "輸入錯誤",
     "PLACEHOLDER": "我們找不到任何可以配置定額的項目",
-    "FILTER_PLACEHOLDER": "Search by name(exact match)"
+    "FILTER_PLACEHOLDER": "Search by name(exact match)",
+    "QUOTA_USED": "Quota used"
   },
   "WEEKLY":{
     "MONDAY": "週一",
@@ -1708,5 +1721,45 @@
     "CO_SIGN": "Cosign",
     "NOTARY": "Notary",
     "PLACEHOLDER": "We couldn't find any accessories!"
+  },
+  "CLEARANCES": {
+    "CLEARANCES": "Clean Up",
+    "AUDIT_LOG": "Log Rotation",
+    "LAST_COMPLETED": "Last completed",
+    "NEXT_SCHEDULED_TIME": "Next scheduled time",
+    "SCHEDULE_TO_PURGE": "Schedule to purge",
+    "KEEP_IN": "Keep records in",
+    "KEEP_IN_TOOLTIP": "Keep the records in this interval",
+    "KEEP_IN_ERROR": "The value of this item must be an integer, and the time value must be greater than 0 and less than 10000 days",
+    "DAYS": "Days",
+    "HOURS": "Hours",
+    "INCLUDED_OPERATIONS": "Included operations",
+    "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
+    "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+    "PURGE_NOW": "PURGE NOW",
+    "PURGE_NOW_SUCCESS": "Purge triggered successfully",
+    "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
+    "PURGE_HISTORY": "Purge History",
+    "FORWARD_ENDPOINT": "Audit Log Forward Syslog Endpoint",
+    "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+    "SKIP_DATABASE": "Skip Audit Log Database",
+    "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
+    "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",
+    "STOP_PURGE_SUCCESS": "Trigger stopping purging operation successfully",
+    "NO_GC_RECORDS": "We couldn't find any GC histories!",
+    "NO_PURGE_RECORDS": "We couldn't find any purge histories!"
+  },
+  "CVE_EXPORT": {
+    "EXPORT_SOME_PROJECTS": "Export CVEs",
+    "ALL_PROJECTS": "All projects",
+    "EXPORT_TITLE": "Export CVE",
+    "EXPORT_SUBTITLE": "Set exporting conditions",
+    "EXPORT_CVE_FILTER_HELP_TEXT": "Enter multiple comma separated cveIds",
+    "CVE_IDS": "CVE IDs",
+    "EXPORT_BUTTON": "EXPORT",
+    "JOB_NAME": "Job Name",
+    "JOB_NAME_REQUIRED": "Job name is required",
+    "JOB_NAME_EXISTING": "Job name already exists",
+    "TRIGGER_EXPORT_SUCCESS": "Trigger exporting CVEs successfully!"
   }
 }

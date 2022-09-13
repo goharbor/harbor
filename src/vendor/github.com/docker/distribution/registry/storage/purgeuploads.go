@@ -59,7 +59,7 @@ func PurgeUploads(ctx context.Context, driver storageDriver.StorageDriver, older
 // file, so gather files by UUID with a date from startedAt.
 func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriver) (map[string]uploadData, []error) {
 	var errors []error
-	uploads := make(map[string]uploadData, 0)
+	uploads := make(map[string]uploadData)
 
 	inUploadDir := false
 	root, err := pathFor(repositoriesRootPathSpec{})

@@ -23,12 +23,12 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // FetchArtifacts gets resources from Huawei SWR
 func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
-
 	resources := []*model.Resource{}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/repositories?filter=center::self", a.registry.URL)
@@ -66,7 +66,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		resources = append(resources, resource)
 	}
 	return resources, nil
-
 }
 
 // ManifestExist check the manifest of Huawei SWR
@@ -110,8 +109,8 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 	if err != nil {
 		return exist, nil, err
 	}
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	contentType := resp.Header.Get("Content-Type")
+	contentLen := resp.Header.Get("Content-Length")
 	len, _ := strconv.Atoi(contentLen)
 
 	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(len)}, nil

@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.17.6
+#							golang:1.18.5
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -82,7 +82,7 @@ DEVFLAG=true
 NOTARYFLAG=false
 TRIVYFLAG=false
 HTTPPROXY=
-BUILDBIN=false
+BUILDBIN=true
 NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
 CHARTFLAG=false
@@ -111,8 +111,8 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.0-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.22.0
-TRIVYADAPTERVERSION=v0.25.0
+TRIVYVERSION=v0.29.2
+TRIVYADAPTERVERSION=v0.30.0
 
 # version of chartmuseum for pulling the source code
 CHARTMUSEUM_SRC_TAG=v0.14.0
@@ -157,7 +157,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.17.6
+GOBUILDIMAGE=golang:1.18.5
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -346,7 +346,7 @@ gen_apis: lint_apis
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.1.0
+MOCKERY_VERSION=v2.14.0
 MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
@@ -516,16 +516,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis mocks_check misspell gofmt commentfmt golint govet
-
-gofmt:
-	@echo checking gofmt...
-	@res=$$(gofmt -d -e -s $$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print)); \
-	if [ -n "$${res}" ]; then \
-		echo checking gofmt fail... ; \
-		echo "$${res}"; \
-		exit 1; \
-	fi
+go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
@@ -541,13 +532,13 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-golint:
-	@echo checking golint...
-	@go list ./... | grep -v -E 'vendor|test' | xargs fgt golint
-
-govet:
-	@echo checking govet...
-	@cd src;go list ./... | grep -v -E 'vendor|test' | xargs go vet
+# golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
+lint:
+	@echo checking lint
+	@echo $(GOLANGCI_LINT)
+	@cd ./src/; $(GOLANGCI_LINT) -v run ./...;
 
 pushimage:
 	@echo "pushing harbor images ..."

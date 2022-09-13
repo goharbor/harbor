@@ -16,6 +16,7 @@ package auditlog
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"

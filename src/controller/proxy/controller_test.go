@@ -16,7 +16,14 @@ package proxy
 
 import (
 	"context"
+	"io"
+	"testing"
+
 	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
@@ -24,11 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
-	"github.com/opencontainers/go-digest"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"io"
-	"testing"
 )
 
 type localInterfaceMock struct {

@@ -17,12 +17,12 @@ package requestid
 import (
 	"net/http"
 
-	tracelib "github.com/goharbor/harbor/src/lib/trace"
-	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
-	"github.com/google/uuid"
+	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	"github.com/goharbor/harbor/src/server/middleware"
 )
 
 // HeaderXRequestID X-Request-ID header

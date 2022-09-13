@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // SystemInfoCollectorName ...
@@ -68,7 +69,11 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 	}
 	defer res.Body.Close()
 	var sysInfoResponse responseSysInfo
-	json.NewDecoder(res.Body).Decode(&sysInfoResponse)
+	err = json.NewDecoder(res.Body).Decode(&sysInfoResponse)
+	if err != nil {
+		log.Errorf("failed to decode res.Body into sysInfoResponse, error: %v", err)
+		return result
+	}
 	result = append(result, harborSysInfo.MustNewConstMetric(1,
 		sysInfoResponse.AuthMode,
 		sysInfoResponse.HarborVersion,

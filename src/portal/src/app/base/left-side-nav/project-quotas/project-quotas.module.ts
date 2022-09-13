@@ -12,30 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { NgModule } from "@angular/core";
-import { SharedModule } from "../../../shared/shared.module";
-import { RouterModule, Routes } from "@angular/router";
-import { ProjectQuotasContainerComponent } from "./project-quotas-container.component";
-import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
-import { EditProjectQuotasComponent } from "./project-quotas/edit-project-quotas/edit-project-quotas.component";
-
+import { NgModule } from '@angular/core';
+import { SharedModule } from '../../../shared/shared.module';
+import { RouterModule, Routes } from '@angular/router';
+import { ProjectQuotasContainerComponent } from './project-quotas-container.component';
+import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
+import { EditProjectQuotasComponent } from './project-quotas/edit-project-quotas/edit-project-quotas.component';
 
 const routes: Routes = [
     {
         path: '',
-        component: ProjectQuotasContainerComponent
+        component: ProjectQuotasContainerComponent,
     },
 ];
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes),
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
     declarations: [
         ProjectQuotasContainerComponent,
         ProjectQuotasComponent,
-        EditProjectQuotasComponent
+        EditProjectQuotasComponent,
     ],
 })
-export class ProjectQuotasModule {
-}
+export class ProjectQuotasModule {}

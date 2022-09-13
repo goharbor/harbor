@@ -16,15 +16,14 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	"fmt"
-	"strconv"
 
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -245,7 +244,6 @@ func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *h
 
 	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
 	dh.handleJSONData(w, req, http.StatusOK, executions)
-
 }
 
 // HandleGetJobsReq is implementation of method defined in interface 'Handler'
@@ -278,8 +276,8 @@ func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Reques
 
 	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, data)
 
-	w.Header().Set(http.CanonicalHeaderKey("Accept"), "application/json")
-	w.Header().Set(http.CanonicalHeaderKey("content-type"), "application/json")
+	w.Header().Set("Accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	writeDate(w, data)
 }

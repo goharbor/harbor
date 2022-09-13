@@ -1,14 +1,33 @@
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package handler
 
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
@@ -18,8 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
-	"strings"
-	"time"
 )
 
 func newNotificationPolicyAPI() *notificationPolicyAPI {
@@ -36,6 +53,21 @@ type notificationPolicyAPI struct {
 }
 
 func (n *notificationPolicyAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+	return nil
+}
+
+func (n *notificationPolicyAPI) requirePolicyInProject(ctx context.Context, projectIDOrName interface{}, policyID int64) error {
+	projectID, err := getProjectID(ctx, projectIDOrName)
+	if err != nil {
+		return err
+	}
+	l, err := n.webhookPolicyMgr.Get(ctx, policyID)
+	if err != nil {
+		return err
+	}
+	if projectID != l.ProjectID {
+		return errors.NotFoundError(fmt.Errorf("project id:%d, webhook policy id: %d not found", projectID, policyID))
+	}
 	return nil
 }
 
@@ -83,7 +115,9 @@ func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context
 	}
 
 	policy := &policy_model.Policy{}
-	lib.JSONCopy(policy, params.Policy)
+	if err := lib.JSONCopy(policy, params.Policy); err != nil {
+		log.Warningf("failed to call JSONCopy on notification policy when CreateWebhookPolicyOfProject, error: %v", err)
+	}
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
@@ -111,9 +145,18 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
 	}
-
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+	policyID := params.WebhookPolicyID
+	if err := n.requirePolicyInProject(ctx, projectID, policyID); err != nil {
+		return n.SendError(ctx, err)
+	}
 	policy := &policy_model.Policy{}
-	lib.JSONCopy(policy, params.Policy)
+	if err := lib.JSONCopy(policy, params.Policy); err != nil {
+		log.Warningf("failed to call JSONCopy on notification policy when UpdateWebhookPolicyOfProject, error: %v", err)
+	}
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
@@ -122,10 +165,7 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context
 		return n.SendError(ctx, err)
 	}
 
-	projectID, err := getProjectID(ctx, projectNameOrID)
-	if err != nil {
-		return n.SendError(ctx, err)
-	}
+	policy.ID = policyID
 	policy.ProjectID = projectID
 	if err := n.webhookPolicyMgr.Update(ctx, policy); err != nil {
 		return n.SendError(ctx, err)
@@ -139,7 +179,9 @@ func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
 	}
-
+	if err := n.requirePolicyInProject(ctx, projectNameOrID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
 	if err := n.webhookPolicyMgr.Delete(ctx, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
@@ -148,7 +190,14 @@ func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context
 
 func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, params webhook.GetWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
-	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.RequireProjectAccess(ctx, projectID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requirePolicyInProject(ctx, projectID, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
 
@@ -257,28 +306,26 @@ func (n *notificationPolicyAPI) validateEventTypes(policy *policy_model.Policy) 
 // including event type, enabled, creation time, last trigger time
 func (n *notificationPolicyAPI) constructPolicyWithTriggerTime(ctx context.Context, policies []*policy_model.Policy) ([]*models.WebhookLastTrigger, error) {
 	res := []*models.WebhookLastTrigger{}
-	if policies != nil {
-		for _, policy := range policies {
-			for _, t := range policy.EventTypes {
-				ply := &models.WebhookLastTrigger{
-					PolicyName:   policy.Name,
-					EventType:    t,
-					Enabled:      policy.Enabled,
-					CreationTime: strfmt.DateTime(policy.CreationTime),
-				}
-				if !policy.CreationTime.IsZero() {
-					ply.CreationTime = strfmt.DateTime(policy.CreationTime)
-				}
-
-				ltTime, err := n.getLastTriggerTimeGroupByEventType(ctx, t, policy.ID)
-				if err != nil {
-					return nil, err
-				}
-				if !ltTime.IsZero() {
-					ply.LastTriggerTime = strfmt.DateTime(ltTime)
-				}
-				res = append(res, ply)
+	for _, policy := range policies {
+		for _, t := range policy.EventTypes {
+			ply := &models.WebhookLastTrigger{
+				PolicyName:   policy.Name,
+				EventType:    t,
+				Enabled:      policy.Enabled,
+				CreationTime: strfmt.DateTime(policy.CreationTime),
 			}
+			if !policy.CreationTime.IsZero() {
+				ply.CreationTime = strfmt.DateTime(policy.CreationTime)
+			}
+
+			ltTime, err := n.getLastTriggerTimeGroupByEventType(ctx, t, policy.ID)
+			if err != nil {
+				return nil, err
+			}
+			if !ltTime.IsZero() {
+				ply.LastTriggerTime = strfmt.DateTime(ltTime)
+			}
+			res = append(res, ply)
 		}
 	}
 	return res, nil

@@ -16,12 +16,13 @@ package artifacthub
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/reg/filter"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/reg/filter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {

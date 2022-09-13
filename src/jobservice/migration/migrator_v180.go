@@ -20,13 +20,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -121,6 +122,10 @@ func (pm *PolicyMigrator) Migrate() error {
 
 				// Transaction
 				err = conn.Send("MULTI")
+				if err != nil {
+					logger.Errorf("send command MULTI failed with error: %s", err)
+					continue
+				}
 				setArgs := []interface{}{
 					fullID,
 					"status",
@@ -135,6 +140,10 @@ func (pm *PolicyMigrator) Migrate() error {
 				}
 				// Set fields
 				err = conn.Send("HMSET", setArgs...)
+				if err != nil {
+					logger.Errorf("send command HMSET failed with error: %s", err)
+					continue
+				}
 
 				// Remove useless fields
 				rmArgs := []interface{}{
@@ -154,12 +163,16 @@ func (pm *PolicyMigrator) Migrate() error {
 					policy.ID = pID
 					if !utils.IsEmptyStr(hookURL) {
 						// Copy web hook URL
-						policy.WebHookURL = fmt.Sprintf("%s", hookURL)
+						policy.WebHookURL = hookURL
 					}
 
 					if rawJSON, er := policy.Serialize(); er == nil {
 						// Remove the old one first
 						err = conn.Send("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(pm.namespace), numbericPolicyID, numbericPolicyID)
+						if err != nil {
+							logger.Errorf("send command ZREMRANGEBYSCORE failed with error: %s", err)
+							continue
+						}
 						// Save back to the rdb
 						err = conn.Send("ZADD", rds.KeyPeriodicPolicy(pm.namespace), numbericPolicyID, rawJSON)
 					} else {

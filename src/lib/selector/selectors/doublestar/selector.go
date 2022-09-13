@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 
 	"github.com/bmatcuk/doublestar"
+
 	iselector "github.com/goharbor/harbor/src/lib/selector"
 )
 

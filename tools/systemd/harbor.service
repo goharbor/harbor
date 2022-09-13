@@ -1,0 +1,16 @@
+[Unit]
+Description=Harbor Cloud Native Registry
+Documentation=https://goharbor.io
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5
+ExecStart=docker compose -f /etc/goharbor/harbor/docker-compose.yml up
+ExecStop=docker compose -f /etc/goharbor/harbor/docker-compose.yml down -v
+ExecStopPost=docker compose -f /etc/goharbor/harbor/docker-compose.yml rm -f
+
+[Install]
+WantedBy=multi-user.target

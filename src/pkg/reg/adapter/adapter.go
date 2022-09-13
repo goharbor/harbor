@@ -21,6 +21,7 @@ import (
 	"sort"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
@@ -63,6 +64,7 @@ type ArtifactRegistry interface {
 	MountBlob(srcRepository, digest, dstRepository string) (err error)
 	CanBeMount(digest string) (mount bool, repository string, err error) // check whether the blob can be mounted from the remote registry
 	DeleteTag(repository, tag string) error
+	ListTags(repository string) (tags []string, err error)
 }
 
 // ChartRegistry defines the capabilities that a chart registry should have

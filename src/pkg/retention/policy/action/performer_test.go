@@ -15,19 +15,20 @@
 package action
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/controller/immutable"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-	immumodel "github.com/goharbor/harbor/src/pkg/immutable/model"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/selector"
+	immumodel "github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 )
 
 // TestPerformerSuite tests the performer related function

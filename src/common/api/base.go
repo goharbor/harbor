@@ -22,8 +22,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego"
+	"github.com/beego/beego/validation"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -149,9 +150,6 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 		q := u.Query()
 		q.Set("page", strconv.FormatInt(page-1, 10))
 		u.RawQuery = q.Encode()
-		if len(link) != 0 {
-			link += ", "
-		}
 		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
 	}
 

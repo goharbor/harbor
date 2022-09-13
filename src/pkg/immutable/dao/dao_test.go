@@ -1,16 +1,17 @@
 package dao
 
 import (
-	"github.com/goharbor/harbor/src/lib/q"
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/immutable/dao/model"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/immutable/dao/model"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type immutableRuleDaoTestSuite struct {

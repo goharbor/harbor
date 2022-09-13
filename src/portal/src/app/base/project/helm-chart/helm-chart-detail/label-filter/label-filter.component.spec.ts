@@ -9,12 +9,8 @@ describe('LabelFilterComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-              ],
-              imports: [
-                SharedTestingModule
-              ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [LabelFilterComponent],
         }).compileComponents();
     });

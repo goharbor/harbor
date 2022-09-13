@@ -2,6 +2,11 @@ package p2p
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
@@ -10,9 +15,6 @@ import (
 	test_artifact "github.com/goharbor/harbor/src/testing/controller/artifact"
 	test_preheat "github.com/goharbor/harbor/src/testing/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // PreheatTestSuite is a test suite of testing preheat handler

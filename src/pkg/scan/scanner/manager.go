@@ -17,10 +17,11 @@ package scanner
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/google/uuid"
 )
 
 // Manager defines the related scanner API endpoints

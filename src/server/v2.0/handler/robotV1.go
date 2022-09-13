@@ -3,13 +3,14 @@ package handler
 import (
 	"context"
 	"fmt"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"regexp"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
@@ -255,7 +256,9 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 
 	for _, policy := range params.Robot.Access {
 		p := &types.Policy{}
-		lib.JSONCopy(p, policy)
+		if err := lib.JSONCopy(p, policy); err != nil {
+			log.Warningf("failed to call JSONCopy on robot access policy when validate, error: %v", err)
+		}
 		if !mp[p.String()] {
 			return errors.New(nil).WithMessage("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, projectNameOrID).WithCode(errors.BadRequestCode)
 		}

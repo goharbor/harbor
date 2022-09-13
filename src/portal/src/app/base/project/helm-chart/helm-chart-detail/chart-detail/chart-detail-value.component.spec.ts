@@ -11,7 +11,7 @@ describe('ChartDetailValueComponent', () => {
     let component: ChartDetailValueComponent;
     let fixture: ComponentFixture<ChartDetailValueComponent>;
 
-    beforeEach(async ()=> {
+    beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
                 TranslateModule.forRoot(),
@@ -21,20 +21,18 @@ describe('ChartDetailValueComponent', () => {
                 MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
             ],
             declarations: [ChartDetailValueComponent],
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
             providers: [
                 TranslateService,
                 { provide: MarkedOptions, useValue: {} },
-            ]
+            ],
         }).compileComponents();
     });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(ChartDetailValueComponent);
         component = fixture.componentInstance;
-        component.yaml = "rfrf";
+        component.yaml = 'rfrf';
         fixture.detectChanges();
     });
 

@@ -152,9 +152,7 @@ Switch To Project Quotas
     Sleep  1
 
 Switch To Distribution
-    Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
-    Sleep  1
 
 Switch To Robot Account
     Sleep  1
@@ -250,11 +248,14 @@ Switch To System Labels
     Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Labels')]
 
-## System labels
 Switch To Configuration System Setting
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
     Retry Element Click  xpath=${configuration_system_tabsheet_id}
+
+Switch To Configuration Security
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${configuration_security_tabsheet_id}  Retry Wait Until Page Contains  Deployment security
 
 Switch To Configuration Project Quotas
     Sleep  1
@@ -294,50 +295,19 @@ Delete A Label
     Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
-## Garbage Collection
-Switch To Garbage Collection
-    Switch To Configure
-    Sleep  1
-    Retry Element Click  xpath=${gc_config_page}
-    Wait Until Page Contains Element  ${garbage_collection_xpath}
-    Retry Element Click  xpath=${garbage_collection_xpath}
-
-Set GC Schedule
-    [Arguments]  ${type}  ${value}=${null}
-    Switch To Garbage Collection
-    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_edit_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_edit_btn}
-    Retry Element Click  ${GC_schedule_select}
-    Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
-    ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
-    Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${GC_schedule_save_btn}
-    Capture Page Screenshot
-
-Click GC Now
-    Sleep  1
-    Retry Element Click  xpath=${gc_now_xpath}
-    Sleep  2
-
-View GC Details
-    Retry Element Click  xpath=${gc_log_details_xpath}
-    Sleep  2
-
-Switch To GC History
-    Retry Element Click  xpath=${gc_log_xpath}
-    Retry Wait Until Page Contains  Job
-
 Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_btn}
     Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
     Retry Element Click    ${configuration_system_wl_add_confirm_btn}
-    Retry Element Click    ${config_system_save_button_xpath}
+    Retry Element Click    ${config_security_save_button_xpath}
 
 Delete Top Item In System CVE Allowlist
     [Arguments]  ${count}=1
     FOR  ${idx}  IN RANGE  1  ${count}
-        Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+        Retry Element Click  ${configuration_system_wl_delete_a_cve_id_icon}
     END
-    Retry Element Click    ${config_system_save_button_xpath}
+    Retry Element Click  ${config_security_save_button_xpath}
 
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
@@ -408,7 +378,6 @@ Delete A Distribution
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Sleep  10
     Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
 
 Edit A Distribution

@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"github.com/gomodule/redigo/redis"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 )
 
 // delKeys ...
@@ -55,7 +57,12 @@ func v2DeleteManifest(logger logger.Interface, repository, digest string) error 
 		return nil
 	}
 	return retry.Retry(func() error {
-		return registry.Cli.DeleteManifest(repository, digest)
+		err := registry.Cli.DeleteManifest(repository, digest)
+		// if the system is in read-only mode, return an Abort error to skip retrying
+		if err == readonly.Err {
+			return retry.Abort(err)
+		}
+		return err
 	}, retry.Callback(func(err error, sleep time.Duration) {
 		logger.Infof("failed to exec v2DeleteManifest, error: %v, will retry again after: %s", err, sleep)
 	}))

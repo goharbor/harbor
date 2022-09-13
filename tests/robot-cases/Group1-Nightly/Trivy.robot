@@ -45,6 +45,9 @@ Test Case - Disable Scan Schedule
     Retry Wait Until Page Contains  None
     Close Browser
 
+Test Case - Manual Scan All
+    Body Of Manual Scan All  Critical  High
+
 Test Case - Scan A Tag In The Repo
     Body Of Scan A Tag In The Repo  vmware/photon  1.0
 
@@ -61,40 +64,21 @@ Test Case - Scan As An Unprivileged User
 
 # Chose a empty Vul repo
 Test Case - Scan Image With Empty Vul
-    Body Of Scan Image With Empty Vul  photon  2.0_scan
-
-Test Case - Manual Scan All
-    Body Of Manual Scan All  High  Medium
-
-#Test Case - View Scan Error
-#    Init Chrome Driver
-#    ${d}=  get current date  result_format=%m%s
-
-#    Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-#    Create An New Project And Go Into Project  project${d}
-#    Push Image  ${ip}  user026  Test1@34  project${d}  busybox:latest
-#    Go Into Project  project${d}
-#    Go Into Repo  project${d}/busybox
-#    Scan Repo  latest  Fail
-#    View Scan Error Log
-#    Close Browser
+    Body Of Scan Image With Empty Vul  photon  4.0_scan
 
 Test Case - Scan Image On Push
     [Tags]  run-once
-    Body Of Scan Image On Push  High  Medium
+    Body Of Scan Image On Push  Critical  High
 
 Test Case - View Scan Results
     [Tags]  run-once
-    Body Of View Scan Results  High
+    Body Of View Scan Results  Critical
 
 Test Case - Project Level Image Serverity Policy
     [Tags]  run-once
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=  get current date  result_format=%m%s
-    #For docker-hub registry
-    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
-    #For internal CPE harbor registry
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
     ${image}=  Set Variable  redis
     Create An New Project And Go Into Project  project${d}
@@ -111,13 +95,13 @@ Test Case - Project Level Image Serverity Policy
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Test Case - Verfiy System Level CVE Allowlist
     [Tags]  sys_cve
-    Body Of Verfiy System Level CVE Allowlist  goharbor/harbor-portal  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb  CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645  CVE-2019-18276
+    Body Of Verfiy System Level CVE Allowlist  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528  CVE-2021-43519
 
 Test Case - Verfiy Project Level CVE Allowlist
-    Body Of Verfiy Project Level CVE Allowlist  goharbor/harbor-portal  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb  CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645  CVE-2019-18276
+    Body Of Verfiy Project Level CVE Allowlist  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528  CVE-2021-43519
 
 Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System
-    Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System  goharbor/harbor-portal  2cb6a1c24dd6b88f11fd44ccc6560cb7be969f8ac5f752802c99cae6bcd592bb  CVE-2019-19317\nCVE-2019-19646 \nCVE-2019-5188 \nCVE-2019-20387 \nCVE-2019-17498 \nCVE-2019-20372 \nCVE-2019-19244 \nCVE-2019-19603 \nCVE-2019-19880 \nCVE-2019-19923 \nCVE-2019-19925 \nCVE-2019-19926 \nCVE-2019-19959 \nCVE-2019-20218 \nCVE-2019-19232 \nCVE-2019-19234 \nCVE-2019-19645 \nCVE-2019-18276
+    Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528 \nCVE-2021-43519
 
 Test Case - Stop Scan And Stop Scan All
     [Tags]  stop_scan_job

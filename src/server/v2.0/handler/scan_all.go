@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/scanner"
@@ -69,8 +70,7 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, params operation.StopScanA
 		return s.SendError(ctx, err)
 	}
 	if execution == nil {
-		message := fmt.Sprintf("no scan all job is found currently")
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(message))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("no scan all job is found currently"))
 	}
 	go func(ctx context.Context, eid int64) {
 		err := s.execMgr.Stop(ctx, eid)

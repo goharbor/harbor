@@ -12,24 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
-import { ConfigService } from "./config.service";
+import { ConfigService } from './config.service';
 
 @Component({
     selector: 'config',
     templateUrl: 'config.component.html',
-    styleUrls: ['config.component.scss']
+    styleUrls: ['config.component.scss'],
 })
 export class ConfigurationComponent implements OnInit {
     get inProgress(): boolean {
         return this.conf.getLoadingConfigStatus();
     }
 
-    constructor(private conf: ConfigService) {
-    }
+    constructor(private conf: ConfigService) {}
 
     ngOnInit(): void {
         // First load
         this.conf.initConfig();
     }
-
 }

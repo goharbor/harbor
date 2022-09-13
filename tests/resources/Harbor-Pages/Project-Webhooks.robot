@@ -11,12 +11,24 @@ Switch To Project Webhooks
     Sleep  1
 
 Create A New Webhook
-    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}
-    Retry Element Click   ${new_webhook_button_xpath}
-    Retry Text Input  ${webhook_name_xpath}   ${webhook_name}
+    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}=@{EMPTY}
+    Retry Element Click  ${new_webhook_button_xpath}
+    Retry Text Input  ${webhook_name_xpath}  ${webhook_name}
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${webhook_endpoint_url}
+    ${len}=  Get Length  ${event_type}
+    Run Keyword If  ${len} > 0  Select Event Type  @{event_type}
     Retry Double Keywords When Error  Retry Element Click  ${create_webhooks_continue_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_webhooks_continue_button_xpath}
     Retry Wait Until Page Contains  ${webhook_name}
+
+Select Event Type
+    [Arguments]  @{event_type}
+    ${elements}=  Get WebElements  //form//div[contains(@class,'clr-control-inline')]//label
+    FOR  ${element}  IN  @{elements}
+        Retry Element Click  ${element}
+    END
+    FOR  ${element}  IN  @{event_type}
+        Retry Element Click  //form//div[contains(@class,'clr-control-inline')]//label[contains(.,'${element}')]
+    END
 
 Update A Webhook
     [Arguments]  ${old_webhook_name}  ${new_webhook_name}  ${new_webhook_enpoint}
@@ -35,23 +47,23 @@ Update A Webhook
     Retry Double Keywords When Error  Retry Element Click  ${edit_webhooks_save_button_xpath}  Retry Wait Until Page Not Contains Element  ${edit_webhooks_save_button_xpath}
     Retry Wait Until Page Contains  ${new_webhook_name}
 
-Enable/Disable State of Same Webhook
+Enable/Deactivate State of Same Webhook
     [Arguments]  ${webhook_name}
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click   ${action_webhook_xpath}
     Retry Element Click   ${action_webhook_disable_or_enable_button}
     Retry Wait Until Page Contains Element  ${dialog_disable_id_xpath}
     Retry Element Click  ${dialog_disable_id_xpath}
-    # contain disabled webhook
-    Retry Wait Until Page Contains Element   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//span[contains(.,'Disabled')]
+    # contain deactivated webhook
+    Retry Wait Until Page Contains Element   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//span[contains(.,'Deactivated')]
 
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click   ${action_webhook_xpath}
     Retry Element Click   ${action_webhook_disable_or_enable_button}
     Retry Wait Until Page Contains Element  ${dialog_enable_id_xpath}
     Retry Element Click  ${dialog_enable_id_xpath}
-    # not contain disabled webhook
-    Retry Wait Until Page Not Contains Element   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//span[contains(.,'Disabled')]
+    # not contain deactivated webhook
+    Retry Wait Until Page Not Contains Element   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//span[contains(.,'Deactivated')]
 
 Delete A Webhook
     [Arguments]  ${webhook_name}

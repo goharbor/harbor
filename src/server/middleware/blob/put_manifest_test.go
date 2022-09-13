@@ -16,19 +16,20 @@ package blob
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/blob"
-	"github.com/goharbor/harbor/src/lib"
-	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
-	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/distribution"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/lib"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
+	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
+	"github.com/goharbor/harbor/src/pkg/distribution"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type PutManifestMiddlewareTestSuite struct {

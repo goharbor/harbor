@@ -3,6 +3,7 @@ package backend
 import (
 	"bufio"
 	"bytes"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/joblog"

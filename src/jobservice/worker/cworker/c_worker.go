@@ -20,19 +20,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
 	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/jobservice/runner"
 	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -171,7 +172,7 @@ func (w *basicWorker) GetPoolID() string {
 
 // RegisterJobs is used to register multiple jobs to worker.
 func (w *basicWorker) RegisterJobs(jobs map[string]interface{}) error {
-	if jobs == nil || len(jobs) == 0 {
+	if len(jobs) == 0 {
 		// Do nothing
 		return nil
 	}
@@ -360,7 +361,7 @@ func (w *basicWorker) StopJob(jobID string) error {
 		// We need to delete the scheduled job in the queue if it is not running yet
 		if err := w.client.DeleteScheduledJob(t.Job().Info.RunAt, jobID); err != nil {
 			// Job is already running?
-			logger.Warningf("scheduled job %q (run at = %d) is not found in the queue, is it running?", jobID, t.Job().Info.RunAt)
+			logger.Warningf("scheduled job %s (run at = %d) is not found in the queue, is it running?", lib.TrimLineBreaks(jobID), t.Job().Info.RunAt)
 		}
 	}
 

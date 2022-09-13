@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	si "github.com/goharbor/harbor/src/controller/systeminfo"
@@ -95,5 +96,4 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.CurrentTime = &currentTime
 	}
 	return res
-
 }

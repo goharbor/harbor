@@ -7,7 +7,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
 	"github.com/opencontainers/go-digest"
-	"github.com/opencontainers/image-spec/specs-go/v1"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // Builder is a type for constructing manifests.
@@ -48,7 +48,7 @@ func NewManifestBuilder(bs distribution.BlobService, configJSON []byte, annotati
 // valid media type for oci image manifests currently: "" or "application/vnd.oci.image.manifest.v1+json"
 func (mb *Builder) SetMediaType(mediaType string) error {
 	if mediaType != "" && mediaType != v1.MediaTypeImageManifest {
-		return errors.New("Invalid media type for OCI image manifest")
+		return errors.New("invalid media type for OCI image manifest")
 	}
 
 	mb.mediaType = mediaType

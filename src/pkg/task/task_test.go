@@ -18,13 +18,13 @@ import (
 	"errors"
 	"testing"
 
-	cjob "github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	cjob "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 type taskManagerTestSuite struct {

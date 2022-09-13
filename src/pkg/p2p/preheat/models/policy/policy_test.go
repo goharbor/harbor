@@ -17,7 +17,7 @@ package policy
 import (
 	"testing"
 
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/validation"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -124,7 +124,7 @@ func (p *PolicyTestSuite) TestValid() {
 	require.Contains(p.T(), v.Errors[0].Error(), "invalid cron string for scheduled trigger")
 
 	// all is well
-	p.schema.Trigger.Settings.Cron = "0/12 * * * *"
+	p.schema.Trigger.Settings.Cron = "0/12 * * * * *"
 	v = &validation.Validation{}
 	p.schema.Valid(v)
 	require.False(p.T(), v.HasErrors(), "should return nil error")

@@ -19,9 +19,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"

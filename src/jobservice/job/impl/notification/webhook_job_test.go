@@ -1,13 +1,15 @@
 package notification
 
 import (
-	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 )
 
 func TestMaxFails(t *testing.T) {

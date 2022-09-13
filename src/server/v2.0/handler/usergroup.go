@@ -17,7 +17,10 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
@@ -27,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/usergroup"
-	"strings"
 )
 
 type userGroupAPI struct {
@@ -109,6 +111,9 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	query, err := u.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
 	if err != nil {
 		return u.SendError(ctx, err)
+	}
+	if params.GroupName != nil && len(*params.GroupName) > 0 {
+		query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: *params.GroupName}
 	}
 	switch authMode {
 	case common.LDAPAuth:

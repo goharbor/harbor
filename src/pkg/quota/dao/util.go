@@ -55,7 +55,7 @@ func listConditions(query *q.Query) (string, []interface{}) {
 
 	bytes, err := json.Marshal(query.Keywords)
 	if err == nil {
-		json.Unmarshal(bytes, &q)
+		_ = json.Unmarshal(bytes, &q)
 	}
 
 	if q.ID != 0 {

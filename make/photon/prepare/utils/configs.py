@@ -3,11 +3,13 @@ import os
 import yaml
 from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric, Trace, PurgeUpload
+from models import InternalTLS, Metric, Trace, PurgeUpload, Cache
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
-default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
-default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+# NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+default_db_max_idle_conns = 2
+# NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+default_db_max_open_conns = 0
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
 
@@ -49,7 +51,8 @@ def validate(conf: dict, **kwargs):
         raise Exception("Error: storage driver %s is not supported, only the following ones are supported: %s" % (
             storage_provider_name, ",".join(valid_storage_drivers)))
 
-    storage_provider_config = conf.get("storage_provider_config") ## original is registry_storage_provider_config
+    # original is registry_storage_provider_config
+    storage_provider_config = conf.get("storage_provider_config")
     if storage_provider_name != "filesystem":
         if storage_provider_config == "":
             raise Exception(
@@ -78,9 +81,13 @@ def validate(conf: dict, **kwargs):
 
     if conf.get('trace'):
         conf['trace'].validate()
-        
+
     if conf.get('purge_upload'):
         conf['purge_upload'].validate()
+
+    if conf.get('cache'):
+        conf['cache'].validate()
+
 
 def parse_versions():
     if not versions_file_path.is_file():
@@ -168,7 +175,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             config_dict['notary_server_db_password'] = 'password'
             config_dict['notary_server_db_sslmode'] = 'disable'
 
-
     # Data path volume
     config_dict['data_volume'] = configs['data_volume']
 
@@ -214,9 +220,9 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         all_no_proxy |= set(no_proxy_config.split(','))
 
     for proxy_component in proxy_components:
-      config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
-      config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
-      config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
+        config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
+        config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
+        config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     # Trivy configs, optional
     trivy_configs = configs.get("trivy") or {}
@@ -353,6 +359,10 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     # purge upload configs
     purge_upload_config = configs.get('upload_purging')
     config_dict['purge_upload'] = PurgeUpload(purge_upload_config or {})
+
+    # cache configs
+    cache_config = configs.get('cache')
+    config_dict['cache'] = Cache(cache_config or {})
 
     return config_dict
 

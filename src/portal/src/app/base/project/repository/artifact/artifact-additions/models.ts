@@ -1,4 +1,4 @@
-import { HelmChartMaintainer } from "../../../helm-chart/helm-chart-detail/helm-chart.interface.service";
+import { HelmChartMaintainer } from '../../../helm-chart/helm-chart-detail/helm-chart.interface.service';
 
 export class ArtifactBuildHistory {
     created: Date;
@@ -25,17 +25,15 @@ export interface ArtifactSummary {
     digest: string;
 }
 
-
 export interface Addition {
     type: string;
     data?: object;
 }
 
-export enum ADDITIONS  {
+export enum ADDITIONS {
     VULNERABILITIES = 'vulnerabilities',
     BUILD_HISTORY = 'build_history',
     SUMMARY = 'readme.md',
     VALUES = 'values.yaml',
-    DEPENDENCIES = 'dependencies'
+    DEPENDENCIES = 'dependencies',
 }
-

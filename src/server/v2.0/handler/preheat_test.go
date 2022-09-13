@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/task"
-
 	"github.com/go-openapi/strfmt"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_convertProvidersToFrontend(t *testing.T) {

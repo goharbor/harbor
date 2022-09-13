@@ -80,9 +80,9 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		return errors.New("`JOB_FAILED` env is set")
 	}
 
-	ctx.Checkin("progress data: %30")
+	_ = ctx.Checkin("progress data: %30")
 	<-time.After(1 * time.Second)
-	ctx.Checkin("progress data: %60")
+	_ = ctx.Checkin("progress data: %60")
 
 	// HOLD ON FOR A WHILE
 	logger.Warning("Holding for 30 seconds")

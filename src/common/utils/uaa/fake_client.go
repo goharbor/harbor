@@ -16,6 +16,7 @@ package uaa
 
 import (
 	"fmt"
+
 	"golang.org/x/oauth2"
 )
 

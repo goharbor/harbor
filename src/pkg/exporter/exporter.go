@@ -33,10 +33,13 @@ func NewExporter(opt *Opt) *Exporter {
 	if opt.CacheDuration > 0 {
 		CacheInit(opt)
 	}
-	exporter.RegisterCollector(NewHealthCollect(hbrCli),
+	err := exporter.RegisterCollector(NewHealthCollect(hbrCli),
 		NewSystemInfoCollector(hbrCli),
 		NewProjectCollector(),
 		NewJobServiceCollector())
+	if err != nil {
+		log.Warningf("calling RegisterCollector() errored out, error: %v", err)
+	}
 
 	r := prometheus.NewRegistry()
 	r.MustRegister(exporter)
@@ -69,7 +72,7 @@ func newServer(opt *Opt, r *prometheus.Registry) *http.Server {
 	exporterMux := http.NewServeMux()
 	exporterMux.Handle(opt.MetricsPath, promhttp.Handler())
 	exporterMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		_, _ = w.Write([]byte(`<html>
 		<head><title>Harbor Exporter</title></head>
 		<body>
 		<h1>Harbor Exporter</h1>

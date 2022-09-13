@@ -23,9 +23,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
 // HookClientTestSuite tests functions of hook client

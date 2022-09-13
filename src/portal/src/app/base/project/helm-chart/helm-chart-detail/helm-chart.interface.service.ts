@@ -1,4 +1,4 @@
-import { Label } from "../../../../shared/services";
+import { Label } from '../../../../shared/services';
 
 export interface HelmChartSearchResultItem {
     Name: string;
@@ -75,8 +75,8 @@ export interface HelmChartDependency {
 }
 
 export interface HelmchartFile {
-    "README.MD": string;
-    "values.yaml": string;
+    'README.MD': string;
+    'values.yaml': string;
 }
 
 export interface HelmChartSecurity {

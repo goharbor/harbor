@@ -84,5 +84,4 @@ func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if a.handler != nil {
 		a.handler.ServeHTTP(w, r)
 	}
-	return
 }

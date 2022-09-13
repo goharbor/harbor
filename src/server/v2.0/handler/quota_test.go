@@ -23,6 +23,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -30,7 +32,6 @@ import (
 	quotatesting "github.com/goharbor/harbor/src/testing/controller/quota"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
-	"github.com/stretchr/testify/suite"
 )
 
 type QuotaTestSuite struct {

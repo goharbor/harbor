@@ -19,6 +19,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -29,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	ts "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tt "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
 )
 
 // WorkerTestSuite is test suite for testing sync.Worker.

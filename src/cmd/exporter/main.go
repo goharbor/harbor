@@ -5,14 +5,15 @@ import (
 	"os"
 	"strings"
 
+	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/spf13/viper"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/exporter"
-	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -64,7 +65,7 @@ func main() {
 		CacheCleanInterval:     viper.GetInt64("exporter.cache_clean_interval"),
 	}
 	harborExporter := exporter.NewExporter(exporterOpt)
-	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v cache_time=%v clean_internal=%v",
+	log.Infof("Starting harbor_exporter with port=%v path=%v metrics=%v max_request=%v tls=%v cert=%v key=%v cache_time=%v clean_interval=%v",
 		exporterOpt.Port,
 		exporterOpt.MetricsPath,
 		exporterOpt.ExporterMetricsEnabled,

@@ -16,15 +16,16 @@ package v2token
 
 import (
 	"context"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/testing/controller/project"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAll(t *testing.T) {

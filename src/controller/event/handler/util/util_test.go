@@ -1,13 +1,13 @@
 package util
 
 import (
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/lib/config"
-	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 )
 
 func TestMain(m *testing.M) {
