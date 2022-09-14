@@ -95,6 +95,8 @@ import { ArtifactListPageService } from '../../artifact-list-page.service';
 import { ACCESSORY_PAGE_SIZE } from './sub-accessories/sub-accessories.component';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
+import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
+import { CopyDigestComponent } from './copy-digest/copy-digest.component';
 
 export interface LabelState {
     iconsShow: boolean;
@@ -120,17 +122,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
     availableTime = AVAILABLE_TIME;
-    showTagManifestOpened: boolean;
-    retagDialogOpened: boolean;
-    manifestInfoTitle: string;
-    digestId: string;
-    staticBackdrop = true;
-    closable = false;
     lastFilteredTagName: string;
     inprogress: boolean;
     openLabelFilterPanel: boolean;
     openLabelFilterPiece: boolean;
-    retagSrcImage: string;
     showlabel: boolean;
 
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
@@ -143,7 +138,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     );
 
     loading = true;
-    copyFailed = false;
     selectedRow: Artifact[] = [];
     labelListOpen = false;
     selectedTag: Artifact[];
@@ -164,10 +158,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     @ViewChild('confirmationDialog')
     confirmationDialog: ConfirmationDialogComponent;
 
-    @ViewChild('imageNameInput')
-    imageNameInput: ImageNameInputComponent;
-
-    @ViewChild('digestTarget') textInput: ElementRef;
+    @ViewChild(CopyArtifactComponent)
+    copyArtifactComponent: CopyArtifactComponent;
+    @ViewChild(CopyDigestComponent)
+    copyDigestComponent: CopyDigestComponent;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT
     );
@@ -846,45 +840,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     retag() {
         if (this.selectedRow && this.selectedRow.length && !this.depth) {
-            this.retagDialogOpened = true;
-            this.imageNameInput.imageNameForm.reset({
-                repoName: this.repoName,
-                projectName: null,
-            });
-            this.imageNameInput.notExist = false;
-            this.retagSrcImage =
-                this.repoName + ':' + this.selectedRow[0].digest;
+            this.copyArtifactComponent.retag(this.selectedRow[0].digest);
         }
-    }
-
-    onRetag() {
-        let params: NewArtifactService.CopyArtifactParams = {
-            projectName: this.imageNameInput.projectName.value,
-            repositoryName: dbEncodeURIComponent(
-                this.imageNameInput.repoName.value
-            ),
-            from: `${this.projectName}/${this.repoName}@${this.selectedRow[0].digest}`,
-        };
-        this.newArtifactService
-            .CopyArtifact(params)
-            .pipe(
-                finalize(() => {
-                    this.imageNameInput.form.reset();
-                    this.retagDialogOpened = false;
-                })
-            )
-            .subscribe(
-                response => {
-                    this.translateService
-                        .get('RETAG.MSG_SUCCESS')
-                        .subscribe((res: string) => {
-                            this.errorHandlerService.info(res);
-                        });
-                },
-                error => {
-                    this.errorHandlerService.error(error);
-                }
-            );
     }
 
     deleteArtifact() {
@@ -1059,10 +1016,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     showDigestId() {
         if (this.selectedRow && this.selectedRow.length === 1 && !this.depth) {
-            this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
-            this.digestId = this.selectedRow[0].digest;
-            this.showTagManifestOpened = true;
-            this.copyFailed = false;
+            this.copyDigestComponent.showDigestId(this.selectedRow[0].digest);
         }
     }
 
@@ -1077,21 +1031,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
             });
-        }
-    }
-
-    onSuccess($event: any): void {
-        this.copyFailed = false;
-        // Directly close dialog
-        this.showTagManifestOpened = false;
-    }
-
-    onError($event: any): void {
-        // Show error
-        this.copyFailed = true;
-        // Select all text
-        if (this.textInput) {
-            this.textInput.nativeElement.select();
         }
     }
 

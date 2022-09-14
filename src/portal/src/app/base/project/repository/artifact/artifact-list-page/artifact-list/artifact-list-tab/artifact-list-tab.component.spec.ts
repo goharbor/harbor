@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ArtifactListTabComponent } from './artifact-list-tab.component';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
@@ -343,7 +343,7 @@ describe('ArtifactListTabComponent (inline template)', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            schemas: [NO_ERRORS_SCHEMA],
             declarations: [ArtifactListTabComponent],
             providers: [
                 {

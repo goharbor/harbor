@@ -21,6 +21,8 @@ import { HistogramChartComponent } from './vulnerability-scanning/histogram-char
 import { ArtifactInfoComponent } from './artifact-list-page/artifact-list/artifact-info/artifact-info.component';
 import { SubAccessoriesComponent } from './artifact-list-page/artifact-list/artifact-list-tab/sub-accessories/sub-accessories.component';
 import { ArtifactListPageService } from './artifact-list-page/artifact-list-page.service';
+import { CopyArtifactComponent } from './artifact-list-page/artifact-list/artifact-list-tab/copy-artifact/copy-artifact.component';
+import { CopyDigestComponent } from './artifact-list-page/artifact-list/artifact-list-tab/copy-digest/copy-digest.component';
 
 const routes: Routes = [
     {
@@ -82,6 +84,8 @@ const routes: Routes = [
         HistogramChartComponent,
         ArtifactInfoComponent,
         SubAccessoriesComponent,
+        CopyArtifactComponent,
+        CopyDigestComponent,
     ],
     imports: [RouterModule.forChild(routes), SharedModule],
     providers: [
