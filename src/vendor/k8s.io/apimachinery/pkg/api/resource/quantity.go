@@ -397,6 +397,10 @@ func (_ Quantity) OpenAPISchemaType() []string { return []string{"string"} }
 // the OpenAPI spec of this type.
 func (_ Quantity) OpenAPISchemaFormat() string { return "" }
 
+// OpenAPIV3OneOfTypes is used by the kube-openapi generator when constructing
+// the OpenAPI v3 spec of this type.
+func (Quantity) OpenAPIV3OneOfTypes() []string { return []string{"string", "number"} }
+
 // CanonicalizeBytes returns the canonical form of q and its suffix (see comment on Quantity).
 //
 // Note about BinarySI:
@@ -460,17 +464,7 @@ func (q *Quantity) AsApproximateFloat64() float64 {
 		return base
 	}
 
-	// multiply by the appropriate exponential scale
-	switch q.Format {
-	case DecimalExponent, DecimalSI:
-		return base * math.Pow10(exponent)
-	default:
-		// fast path for exponents that can fit in 64 bits
-		if exponent > 0 && exponent < 7 {
-			return base * float64(int64(1)<<(exponent*10))
-		}
-		return base * math.Pow(2, float64(exponent*10))
-	}
+	return base * math.Pow10(exponent)
 }
 
 // AsInt64 returns a representation of the current value as an int64 if a fast conversion
@@ -773,4 +767,31 @@ func (q *Quantity) SetScaled(value int64, scale Scale) {
 	q.s = ""
 	q.d.Dec = nil
 	q.i = int64Amount{value: value, scale: scale}
+}
+
+// QuantityValue makes it possible to use a Quantity as value for a command
+// line parameter.
+//
+// +protobuf=true
+// +protobuf.embed=string
+// +protobuf.options.marshal=false
+// +protobuf.options.(gogoproto.goproto_stringer)=false
+// +k8s:deepcopy-gen=true
+type QuantityValue struct {
+	Quantity
+}
+
+// Set implements pflag.Value.Set and Go flag.Value.Set.
+func (q *QuantityValue) Set(s string) error {
+	quantity, err := ParseQuantity(s)
+	if err != nil {
+		return err
+	}
+	q.Quantity = quantity
+	return nil
+}
+
+// Type implements pflag.Value.Type.
+func (q QuantityValue) Type() string {
+	return "quantity"
 }

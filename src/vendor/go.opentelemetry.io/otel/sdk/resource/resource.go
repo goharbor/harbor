@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -36,26 +37,12 @@ type Resource struct {
 }
 
 var (
-	emptyResource Resource
-
-	defaultResource = func(r *Resource, err error) *Resource {
-		if err != nil {
-			otel.Handle(err)
-		}
-		return r
-	}(
-		Detect(
-			context.Background(),
-			defaultServiceNameDetector{},
-			fromEnv{},
-			telemetrySDK{},
-		),
-	)
+	emptyResource       Resource
+	defaultResource     *Resource
+	defaultResourceOnce sync.Once
 )
 
-var (
-	errMergeConflictSchemaURL = errors.New("cannot merge resource due to conflicting Schema URL")
-)
+var errMergeConflictSchemaURL = errors.New("cannot merge resource due to conflicting Schema URL")
 
 // New returns a Resource combined from the user-provided detectors.
 func New(ctx context.Context, opts ...Option) (*Resource, error) {
@@ -211,6 +198,22 @@ func Empty() *Resource {
 // Default returns an instance of Resource with a default
 // "service.name" and OpenTelemetrySDK attributes.
 func Default() *Resource {
+	defaultResourceOnce.Do(func() {
+		var err error
+		defaultResource, err = Detect(
+			context.Background(),
+			defaultServiceNameDetector{},
+			fromEnv{},
+			telemetrySDK{},
+		)
+		if err != nil {
+			otel.Handle(err)
+		}
+		// If Detect did not return a valid resource, fall back to emptyResource.
+		if defaultResource == nil {
+			defaultResource = &emptyResource
+		}
+	})
 	return defaultResource
 }
 
