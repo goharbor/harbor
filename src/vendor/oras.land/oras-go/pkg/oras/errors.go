@@ -22,7 +22,11 @@ import (
 
 // Common errors
 var (
-	ErrResolverUndefined = errors.New("resolver undefined")
+	ErrResolverUndefined     = errors.New("resolver undefined")
+	ErrFromResolverUndefined = errors.New("from target resolver undefined")
+	ErrToResolverUndefined   = errors.New("to target resolver undefined")
+	ErrFromTargetUndefined   = errors.New("from target undefined")
+	ErrToTargetUndefined     = errors.New("from target undefined")
 )
 
 // Path validation related errors

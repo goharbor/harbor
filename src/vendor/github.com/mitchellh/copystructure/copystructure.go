@@ -51,6 +51,19 @@ type CopierFunc func(interface{}) (interface{}, error)
 // this map as well as to Copy in a mutex.
 var Copiers map[reflect.Type]CopierFunc = make(map[reflect.Type]CopierFunc)
 
+// ShallowCopiers is a map of pointer types that behave specially
+// when they are copied.  If a type is found in this map while deep
+// copying, the pointer value will be shallow copied and not walked
+// into.
+//
+// The key should be the type, obtained using: reflect.TypeOf(value
+// with type).
+//
+// It is unsafe to write to this map after Copies have started. If you
+// are writing to this map while also copying, wrap all modifications to
+// this map as well as to Copy in a mutex.
+var ShallowCopiers map[reflect.Type]struct{} = make(map[reflect.Type]struct{})
+
 // Must is a helper that wraps a call to a function returning
 // (interface{}, error) and panics if the error is non-nil. It is intended
 // for use in variable initializations and should only be used when a copy
@@ -73,6 +86,11 @@ type Config struct {
 	// Copiers is a map of types associated with a CopierFunc. Use the global
 	// Copiers map if this is nil.
 	Copiers map[reflect.Type]CopierFunc
+
+	// ShallowCopiers is a map of pointer types that when they are
+	// shallow copied no matter where they are encountered. Use the
+	// global ShallowCopiers if this is nil.
+	ShallowCopiers map[reflect.Type]struct{}
 }
 
 func (c Config) Copy(v interface{}) (interface{}, error) {
@@ -88,6 +106,12 @@ func (c Config) Copy(v interface{}) (interface{}, error) {
 	if c.Copiers == nil {
 		c.Copiers = Copiers
 	}
+	w.copiers = c.Copiers
+
+	if c.ShallowCopiers == nil {
+		c.ShallowCopiers = ShallowCopiers
+	}
+	w.shallowCopiers = c.ShallowCopiers
 
 	err := reflectwalk.Walk(v, w)
 	if err != nil {
@@ -116,10 +140,12 @@ func ifaceKey(pointers, depth int) uint64 {
 type walker struct {
 	Result interface{}
 
-	depth       int
-	ignoreDepth int
-	vals        []reflect.Value
-	cs          []reflect.Value
+	copiers        map[reflect.Type]CopierFunc
+	shallowCopiers map[reflect.Type]struct{}
+	depth          int
+	ignoreDepth    int
+	vals           []reflect.Value
+	cs             []reflect.Value
 
 	// This stores the number of pointers we've walked over, indexed by depth.
 	ps []int
@@ -286,6 +312,20 @@ func (w *walker) PointerExit(v bool) error {
 	return nil
 }
 
+func (w *walker) Pointer(v reflect.Value) error {
+	if _, ok := w.shallowCopiers[v.Type()]; ok {
+		// Shallow copy this value. Use the same logic as primitive, then
+		// return skip.
+		if err := w.Primitive(v); err != nil {
+			return err
+		}
+
+		return reflectwalk.SkipEntry
+	}
+
+	return nil
+}
+
 func (w *walker) Interface(v reflect.Value) error {
 	if !v.IsValid() {
 		return nil
@@ -379,7 +419,7 @@ func (w *walker) Struct(s reflect.Value) error {
 	w.lock(s)
 
 	var v reflect.Value
-	if c, ok := Copiers[s.Type()]; ok {
+	if c, ok := w.copiers[s.Type()]; ok {
 		// We have a Copier for this struct, so we use that copier to
 		// get the copy, and we ignore anything deeper than this.
 		w.ignoreDepth = w.depth

@@ -22,6 +22,8 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/internal/global"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Defaults for BatchSpanProcessorOptions.
@@ -153,10 +155,29 @@ func (bsp *batchSpanProcessor) Shutdown(ctx context.Context) error {
 	return err
 }
 
+type forceFlushSpan struct {
+	ReadOnlySpan
+	flushed chan struct{}
+}
+
+func (f forceFlushSpan) SpanContext() trace.SpanContext {
+	return trace.NewSpanContext(trace.SpanContextConfig{TraceFlags: trace.FlagsSampled})
+}
+
 // ForceFlush exports all ended spans that have not yet been exported.
 func (bsp *batchSpanProcessor) ForceFlush(ctx context.Context) error {
 	var err error
 	if bsp.e != nil {
+		flushCh := make(chan struct{})
+		if bsp.enqueueBlockOnQueueFull(ctx, forceFlushSpan{flushed: flushCh}, true) {
+			select {
+			case <-flushCh:
+				// Processed any items in queue prior to ForceFlush being called
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+
 		wait := make(chan error)
 		go func() {
 			wait <- bsp.exportSpans(ctx)
@@ -204,6 +225,7 @@ func WithBlocking() BatchSpanProcessorOption {
 
 // exportSpans is a subroutine of processing and draining the queue.
 func (bsp *batchSpanProcessor) exportSpans(ctx context.Context) error {
+
 	bsp.timer.Reset(bsp.o.BatchTimeout)
 
 	bsp.batchMutex.Lock()
@@ -216,6 +238,7 @@ func (bsp *batchSpanProcessor) exportSpans(ctx context.Context) error {
 	}
 
 	if l := len(bsp.batch); l > 0 {
+		global.Debug("exporting spans", "count", len(bsp.batch))
 		err := bsp.e.ExportSpans(ctx, bsp.batch)
 
 		// A new batch is always created after exporting, even if the batch failed to be exported.
@@ -248,6 +271,10 @@ func (bsp *batchSpanProcessor) processQueue() {
 				otel.Handle(err)
 			}
 		case sd := <-bsp.queue:
+			if ffs, ok := sd.(forceFlushSpan); ok {
+				close(ffs.flushed)
+				continue
+			}
 			bsp.batchMutex.Lock()
 			bsp.batch = append(bsp.batch, sd)
 			shouldExport := len(bsp.batch) >= bsp.o.MaxExportBatchSize
@@ -296,8 +323,12 @@ func (bsp *batchSpanProcessor) drainQueue() {
 }
 
 func (bsp *batchSpanProcessor) enqueue(sd ReadOnlySpan) {
+	bsp.enqueueBlockOnQueueFull(context.TODO(), sd, bsp.o.BlockOnQueueFull)
+}
+
+func (bsp *batchSpanProcessor) enqueueBlockOnQueueFull(ctx context.Context, sd ReadOnlySpan, block bool) bool {
 	if !sd.SpanContext().IsSampled() {
-		return
+		return false
 	}
 
 	// This ensures the bsp.queue<- below does not panic as the
@@ -317,18 +348,24 @@ func (bsp *batchSpanProcessor) enqueue(sd ReadOnlySpan) {
 
 	select {
 	case <-bsp.stopCh:
-		return
+		return false
 	default:
 	}
 
-	if bsp.o.BlockOnQueueFull {
-		bsp.queue <- sd
-		return
+	if block {
+		select {
+		case bsp.queue <- sd:
+			return true
+		case <-ctx.Done():
+			return false
+		}
 	}
 
 	select {
 	case bsp.queue <- sd:
+		return true
 	default:
 		atomic.AddUint32(&bsp.dropped, 1)
 	}
+	return false
 }

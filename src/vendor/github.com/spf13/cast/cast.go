@@ -20,6 +20,11 @@ func ToTime(i interface{}) time.Time {
 	return v
 }
 
+func ToTimeInDefaultLocation(i interface{}, location *time.Location) time.Time {
+	v, _ := ToTimeInDefaultLocationE(i, location)
+	return v
+}
+
 // ToDuration casts an interface to a time.Duration type.
 func ToDuration(i interface{}) time.Duration {
 	v, _ := ToDurationE(i)

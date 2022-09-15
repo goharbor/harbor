@@ -33,8 +33,10 @@ The `otlptracehttp` package implements a client for the span exporter that sends
 
 ### Environment Variables
 
-The following environment variables can be used
-(instead of options objects) to override the default configuration.
+The following environment variables can be used (instead of options objects) to
+override the default configuration. For more information about how each of
+these environment variables is interpreted, see [the OpenTelemetry
+specification](https://github.com/open-telemetry/opentelemetry-specification/blob/v1.8.0/specification/protocol/exporter.md).
 
 | Environment variable                                                     | Option                        | Default value                       |
 | ------------------------------------------------------------------------ |------------------------------ | ----------------------------------- |
