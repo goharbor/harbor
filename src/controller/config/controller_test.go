@@ -29,6 +29,8 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 	cfgManager := &testCfg.Manager{}
 	cfgManager.On("Get", mock.Anything, common.AuditLogForwardEndpoint).
 		Return(&metadata.ConfigureValue{Name: common.AuditLogForwardEndpoint, Value: ""})
+	cfgManager.On("Get", mock.Anything, common.SkipAuditLogDatabase).
+		Return(&metadata.ConfigureValue{Name: common.SkipAuditLogDatabase, Value: "true"})
 	type args struct {
 		ctx  context.Context
 		cfgs map[string]interface{}
@@ -49,6 +51,9 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 		{name: "none configured", args: args{ctx: context.TODO(),
 			cfgs: map[string]interface{}{},
 			mgr:  cfgManager}, wantErr: false},
+		{name: "enabled skip audit log database, but change log forward endpoint to empty", args: args{ctx: context.TODO(),
+			cfgs: map[string]interface{}{common.AuditLogForwardEndpoint: ""},
+			mgr:  cfgManager}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
