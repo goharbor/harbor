@@ -30,6 +30,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
 )
 
+const pageSize = 1000
+
 // ErrNotFound ...
 var ErrNotFound = errors.New("entity not found")
 
@@ -267,7 +269,7 @@ func (s *Session) SearchLdapAttribute(baseDN, filter string, attributes []string
 		nil,
 	)
 
-	result, err := s.ldapConn.Search(searchRequest)
+	result, err := s.ldapConn.SearchWithPaging(searchRequest, pageSize)
 	if result != nil {
 		log.Debugf("Found entries:%v\n", len(result.Entries))
 	} else {
