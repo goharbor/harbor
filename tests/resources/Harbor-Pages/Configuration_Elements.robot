@@ -57,3 +57,7 @@ ${distribution_del_btn_id}  //*[@id='distribution-delete']
 ${distribution_edit_btn_id}  //*[@id='distribution-edit']
 ${filter_dist_btn}  //hbr-filter//clr-icon[contains(@class,'search-btn')]
 ${filter_dist_input}  //hbr-filter//input
+
+${audit_log_forward_syslog_endpoint_input_id}  //*[@id='auditLogForwardEndpoint']
+${skip_audit_log_database_checkbox}  //*[@id='skipAuditLogDatabase']
+${skip_audit_log_database_label}  //clr-checkbox-wrapper//label[contains(@for,'skipAuditLogDatabase')]

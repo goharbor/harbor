@@ -34,3 +34,11 @@ Verify Log
     Should Be Equal  ${real_resource}  ${resource}
     Should Be Equal  ${real_resource_type}  ${resource_type}
     Should Be Equal  ${real_operation}  ${operation}
+
+Verify Log In File
+    [Arguments]  ${username}  ${resource}  ${resource_type}  ${operation}  ${audit_log_path}=${log_path}/audit.log
+    ${contents}=  OperatingSystem.Get File  ${audit_log_path}
+    @{lines}=  Split to lines  ${contents}
+    Log  ${lines}[-1]
+    @{items}  Create List  operator="${username}"  resource:${resource}  resourceType="${resource_type}"  action:${operation}  time="20
+    Should Contain Any  ${lines}[-1]  @{items}

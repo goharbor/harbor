@@ -144,6 +144,16 @@ Retry Clear Element Text
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Clear Element Text  @{param}
 
+Retry Clear Element Text By Press Keys
+    [Arguments]  ${element_xpath}
+    ${value}=  Get Value  ${element_xpath}
+    ${value_length}=  Get length  ${value}
+    ${keys}=  Create List
+    FOR  ${idx}  IN RANGE  ${value_length}
+        Append To List  ${keys}  BACK_SPACE
+    END
+    Press Keys  ${element_xpath}  @{keys}
+
 Retry Link Click
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
