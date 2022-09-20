@@ -90,6 +90,7 @@ import locale_pt from '@angular/common/locales/pt-PT';
 import locale_tr from '@angular/common/locales/tr';
 import locale_de from '@angular/common/locales/de';
 import { SupportedLanguage } from './entities/shared.const';
+import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
 
 const localesForSupportedLangs: Record<SupportedLanguage, unknown[]> = {
     'en-us': locale_en,
@@ -171,6 +172,7 @@ ClarityIcons.add({
         ImageNameInputComponent,
         HarborDatetimePipe,
         RemainingTimeComponent,
+        LabelSelectorComponent,
     ],
     exports: [
         TranslateModule,
@@ -210,6 +212,7 @@ ClarityIcons.add({
         ImageNameInputComponent,
         HarborDatetimePipe,
         RemainingTimeComponent,
+        LabelSelectorComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },

@@ -338,3 +338,12 @@ hbr-create-edit-rule {
     border-bottom-color: $normal-border-color !important;
   }
 }
+
+app-artifact-filter {
+  .border-bottom-color {
+    border-bottom-color: $normal-border-color !important;
+  }
+  .search-dropdown-toggle {
+    color: $normal-border-color !important;;
+  }
+}

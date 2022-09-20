@@ -10,7 +10,6 @@
         <clr-datagrid
             [clrDgLoading]="loading"
             (clrDgRefresh)="clrDgRefresh($event)"
-            class="datagrid-top"
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar class="action-bar">
                 <div>
@@ -55,6 +54,7 @@
                             clrPosition="bottom-left"
                             *clrIfOpen>
                             <div
+                                id="artifact-list-copy-digest"
                                 class="action-dropdown-item no-border"
                                 aria-label="copy digest"
                                 clrDropdownItem
@@ -66,6 +66,7 @@
                             </div>
                             <clr-dropdown>
                                 <button
+                                    id="artifact-list-add-labels"
                                     class="action-dropdown-item"
                                     clrDropdownTrigger
                                     [disabled]="
@@ -73,68 +74,29 @@
                                         !hasAddLabelImagePermission ||
                                         depth ||
                                         inprogress
-                                    "
-                                    (click)="addLabels()">
+                                    ">
                                     {{ 'REPOSITORY.ADD_LABELS' | translate }}
                                 </button>
                                 <clr-dropdown-menu
                                     [hidden]="!selectedRow.length">
-                                    <div class="filter-grid">
+                                    <div class="filter-grid" clrDropdownItem>
                                         <label class="dropdown-header">{{
                                             'REPOSITORY.ADD_LABEL_TO_IMAGE'
                                                 | translate
                                         }}</label>
-                                        <div
-                                            class="form-group filter-label-input">
-                                            <input
-                                                clrInput
-                                                type="text"
-                                                placeholder="Filter labels"
-                                                [(ngModel)]="stickName"
-                                                (keyup)="
-                                                    handleStickInputFilter()
-                                                " />
-                                        </div>
-                                        <div
-                                            [hidden]="
-                                                artifactListPageService
-                                                    ?.imageStickLabels.length
+                                        <app-label-selector
+                                            [width]="200"
+                                            [ownedLabels]="
+                                                selectedRow[0]?.labels
                                             "
-                                            class="no-labels">
-                                            {{ 'LABEL.NO_LABELS' | translate }}
-                                        </div>
-                                        <div
-                                            [hidden]="
-                                                !artifactListPageService
-                                                    ?.imageStickLabels.length
-                                            "
-                                            class="has-label">
-                                            <button
-                                                type="button"
-                                                class="dropdown-item"
-                                                clrDropdownItem
-                                                *ngFor="
-                                                    let label of artifactListPageService?.imageStickLabels
-                                                "
-                                                [hidden]="!label.show"
-                                                (click)="stickLabel(label)">
-                                                <clr-icon
-                                                    shape="check"
-                                                    class="pull-left"
-                                                    [hidden]="!label.iconsShow">
-                                                </clr-icon>
-                                                <div class="labelDiv">
-                                                    <hbr-label-piece
-                                                        [label]="label.label"
-                                                        [labelWidth]="130">
-                                                    </hbr-label-piece>
-                                                </div>
-                                            </button>
-                                        </div>
+                                            (clickLabel)="stickLabel($event)"
+                                            [projectId]="projectId"
+                                            [scope]="'p'"></app-label-selector>
                                     </div>
                                 </clr-dropdown-menu>
                             </clr-dropdown>
                             <div
+                                id="artifact-list-copy"
                                 class="action-dropdown-item"
                                 aria-label="retag"
                                 [clrDisabled]="
@@ -162,161 +124,11 @@
                         </clr-dropdown-menu>
                     </clr-dropdown>
                 </div>
-                <div class="row flex-items-xs-right rightPos">
-                    <div id="filterArea" *ngIf="!depth">
-                        <div
-                            class="filterLabelPiece"
-                            *ngIf="
-                                openLabelFilterPiece &&
-                                filterByType === 'labels'
-                            "
-                            [style.left.px]="110">
-                            <hbr-label-piece
-                                *ngIf="showlabel"
-                                [hidden]="!filterOneLabel"
-                                [label]="filterOneLabel"
-                                [labelWidth]="130"></hbr-label-piece>
-                        </div>
-                        <div class="flex-xs-middle">
-                            <div class="execution-select">
-                                <div
-                                    class="select filter-tag"
-                                    [hidden]="!openSelectFilterPiece">
-                                    <clr-select-container>
-                                        <select
-                                            clrSelect
-                                            [(ngModel)]="filterByType"
-                                            (change)="selectFilterType()">
-                                            <option
-                                                *ngFor="
-                                                    let filter of mutipleFilter
-                                                "
-                                                value="{{ filter.filterBy }}">
-                                                {{
-                                                    filter.filterByShowText
-                                                        | translate
-                                                }}
-                                            </option>
-                                        </select>
-                                    </clr-select-container>
-                                </div>
-                                <div class="flex-xs-middle">
-                                    <hbr-filter
-                                        [withDivider]="true"
-                                        [readonly]="isFilterReadonly"
-                                        filterPlaceholder="{{
-                                            getFilterPlaceholder() | translate
-                                        }}"
-                                        (filterEvt)="
-                                            doSearchArtifactByFilter($event)
-                                        "
-                                        (openFlag)="openFlagEvent($event)"
-                                        [currentValue]="lastFilteredTagName">
-                                    </hbr-filter>
-                                    <div
-                                        [hidden]="!openSelectFilterPiece"
-                                        class="label-filter-panel list-filter">
-                                        <div
-                                            *ngFor="
-                                                let filter of mutipleFilter
-                                            ">
-                                            <ul
-                                                class="list-unstyled"
-                                                *ngIf="
-                                                    filterByType ===
-                                                    filter.filterBy
-                                                ">
-                                                <li
-                                                    class="cursor-pointer"
-                                                    (click)="
-                                                        selectFilter(
-                                                            item.showItem,
-                                                            item.filterText
-                                                        )
-                                                    "
-                                                    *ngFor="
-                                                        let item of filter.listItem
-                                                    ">
-                                                    {{
-                                                        item.showItem
-                                                            | translate
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="label-filter-panel"
-                                        [hidden]="
-                                            !(
-                                                openLabelFilterPanel &&
-                                                filterByType === 'labels'
-                                            )
-                                        ">
-                                        <a
-                                            class="filterClose"
-                                            (click)="closeFilter()"
-                                            >&times;</a
-                                        >
-                                        <label
-                                            class="filterLabelHeader filter-dark"
-                                            >{{
-                                                'REPOSITORY.FILTER_ARTIFACT_BY_LABEL'
-                                                    | translate
-                                            }}</label
-                                        >
-                                        <div class="form-group mb-05">
-                                            <input
-                                                clrInput
-                                                type="text"
-                                                placeholder="Filter labels"
-                                                [(ngModel)]="filterName"
-                                                (keyup)="handleInputFilter()" />
-                                        </div>
-                                        <div
-                                            [hidden]="
-                                                artifactListPageService
-                                                    ?.imageFilterLabels.length
-                                            "
-                                            class="no-labels">
-                                            {{ 'LABEL.NO_LABELS' | translate }}
-                                        </div>
-                                        <div
-                                            [hidden]="
-                                                !artifactListPageService
-                                                    ?.imageFilterLabels.length
-                                            "
-                                            class="has-label">
-                                            <button
-                                                type="button"
-                                                class="labelBtn"
-                                                *ngFor="
-                                                    let label of artifactListPageService?.imageFilterLabels
-                                                "
-                                                [hidden]="!label.show"
-                                                (click)="
-                                                    rightFilterLabel(label)
-                                                ">
-                                                <clr-icon
-                                                    shape="check"
-                                                    class="pull-left"
-                                                    [hidden]="
-                                                        !label.iconsShow
-                                                    "></clr-icon>
-                                                <div class="labelDiv top-3-px">
-                                                    <hbr-label-piece
-                                                        [label]="label.label"
-                                                        [labelWidth]="
-                                                            160
-                                                        "></hbr-label-piece>
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="right-pos">
+                    <app-artifact-filter
+                        [withDivider]="true"
+                        (filterEvent)="filterEvent($event)"
+                        [projectId]="projectId"></app-artifact-filter>
                     <span class="refresh-btn" (click)="refresh()">
                         <clr-icon shape="refresh"></clr-icon>
                     </span>
@@ -649,27 +461,23 @@
                         <div
                             class="signpost-item"
                             [hidden]="artifact.labels?.length <= 1">
-                            <div class="trigger-item">
-                                <clr-signpost>
-                                    <button
-                                        class="btn btn-link"
-                                        clrSignpostTrigger>
-                                        ...
-                                    </button>
-                                    <clr-signpost-content
-                                        [clrPosition]="'top-middle'"
-                                        *clrIfOpen>
-                                        <div>
-                                            <hbr-label-piece
-                                                *ngFor="
-                                                    let label of artifact.labels
-                                                "
-                                                [label]="label">
-                                            </hbr-label-piece>
-                                        </div>
-                                    </clr-signpost-content>
-                                </clr-signpost>
-                            </div>
+                            <clr-signpost>
+                                <button class="btn btn-link" clrSignpostTrigger>
+                                    ...
+                                </button>
+                                <clr-signpost-content
+                                    [clrPosition]="'top-middle'"
+                                    *clrIfOpen>
+                                    <div
+                                        *ngFor="let label of artifact.labels"
+                                        class="margin-5px">
+                                        <hbr-label-piece
+                                            [labelWidth]="130"
+                                            [label]="label">
+                                        </hbr-label-piece>
+                                    </div>
+                                </clr-signpost-content>
+                            </clr-signpost>
                         </div>
                     </div>
                 </clr-dg-cell>
