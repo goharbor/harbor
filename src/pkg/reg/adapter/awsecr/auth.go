@@ -63,7 +63,7 @@ func (a *awsAuthCredential) Modify(req *http.Request) error {
 		return nil
 	}
 	if !a.isTokenValid() {
-		endpoint, user, pass, expiresAt, err := a.getAuthorization()
+		endpoint, user, pass, expiresAt, err := a.getAuthorization(req.URL.String())
 
 		if err != nil {
 			return err
@@ -121,9 +121,15 @@ func getAwsSvc(region, accessKey, accessSecret string, insecure bool, forceEndpo
 	return svc, nil
 }
 
-func (a *awsAuthCredential) getAuthorization() (string, string, string, *time.Time, error) {
+func (a *awsAuthCredential) getAuthorization(url string) (string, string, string, *time.Time, error) {
+	id, _, err := parseAccountRegion(url)
+	if err != nil {
+		return "", "", "", nil, err
+	}
+
+	regIds := []*string{&id}
 	svc := a.awssvc
-	result, err := svc.GetAuthorizationToken(nil)
+	result, err := svc.GetAuthorizationToken(&awsecrapi.GetAuthorizationTokenInput{RegistryIds: regIds})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			return "", "", "", nil, fmt.Errorf("%s: %s", aerr.Code(), aerr.Error())
