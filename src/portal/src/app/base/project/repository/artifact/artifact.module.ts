@@ -23,6 +23,7 @@ import { SubAccessoriesComponent } from './artifact-list-page/artifact-list/arti
 import { ArtifactListPageService } from './artifact-list-page/artifact-list-page.service';
 import { CopyArtifactComponent } from './artifact-list-page/artifact-list/artifact-list-tab/copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './artifact-list-page/artifact-list/artifact-list-tab/copy-digest/copy-digest.component';
+import { ArtifactFilterComponent } from './artifact-list-page/artifact-list/artifact-list-tab/artifact-filter/artifact-filter.component';
 
 const routes: Routes = [
     {
@@ -86,6 +87,7 @@ const routes: Routes = [
         SubAccessoriesComponent,
         CopyArtifactComponent,
         CopyDigestComponent,
+        ArtifactFilterComponent,
     ],
     imports: [RouterModule.forChild(routes), SharedModule],
     providers: [

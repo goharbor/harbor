@@ -11,21 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-    Component,
-    ElementRef,
-    OnDestroy,
-    OnInit,
-    ViewChild,
-} from '@angular/core';
-import { forkJoin, Observable, of, Subject, Subscription } from 'rxjs';
-import {
-    catchError,
-    debounceTime,
-    distinctUntilChanged,
-    finalize,
-    map,
-} from 'rxjs/operators';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { forkJoin, Observable, of, Subscription } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import {
     ClrDatagridComparatorInterface,
@@ -48,7 +36,6 @@ import {
     setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
-import { ImageNameInputComponent } from '../../../../../../../shared/components/image-name-input/image-name-input.component';
 import { ErrorHandler } from '../../../../../../../shared/units/error-handler';
 import { ArtifactService } from '../../../artifact.service';
 import { OperationService } from '../../../../../../../shared/components/operation/operation.service';
@@ -65,12 +52,12 @@ import {
 import {
     AccessoryType,
     artifactDefault,
+    ArtifactFilterEvent,
     ArtifactFront as Artifact,
     ArtifactFront,
     ArtifactType,
     getPullCommandByDigest,
     getPullCommandByTag,
-    mutipleFilter,
 } from '../../../artifact';
 import { Project } from '../../../../../project';
 import { ArtifactService as NewArtifactService } from '../../../../../../../../../ng-swagger-gen/services/artifact.service';
@@ -98,12 +85,6 @@ import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
 
-export interface LabelState {
-    iconsShow: boolean;
-    label: Label;
-    show: boolean;
-}
-
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
 const CHECKING: string = 'checking';
@@ -122,12 +103,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
     availableTime = AVAILABLE_TIME;
-    lastFilteredTagName: string;
     inprogress: boolean;
-    openLabelFilterPanel: boolean;
-    openLabelFilterPiece: boolean;
-    showlabel: boolean;
-
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
         'pull_time',
         'date'
@@ -139,21 +115,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     loading = true;
     selectedRow: Artifact[] = [];
-    labelListOpen = false;
-    selectedTag: Artifact[];
-    labelNameFilter: Subject<string> = new Subject<string>();
-    stickLabelNameFilter: Subject<string> = new Subject<string>();
-    filterOnGoing: boolean;
-    stickName = '';
-    filterName = '';
-    initFilter = {
-        name: '',
-        description: '',
-        color: '',
-        scope: '',
-        project_id: 0,
-    };
-    filterOneLabel: Label = this.initFilter;
 
     @ViewChild('confirmationDialog')
     confirmationDialog: ConfirmationDialogComponent;
@@ -193,11 +154,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     scanStoppedArtifactLength: number = 0;
     artifactDigest: string;
     depth: string;
-    labelNameFilterSub: Subscription;
-    stickLabelNameFilterSub: Subscription;
-    mutipleFilter = clone(mutipleFilter);
-    filterByType: string = this.mutipleFilter[0].filterBy;
-    openSelectFilterPiece = false;
     // could Pagination filter
     filters: string[];
     scanFinishedArtifactLength: number = 0;
@@ -214,7 +170,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private appConfigService: AppConfigService,
-        public artifactListPageService: ArtifactListPageService
+        private artifactListPageService: ArtifactListPageService
     ) {}
     initRouterData() {
         this.projectId =
@@ -237,10 +193,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             const arr: string[] = this.depth.split('-');
             this.artifactDigest = this.depth.split('-')[arr.length - 1];
         }
-        this.lastFilteredTagName = '';
     }
     ngOnInit() {
-        this.artifactListPageService.resetClonedLabels();
         this.registryUrl = this.appConfigService.getConfig().registry_url;
         this.initRouterData();
         if (!this.updateArtifactSub) {
@@ -257,84 +211,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             );
         }
-        if (!this.labelNameFilterSub) {
-            this.labelNameFilterSub = this.labelNameFilter
-                .pipe(debounceTime(500))
-                .pipe(distinctUntilChanged())
-                .subscribe((name: string) => {
-                    if (this.filterName.length) {
-                        this.filterOnGoing = true;
-                        this.artifactListPageService.imageFilterLabels.forEach(
-                            data => {
-                                data.show =
-                                    data.label.name.indexOf(this.filterName) !==
-                                    -1;
-                            }
-                        );
-                    }
-                });
-        }
-        if (!this.stickLabelNameFilterSub) {
-            this.stickLabelNameFilterSub = this.stickLabelNameFilter
-                .pipe(debounceTime(500))
-                .pipe(distinctUntilChanged())
-                .subscribe((name: string) => {
-                    if (this.stickName.length) {
-                        this.filterOnGoing = true;
-                        this.artifactListPageService.imageStickLabels.forEach(
-                            data => {
-                                data.show =
-                                    data.label.name.indexOf(this.stickName) !==
-                                    -1;
-                            }
-                        );
-                    }
-                });
-        }
     }
     ngOnDestroy() {
-        if (this.labelNameFilterSub) {
-            this.labelNameFilterSub.unsubscribe();
-            this.labelNameFilterSub = null;
-        }
-        if (this.stickLabelNameFilterSub) {
-            this.stickLabelNameFilterSub.unsubscribe();
-            this.stickLabelNameFilterSub = null;
-        }
         if (this.updateArtifactSub) {
             this.updateArtifactSub.unsubscribe();
             this.updateArtifactSub = null;
         }
     }
-    public get filterLabelPieceWidth() {
-        let len = this.lastFilteredTagName.length
-            ? this.lastFilteredTagName.length * 6 + 60
-            : 115;
-        return len > 210 ? 210 : len;
-    }
-
     get withNotary(): boolean {
         return this.appConfigService.getConfig()?.with_notary;
-    }
-
-    doSearchArtifactByFilter(filterWords) {
-        this.lastFilteredTagName = filterWords;
-        this.currentPage = 1;
-
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        if (this.lastFilteredTagName) {
-            this.filters.push(
-                `${this.filterByType}=~${this.lastFilteredTagName}`
-            );
-        }
-        this.clrLoad(st);
     }
 
     clrDgRefresh(state: ClrDatagridStateInterface) {
@@ -538,39 +423,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         return pullCommand;
     }
-    labelSelectedChange(artifact?: Artifact[]): void {
-        this.artifactListPageService.imageStickLabels.forEach(data => {
-            data.iconsShow = false;
-            data.show = true;
-        });
-        if (artifact && artifact[0].labels && artifact[0].labels.length) {
-            artifact[0].labels.forEach((labelInfo: Label) => {
-                let findedLabel =
-                    this.artifactListPageService.imageStickLabels.find(
-                        data => labelInfo.id === data['label'].id
-                    );
-                if (findedLabel) {
-                    this.artifactListPageService.imageStickLabels.splice(
-                        this.artifactListPageService.imageStickLabels.indexOf(
-                            findedLabel
-                        ),
-                        1
-                    );
-                    this.artifactListPageService.imageStickLabels.unshift(
-                        findedLabel
-                    );
-                    findedLabel.iconsShow = true;
-                }
-            });
-        }
-    }
-
-    addLabels(): void {
-        this.labelListOpen = true;
-        this.selectedTag = this.selectedRow;
-        this.stickName = '';
-        this.labelSelectedChange(this.selectedRow);
-    }
 
     canAddLabel(): boolean {
         if (this.selectedRow && this.selectedRow.length === 1) {
@@ -590,248 +442,58 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    stickLabel(labelInfo: LabelState): void {
-        if (labelInfo && !labelInfo.iconsShow) {
-            this.selectLabel(labelInfo);
-        }
-        if (labelInfo && labelInfo.iconsShow) {
-            this.unSelectLabel(labelInfo);
+    stickLabel(labelEvent: { label: Label; isAdd: boolean }): void {
+        if (labelEvent.isAdd) {
+            this.addLabel(labelEvent?.label);
+        } else {
+            this.removeLabel(labelEvent?.label);
         }
     }
-
-    selectLabel(labelInfo: LabelState): void {
+    addLabel(label: Label) {
         if (!this.inprogress) {
-            // add label to multiple artifact
-            const ObservableArr: Array<Observable<null>> = [];
-            this.selectedRow.forEach(item => {
-                const params: NewArtifactService.AddLabelParams = {
-                    projectName: this.projectName,
-                    repositoryName: dbEncodeURIComponent(this.repoName),
-                    reference: item.digest,
-                    label: labelInfo.label,
-                };
-                ObservableArr.push(this.newArtifactService.addLabel(params));
-            });
+            const params: NewArtifactService.AddLabelParams = {
+                projectName: this.projectName,
+                repositoryName: dbEncodeURIComponent(this.repoName),
+                reference: this.selectedRow[0].digest,
+                label: label,
+            };
             this.inprogress = true;
-            forkJoin(ObservableArr)
+            this.newArtifactService
+                .addLabel(params)
                 .pipe(finalize(() => (this.inprogress = false)))
-                .subscribe(
-                    res => {
+                .subscribe({
+                    next: res => {
                         this.refresh();
-                        // set the selected label in front
-                        this.artifactListPageService.imageStickLabels.splice(
-                            this.artifactListPageService.imageStickLabels.indexOf(
-                                labelInfo
-                            ),
-                            1
-                        );
-                        this.artifactListPageService.imageStickLabels.some(
-                            (data, i) => {
-                                if (!data.iconsShow) {
-                                    this.artifactListPageService.imageStickLabels.splice(
-                                        i,
-                                        0,
-                                        labelInfo
-                                    );
-                                    return true;
-                                }
-                            }
-                        );
-                        // when is the last one
-                        if (
-                            this.artifactListPageService.imageStickLabels.every(
-                                data => data.iconsShow === true
-                            )
-                        ) {
-                            this.artifactListPageService.imageStickLabels.push(
-                                labelInfo
-                            );
-                        }
-                        labelInfo.iconsShow = true;
                     },
-                    err => {
+                    error: err => {
                         this.refresh();
                         this.errorHandlerService.error(err);
-                    }
-                );
+                    },
+                });
         }
     }
-
-    unSelectLabel(labelInfo: LabelState): void {
+    removeLabel(label: Label) {
         if (!this.inprogress) {
-            this.inprogress = true;
-            let labelId = labelInfo.label.id;
-            this.selectedRow = this.selectedTag;
             let params: NewArtifactService.RemoveLabelParams = {
                 projectName: this.projectName,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.selectedRow[0].digest,
-                labelId: labelId,
+                labelId: label.id,
             };
-            this.newArtifactService.removeLabel(params).subscribe(
-                res => {
-                    this.refresh();
-
-                    // insert the unselected label to groups with the same icons
-                    this.sortOperation(
-                        this.artifactListPageService.imageStickLabels,
-                        labelInfo
-                    );
-                    labelInfo.iconsShow = false;
-                    this.inprogress = false;
-                },
-                err => {
-                    this.inprogress = false;
-                    this.errorHandlerService.error(err);
-                }
-            );
+            this.inprogress = true;
+            this.newArtifactService
+                .removeLabel(params)
+                .pipe(finalize(() => (this.inprogress = false)))
+                .subscribe({
+                    next: res => {
+                        this.refresh();
+                    },
+                    error: err => {
+                        this.refresh();
+                        this.errorHandlerService.error(err);
+                    },
+                });
         }
-    }
-
-    rightFilterLabel(labelInfo: LabelState): void {
-        if (labelInfo) {
-            if (!labelInfo.iconsShow) {
-                this.filterLabel(labelInfo);
-                this.showlabel = true;
-            } else {
-                this.unFilterLabel(labelInfo);
-                this.showlabel = false;
-            }
-        }
-    }
-
-    filterLabel(labelInfo: LabelState): void {
-        let labelId = labelInfo.label.id;
-        this.artifactListPageService.imageFilterLabels.filter(data => {
-            data.iconsShow = data.label.id === labelId;
-        });
-        this.filterOneLabel = labelInfo.label;
-
-        // reload data
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-
-        this.filters = [`${this.filterByType}=(${labelId})`];
-
-        this.clrLoad(st);
-    }
-
-    unFilterLabel(labelInfo: LabelState): void {
-        this.filterOneLabel = this.initFilter;
-        labelInfo.iconsShow = false;
-        // reload data
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-
-        this.filters = [];
-        this.clrLoad(st);
-    }
-
-    closeFilter(): void {
-        this.openLabelFilterPanel = false;
-    }
-
-    reSortImageFilterLabels() {
-        if (
-            this.artifactListPageService.imageFilterLabels &&
-            this.artifactListPageService.imageFilterLabels.length
-        ) {
-            for (
-                let i = 0;
-                i < this.artifactListPageService.imageFilterLabels.length;
-                i++
-            ) {
-                if (
-                    this.artifactListPageService.imageFilterLabels[i].iconsShow
-                ) {
-                    const arr: LabelState[] =
-                        this.artifactListPageService.imageFilterLabels.splice(
-                            i,
-                            1
-                        );
-                    this.artifactListPageService.imageFilterLabels.unshift(
-                        ...arr
-                    );
-                    break;
-                }
-            }
-        }
-    }
-
-    getFilterPlaceholder(): string {
-        return this.showlabel ? '' : 'ARTIFACT.FILTER_FOR_ARTIFACTS';
-    }
-
-    openFlagEvent(isOpen: boolean): void {
-        if (isOpen) {
-            this.openLabelFilterPanel = true;
-            // every time  when filer panel opens, resort imageFilterLabels labels
-            this.reSortImageFilterLabels();
-            this.openLabelFilterPiece = true;
-            this.openSelectFilterPiece = true;
-            this.filterName = '';
-            // redisplay all labels
-            this.artifactListPageService.imageFilterLabels.forEach(data => {
-                data.show = data.label.name.indexOf(this.filterName) !== -1;
-            });
-        } else {
-            this.openLabelFilterPanel = false;
-            this.openLabelFilterPiece = false;
-            this.openSelectFilterPiece = false;
-        }
-    }
-
-    handleInputFilter() {
-        if (this.filterName.length) {
-            this.labelNameFilter.next(this.filterName);
-        } else {
-            this.artifactListPageService.imageFilterLabels.every(
-                data => (data.show = true)
-            );
-        }
-    }
-
-    handleStickInputFilter() {
-        if (this.stickName.length) {
-            this.stickLabelNameFilter.next(this.stickName);
-        } else {
-            this.artifactListPageService.imageStickLabels.every(
-                data => (data.show = true)
-            );
-        }
-    }
-
-    // insert the unselected label to groups with the same icons
-    sortOperation(labelList: LabelState[], labelInfo: LabelState): void {
-        labelList.some((data, i) => {
-            if (!data.iconsShow) {
-                if (data.label.scope === labelInfo.label.scope) {
-                    labelList.splice(i, 0, labelInfo);
-                    labelList.splice(labelList.indexOf(labelInfo, 0), 1);
-                    return true;
-                }
-                if (
-                    data.label.scope !== labelInfo.label.scope &&
-                    i === labelList.length - 1
-                ) {
-                    labelList.push(labelInfo);
-                    labelList.splice(labelList.indexOf(labelInfo), 1);
-                    return true;
-                }
-            }
-        });
     }
 
     sizeTransform(tagSize: string): string {
@@ -1011,7 +673,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 return of(error);
             })
         );
-        // }
     }
 
     showDigestId() {
@@ -1147,56 +808,19 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
 
-    selectFilterType() {
-        this.lastFilteredTagName = '';
-        if (this.filterByType === 'labels') {
-            this.openLabelFilterPanel = true;
-            // every time  when filer panel opens, resort imageFilterLabels labels
-            this.reSortImageFilterLabels();
-            this.openLabelFilterPiece = true;
+    filterEvent(e: ArtifactFilterEvent) {
+        this.filters = [];
+        if (e?.isLabel) {
+            if (e?.label?.name) {
+                this.filters.push(`${e.type}=(${e?.label?.id})`);
+            }
         } else {
-            this.openLabelFilterPiece = false;
-            this.filterOneLabel = this.initFilter;
-            this.showlabel = false;
-            this.artifactListPageService.imageFilterLabels.forEach(data => {
-                data.iconsShow = false;
-            });
+            if (e?.stringValue) {
+                this.filters.push(`${e.type}=${e?.stringValue}`);
+            }
         }
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        this.clrLoad(st);
+        this.refresh();
     }
-
-    selectFilter(showItem: string, filterItem: string) {
-        this.lastFilteredTagName = filterItem;
-        this.currentPage = 1;
-
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        if (filterItem) {
-            this.filters.push(`${this.filterByType}=${filterItem}`);
-        }
-
-        this.clrLoad(st);
-    }
-
-    get isFilterReadonly() {
-        return this.filterByType === 'labels' ? 'readonly' : null;
-    }
-
     // when finished, remove it from selectedRow
     scanFinished(artifact: Artifact) {
         if (this.selectedRow && this.selectedRow.length) {
