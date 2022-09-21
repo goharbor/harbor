@@ -277,13 +277,7 @@ define _build_base
 		else \
 			echo "No docker credentials provided, please be aware of priviledges to access docker hub!" ; \
 		fi ;\
-		if [ "$(1)" = "db" ] && [ "$(BUILD_PG96)" = "true" ]; then \
-			echo "build pg96 rpm package." ; \
-			cd $(DOCKERFILEPATH)/db && $(DOCKERFILEPATH)/db/rpm_builder.sh && cd - ; \
-			$(DOCKERBUILD) --pull --no-cache -f $(DOCKERFILEPATH)/db/Dockerfile.pg96 -t $(BASEIMAGENAMESPACE)/harbor-db-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ; \
-		else \
-			$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
-		fi ;\
+		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
