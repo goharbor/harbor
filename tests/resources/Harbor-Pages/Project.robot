@@ -304,17 +304,17 @@ Add Labels To Tag
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
-    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select
-    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select/option[@value='labels']
+    Retry Element Click  xpath=//*[@id='search-btn']
+    Retry Element Click  xpath=//*[@id='type-select']
+    Retry Element Click  xpath=//*[@id='type-select']/option[@value='labels']
     Retry Wait Until Page Contains Element  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//app-artifact-filter//clr-icon[contains(@shape,'search')]
     Retry Wait Until Page Contains Element  xpath=//clr-datagrid//label[contains(.,'${labelName1}')]
 
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//*[@id='search-btn']
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName2}')]
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//app-artifact-filter//clr-icon[contains(@shape,'search')]
     Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
