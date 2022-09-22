@@ -525,6 +525,13 @@ lint:
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) -v run ./...;
 
+# go install golang.org/x/vuln/cmd/govulncheck@latest
+GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
+govulncheck:
+	@echo golang vulnerability check
+	@cd ./src/; $(GOVULNCHECK) ./...;
+
+
 pushimage:
 	@echo "pushing harbor images ..."
 	@$(DOCKERTAG) $(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
