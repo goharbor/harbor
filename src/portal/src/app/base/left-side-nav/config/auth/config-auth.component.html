@@ -51,7 +51,7 @@
             >
         </div>
     </div>
-    <section>
+    <section *ngIf="currentConfig?.auth_mode?.value !== 'db_auth'">
       <clr-checkbox-container>
         <label for="primaryAuthMode"
         >{{ 'CONFIG.PRIMARY_AUTH_MODE' | translate }}
@@ -96,7 +96,7 @@
                 size="35"
                 [(ngModel)]="currentConfig.uaa_endpoint.value"
                 [disabled]="!currentConfig.uaa_verify_cert.editable" />
-        </clr-input-container>
+        </clr-input-container>tttu6
         <clr-input-container>
             <label for="uaa-id" class="required">{{
                 'CONFIG.UAA.CLIENT_ID' | translate
