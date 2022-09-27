@@ -131,18 +131,18 @@ var (
 type manifestV2ProcessorTestSuite struct {
 	suite.Suite
 	processor *manifestV2Processor
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 }
 
 func (m *manifestV2ProcessorTestSuite) SetupTest() {
-	m.regCli = &registry.FakeClient{}
+	m.regCli = &registry.Client{}
 	m.processor = &manifestV2Processor{}
 	m.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: m.regCli}
 }
 
 func (m *manifestV2ProcessorTestSuite) TestAbstractMetadata() {
 	artifact := &artifact.Artifact{}
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
 	m.NotNil(artifact.ExtraAttrs["created"])
@@ -162,8 +162,8 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
 	artifact := &artifact.Artifact{}
 	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, []byte(manifest))
 	m.Require().Nil(err)
-	m.regCli.On("PullManifest").Return(manifest, "", nil)
-	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
 	addition, err := m.processor.AbstractAddition(nil, artifact, AdditionTypeBuildHistory)
 	m.Require().Nil(err)
 	m.Equal("application/json; charset=utf-8", addition.ContentType)

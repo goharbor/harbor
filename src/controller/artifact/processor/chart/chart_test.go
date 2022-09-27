@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 )
@@ -62,12 +63,12 @@ var (
 type processorTestSuite struct {
 	suite.Suite
 	processor *processor
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 	chartOptr *chart.FakeOpertaor
 }
 
 func (p *processorTestSuite) SetupTest() {
-	p.regCli = &registry.FakeClient{}
+	p.regCli = &registry.Client{}
 	p.chartOptr = &chart.FakeOpertaor{}
 	p.processor = &processor{
 		chartOperator: p.chartOptr,
@@ -103,8 +104,8 @@ func (p *processorTestSuite) TestAbstractAddition() {
 	artifact := &artifact.Artifact{}
 	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(chartManifest))
 	p.Require().Nil(err)
-	p.regCli.On("PullManifest").Return(manifest, "", nil)
-	p.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(chartYaml)), nil)
+	p.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(chartYaml)), nil)
 	p.chartOptr.On("GetDetails").Return(chartDetails, nil)
 
 	// values.yaml

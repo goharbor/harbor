@@ -122,11 +122,11 @@ type defaultProcessorTestSuite struct {
 	suite.Suite
 	processor *defaultProcessor
 	parser    *parser.Parser
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 }
 
 func (d *defaultProcessorTestSuite) SetupTest() {
-	d.regCli = &registry.FakeClient{}
+	d.regCli = &registry.Client{}
 	d.processor = &defaultProcessor{
 		regCli: d.regCli,
 	}
@@ -179,7 +179,7 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadata() {
 
 	configBlob := ioutil.NopCloser(strings.NewReader(ormbConfig))
 	art := &artifact.Artifact{ManifestMediaType: manifestMediaType}
-	d.regCli.On("PullBlob").Return(0, configBlob, nil)
+	d.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), configBlob, nil)
 	d.parser.On("Parse", context.TODO(), mock.AnythingOfType("*artifact.Artifact"), mock.AnythingOfType("[]byte")).Return(nil)
 	err = d.processor.AbstractMetadata(nil, art, content)
 	d.Require().Nil(err)
