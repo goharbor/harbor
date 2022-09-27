@@ -186,6 +186,12 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 	for _, trigger := range info.SupportedTriggers {
 		in.SupportedTriggers = append(in.SupportedTriggers, string(trigger))
 	}
+
+	// whether support copy by chunk
+	if info.SupportedCopyByChunk {
+		in.SupportedCopyByChunk = &info.SupportedCopyByChunk
+	}
+
 	return operation.NewGetRegistryInfoOK().WithPayload(in)
 }
 

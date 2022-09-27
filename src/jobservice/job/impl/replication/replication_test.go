@@ -51,14 +51,17 @@ func TestParseParam(t *testing.T) {
 
 func TestParseParams(t *testing.T) {
 	params := map[string]interface{}{
-		"src_resource": `{"type":"chart"}`,
-		"dst_resource": `{"type":"chart"}`,
+		"src_resource":  `{"type":"chart"}`,
+		"dst_resource":  `{"type":"chart"}`,
+		"speed":         1024,
+		"copy_by_chunk": true,
 	}
-	res, dst, speed, err := parseParams(params)
+	res, dst, opts, err := parseParams(params)
 	require.Nil(t, err)
 	assert.Equal(t, "chart", string(res.Type))
 	assert.Equal(t, "chart", string(dst.Type))
-	assert.Equal(t, int32(0), speed)
+	assert.Equal(t, int32(1024), opts.Speed)
+	assert.True(t, opts.CopyByChunk)
 }
 
 func TestMaxFails(t *testing.T) {
@@ -84,7 +87,7 @@ var fakedTransferFactory = func(transfer.Logger, transfer.StopFunc) (transfer.Tr
 
 type fakedTransfer struct{}
 
-func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource, speed int32) error {
+func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource, opts *transfer.Options) error {
 	transferred = true
 	return nil
 }

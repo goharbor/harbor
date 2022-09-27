@@ -86,8 +86,12 @@ type Client interface {
 	BlobExist(repository, digest string) (exist bool, err error)
 	// PullBlob pulls the specified blob. The caller must close the returned "blob"
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	// PullBlobChunk pulls the specified blob, but by chunked
+	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
 	// PushBlob pushes the specified blob
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
+	// PushBlobChunk pushes the specified blob, but by chunked
+	PushBlobChunk(repository, digest string, blobSize int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error)
 	// MountBlob mounts the blob from the source repository
 	MountBlob(srcRepository, digest, dstRepository string) (err error)
 	// DeleteBlob deletes the specified blob
@@ -371,12 +375,124 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 	return size, resp.Body, nil
 }
 
+// PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
+func (c *client) PullBlobChunk(repository, digest string, blobSize int64, start, end int64) (int64, io.ReadCloser, error) {
+	req, err := http.NewRequest(http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	req.Header.Add("Accept-Encoding", "identity")
+	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+	resp, err := c.do(req)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var size int64
+	n := resp.Header.Get("Content-Length")
+	// no content-length is acceptable, which can taken from manifests
+	if len(n) > 0 {
+		size, err = strconv.ParseInt(n, 10, 64)
+		if err != nil {
+			defer resp.Body.Close()
+			return 0, nil, err
+		}
+	}
+
+	return size, resp.Body, nil
+}
+
 func (c *client) PushBlob(repository, digest string, size int64, blob io.Reader) error {
 	location, _, err := c.initiateBlobUpload(repository)
 	if err != nil {
 		return err
 	}
 	return c.monolithicBlobUpload(location, digest, size, blob)
+}
+
+// PushBlobChunk pushes the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#push for more details.
+func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk io.Reader, start, end int64, location string) (string, int64, error) {
+	var err error
+	// first chunk need to initialize blob upload location
+	if start == 0 {
+		location, _, err = c.initiateBlobUpload(repository)
+		if err != nil {
+			return location, end, err
+		}
+	}
+
+	// the range is from 0 to (blobSize-1), so (end == blobSize-1) means it is last chunk
+	lastChunk := end == blobSize-1
+	url, err := buildChunkBlobUploadURL(c.url, location, digest, lastChunk)
+	if err != nil {
+		return location, end, err
+	}
+
+	// use PUT instead of PATCH for last chunk which can reduce a final request
+	method := http.MethodPatch
+	if lastChunk {
+		method = http.MethodPut
+	}
+	req, err := http.NewRequest(method, url, chunk)
+	if err != nil {
+		return location, end, err
+	}
+
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
+	req.Header.Set("Content-Range", fmt.Sprintf("%d-%d", start, end))
+	resp, err := c.do(req)
+	if err != nil {
+		// if push chunk error, we should query the upload progress for new location and end range.
+		newLocation, newEnd, err1 := c.getUploadStatus(location)
+		if err1 == nil {
+			return newLocation, newEnd, err
+		}
+		// end should return start-1 to re-push this chunk
+		return location, start - 1, fmt.Errorf("failed to get upload status: %w", err1)
+	}
+
+	defer resp.Body.Close()
+	// return the location for next chunk upload
+	return resp.Header.Get("Location"), end, nil
+}
+
+func (c *client) getUploadStatus(location string) (string, int64, error) {
+	req, err := http.NewRequest(http.MethodGet, location, nil)
+	if err != nil {
+		return location, -1, err
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		return location, -1, err
+	}
+
+	defer resp.Body.Close()
+
+	_, end, err := parseContentRange(resp.Header.Get("Range"))
+	if err != nil {
+		return location, -1, err
+	}
+
+	return resp.Header.Get("Location"), end, nil
+}
+
+func parseContentRange(cr string) (int64, int64, error) {
+	ranges := strings.Split(cr, "-")
+	if len(ranges) != 2 {
+		return -1, -1, fmt.Errorf("invalid content range format, %s", cr)
+	}
+	start, err := strconv.ParseInt(ranges[0], 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+	end, err := strconv.ParseInt(ranges[1], 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+
+	return start, end, nil
 }
 
 func (c *client) initiateBlobUpload(repository string) (string, string, error) {
@@ -583,6 +699,23 @@ func buildMountBlobURL(endpoint, repository, digest, from string) string {
 
 func buildInitiateBlobUploadURL(endpoint, repository string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repository)
+}
+
+func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {
+	url, err := url.Parse(location)
+	if err != nil {
+		return "", err
+	}
+	q := url.Query()
+	if lastChunk {
+		q.Set("digest", digest)
+	}
+	url.RawQuery = q.Encode()
+	if url.IsAbs() {
+		return url.String(), nil
+	}
+	// the "relativeurls" is enabled in registry
+	return endpoint + url.String(), nil
 }
 
 func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {

@@ -272,6 +272,36 @@ func (_m *mockAdapter) PullBlob(repository string, digest string) (int64, io.Rea
 	return r0, r1, r2
 }
 
+// PullBlobChunk provides a mock function with given fields: repository, digest, blobSize, start, end
+func (_m *mockAdapter) PullBlobChunk(repository string, digest string, blobSize int64, start int64, end int64) (int64, io.ReadCloser, error) {
+	ret := _m.Called(repository, digest, blobSize, start, end)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(string, string, int64, int64, int64) int64); ok {
+		r0 = rf(repository, digest, blobSize, start, end)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 io.ReadCloser
+	if rf, ok := ret.Get(1).(func(string, string, int64, int64, int64) io.ReadCloser); ok {
+		r1 = rf(repository, digest, blobSize, start, end)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(io.ReadCloser)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string, string, int64, int64, int64) error); ok {
+		r2 = rf(repository, digest, blobSize, start, end)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // PullManifest provides a mock function with given fields: repository, reference, accepttedMediaTypes
 func (_m *mockAdapter) PullManifest(repository string, reference string, accepttedMediaTypes ...string) (distribution.Manifest, string, error) {
 	_va := make([]interface{}, len(accepttedMediaTypes))
@@ -321,6 +351,34 @@ func (_m *mockAdapter) PushBlob(repository string, digest string, size int64, bl
 	}
 
 	return r0
+}
+
+// PushBlobChunk provides a mock function with given fields: repository, digest, size, chunk, start, end, location
+func (_m *mockAdapter) PushBlobChunk(repository string, digest string, size int64, chunk io.Reader, start int64, end int64, location string) (string, int64, error) {
+	ret := _m.Called(repository, digest, size, chunk, start, end, location)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string, string, int64, io.Reader, int64, int64, string) string); ok {
+		r0 = rf(repository, digest, size, chunk, start, end, location)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(string, string, int64, io.Reader, int64, int64, string) int64); ok {
+		r1 = rf(repository, digest, size, chunk, start, end, location)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string, string, int64, io.Reader, int64, int64, string) error); ok {
+		r2 = rf(repository, digest, size, chunk, start, end, location)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // PushManifest provides a mock function with given fields: repository, reference, mediaType, payload
