@@ -188,3 +188,7 @@ Test Case - Log Rotation
 Test Case - Log Forward
     [Tags]  log_forward
     Harbor API Test  ./tests/apitests/python/test_audit_log_forward.py
+
+Test Case - Scan Data Export
+    [Tags]  scan_data_export
+    Harbor API Test  ./tests/apitests/python/test_scan_data_export.py
