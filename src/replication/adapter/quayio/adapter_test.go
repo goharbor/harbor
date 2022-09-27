@@ -38,11 +38,3 @@ func TestAdapter_Info(t *testing.T) {
 	assert.Nil(t, err)
 	t.Log(info)
 }
-
-func TestAdapter_PullManifests(t *testing.T) {
-	quayAdapter := getMockAdapter(t)
-	registry, _, err := quayAdapter.(*adapter).PullManifest("quay/busybox", "latest", []string{})
-	assert.Nil(t, err)
-	assert.NotNil(t, registry)
-	t.Log(registry)
-}
