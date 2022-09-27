@@ -1,0 +1,83 @@
+image: docker:stable
+
+services:
+  - docker:dind
+
+variables:
+  GIT_DEPTH: "1"
+  DOCKER_DRIVER: "overlay2"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: "1"
+  REGISTRY_DOMAIN: "8gears.container-registry.com"
+
+before_script:
+  - apk add --purge --no-cache make bash git docker-compose curl
+  - mkdir -p $HOME/.docker/
+  - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+stages:
+  - build
+
+build-portal:
+  stage: build
+  only:
+    - /^cr/.*/ # regular expression
+  variables:
+    DOCKERIMAGENAME_PORTAL: "${REGISTRY_DOMAIN}/container-registry/harbor-portal"
+  script:
+    - export VERSIONTAG=$(cat ./VERSION)
+    - mv setting-container-registry.json src/portal/src/setting.json
+    - cp -a container-registry-logo.svg src/portal/src/images/
+    - make build -e BUILDTARGET="_build_prepare _build_portal" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_PORTAL="$DOCKERIMAGENAME_PORTAL"
+    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}"
+
+build-portal-advantest:
+  stage: build
+  only:
+    - /^cr/.*/ # regular expression
+  variables:
+    DOCKERIMAGENAME_PORTAL: "${REGISTRY_DOMAIN}/container-registry/harbor-portal"
+    NG_BUILD_ARGS: '--prod --base-href /admin-console/ --deploy-url /admin-console/'
+  script:
+    - export VERSIONTAG="$(cat ./VERSION)-advantest"
+    - mv setting-advantest.json src/portal/src/setting.json
+    - cp -a advantest-logo.svg src/portal/src/images/
+    - make build -e BUILDTARGET="_build_prepare _build_portal" -e BASEIMAGETAG=$(cat ./VERSION) -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_PORTAL="$DOCKERIMAGENAME_PORTAL"
+    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}"
+
+build-core:
+  stage: build
+  only:
+    - /^cr/.*/ # regular expression
+  variables:
+    DOCKERIMAGENAME_CORE: "${REGISTRY_DOMAIN}/container-registry/harbor-core"
+  script:
+    - export VERSIONTAG=$(cat ./VERSION)
+    #- make update_prepare_version check_environment versions_prepare compile_core DEVFLAG="false" BASEIMAGETAG="$VERSIONTAG" VERSIONTAG="$VERSIONTAG"
+    #- make -f make/photon/Makefile _build_core BASEIMAGETAG="$VERSIONTAG" DOCKERIMAGENAME_CORE="$DOCKERIMAGENAME_CORE" VERSIONTAG="$VERSIONTAG"
+    - make versions_prepare compile_core build -e BUILDTARGET="_build_prepare _build_core" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_CORE="$DOCKERIMAGENAME_CORE"
+    - docker push "${DOCKERIMAGENAME_CORE}:${VERSIONTAG}"
+
+build-registry:
+  stage: build
+  only:
+    - /^cr/.*/ # regular expression
+  variables:
+    DOCKERIMAGENAME_REGISTRY: "${REGISTRY_DOMAIN}/container-registry/registry-photon"
+  script:
+    - export VERSIONTAG=$(cat ./VERSION)
+    - make versions_prepare build -e BUILDTARGET="_build_prepare _build_registry" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_REGISTRY="DOCKERIMAGENAME_REGISTRY"
+    - docker push "${DOCKERIMAGENAME_REGISTRY}:${VERSIONTAG}"
+  allow_failure: true
+
+#jobservice:
+#  stage: build
+#  only:
+#    - /^cr/.*/ # regular expression
+#  variables:
+#    DOCKERIMAGENAME_JOBSERVICE: "c8n.io/container-registry/harbor-jobservice"
+#  script:
+#    - export VERSIONTAG=$(cat ./VERSION)
+#    - echo "$CR_REGISTRY_PASS" | docker login -u "$CR_REGISTRY_USER" --password-stdin c8n.io
+#    - make check_environment versions_prepare compile_jobservice DEVFLAG="false" BASEIMAGETAG="$VERSIONTAG" VERSIONTAG="$VERSIONTAG"
+#    - make -f make/photon/Makefile _build_jobservice BASEIMAGETAG="$VERSIONTAG" DOCKERIMAGENAME_JOBSERVICE="$DOCKERIMAGENAME_JOBSERVICE" VERSIONTAG="$VERSIONTAG"
+#    - docker push "$DOCKERIMAGENAME_JOBSERVICE":"$VERSIONTAG"

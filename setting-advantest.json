@@ -1,0 +1,13 @@
+{
+  "headerBgColor": {
+    "darkMode": "",
+    "lightMode": ""
+  },
+  "loginBgImg": "",
+  "loginTitle": "Advantest Container Registry",
+  "product": {
+    "name": "Container Registry",
+    "logo": "advantest-logo.svg",
+    "introduction": "8gears Container Registry as a Service is a Harbor based Container Registry from the maintainers of the project. Harbor is an an open source trusted cloud native registry project that stores, signs, and scans images and other artifacts, supporting advanced features such as user management, access control, activity monitoring, and replication with other registries."
+  }
+}

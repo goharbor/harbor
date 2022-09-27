@@ -21,7 +21,7 @@ COPY src/portal /build_dir
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
 RUN npm install --unsafe-perm
 RUN npm run generate-build-timestamp
-RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --configuration production
+RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --configuration production --aot=true --buildOptimizer=true
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > dist/swagger.json
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger2.yaml > dist/swagger2.json
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger3.yaml > dist/swagger3.json
