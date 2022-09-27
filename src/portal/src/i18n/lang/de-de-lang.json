@@ -871,6 +871,7 @@
         "SESSION_TIMEOUT": "Session Timeout (Minutes)",
         "SESSION_TIMEOUT_INFO": "Set the session timeout for Harbor UI. The default is 60 minutes.",
         "AUTH_MODE": "Auth Mode",
+        "PRIMARY_AUTH_MODE": "Dieser Anmeldemodus wird zur Standardmethode für die Benutzeranmeldung. Der Anmeldebildschirm, in dem der Benutzer auswählt, ob er sich über den Identitätsanbieter oder über die lokale DB anmelden möchte, leitet den Benutzer automatisch an diesen Identitätsanbieter weiter. Die Anmeldung über die DB ist möglich, wenn die URL '/account/sign-in' explizit aufgerufen wird.",
         "PRO_CREATION_RESTRICTION": "Projekt Erzeugung",
         "SELF_REGISTRATION": "Selbst-Registrierung",
         "AUTH_MODE_DB": "Datenbank",
