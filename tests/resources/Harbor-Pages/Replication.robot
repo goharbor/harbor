@@ -101,9 +101,9 @@ Create A New Endpoint
     Select From List By Value  ${provider_selector}  ${provider}
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
     Run Keyword If  '${provider}' == 'harbor' or '${provider}' == 'gitlab'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
-    Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  ${url}
-    Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'    Retry Text Input  xpath=${destination_username_xpath}  ${username}
-    Run Keyword If  '${pwd}' != '${null}'  Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
+    Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'  Run keyword  Select Destination URL  ${url}
+    Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'  Retry Password Input  xpath=${destination_username_xpath}  ${username}
+    Run Keyword If  '${pwd}' != '${null}'  Retry Password Input  xpath=${destination_password_xpath}  ${pwd}
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
@@ -122,7 +122,7 @@ Create A Rule With Existing Endpoint
     ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}  AND  Select Source Registry  ${endpoint}
 
     #set filter
-    Retry Text Input    ${filter_name_id}    ${filter_project_name}
+    Retry Password Input  ${filter_name_id}  ${filter_project_name}
     Run Keyword If  '${filter_tag_model}' != 'matching'  Select Filter Tag Model  ${filter_tag_model}
     Run Keyword If  '${filter_tag}' != '${false}'  Retry Text Input    ${filter_tag_id}    ${filter_tag}
     Run Keyword If  '${filter_label_model}' != 'matching'  Select Filter Label Model  ${filter_label_model}
