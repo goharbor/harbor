@@ -904,7 +904,6 @@ Test Case - Audit Log And Purge
     # create artifact
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag1}  ${tag1}
     Clean All Local Images
-    Refresh Logs
     Verify Log  ${user}  project${d}/${image}:${tag1}  artifact  create
     Go Into Project  project${d}
     Go Into Repo  ${image}
@@ -941,4 +940,52 @@ Test Case - Audit Log And Purge
     Verify Log  ${user}  project${d}  project  delete
     Switch To Log Rotation
     Purge Now  1  Hours
+    Close Browser
+
+Test Case - Audit Log Forward
+    [Tags]  audit_log_forward
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${audit_log_path}=  Set Variable  ${log_path}/audit.log
+    ${syslog_endpoint}=  Set Variable  harbor-log:10514
+    ${test_endpoint}=  Set Variable  test.endpoint
+    ${image}=  Set Variable  alpine
+    ${tag1}=  Set Variable  3.10
+    ${tag2}=  Set Variable  test
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Switch To Logs
+    Verify Log  ${HARBOR_ADMIN}  project${d}  project  create
+    Switch To System Settings
+    Retry Wait Element Should Be Disabled  ${skip_audit_log_database_checkbox}
+    Set Audit Log Forward  ${test_endpoint}  bad request: could not connect to the audit endpoint: ${test_endpoint}
+    # Set Audit Log Forward
+    Set Audit Log Forward  ${syslog_endpoint}  Configuration has been successfully saved.
+    Wait Until Element Is Enabled  ${skip_audit_log_database_checkbox}
+    # create artifact
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  ${tag1}  ${tag1}
+    Switch To Logs
+    Verify Log  ${HARBOR_ADMIN}  project${d}/${image}:${tag1}  artifact  create
+    Verify Log In File  ${HARBOR_ADMIN}  project${d}/${image}:${tag1}  artifact  create
+    # Enable Skip Audit Log Database
+    Enable Skip Audit Log Database
+    Go Into Project  project${d}
+    Go Into Repo  ${image}
+    Go Into Artifact  ${tag1}
+    # create tag
+    Add A New Tag   ${tag2}
+    Switch To Logs
+    Verify Log  ${HARBOR_ADMIN}  project${d}/${image}:${tag1}  artifact  create
+    Verify Log In File  ${HARBOR_ADMIN}  project${d}/${image}:${tag2}  artifact  create
+    Set Audit Log Forward  ${null}  Configuration has been successfully saved.
+    Retry Wait Element Should Be Disabled  ${skip_audit_log_database_checkbox}
+    Checkbox Should Not Be Selected  ${skip_audit_log_database_checkbox}
+    Go Into Project  project${d}
+    Go Into Repo  ${image}
+    Go Into Artifact  ${tag1}
+    # delete tag
+    Delete A Tag  ${tag2}
+    Switch To Logs
+    Verify Log  ${HARBOR_ADMIN}  project${d}/${image}:${tag2}  tag  delete
+    Verify Log In File  ${HARBOR_ADMIN}  project${d}/${image}:${tag2}  artifact  create
     Close Browser
