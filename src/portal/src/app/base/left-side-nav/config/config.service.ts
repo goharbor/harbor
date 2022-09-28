@@ -81,12 +81,6 @@ export class ConfigService {
                         new StringValueItem(fakePass, true);
                     // Keep the original copy of the data
                     this._originalConfig = clone(this._currentConfig);
-                    // Handle read only
-                    if (this._originalConfig?.read_only?.value) {
-                        this.msgHandler.handleReadOnly();
-                    } else {
-                        this.msgHandler.clear();
-                    }
                 },
                 error => {
                     this.msgHandler.handleError(error);

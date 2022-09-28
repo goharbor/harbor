@@ -13,6 +13,7 @@ mockApi.get('/', (req, res) => {
 mockApi.get(CURRENT_BASE_HREF + '/scanners', Controllers.getScanner);
 
 mockApi.listen(3000, () => {
+    // eslint-disable-next-line no-console
     console.log('Api server listening on port 3000!');
 });
 
