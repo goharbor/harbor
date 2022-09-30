@@ -29,11 +29,11 @@ import (
 )
 
 const (
-	regionPattern = "https://(?:api|\\d+\\.dkr)\\.ecr\\.([\\w\\-]+)\\.amazonaws\\.com"
+	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr\\.([\\w\\-]+)\\.amazonaws\\.com"
 )
 
 var (
-	regionRegexp = regexp.MustCompile(regionPattern)
+	ecrRegexp = regexp.MustCompile(ecrPattern)
 )
 
 func init() {
@@ -45,12 +45,12 @@ func init() {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	region, err := parseRegion(registry.URL)
+	_, region, err := parseAccountRegion(registry.URL)
 	if err != nil {
 		return nil, err
 	}
 	svc, err := getAwsSvc(
-		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, &registry.URL)
+		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,12 +62,12 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	}, nil
 }
 
-func parseRegion(url string) (string, error) {
-	rs := regionRegexp.FindStringSubmatch(url)
+func parseAccountRegion(url string) (string, string, error) {
+	rs := ecrRegexp.FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("bad aws url")
+		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], nil
+	return rs[1], rs[2], nil
 }
 
 type factory struct {

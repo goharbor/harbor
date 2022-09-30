@@ -289,18 +289,18 @@ var urlForBenchmark = []string{
 	"https://test-region.amazonaws.com",
 }
 
-func compileRegexpEveryTime(url string) (string, error) {
-	rs := regexp.MustCompile(regionPattern).FindStringSubmatch(url)
+func compileRegexpEveryTime(url string) (string, string, error) {
+	rs := regexp.MustCompile(ecrPattern).FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("bad aws url")
+		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], nil
+	return rs[1], rs[2], nil
 }
 
-func BenchmarkGetRegion(b *testing.B) {
+func BenchmarkGetAccountRegion(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, url := range urlForBenchmark {
-			parseRegion(url)
+			parseAccountRegion(url)
 		}
 	}
 }
