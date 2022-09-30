@@ -661,7 +661,9 @@
         "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
         "UNLIMITED": "无限制",
         "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}",
-        "CRON_ERROR_TIP": "此项必填且\"分钟\"项不能为\"*\""
+        "CRON_ERROR_TIP": "此项必填且\"分钟\"项不能为\"*\"",
+        "COPY_BY_CHUNK": "分块复制",
+        "COPY_BY_CHUNK_TIP": "请指定是否开启分块复制。开启此项可能导致相应的 API 请求数量增加。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
