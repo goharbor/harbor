@@ -226,6 +226,9 @@ describe('CreateEditRuleComponent (inline template)', () => {
         listRegistries() {
             return of(mockEndpoints).pipe(delay(0));
         },
+        getRegistryInfo() {
+            return of(mockRegistryInfo).pipe(delay(0));
+        },
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
