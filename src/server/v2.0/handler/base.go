@@ -85,7 +85,11 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 		p, err := baseProjectCtl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
-			return false
+			if errors.IsNotFoundErr(err) {
+				p = &project.Project{}
+			} else {
+				return false
+			}
 		}
 		if p == nil {
 			log.Warningf("project %s not found", projectName)
