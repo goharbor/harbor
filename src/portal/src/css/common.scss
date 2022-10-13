@@ -347,3 +347,13 @@ app-artifact-filter {
     color: $normal-border-color !important;;
   }
 }
+
+job-service-dashboard {
+  .duration {
+    color: $text-color-job-service-dashboard;
+  }
+}
+
+.datagrid-numeric-filter-input {
+  background-color: $datagrid-numeric-filter-input-bg-color;
+}

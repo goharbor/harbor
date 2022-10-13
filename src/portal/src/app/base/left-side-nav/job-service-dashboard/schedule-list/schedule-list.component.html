@@ -1,0 +1,66 @@
+<clr-datagrid
+    [clrDgLoading]="loadingSchedules"
+    (clrDgRefresh)="clrLoad($event)">
+    <clr-dg-action-bar class="action-bar">
+        <span class="refresh-btn" (click)="clrLoad()">
+            <clr-icon shape="refresh"></clr-icon>
+        </span>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgSortBy]="'id'">{{
+        'TAG_RETENTION.SERIAL' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'vendor_type'">{{
+        'JOB_SERVICE_DASHBOARD.VENDOR_TYPE' | translate
+    }}</clr-dg-column>
+    <clr-dg-column>{{
+        'JOB_SERVICE_DASHBOARD.VENDOR_ID' | translate
+    }}</clr-dg-column>
+    <clr-dg-column>{{
+        'JOB_SERVICE_DASHBOARD.EXTRA_ATTR' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'creation_time'">{{
+        'PROJECT.CREATION_TIME' | translate
+    }}</clr-dg-column>
+    <clr-dg-placeholder>{{
+        'JOB_SERVICE_DASHBOARD.NO_SCHEDULE' | translate
+    }}</clr-dg-placeholder>
+    <clr-dg-row *ngFor="let p of schedules" [clrDgItem]="p">
+        <clr-dg-cell>{{ p.id }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.vendor_type }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.vendor_id }}</clr-dg-cell>
+        <clr-dg-cell class="flex">
+            <clr-signpost>
+                <a class="btn btn-link link-normal" clrSignpostTrigger>{{
+                    p.extra_attrs
+                }}</a>
+                <clr-signpost-content
+                    class="pre"
+                    [clrPosition]="'top-middle'"
+                    *clrIfOpen>
+                    <pre
+                        [innerHTML]="
+                            json(p.extra_attrs) | json | markdown
+                        "></pre>
+                </clr-signpost-content>
+            </clr-signpost>
+        </clr-dg-cell>
+        <clr-dg-cell>{{ p.creation_time | harborDatetime }}</clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <clr-dg-pagination
+            #pagination
+            [clrDgPageSize]="pageSize"
+            [(clrDgPage)]="page"
+            [clrDgTotalItems]="total">
+            <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                'PAGINATION.PAGE_SIZE' | translate
+            }}</clr-dg-page-size>
+            <span *ngIf="total">
+                {{ pagination.firstItem + 1 }} -
+                {{ pagination.lastItem + 1 }}
+                {{ 'GROUP.OF' | translate }}
+            </span>
+            {{ total }} {{ 'GROUP.ITEMS' | translate }}
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

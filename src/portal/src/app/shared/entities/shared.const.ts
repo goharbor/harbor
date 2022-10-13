@@ -56,6 +56,14 @@ export const enum ConfirmationTargets {
     ALL_ACCESSORIES,
     STOP_GC,
     STOP_AUDIT_LOG_ROTATION,
+    FREE_ALL_WORKERS,
+    RESUME_ALL_SCHEDULES,
+    PAUSE_ALL_SCHEDULES,
+    STOP_ALL_PENDING_JOBS,
+    FREE_SPECIFIED_WORKERS,
+    STOPS_JOBS,
+    PAUSE_JOBS,
+    RESUME_JOBS,
 }
 
 export const enum ActionType {

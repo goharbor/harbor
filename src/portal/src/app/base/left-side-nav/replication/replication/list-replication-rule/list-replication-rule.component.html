@@ -126,15 +126,15 @@
                         <clr-icon
                             shape="exclamation-triangle"
                             class="is-warning text-alignment"
-                            size="18"></clr-icon
-                        >Deactivated
+                            size="18"></clr-icon>
+                        {{ 'WEBHOOK.DISABLED' | translate }}
                     </div>
                     <div *ngIf="p?.enabled">
                         <clr-icon
                             shape="success-standard"
                             class="is-success text-alignment"
                             size="18"></clr-icon>
-                        Enabled
+                        {{ 'WEBHOOK.ENABLED' | translate }}
                     </div>
                 </div>
             </clr-dg-cell>
@@ -172,7 +172,14 @@
                 getFlattenLevelString(p.dest_namespace_replace_count)
                     | translate
             }}</clr-dg-cell>
-            <clr-dg-cell>{{ p.trigger ? p.trigger.type : '' }}</clr-dg-cell>
+            <clr-dg-cell class="trigger">
+                {{ getTriggerTypeI18n(p.trigger) | translate }}
+                <clr-signpost *ngIf="p?.trigger?.trigger_settings?.cron">
+                    <clr-signpost-content *clrIfOpen>
+                        {{ p?.trigger?.trigger_settings?.cron }}
+                    </clr-signpost-content>
+                </clr-signpost>
+            </clr-dg-cell>
             <clr-dg-cell>{{
                 getBandwidthStr(p.speed) | translate
             }}</clr-dg-cell>

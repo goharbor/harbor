@@ -17,6 +17,8 @@ import {
 import { AbstractControl } from '@angular/forms';
 import { isValidCron } from 'cron-validator';
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { ScheduleListComponent } from '../../base/left-side-nav/job-service-dashboard/schedule-list/schedule-list.component';
+import { PendingListComponent } from '../../base/left-side-nav/job-service-dashboard/pending-job-list/pending-job-list.component';
 
 /**
  * Api levels
@@ -928,6 +930,29 @@ export function setPageSizeToLocalStorage(key: string, pageSize: number) {
     }
 }
 
+/**
+ * Convert seconds to xx hrs xx min xx sec
+ * @param distance in milliseconds
+ */
+export function durationStr(distance: number): string {
+    const hours = Math.floor(distance / 3600000);
+    distance -= hours * 3600000;
+    const minutes = Math.floor(distance / 60000);
+    distance -= minutes * 60000;
+    const seconds = Math.floor(distance / 1000);
+    let result: string = '';
+    if (seconds) {
+        result = `${seconds}sec`;
+    }
+    if (minutes) {
+        result = `${minutes}min ${seconds}sec`;
+    }
+    if (hours) {
+        result = `${hours}hrs ${minutes}min ${seconds}sec`;
+    }
+    return result ? result : '0';
+}
+
 export enum PageSizeMapKeys {
     LIST_PROJECT_COMPONENT = 'ListProjectComponent',
     REPOSITORY_GRIDVIEW_COMPONENT = 'RepositoryGridviewComponent',
@@ -957,4 +982,8 @@ export enum PageSizeMapKeys {
     SYSTEM_SCANNER_COMPONENT = 'ConfigurationScannerComponent',
     GC_HISTORY_COMPONENT = 'GcHistoryComponent',
     SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent',
+    WORKER_LIST_COMPONENT_POOL = 'WorkerListComponentPool',
+    WORKER_LIST_COMPONENT_WORKER = 'WorkerListComponentWorker',
+    SCHEDULE_LIST_COMPONENT = 'ScheduleListComponent',
+    PENDING_LIST_COMPONENT = 'PendingListComponent',
 }

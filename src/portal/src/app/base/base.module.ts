@@ -124,6 +124,14 @@ const routes: Routes = [
                     ).then(m => m.ClearingJobModule),
             },
             {
+                path: 'job-service-dashboard',
+                canActivate: [SystemAdminGuard],
+                loadChildren: () =>
+                    import(
+                        './left-side-nav/job-service-dashboard/job-service-dashboard.module'
+                    ).then(m => m.JobServiceDashboardModule),
+            },
+            {
                 path: 'configs',
                 canActivate: [SystemAdminGuard],
                 loadChildren: () =>
