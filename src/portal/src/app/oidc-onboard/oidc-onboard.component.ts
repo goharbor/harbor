@@ -34,10 +34,10 @@ export class OidcOnboardComponent implements OnInit {
             .subscribe(
                 res => {
                     if (this.redirectUrl === '') {
-                      // Routing to the default location
-                      this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
+                        // Routing to the default location
+                        this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
                     } else {
-                      this.router.navigateByUrl(this.redirectUrl);
+                        this.router.navigateByUrl(this.redirectUrl);
                     }
                 },
                 error => {
