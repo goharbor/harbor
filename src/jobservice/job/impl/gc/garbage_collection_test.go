@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/tests"
 	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
@@ -276,9 +277,8 @@ func (suite *gcTestSuite) TestRun() {
 	}
 	params := map[string]interface{}{
 		"delete_untagged": false,
-		// ToDo add a redis testing pkg, we do have a 'localhost' redis server in UT
-		"redis_url_reg": "redis://localhost:6379",
-		"time_window":   1,
+		"redis_url_reg":   tests.GetRedisURL(),
+		"time_window":     1,
 	}
 
 	suite.Nil(gc.Run(ctx, params))
