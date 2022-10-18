@@ -82,7 +82,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -344,7 +344,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
