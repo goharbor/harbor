@@ -11,15 +11,26 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - "release-note/infra"
+      - "release-note/update"
+    assignees:
+      - "OrlinVasilev"
+    reviewers:
+      - "OrlinVasilev"
 
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "release-note/update"
 
   - package-ecosystem: "gomod"
     directory: "tests/"
     schedule:
       interval: "weekly"
+    labels:
+      - "release-note/update"
   
   # More will be needed
