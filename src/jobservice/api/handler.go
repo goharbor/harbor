@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/core"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -56,11 +57,14 @@ type Handler interface {
 	// HandleJobLogReq is used to handle the request of getting job logs
 	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
 
-	// HandleJobLogReq is used to handle the request of getting periodic executions
+	// HandlePeriodicExecutions is used to handle the request of getting periodic executions
 	HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request)
 
 	// HandleGetJobsReq is used to handle the request of getting jobs
 	HandleGetJobsReq(w http.ResponseWriter, req *http.Request)
+
+	// HandleGetConfigReq is used to handle the request of getting configure
+	HandleGetConfigReq(w http.ResponseWriter, req *http.Request)
 }
 
 // DefaultHandler is the default request handler which implements the Handler interface.
@@ -292,6 +296,18 @@ func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, 
 
 func (dh *DefaultHandler) log(req *http.Request, code int, text string) {
 	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, text)
+}
+
+// HandleGetConfigReq return the config of the job service
+func (dh *DefaultHandler) HandleGetConfigReq(w http.ResponseWriter, req *http.Request) {
+	if config.DefaultConfig == nil || config.DefaultConfig.PoolConfig == nil || config.DefaultConfig.PoolConfig.RedisPoolCfg == nil {
+		logger.Errorf("Failed to get config, config is nil")
+		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(fmt.Errorf("no configuration")))
+		return
+	}
+	dh.handleJSONData(w, req, http.StatusOK, &job.Config{
+		RedisPoolConfig: config.DefaultConfig.PoolConfig.RedisPoolCfg,
+	})
 }
 
 func extractQuery(req *http.Request) *query.Parameter {
