@@ -15,7 +15,6 @@
 package gc
 
 import (
-	"os"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
@@ -380,6 +379,6 @@ func (suite *gcTestSuite) TestSweep() {
 }
 
 func TestGCTestSuite(t *testing.T) {
-	os.Setenv("UTTEST", "true")
+	t.Setenv("UTTEST", "true")
 	suite.Run(t, &gcTestSuite{})
 }

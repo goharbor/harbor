@@ -90,7 +90,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 	_, err := test.GenerateKey(secretKeyPath)
 	suite.Nil(err)
 	defer os.Remove(secretKeyPath)
-	os.Setenv("KEY_PATH", secretKeyPath)
+	suite.T().Setenv("KEY_PATH", secretKeyPath)
 
 	conf := map[string]interface{}{
 		common.RobotTokenDuration: "30",

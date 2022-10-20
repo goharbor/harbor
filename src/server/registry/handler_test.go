@@ -16,7 +16,6 @@ package registry
 
 import (
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,12 +27,8 @@ func direct(req *http.Request) {
 
 func TestBasicAuthDirector(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "127.0.0.1", nil)
-	os.Setenv("REGISTRY_CREDENTIAL_USERNAME", "testuser")
-	os.Setenv("REGISTRY_CREDENTIAL_PASSWORD", "testpassword")
-	defer func() {
-		os.Unsetenv("REGISTRY_CREDENTIAL_USERNAME")
-		os.Unsetenv("REGISTRY_CREDENTIAL_PASSWORD")
-	}()
+	t.Setenv("REGISTRY_CREDENTIAL_USERNAME", "testuser")
+	t.Setenv("REGISTRY_CREDENTIAL_PASSWORD", "testpassword")
 
 	d := basicAuthDirector(direct)
 	d(req)
