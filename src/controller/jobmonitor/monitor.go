@@ -21,25 +21,32 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 
 	"github.com/goharbor/harbor/src/lib/log"
 
 	"github.com/gocraft/work"
 
 	"github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	jm "github.com/goharbor/harbor/src/pkg/jobmonitor"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-// All the jobs in the pool, or all pools
-const All = "all"
+const (
+	all = "all"
+)
 
 // Ctl the controller instance of the worker pool controller
 var Ctl = NewMonitorController()
+
+var skippedJobTypes = []string{
+	"DEMO",
+	"IMAGE_REPLICATE",
+	"IMAGE_SCAN_ALL",
+	"IMAGE_GC",
+}
 
 // MonitorController defines the worker pool operations
 type MonitorController interface {
@@ -47,78 +54,41 @@ type MonitorController interface {
 	ListPools(ctx context.Context) ([]*jm.WorkerPool, error)
 	// ListWorkers lists the workers in the pool
 	ListWorkers(ctx context.Context, poolID string) ([]*jm.Worker, error)
+
 	// StopRunningJob stop the running job
-	StopRunningJob(ctx context.Context, jobID string) error
+	StopRunningJobs(ctx context.Context, jobID string) error
+	// StopPendingJobs stop the pending jobs
+	StopPendingJobs(ctx context.Context, jobType string) error
+
+	// ListQueues lists job queues
+	ListQueues(ctx context.Context) ([]*jm.Queue, error)
+	// PauseJobQueues suspend the job queue by type
+	PauseJobQueues(ctx context.Context, jobType string) error
+	// ResumeJobQueues resume the job queue by type
+	ResumeJobQueues(ctx context.Context, jobType string) error
 }
 
 type monitorController struct {
-	poolManager   jm.PoolManager
-	workerManager jm.WorkerManager
-	taskManager   task.Manager
-	sch           scheduler.Scheduler
-	monitorClient func() (jm.JobServiceMonitorClient, error)
+	poolManager           jm.PoolManager
+	workerManager         jm.WorkerManager
+	taskManager           task.Manager
+	queueManager          jm.QueueManager
+	queueStatusManager    queuestatus.Manager
+	monitorClient         func() (jm.JobServiceMonitorClient, error)
+	jobServiceRedisClient func() (jm.RedisClient, error)
 }
 
 // NewMonitorController ...
 func NewMonitorController() MonitorController {
 	return &monitorController{
-		poolManager:   jm.NewPoolManager(),
-		workerManager: jm.NewWorkerManager(),
-		taskManager:   task.NewManager(),
-		monitorClient: jobServiceMonitorClient,
+		poolManager:           jm.NewPoolManager(),
+		workerManager:         jm.NewWorkerManager(),
+		taskManager:           task.NewManager(),
+		queueManager:          jm.NewQueueClient(),
+		queueStatusManager:    queuestatus.Mgr,
+		monitorClient:         jobServiceMonitorClient,
+		jobServiceRedisClient: jm.JobServiceRedisClient,
 	}
-}
-
-func (w *monitorController) StopRunningJob(ctx context.Context, jobID string) error {
-	if strings.EqualFold(jobID, All) {
-		allRunningJobs, err := w.allRunningJobs(ctx)
-		if err != nil {
-			log.Errorf("failed to get all running jobs: %v", err)
-			return err
-		}
-		for _, jobID := range allRunningJobs {
-			if err := w.stopJob(ctx, jobID); err != nil {
-				log.Errorf("failed to stop running job %s: %v", jobID, err)
-				return err
-			}
-		}
-		return nil
-	}
-	return w.stopJob(ctx, jobID)
-}
-
-func (w *monitorController) stopJob(ctx context.Context, jobID string) error {
-	tasks, err := w.taskManager.List(ctx, &q.Query{Keywords: q.KeyWords{"job_id": jobID}})
-	if err != nil {
-		return err
-	}
-	if len(tasks) == 0 {
-		return errors.BadRequestError(nil).WithMessage("job %s not found", jobID)
-	}
-	if len(tasks) != 1 {
-		return fmt.Errorf("there are more than one task with the same job ID")
-	}
-	// use local transaction to avoid rollback batch success tasks to previous state when one fail
-	if ctx == nil {
-		log.Debug("context is nil, skip stop operation")
-		return nil
-	}
-	return orm.WithTransaction(func(ctx context.Context) error {
-		return w.taskManager.Stop(ctx, tasks[0].ID)
-	})(orm.SetTransactionOpNameToContext(ctx, "tx-stop-job"))
-}
-
-func (w *monitorController) allRunningJobs(ctx context.Context) ([]string, error) {
-	jobIDs := make([]string, 0)
-	wks, err := w.ListWorkers(ctx, All)
-	if err != nil {
-		log.Errorf("failed to list workers: %v", err)
-		return nil, err
-	}
-	for _, wk := range wks {
-		jobIDs = append(jobIDs, wk.JobID)
-	}
-	return jobIDs, nil
 }
 
 func jobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
@@ -127,7 +97,7 @@ func jobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
 		return nil, err
 	}
 	config := cfg.RedisPoolConfig
-	pool, err := libRedis.GetRedisPool("JobService", config.RedisURL, &libRedis.PoolParam{
+	pool, err := libRedis.GetRedisPool(jm.JobServicePool, config.RedisURL, &libRedis.PoolParam{
 		PoolMaxIdle:     0,
 		PoolIdleTimeout: time.Duration(config.IdleTimeoutSecond) * time.Second,
 	})
@@ -152,4 +122,236 @@ func (w *monitorController) ListPools(ctx context.Context) ([]*jm.WorkerPool, er
 		return nil, err
 	}
 	return w.poolManager.List(ctx, mClient)
+}
+
+func (w *monitorController) StopRunningJobs(ctx context.Context, jobID string) error {
+	if !strings.EqualFold(jobID, all) {
+		return w.stopJob(ctx, jobID)
+	}
+	allRunningJobs, err := w.allRunningJobs(ctx)
+	if err != nil {
+		log.Errorf("failed to get all running jobs: %v", err)
+		return err
+	}
+	for _, jobID := range allRunningJobs {
+		if err := w.stopJob(ctx, jobID); err != nil {
+			log.Errorf("failed to stop running job %s: %v", jobID, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *monitorController) stopJob(ctx context.Context, jobID string) error {
+	tasks, err := w.taskManager.List(ctx, &q.Query{Keywords: q.KeyWords{"job_id": jobID}})
+	if err != nil {
+		return err
+	}
+	if len(tasks) == 0 {
+		// the job is not found
+		log.Infof("job %s not found, maybe the job is already complete", jobID)
+		return nil
+	}
+	if len(tasks) != 1 {
+		return fmt.Errorf("there are more than one task with the same job ID")
+	}
+	// use local transaction to avoid rollback batch success tasks to previous state when one fail
+	if ctx == nil {
+		log.Debug("context is nil, skip stop operation")
+		return nil
+	}
+	return orm.WithTransaction(func(ctx context.Context) error {
+		return w.taskManager.Stop(ctx, tasks[0].ID)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-stop-job"))
+}
+
+func (w *monitorController) allRunningJobs(ctx context.Context) ([]string, error) {
+	jobIDs := make([]string, 0)
+	wks, err := w.ListWorkers(ctx, all)
+	if err != nil {
+		log.Errorf("failed to list workers: %v", err)
+		return nil, err
+	}
+	for _, wk := range wks {
+		jobIDs = append(jobIDs, wk.JobID)
+	}
+	return jobIDs, nil
+}
+
+func (w *monitorController) StopPendingJobs(ctx context.Context, jobType string) error {
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(jobType, all) {
+		return w.stopPendingJob(ctx, jobType)
+	}
+
+	jobTypes, err := redisClient.AllJobTypes(ctx)
+	if err != nil {
+		return err
+	}
+	for _, jobType := range jobTypes {
+		if err := w.stopPendingJob(ctx, jobType); err != nil {
+			log.Warningf("failed to stop pending jobs of type %s: %v", jobType, err)
+			continue
+		}
+	}
+	return nil
+}
+
+func (w *monitorController) stopPendingJob(ctx context.Context, jobType string) error {
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return err
+	}
+	jobIDs, err := redisClient.StopPendingJobs(ctx, jobType)
+	if err != nil {
+		return err
+	}
+	return w.updateJobStatusInTask(ctx, jobIDs, "Stopped")
+}
+
+func (w *monitorController) updateJobStatusInTask(ctx context.Context, jobIDs []string, status string) error {
+	if ctx == nil {
+		log.Debug("context is nil, update job status in task")
+		return nil
+	}
+	for _, jobID := range jobIDs {
+		ts, err := w.taskManager.List(ctx, q.New(q.KeyWords{"job_id": jobID}))
+		if err != nil {
+			return err
+		}
+		if len(ts) == 0 {
+			continue
+		}
+		ts[0].Status = status
+		// use local transaction to avoid rollback batch success tasks to previous state when one fail
+		if err := orm.WithTransaction(func(ctx context.Context) error {
+			return w.taskManager.Update(ctx, ts[0], "Status")
+		})(orm.SetTransactionOpNameToContext(ctx, "tx-update-task")); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *monitorController) ListQueues(ctx context.Context) ([]*jm.Queue, error) {
+	mClient, err := w.monitorClient()
+	if err != nil {
+		return nil, err
+	}
+	qs, err := mClient.Queues()
+	if err != nil {
+		return nil, err
+	}
+	// the original queue doesn't include the paused status, fetch it from the redis
+	statusMap, err := w.queueStatusManager.AllJobTypeStatus(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*jm.Queue, 0)
+	for _, queue := range qs {
+		if skippedUnusedJobType(queue.JobName) {
+			continue
+		}
+		result = append(result, &jm.Queue{
+			JobType: queue.JobName,
+			Count:   queue.Count,
+			Latency: queue.Latency,
+			Paused:  statusMap[queue.JobName],
+		})
+	}
+	return result, nil
+}
+
+func skippedUnusedJobType(jobType string) bool {
+	for _, t := range skippedJobTypes {
+		if jobType == t {
+			return true
+		}
+	}
+	return false
+}
+
+func (w *monitorController) PauseJobQueues(ctx context.Context, jobType string) error {
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(jobType, all) {
+		return w.pauseQueue(ctx, jobType)
+	}
+
+	jobTypes, err := redisClient.AllJobTypes(ctx)
+	if err != nil {
+		return err
+	}
+	for _, t := range jobTypes {
+		if err := w.pauseQueue(ctx, t); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *monitorController) pauseQueue(ctx context.Context, jobType string) error {
+	if ctx == nil {
+		log.Debug("context is nil, skip pause queue")
+		return nil
+	}
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return fmt.Errorf("failed to pause queue %v, error: %v", jobType, err)
+	}
+	err = redisClient.PauseJob(ctx, jobType)
+	if err != nil {
+		return fmt.Errorf("failed to pause queue %v, error: %v", jobType, err)
+	}
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		return w.queueStatusManager.UpdateStatus(ctx, jobType, true)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-update-queue-status")); err != nil {
+		return fmt.Errorf("failed to pause queue %v, error: %v", jobType, err)
+	}
+	return nil
+}
+
+func (w *monitorController) ResumeJobQueues(ctx context.Context, jobType string) error {
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(jobType, all) {
+		return w.resumeQueue(ctx, jobType)
+	}
+	jobTypes, err := redisClient.AllJobTypes(ctx)
+	if err != nil {
+		return err
+	}
+	for _, jobType := range jobTypes {
+		if err := w.resumeQueue(ctx, jobType); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *monitorController) resumeQueue(ctx context.Context, jobType string) error {
+	if ctx == nil {
+		log.Debug("context is nil, skip resume queue")
+		return nil
+	}
+	redisClient, err := w.jobServiceRedisClient()
+	if err != nil {
+		return fmt.Errorf("failed to resume queue %v, error: %v", jobType, err)
+	}
+	if err := redisClient.UnpauseJob(ctx, jobType); err != nil {
+		return fmt.Errorf("failed to resume queue %v, error: %v", jobType, err)
+	}
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		return w.queueStatusManager.UpdateStatus(ctx, jobType, false)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-update-queue-status")); err != nil {
+		return fmt.Errorf("failed to resume queue %v, error: %v", jobType, err)
+	}
+	return nil
 }

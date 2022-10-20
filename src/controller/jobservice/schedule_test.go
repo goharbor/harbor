@@ -15,26 +15,32 @@
 package jobservice
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/purge"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/mock"
+	queueStatusMock "github.com/goharbor/harbor/src/testing/pkg/queuestatus"
 	testingScheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 )
 
 type ScheduleTestSuite struct {
 	suite.Suite
-	scheduler *testingScheduler.Scheduler
-	ctl       SchedulerController
+	scheduler      *testingScheduler.Scheduler
+	ctl            SchedulerController
+	queueStatusMgr queuestatus.Manager
 }
 
 func (s *ScheduleTestSuite) SetupSuite() {
 	s.scheduler = &testingScheduler.Scheduler{}
+	s.queueStatusMgr = &queueStatusMock.Manager{}
 	s.ctl = &schedulerController{
-		schedulerMgr: s.scheduler,
+		schedulerMgr:   s.scheduler,
+		queueStatusMgr: s.queueStatusMgr,
 	}
 }
 
@@ -60,11 +66,35 @@ func (s *ScheduleTestSuite) TestGetSchedule() {
 			ID:         1,
 			VendorType: purge.VendorType,
 		},
-	}, nil)
+	}, nil).Once()
 
 	schedule, err := s.ctl.Get(nil, purge.VendorType)
 	s.Nil(err)
 	s.Equal(purge.VendorType, schedule.VendorType)
+}
+
+func (s *ScheduleTestSuite) TestListSchedule() {
+	mock.OnAnything(s.scheduler, "ListSchedules").Return([]*scheduler.Schedule{
+		{ID: 1, VendorType: "GARBAGE_COLLECTION", CRON: "0 0 0 * * *", ExtraAttrs: map[string]interface{}{"args": "sample args"}}}, nil).Once()
+	schedules, err := s.scheduler.ListSchedules(nil, nil)
+	s.Assert().Nil(err)
+	s.Assert().Equal(1, len(schedules))
+	s.Assert().Equal(schedules[0].VendorType, "GARBAGE_COLLECTION")
+	s.Assert().Equal(schedules[0].ID, int64(1))
+}
+
+func (s *ScheduleTestSuite) TestSchedulerStatus() {
+	mock.OnAnything(s.queueStatusMgr, "AllJobTypeStatus").Return(map[string]bool{"SCHEDULER": true}, nil).Once()
+	result, err := s.ctl.Paused(context.Background())
+	s.Assert().Nil(err)
+	s.Assert().True(result)
+}
+
+func (s *ScheduleTestSuite) TestCountSchedule() {
+	mock.OnAnything(s.scheduler, "CountSchedules").Return(int64(1), nil).Once()
+	count, err := s.ctl.Count(context.Background(), nil)
+	s.Assert().Nil(err)
+	s.Assert().Equal(int64(1), count)
 }
 
 func TestScheduleTestSuite(t *testing.T) {

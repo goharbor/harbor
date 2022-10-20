@@ -18,6 +18,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
+	queueStatusMock "github.com/goharbor/harbor/src/testing/pkg/queuestatus"
+
 	"github.com/gocraft/work"
 	"github.com/stretchr/testify/suite"
 
@@ -30,11 +34,14 @@ import (
 
 type JobServiceMonitorTestSuite struct {
 	suite.Suite
-	jmClient        jobmonitor.JobServiceMonitorClient
-	poolManager     jobmonitor.PoolManager
-	workerManager   jobmonitor.WorkerManager
-	monitController MonitorController
-	taskManager     task.Manager
+	jmClient           jobmonitor.JobServiceMonitorClient
+	poolManager        jobmonitor.PoolManager
+	workerManager      jobmonitor.WorkerManager
+	monitController    MonitorController
+	taskManager        task.Manager
+	queueStatusManager queuestatus.Manager
+	sch                scheduler.Scheduler
+	redisClient        jobmonitor.RedisClient
 }
 
 func (s *JobServiceMonitorTestSuite) SetupSuite() {
@@ -42,12 +49,18 @@ func (s *JobServiceMonitorTestSuite) SetupSuite() {
 	s.poolManager = &monitorMock.PoolManager{}
 	s.workerManager = jobmonitor.NewWorkerManager()
 	s.taskManager = &taskMock.Manager{}
+	s.redisClient = &monitorMock.RedisClient{}
+	s.queueStatusManager = &queueStatusMock.Manager{}
 	s.monitController = &monitorController{
-		poolManager:   s.poolManager,
-		workerManager: s.workerManager,
-		taskManager:   s.taskManager,
+		poolManager:        s.poolManager,
+		workerManager:      s.workerManager,
+		taskManager:        s.taskManager,
+		queueStatusManager: s.queueStatusManager,
 		monitorClient: func() (jobmonitor.JobServiceMonitorClient, error) {
 			return s.jmClient, nil
+		},
+		jobServiceRedisClient: func() (jobmonitor.RedisClient, error) {
+			return s.redisClient, nil
 		},
 	}
 }
@@ -87,7 +100,27 @@ func (s *JobServiceMonitorTestSuite) TestStopRunningJob() {
 	}, nil)
 	mock.OnAnything(s.taskManager, "List").Return([]*task.Task{{ID: 1, VendorType: "GARBAGE_COLLECTION"}}, nil)
 	mock.OnAnything(s.taskManager, "Stop").Return(nil)
-	err := s.monitController.StopRunningJob(nil, "1")
+	err := s.monitController.StopRunningJobs(nil, "1")
+	s.Assert().Nil(err)
+}
+
+func (s *JobServiceMonitorTestSuite) TestListQueue() {
+	mock.OnAnything(s.jmClient, "Queues").Return([]*work.Queue{
+		{JobName: "GARBAGE_COLLECTION", Count: 100, Latency: 10000}}, nil)
+	mock.OnAnything(s.queueStatusManager, "AllJobTypeStatus").Return(map[string]bool{"GARBAGE_COLLECTION": false}, nil).Once()
+	queues, err := s.monitController.ListQueues(nil)
+	s.Assert().Nil(err)
+	s.Assert().Equal(1, len(queues))
+	s.Assert().Equal("GARBAGE_COLLECTION", queues[0].JobType)
+	s.Assert().False(queues[0].Paused)
+}
+
+func (s *JobServiceMonitorTestSuite) TestPauseJob() {
+	mock.OnAnything(s.redisClient, "PauseJob").Return(nil).Once()
+	err := s.monitController.PauseJobQueues(nil, "GARBAGE_COLLECTION")
+	s.Assert().Nil(err)
+	mock.OnAnything(s.redisClient, "UnpauseJob").Return(nil).Once()
+	err = s.monitController.ResumeJobQueues(nil, "GARBAGE_COLLECTION")
 	s.Assert().Nil(err)
 }
 

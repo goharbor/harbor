@@ -20,11 +20,7 @@ import (
 	"github.com/gocraft/work"
 )
 
-// PoolManager the interface to retrieve job service monitor metrics
-type PoolManager interface {
-	// List retrieves pools information
-	List(ctx context.Context, monitorClient JobServiceMonitorClient) ([]*WorkerPool, error)
-}
+var _ JobServiceMonitorClient = (*work.Client)(nil)
 
 // JobServiceMonitorClient the interface to retrieve job service monitor metrics
 type JobServiceMonitorClient interface {
@@ -32,6 +28,14 @@ type JobServiceMonitorClient interface {
 	WorkerPoolHeartbeats() ([]*work.WorkerPoolHeartbeat, error)
 	// WorkerObservations retrieves worker observations
 	WorkerObservations() ([]*work.WorkerObservation, error)
+	// Queues retrieves the job queue information
+	Queues() ([]*work.Queue, error)
+}
+
+// PoolManager the interface to retrieve job service monitor metrics
+type PoolManager interface {
+	// List retrieves pools information
+	List(ctx context.Context, monitorClient JobServiceMonitorClient) ([]*WorkerPool, error)
 }
 
 type poolManager struct{}

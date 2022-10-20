@@ -26,9 +26,12 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/queuestatus/model"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
+	redisClientMock "github.com/goharbor/harbor/src/testing/pkg/jobmonitor"
+	mockQueueStatus "github.com/goharbor/harbor/src/testing/pkg/queuestatus"
 	ts "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tt "github.com/goharbor/harbor/src/testing/pkg/task"
 )
@@ -36,8 +39,9 @@ import (
 // WorkerTestSuite is test suite for testing sync.Worker.
 type WorkerTestSuite struct {
 	suite.Suite
-
-	worker *Worker
+	queueStatusManager *mockQueueStatus.Manager
+	monitorRedisClient *redisClientMock.RedisClient
+	worker             *Worker
 }
 
 // TestWorker is the entry method of WorkerTestSuite.
@@ -111,7 +115,8 @@ func (suite *WorkerTestSuite) SetupSuite() {
 
 	mmm := &mgt.MockManager{}
 	mmm.On("SaveJob", mock.Anything).Return(nil)
-
+	suite.queueStatusManager = &mockQueueStatus.Manager{}
+	mock.OnAnything(suite.queueStatusManager, "List").Return([]*model.JobQueueStatus{{JobType: "GARBAGE_COLLECTION", Paused: true}}, nil)
 	suite.worker = New(3).
 		WithContext(&env.Context{
 			SystemContext: sysContext,
@@ -122,8 +127,12 @@ func (suite *WorkerTestSuite) SetupSuite() {
 		UseCoreTaskManager(ttm).
 		UseScheduler(pms).
 		UseManager(mmm).
+		UseQueueStatusManager(suite.queueStatusManager).
 		WithCoreInternalAddr("http://core:8080").
 		WithPolicyLoader(getPolicies)
+	suite.monitorRedisClient = &redisClientMock.RedisClient{}
+	mock.OnAnything(suite.monitorRedisClient, "PauseJob").Return(nil)
+	suite.worker.monitorRedisClient = suite.monitorRedisClient
 }
 
 // TestStart test Start().
@@ -135,5 +144,6 @@ func (suite *WorkerTestSuite) TestStart() {
 // TestRun test Run().
 func (suite *WorkerTestSuite) TestRun() {
 	err := suite.worker.Run(context.TODO())
+
 	suite.NoError(err, "run worker")
 }
