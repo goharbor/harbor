@@ -34,21 +34,30 @@ pipeline if you like living on the edge.
 
 ## Pre-Release
 
+First, decide which module sets will be released and update their versions
+in `versions.yaml`.  Commit this change to a new branch.
+
 Update go.mod for submodules to depend on the new release which will happen in the next step.
 
-1. Run the pre-release script. It creates a branch `pre_release_<new tag>` that will contain all release changes.
+1. Run the `prerelease` make target. It creates a branch
+    `prerelease_<module set>_<new tag>` that will contain all release changes.
 
     ```
-    ./pre_release.sh -t <new tag>
+    make prerelease MODSET=<module set>
     ```
 
 2. Verify the changes.
 
     ```
-    git diff main
+    git diff ...prerelease_<module set>_<new tag>
     ```
 
     This should have changed the version for all modules to be `<new tag>`.
+    If these changes look correct, merge them into your pre-release branch:
+
+    ```go
+    git merge prerelease_<module set>_<new tag>
+    ```
 
 3. Update the [Changelog](./CHANGELOG.md).
    - Make sure all relevant changes for this release are included and are in language that non-contributors to the project can understand.
@@ -69,17 +78,22 @@ Update go.mod for submodules to depend on the new release which will happen in t
 Once the Pull Request with all the version changes has been approved and merged it is time to tag the merged commit.
 
 ***IMPORTANT***: It is critical you use the same tag that you used in the Pre-Release step!
-Failure to do so will leave things in a broken state.
+Failure to do so will leave things in a broken state. As long as you do not
+change `versions.yaml` between pre-release and this step, things should be fine.
 
 ***IMPORTANT***: [There is currently no way to remove an incorrectly tagged version of a Go module](https://github.com/golang/go/issues/34189).
 It is critical you make sure the version you push upstream is correct.
 [Failure to do so will lead to minor emergencies and tough to work around](https://github.com/open-telemetry/opentelemetry-go/issues/331).
 
-1. Run the tag.sh script using the `<commit-hash>` of the commit on the main branch for the merged Pull Request.
+1. For each module set that will be released, run the `add-tags` make target
+    using the `<commit-hash>` of the commit on the main branch for the merged Pull Request.
 
     ```
-    ./tag.sh <new tag> <commit-hash>
+    make add-tags MODSET=<module set> COMMIT=<commit hash>
     ```
+
+    It should only be necessary to provide an explicit `COMMIT` value if the
+    current `HEAD` of your working directory is not the correct commit.
 
 2. Push tags to the upstream remote (not your fork: `github.com/open-telemetry/opentelemetry-go.git`).
     Make sure you push all sub-modules as well.

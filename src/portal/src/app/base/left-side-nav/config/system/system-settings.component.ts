@@ -6,10 +6,10 @@ import {
     getChanges,
     isEmpty,
 } from '../../../../shared/units/utils';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { ConfigService } from '../config.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { finalize } from 'rxjs/operators';
+import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 
 @Component({
     selector: 'system-settings',
@@ -30,7 +30,7 @@ export class SystemSettingsComponent implements OnInit {
 
     constructor(
         private appConfigService: AppConfigService,
-        private errorHandler: ErrorHandler,
+        private errorHandler: MessageHandlerService,
         private conf: ConfigService
     ) {
         this.downloadLink = CURRENT_BASE_HREF + '/systeminfo/getcert';
@@ -151,23 +151,25 @@ export class SystemSettingsComponent implements OnInit {
                 .pipe(finalize(() => (this.onGoing = false)))
                 .subscribe({
                     next: result => {
-                        if (!isEmpty(changes)) {
-                            // API should return the updated configurations here
-                            // Unfortunately API does not do that
-                            // To refresh the view, we can clone the original data copy
-                            // or force refresh by calling service.
-                            // HERE we choose force way
-                            this.conf.updateConfig();
-                            // Reload bootstrap option
-                            this.appConfigService.load().subscribe(
-                                () => {},
-                                error =>
-                                    console.error(
-                                        'Failed to reload bootstrap option with error: ',
-                                        error
-                                    )
-                            );
+                        // API should return the updated configurations here
+                        // Unfortunately API does not do that
+                        // So we need to call update function again
+                        this.conf.updateConfig();
+                        // Handle read only
+                        if (changes['read_only']) {
+                            this.errorHandler.handleReadOnly();
+                        } else {
+                            this.errorHandler.clear();
                         }
+                        // Reload bootstrap option
+                        this.appConfigService.load().subscribe(
+                            () => {},
+                            error =>
+                                console.error(
+                                    'Failed to reload bootstrap option with error: ',
+                                    error
+                                )
+                        );
                         this.errorHandler.info('CONFIG.SAVE_SUCCESS');
                     },
                     error: error => {

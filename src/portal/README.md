@@ -14,97 +14,23 @@ Start
 4. npm run start
 5. open your browser on https://localhost:4200
 ```json
-{
-  "/api/*": {
+[
+  {
+    "context": [
+      "/api",
+      "/c",
+      "/i18n",
+      "/chartrepo",
+      "/LICENSE",
+      "/swagger.json",
+      "/swagger2.json",
+      "/devcenter-api-2.0",
+      "/swagger-ui.bundle.js"
+    ],
     "target": "https://hostname",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
-  },
-  "/service/*": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/c/login": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/c/oidc/login": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/sign_in": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/c/log_out": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/sendEmail": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/language": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/reset": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/c/userExists": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/reset_password": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/i18n/lang/*.json": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/chartrepo/*": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/LICENSE": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/swagger.json": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/swagger2.json": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/devcenter-api-2.0": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
-  },
-  "/swagger-ui.bundle.js": {
-    "target": "https://hostname",
-    "secure": false,
-    "logLevel": "debug"
   }
-}
+]
 ```

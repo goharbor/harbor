@@ -33,15 +33,15 @@ describe('ConfigService', () => {
         }
     ));
 
-    it('should init config', inject(
+    it('should update config', inject(
         [ConfigService],
         (service: ConfigService) => {
             expect(getConfigSpy.calls.count()).toEqual(0);
-            service.initConfig();
+            service.updateConfig();
             expect(getConfigSpy.calls.count()).toEqual(1);
-            // only init once
-            service.initConfig();
-            expect(getConfigSpy.calls.count()).toEqual(1);
+            // update again
+            service.updateConfig();
+            expect(getConfigSpy.calls.count()).toEqual(2);
             expect(service).toBeTruthy();
         }
     ));

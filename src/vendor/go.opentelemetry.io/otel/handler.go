@@ -18,7 +18,6 @@ import (
 	"log"
 	"os"
 	"sync"
-	"sync/atomic"
 )
 
 var (
@@ -28,44 +27,45 @@ var (
 	// `Handle` and will be delegated to the registered ErrorHandler.
 	globalErrorHandler = defaultErrorHandler()
 
-	// delegateErrorHandlerOnce ensures that a user provided ErrorHandler is
-	// only ever registered once.
-	delegateErrorHandlerOnce sync.Once
-
 	// Compile-time check that delegator implements ErrorHandler.
 	_ ErrorHandler = (*delegator)(nil)
+	// Compile-time check that errLogger implements ErrorHandler.
+	_ ErrorHandler = (*errLogger)(nil)
 )
 
-type holder struct {
-	eh ErrorHandler
-}
-
-func defaultErrorHandler() *atomic.Value {
-	v := &atomic.Value{}
-	v.Store(holder{eh: &delegator{l: log.New(os.Stderr, "", log.LstdFlags)}})
-	return v
-}
-
-// delegator logs errors if no delegate is set, otherwise they are delegated.
 type delegator struct {
-	delegate atomic.Value
+	lock *sync.RWMutex
+	eh   ErrorHandler
+}
 
-	l *log.Logger
+func (d *delegator) Handle(err error) {
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+	d.eh.Handle(err)
 }
 
 // setDelegate sets the ErrorHandler delegate.
-func (h *delegator) setDelegate(d ErrorHandler) {
-	// It is critical this is guarded with delegateErrorHandlerOnce, if it is
-	// called again with a different concrete type it will panic.
-	h.delegate.Store(d)
+func (d *delegator) setDelegate(eh ErrorHandler) {
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	d.eh = eh
+}
+
+func defaultErrorHandler() *delegator {
+	return &delegator{
+		lock: &sync.RWMutex{},
+		eh:   &errLogger{l: log.New(os.Stderr, "", log.LstdFlags)},
+	}
+
+}
+
+// errLogger logs errors if no delegate is set, otherwise they are delegated.
+type errLogger struct {
+	l *log.Logger
 }
 
 // Handle logs err if no delegate is set, otherwise it is delegated.
-func (h *delegator) Handle(err error) {
-	if d := h.delegate.Load(); d != nil {
-		d.(ErrorHandler).Handle(err)
-		return
-	}
+func (h *errLogger) Handle(err error) {
 	h.l.Print(err)
 }
 
@@ -79,7 +79,7 @@ func (h *delegator) Handle(err error) {
 // Subsequent calls to SetErrorHandler after the first will not forward errors
 // to the new ErrorHandler for prior returned instances.
 func GetErrorHandler() ErrorHandler {
-	return globalErrorHandler.Load().(holder).eh
+	return globalErrorHandler
 }
 
 // SetErrorHandler sets the global ErrorHandler to h.
@@ -89,16 +89,7 @@ func GetErrorHandler() ErrorHandler {
 // ErrorHandler. Subsequent calls will set the global ErrorHandler, but not
 // delegate errors to h.
 func SetErrorHandler(h ErrorHandler) {
-	delegateErrorHandlerOnce.Do(func() {
-		current := GetErrorHandler()
-		if current == h {
-			return
-		}
-		if internalHandler, ok := current.(*delegator); ok {
-			internalHandler.setDelegate(h)
-		}
-	})
-	globalErrorHandler.Store(holder{eh: h})
+	globalErrorHandler.setDelegate(h)
 }
 
 // Handle is a convenience function for ErrorHandler().Handle(err)

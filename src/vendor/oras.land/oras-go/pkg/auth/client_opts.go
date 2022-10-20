@@ -30,6 +30,9 @@ type (
 		Hostname  string
 		Username  string
 		Secret    string
+		CertFile  string
+		KeyFile   string
+		CAFile    string
 		Insecure  bool
 		UserAgent string
 	}
@@ -67,6 +70,15 @@ func WithLoginSecret(secret string) LoginOption {
 func WithLoginInsecure() LoginOption {
 	return func(settings *LoginSettings) {
 		settings.Insecure = true
+	}
+}
+
+// WithLoginTLS returns a function that sets the tls settings on login.
+func WithLoginTLS(certFile, keyFile, caFile string) LoginOption {
+	return func(settings *LoginSettings) {
+		settings.CertFile = certFile
+		settings.KeyFile = keyFile
+		settings.CAFile = caFile
 	}
 }
 

@@ -23,6 +23,7 @@ var (
 	ErrNoName             = errors.New("no_name")
 	ErrUnsupportedSize    = errors.New("unsupported_size")
 	ErrUnsupportedVersion = errors.New("unsupported_version")
+	ErrInvalidReference   = errors.New("invalid_reference")
 )
 
 // FileStore errors

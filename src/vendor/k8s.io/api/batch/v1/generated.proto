@@ -27,7 +27,7 @@ import "k8s.io/apimachinery/pkg/runtime/generated.proto";
 import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
 
 // Package-wide variables from generator "generated".
-option go_package = "v1";
+option go_package = "k8s.io/api/batch/v1";
 
 // CronJob represents the configuration of a single cron job.
 message CronJob {
@@ -62,6 +62,12 @@ message CronJobList {
 message CronJobSpec {
   // The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron.
   optional string schedule = 1;
+
+  // The time zone for the given schedule, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
+  // If not specified, this will rely on the time zone of the kube-controller-manager process.
+  // ALPHA: This field is in alpha and must be enabled via the `CronJobTimeZone` feature gate.
+  // +optional
+  optional string timeZone = 8;
 
   // Optional deadline in seconds for starting the job if it misses scheduled
   // time for any reason.  Missed jobs executions will be counted as failed ones.
@@ -227,8 +233,6 @@ message JobSpec {
   // guarantees (e.g. finalizers) will be honored. If this field is unset,
   // the Job won't be automatically deleted. If this field is set to zero,
   // the Job becomes eligible to be deleted immediately after it finishes.
-  // This field is alpha-level and is only honored by servers that enable the
-  // TTLAfterFinished feature.
   // +optional
   optional int32 ttlSecondsAfterFinished = 8;
 
@@ -250,9 +254,10 @@ message JobSpec {
   // `$(job-name)-$(index)-$(random-string)`,
   // the Pod hostname takes the form `$(job-name)-$(index)`.
   //
-  // This field is beta-level. More completion modes can be added in the future.
-  // If the Job controller observes a mode that it doesn't recognize, the
-  // controller skips updates for the Job.
+  // More completion modes can be added in the future.
+  // If the Job controller observes a mode that it doesn't recognize, which
+  // is possible during upgrades due to version skew, the controller
+  // skips updates for the Job.
   // +optional
   optional string completionMode = 9;
 
@@ -263,9 +268,6 @@ message JobSpec {
   // with this Job. Users must design their workload to gracefully handle this.
   // Suspending a Job will reset the StartTime field of the Job, effectively
   // resetting the ActiveDeadlineSeconds timer too. Defaults to false.
-  //
-  // This field is beta-level, gated by SuspendJob feature flag (enabled by
-  // default).
   //
   // +optional
   optional bool suspend = 10;
@@ -300,7 +302,7 @@ message JobStatus {
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Time completionTime = 3;
 
-  // The number of actively running pods.
+  // The number of pending and running pods.
   // +optional
   optional int32 active = 4;
 
@@ -333,12 +335,20 @@ message JobStatus {
   // (3) Remove the pod UID from the arrays while increasing the corresponding
   //     counter.
   //
-  // This field is alpha-level. The job controller only makes use of this field
-  // when the feature gate PodTrackingWithFinalizers is enabled.
+  // This field is beta-level. The job controller only makes use of this field
+  // when the feature gate JobTrackingWithFinalizers is enabled (enabled
+  // by default).
   // Old jobs might not be tracked using this field, in which case the field
   // remains null.
   // +optional
   optional UncountedTerminatedPods uncountedTerminatedPods = 8;
+
+  // The number of pods which have a Ready condition.
+  //
+  // This field is beta-level. The job controller populates the field when
+  // the feature gate JobReadyPods is enabled (enabled by default).
+  // +optional
+  optional int32 ready = 9;
 }
 
 // JobTemplateSpec describes the data a Job should have when created from a template

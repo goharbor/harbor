@@ -11,6 +11,7 @@
       ],
       "parserOptions": {
         "project": [
+          "server/tsconfig.json",
           "tsconfig.json",
           "e2e/tsconfig.json"
         ],
@@ -22,6 +23,7 @@
         "plugin:prettier/recommended"
       ],
       "rules": {
+        "no-console": ["error", { "allow": ["warn", "error"] }]
       }
     },
     {

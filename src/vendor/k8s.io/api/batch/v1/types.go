@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 import (
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -71,6 +71,7 @@ type JobList struct {
 }
 
 // CompletionMode specifies how Pod completions of a Job are tracked.
+// +enum
 type CompletionMode string
 
 const (
@@ -145,7 +146,7 @@ type JobSpec struct {
 
 	// Describes the pod that will be created when executing a job.
 	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
-	Template v1.PodTemplateSpec `json:"template" protobuf:"bytes,6,opt,name=template"`
+	Template corev1.PodTemplateSpec `json:"template" protobuf:"bytes,6,opt,name=template"`
 
 	// ttlSecondsAfterFinished limits the lifetime of a Job that has finished
 	// execution (either Complete or Failed). If this field is set,
@@ -154,8 +155,6 @@ type JobSpec struct {
 	// guarantees (e.g. finalizers) will be honored. If this field is unset,
 	// the Job won't be automatically deleted. If this field is set to zero,
 	// the Job becomes eligible to be deleted immediately after it finishes.
-	// This field is alpha-level and is only honored by servers that enable the
-	// TTLAfterFinished feature.
 	// +optional
 	TTLSecondsAfterFinished *int32 `json:"ttlSecondsAfterFinished,omitempty" protobuf:"varint,8,opt,name=ttlSecondsAfterFinished"`
 
@@ -177,9 +176,10 @@ type JobSpec struct {
 	// `$(job-name)-$(index)-$(random-string)`,
 	// the Pod hostname takes the form `$(job-name)-$(index)`.
 	//
-	// This field is beta-level. More completion modes can be added in the future.
-	// If the Job controller observes a mode that it doesn't recognize, the
-	// controller skips updates for the Job.
+	// More completion modes can be added in the future.
+	// If the Job controller observes a mode that it doesn't recognize, which
+	// is possible during upgrades due to version skew, the controller
+	// skips updates for the Job.
 	// +optional
 	CompletionMode *CompletionMode `json:"completionMode,omitempty" protobuf:"bytes,9,opt,name=completionMode,casttype=CompletionMode"`
 
@@ -190,9 +190,6 @@ type JobSpec struct {
 	// with this Job. Users must design their workload to gracefully handle this.
 	// Suspending a Job will reset the StartTime field of the Job, effectively
 	// resetting the ActiveDeadlineSeconds timer too. Defaults to false.
-	//
-	// This field is beta-level, gated by SuspendJob feature flag (enabled by
-	// default).
 	//
 	// +optional
 	Suspend *bool `json:"suspend,omitempty" protobuf:"varint,10,opt,name=suspend"`
@@ -227,7 +224,7 @@ type JobStatus struct {
 	// +optional
 	CompletionTime *metav1.Time `json:"completionTime,omitempty" protobuf:"bytes,3,opt,name=completionTime"`
 
-	// The number of actively running pods.
+	// The number of pending and running pods.
 	// +optional
 	Active int32 `json:"active,omitempty" protobuf:"varint,4,opt,name=active"`
 
@@ -260,12 +257,20 @@ type JobStatus struct {
 	// (3) Remove the pod UID from the arrays while increasing the corresponding
 	//     counter.
 	//
-	// This field is alpha-level. The job controller only makes use of this field
-	// when the feature gate PodTrackingWithFinalizers is enabled.
+	// This field is beta-level. The job controller only makes use of this field
+	// when the feature gate JobTrackingWithFinalizers is enabled (enabled
+	// by default).
 	// Old jobs might not be tracked using this field, in which case the field
 	// remains null.
 	// +optional
 	UncountedTerminatedPods *UncountedTerminatedPods `json:"uncountedTerminatedPods,omitempty" protobuf:"bytes,8,opt,name=uncountedTerminatedPods"`
+
+	// The number of pods which have a Ready condition.
+	//
+	// This field is beta-level. The job controller populates the field when
+	// the feature gate JobReadyPods is enabled (enabled by default).
+	// +optional
+	Ready *int32 `json:"ready,omitempty" protobuf:"varint,9,opt,name=ready"`
 }
 
 // UncountedTerminatedPods holds UIDs of Pods that have terminated but haven't
@@ -284,7 +289,7 @@ type UncountedTerminatedPods struct {
 
 type JobConditionType string
 
-// These are valid conditions of a job.
+// These are built-in conditions of a job.
 const (
 	// JobSuspended means the job has been suspended.
 	JobSuspended JobConditionType = "Suspended"
@@ -299,7 +304,7 @@ type JobCondition struct {
 	// Type of job condition, Complete or Failed.
 	Type JobConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=JobConditionType"`
 	// Status of the condition, one of True, False, Unknown.
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	Status corev1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
 	// Last time the condition was checked.
 	// +optional
 	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty" protobuf:"bytes,3,opt,name=lastProbeTime"`
@@ -370,6 +375,12 @@ type CronJobSpec struct {
 	// The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron.
 	Schedule string `json:"schedule" protobuf:"bytes,1,opt,name=schedule"`
 
+	// The time zone for the given schedule, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
+	// If not specified, this will rely on the time zone of the kube-controller-manager process.
+	// ALPHA: This field is in alpha and must be enabled via the `CronJobTimeZone` feature gate.
+	// +optional
+	TimeZone *string `json:"timeZone,omitempty" protobuf:"bytes,8,opt,name=timeZone"`
+
 	// Optional deadline in seconds for starting the job if it misses scheduled
 	// time for any reason.  Missed jobs executions will be counted as failed ones.
 	// +optional
@@ -406,6 +417,7 @@ type CronJobSpec struct {
 // Only one of the following concurrent policies may be specified.
 // If none of the following policies is specified, the default one
 // is AllowConcurrent.
+// +enum
 type ConcurrencyPolicy string
 
 const (
@@ -425,7 +437,7 @@ type CronJobStatus struct {
 	// A list of pointers to currently running jobs.
 	// +optional
 	// +listType=atomic
-	Active []v1.ObjectReference `json:"active,omitempty" protobuf:"bytes,1,rep,name=active"`
+	Active []corev1.ObjectReference `json:"active,omitempty" protobuf:"bytes,1,rep,name=active"`
 
 	// Information when was the last time the job was successfully scheduled.
 	// +optional

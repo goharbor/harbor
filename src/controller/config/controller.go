@@ -138,13 +138,21 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 }
 
 func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr config.Manager) error {
+	updated := false
+	endPoint := mgr.Get(ctx, common.AuditLogForwardEndpoint).GetString()
+	skipAuditDB := mgr.Get(ctx, common.SkipAuditLogDatabase).GetBool()
+
 	if skip, exist := cfgs[common.SkipAuditLogDatabase]; exist {
-		endPoint := mgr.Get(ctx, common.AuditLogForwardEndpoint).GetString()
-		if edp, found := cfgs[common.AuditLogForwardEndpoint]; found {
-			endPoint = edp.(string)
-		}
-		skipAuditDB := skip.(bool)
-		if len(endPoint) == 0 && skipAuditDB {
+		skipAuditDB = skip.(bool)
+		updated = true
+	}
+	if endpoint, exist := cfgs[common.AuditLogForwardEndpoint]; exist {
+		endPoint = endpoint.(string)
+		updated = true
+	}
+
+	if updated {
+		if skipAuditDB && len(endPoint) == 0 {
 			return errors.BadRequestError(errors.New("audit log forward endpoint should be configured before enable skip audit log in database"))
 		}
 	}

@@ -27,20 +27,22 @@ import (
 )
 
 const (
+	poolMaxIdle           = 6
+	PoolMaxActive         = 6
 	dialConnectionTimeout = 30 * time.Second
 	healthCheckPeriod     = time.Minute
 	dialReadTimeout       = healthCheckPeriod + 10*time.Second
 	dialWriteTimeout      = 10 * time.Second
-	testingRedisHost      = "REDIS_HOST"
+	testingRedisHostEnv   = "REDIS_HOST"
+	testingRedisPort      = 6379
 	testingNamespace      = "testing_job_service_v2"
 )
 
 // GiveMeRedisPool ...
 func GiveMeRedisPool() *redis.Pool {
-	redisHost := getRedisHost()
-	pool, _ := redislib.GetRedisPool("test", fmt.Sprintf("redis://%s:%d", redisHost, 6379), &redislib.PoolParam{
-		PoolMaxIdle:           6,
-		PoolMaxActive:         6,
+	pool, _ := redislib.GetRedisPool("test", GetRedisURL(), &redislib.PoolParam{
+		PoolMaxIdle:           poolMaxIdle,
+		PoolMaxActive:         PoolMaxActive,
 		DialConnectionTimeout: dialConnectionTimeout,
 		DialReadTimeout:       dialReadTimeout,
 		DialWriteTimeout:      dialWriteTimeout,
@@ -51,6 +53,16 @@ func GiveMeRedisPool() *redis.Pool {
 // GiveMeTestNamespace ...
 func GiveMeTestNamespace() string {
 	return testingNamespace
+}
+
+// GetRedisURL ...
+func GetRedisURL() string {
+	redisHost := os.Getenv(testingRedisHostEnv)
+	if redisHost == "" {
+		redisHost = "127.0.0.1" // for local test
+	}
+
+	return fmt.Sprintf("redis://%s:%d", redisHost, testingRedisPort)
 }
 
 // Clear ...
@@ -81,13 +93,4 @@ func ClearAll(namespace string, conn redis.Conn) error {
 	}
 
 	return conn.Flush()
-}
-
-func getRedisHost() string {
-	redisHost := os.Getenv(testingRedisHost)
-	if redisHost == "" {
-		redisHost = "127.0.0.1" // for local test
-	}
-
-	return redisHost
 }

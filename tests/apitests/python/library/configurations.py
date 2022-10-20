@@ -25,6 +25,10 @@ def set_configurations(client, expect_status_code = 200, expect_response_body = 
         conf["ldap_group_search_scope"] = config.get("ldap_group_search_scope")
     if "ldap_group_admin_dn" in config and config.get("ldap_group_admin_dn") is not None:
         conf["ldap_group_admin_dn"] = config.get("ldap_group_admin_dn")
+    if "audit_log_forward_endpoint" in config and config.get("audit_log_forward_endpoint") is not None:
+        conf["audit_log_forward_endpoint"] = config.get("audit_log_forward_endpoint")
+    if "skip_audit_log_database" in config and config.get("skip_audit_log_database") is not None:
+        conf["skip_audit_log_database"] = config.get("skip_audit_log_database")
 
     try:
         _, status_code, _ = client.update_configurations_with_http_info(conf)
@@ -81,3 +85,7 @@ class Configurations(base.Base, object):
                            ldap_group_base_dn=ldap_group_base_dn, ldap_group_search_filter=ldap_group_search_filter, ldap_group_admin_dn=ldap_group_admin_dn, ldap_group_search_scope=ldap_group_search_scope)
         set_configurations(client, expect_status_code = expect_status_code, **config)
 
+    def set_configurations_of_audit_log_forword(self, audit_log_forward_endpoint=None, skip_audit_log_database=None, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        config=dict(audit_log_forward_endpoint=audit_log_forward_endpoint, skip_audit_log_database=skip_audit_log_database)
+        set_configurations(client, expect_status_code = expect_status_code, **config)

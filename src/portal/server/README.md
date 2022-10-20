@@ -14,7 +14,7 @@ suppose you want to mock a api server for below code:
    
    1. Edit mock-api.ts, and add below code: 
    ```typescript
-      mockApi.get('/api/scanners', Controllers.getScanner);
+      mockApi.get('/api/v2.0/scanners', Controllers.getScanner);
    ```
    2. Add your method implementation into folder "controllers" and export it:
    ```typescript
@@ -28,14 +28,39 @@ suppose you want to mock a api server for below code:
      npm run mock-api-server
    ```
 
-   4.(Optional)Edit file proxy.config.json, and add below code on the top:
+   4.Edit the file proxy.config.json, and add a proxy object at the top as below:
    ```json
-     "/api/scanner": {
-     "target": "http://localhost:3000",
-     "secure": false,
-     "changeOrigin": true,
-     "logLevel": "debug"
-    }
+[
+  // redirect requests to the mocked api server
+  {
+    "context": [
+      "/api/v2.0/scanners"
+    ],
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  
+  // redirect requests to the back-end server
+  {
+    "context": [
+      "/api",
+      "/c",
+      "/i18n",
+      "/chartrepo",
+      "/LICENSE",
+      "/swagger.json",
+      "/swagger2.json",
+      "/devcenter-api-2.0",
+      "/swagger-ui.bundle.js"
+    ],
+    "target": "https://hostname",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+]
    ```
 
-   5.Now, you can get mocked scanners when you send "get request" to "/api/scanners"
+   5. Run `npm run start`, then all the mocked APIs will be redirected to the mocked server
