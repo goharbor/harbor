@@ -35,7 +35,7 @@ import (
 const tokenKey = "oidc_token"
 const stateKey = "oidc_state"
 const userInfoKey = "oidc_user_info"
-const redirectUrlKey = "oidc_redirect_url"
+const redirectURLKey = "oidc_redirect_url"
 const oidcUserComment = "Onboarded via OIDC provider"
 
 // OIDCController handles requests for OIDC login, callback and user onboard
@@ -63,7 +63,7 @@ func (oc *OIDCController) RedirectLogin() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	oc.SetSession(redirectUrlKey, oc.Ctx.Request.URL.Query().Get("redirect_url"))
+	oc.SetSession(redirectURLKey, oc.Ctx.Request.URL.Query().Get("redirect_url"))
 	oc.SetSession(stateKey, state)
 	log.Debugf("State dumped to session: %s", state)
 	// Force to use the func 'Redirect' of beego.Controller
@@ -87,11 +87,11 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
 		return
 	}
-	var redirectUrlStr string
-	redirectUrl := oc.GetSession(redirectUrlKey)
-	if redirectUrl != nil {
-		redirectUrlStr = redirectUrl.(string)
-		oc.DelSession(redirectUrlKey)
+	var redirectURLStr string
+	redirectURL := oc.GetSession(redirectURLKey)
+	if redirectURL != nil {
+		redirectURLStr = redirectURL.(string)
+		oc.DelSession(redirectURLKey)
 	}
 	code := oc.Ctx.Request.URL.Query().Get("code")
 	ctx := oc.Ctx.Request.Context()
@@ -151,7 +151,7 @@ func (oc *OIDCController) Callback() {
 			u = userRec
 		} else {
 			oc.SetSession(userInfoKey, string(ouDataStr))
-			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s&redirect_url=%s", username, redirectUrlStr), http.StatusFound)
+			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s&redirect_url=%s", username, redirectURLStr), http.StatusFound)
 			// Once redirected, no further actions are done
 			return
 		}
@@ -178,10 +178,10 @@ func (oc *OIDCController) Callback() {
 	}
 	oc.PopulateUserSession(*u)
 
-	if redirectUrlStr == "" {
-		redirectUrlStr = "/"
+	if redirectURLStr == "" {
+		redirectURLStr = "/"
 	}
-	oc.Controller.Redirect(redirectUrlStr, http.StatusFound)
+	oc.Controller.Redirect(redirectURLStr, http.StatusFound)
 }
 
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
