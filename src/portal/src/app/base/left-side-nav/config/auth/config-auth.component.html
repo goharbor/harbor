@@ -905,8 +905,7 @@
                 [disabled]="
                     !currentConfig.oidc_auto_onboard.value ||
                     disabled(currentConfig.oidc_user_claim)
-                "
-                pattern="^[a-zA-Z0-9_-]*$" />
+                " />
         </clr-input-container>
         <div class="oidc-tip">
             {{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate }}
