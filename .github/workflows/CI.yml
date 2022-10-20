@@ -39,7 +39,7 @@ jobs:
         with:
           docker_version: 20.04
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
          path: src/github.com/goharbor/harbor
       - name: setup env
@@ -105,7 +105,7 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -165,7 +165,7 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -225,7 +225,7 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -283,7 +283,7 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -333,7 +333,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '16'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: script

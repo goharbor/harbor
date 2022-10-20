@@ -16,7 +16,7 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: google-github-actions/setup-gcloud@v0
         with:
           version: '285.0.0'
@@ -35,13 +35,13 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v3
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
