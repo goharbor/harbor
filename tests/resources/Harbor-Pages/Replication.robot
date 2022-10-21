@@ -60,9 +60,12 @@ Select Filter Label Model
     Retry Element Click  ${filter_label_model_select}//option[contains(.,'${type}')]
 
 Select Filter Label
-    [Arguments]    ${label}
+    [Arguments]    @{labels}
     Retry Element Click  ${filter_label_xpath}
-    Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
+    FOR  ${label}  IN  @{labels}
+        Log  ${label}
+        Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
+    END
     Retry Element Click  ${filter_label_xpath}
 
 Select Bandwidth Unit
