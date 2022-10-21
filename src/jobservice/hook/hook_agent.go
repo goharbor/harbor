@@ -36,12 +36,6 @@ const (
 	errRetryBackoff = 5 * time.Minute
 )
 
-// Agent is designed to handle the hook events with reasonable numbers of concurrent threads.
-type Agent interface {
-	// Trigger hooks
-	Trigger(evt *Event) error
-}
-
 // Event contains the hook URL and the data
 type Event struct {
 	URL       string            `json:"url"`
@@ -52,8 +46,7 @@ type Event struct {
 
 // Validate event
 func (e *Event) Validate() error {
-	_, err := url.Parse(e.URL)
-	if err != nil {
+	if _, err := url.Parse(e.URL); err != nil {
 		return err
 	}
 
@@ -64,8 +57,14 @@ func (e *Event) Validate() error {
 	return nil
 }
 
-// Basic agent for usage
-type basicAgent struct {
+// Agent is designed to handle the hook events with reasonable numbers of concurrent threads.
+type Agent interface {
+	// Trigger hooks
+	Trigger(evt *Event) error
+}
+
+// Agent provides to handle the hook events function.
+type agent struct {
 	context   context.Context
 	namespace string
 	client    Client
@@ -73,9 +72,9 @@ type basicAgent struct {
 	tokens    chan struct{}
 }
 
-// NewAgent is constructor of basic agent
+// NewAgent is constructor of the agent.
 func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool, retryConcurrency uint) Agent {
-	return &basicAgent{
+	return &agent{
 		context:   ctx.SystemContext,
 		namespace: ns,
 		client:    NewClient(ctx.SystemContext),
@@ -85,7 +84,7 @@ func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool, retryConcurren
 }
 
 // Trigger implements the same method of interface @Agent
-func (ba *basicAgent) Trigger(evt *Event) error {
+func (ba *agent) Trigger(evt *Event) error {
 	if evt == nil {
 		return errors.New("nil hook event")
 	}
@@ -122,7 +121,7 @@ func (ba *basicAgent) Trigger(evt *Event) error {
 
 // retry event with exponential backoff.
 // Limit the max concurrency (defined by maxConcurrency) of retrying goroutines.
-func (ba *basicAgent) retry(evt *Event) {
+func (ba *agent) retry(evt *Event) {
 	// Apply for a running token.
 	// If no token is available, then hold until token is released.
 	ba.tokens <- struct{}{}
@@ -135,7 +134,7 @@ func (ba *basicAgent) retry(evt *Event) {
 	bf := newBackoff(errRetryBackoff)
 	bf.Reset()
 
-	err := backoff.RetryNotify(func() error {
+	if err := backoff.RetryNotify(func() error {
 		logger.Debugf("Retry: sending hook event: %s->%s", evt.Message, evt.URL)
 
 		// Try to avoid sending outdated events, just a try-best operation.
@@ -153,15 +152,13 @@ func (ba *basicAgent) retry(evt *Event) {
 		return ba.client.SendEvent(evt)
 	}, bf, func(e error, d time.Duration) {
 		logger.Errorf("Retry: sending hook event error: %s, evt=%s->%s, duration=%v", e.Error(), evt.Message, evt.URL, d)
-	})
-
-	if err != nil {
+	}); err != nil {
 		logger.Errorf("Retry: still failed after all retries: %s, evt=%s->%s", err.Error(), evt.Message, evt.URL)
 	}
 }
 
 // ack hook event
-func (ba *basicAgent) ack(evt *Event) error {
+func (ba *agent) ack(evt *Event) error {
 	conn := ba.redisPool.Get()
 	defer func() {
 		if err := conn.Close(); err != nil {
@@ -169,12 +166,10 @@ func (ba *basicAgent) ack(evt *Event) error {
 		}
 	}()
 
-	k := rds.KeyJobStats(ba.namespace, evt.Data.JobID)
-	k2 := rds.KeyJobTrackInProgress(ba.namespace)
 	reply, err := redis.String(rds.HookAckScript.Do(
 		conn,
-		k,
-		k2,
+		rds.KeyJobStats(ba.namespace, evt.Data.JobID),
+		rds.KeyJobTrackInProgress(ba.namespace),
 		evt.Data.Status,
 		evt.Data.Metadata.Revision,
 		evt.Data.Metadata.CheckInAt,
@@ -192,7 +187,7 @@ func (ba *basicAgent) ack(evt *Event) error {
 }
 
 // Check if the event has been outdated.
-func (ba *basicAgent) isOutdated(evt *Event) (bool, error) {
+func (ba *agent) isOutdated(evt *Event) (bool, error) {
 	if evt == nil || evt.Data == nil {
 		return false, nil
 	}
@@ -202,16 +197,15 @@ func (ba *basicAgent) isOutdated(evt *Event) (bool, error) {
 		_ = conn.Close()
 	}()
 
-	key := rds.KeyJobStats(ba.namespace, evt.Data.JobID)
-	values, err := rds.HmGet(conn, key, "ack")
+	values, err := rds.HmGet(conn, rds.KeyJobStats(ba.namespace, evt.Data.JobID), "ack")
 	if err != nil {
 		return false, errors.Wrap(err, "check outdated event error")
 	}
 
 	// Parse ack
 	if ab, ok := values[0].([]byte); ok && len(ab) > 0 {
-		ack := &job.ACK{}
-		if err := json.Unmarshal(ab, ack); err != nil {
+		var ack job.ACK
+		if err := json.Unmarshal(ab, &ack); err != nil {
 			return false, errors.Wrap(err, "parse ack error")
 		}
 

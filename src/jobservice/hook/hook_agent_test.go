@@ -37,7 +37,7 @@ type HookAgentTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
-	agent     *basicAgent
+	agent     *agent
 
 	event *Event
 	jid   string
@@ -53,7 +53,7 @@ func (suite *HookAgentTestSuite) SetupSuite() {
 	suite.pool = tests.GiveMeRedisPool()
 	suite.namespace = tests.GiveMeTestNamespace()
 
-	suite.agent = &basicAgent{
+	suite.agent = &agent{
 		context:   context.TODO(),
 		namespace: suite.namespace,
 		redisPool: suite.pool,
