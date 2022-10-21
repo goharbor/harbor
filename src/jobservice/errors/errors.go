@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package errs define some system errors with specified types.
-package errs
+// Package errors define some system errors with specified types.
+package errors
 
 import (
 	"encoding/json"

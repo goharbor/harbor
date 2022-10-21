@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/list"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -383,7 +383,7 @@ func (bt *basicTracker) UpdateStatusWithRetry(targetStatus Status) error {
 	err := bt.compareAndSet(targetStatus)
 	if err != nil {
 		// Status mismatching error will be directly ignored as the status has already been outdated
-		if !errs.IsStatusMismatchError(err) {
+		if !jerrors.IsStatusMismatchError(err) {
 			// Push to the retrying daemon
 			bt.retryList.Push(SimpleStatusChange{
 				JobID:        bt.jobID,
@@ -437,7 +437,7 @@ func (bt *basicTracker) FireHook() error {
 // setStatus sets the job status to the target status and fire status change hook
 func (bt *basicTracker) setStatus(status Status) error {
 	err := bt.UpdateStatusWithRetry(status)
-	if !errs.IsStatusMismatchError(err) {
+	if !jerrors.IsStatusMismatchError(err) {
 		bt.refresh(status)
 		if er := bt.fireHookEvent(status); er != nil {
 			// Add more error context
@@ -512,7 +512,7 @@ func (bt *basicTracker) compareAndSet(targetStatus Status) error {
 	}
 
 	if reply != "ok" {
-		return errs.StatusMismatchError(reply, targetStatus.String())
+		return jerrors.StatusMismatchError(reply, targetStatus.String())
 	}
 
 	return nil
@@ -529,14 +529,14 @@ func (bt *basicTracker) retrieve() error {
 	vals, err := redis.Strings(conn.Do("HGETALL", key))
 	if err != nil {
 		if errors.Is(err, redis.ErrNil) {
-			return errs.NoObjectFoundError(bt.jobID)
+			return jerrors.NoObjectFoundError(bt.jobID)
 		}
 
 		return err
 	}
 
 	if len(vals) == 0 {
-		return errs.NoObjectFoundError(bt.jobID)
+		return jerrors.NoObjectFoundError(bt.jobID)
 	}
 
 	res := &Stats{

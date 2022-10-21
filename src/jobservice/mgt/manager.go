@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
@@ -292,7 +292,7 @@ func (bm *basicManager) GetScheduledJobs(q *query.Parameter) ([]*job.Stats, int6
 // GetJob is implementation of Manager.GetJob
 func (bm *basicManager) GetJob(jobID string) (*job.Stats, error) {
 	if utils.IsEmptyStr(jobID) {
-		return nil, errs.BadRequestError("empty job ID")
+		return nil, jerrors.BadRequestError("empty job ID")
 	}
 
 	t := job.NewBasicTrackerWithID(bm.ctx, jobID, bm.namespace, bm.pool, nil, nil)
@@ -306,7 +306,7 @@ func (bm *basicManager) GetJob(jobID string) (*job.Stats, error) {
 // SaveJob is implementation of Manager.SaveJob
 func (bm *basicManager) SaveJob(j *job.Stats) error {
 	if j == nil {
-		return errs.BadRequestError("nil saving job stats")
+		return jerrors.BadRequestError("nil saving job stats")
 	}
 
 	t := job.NewBasicTrackerWithStats(bm.ctx, j, bm.namespace, bm.pool, nil, nil)

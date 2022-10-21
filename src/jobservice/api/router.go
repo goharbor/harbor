@@ -21,7 +21,7 @@ import (
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -75,7 +75,7 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// Do auth for other services
 	if req.URL.String() != fmt.Sprintf("%s/%s/stats", baseRoute, apiVersion) {
 		if err := br.authenticator.DoAuth(req); err != nil {
-			authErr := errs.UnauthorizedError(err)
+			authErr := jerrors.UnauthorizedError(err)
 			if authErr == nil {
 				authErr = errors.Errorf("unauthorized: %s", err)
 			}

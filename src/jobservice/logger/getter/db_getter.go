@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/joblog"
 )
@@ -27,7 +27,7 @@ func (dbg *DBGetter) Retrieve(logID string) ([]byte, error) {
 	jobLog, err := joblog.Mgr.Get(orm.Context(), logID)
 	if err != nil {
 		// Other errors have been ignored by GetJobLog()
-		return nil, errs.NoObjectFoundError(fmt.Sprintf("log entity: %s", logID))
+		return nil, jerrors.NoObjectFoundError(fmt.Sprintf("log entity: %s", logID))
 	}
 
 	return []byte(jobLog.Content), nil

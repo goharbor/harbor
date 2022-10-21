@@ -24,7 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -178,7 +178,7 @@ func (bs *basicScheduler) locatePolicy(policyID string, conn redis.Conn) (int64,
 	tracker, err := bs.ctl.Track(policyID)
 	if err != nil {
 		// If error is not found error, then switch to the backup approach
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			// Loop the policy list to get the policy data
 			pl, err := Load(bs.namespace, conn)
 			if err != nil {

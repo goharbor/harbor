@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/list"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -162,7 +162,7 @@ func (bc *basicController) retryLoop() {
 				logger.Errorf("Failed to retry the status update action: %v : %s", err, "retry loop: lcm")
 			}
 
-			if err == nil || errs.IsStatusMismatchError(err) {
+			if err == nil || jerrors.IsStatusMismatchError(err) {
 				return true
 			}
 		}
@@ -193,7 +193,7 @@ func retry(conn redis.Conn, ns string, change job.SimpleStatusChange) error {
 	}
 
 	if reply != "ok" {
-		return errs.StatusMismatchError(reply, change.TargetStatus)
+		return jerrors.StatusMismatchError(reply, change.TargetStatus)
 	}
 
 	return nil

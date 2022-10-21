@@ -10,7 +10,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
@@ -79,7 +79,7 @@ func (rdd *redisDeDuplicator) MustUnique(jobName string, params job.Parameters) 
 
 	res, err := redis.String(conn.Do("SET", args...))
 	if err == redis.ErrNil {
-		return errs.ConflictError(uniqueKey)
+		return jerrors.ConflictError(uniqueKey)
 	}
 
 	if err == nil {

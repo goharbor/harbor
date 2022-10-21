@@ -23,7 +23,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -138,7 +138,7 @@ func (r *reaper) syncOutdatedStats() error {
 	// status is hung.
 	h := func(k string, v int64) (err error) {
 		defer func() {
-			if errs.IsObjectNotFoundError(err) {
+			if jerrors.IsObjectNotFoundError(err) {
 				// As the job stats is lost and we don't have chance to restore it, then directly discard it.
 				// Un-track the in-progress record
 				if e := r.unTrackInProgress(k); e != nil {

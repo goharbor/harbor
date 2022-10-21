@@ -20,7 +20,7 @@ import (
 	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -48,18 +48,18 @@ func NewController(backendWorker worker.Interface, mgr mgt.Manager) Interface {
 // LaunchJob is implementation of same method in core interface.
 func (bc *basicController) LaunchJob(req *job.Request) (res *job.Stats, err error) {
 	if err := validJobReq(req); err != nil {
-		return nil, errs.BadRequestError(err)
+		return nil, jerrors.BadRequestError(err)
 	}
 
 	// Validate job name
 	jobType, isKnownJob := bc.backendWorker.IsKnownJob(req.Job.Name)
 	if !isKnownJob {
-		return nil, errs.BadRequestError(errors.Errorf("job with name '%s' is unknown", req.Job.Name))
+		return nil, jerrors.BadRequestError(errors.Errorf("job with name '%s' is unknown", req.Job.Name))
 	}
 
 	// Validate parameters
 	if err := bc.backendWorker.ValidateJobParameters(jobType, req.Job.Parameters); err != nil {
-		return nil, errs.BadRequestError(err)
+		return nil, jerrors.BadRequestError(err)
 	}
 
 	// Enqueue job regarding of the kind
@@ -102,7 +102,7 @@ func (bc *basicController) LaunchJob(req *job.Request) (res *job.Stats, err erro
 // GetJob is implementation of same method in core interface.
 func (bc *basicController) GetJob(jobID string) (*job.Stats, error) {
 	if utils.IsEmptyStr(jobID) {
-		return nil, errs.BadRequestError(errors.New("empty job ID"))
+		return nil, jerrors.BadRequestError(errors.New("empty job ID"))
 	}
 
 	return bc.manager.GetJob(jobID)
@@ -111,7 +111,7 @@ func (bc *basicController) GetJob(jobID string) (*job.Stats, error) {
 // StopJob is implementation of same method in core interface.
 func (bc *basicController) StopJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
-		return errs.BadRequestError(errors.New("empty job ID"))
+		return jerrors.BadRequestError(errors.New("empty job ID"))
 	}
 
 	return bc.backendWorker.StopJob(jobID)
@@ -120,7 +120,7 @@ func (bc *basicController) StopJob(jobID string) error {
 // RetryJob is implementation of same method in core interface.
 func (bc *basicController) RetryJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
-		return errs.BadRequestError(errors.New("empty job ID"))
+		return jerrors.BadRequestError(errors.New("empty job ID"))
 	}
 
 	return bc.backendWorker.RetryJob(jobID)
@@ -129,7 +129,7 @@ func (bc *basicController) RetryJob(jobID string) error {
 // GetJobLogData is used to return the log text data for the specified job if exists
 func (bc *basicController) GetJobLogData(jobID string) ([]byte, error) {
 	if utils.IsEmptyStr(jobID) {
-		return nil, errs.BadRequestError(errors.New("empty job ID"))
+		return nil, jerrors.BadRequestError(errors.New("empty job ID"))
 	}
 
 	return logger.Retrieve(jobID)
@@ -143,7 +143,7 @@ func (bc *basicController) CheckStatus() (*worker.Stats, error) {
 // GetPeriodicExecutions gets the periodic executions for the specified periodic job
 func (bc *basicController) GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error) {
 	if utils.IsEmptyStr(periodicJobID) {
-		return nil, 0, errs.BadRequestError(errors.New("nil periodic job ID"))
+		return nil, 0, jerrors.BadRequestError(errors.New("nil periodic job ID"))
 	}
 
 	return bc.manager.GetPeriodicExecution(periodicJobID, query)

@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/core"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -79,14 +79,14 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.ReadRequestBodyError(err))
 		return
 	}
 
 	// unmarshal data
 	jobReq := &job.Request{}
 	if err = json.Unmarshal(data, jobReq); err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.HandleJSONDataError(err))
 		return
 	}
 
@@ -94,15 +94,15 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
 		code := http.StatusInternalServerError
-		if errs.IsBadRequestError(err) {
+		if jerrors.IsBadRequestError(err) {
 			// Bad request
 			code = http.StatusBadRequest
-		} else if errs.IsConflictError(err) {
+		} else if jerrors.IsConflictError(err) {
 			// Conflict error
 			code = http.StatusConflict
 		} else {
 			// General error
-			err = errs.LaunchJobError(err)
+			err = jerrors.LaunchJobError(err)
 		}
 
 		dh.handleError(w, req, code, err)
@@ -120,12 +120,12 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 	jobStats, err := dh.controller.GetJob(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-		} else if errs.IsBadRequestError(err) {
+		} else if jerrors.IsBadRequestError(err) {
 			code = http.StatusBadRequest
 		} else {
-			err = errs.GetJobStatsError(err)
+			err = jerrors.GetJobStatsError(err)
 		}
 		dh.handleError(w, req, code, err)
 		return
@@ -141,33 +141,33 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.ReadRequestBodyError(err))
 		return
 	}
 
 	// unmarshal data
 	jobActionReq := &job.ActionRequest{}
 	if err = json.Unmarshal(data, jobActionReq); err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.HandleJSONDataError(err))
 		return
 	}
 
 	// Only support stop command now
 	cmd := job.OPCommand(jobActionReq.Action)
 	if !cmd.IsStop() {
-		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(errors.Errorf("command: %s", jobActionReq.Action)))
+		dh.handleError(w, req, http.StatusNotImplemented, jerrors.UnknownActionNameError(errors.Errorf("command: %s", jobActionReq.Action)))
 		return
 	}
 
 	// Stop job
 	if err := dh.controller.StopJob(jobID); err != nil {
 		code := http.StatusInternalServerError
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-		} else if errs.IsBadRequestError(err) {
+		} else if jerrors.IsBadRequestError(err) {
 			code = http.StatusBadRequest
 		} else {
-			err = errs.StopJobError(err)
+			err = jerrors.StopJobError(err)
 		}
 		dh.handleError(w, req, code, err)
 		return
@@ -182,7 +182,7 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
 	stats, err := dh.controller.CheckStatus()
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.CheckStatsError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.CheckStatsError(err))
 		return
 	}
 
@@ -202,12 +202,12 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	logData, err := dh.controller.GetJobLogData(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-		} else if errs.IsBadRequestError(err) {
+		} else if jerrors.IsBadRequestError(err) {
 			code = http.StatusBadRequest
 		} else {
-			err = errs.GetJobLogError(err)
+			err = jerrors.GetJobLogError(err)
 		}
 		dh.handleError(w, req, code, err)
 		return
@@ -231,12 +231,12 @@ func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *h
 	executions, total, err := dh.controller.GetPeriodicExecutions(jobID, q)
 	if err != nil {
 		code := http.StatusInternalServerError
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-		} else if errs.IsBadRequestError(err) {
+		} else if jerrors.IsBadRequestError(err) {
 			code = http.StatusBadRequest
 		} else {
-			err = errs.GetPeriodicExecutionError(err)
+			err = jerrors.GetPeriodicExecutionError(err)
 		}
 		dh.handleError(w, req, code, err)
 		return
@@ -252,7 +252,7 @@ func (dh *DefaultHandler) HandleGetJobsReq(w http.ResponseWriter, req *http.Requ
 	q := extractQuery(req)
 	jobs, total, err := dh.controller.GetJobs(q)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.GetJobsError(q, err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.GetJobsError(q, err))
 		return
 	}
 
@@ -270,7 +270,7 @@ func (dh *DefaultHandler) HandleGetJobsReq(w http.ResponseWriter, req *http.Requ
 func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object interface{}) {
 	data, err := json.Marshal(object)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, jerrors.HandleJSONDataError(err))
 		return
 	}
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 )
 
 // FileGetter is responsible for retrieving file log data
@@ -31,7 +31,7 @@ func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
 	fPath := path.Join(fg.baseDir, fmt.Sprintf("%s.log", logID))
 
 	if !utils.FileExists(fPath) {
-		return nil, errs.NoObjectFoundError(logID)
+		return nil, jerrors.NoObjectFoundError(logID)
 	}
 
 	return ioutil.ReadFile(fPath)

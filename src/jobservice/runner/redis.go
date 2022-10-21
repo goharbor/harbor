@@ -25,7 +25,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -86,7 +86,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		if err == nil {
 			break
 		}
-		if errs.IsObjectNotFoundError(err) {
+		if jerrors.IsObjectNotFoundError(err) {
 			if retried < maxTrackRetries {
 				// Still have chance to re-track the given job.
 				// Hold for a while and retry

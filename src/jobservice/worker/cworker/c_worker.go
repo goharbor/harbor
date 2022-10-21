@@ -25,7 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -330,13 +330,13 @@ func (w *basicWorker) StopJob(jobID string) error {
 	}
 
 	t, err := w.ctl.Track(jobID)
-	if err != nil && !errs.IsObjectNotFoundError(err) {
+	if err != nil && !jerrors.IsObjectNotFoundError(err) {
 		// For none not found error, directly return
 		return err
 	}
 
 	// For periodical job and stats not found cases
-	if errs.IsObjectNotFoundError(err) || (t != nil && t.Job().Info.JobKind == job.KindPeriodic) {
+	if jerrors.IsObjectNotFoundError(err) || (t != nil && t.Job().Info.JobKind == job.KindPeriodic) {
 		// If the job kind is periodic or
 		// if the original job stats tracker is not found (the scheduler will have a try based on other data under this case)
 		return w.scheduler.UnSchedule(jobID)

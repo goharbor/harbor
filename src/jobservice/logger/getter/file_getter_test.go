@@ -6,7 +6,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 )
 
 const (
@@ -29,7 +29,7 @@ func TestLogDataGetter(t *testing.T) {
 
 	fg := NewFileGetter(os.TempDir())
 	if _, err := fg.Retrieve(nonExistFileID); err != nil {
-		if !errs.IsObjectNotFoundError(err) {
+		if !jerrors.IsObjectNotFoundError(err) {
 			t.Error("expect object not found error but got other error")
 		}
 	} else {

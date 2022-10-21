@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,7 +32,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/common/query"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	jerrors "github.com/goharbor/harbor/src/jobservice/errors"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 )
@@ -103,19 +103,19 @@ func (suite *APIHandlerTestSuite) TestLaunchJobFailed() {
 	bytes, _ := json.Marshal(req)
 
 	fc1 := &fakeController{}
-	fc1.On("LaunchJob", req).Return(nil, errs.BadRequestError(req.Job.Name))
+	fc1.On("LaunchJob", req).Return(nil, jerrors.BadRequestError(req.Job.Name))
 	suite.controller = fc1
 	_, code := suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
 	assert.Equal(suite.T(), 400, code, "expect 400 bad request but got %d", code)
 
 	fc2 := &fakeController{}
-	fc2.On("LaunchJob", req).Return(nil, errs.ConflictError(req.Job.Name))
+	fc2.On("LaunchJob", req).Return(nil, jerrors.ConflictError(req.Job.Name))
 	suite.controller = fc2
 	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
 	assert.Equal(suite.T(), 409, code, "expect 409 conflict but got %d", code)
 
 	fc3 := &fakeController{}
-	fc3.On("LaunchJob", req).Return(nil, errs.LaunchJobError(errors.New("testing launch job")))
+	fc3.On("LaunchJob", req).Return(nil, jerrors.LaunchJobError(errors.New("testing launch job")))
 	suite.controller = fc3
 	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
 	assert.Equal(suite.T(), 500, code, "expect 500 internal server error but got %d", code)
@@ -137,7 +137,7 @@ func (suite *APIHandlerTestSuite) TestLaunchJobSucceed() {
 // TestGetJobFailed ...
 func (suite *APIHandlerTestSuite) TestGetJobFailed() {
 	fc := &fakeController{}
-	fc.On("GetJob", "fake_job_ID").Return(nil, errs.NoObjectFoundError("fake_job_ID"))
+	fc.On("GetJob", "fake_job_ID").Return(nil, jerrors.NoObjectFoundError("fake_job_ID"))
 	suite.controller = fc
 
 	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"))
@@ -165,7 +165,7 @@ func (suite *APIHandlerTestSuite) TestJobActionFailed() {
 	assert.Equal(suite.T(), 501, code, "expected 501 not implemented but got %d", code)
 
 	fc1 := &fakeController{}
-	fc1.On("StopJob", "fake_job_ID_not").Return(errs.NoObjectFoundError("fake_job_ID_not"))
+	fc1.On("StopJob", "fake_job_ID_not").Return(jerrors.NoObjectFoundError("fake_job_ID_not"))
 	suite.controller = fc1
 	actionReq = createJobActionReq("stop")
 	data, _ = json.Marshal(actionReq)
@@ -173,13 +173,13 @@ func (suite *APIHandlerTestSuite) TestJobActionFailed() {
 	assert.Equal(suite.T(), 404, code, "expected 404 not found but got %d", code)
 
 	fc2 := &fakeController{}
-	fc2.On("StopJob", "fake_job_ID").Return(errs.BadRequestError("fake_job_ID"))
+	fc2.On("StopJob", "fake_job_ID").Return(jerrors.BadRequestError("fake_job_ID"))
 	suite.controller = fc2
 	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"), data)
 	assert.Equal(suite.T(), 400, code, "expected 400 bad request but got %d", code)
 
 	fc3 := &fakeController{}
-	fc3.On("StopJob", "fake_job_ID").Return(errs.StopJobError(errors.New("testing error")))
+	fc3.On("StopJob", "fake_job_ID").Return(jerrors.StopJobError(errors.New("testing error")))
 	suite.controller = fc3
 	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"), data)
 	assert.Equal(suite.T(), 500, code, "expected 500 internal server but got %d", code)
@@ -224,7 +224,7 @@ func (suite *APIHandlerTestSuite) TestCheckStatus() {
 // TestGetJobLogInvalidID ...
 func (suite *APIHandlerTestSuite) TestGetJobLogInvalidID() {
 	fc := &fakeController{}
-	fc.On("GetJobLogData", "fake_job_ID_not").Return(nil, errs.NoObjectFoundError("fake_job_ID_not"))
+	fc.On("GetJobLogData", "fake_job_ID_not").Return(nil, jerrors.NoObjectFoundError("fake_job_ID_not"))
 	suite.controller = fc
 
 	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID_not/log"))
