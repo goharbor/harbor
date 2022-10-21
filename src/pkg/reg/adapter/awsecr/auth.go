@@ -127,9 +127,12 @@ func (a *awsAuthCredential) getAuthorization(url string) (string, string, string
 		return "", "", "", nil, err
 	}
 
-	regIds := []*string{&id}
+	var input *awsecrapi.GetAuthorizationTokenInput
+	if id != "" {
+		input = &awsecrapi.GetAuthorizationTokenInput{RegistryIds: []*string{&id}}
+	}
 	svc := a.awssvc
-	result, err := svc.GetAuthorizationToken(&awsecrapi.GetAuthorizationTokenInput{RegistryIds: regIds})
+	result, err := svc.GetAuthorizationToken(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			return "", "", "", nil, fmt.Errorf("%s: %s", aerr.Code(), aerr.Error())
