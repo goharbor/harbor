@@ -17,7 +17,7 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
         uses: google-github-actions/auth@v0
@@ -35,7 +35,7 @@ jobs:
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: before_install
