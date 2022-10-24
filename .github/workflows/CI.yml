@@ -330,7 +330,7 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
       - uses: actions/checkout@v3
