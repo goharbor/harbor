@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -390,7 +389,7 @@ func (c *Client) fetchCertRFC(ctx context.Context, url string, bundle bool) ([][
 	// Get all the bytes up to a sane maximum.
 	// Account very roughly for base64 overhead.
 	const max = maxCertChainSize + maxCertChainSize/33
-	b, err := ioutil.ReadAll(io.LimitReader(res.Body, max+1))
+	b, err := io.ReadAll(io.LimitReader(res.Body, max+1))
 	if err != nil {
 		return nil, fmt.Errorf("acme: fetch cert response stream: %v", err)
 	}
@@ -469,7 +468,7 @@ func (c *Client) ListCertAlternates(ctx context.Context, url string) ([]string, 
 
 	// We don't need the body but we need to discard it so we don't end up
 	// preventing keep-alive
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res.Body); err != nil {
 		return nil, fmt.Errorf("acme: cert alternates response stream: %v", err)
 	}
 	alts := linkHeader(res.Header, "alternate")
