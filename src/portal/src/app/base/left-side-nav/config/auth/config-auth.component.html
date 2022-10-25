@@ -52,35 +52,34 @@
         </div>
     </div>
     <section *ngIf="currentConfig?.auth_mode?.value !== 'db_auth'">
-      <clr-checkbox-container>
-        <label for="primaryAuthMode"
-        >{{ 'CONFIG.PRIMARY_AUTH_MODE' | translate }}
-          <clr-tooltip>
-            <clr-icon
-              clrTooltipTrigger
-              shape="info-circle"
-              size="24"></clr-icon>
-            <clr-tooltip-content
-              clrPosition="top-right"
-              clrSize="lg"
-              *clrIfOpen>
+        <clr-checkbox-container>
+            <label for="primaryAuthMode"
+                >{{ 'CONFIG.PRIMARY_AUTH_MODE' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
                         <span>{{
                             'CONFIG.TOOLTIP.PRIMARY_AUTH_MODE' | translate
                         }}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </label>
-        <clr-checkbox-wrapper>
-          <input
-            type="checkbox"
-            clrCheckbox
-            name="primaryAuthMode"
-            id="primaryAuthMode"
-            [(ngModel)]="currentConfig.primary_auth_mode.value"
-            [disabled]="!currentConfig.primary_auth_mode.editable"
-          />
-        </clr-checkbox-wrapper>
-      </clr-checkbox-container>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="primaryAuthMode"
+                    id="primaryAuthMode"
+                    [(ngModel)]="currentConfig.primary_auth_mode.value"
+                    [disabled]="!currentConfig.primary_auth_mode.editable" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
     </section>
 
     <section *ngIf="showUAA">
@@ -96,7 +95,7 @@
                 size="35"
                 [(ngModel)]="currentConfig.uaa_endpoint.value"
                 [disabled]="!currentConfig.uaa_verify_cert.editable" />
-        </clr-input-container>tttu6
+        </clr-input-container>
         <clr-input-container>
             <label for="uaa-id" class="required">{{
                 'CONFIG.UAA.CLIENT_ID' | translate

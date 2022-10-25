@@ -115,7 +115,7 @@ export class Configuration {
     session_timeout: NumberValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem('db_auth', true);
-        this.primary_auth_mode = new BoolValueItem(false, true)
+        this.primary_auth_mode = new BoolValueItem(false, true);
         this.project_creation_restriction = new StringValueItem(
             'everyone',
             true

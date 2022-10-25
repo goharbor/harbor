@@ -27,8 +27,8 @@ describe('ProjectComponent', () => {
                     editable: false,
                 },
                 primary_auth_mode: {
-                  value: false,
-                  editable: true,
+                    value: false,
+                    editable: true,
                 },
                 count_per_project: {
                     value: -1,
