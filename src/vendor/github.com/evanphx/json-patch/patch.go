@@ -412,6 +412,17 @@ func (d *partialArray) set(key string, val *lazyNode) error {
 	if err != nil {
 		return err
 	}
+
+	if idx < 0 {
+		if !SupportNegativeIndices {
+			return errors.Wrapf(ErrInvalidIndex, "Unable to access invalid index: %d", idx)
+		}
+		if idx < -len(*d) {
+			return errors.Wrapf(ErrInvalidIndex, "Unable to access invalid index: %d", idx)
+		}
+		idx += len(*d)
+	}
+
 	(*d)[idx] = val
 	return nil
 }
@@ -460,6 +471,16 @@ func (d *partialArray) get(key string) (*lazyNode, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if idx < 0 {
+		if !SupportNegativeIndices {
+			return nil, errors.Wrapf(ErrInvalidIndex, "Unable to access invalid index: %d", idx)
+		}
+		if idx < -len(*d) {
+			return nil, errors.Wrapf(ErrInvalidIndex, "Unable to access invalid index: %d", idx)
+		}
+		idx += len(*d)
 	}
 
 	if idx >= len(*d) {

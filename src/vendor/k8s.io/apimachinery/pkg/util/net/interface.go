@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	netutils "k8s.io/utils/net"
 )
 
 type AddressFamily uint
@@ -221,7 +222,7 @@ func getMatchingGlobalIP(addrs []net.Addr, family AddressFamily) (net.IP, error)
 	if len(addrs) > 0 {
 		for i := range addrs {
 			klog.V(4).Infof("Checking addr  %s.", addrs[i].String())
-			ip, _, err := net.ParseCIDR(addrs[i].String())
+			ip, _, err := netutils.ParseCIDRSloppy(addrs[i].String())
 			if err != nil {
 				return nil, err
 			}
@@ -336,9 +337,9 @@ func chooseIPFromHostInterfaces(nw networkInterfacer, addressFamilies AddressFam
 				continue
 			}
 			for _, addr := range addrs {
-				ip, _, err := net.ParseCIDR(addr.String())
+				ip, _, err := netutils.ParseCIDRSloppy(addr.String())
 				if err != nil {
-					return nil, fmt.Errorf("Unable to parse CIDR for interface %q: %s", intf.Name, err)
+					return nil, fmt.Errorf("unable to parse CIDR for interface %q: %s", intf.Name, err)
 				}
 				if !memberOf(ip, family) {
 					klog.V(4).Infof("Skipping: no address family match for %q on interface %q.", ip, intf.Name)

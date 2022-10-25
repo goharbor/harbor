@@ -16,10 +16,12 @@ If you do not wish to use the default `completion` command, you can choose to
 provide your own, which will take precedence over the default one. (This also provides
 backwards-compatibility with programs that already have their own `completion` command.)
 
-If you are using the generator, you can create a completion command by running
+If you are using the `cobra-cli` generator,
+which can be found at [spf13/cobra-cli](https://github.com/spf13/cobra-cli),
+you can create a completion command by running
 
 ```bash
-cobra add completion
+cobra-cli add completion
 ```
 and then modifying the generated `cmd/completion.go` file to look something like this
 (writing the shell script to stdout allows the most flexible use):
@@ -28,17 +30,17 @@ and then modifying the generated `cmd/completion.go` file to look something like
 var completionCmd = &cobra.Command{
 	Use:   "completion [bash|zsh|fish|powershell]",
 	Short: "Generate completion script",
-	Long: `To load completions:
+	Long: fmt.Sprintf(`To load completions:
 
 Bash:
 
-  $ source <(yourprogram completion bash)
+  $ source <(%[1]s completion bash)
 
   # To load completions for each session, execute once:
   # Linux:
-  $ yourprogram completion bash > /etc/bash_completion.d/yourprogram
+  $ %[1]s completion bash > /etc/bash_completion.d/%[1]s
   # macOS:
-  $ yourprogram completion bash > /usr/local/etc/bash_completion.d/yourprogram
+  $ %[1]s completion bash > $(brew --prefix)/etc/bash_completion.d/%[1]s
 
 Zsh:
 
@@ -48,25 +50,25 @@ Zsh:
   $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
   # To load completions for each session, execute once:
-  $ yourprogram completion zsh > "${fpath[1]}/_yourprogram"
+  $ %[1]s completion zsh > "${fpath[1]}/_%[1]s"
 
   # You will need to start a new shell for this setup to take effect.
 
 fish:
 
-  $ yourprogram completion fish | source
+  $ %[1]s completion fish | source
 
   # To load completions for each session, execute once:
-  $ yourprogram completion fish > ~/.config/fish/completions/yourprogram.fish
+  $ %[1]s completion fish > ~/.config/fish/completions/%[1]s.fish
 
 PowerShell:
 
-  PS> yourprogram completion powershell | Out-String | Invoke-Expression
+  PS> %[1]s completion powershell | Out-String | Invoke-Expression
 
   # To load completions for every new session, run:
-  PS> yourprogram completion powershell > yourprogram.ps1
+  PS> %[1]s completion powershell > %[1]s.ps1
   # and source this file from your PowerShell profile.
-`,
+`,cmd.Root().Name()),
 	DisableFlagsInUseLine: true,
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	Args:                  cobra.ExactValidArgs(1),
@@ -120,7 +122,7 @@ For example, if you want `kubectl get [tab][tab]` to show a list of valid "nouns
 Some simplified code from `kubectl get` looks like:
 
 ```go
-validArgs []string = { "pod", "node", "service", "replicationcontroller" }
+validArgs = []string{ "pod", "node", "service", "replicationcontroller" }
 
 cmd := &cobra.Command{
 	Use:     "get [(-o|--output=)json|yaml|template|...] (RESOURCE [NAME] | RESOURCE/NAME ...)",
@@ -146,7 +148,7 @@ node   pod   replicationcontroller   service
 If your nouns have aliases, you can define them alongside `ValidArgs` using `ArgAliases`:
 
 ```go
-argAliases []string = { "pods", "nodes", "services", "svc", "replicationcontrollers", "rc" }
+argAliases = []string { "pods", "nodes", "services", "svc", "replicationcontrollers", "rc" }
 
 cmd := &cobra.Command{
     ...

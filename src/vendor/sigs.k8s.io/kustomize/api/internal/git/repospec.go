@@ -78,15 +78,15 @@ func (x *RepoSpec) Cleaner(fSys filesys.FileSystem) func() error {
 	return func() error { return fSys.RemoveAll(x.Dir.String()) }
 }
 
-// NewRepoSpecFromUrl parses git-like urls.
+// NewRepoSpecFromURL parses git-like urls.
 // From strings like git@github.com:someOrg/someRepo.git or
 // https://github.com/someOrg/someRepo?ref=someHash, extract
 // the parts.
-func NewRepoSpecFromUrl(n string) (*RepoSpec, error) {
+func NewRepoSpecFromURL(n string) (*RepoSpec, error) {
 	if filepath.IsAbs(n) {
 		return nil, fmt.Errorf("uri looks like abs path: %s", n)
 	}
-	host, orgRepo, path, gitRef, gitSubmodules, suffix, gitTimeout := parseGitUrl(n)
+	host, orgRepo, path, gitRef, gitSubmodules, suffix, gitTimeout := parseGitURL(n)
 	if orgRepo == "" {
 		return nil, fmt.Errorf("url lacks orgRepo: %s", n)
 	}
@@ -108,9 +108,8 @@ const (
 // From strings like git@github.com:someOrg/someRepo.git or
 // https://github.com/someOrg/someRepo?ref=someHash, extract
 // the parts.
-func parseGitUrl(n string) (
+func parseGitURL(n string) (
 	host string, orgRepo string, path string, gitRef string, gitSubmodules bool, gitSuff string, gitTimeout time.Duration) {
-
 	if strings.Contains(n, gitDelimiter) {
 		index := strings.Index(n, gitDelimiter)
 		// Adding _git/ to host
@@ -125,7 +124,7 @@ func parseGitUrl(n string) (
 		index := strings.Index(n, gitSuffix)
 		orgRepo = n[0:index]
 		n = n[index+len(gitSuffix):]
-		if n[0] == '/' {
+		if len(n) > 0 && n[0] == '/' {
 			n = n[1:]
 		}
 		path, gitRef, gitTimeout, gitSubmodules = peelQuery(n)
@@ -229,7 +228,7 @@ func parseHostSpec(n string) (string, string) {
 		if strings.HasSuffix(host, p) {
 			i := strings.Index(n, "/")
 			if i > -1 {
-				host = host + n[0:i+1]
+				host += n[0 : i+1]
 				n = n[i+1:]
 			}
 			break
