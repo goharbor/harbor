@@ -176,6 +176,8 @@ func main() {
 		if err = migration.Migrate(database); err != nil {
 			log.Fatalf("failed to migrate the database, error: %v", err)
 		}
+
+		log.Info("The database has been migrated successfully")
 	}
 
 	ctx = orm.Clone(ctx)
