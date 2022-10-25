@@ -111,6 +111,7 @@ const (
 	OIDCVerifyCert                   = "oidc_verify_cert"
 	OIDCAdminGroup                   = "oidc_admin_group"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
+	OIDCGroupFilter                  = "oidc_group_filter"
 	OIDCAutoOnboard                  = "oidc_auto_onboard"
 	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
