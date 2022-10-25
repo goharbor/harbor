@@ -86,6 +86,9 @@ trivy:
   # This option doesn’t affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
   offline_scan: false
   #
+  # Comma-separated list of what security issues to detect. Possible values are `vuln`, `config` and `secret`. Defaults to `vuln`.
+  security_check: vuln
+  #
   # insecure The flag to skip verifying registry certificate
   insecure: false
   # github_token The GitHub access token to download Trivy DB
