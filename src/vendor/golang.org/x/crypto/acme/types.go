@@ -297,7 +297,7 @@ type Directory struct {
 
 	// CAA consists of lowercase hostname elements, which the ACME server
 	// recognises as referring to itself for the purposes of CAA record validation
-	// as defined in RFC6844.
+	// as defined in RFC 6844.
 	CAA []string
 
 	// ExternalAccountRequired indicates that the CA requires for all account-related
@@ -440,7 +440,7 @@ func DomainIDs(names ...string) []AuthzID {
 
 // IPIDs creates a slice of AuthzID with "ip" identifier type.
 // Each element of addr is textual form of an address as defined
-// in RFC1123 Section 2.1 for IPv4 and in RFC5952 Section 4 for IPv6.
+// in RFC 1123 Section 2.1 for IPv4 and in RFC 5952 Section 4 for IPv6.
 func IPIDs(addr ...string) []AuthzID {
 	a := make([]AuthzID, len(addr))
 	for i, v := range addr {
