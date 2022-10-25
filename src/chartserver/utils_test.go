@@ -2,7 +2,6 @@ package chartserver
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 )
 
@@ -70,59 +69,61 @@ func TestParseRedisConfig(t *testing.T) {
 }
 
 func TestGetCacheConfig(t *testing.T) {
-	// case 1: no cache set
-	cacheConf, err := getCacheConfig()
-	if err != nil || cacheConf != nil {
-		t.Fatal("expect nil cache config and nil error but got non-nil one when parsing empty cache settings")
-	}
-
-	// case 2: unknown cache type
-	os.Setenv(cacheDriverENVKey, "unknown")
-	_, err = getCacheConfig()
-	if err == nil {
-		t.Fatal("expect non-nil error but got nil one when parsing unknown cache type")
-	}
-
-	// case 3: in memory cache type
-	os.Setenv(cacheDriverENVKey, cacheDriverMem)
-	memCacheConf, err := getCacheConfig()
-	if err != nil || memCacheConf == nil || memCacheConf.DriverType != cacheDriverMem {
-		t.Fatal("expect in memory cache driver but got invalid one")
-	}
-
-	// case 4: wrong redis cache conf
-	os.Setenv(cacheDriverENVKey, cacheDriverRedis)
-	os.Setenv(redisENVKey, "")
-	_, err = getCacheConfig()
-	if err == nil {
-		t.Fatal("expect non-nil error but got nil one when parsing a invalid redis cache conf")
-	}
-
-	// case 5: redis cache conf
-	os.Setenv(redisENVKey, ":Passw0rd@redis:6379/1?idle_timeout_seconds=100")
-	redisConf, err := getCacheConfig()
-	if err != nil {
-		t.Fatalf("expect nil error but got non-nil one when parsing valid redis conf")
-	}
-
-	if redisConf == nil || redisConf.DriverType != cacheDriverRedis {
-		t.Fatal("expect redis cache driver but got invalid one")
-	}
-
-	conf := make(map[string]string)
-	if err = json.Unmarshal([]byte(redisConf.Config), &conf); err != nil {
-		t.Fatal(err)
-	}
-
-	if v, ok := conf["conn"]; !ok {
-		t.Fatal("expect 'conn' filed in the parsed conf but got nothing")
-	} else {
-		if v != "redis:6379" {
-			t.Fatalf("expect %s but got %s", "redis:6379", v)
+	t.Run("no cache set", func(t *testing.T) {
+		cacheConf, err := getCacheConfig()
+		if err != nil || cacheConf != nil {
+			t.Fatal("expect nil cache config and nil error but got non-nil one when parsing empty cache settings")
 		}
-	}
+	})
 
-	// clear
-	os.Unsetenv(cacheDriverENVKey)
-	os.Unsetenv(redisENVKey)
+	t.Run("unknown cache type", func(t *testing.T) {
+		t.Setenv(cacheDriverENVKey, "unknown")
+		_, err := getCacheConfig()
+		if err == nil {
+			t.Fatal("expect non-nil error but got nil one when parsing unknown cache type")
+		}
+	})
+
+	t.Run("in memory cache type", func(t *testing.T) {
+		t.Setenv(cacheDriverENVKey, cacheDriverMem)
+		memCacheConf, err := getCacheConfig()
+		if err != nil || memCacheConf == nil || memCacheConf.DriverType != cacheDriverMem {
+			t.Fatal("expect in memory cache driver but got invalid one")
+		}
+	})
+
+	t.Run("wrong redis cache conf", func(t *testing.T) {
+		t.Setenv(cacheDriverENVKey, cacheDriverRedis)
+		t.Setenv(redisENVKey, "")
+		_, err := getCacheConfig()
+		if err == nil {
+			t.Fatal("expect non-nil error but got nil one when parsing a invalid redis cache conf")
+		}
+	})
+
+	t.Run("redis cache conf", func(t *testing.T) {
+		t.Setenv(cacheDriverENVKey, cacheDriverRedis)
+		t.Setenv(redisENVKey, ":Passw0rd@redis:6379/1?idle_timeout_seconds=100")
+		redisConf, err := getCacheConfig()
+		if err != nil {
+			t.Fatalf("expect nil error but got non-nil one when parsing valid redis conf")
+		}
+
+		if redisConf == nil || redisConf.DriverType != cacheDriverRedis {
+			t.Fatal("expect redis cache driver but got invalid one")
+		}
+
+		conf := make(map[string]string)
+		if err = json.Unmarshal([]byte(redisConf.Config), &conf); err != nil {
+			t.Fatal(err)
+		}
+
+		if v, ok := conf["conn"]; !ok {
+			t.Fatal("expect 'conn' filed in the parsed conf but got nothing")
+		} else {
+			if v != "redis:6379" {
+				t.Fatalf("expect %s but got %s", "redis:6379", v)
+			}
+		}
+	})
 }

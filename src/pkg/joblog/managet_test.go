@@ -2,7 +2,6 @@ package joblog
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -28,13 +27,7 @@ func (m *managerTestingSuite) SetupSuite() {
 	m.assert = assert.New(m.t)
 	m.require = require.New(m.t)
 
-	err := os.Setenv("RUN_MODE", "TEST")
-	m.require.Nil(err)
-}
-
-func (m *managerTestingSuite) TearDownSuite() {
-	err := os.Unsetenv("RUN_MODE")
-	m.require.Nil(err)
+	m.T().Setenv("RUN_MODE", "TEST")
 }
 
 func (m *managerTestingSuite) SetupTest() {
