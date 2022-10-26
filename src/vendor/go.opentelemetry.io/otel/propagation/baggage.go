@@ -25,7 +25,7 @@ const baggageHeader = "baggage"
 // Baggage is a propagator that supports the W3C Baggage format.
 //
 // This propagates user-defined baggage associated with a trace. The complete
-// specification is defined at https://w3c.github.io/baggage/.
+// specification is defined at https://www.w3.org/TR/baggage/.
 type Baggage struct{}
 
 var _ TextMapPropagator = Baggage{}

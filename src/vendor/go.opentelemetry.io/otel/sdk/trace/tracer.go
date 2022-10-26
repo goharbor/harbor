@@ -18,9 +18,8 @@ import (
 	"context"
 	"time"
 
-	"go.opentelemetry.io/otel/trace"
-
 	"go.opentelemetry.io/otel/sdk/instrumentation"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type tracer struct {

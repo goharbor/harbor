@@ -16,8 +16,11 @@ limitations under the License.
 package content
 
 import (
+	"bytes"
 	"compress/gzip"
 	"context"
+	_ "crypto/sha256"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -28,18 +31,14 @@ import (
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/errdefs"
+	"github.com/containerd/containerd/remotes"
 	digest "github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 )
 
-// ensure interface
-var (
-	_ ProvideIngester = &FileStore{}
-)
-
-// FileStore provides content from the file system
-type FileStore struct {
+// File provides content via files from the file system
+type File struct {
 	DisableOverwrite          bool
 	AllowPathTraversalOnWrite bool
 
@@ -48,13 +47,15 @@ type FileStore struct {
 
 	root         string
 	descriptor   *sync.Map // map[digest.Digest]ocispec.Descriptor
-	pathMap      *sync.Map
+	pathMap      *sync.Map // map[name string](file string)
+	memoryMap    *sync.Map // map[digest.Digest]([]byte)
+	refMap       *sync.Map // map[string]ocispec.Descriptor
 	tmpFiles     *sync.Map
 	ignoreNoName bool
 }
 
-// NewFileStore creats a new file store
-func NewFileStore(rootPath string, opts ...WriterOpt) *FileStore {
+// NewFile creats a new file target. It represents a single root reference and all of its components.
+func NewFile(rootPath string, opts ...WriterOpt) *File {
 	// we have to process the opts to find if they told us to change defaults
 	wOpts := DefaultWriterOpts()
 	for _, opt := range opts {
@@ -62,17 +63,117 @@ func NewFileStore(rootPath string, opts ...WriterOpt) *FileStore {
 			continue
 		}
 	}
-	return &FileStore{
+	return &File{
 		root:         rootPath,
 		descriptor:   &sync.Map{},
 		pathMap:      &sync.Map{},
+		memoryMap:    &sync.Map{},
+		refMap:       &sync.Map{},
 		tmpFiles:     &sync.Map{},
 		ignoreNoName: wOpts.IgnoreNoName,
 	}
 }
 
-// Add adds a file reference
-func (s *FileStore) Add(name, mediaType, path string) (ocispec.Descriptor, error) {
+func (s *File) Resolver() remotes.Resolver {
+	return s
+}
+
+func (s *File) Resolve(ctx context.Context, ref string) (name string, desc ocispec.Descriptor, err error) {
+	desc, ok := s.getRef(ref)
+	if !ok {
+		return "", ocispec.Descriptor{}, fmt.Errorf("unknown reference: %s", ref)
+	}
+	return ref, desc, nil
+}
+
+func (s *File) Fetcher(ctx context.Context, ref string) (remotes.Fetcher, error) {
+	if _, ok := s.refMap.Load(ref); !ok {
+		return nil, fmt.Errorf("unknown reference: %s", ref)
+	}
+	return s, nil
+}
+
+// Fetch get an io.ReadCloser for the specific content
+func (s *File) Fetch(ctx context.Context, desc ocispec.Descriptor) (io.ReadCloser, error) {
+	// first see if it is in the in-memory manifest map
+	manifest, ok := s.getMemory(desc)
+	if ok {
+		return ioutil.NopCloser(bytes.NewReader(manifest)), nil
+	}
+	desc, ok = s.get(desc)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	name, ok := ResolveName(desc)
+	if !ok {
+		return nil, ErrNoName
+	}
+	path := s.ResolvePath(name)
+	return os.Open(path)
+}
+
+func (s *File) Pusher(ctx context.Context, ref string) (remotes.Pusher, error) {
+	var tag, hash string
+	parts := strings.SplitN(ref, "@", 2)
+	if len(parts) > 0 {
+		tag = parts[0]
+	}
+	if len(parts) > 1 {
+		hash = parts[1]
+	}
+	return &filePusher{
+		store: s,
+		ref:   tag,
+		hash:  hash,
+	}, nil
+}
+
+type filePusher struct {
+	store *File
+	ref   string
+	hash  string
+}
+
+func (s *filePusher) Push(ctx context.Context, desc ocispec.Descriptor) (content.Writer, error) {
+	name, ok := ResolveName(desc)
+	now := time.Now()
+	if !ok {
+		// if we were not told to ignore NoName, then return an error
+		if !s.store.ignoreNoName {
+			return nil, ErrNoName
+		}
+
+		// just return a nil writer - we do not want to calculate the hash, so just use
+		// whatever was passed in the descriptor
+		return NewIoContentWriter(ioutil.Discard, WithOutputHash(desc.Digest)), nil
+	}
+	path, err := s.store.resolveWritePath(name)
+	if err != nil {
+		return nil, err
+	}
+	file, afterCommit, err := s.store.createWritePath(path, desc, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fileWriter{
+		store:    s.store,
+		file:     file,
+		desc:     desc,
+		digester: digest.Canonical.Digester(),
+		status: content.Status{
+			Ref:       name,
+			Total:     desc.Size,
+			StartedAt: now,
+			UpdatedAt: now,
+		},
+		afterCommit: afterCommit,
+	}, nil
+}
+
+// Add adds a file reference from a path, either directory or single file,
+// and returns the reference descriptor.
+func (s *File) Add(name, mediaType, path string) (ocispec.Descriptor, error) {
 	if path == "" {
 		path = name
 	}
@@ -101,7 +202,33 @@ func (s *FileStore) Add(name, mediaType, path string) (ocispec.Descriptor, error
 	return desc, nil
 }
 
-func (s *FileStore) descFromFile(info os.FileInfo, mediaType, path string) (ocispec.Descriptor, error) {
+// Load is a lower-level memory-only version of Add. Rather than taking a path,
+// generating a descriptor and creating a reference, it takes raw data and a descriptor
+// that describes that data and stores it in memory. It will disappear at process
+// termination.
+//
+// It is especially useful for adding ephemeral data, such as config, that must
+// exist in order to walk a manifest.
+func (s *File) Load(desc ocispec.Descriptor, data []byte) error {
+	s.memoryMap.Store(desc.Digest, data)
+	return nil
+}
+
+// Ref gets a reference's descriptor and content
+func (s *File) Ref(ref string) (ocispec.Descriptor, []byte, error) {
+	desc, ok := s.getRef(ref)
+	if !ok {
+		return ocispec.Descriptor{}, nil, ErrNotFound
+	}
+	// first see if it is in the in-memory manifest map
+	manifest, ok := s.getMemory(desc)
+	if !ok {
+		return ocispec.Descriptor{}, nil, ErrNotFound
+	}
+	return desc, manifest, nil
+}
+
+func (s *File) descFromFile(info os.FileInfo, mediaType, path string) (ocispec.Descriptor, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return ocispec.Descriptor{}, err
@@ -122,7 +249,7 @@ func (s *FileStore) descFromFile(info os.FileInfo, mediaType, path string) (ocis
 	}, nil
 }
 
-func (s *FileStore) descFromDir(name, mediaType, root string) (ocispec.Descriptor, error) {
+func (s *File) descFromDir(name, mediaType, root string) (ocispec.Descriptor, error) {
 	// generate temp file
 	file, err := s.tempFile()
 	if err != nil {
@@ -167,7 +294,7 @@ func (s *FileStore) descFromDir(name, mediaType, root string) (ocispec.Descripto
 	}, nil
 }
 
-func (s *FileStore) tempFile() (*os.File, error) {
+func (s *File) tempFile() (*os.File, error) {
 	file, err := ioutil.TempFile("", TempFilePattern)
 	if err != nil {
 		return nil, err
@@ -177,7 +304,7 @@ func (s *FileStore) tempFile() (*os.File, error) {
 }
 
 // Close frees up resources used by the file store
-func (s *FileStore) Close() error {
+func (s *File) Close() error {
 	var errs []string
 	s.tmpFiles.Range(func(name, _ interface{}) bool {
 		if err := os.Remove(name.(string)); err != nil {
@@ -185,78 +312,13 @@ func (s *FileStore) Close() error {
 		}
 		return true
 	})
-	return errors.New(strings.Join(errs, "; "))
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "; "))
+	}
+	return nil
 }
 
-// ReaderAt provides contents
-func (s *FileStore) ReaderAt(ctx context.Context, desc ocispec.Descriptor) (content.ReaderAt, error) {
-	desc, ok := s.get(desc)
-	if !ok {
-		return nil, ErrNotFound
-	}
-	name, ok := ResolveName(desc)
-	if !ok {
-		return nil, ErrNoName
-	}
-	path := s.ResolvePath(name)
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return sizeReaderAt{
-		readAtCloser: file,
-		size:         desc.Size,
-	}, nil
-}
-
-// Writer begins or resumes the active writer identified by desc
-func (s *FileStore) Writer(ctx context.Context, opts ...content.WriterOpt) (content.Writer, error) {
-	var wOpts content.WriterOpts
-	for _, opt := range opts {
-		if err := opt(&wOpts); err != nil {
-			return nil, err
-		}
-	}
-	desc := wOpts.Desc
-
-	name, ok := ResolveName(desc)
-	if !ok {
-		// if we were not told to ignore NoName, then return an error
-		if !s.ignoreNoName {
-			return nil, ErrNoName
-		}
-
-		// just return a nil writer - we do not want to calculate the hash, so just use
-		// whatever was passed in the descriptor
-		return NewIoContentWriter(ioutil.Discard, WithOutputHash(desc.Digest)), nil
-	}
-	path, err := s.resolveWritePath(name)
-	if err != nil {
-		return nil, err
-	}
-	file, afterCommit, err := s.createWritePath(path, desc, name)
-	if err != nil {
-		return nil, err
-	}
-
-	now := time.Now()
-	return &fileWriter{
-		store:    s,
-		file:     file,
-		desc:     desc,
-		digester: digest.Canonical.Digester(),
-		status: content.Status{
-			Ref:       name,
-			Total:     desc.Size,
-			StartedAt: now,
-			UpdatedAt: now,
-		},
-		afterCommit: afterCommit,
-	}, nil
-}
-
-func (s *FileStore) resolveWritePath(name string) (string, error) {
+func (s *File) resolveWritePath(name string) (string, error) {
 	path := s.ResolvePath(name)
 	if !s.AllowPathTraversalOnWrite {
 		base, err := filepath.Abs(s.root)
@@ -286,7 +348,7 @@ func (s *FileStore) resolveWritePath(name string) (string, error) {
 	return path, nil
 }
 
-func (s *FileStore) createWritePath(path string, desc ocispec.Descriptor, prefix string) (*os.File, func() error, error) {
+func (s *File) createWritePath(path string, desc ocispec.Descriptor, prefix string) (*os.File, func() error, error) {
 	if value, ok := desc.Annotations[AnnotationUnpack]; !ok || value != "true" {
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return nil, nil, err
@@ -307,14 +369,14 @@ func (s *FileStore) createWritePath(path string, desc ocispec.Descriptor, prefix
 }
 
 // MapPath maps name to path
-func (s *FileStore) MapPath(name, path string) string {
+func (s *File) MapPath(name, path string) string {
 	path = s.resolvePath(path)
 	s.pathMap.Store(name, path)
 	return path
 }
 
 // ResolvePath returns the path by name
-func (s *FileStore) ResolvePath(name string) string {
+func (s *File) ResolvePath(name string) string {
 	if value, ok := s.pathMap.Load(name); ok {
 		if path, ok := value.(string); ok {
 			return path
@@ -325,18 +387,18 @@ func (s *FileStore) ResolvePath(name string) string {
 	return s.resolvePath(name)
 }
 
-func (s *FileStore) resolvePath(path string) string {
+func (s *File) resolvePath(path string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
 	return filepath.Join(s.root, path)
 }
 
-func (s *FileStore) set(desc ocispec.Descriptor) {
+func (s *File) set(desc ocispec.Descriptor) {
 	s.descriptor.Store(desc.Digest, desc)
 }
 
-func (s *FileStore) get(desc ocispec.Descriptor) (ocispec.Descriptor, bool) {
+func (s *File) get(desc ocispec.Descriptor) (ocispec.Descriptor, bool) {
 	value, ok := s.descriptor.Load(desc.Digest)
 	if !ok {
 		return ocispec.Descriptor{}, false
@@ -345,8 +407,38 @@ func (s *FileStore) get(desc ocispec.Descriptor) (ocispec.Descriptor, bool) {
 	return desc, ok
 }
 
+func (s *File) getMemory(desc ocispec.Descriptor) ([]byte, bool) {
+	value, ok := s.memoryMap.Load(desc.Digest)
+	if !ok {
+		return nil, false
+	}
+	content, ok := value.([]byte)
+	return content, ok
+}
+
+func (s *File) getRef(ref string) (ocispec.Descriptor, bool) {
+	value, ok := s.refMap.Load(ref)
+	if !ok {
+		return ocispec.Descriptor{}, false
+	}
+	desc, ok := value.(ocispec.Descriptor)
+	return desc, ok
+}
+
+// StoreManifest stores a manifest linked to by the provided ref. The children of the
+// manifest, such as layers and config, should already exist in the file store, either
+// as files linked via Add(), or via Load(). If they do not exist, then a typical
+// Fetcher that walks the manifest will hit an unresolved hash.
+//
+// StoreManifest does *not* validate their presence.
+func (s *File) StoreManifest(ref string, desc ocispec.Descriptor, manifest []byte) error {
+	s.refMap.Store(ref, desc)
+	s.memoryMap.Store(desc.Digest, manifest)
+	return nil
+}
+
 type fileWriter struct {
-	store       *FileStore
+	store       *File
 	file        *os.File
 	desc        ocispec.Descriptor
 	digester    digest.Digester

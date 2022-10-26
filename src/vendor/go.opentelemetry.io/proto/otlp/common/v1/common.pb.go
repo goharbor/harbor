@@ -48,7 +48,7 @@ type AnyValue struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The value is one of the listed fields. It is valid for all values to be unspecified
-	// in which case this AnyValue is considered to be "null".
+	// in which case this AnyValue is considered to be "empty".
 	//
 	// Types that are assignable to Value:
 	//	*AnyValue_StringValue

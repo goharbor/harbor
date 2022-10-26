@@ -40,6 +40,9 @@ $(TOOLS)/%: | $(TOOLS)
 	cd $(TOOLS_MOD_DIR) && \
 	$(GO) build -o $@ $(PACKAGE)
 
+MULTIMOD = $(TOOLS)/multimod
+$(TOOLS)/multimod: PACKAGE=go.opentelemetry.io/build-tools/multimod
+
 SEMCONVGEN = $(TOOLS)/semconvgen
 $(TOOLS)/semconvgen: PACKAGE=go.opentelemetry.io/build-tools/semconvgen
 
@@ -50,19 +53,22 @@ GOLANGCI_LINT = $(TOOLS)/golangci-lint
 $(TOOLS)/golangci-lint: PACKAGE=github.com/golangci/golangci-lint/cmd/golangci-lint
 
 MISSPELL = $(TOOLS)/misspell
-$(TOOLS)/misspell: PACKAGE= github.com/client9/misspell/cmd/misspell
+$(TOOLS)/misspell: PACKAGE=github.com/client9/misspell/cmd/misspell
 
 GOCOVMERGE = $(TOOLS)/gocovmerge
-$(TOOLS)/gocovmerge: PACKAGE= github.com/wadey/gocovmerge
+$(TOOLS)/gocovmerge: PACKAGE=github.com/wadey/gocovmerge
 
 STRINGER = $(TOOLS)/stringer
 $(TOOLS)/stringer: PACKAGE=golang.org/x/tools/cmd/stringer
 
+PORTO = $(TOOLS)/porto
+$(TOOLS)/porto: PACKAGE=github.com/jcchavezs/porto/cmd/porto
+
+GOJQ = $(TOOLS)/gojq
 $(TOOLS)/gojq: PACKAGE=github.com/itchyny/gojq/cmd/gojq
 
 .PHONY: tools
-tools: $(CROSSLINK) $(GOLANGCI_LINT) $(MISSPELL) $(GOCOVMERGE) $(STRINGER) $(TOOLS)/gojq $(SEMCONVGEN)
-
+tools: $(CROSSLINK) $(GOLANGCI_LINT) $(MISSPELL) $(GOCOVMERGE) $(STRINGER) $(PORTO) $(GOJQ) $(SEMCONVGEN) $(MULTIMOD)
 
 # Build
 
@@ -74,11 +80,12 @@ examples:
 	   $(GO) build .); \
 	done
 
-generate: $(STRINGER)
+generate: $(STRINGER) $(PORTO)
 	set -e; for dir in $(ALL_GO_MOD_DIRS); do \
 	  echo "$(GO) generate $${dir}/..."; \
 	  (cd "$${dir}" && \
-	    PATH="$(TOOLS):$${PATH}" $(GO) generate ./...); \
+	    PATH="$(TOOLS):$${PATH}" $(GO) generate ./... && \
+		$(PORTO) -w .); \
 	done
 
 build: generate
@@ -136,6 +143,10 @@ lint: misspell lint-modules | $(GOLANGCI_LINT)
 	    $(GOLANGCI_LINT) run); \
 	done
 
+.PHONY: vanity-import-check
+vanity-import-check: | $(PORTO)
+	$(PORTO) --include-internal -l .
+
 .PHONY: misspell
 misspell: | $(MISSPELL)
 	$(MISSPELL) -w $(ALL_DOCS)
@@ -183,3 +194,14 @@ check-clean-work-tree:
 	  git status; \
 	  exit 1; \
 	fi
+
+.PHONY: prerelease
+prerelease: | $(MULTIMOD)
+	@[ "${MODSET}" ] || ( echo ">> env var MODSET is not set"; exit 1 )
+	$(MULTIMOD) verify && $(MULTIMOD) prerelease -m ${MODSET}
+
+COMMIT ?= "HEAD"
+.PHONY: add-tags
+add-tags: | $(MULTIMOD)
+	@[ "${MODSET}" ] || ( echo ">> env var MODSET is not set"; exit 1 )
+	$(MULTIMOD) verify && $(MULTIMOD) tag -m ${MODSET} -c ${COMMIT}
