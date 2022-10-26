@@ -132,10 +132,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get onldy admin create project: %v", err)
 	}
 
-	if _, err := Email(ctx); err != nil {
-		t.Fatalf("failed to get email settings: %v", err)
-	}
-
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
 	}

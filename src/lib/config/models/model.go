@@ -18,18 +18,6 @@ import (
 	"github.com/beego/beego/orm"
 )
 
-// Email ...
-type Email struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	SSL      bool   `json:"ssl"`
-	Identity string `json:"identity"`
-	From     string `json:"from"`
-	Insecure bool   `json:"insecure"`
-}
-
 // HTTPAuthProxy wraps the settings for HTTP auth proxy
 type HTTPAuthProxy struct {
 	Endpoint            string   `json:"endpoint"`
