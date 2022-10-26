@@ -79,7 +79,7 @@ require (
 
 require (
 	github.com/beego/beego v1.12.11
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.4.0
 )
 
 require (
