@@ -7,7 +7,6 @@ package autocert
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -48,7 +47,7 @@ func (d DirCache) Get(ctx context.Context, name string) ([]byte, error) {
 		done = make(chan struct{})
 	)
 	go func() {
-		data, err = ioutil.ReadFile(name)
+		data, err = os.ReadFile(name)
 		close(done)
 	}()
 	select {
@@ -119,7 +118,7 @@ func (d DirCache) Delete(ctx context.Context, name string) error {
 // writeTempFile writes b to a temporary file, closes the file and returns its path.
 func (d DirCache) writeTempFile(prefix string, b []byte) (name string, reterr error) {
 	// TempFile uses 0600 permissions
-	f, err := ioutil.TempFile(string(d), prefix)
+	f, err := os.CreateTemp(string(d), prefix)
 	if err != nil {
 		return "", err
 	}
