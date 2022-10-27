@@ -67,8 +67,12 @@ func (suite *Suite) Assert() *assert.Assertions {
 	return suite.Assertions
 }
 
-func failOnPanic(t *testing.T) {
+func recoverAndFailOnPanic(t *testing.T) {
 	r := recover()
+	failOnPanic(t, r)
+}
+
+func failOnPanic(t *testing.T, r interface{}) {
 	if r != nil {
 		t.Errorf("test panicked: %v\n%s", r, debug.Stack())
 		t.FailNow()
@@ -91,7 +95,7 @@ func (suite *Suite) Run(name string, subtest func()) bool {
 // Run takes a testing suite and runs all of the tests attached
 // to it.
 func Run(t *testing.T, suite TestingSuite) {
-	defer failOnPanic(t)
+	defer recoverAndFailOnPanic(t)
 
 	suite.SetT(t)
 
@@ -136,10 +140,12 @@ func Run(t *testing.T, suite TestingSuite) {
 			F: func(t *testing.T) {
 				parentT := suite.T()
 				suite.SetT(t)
-				defer failOnPanic(t)
+				defer recoverAndFailOnPanic(t)
 				defer func() {
+					r := recover()
+
 					if stats != nil {
-						passed := !t.Failed()
+						passed := !t.Failed() && r == nil
 						stats.end(method.Name, passed)
 					}
 
@@ -152,6 +158,7 @@ func Run(t *testing.T, suite TestingSuite) {
 					}
 
 					suite.SetT(parentT)
+					failOnPanic(t, r)
 				}()
 
 				if setupTestSuite, ok := suite.(SetupTestSuite); ok {
