@@ -22,6 +22,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/beego/beego"
+
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -73,6 +75,12 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	}
 
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Error(err)
+				panic(beego.ErrAbort)
+			}
+		}()
 		next.ServeHTTP(w, r)
 		return nil
 	}
