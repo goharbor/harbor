@@ -114,12 +114,24 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	if err != nil {
 		logger.Errorf(
 			"Export Job Id = %v. Error when persisting report file %s to persistent storage: %v", params["JobId"], fileName, err)
+		// NOTICE: this is a tentative solution to resolve error to push empty blob to S3 storage driver,
+		// should unify the behaviour for different drivers.
+		// Temporary set the status message to extra attributes, then the API handler will fetch it and combined to response for better experience.
+		if stat.Size() == 0 {
+			extra := map[string]interface{}{
+				"status_message": "No vulnerabilities found or matched",
+			}
+			updateErr := sde.updateExecAttributes(ctx, params, extra)
+			if updateErr != nil {
+				logger.Errorf("Export Job Id = %v. Error when updating the exec extra attributes 'status_message' to 'No vulnerabilities found or matched': %v", params["JobId"], updateErr)
+			}
+		}
+
 		return err
 	}
 
 	logger.Infof("Export Job Id = %v. Created system artifact: %v for report file %s to persistent storage: %v", params["JobId"], artID, fileName, err)
-	err = sde.updateExecAttributes(ctx, params, err, hash)
-
+	err = sde.updateExecAttributes(ctx, params, map[string]interface{}{export.DigestKey: hash.String()})
 	if err != nil {
 		logger.Errorf("Export Job Id = %v. Error when updating execution record : %v", params["JobId"], err)
 		return err
@@ -129,7 +141,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	return nil
 }
 
-func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, err error, hash digest.Digest) error {
+func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, attrs map[string]interface{}) error {
 	execID := int64(params["JobId"].(float64))
 	exec, err := sde.execMgr.Get(ctx.SystemContext(), execID)
 	logger := ctx.GetLogger()
@@ -137,11 +149,11 @@ func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Para
 		logger.Errorf("Export Job Id = %v. Error when fetching execution record for update : %v", params["JobId"], err)
 		return err
 	}
-	attrsToUpdate := make(map[string]interface{})
-	for k, v := range exec.ExtraAttrs {
+	// copy old extra
+	attrsToUpdate := exec.ExtraAttrs
+	for k, v := range attrs {
 		attrsToUpdate[k] = v
 	}
-	attrsToUpdate[export.DigestKey] = hash.String()
 	return sde.execMgr.UpdateExtraAttrs(ctx.SystemContext(), execID, attrsToUpdate)
 }
 
