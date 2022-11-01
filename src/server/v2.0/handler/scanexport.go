@@ -132,6 +132,10 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 		UserName:    execution.UserName,
 		FilePresent: execution.FilePresent,
 	}
+	// add human friendly message when status is error
+	if sdeExec.Status == job.ErrorStatus.String() && sdeExec.StatusText == "" {
+		sdeExec.StatusText = "Please contact the system administrator to check the logs of jobservice."
+	}
 
 	return operation.NewGetScanDataExportExecutionOK().WithPayload(&sdeExec)
 }
@@ -226,7 +230,7 @@ func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context,
 			FilePresent: execution.FilePresent,
 		}
 		// add human friendly message when status is error
-		if sdeExec.Status == job.ErrorStatus.String() {
+		if sdeExec.Status == job.ErrorStatus.String() && sdeExec.StatusText == "" {
 			sdeExec.StatusText = "Please contact the system administrator to check the logs of jobservice."
 		}
 		// store project ids
