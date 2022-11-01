@@ -656,7 +656,9 @@
     "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
     "UNLIMITED": "Unlimited",
     "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
-    "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field"
+    "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field",
+    "COPY_BY_CHUNK": "Copy by chunk",
+    "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests."
   },
   "DESTINATION":{
     "NEW_ENDPOINT": "新建目標",

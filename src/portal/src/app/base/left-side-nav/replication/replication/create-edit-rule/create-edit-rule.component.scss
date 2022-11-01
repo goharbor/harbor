@@ -28,7 +28,7 @@ h4 {
 .filterSelect {
     position: relative;
     width: 315px;
-    margin-bottom:0.5rem;
+    margin-bottom:0.25rem;
 }
 
 .filterSelect clr-icon {
@@ -314,4 +314,16 @@ clr-modal {
     position: absolute;
     display: flex;
     align-items: center;
+}
+
+.clr-form-control {
+    margin-top: 1rem;
+}
+
+.flattening {
+    margin-top: 0.5rem;
+}
+
+.bandwidth {
+    margin-top: 0.25rem;
 }
