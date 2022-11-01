@@ -25,17 +25,18 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
 type processorTestSuite struct {
 	suite.Suite
 	processor *processor
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 }
 
 func (p *processorTestSuite) SetupTest() {
-	p.regCli = &registry.FakeClient{}
+	p.regCli = &registry.Client{}
 	p.processor = &processor{
 		manifestProcessor: &base.ManifestProcessor{
 			RegCli: p.regCli,
@@ -93,8 +94,8 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 	}
 	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
 	p.Require().Nil(err)
-	p.regCli.On("PullManifest").Return(mani, "", nil)
-	p.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	p.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(mani, "", nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
 	err = p.processor.AbstractMetadata(nil, art, nil)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 7)

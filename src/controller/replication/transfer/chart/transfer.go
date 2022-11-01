@@ -49,7 +49,7 @@ type transfer struct {
 	dst       adapter.ChartRegistry
 }
 
-func (t *transfer) Transfer(src *model.Resource, dst *model.Resource, speed int32) error {
+func (t *transfer) Transfer(src *model.Resource, dst *model.Resource, opts *trans.Options) error {
 	// initialize
 	if err := t.initialize(src, dst); err != nil {
 		return err
@@ -78,7 +78,7 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource, speed int3
 		version: dst.Metadata.Artifacts[0].Tags[0],
 	}
 	// copy the chart from source registry to the destination
-	return t.copy(srcChart, dstChart, dst.Override, speed)
+	return t.copy(srcChart, dstChart, dst.Override, opts)
 }
 
 func (t *transfer) initialize(src, dst *model.Resource) error {
@@ -129,7 +129,7 @@ func (t *transfer) shouldStop() bool {
 	return isStopped
 }
 
-func (t *transfer) copy(src, dst *chart, override bool, speed int32) error {
+func (t *transfer) copy(src, dst *chart, override bool, opts *trans.Options) error {
 	if t.shouldStop() {
 		return nil
 	}
@@ -160,9 +160,9 @@ func (t *transfer) copy(src, dst *chart, override bool, speed int32) error {
 		t.logger.Errorf("failed to download the chart %s:%s: %v", src.name, src.version, err)
 		return err
 	}
-	if speed > 0 {
-		t.logger.Infof("limit network speed at %d kb/s", speed)
-		chart = trans.NewReader(chart, speed)
+	if opts.Speed > 0 {
+		t.logger.Infof("limit network speed at %d kb/s", opts.Speed)
+		chart = trans.NewReader(chart, opts.Speed)
 	}
 	defer chart.Close()
 

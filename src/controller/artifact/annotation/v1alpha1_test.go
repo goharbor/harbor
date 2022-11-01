@@ -26,6 +26,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/distribution"
+	"github.com/goharbor/harbor/src/testing/mock"
 	reg "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
@@ -172,12 +173,12 @@ var (
 // v1alpha1TestSuite is a test suite of testing v1alpha1 parser
 type v1alpha1TestSuite struct {
 	suite.Suite
-	regCli         *reg.FakeClient
+	regCli         *reg.Client
 	v1alpha1Parser *v1alpha1Parser
 }
 
 func (p *v1alpha1TestSuite) SetupTest() {
-	p.regCli = &reg.FakeClient{}
+	p.regCli = &reg.Client{}
 	p.v1alpha1Parser = &v1alpha1Parser{
 		regCli: p.regCli,
 	}
@@ -196,7 +197,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	art := &artifact.Artifact{ManifestMediaType: manifestMediaType, ExtraAttrs: metadata}
 
 	blob := ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
-	p.regCli.On("PullBlob").Return(0, blob, nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), blob, nil)
 	err = p.v1alpha1Parser.Parse(nil, art, content)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 12)
@@ -219,7 +220,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	art = &artifact.Artifact{ManifestMediaType: manifestMediaType, ExtraAttrs: metadata}
 
 	blob = ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
-	p.regCli.On("PullBlob").Return(0, blob, nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), blob, nil)
 	err = p.v1alpha1Parser.Parse(nil, art, content)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 13)

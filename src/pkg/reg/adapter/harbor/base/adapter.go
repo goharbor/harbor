@@ -116,6 +116,7 @@ func (a *Adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 		SupportedRepositoryPathComponentType: model.RepositoryPathComponentTypeAtLeastTwo,
+		SupportedCopyByChunk:                 true,
 	}
 
 	enabled, err := a.Client.ChartRegistryEnabled()

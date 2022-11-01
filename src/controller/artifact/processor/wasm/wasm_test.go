@@ -113,18 +113,18 @@ var (
 type WASMProcessorTestSuite struct {
 	suite.Suite
 	processor *Processor
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 }
 
 func (m *WASMProcessorTestSuite) SetupTest() {
-	m.regCli = &registry.FakeClient{}
+	m.regCli = &registry.Client{}
 	m.processor = &Processor{}
 	m.processor.ManifestProcessor = &base.ManifestProcessor{RegCli: m.regCli}
 }
 
 func (m *WASMProcessorTestSuite) TestAbstractMetadataForAnnotationFashion() {
 	artifact := &artifact.Artifact{}
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(0, ioutil.NopCloser(bytes.NewReader([]byte(annnotated_config))), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(bytes.NewReader([]byte(annnotated_config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(annnotated_manifest))
 	m.Require().Nil(err)
 	m.NotNil(artifact.ExtraAttrs["created"])
@@ -157,8 +157,8 @@ func (m *WASMProcessorTestSuite) TestAbstractAdditionForAnnotationFashion() {
 	err = json.Unmarshal([]byte(annnotated_manifest), &manifest)
 	deserializedManifest, err := schema2.FromStruct(manifest)
 	m.Require().Nil(err)
-	m.regCli.On("PullManifest").Return(deserializedManifest, "", nil)
-	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(annnotated_config)), nil)
+	m.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(deserializedManifest, "", nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(annnotated_config)), nil)
 	addition, err := m.processor.AbstractAddition(nil, artifact, AdditionTypeBuildHistory)
 	m.Require().Nil(err)
 	m.Equal("application/json; charset=utf-8", addition.ContentType)
