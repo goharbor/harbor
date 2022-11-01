@@ -350,16 +350,18 @@ func (suite *ScanExportTestSuite) TestExportScanDataNoPrivileges() {
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	suite.Security.On("GetUsername").Return("test-user")
-	suite.Security.On("IsAuthenticated").Return(true).Once()
-	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	suite.Security.On("IsAuthenticated").Return(true).Twice()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Twice()
 	url := "/export/cve/execution/100"
 	endTime := time.Now()
 	startTime := endTime.Add(-10 * time.Minute)
+	defaultStatusMessage := "Please contact the system administrator to check the logs of jobservice."
+	customizeStatusMessage := "No vulnerabilities found or matched"
 
 	execution := &export.Execution{
 		ID:               100,
 		UserID:           3,
-		Status:           "Success",
+		Status:           "Error",
 		StatusMessage:    "",
 		Trigger:          "MANUAL",
 		StartTime:        startTime,
@@ -377,7 +379,17 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	json.NewDecoder(res.Body).Decode(&respData)
 	suite.Equal("test-user", respData.UserName)
 	suite.Equal(false, respData.FilePresent)
+	suite.Equal(defaultStatusMessage, respData.StatusText)
 
+	// test customize status message
+	execution.StatusMessage = customizeStatusMessage
+	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil).Once()
+	res, err = suite.DoReq(http.MethodGet, url, nil)
+	suite.Equal(200, res.StatusCode)
+	suite.Equal(nil, err)
+	respData = models.ScanDataExportExecution{}
+	json.NewDecoder(res.Body).Decode(&respData)
+	suite.Equal(customizeStatusMessage, respData.StatusText)
 }
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionUserNotOwnerOfExport() {
@@ -567,19 +579,21 @@ func (suite *ScanExportTestSuite) TestDownloadScanDataExecutionError() {
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionList() {
 	suite.Security.On("GetUsername").Return("test-user")
-	suite.Security.On("IsAuthenticated").Return(true).Once()
-	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	suite.Security.On("IsAuthenticated").Return(true).Twice()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Twice()
 	url, err := url2.Parse("/export/cve/executions")
 	params := url2.Values{}
 	params.Add("user_name", "test-user")
 	url.RawQuery = params.Encode()
 	endTime := time.Now()
 	startTime := endTime.Add(-10 * time.Minute)
+	defaultStatusMessage := "Please contact the system administrator to check the logs of jobservice."
+	customizeStatusMessage := "No vulnerabilities found or matched"
 
 	execution := &export.Execution{
 		ID:               100,
 		UserID:           3,
-		Status:           "Success",
+		Status:           "Error",
 		StatusMessage:    "",
 		Trigger:          "MANUAL",
 		StartTime:        startTime,
@@ -597,6 +611,18 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionList() {
 	json.NewDecoder(res.Body).Decode(&respData)
 	suite.Equal(1, len(respData.Items))
 	suite.Equal(int64(100), respData.Items[0].ID)
+	suite.Equal(defaultStatusMessage, respData.Items[0].StatusText)
+	// test customize status message
+	execution.StatusMessage = customizeStatusMessage
+	mock.OnAnything(suite.scanExportCtl, "ListExecutions").Return([]*export.Execution{execution}, nil).Once()
+	res, err = suite.DoReq(http.MethodGet, url.String(), nil)
+	suite.Equal(200, res.StatusCode)
+	suite.Equal(nil, err)
+	respData = models.ScanDataExportExecutionList{}
+	json.NewDecoder(res.Body).Decode(&respData)
+	suite.Equal(1, len(respData.Items))
+	suite.Equal(int64(100), respData.Items[0].ID)
+	suite.Equal(customizeStatusMessage, respData.Items[0].StatusText)
 }
 
 func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionListFilterNotOwned() {

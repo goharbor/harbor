@@ -97,6 +97,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecution() {
 	attrs := make(map[string]interface{})
 	attrs[export.JobNameAttribute] = "test-job"
 	attrs[export.UserNameAttribute] = "test-user"
+	attrs["status_message"] = "test-message"
 	{
 		exec := task.Execution{
 			ID:            100,
@@ -119,6 +120,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecution() {
 		suite.Equal(exec.ID, exportExec.ID)
 		suite.Equal("test-user", exportExec.UserName)
 		suite.Equal("test-job", exportExec.JobName)
+		suite.Equal("test-message", exportExec.StatusMessage)
 		suite.Equal(true, exportExec.FilePresent)
 	}
 
