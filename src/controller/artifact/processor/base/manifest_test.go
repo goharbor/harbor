@@ -19,10 +19,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/opencontainers/image-spec/specs-go/v1"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
@@ -125,11 +126,11 @@ const (
 type manifestTestSuite struct {
 	suite.Suite
 	processor *ManifestProcessor
-	regCli    *registry.FakeClient
+	regCli    *registry.Client
 }
 
 func (m *manifestTestSuite) SetupTest() {
-	m.regCli = &registry.FakeClient{}
+	m.regCli = &registry.Client{}
 	m.processor = &ManifestProcessor{
 		RegCli: m.regCli,
 	}
@@ -139,7 +140,7 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract all properties
 	art := &artifact.Artifact{}
 
-	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Len(art.ExtraAttrs, 9)
 
@@ -149,14 +150,14 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract the specified properties
 	m.processor.properties = []string{"os"}
 	art = &artifact.Artifact{}
-	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Require().Len(art.ExtraAttrs, 1)
 	m.Equal("linux", art.ExtraAttrs["os"])
 }
 
 func (m *manifestTestSuite) TestUnmarshalConfig() {
-	m.regCli.On("PullBlob").Return(0, ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
 	config := &v1.Image{}
 	err := m.processor.UnmarshalConfig(nil, "library/hello-world", []byte(manifest), config)
 	m.Require().Nil(err)

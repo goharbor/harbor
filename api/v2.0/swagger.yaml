@@ -6959,6 +6959,10 @@ definitions:
         format: int32
         description: speed limit for each task
         x-isnullable: true # make this field optional to keep backward compatibility
+      copy_by_chunk:
+        type: boolean
+        description: Whether to enable copy by chunk.
+        x-isnullable: true
   ReplicationTrigger:
     type: object
     properties:
@@ -7116,6 +7120,11 @@ definitions:
         description: The triggers that the registry supports
         items:
           type: string
+      supported_copy_by_chunk:
+        type: boolean
+        description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
   RegistryProviderInfo:
     type: object
     description: The registry provider info contains the base info and capability declarations of the registry provider
