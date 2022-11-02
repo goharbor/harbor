@@ -19,11 +19,11 @@ import { AppConfigService } from '../../services/app-config.service';
 import { ErrorHandler } from '../../shared/units/error-handler';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
-import { AccountSettingsModalService } from '../account-settings/account-settings-modal-service.service';
 import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../ng-swagger-gen/models/registry';
 import { delay } from 'rxjs/operators';
+import { UserService } from '../../../../ng-swagger-gen/services/user.service';
 
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;
@@ -38,7 +38,6 @@ describe('HarborShellComponent', () => {
         searchCloseChan$: of(null),
     };
     let mockMessageHandlerService = null;
-    let mockAccountSettingsModalService = null;
     let mockPasswordSettingService = null;
     let mockSkinableConfig = {
         getSkinConfig: function () {
@@ -89,6 +88,14 @@ describe('HarborShellComponent', () => {
             return of([]).pipe(delay(0));
         },
     };
+    const fakedUserService = {
+        getCurrentUserInfo() {
+            return of({});
+        },
+        setCliSecret() {
+            return of(null);
+        },
+    };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
@@ -119,8 +126,8 @@ describe('HarborShellComponent', () => {
                     useValue: mockMessageHandlerService,
                 },
                 {
-                    provide: AccountSettingsModalService,
-                    useValue: mockAccountSettingsModalService,
+                    provide: UserService,
+                    useValue: fakedUserService,
                 },
                 {
                     provide: PasswordSettingService,
