@@ -136,7 +136,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => (this.inProgress = false)))
             .subscribe({
                 next: adapter => {
-                    this.setFilterAndTrigger(adapter);
+                    // for push mode, if id === 0,  what we get is currentRegistryInfo, and then setFilterAndTrigger(currentRegistryInfo)
+                    // for pull mode, always setFilterAndTrigger
+                    if ((this.isPushMode && !id) || !this.isPushMode) {
+                        this.setFilterAndTrigger(adapter);
+                    }
                     if (id) {
                         this.checkChunkOption(id, adapter);
                     }
