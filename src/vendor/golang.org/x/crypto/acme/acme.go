@@ -88,7 +88,7 @@ type Client struct {
 	//
 	// The following algorithms are supported:
 	// RS256, ES256, ES384 and ES512.
-	// See RFC7518 for more details about the algorithms.
+	// See RFC 7518 for more details about the algorithms.
 	Key crypto.Signer
 
 	// HTTPClient optionally specifies an HTTP client to use
@@ -310,9 +310,9 @@ func (c *Client) UpdateReg(ctx context.Context, acct *Account) (*Account, error)
 // On success client's Key is updated which is not concurrency safe.
 // On failure an error will be returned.
 // The new key is already registered with the ACME provider if the following is true:
-//  - error is of type acme.Error
-//  - StatusCode should be 409 (Conflict)
-//  - Location header will have the KID of the associated account
+//   - error is of type acme.Error
+//   - StatusCode should be 409 (Conflict)
+//   - Location header will have the KID of the associated account
 //
 // More about account key rollover can be found at
 // https://tools.ietf.org/html/rfc8555#section-7.3.5.
