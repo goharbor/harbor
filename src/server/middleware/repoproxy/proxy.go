@@ -58,6 +58,12 @@ func BlobGetMiddleware() func(http.Handler) http.Handler {
 }
 
 func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(err)
+			panic(beego.ErrAbort)
+		}
+	}()
 	ctx := r.Context()
 	art, p, proxyCtl, err := preCheck(ctx)
 	if err != nil {
@@ -75,12 +81,6 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	}
 
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
-		defer func() {
-			if err := recover(); err != nil {
-				log.Error(err)
-				panic(beego.ErrAbort)
-			}
-		}()
 		next.ServeHTTP(w, r)
 		return nil
 	}
