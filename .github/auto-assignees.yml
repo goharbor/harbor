@@ -1,0 +1,32 @@
+---
+# This assigns a PR to its author
+addAssignees: author
+
+addReviewers: true
+
+useReviewGroups: true
+
+reviewGroups:
+  maintainers:
+    - reasonerjt
+    - kofj
+    - mmpei
+    - renmaosheng
+    - wy65701436
+    - ywk253100
+    - hainingzhang
+    - steven-zou
+    - jMonsinjon
+    - holyhope
+    - Vad1mo
+  community:
+    - OrlinVasilev
+
+options:
+  ignore_draft: true
+  ignored_keywords:
+    - WIP
+    - wip
+    - DO NOT MERGE
+  enable_group_assignment: true
+  number_of_reviewers: 2
