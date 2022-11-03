@@ -12,7 +12,8 @@
     // For developing
     "start": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0 --proxy-config proxy.config.json",
     "start:prod": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0 --proxy-config proxy.config.json --configuration production",
-
+    "start_default_port": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0 --port 443 --disable-host-check --proxy-config proxy.config.json",
+    
     // For code grammar checking
     "lint": "tslint \"src/**/*.ts\"",
     "lint_fix": "tslint --fix \"src/**/*.ts\"",
