@@ -1,27 +1,19 @@
 ---
 # This assigns a PR to its author
-addAssignees: author
+addAssignees: true
 
-addReviewers: true
+addReviewers: false
 
-useReviewGroups: true
-
-reviewGroups:
-  maintainers:
-    - reasonerjt
-    - ywk253100
-    - renmaosheng
-    - wy65701436
-    - steven-zou
-    - Vad1mo
-  community:
-    - OrlinVasilev
-  contributors:
-    - stonezdj
-    - chlins
-    - zyyw
-    - MinerYang
-    - AllForNothing
+reviewers:
+  - ywk253100
+  - wy65701436
+  - Vad1mo
+  - OrlinVasilev
+  - stonezdj
+  - chlins
+  - zyyw
+  - MinerYang
+  - AllForNothing
 
 options:
   ignore_draft: true
@@ -30,4 +22,4 @@ options:
     - wip
     - DO NOT MERGE
   enable_group_assignment: true
-  number_of_reviewers: 2
+  number_of_reviewers: 3
