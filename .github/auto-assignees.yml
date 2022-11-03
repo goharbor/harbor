@@ -9,18 +9,19 @@ useReviewGroups: true
 reviewGroups:
   maintainers:
     - reasonerjt
-    - kofj
-    - mmpei
+    - ywk253100
     - renmaosheng
     - wy65701436
-    - ywk253100
-    - hainingzhang
     - steven-zou
-    - jMonsinjon
-    - holyhope
     - Vad1mo
   community:
     - OrlinVasilev
+  contributors:
+    - stonezdj
+    - chlins
+    - zyyw
+    - MinerYang
+    - AllForNothing
 
 options:
   ignore_draft: true
