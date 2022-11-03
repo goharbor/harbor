@@ -14,6 +14,11 @@ type MockJobClient struct {
 	JobUUID []string
 }
 
+// GetJobServiceConfig ...
+func (mjc *MockJobClient) GetJobServiceConfig() (*job.Config, error) {
+	panic("implement me")
+}
+
 // GetJobLog ...
 func (mjc *MockJobClient) GetJobLog(uuid string) ([]byte, error) {
 	if uuid == "500" {

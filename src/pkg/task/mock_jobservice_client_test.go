@@ -60,6 +60,29 @@ func (_m *mockJobserviceClient) GetJobLog(uuid string) ([]byte, error) {
 	return r0, r1
 }
 
+// GetJobServiceConfig provides a mock function with given fields:
+func (_m *mockJobserviceClient) GetJobServiceConfig() (*job.Config, error) {
+	ret := _m.Called()
+
+	var r0 *job.Config
+	if rf, ok := ret.Get(0).(func() *job.Config); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*job.Config)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // PostAction provides a mock function with given fields: uuid, action
 func (_m *mockJobserviceClient) PostAction(uuid string, action string) error {
 	ret := _m.Called(uuid, action)

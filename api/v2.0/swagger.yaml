@@ -4517,6 +4517,82 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /jobservice/pools:
+    get:
+      operationId: getWorkerPools
+      summary: Get worker pools
+      description: Get worker pools
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get worker pools successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WorkerPool'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /jobservice/pools/{pool_id}/workers:
+    get:
+      operationId: getWorkers
+      summary: Get workers
+      description: Get workers in current pool
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: pool_id
+          in: path
+          required: true
+          type: string
+          description: The name of the pool. 'all' stands for all pools
+      responses:
+        '200':
+          description: Get workers successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Worker'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /jobservice/jobs/{job_id}:
+    put:
+      operationId: stopRunningJob
+      summary: Stop running job
+      description: Stop running job
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_id
+          in: path
+          required: true
+          type: string
+          description: The id of the job.
+      responses:
+        '200':
+          description: Stop worker successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /ping:
     get:
       operationId: getPing
@@ -9254,3 +9330,57 @@ definitions:
         items:
           $ref: '#/definitions/ScanDataExportExecution'
         description: The list of scan data export executions
+  WorkerPool:
+    type: object
+    description: the worker pool of job service
+    properties: 
+      pid:
+        type: integer
+        description: the process id of jobservice
+      worker_pool_id:
+        type: string
+        description: the id of the worker pool
+      start_at:
+        type: string
+        format: date-time
+        description: The start time of the work pool
+      heartbeat_at:
+        type: string
+        format: date-time
+        description: The heartbeat time of the work pool
+      concurrency:
+        type: integer
+        description: The concurrency of the work pool
+      host: 
+        type: string
+        description: The host of the work pool 
+  Worker:
+    type: object
+    description: worker in the pool
+    properties: 
+      id:
+        type: string
+        description: the id of the worker
+      pool_id:
+        type: string
+        description: the id of the worker pool
+      job_name:
+        type: string
+        description: the name of the running job in the worker
+      job_id:
+        type: string
+        description: the id of the running job in the worker
+      start_at:
+        type: string
+        format: date-time
+        description: The start time of the worker
+      args:
+        type: string
+        description: The args of the worker
+      check_in:
+        type: string
+        description: the checkin of the running job in the worker
+      checkin_at:
+        type: string
+        format: date-time
+        description: The checkin time of the running job in the worker

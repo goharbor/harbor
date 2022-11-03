@@ -34,6 +34,8 @@ type Client interface {
 	PostAction(uuid, action string) error
 	GetExecutions(uuid string) ([]job.Stats, error)
 	// TODO Redirect joblog when we see there's memory issue.
+	// GetJobServiceConfig retrieves the job config
+	GetJobServiceConfig() (*job.Config, error)
 }
 
 // StatusBehindError represents the error got when trying to stop a success/failed job
@@ -212,6 +214,35 @@ func (d *DefaultClient) PostAction(uuid, action string) error {
 	return nil
 }
 
+// GetJobServiceConfig retrieves the job service configuration
+func (d *DefaultClient) GetJobServiceConfig() (*job.Config, error) {
+	url := d.endpoint + "/api/v1/config"
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(data),
+		}
+	}
+	var config job.Config
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
 func isStatusBehindError(err error) (string, bool) {
 	if err == nil {
 		return "", false

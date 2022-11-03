@@ -68,3 +68,6 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/registry --name Client --output ./registry --outpkg registry --filename fake_registry_client.go
 //go:generate mockery --case snake --dir ../../pkg/member --name Manager --output ./member --outpkg member --filename fake_member_manager.go
 //go:generate mockery --case snake --dir ../../pkg/usergroup --name Manager --output ./usergroup --outpkg usergroup --filename fake_usergroup_manager.go
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name PoolManager --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name JobServiceMonitorClient --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name WorkerManager --output ./jobmonitor --outpkg jobmonitor

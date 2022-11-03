@@ -66,5 +66,9 @@ var (
 		{Resource: rbac.ResourceLdapUser, Action: rbac.ActionList},
 		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
+
+		{Resource: rbac.ResourceJobServiceMonitor, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceJobServiceMonitor, Action: rbac.ActionList},
+		{Resource: rbac.ResourceJobServiceMonitor, Action: rbac.ActionStop},
 	}
 )
