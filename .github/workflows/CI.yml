@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
            go-version: 1.19.3
         id: go
@@ -96,7 +96,7 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.3
         id: go
@@ -156,7 +156,7 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.3
         id: go
@@ -216,7 +216,7 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.3
         id: go
@@ -274,7 +274,7 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.3
         id: go
