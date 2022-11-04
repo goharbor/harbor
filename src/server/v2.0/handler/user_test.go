@@ -90,6 +90,14 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	}
 }
 
+func (uts *UserTestSuite) TestGetRandomSecret() {
+	for i := 1; i < 5; i++ {
+		rSec, err := getRandomSecret()
+		uts.NoError(err)
+		uts.NoError(requireValidSecret(rSec))
+	}
+}
+
 func TestUserTestSuite(t *testing.T) {
 	suite.Run(t, &UserTestSuite{})
 }
