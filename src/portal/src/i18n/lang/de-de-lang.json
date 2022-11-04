@@ -103,8 +103,6 @@
         "OIDC_ENDPOINT": "Die URL eines OIDC-kompatiblen Servers.",
         "OIDC_SCOPE": "Der Scope, der während der Authentifizierung zum OIDC-Server gesendet wird.  Es muss “openid”, und “offline_access” enthalten. Wenn Google verwendet wird, entfällt “offline_access”.",
         "OIDC_VERIFYCERT": "Box deaktivieren, falls der OIDC Server mit selbstsignierten Zertifikaten betrieben wird.",
-        "OIDC_GROUP_CLAIM": "Der Name des Claim im ID Token, dessen Wert die Liste der Gruppennamen enthält.",
-        "OIDC_GROUP_CLAIM_WARNING": "Es darf ausschließlich Buchstaben, Ziffern und Unterstriche enthalten. Die Länge muss kürzer als 256 Zeichen sein.",
         "OIDC_AUTOONBOARD": "Überspringe die Startseite, hierdurch können Nutzer ihren Nutzernamen nicht ändern. Der Nutzername wird aus dem ID Token übernommen.",
         "OIDC_USER_CLAIM": "Der Name des Claims im ID Token, aus dem der Nutzername stammt. Falls das Feld leer ist, wird 'name' verwendet.",
         "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer."
@@ -959,8 +957,11 @@
             "OIDC_SETNAMECONTENT": "Es muss ein Harbor Nutzername bei der ersten Anmeldung über thirdParty (OIDC) gesetzt werden. Dieser wird in Harbor für die assoziation mit Projekten, Rollen, etc. verwendet.",
             "OIDC_USERNAME": "Nutzername",
             "GROUP_CLAIM_NAME": "Group Claim Name",
-	    "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
-	    "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden."
+            "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
+	        "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
+	        "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
+            "OIDC_GROUP_FILTER": "OIDC Group Filter",
+            "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",

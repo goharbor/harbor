@@ -102,8 +102,6 @@
     "OIDC_ENDPOINT": "OIDC服務器的地址。",
     "OIDC_SCOPE": "在身份驗證期間發送到OIDC服務器的scope。它必須包含“openid”和“offline_access”。如果您使用Google,請從此字段中刪除“脫機訪問”。",
     "OIDC_VERIFYCERT": "如果您的OIDC服務器是通過自簽名證書託管的,請取消選中此框。",
-    "OIDC_GROUP_CLAIM": "ID和token中的Claim名稱,在組的名稱列表中。",
-    "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、數字、下劃線,且輸入長度不超過256字符。",
     "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
     "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
     "NEW_SECRET": "Cli secret 必須超過8個字符,並至少包含1個大寫字母,1個小寫字母和1個數字。"
@@ -955,8 +953,11 @@
       "OIDC_SETNAMECONTENT": "在通過第三方（OIDC）進行身份驗證時,您必須第一次創建一個Harbor用戶名。這將在端口中用於與項目、角色等關聯。",
       "OIDC_USERNAME": "用戶名",
       "GROUP_CLAIM_NAME": "組名稱",
+      "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
       "OIDC_ADMIN_GROUP": "OIDC Admin Group",
-      "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
+      "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
+      "OIDC_GROUP_FILTER": "OIDC Group Filter",
+      "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
     },
     "SCANNING":{
       "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",

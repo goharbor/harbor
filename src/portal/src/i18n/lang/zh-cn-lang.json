@@ -102,8 +102,6 @@
         "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
-        "OIDC_GROUP_CLAIM": "ID和token中的Claim名称，在组的名称列表中。",
-        "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、数字、下划线,且输入长度不超过256字符。",
         "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
         "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
         "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。"
@@ -959,9 +957,12 @@
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在Harbor中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名",
-            "GROUP_CLAIM_NAME": "组名称",
+            "GROUP_CLAIM_NAME": "组声明名称",
+            "GROUP_CLAIM_NAME_INFO": "您在 OIDC 提供商中配置的自定义组声明的名称",
             "OIDC_ADMIN_GROUP": "OIDC管理员组",
-            "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。"
+            "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。",
+            "OIDC_GROUP_FILTER": "OIDC 组过滤器",
+            "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "停止扫描所有镜像任务成功!",
