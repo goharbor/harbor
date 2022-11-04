@@ -4,7 +4,6 @@ import { AccountSettingsModalComponent } from './account-settings-modal.componen
 import { SessionService } from '../../shared/services/session.service';
 import { MessageHandlerService } from '../../shared/services/message-handler.service';
 import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
-import { AccountSettingsModalService } from './account-settings-modal-service.service';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,6 +17,7 @@ import { ConfirmationDialogComponent } from '../../shared/components/confirmatio
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ConfirmationDialogService } from '../global-confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
+import { UserService } from '../../../../ng-swagger-gen/services/user.service';
 
 describe('AccountSettingsModalComponent', () => {
     let component: AccountSettingsModalComponent;
@@ -54,9 +54,6 @@ describe('AccountSettingsModalComponent', () => {
     let fakeSearchTriggerService = {
         closeSearch: () => {},
     };
-    let fakeAccountSettingsModalService = {
-        saveNewCli: () => of(null),
-    };
     let fakeConfirmationDialogService = {
         cancel: () => of(null),
         confirm: () => of(null),
@@ -66,6 +63,15 @@ describe('AccountSettingsModalComponent', () => {
     };
     let fakeRouter = {
         navigate: () => {},
+    };
+
+    const fakedUserService = {
+        getCurrentUserInfo() {
+            return of({});
+        },
+        setCliSecret() {
+            return of(null);
+        },
     };
 
     beforeEach(async () => {
@@ -96,8 +102,8 @@ describe('AccountSettingsModalComponent', () => {
                     useValue: fakeSearchTriggerService,
                 },
                 {
-                    provide: AccountSettingsModalService,
-                    useValue: fakeAccountSettingsModalService,
+                    provide: UserService,
+                    useValue: fakedUserService,
                 },
                 { provide: Router, useValue: fakeRouter },
                 {
@@ -261,7 +267,7 @@ describe('AccountSettingsModalComponent', () => {
             ConfirmationDialogComponent
         ).componentInstance;
         generateCliButton.dispatchEvent(new Event('click'));
-        component.confirmGenerate(null);
+        component.confirmGenerate();
         await fixture.whenStable();
         expect(component.showGenerateCli).toEqual(false);
     });
