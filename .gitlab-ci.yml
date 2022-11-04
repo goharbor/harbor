@@ -28,7 +28,9 @@ build-portal:
     - mv setting-container-registry.json src/portal/src/setting.json
     - cp -a container-registry-logo.svg src/portal/src/images/
     - make build -e BUILDTARGET="_build_prepare _build_portal" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_PORTAL="$DOCKERIMAGENAME_PORTAL"
-    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}"
+    - docker tag "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}" "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}-dev"
+    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}-dev"
+
 
 build-portal-advantest:
   stage: build
@@ -38,11 +40,12 @@ build-portal-advantest:
     DOCKERIMAGENAME_PORTAL: "${REGISTRY_DOMAIN}/container-registry/harbor-portal"
     NG_BUILD_ARGS: '--prod --base-href /admin-console/ --deploy-url /admin-console/'
   script:
-    - export VERSIONTAG="$(cat ./VERSION)-advantest"
+    - export VERSIONTAG="$(cat ./VERSION)"
     - mv setting-advantest.json src/portal/src/setting.json
     - cp -a advantest-logo.svg src/portal/src/images/
     - make build -e BUILDTARGET="_build_prepare _build_portal" -e BASEIMAGETAG=$(cat ./VERSION) -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_PORTAL="$DOCKERIMAGENAME_PORTAL"
-    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}"
+    - docker tag "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}" "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}-advantest-dev"
+    - docker push "${DOCKERIMAGENAME_PORTAL}:${VERSIONTAG}-advantest-dev"
 
 build-core:
   stage: build
@@ -55,19 +58,20 @@ build-core:
     #- make update_prepare_version check_environment versions_prepare compile_core DEVFLAG="false" BASEIMAGETAG="$VERSIONTAG" VERSIONTAG="$VERSIONTAG"
     #- make -f make/photon/Makefile _build_core BASEIMAGETAG="$VERSIONTAG" DOCKERIMAGENAME_CORE="$DOCKERIMAGENAME_CORE" VERSIONTAG="$VERSIONTAG"
     - make versions_prepare compile_core build -e BUILDTARGET="_build_prepare _build_core" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_CORE="$DOCKERIMAGENAME_CORE"
-    - docker push "${DOCKERIMAGENAME_CORE}:${VERSIONTAG}"
+    - docker tag "${DOCKERIMAGENAME_CORE}:${VERSIONTAG}" "${DOCKERIMAGENAME_CORE}:${VERSIONTAG}-advantest-dev"
+    - docker push "${DOCKERIMAGENAME_CORE}:${VERSIONTAG}-advantest-dev"
 
-build-registry:
-  stage: build
-  only:
-    - /^cr/.*/ # regular expression
-  variables:
-    DOCKERIMAGENAME_REGISTRY: "${REGISTRY_DOMAIN}/container-registry/registry-photon"
-  script:
-    - export VERSIONTAG=$(cat ./VERSION)
-    - make versions_prepare build -e BUILDTARGET="_build_prepare _build_registry" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_REGISTRY="DOCKERIMAGENAME_REGISTRY"
-    - docker push "${DOCKERIMAGENAME_REGISTRY}:${VERSIONTAG}"
-  allow_failure: true
+#build-registry:
+#  stage: build
+#  only:
+#    - /^cr/.*/ # regular expression
+#  variables:
+#    DOCKERIMAGENAME_REGISTRY: "${REGISTRY_DOMAIN}/container-registry/registry-photon"
+#  script:
+#    - export VERSIONTAG=$(cat ./VERSION)
+#    - make versions_prepare build -e BUILDTARGET="_build_prepare _build_registry" -e BASEIMAGETAG="$VERSIONTAG" -e DEVFLAG=false -e VERSIONTAG=$VERSIONTAG -e DOCKERIMAGENAME_REGISTRY="DOCKERIMAGENAME_REGISTRY"
+#    - docker push "${DOCKERIMAGENAME_REGISTRY}:${VERSIONTAG}"
+#  allow_failure: true
 
 #jobservice:
 #  stage: build
