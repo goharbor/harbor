@@ -26,7 +26,7 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v0
       - run: gcloud info
       - name: Set up Go 1.19
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19.3
         id: go
