@@ -391,10 +391,6 @@ Verify System Setting
     @{authtype}=  Get Value From Json  ${json}  $.configuration.authmode
     @{creation}=  Get Value From Json  ${json}  $.configuration..projectcreation
     @{selfreg}=  Get Value From Json  ${json}  $.configuration..selfreg
-    @{emailserver}=  Get Value From Json  ${json}  $.configuration..emailserver
-    @{emailport}=  Get Value From Json  ${json}  $.configuration..emailport
-    @{emailuser}=  Get Value From Json  ${json}  $.configuration..emailuser
-    @{emailfrom}=  Get Value From Json  ${json}  $.configuration..emailfrom
     @{token}=  Get Value From Json  ${json}  $.configuration..token
     @{robot_token}=  Get Value From Json  ${json}  $.configuration..robot_token
     @{scanschedule}=  Get Value From Json  ${json}  $.configuration..scanall
@@ -405,11 +401,6 @@ Verify System Setting
     Page Should Contain  @{authtype}[0]
     Run Keyword If  @{selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
     Run Keyword If  @{selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
-    Switch To Email
-    Textfield Value Should Be  xpath=//*[@id='mailServer']  @{emailserver}[0]
-    Textfield Value Should Be  xpath=//*[@id='emailPort']  @{emailport}[0]
-    Textfield Value Should Be  xpath=//*[@id='emailUsername']  @{emailuser}[0]
-    Textfield Value Should Be  xpath=//*[@id='emailFrom']  @{emailfrom}[0]
     Switch To System Settings
     ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
     Should Be Equal As Strings  ${ret}  @{creation}[0]
