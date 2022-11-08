@@ -199,21 +199,6 @@ Test Case - Verify Download Ca Link
     Page Should Contain  Registry Root Certificate
     Close Browser
 
-Test Case - Edit Email Settings
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-
-    Switch To Email
-    Config Email
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-
-    Switch To Email
-    Verify Email
-
-    Close Browser
-
 Test Case - Edit Token Expire
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

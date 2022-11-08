@@ -185,34 +185,6 @@ Switch To System Replication
 Should Verify Remote Cert Be Enabled
     Checkbox Should Not Be Selected  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
 
-## Email
-Switch To Email
-    Switch To Configure
-    Retry Element Click  xpath=//*[@id='config-email']
-    Sleep  1
-
-Config Email
-    Input Text  xpath=//*[@id='mailServer']  smtp.harbortest.com
-    Input Text  xpath=//*[@id='emailPort']  25
-    Input Text  xpath=//*[@id='emailUsername']  example@harbortest.com
-    Input Text  xpath=//*[@id='emailPassword']  example
-    Input Text  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
-    Sleep  1
-    Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
-    Sleep  1
-    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
-    Sleep  1
-    Retry Element Click  xpath=${config_email_save_button_xpath}
-    Sleep  6
-
-Verify Email
-    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.harbortest.com
-    Textfield Value Should Be  xpath=//*[@id='emailPort']  25
-    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@harbortest.com
-    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
-    Checkbox Should Be Selected  xpath=//*[@id='emailSSL']
-    Checkbox Should Not Be Selected  xpath=//*[@id='emailInsecure']
-
 Set Scan All To None
     Retry Element Click  //vulnerability-config//select
     Retry Element Click  //vulnerability-config//select/option[@value='none']
