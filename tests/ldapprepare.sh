@@ -8,7 +8,7 @@ docker run --env LDAP_ORGANISATION="Harbor." \
 --env LDAP_TLS_VERIFY_CLIENT="never" \
 -p 389:389 \
 -p 636:636 \
---detach --name $NAME osixia/openldap:1.1.7
+--detach --name $NAME osixia/openldap:1.5.0
 
 sleep 5
 docker cp ldap_test.ldif ldap_server:/

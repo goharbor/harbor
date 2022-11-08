@@ -1,5 +1,4 @@
 FROM photon:4.0
-
 RUN tdnf install -y rpm shadow >> /dev/null \
     && tdnf clean all \
     && groupadd -r -g 10000 scanner \

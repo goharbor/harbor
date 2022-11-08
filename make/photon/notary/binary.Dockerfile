@@ -1,3 +1,7 @@
+ARG cgo_enabled
+ARG go_os
+ARG go_arch
+
 FROM golang:1.14.15
 
 ARG NOTARY_VERSION
@@ -6,6 +10,10 @@ RUN test -n "$NOTARY_VERSION"
 RUN test -n "$MIGRATE_VERSION"
 ENV NOTARYPKG github.com/theupdateframework/notary
 ENV MIGRATEPKG github.com/golang-migrate/migrate
+
+ENV CGO_ENABLED=${cgo_enabled}
+ENV GOOS=${go_os}
+ENV GOARCH=${go_arch}
 
 RUN git clone -b $NOTARY_VERSION https://github.com/theupdateframework/notary.git /go/src/${NOTARYPKG}
 WORKDIR /go/src/${NOTARYPKG}
