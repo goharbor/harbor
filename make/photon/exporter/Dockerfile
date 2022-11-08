@@ -1,12 +1,15 @@
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+ARG cgo_enabled
+ARG go_os
+ARG go_arch
 
 FROM ${build_image} AS build
 
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-ENV GOARCH=amd64
+ENV CGO_ENABLED=${cgo_enabled}
+ENV GOOS=${go_os}
+ENV GOARCH=${go_arch}
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter

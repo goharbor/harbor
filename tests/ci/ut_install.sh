@@ -22,12 +22,17 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
+# support for multi-architecture compilation
+image_tag="dev"
+if [  "$1" = "arm64"  ]; then
+    image_tag="dev-arm"
+fi
 sudo rm -rf /data/* 
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDBIN=true
-docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
+sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDBIN=true GOARCH="$1"
+docker run --rm -v /:/hostfs:z goharbor/prepare:$image_tag gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
 sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
@@ -37,7 +42,7 @@ sudo ./tests/testprepare.sh
 cd tests && sudo ./ldapprepare.sh && cd ..
 env
 docker images
-sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
+sudo sed -i "s/__version__/${image_tag}/g" ./make/docker-compose.test.yml
 cat ./make/docker-compose.test.yml
 sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
 sudo mkdir -p /storage && sudo chown 10000:10000 -R /storage

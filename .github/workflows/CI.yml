@@ -13,6 +13,8 @@ env:
    REDIS_HOST: localhost
    REG_VERSION: v2.7.1-patch-2819-2553
    UI_BUILDER_VERSION: 1.6.0
+   ARCH: amd64
+
 
 on:
   pull_request:
@@ -77,7 +79,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           env
           df -h
-          bash ./tests/showtime.sh ./tests/ci/ut_install.sh
+          bash ./tests/showtime.sh ./tests/ci/ut_install.sh $ARCH
       - name: script
         run: |
           echo IP: $IP
@@ -142,7 +144,7 @@ jobs:
           env
           df -h
           docker system prune -a -f
-          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB $ARCH
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
@@ -202,7 +204,7 @@ jobs:
           env
           df -h
           docker system prune -a -f
-          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB $ARCH
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
@@ -260,7 +262,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           env
           df -h
-          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP $ARCH
       - name: script
         run: |
           echo IP: $IP
@@ -323,7 +325,7 @@ jobs:
           echo IP: $IP
           df -h
           cd src/github.com/goharbor/harbor
-          bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
+          bash ./tests/showtime.sh ./tests/ci/distro_installer.sh $ARCH
           df -h
 
   UI_UT:

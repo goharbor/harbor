@@ -1,10 +1,18 @@
+ARG cgo_enabled
+ARG go_os
+ARG go_arch
+
 FROM golang:1.19.4
 
 ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
 ENV BUILDTAGS include_oss include_gcs
 ENV GO111MODULE auto
 
+ENV CGO_ENABLED=${cgo_enabled}
+ENV GOOS=${go_os}
+ENV GOARCH=${go_arch}
+
 WORKDIR $DISTRIBUTION_DIR
 COPY . $DISTRIBUTION_DIR
 
-RUN CGO_ENABLED=0 make PREFIX=/go clean binaries
+RUN make PREFIX=/go clean binaries

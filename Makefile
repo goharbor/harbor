@@ -121,12 +121,18 @@ CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.0
 
+# go build param
+CGO_ENABLED=0
+GOOS=linux
+GOARCH=amd64
+
 # dependency binaries
 CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
 NOTARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
+
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -146,6 +152,17 @@ DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
 DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
+
+# according to the build platform, replace the relevant parameters.
+ifeq ($(GOARCH), arm64)
+	VERSIONTAG=dev-arm
+	BASEIMAGETAG=dev-arm
+	PKGVERSIONTAG=dev-arm
+	GOARCH=arm64
+	TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-ARM64.tar.gz
+	TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_arm64.tar.gz
+	DOCKERBUILD=$(DOCKERCMD) buildx build --platform linux/arm64 --progress plain --output=type=docker
+endif
 
 # go parameters
 GOCMD=$(shell which go)
@@ -371,27 +388,27 @@ check_environment:
 compile_core: gen_apis
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBUILDPATHINCONTAINER)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
 	@echo "Done."
 
 compile_jobservice:
 	@echo "compiling binary for jobservice (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
 compile_registryctl:
 	@echo "compiling binary for harbor registry controller (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
 compile_notary_migrate_patch:
 	@echo "compiling binary for migrate patch (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
 	@echo "Done."
 
 compile_standalone_db_migrator:
 	@echo "compiling binary for standalone db migrator (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
 	@echo "Done."
 
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
@@ -401,12 +418,12 @@ update_prepare_version:
 	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
 
 gen_tls:
-	@$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
+	@$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
 
 prepare: update_prepare_version
 	@echo "preparing..."
 	@if [ -n "$(GEN_TLS)" ] ; then \
-		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+		$(DOCKERCMD) run --rm --env GOOS=$(GOOS) --env GOARCH=$(GOARCH) -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
@@ -436,7 +453,8 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) \
+	 -e CGO_ENABLED=$(CGO_ENABLED) -e GOOS=$(GOOS) -e GOARCH=$(GOARCH)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)

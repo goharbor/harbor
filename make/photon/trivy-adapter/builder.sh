@@ -8,6 +8,9 @@ if [ -z $1 ]; then
 fi
 
 VERSION="$1"
+CGO_ENABLED="$2"
+GOOS="$3"
+GOARCH="$4"
 
 set -e
 
@@ -21,7 +24,8 @@ cd $TEMP; git checkout $VERSION; cd -
 
 echo "Building Trivy adapter binary based on golang:1.19.4..."
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t trivy-adapter-golang $TEMP
+docker build -f $TEMP/Dockerfile.binary --build-arg cgo_enabled=$CGO_ENABLED \
+--build-arg go_os=$GOOS --build-arg go_arch=$GOARCH  -t trivy-adapter-golang $TEMP
 
 echo "Copying Trivy adapter binary from the container to the local directory..."
 ID=$(docker create trivy-adapter-golang)

@@ -16,6 +16,12 @@ VERSION="$2"
 MAIN_GO_PATH="$3"
 BIN_NAME="$4"
 
+$ build param
+GO_OS="$5"
+GO_ARCH="$6"
+CGO_ENABLED="$7"
+
+
 #Get the source code
 git clone $GIT_PATH src_code
 ls
@@ -32,5 +38,5 @@ for p in $(ls /go/bin/*.patch); do
 done
 
 #Compile
-cd $SRC_PATH/$MAIN_GO_PATH && go build -a -o $BIN_NAME
+cd $SRC_PATH/$MAIN_GO_PATH && GOOS=$GO_OS GOARCH=$GO_ARCH CGO_ENABLED=$CGO_ENABLED  go build -a -o $BIN_NAME
 mv $BIN_NAME /go/bin/
