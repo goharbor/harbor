@@ -26,6 +26,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/redis"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -91,8 +92,10 @@ func (rs *Store) SessionRelease(w http.ResponseWriter) {
 		return
 	}
 
+	ctx := context.TODO()
+	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
 	if rdb, ok := rs.c.(*redis.Cache); ok {
-		cmd := rdb.Client.Set(context.TODO(), rs.sid, string(b), time.Duration(rs.maxlifetime))
+		cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
 		if cmd.Err() != nil {
 			log.Debugf("release session error: %v", err)
 		}
@@ -136,8 +139,9 @@ func (rp *Provider) SessionExist(sid string) bool {
 // SessionRegenerate generate new sid for redis session
 func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error) {
 	ctx := context.TODO()
+	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
 	if !rp.SessionExist(oldsid) {
-		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
+		err := rp.c.Save(ctx, sid, "", maxlifetime)
 		if err != nil {
 			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
 		}
@@ -145,7 +149,7 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 		if rdb, ok := rp.c.(*redis.Cache); ok {
 			// redis has rename command
 			rdb.Rename(ctx, oldsid, sid)
-			rdb.Expire(ctx, sid, time.Duration(rp.maxlifetime))
+			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
 			kv := make(map[interface{}]interface{})
 			err := rp.c.Fetch(ctx, sid, &kv)
@@ -157,7 +161,7 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 			if err != nil {
 				log.Debugf("failed to delete oldsid=%s, error: %s", oldsid, err)
 			}
-			err = rp.c.Save(ctx, sid, kv)
+			err = rp.c.Save(ctx, sid, kv, maxlifetime)
 			if err != nil {
 				log.Debugf("failed to save sid=%s, error: %s", sid, err)
 			}
@@ -179,6 +183,18 @@ func (rp *Provider) SessionGC() {
 // SessionAll return all activeSession
 func (rp *Provider) SessionAll() int {
 	return 0
+}
+
+// systemSessionTimeout return the system session timeout set by user.
+func systemSessionTimeout(ctx context.Context, beegoTimeout int64) int64 {
+	// read from system config if it is meaningful to support change session timeout in runtime for user.
+	// otherwise, use parameters beegoTimeout which set from beego.
+	timeout := beegoTimeout
+	if sysTimeout := config.SessionTimeout(ctx); sysTimeout > 0 {
+		timeout = sysTimeout * int64(time.Minute)
+	}
+
+	return timeout
 }
 
 func init() {

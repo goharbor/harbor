@@ -19,6 +19,10 @@ import (
 
 	"github.com/beego/beego/session"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 )
 
 type sessionTestSuite struct {
@@ -27,7 +31,9 @@ type sessionTestSuite struct {
 	provider session.Provider
 }
 
-func (s *sessionTestSuite) SetupTest() {
+func (s *sessionTestSuite) SetupSuite() {
+	config.Init()
+
 	var err error
 	s.provider, err = session.GetProvider("harbor")
 	s.NoError(err, "should get harbor provider")
