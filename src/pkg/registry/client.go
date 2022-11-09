@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -38,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
@@ -64,7 +66,27 @@ var (
 // const definition
 const (
 	UserAgent = "harbor-registry-client"
+	// DefaultHTTPClientTimeout is the default timeout for registry http client.
+	DefaultHTTPClientTimeout = 30 * time.Minute
 )
+
+var (
+	// registryHTTPClientTimeout is the timeout for registry http client.
+	registryHTTPClientTimeout time.Duration
+)
+
+func init() {
+	registryHTTPClientTimeout = DefaultHTTPClientTimeout
+	// override it if read from environment variable, in minutes
+	timeout, err := strconv.ParseInt(os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"), 10, 64)
+	if err != nil {
+		log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
+	} else {
+		if timeout > 0 {
+			registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
+		}
+	}
+}
 
 // Client defines the methods that a registry client should implements
 type Client interface {
@@ -120,7 +142,7 @@ func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure boo
 		interceptors: interceptors,
 		client: &http.Client{
 			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
-			Timeout:   30 * time.Minute,
+			Timeout:   registryHTTPClientTimeout,
 		},
 	}
 }
