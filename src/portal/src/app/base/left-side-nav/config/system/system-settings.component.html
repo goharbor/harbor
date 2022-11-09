@@ -70,6 +70,39 @@
             }}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
+            <label for="sessionTimeout" class="required"
+                >{{ 'CONFIG.SESSION_TIMEOUT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.SESSION_TIMEOUT_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input
+                clrInput
+                name="sessionTimeout"
+                type="text"
+                #ngSessionTimeout="ngModel"
+                [(ngModel)]="sessionTimeout"
+                required
+                pattern="^[1-9]{1}[0-9]*$"
+                id="sessionTimeout"
+                size="10"
+                [disabled]="!editable" />
+            <clr-control-error>{{
+                'TOOLTIP.NUMBER_REQUIRED' | translate
+            }}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
             <label for="robotNamePrefix" class="required"
                 >{{ 'ROBOT_ACCOUNT.NAME_PREFIX' | translate }}
                 <clr-tooltip>

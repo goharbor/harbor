@@ -110,6 +110,7 @@ export class Configuration {
     oidc_admin_group: StringValueItem;
     audit_log_forward_endpoint: StringValueItem;
     skip_audit_log_database: BoolValueItem;
+    session_timeout: NumberValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem('db_auth', true);
         this.project_creation_restriction = new StringValueItem(
@@ -182,6 +183,7 @@ export class Configuration {
         this.storage_per_project = new NumberValueItem(-1, true);
         this.audit_log_forward_endpoint = new StringValueItem('', true);
         this.skip_audit_log_database = new BoolValueItem(false, true);
+        this.session_timeout = new NumberValueItem(60, true);
     }
 }
 
