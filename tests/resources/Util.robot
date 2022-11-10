@@ -144,16 +144,6 @@ Retry Clear Element Text
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Clear Element Text  @{param}
 
-Retry Clear Element Text By Press Keys
-    [Arguments]  ${element_xpath}
-    ${value}=  Get Value  ${element_xpath}
-    ${value_length}=  Get length  ${value}
-    ${keys}=  Create List
-    FOR  ${idx}  IN RANGE  ${value_length}
-        Append To List  ${keys}  BACK_SPACE
-    END
-    Press Keys  ${element_xpath}  @{keys}
-
 Retry Link Click
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
@@ -310,11 +300,9 @@ Retry File Should Not Exist
 
 Run Curl And Return Json
     [Arguments]  ${curl_cmd}
-    ${json_data_file}=  Set Variable  ${CURDIR}${/}cur_user_info.json
     ${rc}  ${output}=  Run And Return Rc And Output  ${curl_cmd}
     Should Be Equal As Integers  0  ${rc}
-    Create File  ${json_data_file}  ${output}
-    ${json}=    Load Json From File    ${json_data_file}
+    ${json}=  Convert String To Json  ${output}
     [Return]  ${json}
 
 Log All
