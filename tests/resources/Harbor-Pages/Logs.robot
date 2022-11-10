@@ -35,10 +35,10 @@ Verify Log
     Should Be Equal  ${real_resource_type}  ${resource_type}
     Should Be Equal  ${real_operation}  ${operation}
 
-Verify Log In File
-    [Arguments]  ${username}  ${resource}  ${resource_type}  ${operation}  ${audit_log_path}=${log_path}/audit.log
-    ${contents}=  OperatingSystem.Get File  ${audit_log_path}
-    @{lines}=  Split to lines  ${contents}
-    Log  ${lines}[-1]
-    @{items}  Create List  operator="${username}"  resource:${resource}  resourceType="${resource_type}"  action:${operation}  time="20
-    Should Contain Any  ${lines}[-1]  @{items}
+Verify Log In Syslog Service
+    [Arguments]  ${username}  ${resource}  ${resource_type}  ${operation}  ${expected_count}=1
+    ${data_raw}=  Set Variable  {"query": {"match": {"message": {"query": "operator=\\"${username}\\" resource:${resource} resourceType=\\"${resource_type}\\" action:${operation}","operator": "and"}}}}
+    ${cmd}=  Set Variable  curl -s -k -X GET '${ES_ENDPOINT}/_count' -H 'Content-Type: application/json' -d '${data_raw}'
+    ${json}=  Run Curl And Return Json  ${cmd}
+    ${count}=  Set Variable  ${json["count"]}
+    Should Be Equal As Integers  ${count}  ${expected_count}

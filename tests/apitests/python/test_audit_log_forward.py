@@ -1,8 +1,11 @@
 from __future__ import absolute_import
 
 import unittest
+import requests
+import json
+import time
 
-from testutils import ADMIN_CLIENT, LOG_PATH, harbor_server, suppress_urllib3_warning
+from testutils import ADMIN_CLIENT, harbor_server, SYSLOG_ENDPOINT, ES_ENDPOINT, suppress_urllib3_warning
 from library.audit_log import Audit_Log
 from library.user import User
 from library.project import Project
@@ -23,16 +26,13 @@ class TestAuditLogForword(unittest.TestCase, object):
         self.audit_log = Audit_Log()
         self.image = "hello-world"
         self.tag = "latest"
-        self.audit_log_path = LOG_PATH + "audit.log"
-        self.audit_log_forward_endpoint = "harbor-log:10514"
+        self.tag2 = "test"
         # 1. Reset audit log forword
         self.config.set_configurations_of_audit_log_forword("", False)
 
     def tearDown(self):
         # 1. Reset audit log forword
         self.config.set_configurations_of_audit_log_forword("", False)
-        # 2. Close audit log file
-        TestAuditLogForword.audit_log_file.close
 
     def testAuditLogForword(self):
         """
@@ -47,7 +47,7 @@ class TestAuditLogForword(unittest.TestCase, object):
             6. Verify that the Audit Log should be in the log database;
             7. Verify that the Audit Log should be in the audit.log;
             8. Enable Skip Audit Log Database;
-            9. Delete image(IA);
+            9. Create a tag;
             10. Verify that the Audit Log should not be in log database;
             11. Verify that the Audit Log should be in the audit.log;
             12. Verify that Skip Audit Log Database cannot be enabled without Audit Log Forward;
@@ -70,10 +70,10 @@ class TestAuditLogForword(unittest.TestCase, object):
         self.config.set_configurations_of_audit_log_forword(skip_audit_log_database=True, expect_status_code=400)
         
         # 4 Enable Audit Log Forward
-        self.config.set_configurations_of_audit_log_forword(audit_log_forward_endpoint=self.audit_log_forward_endpoint, expect_status_code=200)
+        self.config.set_configurations_of_audit_log_forword(audit_log_forward_endpoint=SYSLOG_ENDPOINT, expect_status_code=200)
         # 4.1 Verify configuration
         configurations = self.config.get_configurations()
-        self.assertEqual(configurations.audit_log_forward_endpoint.value, self.audit_log_forward_endpoint)
+        self.assertEqual(configurations.audit_log_forward_endpoint.value, SYSLOG_ENDPOINT)
         self.assertFalse(configurations.skip_audit_log_database.value)
         
         # 5 Push a new image(IA) in project(PA) by user(UA)
@@ -88,23 +88,17 @@ class TestAuditLogForword(unittest.TestCase, object):
         self.assertIsNotNone(first_audit_log.op_time)
         
         # 7. Verify that the Audit Log should be in the audit.log
-        TestAuditLogForword.audit_log_file = open(self.audit_log_path, "r")
-        latest_line = TestAuditLogForword.audit_log_file.readlines()[-1]
-        self.assertIn('operator="{}"'.format(user_name), latest_line)
-        self.assertIn('resourceType="artifact"', latest_line)
-        self.assertIn('action:create', latest_line)
-        self.assertIn('resource:{}:{}'.format(repo_name, tag), latest_line)
-        self.assertIn('time="20', latest_line)
+        self.assertTrue(self.verifyLogInSyslogService(user_name, "{}:{}".format(repo_name, tag), "artifact", "create"))
         
         # 8.1 Enable Skip Audit Log Database
         self.config.set_configurations_of_audit_log_forword(skip_audit_log_database=True)
         # 8.1 Verify configuration
         configurations = self.config.get_configurations()
-        self.assertEqual(configurations.audit_log_forward_endpoint.value, self.audit_log_forward_endpoint)
+        self.assertEqual(configurations.audit_log_forward_endpoint.value, SYSLOG_ENDPOINT)
         self.assertTrue(configurations.skip_audit_log_database.value)
 
-        # 9. Delete image(IA)
-        self.artifact.delete_artifact(project_name, self.image, self.tag, **user_client)
+        # 9. Create a tag
+        self.artifact.create_tag(project_name, self.image, self.tag, self.tag2, **user_client)
 
         # 10. Verify that the Audit Log should not be in log database
         second_audit_log = self.audit_log.get_latest_audit_log()
@@ -115,15 +109,32 @@ class TestAuditLogForword(unittest.TestCase, object):
         self.assertEqual(first_audit_log.op_time, second_audit_log.op_time)
 
         # 11. Verify that the Audit Log should be in the audit.log
-        latest_line = TestAuditLogForword.audit_log_file.readlines()[-1]
-        self.assertIn('operator="{}"'.format(user_name), latest_line)
-        self.assertIn('resourceType="artifact"', latest_line)
-        self.assertIn('action:delete', latest_line)
-        self.assertIn('resource:{}'.format(repo_name), latest_line)
-        self.assertIn('time="20', latest_line)
+        self.assertTrue(self.verifyLogInSyslogService(user_name, "{}:{}".format(repo_name, self.tag2), "tag", "create"))
         
         # 12 Verify that Skip Audit Log Database cannot be enabled without Audit Log Forward
         self.config.set_configurations_of_audit_log_forword(audit_log_forward_endpoint="", expect_status_code=400)
+    
+    def verifyLogInSyslogService(self, username, resource, resource_type, operation, expected_count=1):
+        url = ES_ENDPOINT + "/_count"
+        payload = json.dumps({
+            "query": {
+                "match": {
+                    "message": {
+                        "query": "operator=\"{}\" resource:{} resourceType=\"{}\" action:{}".format(username, resource, resource_type, operation),
+                        "operator": "and"
+                    }
+                }
+            }
+        })
+        headers = { 'Content-Type': 'application/json' }
+        for _ in range(5):
+            response = requests.request("GET", url, headers=headers, data=payload)
+            self.assertEqual(response.status_code, 200)
+            response_json = response.json()
+            if response_json["count"] == expected_count:
+                return True
+            time.sleep(5)
+        return False
 
 if __name__ == '__main__':
     unittest.main()
