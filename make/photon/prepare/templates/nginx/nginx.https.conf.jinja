@@ -50,7 +50,7 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
-    listen 8443 ssl;
+    listen 8443 ssl default;
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
@@ -229,7 +229,7 @@ http {
     }
   }
   server {
-      listen 8080;
+      listen 8080 default;
       #server_name harbordomain.com;
       return 308 https://{{https_redirect}}$request_uri;
   }
@@ -251,7 +251,7 @@ http {
   }
 
   server {
-    listen 9090;
+    listen 9090 default;
     location = {{ metric.path }} {
       if ($arg_comp = core) { proxy_pass http://core_metrics; }
       if ($arg_comp = jobservice) { proxy_pass http://js_metrics; }
