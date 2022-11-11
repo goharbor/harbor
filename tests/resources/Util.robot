@@ -324,7 +324,7 @@ Log All
 
 New Tab
     Execute Javascript  window.open('')
-    Select Window  title=undefined
+    Switch Window  title=undefined
 
 Click Link New Tab And Switch
     [Arguments]  ${element_xpath}

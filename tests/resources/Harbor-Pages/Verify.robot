@@ -58,7 +58,7 @@ Verify Project Metadata
         Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.prevent_vul  ${project_config_prevent_vulnerable_images_from_running_checkbox}
         ${ret}    Get Selected List Value    ${project_config_severity_select}
         @{severity}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.severity
-        Should Contain    ${ret}    @{severity}[0]
+        Should Contain    ${ret}    ${severity}[0]
         Navigate To Projects
     END
     Close Browser
@@ -86,7 +86,7 @@ Verify Checkbox
     [Arguments]    ${json}    ${key}    ${checkbox}  ${is_opposite}=${false}
     @{out}=    Get Value From Json    ${json}    ${key}
     ${value}=  Set Variable If  '${is_opposite}'=='${true}'  'false'  'true'
-    Run Keyword If    '@{out}[0]'==${value}    Checkbox Should Be Selected    ${checkbox}
+    Run Keyword If    '${out}[0]'==${value}    Checkbox Should Be Selected    ${checkbox}
     ...    ELSE    Checkbox Should Not Be Selected    ${checkbox}
 
 
@@ -224,15 +224,13 @@ Verify Tag Immutability Rule
         ${has_image}  Set Variable If  ${out_has_image}[0] == ${true}  ${true}  ${false}
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Tag Immutability
-        @{repo_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_decoration
+        ${repo_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_decoration
         @{tag_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.tag_decoration
         @{repo_pattern}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_pattern
         @{tag_pattern}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.tag_pattern
-        Log To Console  '@{repo_decoration}[0]'
-        #Page Should Contain  @{repo_decoration}[0]
-        #Page Should Contain  @{tag_decoration}[0]
-        Page Should Contain  @{repo_pattern}[0]
-        Page Should Contain  @{tag_pattern}[0]
+        Log To Console  '${repo_decoration}[0]'
+        Page Should Contain  ${repo_pattern}[0]
+        Page Should Contain  ${tag_pattern}[0]
         Navigate To Projects
     END
     Close Browser
@@ -346,26 +344,26 @@ Verify Replicationrule
         @{dest_namespace}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].dest_namespace
         @{cron}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].cron
         @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
-        Log To Console    -----is_src_registry-----@{is_src_registry}[0]------------
+        Log To Console    -----is_src_registry-----${is_src_registry}[0]------------
         @{endpoint}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].endpoint
         Log To Console    -----endpoint-----@{endpoint}------------
-        ${endpoint0}=   Set Variable    @{endpoint}[0]
+        ${endpoint0}=   Set Variable    ${endpoint}[0]
         Log To Console    -----endpoint0-----${endpoint0}------------
         @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
         @{endpoint_url}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].url
-        Retry Textfield Value Should Be    ${filter_name_id}    @{name_filters}[0]
-        Retry Textfield Value Should Be    ${filter_tag_id}    @{tag_filters}[0]
+        Retry Textfield Value Should Be    ${filter_name_id}    ${name_filters}[0]
+        Retry Textfield Value Should Be    ${filter_tag_id}    ${tag_filters}[0]
         Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
-        Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
-        Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------
-        ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-@{endpoint_url}[0]    ${endpoint0}-https://hub.docker.com
+        Retry Textfield Value Should Be    ${dest_namespace_xpath}    ${dest_namespace}[0]
+        Log To Console    -----endpoint_type-----${endpoint_type}[0]------------
+        ${registry}=    Set Variable If    "${endpoint_type}[0]"=="harbor"    ${endpoint0}-${endpoint_url}[0]    ${endpoint0}-https://hub.docker.com
         Log To Console    -------registry---${registry}------------
-        Run Keyword If    '@{is_src_registry}[0]' == '${true}'    Retry List Selection Should Be    ${src_registry_dropdown_list}    ${registry}
+        Run Keyword If    '${is_src_registry}[0]' == '${true}'    Retry List Selection Should Be    ${src_registry_dropdown_list}    ${registry}
         ...    ELSE    Retry List Selection Should Be    ${dest_registry_dropdown_list}    ${registry}
             #Retry List Selection Should Be    ${rule_resource_selector}    ${resource_type}
-        Retry List Selection Should Be    ${rule_trigger_select}    @{trigger_type}[0]
-        Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Log To Console    ----------@{trigger_type}[0]------------
-        Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Retry Textfield Value Should Be    ${targetCron_id}    @{cron}[0]
+        Retry List Selection Should Be    ${rule_trigger_select}    ${trigger_type}[0]
+        Run Keyword If    '${trigger_type}[0]' == 'scheduled'    Log To Console    ----------${trigger_type}[0]------------
+        Run Keyword If    '${trigger_type}[0]' == 'scheduled'    Retry Textfield Value Should Be    ${targetCron_id}    ${cron}[0]
     END
 
     Reload Page
@@ -382,7 +380,7 @@ Verify Interrogation Services
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Page Should Contain  Custom
-    Page Should Contain  @{cron}[0]
+    Page Should Contain  ${cron}[0]
     Close Browser
 
 Verify System Setting
@@ -398,14 +396,14 @@ Verify System Setting
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
-    Page Should Contain  @{authtype}[0]
-    Run Keyword If  @{selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
-    Run Keyword If  @{selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Page Should Contain  ${authtype}[0]
+    Run Keyword If  ${selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Run Keyword If  ${selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
     Switch To System Settings
     ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
-    Should Be Equal As Strings  ${ret}  @{creation}[0]
-    Token Must Be Match  @{token}[0]
-    Robot Account Token Must Be Match  @{robot_token}[0]
+    Should Be Equal As Strings  ${ret}  ${creation}[0]
+    Token Must Be Match  ${token}[0]
+    Robot Account Token Must Be Match  ${robot_token}[0]
     Close Browser
 
 Verify Project-level Allowlist
@@ -423,7 +421,7 @@ Verify Project-level Allowlist
         Go Into Project  ${project}  has_image=${has_image}
         Switch To Project Configuration
         @{is_reuse_sys_cve_allowlist}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.reuse_sys_cve_allowlist
-        Run Keyword If  "@{is_reuse_sys_cve_allowlist}[0]" == "true"  Retry Wait Element Should Be Disabled   ${project_config_project_wl_add_btn}
+        Run Keyword If  "${is_reuse_sys_cve_allowlist}[0]" == "true"  Retry Wait Element Should Be Disabled   ${project_config_project_wl_add_btn}
         ...  ELSE  Retry Wait Element  ${project_config_project_wl_add_btn}
         @{cve_ids}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.cve
         Loop Verifiy CVE_IDs  @{cve_ids}
