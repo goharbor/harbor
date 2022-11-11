@@ -8600,6 +8600,9 @@ definitions:
       oidc_admin_group:
         $ref: '#/definitions/StringConfigItem'
         description: The OIDC group which has the harbor admin privileges
+      oidc_group_filter:
+        $ref: '#/definitions/StringConfigItem'
+        description: The OIDC group filter which filters out the group doesn't match the regular expression   
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
         description: The scope of the OIDC provider
@@ -8877,6 +8880,11 @@ definitions:
         description: The OIDC group which has the harbor admin privileges
         x-omitempty: true
         x-isnullable: true
+      oidc_group_filter:
+        type: string
+        description: The OIDC group filter which filters out the group name doesn't match the regular expression
+        x-omitempty: true
+        x-isnullable: true        
       oidc_scope:
         type: string
         description: The scope of the OIDC provider
