@@ -14,12 +14,17 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from './add-rule/add-rule.component';
-import {
-    ClrDatagridStateInterface,
-    ClrDatagridStringFilterInterface,
-} from '@clr/angular';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { TagRetentionService } from './tag-retention.service';
-import { PENDING, Retention, Rule, RUNNING, TIMEOUT } from './retention';
+import {
+    PENDING,
+    Retention,
+    RetentionAction,
+    Rule,
+    RuleMetadate,
+    RUNNING,
+    TIMEOUT,
+} from './retention';
 import { finalize } from 'rxjs/operators';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
@@ -30,6 +35,9 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
 } from '../../../../shared/units/utils';
+import { RetentionService } from '../../../../../../ng-swagger-gen/services/retention.service';
+import { RetentionPolicy } from '../../../../../../ng-swagger-gen/models/retention-policy';
+import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
 
 const MIN = 60000;
 const SEC = 1000;
@@ -53,24 +61,6 @@ const DECORATION = {
     styleUrls: ['./tag-retention.component.scss'],
 })
 export class TagRetentionComponent implements OnInit, OnDestroy {
-    serialFilter: ClrDatagridStringFilterInterface<any> = {
-        accepts(item: any, search: string): boolean {
-            return item.id.toString().indexOf(search) !== -1;
-        },
-    };
-    statusFilter: ClrDatagridStringFilterInterface<any> = {
-        accepts(item: any, search: string): boolean {
-            return (
-                item.status.toLowerCase().indexOf(search.toLowerCase()) !== -1
-            );
-        },
-    };
-    dryRunFilter: ClrDatagridStringFilterInterface<any> = {
-        accepts(item: any, search: string): boolean {
-            let str = item.dry_run ? 'YES' : 'NO';
-            return str.indexOf(search) !== -1;
-        },
-    };
     projectId: number;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;
@@ -98,7 +88,9 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private tagRetentionService: TagRetentionService,
-        private errorHandler: ErrorHandler
+        private retentionService: RetentionService,
+        private errorHandler: ErrorHandler,
+        private projectService: ProjectService
     ) {}
     originCron(): OriginCron {
         let originCron: OriginCron = {
@@ -149,67 +141,74 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
         this.updateCron(this.cron);
     }
     updateCron(cron: string) {
-        let retention: Retention = clone(this.retention);
-        retention.trigger.settings.cron = cron;
+        let retention: RetentionPolicy = clone(this.retention);
+        retention.trigger.settings['cron'] = cron;
         if (!this.retentionId) {
-            this.tagRetentionService.createRetention(retention).subscribe(
-                response => {
-                    this.cronScheduleComponent.isEditMode = false;
-                    this.refreshAfterCreatRetention();
-                },
-                error => {
-                    this.errorHandler.error(error);
-                }
-            );
+            this.retentionService
+                .createRetention({
+                    policy: retention,
+                })
+                .subscribe({
+                    next: res => {
+                        this.cronScheduleComponent.isEditMode = false;
+                        this.refreshAfterCreatRetention();
+                    },
+                    error: err => {
+                        this.errorHandler.error(err);
+                    },
+                });
         } else {
-            this.tagRetentionService
-                .updateRetention(this.retentionId, retention)
-                .subscribe(
-                    response => {
+            this.retentionService
+                .updateRetention({
+                    id: this.retentionId,
+                    policy: retention,
+                })
+                .subscribe({
+                    next: res => {
                         this.cronScheduleComponent.isEditMode = false;
                         this.getRetention();
                     },
-                    error => {
-                        this.errorHandler.error(error);
-                    }
-                );
+                    error: err => {
+                        this.errorHandler.error(err);
+                    },
+                });
         }
     }
     getMetadata() {
-        this.tagRetentionService.getRetentionMetadata().subscribe(
-            response => {
-                this.addRuleComponent.metadata = response;
+        this.retentionService.getRentenitionMetadata().subscribe({
+            next: res => {
+                this.addRuleComponent.metadata = res as RuleMetadate;
             },
-            error => {
-                this.errorHandler.error(error);
-            }
-        );
+            error: err => {
+                this.errorHandler.error(err);
+            },
+        });
     }
 
     getRetention() {
         if (this.retentionId) {
-            this.tagRetentionService.getRetention(this.retentionId).subscribe(
-                response => {
-                    if (
-                        response &&
-                        response.rules &&
-                        response.rules.length > 0
-                    ) {
-                        response.rules.forEach(item => {
-                            if (!item.params) {
-                                item.params = {};
-                            }
-                            this.setRuleUntagged(item);
-                        });
-                    }
-                    this.retention = response;
-                    this.loadingRule = false;
-                },
-                error => {
-                    this.errorHandler.error(error);
-                    this.loadingRule = false;
-                }
-            );
+            this.retentionService
+                .getRetention({
+                    id: this.retentionId,
+                })
+                .subscribe({
+                    next: res => {
+                        if (res?.rules?.length) {
+                            res.rules.forEach(item => {
+                                if (!item.params) {
+                                    item.params = {};
+                                }
+                                this.setRuleUntagged(item);
+                            });
+                        }
+                        this.retention = res as Retention;
+                        this.loadingRule = false;
+                    },
+                    error: err => {
+                        this.errorHandler.error(err);
+                        this.loadingRule = false;
+                    },
+                });
         }
     }
 
@@ -224,42 +223,48 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
         this.ruleIndex = -1;
     }
     toggleDisable(index, isActionDisable) {
-        let retention: Retention = clone(this.retention);
+        let retention: RetentionPolicy = clone(this.retention);
         retention.rules[index].disabled = isActionDisable;
         this.ruleIndex = -1;
         this.loadingRule = true;
-        this.tagRetentionService
-            .updateRetention(this.retentionId, retention)
-            .subscribe(
-                response => {
+        this.retentionService
+            .updateRetention({
+                id: this.retentionId,
+                policy: retention,
+            })
+            .subscribe({
+                next: res => {
                     this.getRetention();
                 },
-                error => {
+                error: err => {
                     this.loadingRule = false;
-                    this.errorHandler.error(error);
-                }
-            );
+                    this.errorHandler.error(err);
+                },
+            });
     }
     deleteRule(index) {
-        let retention: Retention = clone(this.retention);
+        let retention: RetentionPolicy = clone(this.retention);
         retention.rules.splice(index, 1);
         // if rules is empty, clear schedule.
         if (retention.rules && retention.rules.length === 0) {
-            retention.trigger.settings.cron = '';
+            retention.trigger.settings['cron'] = '';
         }
         this.ruleIndex = -1;
         this.loadingRule = true;
-        this.tagRetentionService
-            .updateRetention(this.retentionId, retention)
-            .subscribe(
-                response => {
+        this.retentionService
+            .updateRetention({
+                id: this.retentionId,
+                policy: retention,
+            })
+            .subscribe({
+                next: res => {
                     this.getRetention();
                 },
-                error => {
+                error: err => {
                     this.loadingRule = false;
-                    this.errorHandler.error(error);
-                }
-            );
+                    this.errorHandler.error(err);
+                },
+            });
     }
     setRuleUntagged(rule) {
         if (!rule.tag_selectors[0].extras) {
@@ -294,25 +299,39 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
 
     runRetention() {
         this.isRetentionRunOpened = false;
-        this.tagRetentionService.runNowTrigger(this.retentionId).subscribe(
-            response => {
-                this.refreshList();
-            },
-            error => {
-                this.errorHandler.error(error);
-            }
-        );
+        this.retentionService
+            .triggerRetentionExecution({
+                id: this.retentionId,
+                body: {
+                    dry_run: false,
+                },
+            })
+            .subscribe({
+                next: res => {
+                    this.refreshList();
+                },
+                error: err => {
+                    this.errorHandler.error(err);
+                },
+            });
     }
 
     whatIfRun() {
-        this.tagRetentionService.whatIfRunTrigger(this.retentionId).subscribe(
-            response => {
-                this.refreshList();
-            },
-            error => {
-                this.errorHandler.error(error);
-            }
-        );
+        this.retentionService
+            .triggerRetentionExecution({
+                id: this.retentionId,
+                body: {
+                    dry_run: true,
+                },
+            })
+            .subscribe({
+                next: res => {
+                    this.refreshList();
+                },
+                error: err => {
+                    this.errorHandler.error(err);
+                },
+            });
     }
     loopGettingExecutions() {
         if (
@@ -323,12 +342,12 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
             })
         ) {
             this.executionTimeout = setTimeout(() => {
-                this.tagRetentionService
-                    .getRunNowList(
-                        this.retentionId,
-                        this.currentPage,
-                        this.pageSize
-                    )
+                this.retentionService
+                    .listRetentionExecutionsResponse({
+                        id: this.retentionId,
+                        page: this.currentPage,
+                        pageSize: this.pageSize,
+                    })
                     .pipe(finalize(() => (this.loadingExecutions = false)))
                     .subscribe(res => {
                         // Get total count
@@ -370,33 +389,33 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
                 );
             }
             this.loadingExecutions = true;
-            this.tagRetentionService
-                .getRunNowList(
-                    this.retentionId,
-                    this.currentPage,
-                    this.pageSize
-                )
+            this.retentionService
+                .listRetentionExecutionsResponse({
+                    id: this.retentionId,
+                    page: this.currentPage,
+                    pageSize: this.pageSize,
+                })
                 .pipe(finalize(() => (this.loadingExecutions = false)))
-                .subscribe(
-                    (response: any) => {
+                .subscribe({
+                    next: res => {
                         // Get total count
-                        if (response.headers) {
+                        if (res.headers) {
                             let xHeader: string =
-                                response.headers.get('x-total-count');
+                                res.headers.get('x-total-count');
                             if (xHeader) {
                                 this.totalCount = parseInt(xHeader, 0);
                             }
                         }
-                        this.executionList = response.body as Array<any>;
+                        this.executionList = res.body as Array<any>;
                         TagRetentionComponent.calculateDuration(
                             this.executionList
                         );
                         this.loopGettingExecutions();
                     },
-                    error => {
-                        this.errorHandler.error(error);
-                    }
-                );
+                    error: err => {
+                        this.errorHandler.error(err);
+                    },
+                });
         } else {
             setTimeout(() => {
                 this.loadingExecutions = false;
@@ -433,16 +452,22 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
 
     abortRun() {
         this.isAbortedOpened = true;
-        this.tagRetentionService
-            .AbortRun(this.retentionId, this.selectedItem.id)
-            .subscribe(
-                res => {
+        this.retentionService
+            .operateRetentionExecution({
+                id: this.retentionId,
+                eid: this.selectedItem.id,
+                body: {
+                    action: RetentionAction.STOP,
+                },
+            })
+            .subscribe({
+                next: res => {
                     this.refreshList();
                 },
-                error => {
-                    this.errorHandler.error(error);
-                }
-            );
+                error: err => {
+                    this.errorHandler.error(err);
+                },
+            });
     }
 
     abortRetention() {
@@ -457,93 +482,86 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
         }
     }
     refreshAfterCreatRetention() {
-        this.tagRetentionService.getProjectInfo(this.projectId).subscribe(
-            response => {
-                this.retentionId = response.metadata.retention_id;
-                this.refreshList();
-                this.getRetention();
-            },
-            error => {
-                this.loadingRule = false;
-                this.errorHandler.error(error);
-            }
-        );
+        this.projectService
+            .getProject({
+                projectNameOrId: this.projectId.toString(),
+            })
+            .subscribe({
+                next: res => {
+                    this.retentionId = +res.metadata.retention_id;
+                    this.refreshList();
+                    this.getRetention();
+                },
+                error: err => {
+                    this.loadingRule = false;
+                    this.errorHandler.error(err);
+                },
+            });
     }
 
     clickAdd(rule) {
         this.loadingRule = true;
         this.addRuleComponent.onGoing = true;
         if (this.addRuleComponent.isAdd) {
-            let retention: Retention = clone(this.retention);
+            let retention: RetentionPolicy = clone(this.retention);
             retention.rules.push(rule);
             if (!this.retentionId) {
-                this.tagRetentionService.createRetention(retention).subscribe(
-                    response => {
-                        this.refreshAfterCreatRetention();
-                        this.addRuleComponent.close();
-                        this.addRuleComponent.onGoing = false;
-                    },
-                    error => {
-                        if (error && error.error && error.error.message) {
-                            error = this.tagRetentionService.getI18nKey(
-                                error.error.message
-                            );
-                        }
-                        this.addRuleComponent.inlineAlert.showInlineError(
-                            error
-                        );
-                        this.loadingRule = false;
-                        this.addRuleComponent.onGoing = false;
-                    }
-                );
-            } else {
-                this.tagRetentionService
-                    .updateRetention(this.retentionId, retention)
-                    .subscribe(
-                        response => {
-                            this.getRetention();
+                this.retentionService
+                    .createRetention({
+                        policy: retention,
+                    })
+                    .subscribe({
+                        next: res => {
+                            this.refreshAfterCreatRetention();
                             this.addRuleComponent.close();
                             this.addRuleComponent.onGoing = false;
                         },
-                        error => {
-                            this.loadingRule = false;
-                            this.addRuleComponent.onGoing = false;
-                            if (error && error.error && error.error.message) {
-                                error = this.tagRetentionService.getI18nKey(
-                                    error.error.message
+                        error: err => {
+                            if (err && err.error && err.error.message) {
+                                err = this.tagRetentionService.getI18nKey(
+                                    err.error.message
                                 );
                             }
                             this.addRuleComponent.inlineAlert.showInlineError(
-                                error
+                                err
                             );
-                        }
-                    );
+                            this.loadingRule = false;
+                            this.addRuleComponent.onGoing = false;
+                        },
+                    });
+            } else {
+                this.updateRetention(retention);
             }
         } else {
-            let retention: Retention = clone(this.retention);
+            let retention: RetentionPolicy = clone(this.retention);
             retention.rules[this.editIndex] = rule;
-            this.tagRetentionService
-                .updateRetention(this.retentionId, retention)
-                .subscribe(
-                    response => {
-                        this.getRetention();
-                        this.addRuleComponent.close();
-                        this.addRuleComponent.onGoing = false;
-                    },
-                    error => {
-                        if (error && error.error && error.error.message) {
-                            error = this.tagRetentionService.getI18nKey(
-                                error.error.message
-                            );
-                        }
-                        this.addRuleComponent.inlineAlert.showInlineError(
-                            error
-                        );
-                        this.loadingRule = false;
-                        this.addRuleComponent.onGoing = false;
-                    }
-                );
+            this.updateRetention(retention);
         }
+    }
+
+    updateRetention(retention: RetentionPolicy) {
+        this.retentionService
+            .updateRetention({
+                id: this.retentionId,
+                policy: retention,
+            })
+            .subscribe({
+                next: res => {
+                    this.getRetention();
+                    this.addRuleComponent.close();
+                    this.addRuleComponent.onGoing = false;
+                },
+                error: err => {
+                    this.loadingRule = false;
+                    this.addRuleComponent.onGoing = false;
+                    if (err && err.error && err.error.message) {
+                        err = this.tagRetentionService.getI18nKey(
+                            err.error.message
+                        );
+                    }
+                    this.addRuleComponent.inlineAlert.showInlineError(err);
+                },
+            });
     }
 
     seeLog(executionId, taskId) {

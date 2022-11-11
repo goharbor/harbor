@@ -1,11 +1,17 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ImmutableTagService } from './immutable-tag.service';
-import { ImmutableRetentionRule } from '../tag-retention/retention';
+import {
+    ImmutableRetentionRule,
+    RuleMetadate,
+} from '../tag-retention/retention';
 import { finalize } from 'rxjs/operators';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { clone } from '../../../../shared/units/utils';
 import { AddImmutableRuleComponent } from './add-rule/add-immutable-rule.component';
+import { ImmutableService } from '../../../../../../ng-swagger-gen/services/immutable.service';
+import { RetentionService } from '../../../../../../ng-swagger-gen/services/retention.service';
+import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
 
 @Component({
     selector: 'app-immutable-tag',
@@ -25,7 +31,10 @@ export class ImmutableTagComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private immutableTagService: ImmutableTagService,
-        public errorHandler: ErrorHandler
+        private immutableService: ImmutableService,
+        private retentionService: RetentionService,
+        public errorHandler: ErrorHandler,
+        private projectService: ProjectService
     ) {}
 
     ngOnInit() {
@@ -35,27 +44,31 @@ export class ImmutableTagComponent implements OnInit {
     }
 
     getMetadata() {
-        this.immutableTagService.getRetentionMetadata().subscribe(
-            response => {
-                this.addRuleComponent.metadata = response;
+        this.retentionService.getRentenitionMetadata().subscribe({
+            next: res => {
+                this.addRuleComponent.metadata = res as RuleMetadate;
             },
-            error => {
-                this.errorHandler.error(error);
-            }
-        );
+            error: err => {
+                this.errorHandler.error(err);
+            },
+        });
     }
 
     getRules() {
-        this.immutableTagService.getRules(this.projectId).subscribe(
-            response => {
-                this.rules = response as ImmutableRetentionRule[];
-                this.loadingRule = false;
-            },
-            error => {
-                this.errorHandler.error(error);
-                this.loadingRule = false;
-            }
-        );
+        this.immutableService
+            .ListImmuRules({
+                projectNameOrId: this.projectId.toString(),
+            })
+            .subscribe({
+                next: res => {
+                    this.rules = res as ImmutableRetentionRule[];
+                    this.loadingRule = false;
+                },
+                error: err => {
+                    this.errorHandler.error(err);
+                    this.loadingRule = false;
+                },
+            });
     }
 
     editRuleByIndex(index) {
@@ -71,31 +84,40 @@ export class ImmutableTagComponent implements OnInit {
         cloneRule.disabled = isActionDisable;
         this.ruleIndex = -1;
         this.loadingRule = true;
-        this.immutableTagService
-            .updateRule(this.projectId, cloneRule)
-            .subscribe(
-                response => {
+        this.immutableService
+            .UpdateImmuRule({
+                immutableRuleId: cloneRule.id,
+                projectNameOrId: this.projectId.toString(),
+                ImmutableRule: cloneRule,
+            })
+            .subscribe({
+                next: res => {
                     this.getRules();
                 },
-                error => {
+                error: err => {
                     this.loadingRule = false;
-                    this.errorHandler.error(error);
-                }
-            );
+                    this.errorHandler.error(err);
+                },
+            });
     }
     deleteRule(ruleId) {
         // // if rules is empty, clear schedule.
         this.ruleIndex = -1;
         this.loadingRule = true;
-        this.immutableTagService.deleteRule(this.projectId, ruleId).subscribe(
-            response => {
-                this.getRules();
-            },
-            error => {
-                this.loadingRule = false;
-                this.errorHandler.error(error);
-            }
-        );
+        this.immutableService
+            .DeleteImmuRule({
+                projectNameOrId: this.projectId.toString(),
+                immutableRuleId: ruleId,
+            })
+            .subscribe({
+                next: res => {
+                    this.getRules();
+                },
+                error: err => {
+                    this.loadingRule = false;
+                    this.errorHandler.error(err);
+                },
+            });
     }
 
     openAddRule() {
@@ -113,15 +135,19 @@ export class ImmutableTagComponent implements OnInit {
     }
 
     refreshAfterCreatRetention() {
-        this.immutableTagService.getProjectInfo(this.projectId).subscribe(
-            response => {
-                this.getRules();
-            },
-            error => {
-                this.loadingRule = false;
-                this.errorHandler.error(error);
-            }
-        );
+        this.projectService
+            .getProject({
+                projectNameOrId: this.projectId.toString(),
+            })
+            .subscribe({
+                next: res => {
+                    this.getRules();
+                },
+                error: err => {
+                    this.loadingRule = false;
+                    this.errorHandler.error(err);
+                },
+            });
     }
 
     clickAdd(rule) {
@@ -129,74 +155,62 @@ export class ImmutableTagComponent implements OnInit {
         this.addRuleComponent.onGoing = true;
         if (this.addRuleComponent.isAdd) {
             if (!rule.id) {
-                this.immutableTagService
-                    .createRule(this.projectId, rule)
+                this.immutableService
+                    .CreateImmuRule({
+                        projectNameOrId: this.projectId.toString(),
+                        ImmutableRule: rule,
+                    })
                     .pipe(
                         finalize(() => (this.addRuleComponent.onGoing = false))
                     )
-                    .subscribe(
-                        response => {
+                    .subscribe({
+                        next: res => {
                             this.refreshAfterCreatRetention();
                             this.addRuleComponent.close();
                         },
-                        error => {
-                            if (error && error.error && error.error.message) {
-                                error = this.immutableTagService.getI18nKey(
-                                    error.error.message
+                        error: err => {
+                            if (err && err.error && err.error.message) {
+                                err = this.immutableTagService.getI18nKey(
+                                    err.error.message
                                 );
                             }
                             this.addRuleComponent.inlineAlert.showInlineError(
-                                error
+                                err
                             );
                             this.loadingRule = false;
-                        }
-                    );
-            } else {
-                this.immutableTagService
-                    .updateRule(this.projectId, rule)
-                    .pipe(
-                        finalize(() => (this.addRuleComponent.onGoing = false))
-                    )
-                    .subscribe(
-                        response => {
-                            this.getRules();
-                            this.addRuleComponent.close();
                         },
-                        error => {
-                            this.loadingRule = false;
-                            if (error && error.error && error.error.message) {
-                                error = this.immutableTagService.getI18nKey(
-                                    error.error.message
-                                );
-                            }
-                            this.addRuleComponent.inlineAlert.showInlineError(
-                                error
-                            );
-                        }
-                    );
+                    });
+            } else {
+                this.updateRule(rule);
             }
         } else {
-            this.immutableTagService
-                .updateRule(this.projectId, rule)
-                .pipe(finalize(() => (this.addRuleComponent.onGoing = false)))
-                .subscribe(
-                    response => {
-                        this.getRules();
-                        this.addRuleComponent.close();
-                    },
-                    error => {
-                        if (error && error.error && error.error.message) {
-                            error = this.immutableTagService.getI18nKey(
-                                error.error.message
-                            );
-                        }
-                        this.addRuleComponent.inlineAlert.showInlineError(
-                            error
-                        );
-                        this.loadingRule = false;
-                    }
-                );
+            this.updateRule(rule);
         }
+    }
+
+    updateRule(rule: any) {
+        this.immutableService
+            .UpdateImmuRule({
+                projectNameOrId: this.projectId.toString(),
+                immutableRuleId: rule.id,
+                ImmutableRule: rule,
+            })
+            .pipe(finalize(() => (this.addRuleComponent.onGoing = false)))
+            .subscribe({
+                next: res => {
+                    this.getRules();
+                    this.addRuleComponent.close();
+                },
+                error: err => {
+                    this.loadingRule = false;
+                    if (err && err.error && err.error.message) {
+                        err = this.immutableTagService.getI18nKey(
+                            err.error.message
+                        );
+                    }
+                    this.addRuleComponent.inlineAlert.showInlineError(err);
+                },
+            });
     }
 
     formatPattern(pattern: string): string {

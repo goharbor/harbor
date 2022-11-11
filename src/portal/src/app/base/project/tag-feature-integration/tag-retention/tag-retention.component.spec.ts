@@ -15,6 +15,7 @@ import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
+import { RetentionService } from 'ng-swagger-gen/services/retention.service';
 
 describe('TagRetentionComponent', () => {
     const mockedRunningExecutions = [
@@ -42,18 +43,12 @@ describe('TagRetentionComponent', () => {
     let component: TagRetentionComponent;
     let fixture: ComponentFixture<TagRetentionComponent>;
     const mockTagRetentionService = {
+        seeLog: () => of(null).pipe(delay(0)),
+    };
+    const mockRetentionService = {
         createRetention: () => of(null).pipe(delay(0)),
         updateRetention: () => of(null).pipe(delay(0)),
-        runNowTrigger: () => of(null).pipe(delay(0)),
-        whatIfRunTrigger: () => of(null).pipe(delay(0)),
-        AbortRun: () => of(null).pipe(delay(0)),
-        seeLog: () => of(null).pipe(delay(0)),
-        getExecutionHistory: () =>
-            of({
-                body: [],
-            }).pipe(delay(0)),
-        count: 0,
-        getRunNowList() {
+        listRetentionExecutionsResponse() {
             if (this.count === 0) {
                 this.count += 1;
                 const response: HttpResponse<Array<Registry>> =
@@ -78,13 +73,7 @@ describe('TagRetentionComponent', () => {
                 return of(response).pipe(delay(0));
             }
         },
-        getProjectInfo: () =>
-            of({
-                metadata: {
-                    retention_id: 1,
-                },
-            }).pipe(delay(0)),
-        getRetentionMetadata: () => of(new RuleMetadate()).pipe(delay(0)),
+        getRentenitionMetadata: () => of(new RuleMetadate()).pipe(delay(0)),
         getRetention: () => of(new Retention()).pipe(delay(0)),
     };
     const mockActivatedRoute = {
@@ -114,6 +103,10 @@ describe('TagRetentionComponent', () => {
                 {
                     provide: TagRetentionService,
                     useValue: mockTagRetentionService,
+                },
+                {
+                    provide: RetentionService,
+                    useValue: mockRetentionService,
                 },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
             ],
