@@ -102,8 +102,6 @@
         "OIDC_ENDPOINT": "Endereço do provedor. Deve ser compatível com o protocolo OIDC",
         "OIDC_SCOPE": "O âmbito (scope) de aplicação enviada ao provedor OIDC durante a autenticação. Deve incluir 'openid' e 'offline_access'. Se estiver usando Google, remova o valor 'offline_access'.",
         "OIDC_VERIFYCERT": "Desmarque para ignorar certificados inválidos ou auto-assinados no provedor ODIC.",
-        "OIDC_GROUP_CLAIM": "Nome da propriedade (claim) cujo valor representa a lista de grupos do usuário.",
-        "OIDC_GROUP_CLAIM_WARNING": "Deve conter apenas letras, números e traço-baixo (underscores). Tamanho máximo de 256 caracteres.",
         "OIDC_AUTOONBOARD": "Pular tela de alteração durante o cadastro automático. Informações, como nome e e-mail, virão do provedor externo.",
         "OIDC_USER_CLAIM": "Nome da propriedade (claim) cujo valor representa o nome de usuário (login). Se não informado, 'name' será usado.",
         "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número."
@@ -955,8 +953,11 @@
             "OIDC_SETNAMECONTENT": "Um nome de usuário deve ser criado na base local do Harbor para ser associado a projetos, perfís e permissões. Marque esta opção para que o nome de usuário seja obtido do provedor OIDC através do atributo (claim) informado.",
             "OIDC_USERNAME": "Nome de usuário",
             "GROUP_CLAIM_NAME": "Atributo com nome do grupo (claim)",
+            "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
             "OIDC_ADMIN_GROUP": "Grupo Administrativo",
-            "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado."
+            "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado.",
+            "OIDC_GROUP_FILTER": "OIDC Group Filter",
+            "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Todos os exames foram interrompidos!",

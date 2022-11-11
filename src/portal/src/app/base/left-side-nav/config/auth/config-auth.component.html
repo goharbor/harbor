@@ -736,6 +736,34 @@
             }}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
+            <label for="OIDCGroupFilter"
+                >{{ 'CONFIG.OIDC.OIDC_GROUP_FILTER' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.OIDC.OIDC_GROUP_FILTER_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input
+                clrInput
+                name="OIDCGroupFilter"
+                type="text"
+                #ngOIDCGroupFilter="ngModel"
+                [(ngModel)]="currentConfig.oidc_group_filter.value"
+                id="OIDCGroupFilter"
+                size="40"
+                [disabled]="disabled(currentConfig.oidc_group_filter)" />
+        </clr-input-container>
+        <clr-input-container>
             <label for="oidcGroupClaim"
                 >{{ 'CONFIG.OIDC.GROUP_CLAIM_NAME' | translate }}
                 <clr-tooltip>
@@ -748,7 +776,7 @@
                         clrSize="lg"
                         *clrIfOpen>
                         <span>{{
-                            'TOOLTIP.OIDC_GROUP_CLAIM' | translate
+                            'CONFIG.OIDC.GROUP_CLAIM_NAME_INFO' | translate
                         }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
@@ -757,7 +785,7 @@
                 clrInput
                 name="oidcGroupClaim"
                 type="text"
-                #oidcClientSecretInput="ngModel"
+                #ngOIDCGroupClaim="ngModel"
                 [(ngModel)]="currentConfig.oidc_groups_claim.value"
                 id="oidcGroupClaim"
                 size="40"

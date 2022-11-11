@@ -98,8 +98,6 @@
         "OIDC_ENDPOINT": "L'url d'un serveur de plainte oidc.",
         "OIDC_SCOPE": "Le champ envoyé au serveur au cours de l'authentification oidc. Il doit contenir 'openid', et 'offline_access'. Si vous utilisez google, veuillez supprimer 'offline_access' de ce champ",
         "OIDC_VERIFYCERT": "Décocher cette case si votre serveur oidc est hébergé avec un certificat auto-signé.",
-        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
-        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
         "OIDC_AUTOONBOARD": "Ignorer l'écran d'accueil afin que l'utilisateur ne puisse pas modifier son nom d'utilisateur. Le nom d'utilisateur est fourni à partir du  ID Token",
         "OIDC_USER_CLAIM": "Le nom de la réclamation dans le ID Token à partir duquel le nom d'utilisateur est récupéré. S'il n'est pas spécifié, la valeur par défaut sera 'name'",
         "NEW_SECRET": "Le secret doit être composé de 8 à 20 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
@@ -932,8 +930,11 @@
             "OIDC_SETNAMECONTENT": "Vous devez créer un identifiant Harbor la première fois lors de la vérification par une tierce partie (OIDC). Il sera utilisé au sein de Harbor pour être associé aux projets, rôles, etc.",
             "OIDC_USERNAME": "Nom d'utilisateur",
             "GROUP_CLAIM_NAME": "Nom de groupe Claim",
+            "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
             "OIDC_ADMIN_GROUP": "OIDC Admin Group",
-            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to."
+            "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
+            "OIDC_GROUP_FILTER": "OIDC Group Filter",
+            "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Déclenchement avec succès de l'arrêt de l'analyse globale !",
