@@ -20,14 +20,7 @@ updates:
       - "OrlinVasilev"
 
   - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "release-note/update"
-
-  - package-ecosystem: "gomod"
-    directory: "tests/"
+    directory: "/src"
     schedule:
       interval: "weekly"
     labels:
