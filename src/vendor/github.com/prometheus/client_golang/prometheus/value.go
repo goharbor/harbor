@@ -22,11 +22,8 @@ import (
 	//nolint:staticcheck // Ignore SA1019. Need to keep deprecated package for compatibility.
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
-<<<<<<< HEAD
-=======
 
 	"github.com/prometheus/client_golang/prometheus/internal"
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 
 	dto "github.com/prometheus/client_model/go"
 )

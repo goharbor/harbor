@@ -63,15 +63,9 @@ func InstrumentRoundTripperInFlight(gauge prometheus.Gauge, next http.RoundTripp
 //
 // See the example for ExampleInstrumentRoundTripperDuration for example usage.
 func InstrumentRoundTripperCounter(counter *prometheus.CounterVec, next http.RoundTripper, opts ...Option) RoundTripperFunc {
-<<<<<<< HEAD
-	rtOpts := &option{}
-	for _, o := range opts {
-		o(rtOpts)
-=======
 	rtOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(rtOpts)
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 
 	code, method := checkLabels(counter)
@@ -79,14 +73,11 @@ func InstrumentRoundTripperCounter(counter *prometheus.CounterVec, next http.Rou
 	return func(r *http.Request) (*http.Response, error) {
 		resp, err := next.RoundTrip(r)
 		if err == nil {
-<<<<<<< HEAD
-=======
 			exemplarAdd(
 				counter.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)),
 				1,
 				rtOpts.getExemplarFn(r.Context()),
 			)
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 			counter.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)).Inc()
 		}
 		return resp, err
@@ -115,15 +106,9 @@ func InstrumentRoundTripperCounter(counter *prometheus.CounterVec, next http.Rou
 // Note that this method is only guaranteed to never observe negative durations
 // if used with Go1.9+.
 func InstrumentRoundTripperDuration(obs prometheus.ObserverVec, next http.RoundTripper, opts ...Option) RoundTripperFunc {
-<<<<<<< HEAD
-	rtOpts := &option{}
-	for _, o := range opts {
-		o(rtOpts)
-=======
 	rtOpts := defaultOptions()
 	for _, o := range opts {
 		o.apply(rtOpts)
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 
 	code, method := checkLabels(obs)
@@ -132,15 +117,11 @@ func InstrumentRoundTripperDuration(obs prometheus.ObserverVec, next http.RoundT
 		start := time.Now()
 		resp, err := next.RoundTrip(r)
 		if err == nil {
-<<<<<<< HEAD
-			obs.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)).Observe(time.Since(start).Seconds())
-=======
 			exemplarObserve(
 				obs.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)),
 				time.Since(start).Seconds(),
 				rtOpts.getExemplarFn(r.Context()),
 			)
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 		}
 		return resp, err
 	}

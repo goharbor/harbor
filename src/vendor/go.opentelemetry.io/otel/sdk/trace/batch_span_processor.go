@@ -23,10 +23,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/internal/global"
-<<<<<<< HEAD
 	"go.opentelemetry.io/otel/sdk/internal/env"
-=======
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -187,11 +184,7 @@ func (bsp *batchSpanProcessor) ForceFlush(ctx context.Context) error {
 	var err error
 	if bsp.e != nil {
 		flushCh := make(chan struct{})
-<<<<<<< HEAD
 		if bsp.enqueueBlockOnQueueFull(ctx, forceFlushSpan{flushed: flushCh}) {
-=======
-		if bsp.enqueueBlockOnQueueFull(ctx, forceFlushSpan{flushed: flushCh}, true) {
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 			select {
 			case <-flushCh:
 				// Processed any items in queue prior to ForceFlush being called
@@ -260,7 +253,6 @@ func WithBlocking() BatchSpanProcessorOption {
 
 // exportSpans is a subroutine of processing and draining the queue.
 func (bsp *batchSpanProcessor) exportSpans(ctx context.Context) error {
-
 	bsp.timer.Reset(bsp.o.BatchTimeout)
 
 	bsp.batchMutex.Lock()
@@ -273,11 +265,7 @@ func (bsp *batchSpanProcessor) exportSpans(ctx context.Context) error {
 	}
 
 	if l := len(bsp.batch); l > 0 {
-<<<<<<< HEAD
 		global.Debug("exporting spans", "count", len(bsp.batch), "total_dropped", atomic.LoadUint32(&bsp.dropped))
-=======
-		global.Debug("exporting spans", "count", len(bsp.batch))
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 		err := bsp.e.ExportSpans(ctx, bsp.batch)
 
 		// A new batch is always created after exporting, even if the batch failed to be exported.
@@ -362,7 +350,6 @@ func (bsp *batchSpanProcessor) drainQueue() {
 }
 
 func (bsp *batchSpanProcessor) enqueue(sd ReadOnlySpan) {
-<<<<<<< HEAD
 	ctx := context.TODO()
 	if bsp.o.BlockOnQueueFull {
 		bsp.enqueueBlockOnQueueFull(ctx, sd)
@@ -385,12 +372,6 @@ func recoverSendOnClosedChan() {
 }
 
 func (bsp *batchSpanProcessor) enqueueBlockOnQueueFull(ctx context.Context, sd ReadOnlySpan) bool {
-=======
-	bsp.enqueueBlockOnQueueFull(context.TODO(), sd, bsp.o.BlockOnQueueFull)
-}
-
-func (bsp *batchSpanProcessor) enqueueBlockOnQueueFull(ctx context.Context, sd ReadOnlySpan, block bool) bool {
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	if !sd.SpanContext().IsSampled() {
 		return false
 	}
@@ -405,7 +386,6 @@ func (bsp *batchSpanProcessor) enqueueBlockOnQueueFull(ctx context.Context, sd R
 	default:
 	}
 
-<<<<<<< HEAD
 	select {
 	case bsp.queue <- sd:
 		return true
@@ -427,15 +407,6 @@ func (bsp *batchSpanProcessor) enqueueDrop(ctx context.Context, sd ReadOnlySpan)
 	case <-bsp.stopCh:
 		return false
 	default:
-=======
-	if block {
-		select {
-		case bsp.queue <- sd:
-			return true
-		case <-ctx.Done():
-			return false
-		}
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 
 	select {
@@ -445,7 +416,6 @@ func (bsp *batchSpanProcessor) enqueueDrop(ctx context.Context, sd ReadOnlySpan)
 		atomic.AddUint32(&bsp.dropped, 1)
 	}
 	return false
-<<<<<<< HEAD
 }
 
 // MarshalLog is the marshaling function used by the logging system to represent this exporter.
@@ -459,6 +429,4 @@ func (bsp *batchSpanProcessor) MarshalLog() interface{} {
 		SpanExporter: bsp.e,
 		Config:       bsp.o,
 	}
-=======
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 }

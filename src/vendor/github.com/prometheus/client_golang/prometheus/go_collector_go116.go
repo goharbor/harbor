@@ -40,8 +40,6 @@ type goCollector struct {
 //
 // Deprecated: Use collectors.NewGoCollector instead.
 func NewGoCollector() Collector {
-<<<<<<< HEAD
-=======
 	msMetrics := goRuntimeMemStats()
 	msMetrics = append(msMetrics, struct {
 		desc    *Desc
@@ -57,18 +55,13 @@ func NewGoCollector() Collector {
 		eval:    func(ms *runtime.MemStats) float64 { return ms.GCCPUFraction },
 		valType: GaugeValue,
 	})
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	return &goCollector{
 		base:      newBaseGoCollector(),
 		msLast:    &runtime.MemStats{},
 		msRead:    runtime.ReadMemStats,
 		msMaxWait: time.Second,
 		msMaxAge:  5 * time.Minute,
-<<<<<<< HEAD
-		msMetrics: goRuntimeMemStats(),
-=======
 		msMetrics: msMetrics,
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 }
 

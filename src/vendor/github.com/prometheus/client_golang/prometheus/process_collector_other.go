@@ -11,13 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<< HEAD
-//go:build !windows
-// +build !windows
-=======
 //go:build !windows && !js
 // +build !windows,!js
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 
 package prometheus
 
