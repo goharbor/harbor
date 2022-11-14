@@ -24,7 +24,6 @@ import (
 // RegisterRoutes for Harbor legacy APIs
 func registerLegacyRoutes() {
 	version := APIVersion
-	beego.Router("/api/"+version+"/email/ping", &api.EmailAPI{}, "post:Ping")
 
 	// APIs for chart repository
 	if config.WithChartMuseum() {

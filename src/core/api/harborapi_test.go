@@ -16,7 +16,6 @@
 package api
 
 import (
-	"bytes"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -88,8 +87,6 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
-	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
-
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
@@ -145,12 +142,4 @@ func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (in
 func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
 	code, _, body, err := request0(_sling, acceptHeader, authInfo...)
 	return code, body, err
-}
-
-func (a testapi) PingEmail(authInfo usrInfo, settings []byte) (int, string, error) {
-	_sling := sling.New().Base(a.basePath).Post("/api/email/ping").Body(bytes.NewReader(settings))
-
-	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return code, string(body), err
 }
