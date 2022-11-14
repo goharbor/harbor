@@ -108,25 +108,6 @@ func OnlyAdminCreateProject(ctx context.Context) (bool, error) {
 	return DefaultMgr().Get(ctx, common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
 }
 
-// Email returns email server settings
-func Email(ctx context.Context) (*cfgModels.Email, error) {
-	mgr := DefaultMgr()
-	err := mgr.Load(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &cfgModels.Email{
-		Host:     mgr.Get(ctx, common.EmailHost).GetString(),
-		Port:     mgr.Get(ctx, common.EmailPort).GetInt(),
-		Username: mgr.Get(ctx, common.EmailUsername).GetString(),
-		Password: mgr.Get(ctx, common.EmailPassword).GetString(),
-		SSL:      mgr.Get(ctx, common.EmailSSL).GetBool(),
-		From:     mgr.Get(ctx, common.EmailFrom).GetString(),
-		Identity: mgr.Get(ctx, common.EmailIdentity).GetString(),
-		Insecure: mgr.Get(ctx, common.EmailInsecure).GetBool(),
-	}, nil
-}
-
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings(ctx context.Context) (*models.UAASettings, error) {
 	mgr := DefaultMgr()

@@ -20,7 +20,7 @@ import "github.com/goharbor/harbor/src/common"
 type Item struct {
 	// The Scope of this configuration item: eg: SystemScope, UserScope
 	Scope string `json:"scope,omitempty"`
-	// email, ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group
+	// ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group
 	Group string `json:"group,omitempty"`
 	// environment key to retrieves this value when initialize, for example: POSTGRESQL_HOST, only used for system settings, for user settings no EnvKey
 	EnvKey string `json:"environment_key,omitempty"`
@@ -44,7 +44,6 @@ const (
 	// Group
 	LdapBasicGroup = "ldapbasic"
 	LdapGroupGroup = "ldapgroup"
-	EmailGroup     = "email"
 	UAAGroup       = "uaa"
 	HTTPAuthGroup  = "http_auth"
 	OIDCGroup      = "oidc"
@@ -73,15 +72,6 @@ var (
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.DatabaseType, Scope: SystemScope, Group: BasicGroup, EnvKey: "DATABASE_TYPE", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
-
-		{Name: common.EmailFrom, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_FROM", DefaultValue: "admin <sample_admin@mydomain.com>", ItemType: &StringType{}, Editable: false, Description: `The sender name for Email notification.`},
-		{Name: common.EmailHost, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_HOST", DefaultValue: "smtp.mydomain.com", ItemType: &StringType{}, Editable: false, Description: `The hostname of SMTP server that sends Email notification.`},
-		{Name: common.EmailIdentity, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_IDENTITY", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `By default it's empty so the email_username is picked`},
-		{Name: common.EmailInsecure, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_INSECURE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Whether or not the certificate will be verified when Harbor tries to access the email server.`},
-		{Name: common.EmailPassword, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_PWD", DefaultValue: "", ItemType: &PasswordType{}, Editable: false, Description: `Email password`},
-		{Name: common.EmailPort, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_PORT", DefaultValue: "25", ItemType: &PortType{}, Editable: false, Description: `The port of SMTP server`},
-		{Name: common.EmailSSL, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_SSL", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.`},
-		{Name: common.EmailUsername, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_USR", DefaultValue: "sample_admin@mydomain.com", ItemType: &StringType{}, Editable: false, Description: `The username for authenticate against SMTP server`},
 
 		{Name: common.ExtEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "EXT_ENDPOINT", DefaultValue: "https://host01.com", ItemType: &StringType{}, Editable: false},
 		{Name: common.JobServiceURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "JOBSERVICE_URL", DefaultValue: "http://jobservice:8080", ItemType: &StringType{}, Editable: false},

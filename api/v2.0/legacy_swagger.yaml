@@ -20,33 +20,6 @@ security:
   - basic: []
   - {}
 paths:
-  /email/ping:
-    post:
-      summary: Test connection and authentication with email server.
-      description: |
-        Test connection and authentication with email server.
-      parameters:
-        - name: settings
-          in: body
-          description: 'Email server settings, if some of the settings are not assigned, they will be read from system configuration.'
-          required: false
-          schema:
-            $ref: '#/definitions/EmailServerSetting'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Ping email server successfully.
-        '400':
-          description: Inviald email server settings.
-        '401':
-          description: User need to login first.
-        '403':
-          description: Only admin has this authority.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '500':
-          description: Unexpected internal errors.
   /chartrepo/{repo}/charts/{name}/{version}/labels:
     get:
       summary: Return the attached labels of chart.

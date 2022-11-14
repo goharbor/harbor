@@ -36,7 +36,6 @@ var TestDBConfig = map[string]interface{}{
 	"postgresql_password": "root123",
 	"postgresql_username": "postgres",
 	"postgresql_sslmode":  "disable",
-	"email_host":          "127.0.0.1",
 	"scan_all_policy":     `{"parameter":{"daily_time":0},"type":"daily"}`,
 }
 
@@ -54,7 +53,6 @@ func TestMain(m *testing.M) {
 func TestLoadFromDatabase(t *testing.T) {
 	configManager.UpdateConfig(testCtx, TestDBConfig)
 	configManager.Load(testCtx)
-	assert.Equal(t, "127.0.0.1", configManager.Get(testCtx, "email_host").GetString())
 	assert.Equal(t, `{"parameter":{"daily_time":0},"type":"daily"}`, configManager.Get(testCtx, "scan_all_policy").GetString())
 }
 

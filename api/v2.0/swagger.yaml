@@ -8477,27 +8477,6 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
-      email_from:
-        $ref: '#/definitions/StringConfigItem'
-        description: The sender name for Email notification.
-      email_host:
-        $ref: '#/definitions/StringConfigItem'
-        description: The hostname of SMTP server that sends Email notification.
-      email_identity:
-        $ref: '#/definitions/StringConfigItem'
-        description: By default it's empty so the email_username is picked
-      email_insecure:
-        $ref: '#/definitions/BoolConfigItem'
-        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
-      email_port:
-        $ref: '#/definitions/IntegerConfigItem'
-        description: The port of SMTP server
-      email_ssl:
-        $ref: '#/definitions/BoolConfigItem'
-        description: When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.
-      email_username:
-        $ref: '#/definitions/StringConfigItem'
-        description: The username for authenticate against SMTP server
       ldap_base_dn:
         $ref: '#/definitions/StringConfigItem'
         description: The Base DN for LDAP binding.
@@ -8658,46 +8637,6 @@ definitions:
       auth_mode:
         type: string
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
-        x-omitempty: true
-        x-isnullable: true
-      email_from:
-        type: string
-        description: The sender name for Email notification.
-        x-omitempty: true
-        x-isnullable: true
-      email_host:
-        type: string
-        description: The hostname of SMTP server that sends Email notification.
-        x-omitempty: true
-        x-isnullable: true
-      email_identity:
-        type: string
-        description: By default it's empty so the email_username is picked
-        x-omitempty: true
-        x-isnullable: true
-      email_insecure:
-        type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
-        x-omitempty: true
-        x-isnullable: true
-      email_password:
-        type: string
-        description: Email password
-        x-omitempty: true
-        x-isnullable: true
-      email_port:
-        type: integer
-        description: The port of SMTP server
-        x-omitempty: true
-        x-isnullable: true
-      email_ssl:
-        type: boolean
-        description: When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.
-        x-omitempty: true
-        x-isnullable: true
-      email_username:
-        type: string
-        description: The username for authenticate against SMTP server
         x-omitempty: true
         x-isnullable: true
       ldap_base_dn:
