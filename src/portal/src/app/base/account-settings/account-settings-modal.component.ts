@@ -19,8 +19,6 @@ import { SessionUser } from '../../shared/entities/session-user';
 import { SessionService } from '../../shared/services/session.service';
 import { MessageHandlerService } from '../../shared/services/message-handler.service';
 import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
-import { AccountSettingsModalService } from './account-settings-modal-service.service';
-import { randomWord } from '../../shared/units/shared.utils';
 import { ResetSecret } from './account';
 import { CopyInputComponent } from '../../shared/components/push-image/copy-input.component';
 import {
@@ -31,6 +29,7 @@ import {
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
+import { UserService } from 'ng-swagger-gen/services/user.service';
 
 @Component({
     selector: 'account-settings-modal',
@@ -73,7 +72,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         private msgHandler: MessageHandlerService,
         private router: Router,
         private searchTrigger: SearchTriggerService,
-        private accountSettingsService: AccountSettingsModalService
+        private userService: UserService
     ) {}
 
     private validationStateMap: any = {
@@ -392,29 +391,41 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.showGenerateCli = !this.showGenerateCli;
     }
 
-    confirmGenerate(event): void {
-        this.account.oidc_user_meta.secret = randomWord(9);
-        this.resetCliSecret(this.account.oidc_user_meta.secret);
+    confirmGenerate(): void {
+        this.resetCliSecret(null);
     }
 
     resetCliSecret(secret) {
-        let userId = this.account.user_id;
-        this.accountSettingsService
-            .saveNewCli(userId, { secret: secret })
-            .subscribe(
-                cliSecret => {
-                    this.account.oidc_user_meta.secret = secret;
+        this.userService
+            .setCliSecret({
+                userId: this.account.user_id,
+                secret: secret
+                    ? {
+                          secret: secret,
+                      }
+                    : {},
+            })
+            .subscribe({
+                next: res => {
+                    if (secret) {
+                        this.account.oidc_user_meta.secret = secret;
+                    } else {
+                        this.userService.getCurrentUserInfo().subscribe(res => {
+                            this.account.oidc_user_meta.secret =
+                                res?.oidc_user_meta?.secret;
+                        });
+                    }
                     this.closeReset();
                     this.inlineAlert.showInlineSuccess({
                         message: 'PROFILE.GENERATE_SUCCESS',
                     });
                 },
-                error => {
+                error: err => {
                     this.resetSecretInlineAlert.showInlineError({
                         message: 'PROFILE.GENERATE_ERROR',
                     });
-                }
-            );
+                },
+            });
     }
 
     disableChangeCliSecret() {

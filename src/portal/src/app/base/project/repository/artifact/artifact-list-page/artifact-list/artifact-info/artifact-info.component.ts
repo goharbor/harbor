@@ -26,6 +26,10 @@ import {
 import { ErrorHandler } from 'src/app/shared/units/error-handler/error-handler';
 import { dbEncodeURIComponent } from 'src/app/shared/units/utils';
 import { finalize } from 'rxjs/operators';
+import {
+    UserPermissionService,
+    USERSTATICPERMISSION,
+} from '../../../../../../../shared/services';
 
 @Component({
     selector: 'artifact-info',
@@ -34,8 +38,9 @@ import { finalize } from 'rxjs/operators';
 })
 export class ArtifactInfoComponent implements OnInit {
     projectName: string;
+    projectId: number;
     repoName: string;
-    hasProjectAdminRole: boolean = false;
+    hasEditPermission: boolean = false;
     onSaving: boolean = false;
     loading: boolean = false;
     editing: boolean = false;
@@ -48,7 +53,8 @@ export class ArtifactInfoComponent implements OnInit {
         private errorHandler: ErrorHandler,
         private repositoryService: RepositoryService,
         private translate: TranslateService,
-        private activatedRoute: ActivatedRoute
+        private activatedRoute: ActivatedRoute,
+        private permissionService: UserPermissionService
     ) {}
 
     ngOnInit(): void {
@@ -56,11 +62,24 @@ export class ArtifactInfoComponent implements OnInit {
         let resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
         if (resolverData) {
             this.projectName = (<Project>resolverData['projectResolver']).name;
-            this.hasProjectAdminRole = (<Project>(
+            this.projectId = (<Project>(
                 resolverData['projectResolver']
-            )).has_project_admin_role;
+            )).project_id;
         }
+        this.checkPermission();
         this.retrieve();
+    }
+
+    checkPermission() {
+        this.permissionService
+            .getPermission(
+                this.projectId,
+                USERSTATICPERMISSION.REPOSITORY.KEY,
+                USERSTATICPERMISSION.REPOSITORY.VALUE.UPDATE
+            )
+            .subscribe(res => {
+                this.hasEditPermission = res;
+            });
     }
 
     retrieve() {

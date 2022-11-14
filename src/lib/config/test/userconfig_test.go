@@ -59,17 +59,10 @@ func TestConfig(t *testing.T) {
 	defer os.Remove(secretKeyPath)
 	assert := assert.New(t)
 
-	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
-		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
-	}
-	oriKeyPath := os.Getenv("TOKEN_PRIVATE_KEY_PATH")
-	if err := os.Setenv("TOKEN_PRIVATE_KEY_PATH", ""); err != nil {
-		t.Fatalf("failed to set env %s: %v", "TOKEN_PRIVATE_KEY_PATH", err)
-	}
-	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
-
-	os.Setenv("JOBSERVICE_URL", "http://myjob:8888")
-	os.Setenv("GC_TIME_WINDOW_HOURS", "0")
+	t.Setenv("KEY_PATH", secretKeyPath)
+	t.Setenv("TOKEN_PRIVATE_KEY_PATH", "")
+	t.Setenv("JOBSERVICE_URL", "http://myjob:8888")
+	t.Setenv("GC_TIME_WINDOW_HOURS", "0")
 
 	Init()
 	ctx := orm.Context()

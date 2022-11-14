@@ -72,6 +72,7 @@ GOJQ = $(TOOLS)/gojq
 $(TOOLS)/gojq: PACKAGE=github.com/itchyny/gojq/cmd/gojq
 
 .PHONY: tools
+<<<<<<< HEAD
 tools: $(CROSSLINK) $(DBOTCONF) $(GOLANGCI_LINT) $(MISSPELL) $(GOCOVMERGE) $(STRINGER) $(PORTO) $(GOJQ) $(SEMCONVGEN) $(MULTIMOD) $(SEMCONVKIT)
 
 # Build
@@ -99,6 +100,38 @@ build-tests/%:
 		&& $(GO) list ./... \
 		| grep -v third_party \
 		| xargs $(GO) test -vet=off -run xxxxxMatchNothingxxxxx >/dev/null
+=======
+tools: $(CROSSLINK) $(GOLANGCI_LINT) $(MISSPELL) $(GOCOVMERGE) $(STRINGER) $(PORTO) $(GOJQ) $(SEMCONVGEN) $(MULTIMOD)
+
+# Build
+
+.PHONY: examples generate build
+examples:
+	@set -e; for dir in $(EXAMPLES); do \
+	  echo "$(GO) build $${dir}/..."; \
+	  (cd "$${dir}" && \
+	   $(GO) build .); \
+	done
+
+generate: $(STRINGER) $(PORTO)
+	set -e; for dir in $(ALL_GO_MOD_DIRS); do \
+	  echo "$(GO) generate $${dir}/..."; \
+	  (cd "$${dir}" && \
+	    PATH="$(TOOLS):$${PATH}" $(GO) generate ./... && \
+		$(PORTO) -w .); \
+	done
+
+build: generate
+	# Build all package code including testing code.
+	set -e; for dir in $(ALL_GO_MOD_DIRS); do \
+	  echo "$(GO) build $${dir}/..."; \
+	  (cd "$${dir}" && \
+	    $(GO) build ./... && \
+		$(GO) list ./... \
+		  | grep -v third_party \
+		  | xargs $(GO) test -vet=off -run xxxxxMatchNothingxxxxx >/dev/null); \
+	done
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 
 # Tests
 
@@ -172,6 +205,10 @@ vanity-import-check: | $(PORTO)
 vanity-import-fix: | $(PORTO)
 	@$(PORTO) --include-internal -w .
 
+.PHONY: vanity-import-check
+vanity-import-check: | $(PORTO)
+	$(PORTO) --include-internal -l .
+
 .PHONY: misspell
 misspell: | $(MISSPELL)
 	@$(MISSPELL) -w $(ALL_DOCS)
@@ -205,6 +242,7 @@ check-clean-work-tree:
 	  exit 1; \
 	fi
 
+<<<<<<< HEAD
 SEMCONVPKG ?= "semconv/"
 .PHONY: semconv-generate
 semconv-generate: | $(SEMCONVGEN) $(SEMCONVKIT)
@@ -214,6 +252,8 @@ semconv-generate: | $(SEMCONVGEN) $(SEMCONVKIT)
 	@$(SEMCONVGEN) -i "$(OTEL_SPEC_REPO)/semantic_conventions/resource" -t "$(SEMCONVPKG)/template.j2" -s "$(TAG)"
 	@$(SEMCONVKIT) -output "$(SEMCONVPKG)/$(TAG)" -tag "$(TAG)"
 
+=======
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 .PHONY: prerelease
 prerelease: | $(MULTIMOD)
 	@[ "${MODSET}" ] || ( echo ">> env var MODSET is not set"; exit 1 )

@@ -85,10 +85,7 @@ Switch To Project Tab Overflow
     Sleep  1
 
 Navigate To Projects
-    Reload Page
-    Sleep  3
     Retry Element Click  xpath=${projects_xpath}
-    Sleep  1
 
 Project Should Display
     [Arguments]  ${projectname}
@@ -304,17 +301,17 @@ Add Labels To Tag
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
-    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select
-    Retry Element Click  xpath=//clr-main-container//artifact-list-tab//clr-select-container//select/option[@value='labels']
+    Retry Element Click  xpath=//*[@id='search-btn']
+    Retry Element Click  xpath=//*[@id='type-select']
+    Retry Element Click  xpath=//*[@id='type-select']/option[@value='labels']
     Retry Wait Until Page Contains Element  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName1}')]
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//app-artifact-filter//clr-icon[contains(@shape,'search')]
     Retry Wait Until Page Contains Element  xpath=//clr-datagrid//label[contains(.,'${labelName1}')]
 
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//*[@id='search-btn']
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName2}')]
-    Retry Element Click  xpath=//*[@id='filterArea']//hbr-filter/span/clr-icon
+    Retry Element Click  xpath=//app-artifact-filter//clr-icon[contains(@shape,'search')]
     Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
@@ -399,3 +396,28 @@ Delete Accessory
 Should be Accessory deleted
     [Arguments]  ${tag}
     Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${tag}')]//button[contains(@class,'datagrid-expandable-caret-button')]
+
+Export CVEs
+    [Arguments]  ${project}  ${repositories}  ${tags}  ${labels}  ${cve_ids}
+    Filter Project  ${project}
+    Retry Element Click  //clr-dg-row[contains(.,'${project}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  ${project_action_xpath}
+    Retry Button Click  ${export_cve_btn}
+    Retry Text Input  ${export_cve_filter_repo_input}  ${repositories}
+    Retry Text Input  ${export_cve_filter_tag_input}  ${tags}
+    Select Filter Label  @{labels}
+    Retry Text Input  ${export_cve_filter_cveid_input}  ${cve_ids}
+    Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Trigger exporting CVEs successfully!
+
+Should Not Be Export CVEs
+     Retry Element Click  ${project_action_xpath}
+     Retry Wait Element Should Be Disabled  ${export_cve_btn}
+     Retry Element Click  ${project_action_xpath}
+
+Download Latest CVE CSV File
+    Retry Element Click  ${event_log_xpath}
+    ${csv_file_name}=  Get Text  ${latest_cve_csv_file_name_xpath}
+    ${csv_file_path}=  Set Variable  ${download_directory}/${csv_file_name}.csv
+    Retry Double Keywords When Error  Retry Element Click  ${latest_download_cve_csv_file_xpath}  Retry Wait Until Page Does Not Contains  ${csv_file_name}
+    Retry File Should Exist  ${csv_file_path}
+    [Return]  ${csv_file_path}

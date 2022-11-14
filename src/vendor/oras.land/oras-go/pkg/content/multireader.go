@@ -18,8 +18,9 @@ package content
 import (
 	"context"
 	"fmt"
+	"io"
 
-	"github.com/containerd/containerd/content"
+	"github.com/containerd/containerd/remotes"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -34,18 +35,18 @@ import (
 //
 // You now can use multiStore anywhere that content.Provider is accepted
 type MultiReader struct {
-	stores []content.Provider
+	stores []remotes.Fetcher
 }
 
 // AddStore add a store to read from
-func (m *MultiReader) AddStore(store ...content.Provider) {
+func (m *MultiReader) AddStore(store ...remotes.Fetcher) {
 	m.stores = append(m.stores, store...)
 }
 
 // ReaderAt get a reader
-func (m MultiReader) ReaderAt(ctx context.Context, desc ocispec.Descriptor) (content.ReaderAt, error) {
+func (m MultiReader) Fetch(ctx context.Context, desc ocispec.Descriptor) (io.ReadCloser, error) {
 	for _, store := range m.stores {
-		r, err := store.ReaderAt(ctx, desc)
+		r, err := store.Fetch(ctx, desc)
 		if r != nil && err == nil {
 			return r, nil
 		}

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -405,7 +406,33 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 type populate func(groupNames []string) ([]int, error)
 
 func populateGroupsDB(groupNames []string) ([]int, error) {
-	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(groupNames, common.OIDCGroupType))
+	ctx := orm.Context()
+	cfg, err := config.OIDCSetting(ctx)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("populateGroupsDB, group filter %v", cfg.GroupFilter)
+	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(filterGroup(groupNames, cfg.GroupFilter), common.OIDCGroupType))
+}
+
+// filterGroup filter group with a regular expression filter
+func filterGroup(groupNames []string, filter string) []string {
+	if len(filter) == 0 {
+		return groupNames
+	}
+	pattern, err := regexp.Compile(filter)
+	if err != nil {
+		log.Errorf("failed to filter group, invalid filter %v", filter)
+		return groupNames
+	}
+	result := make([]string, 0)
+	for _, name := range groupNames {
+		if pattern.MatchString(name) {
+			result = append(result, name)
+		}
+	}
+	log.Debugf("filter is %v, result is %v", filter, result)
+	return result
 }
 
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.

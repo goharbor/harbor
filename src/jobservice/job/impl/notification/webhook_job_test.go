@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,16 +13,19 @@ import (
 
 func TestMaxFails(t *testing.T) {
 	rep := &WebhookJob{}
-	// test default max fails
-	assert.Equal(t, uint(10), rep.MaxFails())
+	t.Run("default max fails", func(t *testing.T) {
+		assert.Equal(t, uint(10), rep.MaxFails())
+	})
 
-	// test user defined max fails
-	_ = os.Setenv(maxFails, "15")
-	assert.Equal(t, uint(15), rep.MaxFails())
+	t.Run("user defined max fails", func(t *testing.T) {
+		t.Setenv(maxFails, "15")
+		assert.Equal(t, uint(15), rep.MaxFails())
+	})
 
-	// test user defined wrong max fails
-	_ = os.Setenv(maxFails, "abc")
-	assert.Equal(t, uint(10), rep.MaxFails())
+	t.Run("user defined wrong max fails", func(t *testing.T) {
+		t.Setenv(maxFails, "abc")
+		assert.Equal(t, uint(10), rep.MaxFails())
+	})
 }
 
 func TestShouldRetry(t *testing.T) {

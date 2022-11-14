@@ -43,8 +43,7 @@ func InternalEnableVerifyClientCert() bool {
 func GetInternalCertPair() (tls.Certificate, error) {
 	crtPath := os.Getenv(internalTLSCertPath)
 	keyPath := os.Getenv(internalTLSKeyPath)
-	cert, err := tls.LoadX509KeyPair(crtPath, keyPath)
-	return cert, err
+	return tls.LoadX509KeyPair(crtPath, keyPath)
 }
 
 // GetInternalTLSConfig return a tls.Config for internal https communicate

@@ -17,7 +17,6 @@ const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 @Injectable()
 export class ConfigService {
     private _loadingConfig: boolean = false;
-    private _hasInit: boolean = false;
     private _confirmSub: Subscription;
     private _currentConfig: Configuration = new Configuration();
     private _originalConfig: Configuration;
@@ -59,13 +58,6 @@ export class ConfigService {
         return this._loadingConfig;
     }
 
-    initConfig() {
-        if (!this._hasInit) {
-            this.updateConfig();
-            this._hasInit = true;
-        }
-    }
-
     updateConfig() {
         this._loadingConfig = true;
         this.configureService
@@ -89,10 +81,6 @@ export class ConfigService {
                         new StringValueItem(fakePass, true);
                     // Keep the original copy of the data
                     this._originalConfig = clone(this._currentConfig);
-                    // Handle read only
-                    if (this._originalConfig?.read_only?.value) {
-                        this.msgHandler.handleReadOnly();
-                    }
                 },
                 error => {
                     this.msgHandler.handleError(error);

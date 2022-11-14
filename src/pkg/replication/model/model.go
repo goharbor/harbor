@@ -42,6 +42,7 @@ type Policy struct {
 	CreationTime              time.Time `orm:"column(creation_time);auto_now_add" sort:"default:desc"`
 	UpdateTime                time.Time `orm:"column(update_time);auto_now"`
 	Speed                     int32     `orm:"column(speed_kb)"`
+	CopyByChunk               bool      `orm:"column(copy_by_chunk)"`
 }
 
 // TableName set table name for ORM

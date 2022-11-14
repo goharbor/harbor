@@ -22,7 +22,7 @@
             </label>
             <div class="login-group">
                 <ng-container *ngIf="isOidcLoginMode && steps === 1">
-                    <a href="/c/oidc/login">
+                    <a href="/c/oidc/login?redirect_url={{ redirectUrl }}">
                         <button
                             type="button"
                             id="log_oidc"

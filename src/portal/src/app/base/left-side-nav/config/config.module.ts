@@ -16,7 +16,6 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { ConfigurationComponent } from './config.component';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
-import { ConfigurationEmailComponent } from './email/config-email.component';
 import { SystemSettingsComponent } from './system/system-settings.component';
 import { RouterModule, Routes } from '@angular/router';
 import { ConfigService } from './config.service';
@@ -30,10 +29,6 @@ const routes: Routes = [
             {
                 path: 'auth',
                 component: ConfigurationAuthComponent,
-            },
-            {
-                path: 'email',
-                component: ConfigurationEmailComponent,
             },
             {
                 path: 'security',
@@ -56,7 +51,6 @@ const routes: Routes = [
     declarations: [
         ConfigurationComponent,
         ConfigurationAuthComponent,
-        ConfigurationEmailComponent,
         SystemSettingsComponent,
         SecurityComponent,
     ],

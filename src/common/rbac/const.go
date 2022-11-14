@@ -77,4 +77,5 @@ const (
 	ResourceSystemVolumes      = Resource("system-volumes")
 	ResourcePurgeAuditLog      = Resource("purge-audit")
 	ResourceExportCVE          = Resource("export-cve")
+	ResourceJobServiceMonitor  = Resource("jobservice-monitor")
 )

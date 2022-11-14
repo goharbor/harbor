@@ -38,11 +38,11 @@ func (rt RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 //
 // See the example for ExampleInstrumentRoundTripperDuration for example usage.
 func InstrumentRoundTripperInFlight(gauge prometheus.Gauge, next http.RoundTripper) RoundTripperFunc {
-	return RoundTripperFunc(func(r *http.Request) (*http.Response, error) {
+	return func(r *http.Request) (*http.Response, error) {
 		gauge.Inc()
 		defer gauge.Dec()
 		return next.RoundTrip(r)
-	})
+	}
 }
 
 // InstrumentRoundTripperCounter is a middleware that wraps the provided
@@ -59,22 +59,38 @@ func InstrumentRoundTripperInFlight(gauge prometheus.Gauge, next http.RoundTripp
 // If the wrapped RoundTripper panics or returns a non-nil error, the Counter
 // is not incremented.
 //
+// Use with WithExemplarFromContext to instrument the exemplars on the counter of requests.
+//
 // See the example for ExampleInstrumentRoundTripperDuration for example usage.
 func InstrumentRoundTripperCounter(counter *prometheus.CounterVec, next http.RoundTripper, opts ...Option) RoundTripperFunc {
+<<<<<<< HEAD
 	rtOpts := &option{}
 	for _, o := range opts {
 		o(rtOpts)
+=======
+	rtOpts := defaultOptions()
+	for _, o := range opts {
+		o.apply(rtOpts)
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 
 	code, method := checkLabels(counter)
 
-	return RoundTripperFunc(func(r *http.Request) (*http.Response, error) {
+	return func(r *http.Request) (*http.Response, error) {
 		resp, err := next.RoundTrip(r)
 		if err == nil {
+<<<<<<< HEAD
+=======
+			exemplarAdd(
+				counter.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)),
+				1,
+				rtOpts.getExemplarFn(r.Context()),
+			)
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 			counter.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)).Inc()
 		}
 		return resp, err
-	})
+	}
 }
 
 // InstrumentRoundTripperDuration is a middleware that wraps the provided
@@ -94,24 +110,40 @@ func InstrumentRoundTripperCounter(counter *prometheus.CounterVec, next http.Rou
 // If the wrapped RoundTripper panics or returns a non-nil error, no values are
 // reported.
 //
+// Use with WithExemplarFromContext to instrument the exemplars on the duration histograms.
+//
 // Note that this method is only guaranteed to never observe negative durations
 // if used with Go1.9+.
 func InstrumentRoundTripperDuration(obs prometheus.ObserverVec, next http.RoundTripper, opts ...Option) RoundTripperFunc {
+<<<<<<< HEAD
 	rtOpts := &option{}
 	for _, o := range opts {
 		o(rtOpts)
+=======
+	rtOpts := defaultOptions()
+	for _, o := range opts {
+		o.apply(rtOpts)
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	}
 
 	code, method := checkLabels(obs)
 
-	return RoundTripperFunc(func(r *http.Request) (*http.Response, error) {
+	return func(r *http.Request) (*http.Response, error) {
 		start := time.Now()
 		resp, err := next.RoundTrip(r)
 		if err == nil {
+<<<<<<< HEAD
 			obs.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)).Observe(time.Since(start).Seconds())
+=======
+			exemplarObserve(
+				obs.With(labels(code, method, r.Method, resp.StatusCode, rtOpts.extraMethods...)),
+				time.Since(start).Seconds(),
+				rtOpts.getExemplarFn(r.Context()),
+			)
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 		}
 		return resp, err
-	})
+	}
 }
 
 // InstrumentTrace is used to offer flexibility in instrumenting the available
@@ -149,7 +181,7 @@ type InstrumentTrace struct {
 //
 // See the example for ExampleInstrumentRoundTripperDuration for example usage.
 func InstrumentRoundTripperTrace(it *InstrumentTrace, next http.RoundTripper) RoundTripperFunc {
-	return RoundTripperFunc(func(r *http.Request) (*http.Response, error) {
+	return func(r *http.Request) (*http.Response, error) {
 		start := time.Now()
 
 		trace := &httptrace.ClientTrace{
@@ -231,5 +263,5 @@ func InstrumentRoundTripperTrace(it *InstrumentTrace, next http.RoundTripper) Ro
 		r = r.WithContext(httptrace.WithClientTrace(r.Context(), trace))
 
 		return next.RoundTrip(r)
-	})
+	}
 }

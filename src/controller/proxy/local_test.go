@@ -65,13 +65,13 @@ func (a *artifactControllerMock) GetByReference(ctx context.Context, repository,
 
 type localHelperTestSuite struct {
 	suite.Suite
-	registryClient *testregistry.FakeClient
+	registryClient *testregistry.Client
 	local          *localHelper
 	artCtl         *artifactControllerMock
 }
 
 func (lh *localHelperTestSuite) SetupTest() {
-	lh.registryClient = &testregistry.FakeClient{}
+	lh.registryClient = &testregistry.Client{}
 	lh.artCtl = &artifactControllerMock{}
 	lh.local = &localHelper{registry: lh.registryClient, artifactCtl: lh.artCtl}
 
@@ -82,7 +82,7 @@ func (lh *localHelperTestSuite) TestBlobExist_False() {
 	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
 	art := lib.ArtifactInfo{Repository: repo, Digest: dig}
 	ctx := context.Background()
-	lh.registryClient.On("BlobExist").Return(false, nil)
+	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
 	exist, err := lh.local.BlobExist(ctx, art)
 	lh.Require().Nil(err)
 	lh.Assert().Equal(false, exist)
@@ -92,7 +92,7 @@ func (lh *localHelperTestSuite) TestBlobExist_True() {
 	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
 	art := lib.ArtifactInfo{Repository: repo, Digest: dig}
 	ctx := context.Background()
-	lh.registryClient.On("BlobExist").Return(true, nil)
+	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(true, nil)
 	exist, err := lh.local.BlobExist(ctx, art)
 	lh.Require().Nil(err)
 	lh.Assert().Equal(true, exist)
@@ -100,7 +100,7 @@ func (lh *localHelperTestSuite) TestBlobExist_True() {
 
 func (lh *localHelperTestSuite) TestPushManifest() {
 	dig := "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f"
-	lh.registryClient.On("PushManifest").Return(dig, nil)
+	lh.registryClient.On("PushManifest", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(dig, nil)
 	manifest := &mockManifest{}
 	var ct string
 	manifest.Mock.On("Payload").Return(ct, []byte("example"), nil)
@@ -117,7 +117,7 @@ func (lh *localHelperTestSuite) TestCheckDependencies_Fail() {
 		{Digest: "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"},
 	}
 	manifest.On("References").Return(refs)
-	lh.registryClient.On("BlobExist").Return(false, nil)
+	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
 	ret := lh.local.CheckDependencies(ctx, "library/hello-world", manifest)
 	lh.Assert().Equal(len(ret), 2)
 }
@@ -130,7 +130,7 @@ func (lh *localHelperTestSuite) TestCheckDependencies_Suc() {
 		{Digest: "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"},
 	}
 	manifest.On("References").Return(refs)
-	lh.registryClient.On("BlobExist").Return(true, nil)
+	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(true, nil)
 	ret := lh.local.CheckDependencies(ctx, "library/hello-world", manifest)
 	lh.Assert().Equal(len(ret), 0)
 }

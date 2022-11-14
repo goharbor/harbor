@@ -92,7 +92,7 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed)
+	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed, c.policy.CopyByChunk)
 }
 
 func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
@@ -103,7 +103,7 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 	return execution.Status == job.StoppedStatus.String(), nil
 }
 
-func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32) error {
+func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32, copyByChunk bool) error {
 	var taskCnt int
 	defer func() {
 		// if no task be created, mark execution done.
@@ -137,9 +137,10 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 				JobKind: job.KindGeneric,
 			},
 			Parameters: map[string]interface{}{
-				"src_resource": string(src),
-				"dst_resource": string(dest),
-				"speed":        speed,
+				"src_resource":  string(src),
+				"dst_resource":  string(dest),
+				"speed":         speed,
+				"copy_by_chunk": copyByChunk,
 			},
 		}
 

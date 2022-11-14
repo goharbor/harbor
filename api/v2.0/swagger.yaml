@@ -4517,6 +4517,82 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /jobservice/pools:
+    get:
+      operationId: getWorkerPools
+      summary: Get worker pools
+      description: Get worker pools
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get worker pools successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WorkerPool'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /jobservice/pools/{pool_id}/workers:
+    get:
+      operationId: getWorkers
+      summary: Get workers
+      description: Get workers in current pool
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: pool_id
+          in: path
+          required: true
+          type: string
+          description: The name of the pool. 'all' stands for all pools
+      responses:
+        '200':
+          description: Get workers successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Worker'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /jobservice/jobs/{job_id}:
+    put:
+      operationId: stopRunningJob
+      summary: Stop running job
+      description: Stop running job
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_id
+          in: path
+          required: true
+          type: string
+          description: The id of the job.
+      responses:
+        '200':
+          description: Stop worker successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /ping:
     get:
       operationId: getPing
@@ -6959,6 +7035,10 @@ definitions:
         format: int32
         description: speed limit for each task
         x-isnullable: true # make this field optional to keep backward compatibility
+      copy_by_chunk:
+        type: boolean
+        description: Whether to enable copy by chunk.
+        x-isnullable: true
   ReplicationTrigger:
     type: object
     properties:
@@ -7116,6 +7196,11 @@ definitions:
         description: The triggers that the registry supports
         items:
           type: string
+      supported_copy_by_chunk:
+        type: boolean
+        description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
   RegistryProviderInfo:
     type: object
     description: The registry provider info contains the base info and capability declarations of the registry provider
@@ -8515,6 +8600,9 @@ definitions:
       oidc_admin_group:
         $ref: '#/definitions/StringConfigItem'
         description: The OIDC group which has the harbor admin privileges
+      oidc_group_filter:
+        $ref: '#/definitions/StringConfigItem'
+        description: The OIDC group filter which filters out the group doesn't match the regular expression   
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
         description: The scope of the OIDC provider
@@ -8792,6 +8880,11 @@ definitions:
         description: The OIDC group which has the harbor admin privileges
         x-omitempty: true
         x-isnullable: true
+      oidc_group_filter:
+        type: string
+        description: The OIDC group filter which filters out the group name doesn't match the regular expression
+        x-omitempty: true
+        x-isnullable: true        
       oidc_scope:
         type: string
         description: The scope of the OIDC provider
@@ -9245,3 +9338,57 @@ definitions:
         items:
           $ref: '#/definitions/ScanDataExportExecution'
         description: The list of scan data export executions
+  WorkerPool:
+    type: object
+    description: the worker pool of job service
+    properties: 
+      pid:
+        type: integer
+        description: the process id of jobservice
+      worker_pool_id:
+        type: string
+        description: the id of the worker pool
+      start_at:
+        type: string
+        format: date-time
+        description: The start time of the work pool
+      heartbeat_at:
+        type: string
+        format: date-time
+        description: The heartbeat time of the work pool
+      concurrency:
+        type: integer
+        description: The concurrency of the work pool
+      host: 
+        type: string
+        description: The host of the work pool 
+  Worker:
+    type: object
+    description: worker in the pool
+    properties: 
+      id:
+        type: string
+        description: the id of the worker
+      pool_id:
+        type: string
+        description: the id of the worker pool
+      job_name:
+        type: string
+        description: the name of the running job in the worker
+      job_id:
+        type: string
+        description: the id of the running job in the worker
+      start_at:
+        type: string
+        format: date-time
+        description: The start time of the worker
+      args:
+        type: string
+        description: The args of the worker
+      check_in:
+        type: string
+        description: the checkin of the running job in the worker
+      checkin_at:
+        type: string
+        format: date-time
+        description: The checkin time of the running job in the worker

@@ -134,7 +134,7 @@ type Server struct {
 	channelzRemoveOnce sync.Once
 	serveWG            sync.WaitGroup // counts active Serve goroutines for GracefulStop
 
-	channelzID int64 // channelz unique identification number
+	channelzID *channelz.Identifier
 	czData     *channelzData
 
 	serverWorkerChannels []chan *serverWorkerData
@@ -584,9 +584,8 @@ func NewServer(opt ...ServerOption) *Server {
 		s.initServerWorkers()
 	}
 
-	if channelz.IsOn() {
-		s.channelzID = channelz.RegisterServer(&channelzServer{s}, "")
-	}
+	s.channelzID = channelz.RegisterServer(&channelzServer{s}, "")
+	channelz.Info(logger, s.channelzID, "Server created")
 	return s
 }
 
@@ -712,7 +711,7 @@ var ErrServerStopped = errors.New("grpc: the server has been stopped")
 
 type listenSocket struct {
 	net.Listener
-	channelzID int64
+	channelzID *channelz.Identifier
 }
 
 func (l *listenSocket) ChannelzMetric() *channelz.SocketInternalMetric {
@@ -724,9 +723,8 @@ func (l *listenSocket) ChannelzMetric() *channelz.SocketInternalMetric {
 
 func (l *listenSocket) Close() error {
 	err := l.Listener.Close()
-	if channelz.IsOn() {
-		channelz.RemoveEntry(l.channelzID)
-	}
+	channelz.RemoveEntry(l.channelzID)
+	channelz.Info(logger, l.channelzID, "ListenSocket deleted")
 	return err
 }
 
@@ -759,11 +757,6 @@ func (s *Server) Serve(lis net.Listener) error {
 	ls := &listenSocket{Listener: lis}
 	s.lis[ls] = true
 
-	if channelz.IsOn() {
-		ls.channelzID = channelz.RegisterListenSocket(ls, s.channelzID, lis.Addr().String())
-	}
-	s.mu.Unlock()
-
 	defer func() {
 		s.mu.Lock()
 		if s.lis != nil && s.lis[ls] {
@@ -773,8 +766,16 @@ func (s *Server) Serve(lis net.Listener) error {
 		s.mu.Unlock()
 	}()
 
-	var tempDelay time.Duration // how long to sleep on accept failure
+	var err error
+	ls.channelzID, err = channelz.RegisterListenSocket(ls, s.channelzID, lis.Addr().String())
+	if err != nil {
+		s.mu.Unlock()
+		return err
+	}
+	s.mu.Unlock()
+	channelz.Info(logger, ls.channelzID, "ListenSocket created")
 
+	var tempDelay time.Duration // how long to sleep on accept failure
 	for {
 		rawConn, err := lis.Accept()
 		if err != nil {
@@ -885,13 +886,11 @@ func (s *Server) newHTTP2Transport(c net.Conn) transport.ServerTransport {
 		// ErrConnDispatched means that the connection was dispatched away from
 		// gRPC; those connections should be left open.
 		if err != credentials.ErrConnDispatched {
-			c.Close()
-		}
-		// Don't log on ErrConnDispatched and io.EOF to prevent log spam.
-		if err != credentials.ErrConnDispatched {
+			// Don't log on ErrConnDispatched and io.EOF to prevent log spam.
 			if err != io.EOF {
 				channelz.Warning(logger, s.channelzID, "grpc: Server.Serve failed to create ServerTransport: ", err)
 			}
+			c.Close()
 		}
 		return nil
 	}
@@ -1106,16 +1105,21 @@ func chainUnaryServerInterceptors(s *Server) {
 
 func chainUnaryInterceptors(interceptors []UnaryServerInterceptor) UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *UnaryServerInfo, handler UnaryHandler) (interface{}, error) {
-		var i int
-		var next UnaryHandler
-		next = func(ctx context.Context, req interface{}) (interface{}, error) {
-			if i == len(interceptors)-1 {
-				return interceptors[i](ctx, req, info, handler)
-			}
-			i++
-			return interceptors[i-1](ctx, req, info, next)
+		// the struct ensures the variables are allocated together, rather than separately, since we
+		// know they should be garbage collected together. This saves 1 allocation and decreases
+		// time/call by about 10% on the microbenchmark.
+		var state struct {
+			i    int
+			next UnaryHandler
 		}
-		return next(ctx, req)
+		state.next = func(ctx context.Context, req interface{}) (interface{}, error) {
+			if state.i == len(interceptors)-1 {
+				return interceptors[state.i](ctx, req, info, handler)
+			}
+			state.i++
+			return interceptors[state.i-1](ctx, req, info, state.next)
+		}
+		return state.next(ctx, req)
 	}
 }
 
@@ -1280,9 +1284,10 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 	if appErr != nil {
 		appStatus, ok := status.FromError(appErr)
 		if !ok {
-			// Convert appErr if it is not a grpc status error.
-			appErr = status.Error(codes.Unknown, appErr.Error())
-			appStatus, _ = status.FromError(appErr)
+			// Convert non-status application error to a status error with code
+			// Unknown, but handle context errors specifically.
+			appStatus = status.FromContextError(appErr)
+			appErr = appStatus.Err()
 		}
 		if trInfo != nil {
 			trInfo.tr.LazyLog(stringer(appStatus.Message()), true)
@@ -1391,16 +1396,21 @@ func chainStreamServerInterceptors(s *Server) {
 
 func chainStreamInterceptors(interceptors []StreamServerInterceptor) StreamServerInterceptor {
 	return func(srv interface{}, ss ServerStream, info *StreamServerInfo, handler StreamHandler) error {
-		var i int
-		var next StreamHandler
-		next = func(srv interface{}, ss ServerStream) error {
-			if i == len(interceptors)-1 {
-				return interceptors[i](srv, ss, info, handler)
-			}
-			i++
-			return interceptors[i-1](srv, ss, info, next)
+		// the struct ensures the variables are allocated together, rather than separately, since we
+		// know they should be garbage collected together. This saves 1 allocation and decreases
+		// time/call by about 10% on the microbenchmark.
+		var state struct {
+			i    int
+			next StreamHandler
 		}
-		return next(srv, ss)
+		state.next = func(srv interface{}, ss ServerStream) error {
+			if state.i == len(interceptors)-1 {
+				return interceptors[state.i](srv, ss, info, handler)
+			}
+			state.i++
+			return interceptors[state.i-1](srv, ss, info, state.next)
+		}
+		return state.next(srv, ss)
 	}
 }
 
@@ -1541,7 +1551,9 @@ func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transp
 	if appErr != nil {
 		appStatus, ok := status.FromError(appErr)
 		if !ok {
-			appStatus = status.New(codes.Unknown, appErr.Error())
+			// Convert non-status application error to a status error with code
+			// Unknown, but handle context errors specifically.
+			appStatus = status.FromContextError(appErr)
 			appErr = appStatus.Err()
 		}
 		if trInfo != nil {
@@ -1698,11 +1710,7 @@ func (s *Server) Stop() {
 		s.done.Fire()
 	}()
 
-	s.channelzRemoveOnce.Do(func() {
-		if channelz.IsOn() {
-			channelz.RemoveEntry(s.channelzID)
-		}
-	})
+	s.channelzRemoveOnce.Do(func() { channelz.RemoveEntry(s.channelzID) })
 
 	s.mu.Lock()
 	listeners := s.lis
@@ -1740,11 +1748,7 @@ func (s *Server) GracefulStop() {
 	s.quit.Fire()
 	defer s.done.Fire()
 
-	s.channelzRemoveOnce.Do(func() {
-		if channelz.IsOn() {
-			channelz.RemoveEntry(s.channelzID)
-		}
-	})
+	s.channelzRemoveOnce.Do(func() { channelz.RemoveEntry(s.channelzID) })
 	s.mu.Lock()
 	if s.conns == nil {
 		s.mu.Unlock()
@@ -1797,12 +1801,26 @@ func (s *Server) getCodec(contentSubtype string) baseCodec {
 	return codec
 }
 
-// SetHeader sets the header metadata.
-// When called multiple times, all the provided metadata will be merged.
-// All the metadata will be sent out when one of the following happens:
-//  - grpc.SendHeader() is called;
-//  - The first response is sent out;
-//  - An RPC status is sent out (error or success).
+// SetHeader sets the header metadata to be sent from the server to the client.
+// The context provided must be the context passed to the server's handler.
+//
+// Streaming RPCs should prefer the SetHeader method of the ServerStream.
+//
+// When called multiple times, all the provided metadata will be merged.  All
+// the metadata will be sent out when one of the following happens:
+//
+// - grpc.SendHeader is called, or for streaming handlers, stream.SendHeader.
+// - The first response message is sent.  For unary handlers, this occurs when
+//   the handler returns; for streaming handlers, this can happen when stream's
+//   SendMsg method is called.
+// - An RPC status is sent out (error or success).  This occurs when the handler
+//   returns.
+//
+// SetHeader will fail if called after any of the events above.
+//
+// The error returned is compatible with the status package.  However, the
+// status code will often not match the RPC status as seen by the client
+// application, and therefore, should not be relied upon for this purpose.
 func SetHeader(ctx context.Context, md metadata.MD) error {
 	if md.Len() == 0 {
 		return nil
@@ -1814,8 +1832,14 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 	return stream.SetHeader(md)
 }
 
-// SendHeader sends header metadata. It may be called at most once.
-// The provided md and headers set by SetHeader() will be sent.
+// SendHeader sends header metadata. It may be called at most once, and may not
+// be called after any event that causes headers to be sent (see SetHeader for
+// a complete list).  The provided md and headers set by SetHeader() will be
+// sent.
+//
+// The error returned is compatible with the status package.  However, the
+// status code will often not match the RPC status as seen by the client
+// application, and therefore, should not be relied upon for this purpose.
 func SendHeader(ctx context.Context, md metadata.MD) error {
 	stream := ServerTransportStreamFromContext(ctx)
 	if stream == nil {
@@ -1829,6 +1853,10 @@ func SendHeader(ctx context.Context, md metadata.MD) error {
 
 // SetTrailer sets the trailer metadata that will be sent when an RPC returns.
 // When called more than once, all the provided metadata will be merged.
+//
+// The error returned is compatible with the status package.  However, the
+// status code will often not match the RPC status as seen by the client
+// application, and therefore, should not be relied upon for this purpose.
 func SetTrailer(ctx context.Context, md metadata.MD) error {
 	if md.Len() == 0 {
 		return nil

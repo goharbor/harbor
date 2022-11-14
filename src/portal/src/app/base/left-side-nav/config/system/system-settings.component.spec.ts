@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SystemSettingsComponent } from './system-settings.component';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { of } from 'rxjs';
-import { Configuration, NumberValueItem, StringValueItem } from '../config';
+import { Configuration } from '../config';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { ConfigService } from '../config.service';
 import { AppConfigService } from '../../../../services/app-config.service';
@@ -10,12 +10,6 @@ import { AppConfigService } from '../../../../services/app-config.service';
 describe('SystemSettingsComponent', () => {
     let component: SystemSettingsComponent;
     let fixture: ComponentFixture<SystemSettingsComponent>;
-    const fakedErrorHandler = {
-        info() {
-            return null;
-        },
-    };
-
     const fakeConfigService = {
         config: new Configuration(),
         getConfig() {
@@ -51,7 +45,6 @@ describe('SystemSettingsComponent', () => {
             providers: [
                 { provide: AppConfigService, useValue: fakedAppConfigService },
                 { provide: ConfigService, useValue: fakeConfigService },
-                { provide: ErrorHandler, useValue: fakedErrorHandler },
             ],
             declarations: [SystemSettingsComponent],
         });

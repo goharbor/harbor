@@ -50,12 +50,22 @@ func (d *delegator) setDelegate(eh ErrorHandler) {
 	defer d.lock.Unlock()
 	d.eh = eh
 }
+<<<<<<< HEAD
 
 func defaultErrorHandler() *delegator {
 	return &delegator{
 		lock: &sync.RWMutex{},
 		eh:   &errLogger{l: log.New(os.Stderr, "", log.LstdFlags)},
 	}
+=======
+
+func defaultErrorHandler() *delegator {
+	return &delegator{
+		lock: &sync.RWMutex{},
+		eh:   &errLogger{l: log.New(os.Stderr, "", log.LstdFlags)},
+	}
+
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 }
 
 // errLogger logs errors if no delegate is set, otherwise they are delegated.

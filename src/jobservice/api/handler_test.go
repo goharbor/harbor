@@ -55,7 +55,7 @@ type APIHandlerTestSuite struct {
 
 // SetupSuite prepares test suite
 func (suite *APIHandlerTestSuite) SetupSuite() {
-	_ = os.Setenv(secretKey, fakeSecret)
+	suite.T().Setenv(secretKey, fakeSecret)
 
 	suite.client = &http.Client{
 		Timeout: 10 * time.Second,
@@ -76,7 +76,6 @@ func (suite *APIHandlerTestSuite) SetupSuite() {
 
 // TearDownSuite clears test suite
 func (suite *APIHandlerTestSuite) TearDownSuite() {
-	_ = os.Unsetenv(secretKey)
 	_ = suite.server.Stop()
 	suite.cancel()
 }

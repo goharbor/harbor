@@ -102,8 +102,6 @@
         "OIDC_ENDPOINT": "Endereço do provedor. Deve ser compatível com o protocolo OIDC",
         "OIDC_SCOPE": "O âmbito (scope) de aplicação enviada ao provedor OIDC durante a autenticação. Deve incluir 'openid' e 'offline_access'. Se estiver usando Google, remova o valor 'offline_access'.",
         "OIDC_VERIFYCERT": "Desmarque para ignorar certificados inválidos ou auto-assinados no provedor ODIC.",
-        "OIDC_GROUP_CLAIM": "Nome da propriedade (claim) cujo valor representa a lista de grupos do usuário.",
-        "OIDC_GROUP_CLAIM_WARNING": "Deve conter apenas letras, números e traço-baixo (underscores). Tamanho máximo de 256 caracteres.",
         "OIDC_AUTOONBOARD": "Pular tela de alteração durante o cadastro automático. Informações, como nome e e-mail, virão do provedor externo.",
         "OIDC_USER_CLAIM": "Nome da propriedade (claim) cujo valor representa o nome de usuário (login). Se não informado, 'name' será usado.",
         "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número."
@@ -254,7 +252,7 @@
         "QUOTA_UNLIMIT_TIP": "Para  não ter limite, utilize -1.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
-        "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR, Github GHCR e repositórios compatíveis com o protocolo Docker Registry",
+        "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache"
     },
@@ -659,7 +657,9 @@
         "BANDWIDTH_TOOLTIP": "Informe o limite de banda para cada execução. Tome cuidado e observe a relação com o número de execuções simultâneas. Para remover qualquer limite, informe -1",
         "UNLIMITED": "Ilimitado",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
-        "CRON_ERROR_TIP": "Field is required and \"*\"is not allowed for the \"Minutes\" field"
+        "CRON_ERROR_TIP": "Field is required and \"*\"is not allowed for the \"Minutes\" field",
+        "COPY_BY_CHUNK": "Copy by chunk",
+        "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endereço",
@@ -852,7 +852,6 @@
         "TITLE": "Configuração",
         "AUTH": "Autenticação",
         "REPLICATION": "Replicação",
-        "EMAIL": "E-mail",
         "LABEL": "Marcadores",
         "REPOSITORY": "Repositório",
         "REPO_READ_ONLY": "Repositório somente leitura",
@@ -863,15 +862,6 @@
         "CONFIRM_TITLE": "Confirmação de cancelamento",
         "CONFIRM_SUMMARY": "Algumas alterações não foram salvas. Deseja descartá-las?",
         "SAVE_SUCCESS": "Configuração salva com sucesso.",
-        "MAIL_SERVER": "Servidor de E-mail",
-        "MAIL_SERVER_PORT": "Porta do Servidor de E-mail",
-        "MAIL_USERNAME": "Nome de usuário do Servidor de E-mail",
-        "MAIL_PASSWORD": "Senha do servidor de E-mail",
-        "MAIL_FROM": "E-mail de",
-        "MAIL_SSL": "SSL do E-mail",
-        "MAIL_INSECURE": "Verificar certificados",
-        "INSECURE_TOOLTIP": "Determina se o certificado do servidor de E-mail deve ser verificado. Desmarque esse item quando o servidor de E-mail utiliza um certificado auto-assinado ou não confiável.",
-        "SSL_TOOLTIP": "Habilitar SSL para conexão ao servidor de E-mail",
         "VERIFY_REMOTE_CERT": "Verificar Certificado remoto",
         "TOKEN_EXPIRATION": "Expiração do Token (Minutos)",
         "AUTH_MODE": "Modo de autenticação",
@@ -963,8 +953,11 @@
             "OIDC_SETNAMECONTENT": "Um nome de usuário deve ser criado na base local do Harbor para ser associado a projetos, perfís e permissões. Marque esta opção para que o nome de usuário seja obtido do provedor OIDC através do atributo (claim) informado.",
             "OIDC_USERNAME": "Nome de usuário",
             "GROUP_CLAIM_NAME": "Atributo com nome do grupo (claim)",
+            "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
             "OIDC_ADMIN_GROUP": "Grupo Administrativo",
-            "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado."
+            "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado.",
+            "OIDC_GROUP_FILTER": "OIDC Group Filter",
+            "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Todos os exames foram interrompidos!",

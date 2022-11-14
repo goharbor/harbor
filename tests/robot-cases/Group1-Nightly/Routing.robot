@@ -40,7 +40,6 @@ Test Case - Main Menu Routing
     ...  harbor/clearing-job/gc=//gc-history//h5[contains(.,'GC History')]
     ...  harbor/clearing-job/audit-log-purge=//app-purge-history//h5[contains(.,'Purge History')]
     ...  harbor/configs/auth=//config//config-auth//label[contains(.,'Auth Mode')]
-    ...  harbor/configs/email=//config//config-email//label[contains(.,'Email Server Port')]
     ...  harbor/configs/security=//config//app-security//span[contains(.,'CVE allowlist')]
     ...  harbor/configs/setting=//config//system-settings//label[contains(.,'Project Creation')]
     FOR  ${key}  IN  @{routing.keys()}

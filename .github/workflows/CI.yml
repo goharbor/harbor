@@ -29,17 +29,17 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-           go-version: 1.18.5
+           go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 20.04
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
          path: src/github.com/goharbor/harbor
       - name: setup env
@@ -82,7 +82,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -95,17 +95,17 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.5
+          go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -155,17 +155,17 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.5
+          go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -215,17 +215,17 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.5
+          go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -273,17 +273,17 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.5
+          go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 18.09
           docker_channel: stable
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -330,10 +330,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
       - name: script
@@ -344,7 +344,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

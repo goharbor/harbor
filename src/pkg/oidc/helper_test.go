@@ -537,3 +537,25 @@ func TestInjectGroupsToUser(t *testing.T) {
 		assert.Equal(t, *c.new, *u)
 	}
 }
+
+func Test_filterGroup(t *testing.T) {
+	type args struct {
+		groupNames []string
+		filter     string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"normal", args{[]string{"admin_user"}, "^admin.*"}, []string{"admin_user"}},
+		{"multiple ", args{[]string{"admin_user", "harbor_admin"}, "^admin.*"}, []string{"admin_user"}},
+		{"no match", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, "^admin.*"}, []string{}},
+		{"empty filter", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, ""}, []string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, filterGroup(tt.args.groupNames, tt.args.filter), "filterGroup(%v, %v)", tt.args.groupNames, tt.args.filter)
+		})
+	}
+}

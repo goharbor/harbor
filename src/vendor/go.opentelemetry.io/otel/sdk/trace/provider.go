@@ -21,7 +21,10 @@ import (
 	"sync/atomic"
 
 	"go.opentelemetry.io/otel"
+<<<<<<< HEAD
 	"go.opentelemetry.io/otel/internal/global"
+=======
+>>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/trace"

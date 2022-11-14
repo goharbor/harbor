@@ -12,6 +12,7 @@ import { errorHandler } from '../shared/units/shared.utils';
 })
 export class OidcOnboardComponent implements OnInit {
     url: string;
+    redirectUrl: string;
     errorMessage: string = '';
     oidcUsername = new UntypedFormControl('');
     errorOpen: boolean = false;
@@ -23,6 +24,7 @@ export class OidcOnboardComponent implements OnInit {
 
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
+            this.redirectUrl = params['redirect_url'] || '';
             this.oidcUsername.setValue(params['username'] || '');
         });
     }
@@ -31,7 +33,12 @@ export class OidcOnboardComponent implements OnInit {
             .oidcSave({ username: this.oidcUsername.value })
             .subscribe(
                 res => {
-                    this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                    if (this.redirectUrl === '') {
+                        // Routing to the default location
+                        this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
+                    } else {
+                        this.router.navigateByUrl(this.redirectUrl);
+                    }
                 },
                 error => {
                     this.errorMessage = errorHandler(error);

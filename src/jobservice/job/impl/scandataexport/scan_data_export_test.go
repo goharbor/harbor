@@ -106,6 +106,40 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 
 }
 
+func (suite *ScanDataExportJobTestSuite) TestRunCreateSysArtError() {
+	oldSysArtMgr := suite.sysArtifactMgr
+	defer func() {
+		suite.job.sysArtifactMgr = oldSysArtMgr
+	}()
+
+	sysArtMgr := &systemartifacttesting.Manager{}
+	suite.job.sysArtifactMgr = sysArtMgr
+	sysArtMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(-1), errors.New("create sys artifact error")).Once()
+	// mock create system artifact error when file is empty
+	var data []export.Data
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
+
+	execAttrs := make(map[string]interface{})
+	execAttrs[export.JobNameAttribute] = "test-job"
+	execAttrs[export.UserNameAttribute] = "test-user"
+	mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil)
+
+	params := job.Parameters{}
+	params[export.JobModeKey] = export.JobModeExport
+	params["JobId"] = JobId
+	ctx := &mockjobservice.MockJobContext{}
+
+	err := suite.job.Run(ctx, params)
+	suite.Error(err)
+
+	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+		return attrsMap["status_message"] == "No vulnerabilities found or matched" && attrsMap[export.JobNameAttribute] == "test-job" && attrsMap[export.UserNameAttribute] == "test-user"
+	})
+	suite.execMgr.AssertCalled(suite.T(), "UpdateExtraAttrs", mock.Anything, int64(JobId), extraAttrsMatcher)
+}
+
 func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 
 	data := suite.createDataRecords(3, 1)

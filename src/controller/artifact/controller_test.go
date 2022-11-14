@@ -73,7 +73,7 @@ type controllerTestSuite struct {
 	labelMgr     *label.Manager
 	abstractor   *fakeAbstractor
 	immutableMtr *immutable.FakeMatcher
-	regCli       *registry.FakeClient
+	regCli       *registry.Client
 	accMgr       *accessory.Manager
 }
 
@@ -87,7 +87,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.abstractor = &fakeAbstractor{}
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.accMgr = &accessorytesting.Manager{}
-	c.regCli = &registry.FakeClient{}
+	c.regCli = &registry.Client{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
@@ -562,7 +562,7 @@ func (c *controllerTestSuite) TestCopy() {
 	}, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	c.regCli.On("Copy").Return(nil)
+	c.regCli.On("Copy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
 	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
