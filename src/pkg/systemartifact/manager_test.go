@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -140,7 +139,7 @@ func (suite *ManagerTestSuite) TestRead() {
 
 	dummyRepoFilepath := fmt.Sprintf("/tmp/sys_art_test.dmp_%v", time.Now())
 	data := []byte("test data")
-	err := ioutil.WriteFile(dummyRepoFilepath, data, os.ModePerm)
+	err := os.WriteFile(dummyRepoFilepath, data, os.ModePerm)
 	suite.NoErrorf(err, "Unexpected error when creating test repo file: %v", dummyRepoFilepath)
 
 	repoHandle, err := os.Open(dummyRepoFilepath)
@@ -162,7 +161,7 @@ func (suite *ManagerTestSuite) TestReadSystemArtifactRecordNotFound() {
 
 	dummyRepoFilepath := fmt.Sprintf("/tmp/sys_art_test.dmp_%v", time.Now())
 	data := []byte("test data")
-	err := ioutil.WriteFile(dummyRepoFilepath, data, os.ModePerm)
+	err := os.WriteFile(dummyRepoFilepath, data, os.ModePerm)
 	suite.NoErrorf(err, "Unexpected error when creating test repo file: %v", dummyRepoFilepath)
 
 	repoHandle, err := os.Open(dummyRepoFilepath)

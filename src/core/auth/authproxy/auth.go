@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -83,7 +83,7 @@ func (a *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 	if err != nil {
 		return nil, err
 	}
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Warningf("Failed to read response body, error: %v", err)
 		return nil, auth.ErrAuth{}
@@ -103,7 +103,7 @@ func (a *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 	} else if resp.StatusCode == http.StatusUnauthorized {
 		return nil, auth.NewErrAuth(string(data))
 	} else {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Warningf("Failed to read response body, error: %v", err)
 		}

@@ -15,7 +15,7 @@
 package blob
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib"
@@ -34,7 +34,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		logger := log.G(ctx)
 
 		lib.NopCloseRequest(r) // make the r.Body re-readable
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return err
 		}

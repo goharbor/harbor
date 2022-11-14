@@ -1,7 +1,7 @@
 package notification
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,7 +56,7 @@ func TestSlackJobRun(t *testing.T) {
 	// test slack request
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 
 			// test request method
 			assert.Equal(t, http.MethodPost, r.Method)

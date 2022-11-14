@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -171,7 +171,7 @@ func modifyResponse(res *http.Response) error {
 		res.StatusCode = http.StatusInternalServerError
 	} else {
 		// Extract the error and wrap it into the error object
-		data, err := ioutil.ReadAll(res.Body)
+		data, err := io.ReadAll(res.Body)
 		if err != nil {
 			errorObj["error"] = fmt.Sprintf("%s: %s", res.Status, err.Error())
 		} else {
@@ -187,7 +187,7 @@ func modifyResponse(res *http.Response) error {
 	}
 
 	size := len(content)
-	body := ioutil.NopCloser(bytes.NewReader(content))
+	body := io.NopCloser(bytes.NewReader(content))
 	res.Body = body
 	res.ContentLength = int64(size)
 	res.Header.Set(contentLengthHeader, strconv.Itoa(size))

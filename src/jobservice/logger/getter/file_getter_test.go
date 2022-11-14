@@ -1,7 +1,6 @@
 package getter
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -18,7 +17,7 @@ const (
 // Test the log data getter
 func TestLogDataGetter(t *testing.T) {
 	fakeLog := path.Join(os.TempDir(), newLogFileName)
-	if err := ioutil.WriteFile(fakeLog, []byte("hello"), 0600); err != nil {
+	if err := os.WriteFile(fakeLog, []byte("hello"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	defer func() {

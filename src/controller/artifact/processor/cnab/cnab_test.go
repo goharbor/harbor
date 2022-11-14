@@ -15,7 +15,7 @@
 package cnab
 
 import (
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -95,7 +95,7 @@ func (p *processorTestSuite) TestAbstractMetadata() {
 	mani, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
 	p.Require().Nil(err)
 	p.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(mani, "", nil)
-	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(config)), nil)
 	err = p.processor.AbstractMetadata(nil, art, nil)
 	p.Require().Nil(err)
 	p.Len(art.ExtraAttrs, 7)

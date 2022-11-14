@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -34,7 +34,7 @@ func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
 		return nil, errs.NoObjectFoundError(logID)
 	}
 
-	return ioutil.ReadFile(fPath)
+	return os.ReadFile(fPath)
 }
 
 func isValidLogID(id string) error {

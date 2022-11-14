@@ -17,7 +17,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -81,7 +81,7 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
-	data, err := ioutil.ReadAll(req.Body)
+	data, err := io.ReadAll(req.Body)
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
 		return
@@ -143,7 +143,7 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
-	data, err := ioutil.ReadAll(req.Body)
+	data, err := io.ReadAll(req.Body)
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
 		return

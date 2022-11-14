@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -66,7 +66,7 @@ func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
 			return err
 		}
 		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func (c *Client) getRepositories() ([]*model.Repository, error) {
 			return nil, err
 		}
 		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -198,7 +198,7 @@ func (c *Client) getNamespaces() ([]Account, error) {
 			return nil, err
 		}
 		defer resp.Body.Close()
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -270,7 +270,7 @@ func (c *Client) createRepository(repository string) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (c *Client) createNamespace(namespace string) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

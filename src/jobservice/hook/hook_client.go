@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -111,7 +111,7 @@ func (bc *basicClient) SendEvent(evt *Event) error {
 	if res.StatusCode != http.StatusOK {
 		if res.ContentLength > 0 {
 			// read error content and return
-			dt, err := ioutil.ReadAll(res.Body)
+			dt, err := io.ReadAll(res.Body)
 			if err != nil {
 				return err
 			}

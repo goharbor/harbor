@@ -19,7 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -254,7 +254,7 @@ func reportResponseHandler() responseHandler {
 
 // generalRespHandlerFunc is a handler to cover the general cases
 func generalRespHandlerFunc(expectedCode, code int, resp *http.Response) ([]byte, error) {
-	buf, err := ioutil.ReadAll(resp.Body)
+	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

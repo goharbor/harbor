@@ -3,7 +3,6 @@ package tencentcr
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -229,7 +228,7 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			Pattern: "/",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(r.Method, r.URL)
-				if buf, e := ioutil.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
+				if buf, e := io.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
 					fmt.Println("\t", string(buf))
 				}
 				w.WriteHeader(http.StatusOK)

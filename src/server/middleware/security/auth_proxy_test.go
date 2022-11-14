@@ -17,7 +17,7 @@ package security
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -89,7 +89,7 @@ func newAuthProxyTestServer() (*httptest.Server, error) {
 		}
 
 		var review v1beta1.TokenReview
-		bodyData, _ := ioutil.ReadAll(r.Body)
+		bodyData, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(bodyData, &review); err != nil {
 			http.Error(w, fmt.Sprintf("failed to decode body: %v", err), http.StatusBadRequest)
 			return

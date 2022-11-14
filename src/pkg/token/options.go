@@ -3,7 +3,7 @@ package token
 import (
 	"crypto/rsa"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/golang-jwt/jwt/v4"
 
@@ -67,7 +67,7 @@ func DefaultTokenOptions() *Options {
 
 // NewOptions create Options based on input parms
 func NewOptions(sm, iss, keyPath string) (*Options, error) {
-	pk, err := ioutil.ReadFile(keyPath)
+	pk, err := os.ReadFile(keyPath)
 	if err != nil {
 		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
 		return nil, err

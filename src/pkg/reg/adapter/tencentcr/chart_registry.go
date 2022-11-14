@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -183,7 +182,7 @@ func (a *adapter) DownloadChart(name, version, contentURL string) (rc io.ReadClo
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		body, err = ioutil.ReadAll(resp.Body)
+		body, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return
 		}
@@ -234,7 +233,7 @@ func (a *adapter) UploadChart(name, version string, reader io.Reader) (err error
 
 	// 3. parse response
 	var data []byte
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}

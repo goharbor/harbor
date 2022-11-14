@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -150,7 +149,7 @@ func TestGetGetter(t *testing.T) {
 	}
 
 	logFile := path.Join(os.TempDir(), fakeLogFile)
-	if err := ioutil.WriteFile(logFile, []byte("hello log getter"), 0644); err != nil {
+	if err := os.WriteFile(logFile, []byte("hello log getter"), 0644); err != nil {
 		t.Fatal(err)
 	}
 	defer func() {

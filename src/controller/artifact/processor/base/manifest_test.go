@@ -15,7 +15,7 @@
 package base
 
 import (
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -140,7 +140,7 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract all properties
 	art := &artifact.Artifact{}
 
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Len(art.ExtraAttrs, 9)
 
@@ -150,14 +150,14 @@ func (m *manifestTestSuite) TestAbstractMetadata() {
 	// abstract the specified properties
 	m.processor.properties = []string{"os"}
 	art = &artifact.Artifact{}
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(config)), nil)
 	m.processor.AbstractMetadata(nil, art, []byte(manifest))
 	m.Require().Len(art.ExtraAttrs, 1)
 	m.Equal("linux", art.ExtraAttrs["os"])
 }
 
 func (m *manifestTestSuite) TestUnmarshalConfig() {
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(config)), nil)
 	config := &v1.Image{}
 	err := m.processor.UnmarshalConfig(nil, "library/hello-world", []byte(manifest), config)
 	m.Require().Nil(err)

@@ -17,7 +17,6 @@ package artifacthub
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -140,7 +139,7 @@ func (a *adapter) download(contentURL string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}

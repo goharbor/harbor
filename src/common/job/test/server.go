@@ -3,9 +3,10 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path"
 	"runtime"
 	"strings"
@@ -41,7 +42,7 @@ func NewJobServiceServer() *httptest.Server {
 			rw.Header().Add("Content-Type", "text/plain")
 			rw.WriteHeader(http.StatusOK)
 			f := path.Join(currPath(), "test.log")
-			b, _ := ioutil.ReadFile(f)
+			b, _ := os.ReadFile(f)
 			_, err := rw.Write(b)
 			if err != nil {
 				panic(err)
@@ -75,7 +76,7 @@ func NewJobServiceServer() *httptest.Server {
 				rw.WriteHeader(http.StatusMethodNotAllowed)
 				return
 			}
-			data, err := ioutil.ReadAll(req.Body)
+			data, err := io.ReadAll(req.Body)
 			if err != nil {
 				panic(err)
 			}
@@ -92,7 +93,7 @@ func NewJobServiceServer() *httptest.Server {
 	mux.HandleFunc(jobsPrefix,
 		func(rw http.ResponseWriter, req *http.Request) {
 			if req.Method == http.MethodPost {
-				data, err := ioutil.ReadAll(req.Body)
+				data, err := io.ReadAll(req.Body)
 				if err != nil {
 					panic(err)
 				}

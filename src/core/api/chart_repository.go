@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -587,7 +586,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 
 	request.Header.Set(headerContentType, w.FormDataContentType())
 	request.ContentLength = -1
-	request.Body = ioutil.NopCloser(&body)
+	request.Body = io.NopCloser(&body)
 
 	return nil
 }

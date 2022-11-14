@@ -1,7 +1,6 @@
 package sweeper
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -21,7 +20,7 @@ func TestFileSweeper(t *testing.T) {
 	}()
 
 	logFile := path.Join(workDir, "TestFileSweeper.log")
-	if err := ioutil.WriteFile(logFile, []byte("hello"), os.ModePerm); err != nil {
+	if err := os.WriteFile(logFile, []byte("hello"), os.ModePerm); err != nil {
 		t.Fatal(err)
 	}
 	oldModTime := time.Unix(time.Now().Unix()-6*24*3600, 0)

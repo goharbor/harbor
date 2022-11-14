@@ -16,7 +16,7 @@ package icon
 
 import (
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -67,7 +67,7 @@ func (c *controllerTestSuite) TestGet() {
 			RepositoryName: "library/hello-world",
 		},
 	}, nil)
-	blob := ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(iconStr)))
+	blob := io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(iconStr)))
 	c.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), blob, nil)
 	icon, err := c.controller.Get(nil, "sha256:364feec11702f7ee079ba81da723438373afb0921f3646e9e5015406ee150986")
 	c.Require().Nil(err)

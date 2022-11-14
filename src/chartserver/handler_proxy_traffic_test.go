@@ -3,7 +3,7 @@ package chartserver
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -92,7 +92,7 @@ func TestResponseRewrite(t *testing.T) {
 		t.Fatalf("Expect status code 500 but got %d", response.StatusCode)
 	}
 
-	bytes, err := ioutil.ReadAll(response.Body)
+	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("Read bytes from http response failed with error: %s", err)
 	}

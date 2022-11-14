@@ -16,7 +16,7 @@ package registry
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"testing"
@@ -319,7 +319,7 @@ func (c *clientTestSuite) TestPullBlob() {
 	c.Require().Nil(err)
 	c.Equal(int64(len(data)), size)
 
-	b, err := ioutil.ReadAll(blob)
+	b, err := io.ReadAll(blob)
 	c.Require().Nil(err)
 	c.EqualValues(data, b)
 }

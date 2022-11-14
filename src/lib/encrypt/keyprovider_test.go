@@ -15,7 +15,6 @@
 package encrypt
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -24,7 +23,7 @@ func TestGetOfFileKeyProvider(t *testing.T) {
 	path := "/tmp/key"
 	key := "key_content"
 
-	if err := ioutil.WriteFile(path, []byte(key), 0777); err != nil {
+	if err := os.WriteFile(path, []byte(key), 0777); err != nil {
 		t.Errorf("failed to write to file %s: %v", path, err)
 		return
 	}

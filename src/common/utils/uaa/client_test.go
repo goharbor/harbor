@@ -2,7 +2,6 @@ package uaa
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http/httptest"
 	"os"
 	"path"
@@ -55,7 +54,7 @@ func TestUserInfo(t *testing.T) {
 	assert := assert.New(t)
 	client, err := NewDefaultClient(getCfg())
 	assert.Nil(err)
-	token, err := ioutil.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
+	token, err := os.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
 	if err != nil {
 		panic(err)
 	}
