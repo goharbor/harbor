@@ -8,7 +8,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ## [1.8.0/0.31.0] - 2022-07-08
 
 ### Added
@@ -246,8 +245,6 @@ Code instrumented with the `go.opentelemetry.io/otel/metric` will need to be mod
   - [`Metric.GetIntHistogram()`](https://pkg.go.dev/go.opentelemetry.io/proto/otlp@v0.11.0/metrics/v1#Metric.GetIntHistogram)
   - [`Metric.GetIntSum()`](https://pkg.go.dev/go.opentelemetry.io/proto/otlp@v0.11.0/metrics/v1#Metric.GetIntSum)
 
-=======
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 ## [1.3.0] - 2021-12-10
 
 ### ⚠️ Notice ⚠️
@@ -1879,7 +1876,6 @@ It contains api and sdk for trace and meter.
 - CircleCI build CI manifest files.
 - CODEOWNERS file to track owners of this project.
 
-<<<<<<< HEAD
 [Unreleased]: https://github.com/open-telemetry/opentelemetry-go/compare/v1.8.0...HEAD
 [1.8.0/0.31.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.8.0
 [1.7.0/0.30.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.7.0
@@ -1891,9 +1887,6 @@ It contains api and sdk for trace and meter.
 [1.5.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.5.0
 [1.4.1]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.4.1
 [1.4.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.4.0
-=======
-[Unreleased]: https://github.com/open-telemetry/opentelemetry-go/compare/v1.3.0...HEAD
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 [1.3.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.3.0
 [1.2.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.2.0
 [1.1.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.1.0

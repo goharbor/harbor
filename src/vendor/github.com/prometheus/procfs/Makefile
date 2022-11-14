@@ -18,11 +18,7 @@ include Makefile.common
 	./ttar -C $(dir $*) -x -f $*.ttar
 	touch $@
 
-<<<<<<< HEAD
-fixtures: fixtures/.unpacked
-=======
 fixtures: testdata/fixtures/.unpacked
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 
 update_fixtures:
 	rm -vf testdata/fixtures/.unpacked

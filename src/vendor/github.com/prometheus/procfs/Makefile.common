@@ -55,20 +55,12 @@ ifneq ($(shell which gotestsum),)
 endif
 endif
 
-<<<<<<< HEAD
-PROMU_VERSION ?= 0.12.0
-=======
 PROMU_VERSION ?= 0.13.0
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 PROMU_URL     := https://github.com/prometheus/promu/releases/download/v$(PROMU_VERSION)/promu-$(PROMU_VERSION).$(GO_BUILD_PLATFORM).tar.gz
 
 GOLANGCI_LINT :=
 GOLANGCI_LINT_OPTS ?=
-<<<<<<< HEAD
-GOLANGCI_LINT_VERSION ?= v1.39.0
-=======
 GOLANGCI_LINT_VERSION ?= v1.45.2
->>>>>>> 40ba15ca5a97e1a0c8cd3afebd03f2ab8596069c
 # golangci-lint only supports linux, darwin and windows platforms on i386/amd64.
 # windows isn't included here because of the path separator being different.
 ifeq ($(GOHOSTOS),$(filter $(GOHOSTOS),linux darwin))
@@ -176,15 +168,6 @@ ifdef GOLANGCI_LINT
 # Otherwise staticcheck might fail randomly for some reason not yet explained.
 	$(GO) list -e -compiled -test=true -export=false -deps=true -find=false -tags= -- ./... > /dev/null
 	$(GOLANGCI_LINT) run $(GOLANGCI_LINT_OPTS) $(pkgs)
-endif
-
-.PHONY: common-yamllint
-common-yamllint:
-	@echo ">> running yamllint on all YAML files in the repository"
-ifeq (, $(shell which yamllint))
-	@echo "yamllint not installed so skipping"
-else
-	yamllint .
 endif
 
 .PHONY: common-yamllint
