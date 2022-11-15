@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"github.com/beego/beego/v2/client/orm"
 	"os"
 	"strconv"
 
@@ -24,6 +25,7 @@ import (
 )
 
 var defaultRegistered = false
+var o orm.Ormer
 
 // PrepareTestForMySQL is for test only.
 func PrepareTestForMySQL() {
@@ -72,13 +74,14 @@ func PrepareTestForPostgresSQL() {
 	}
 
 	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-	initDatabaseForTest(database)
+	o = initDatabaseForTest(database)
 }
 
-func initDatabaseForTest(db *models.Database) {
+func initDatabaseForTest(db *models.Database) orm.Ormer {
 	database, err := getDatabase(db)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 
 	log.Infof("initializing database: %s", database.String())
@@ -89,23 +92,22 @@ func initDatabaseForTest(db *models.Database) {
 		alias = "default"
 	}
 	if err := database.Register(alias); err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 	if err := database.UpgradeSchema(); err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 
 	if alias != "default" {
-		if err = GetOrmer().Using(alias); err != nil {
-			log.Fatalf("failed to create new orm: %v", err)
-		}
+		return orm.NewOrmUsingDB(alias)
 	}
+	return GetOrmer()
 }
 
 // PrepareTestData -- Clean and Create data
 func PrepareTestData(clearSqls []string, initSqls []string) {
-	o := GetOrmer()
-
 	for _, sql := range clearSqls {
 		fmt.Printf("Exec sql:%v\n", sql)
 		_, err := o.Raw(sql).Exec()
@@ -124,8 +126,6 @@ func PrepareTestData(clearSqls []string, initSqls []string) {
 
 // ExecuteBatchSQL ...
 func ExecuteBatchSQL(sqls []string) {
-	o := GetOrmer()
-
 	for _, sql := range sqls {
 		fmt.Printf("Exec sql:%v\n", sql)
 		_, err := o.Raw(sql).Exec()
@@ -152,7 +152,6 @@ func ArrayEqual(arrayA, arrayB []int) bool {
 // ClearHTTPAuthProxyUsers remove the records from harbor_users to delete all user imported via
 // HTTP Auth Proxy
 func ClearHTTPAuthProxyUsers() error {
-	o := GetOrmer()
 	sql := "DELETE FROM harbor_user WHERE comment='By Authproxy'"
 	_, err := o.Raw(sql).Exec()
 	return err

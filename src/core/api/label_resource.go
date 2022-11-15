@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/lib/log"
 	"net/http"
 	"strconv"
 
@@ -34,7 +35,11 @@ func (lra *LabelResourceAPI) getLabelsOfResource(rType string, rIDOrName interfa
 	}
 
 	lra.Data["json"] = labels
-	lra.ServeJSON()
+	if err := lra.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json, %v", err)
+		lra.handleErrors(err)
+		return
+	}
 }
 
 func (lra *LabelResourceAPI) markLabelToResource(rl *models.ResourceLabel) {

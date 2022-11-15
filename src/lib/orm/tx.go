@@ -37,7 +37,7 @@ func HasCommittedKey(ctx context.Context) bool {
 // ormerTx transaction which support savepoint
 type ormerTx struct {
 	orm.Ormer
-	txOrmer   orm.TxOrmer
+	orm.TxOrmer
 	savepoint string
 }
 
@@ -49,28 +49,30 @@ func (o *ormerTx) createSavepoint() error {
 	val := uuid.New()
 	o.savepoint = fmt.Sprintf("p%s", hex.EncodeToString(val[:]))
 
-	_, err := o.Raw(fmt.Sprintf("SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) releaseSavepoint() error {
-	_, err := o.Raw(fmt.Sprintf("RELEASE SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("RELEASE SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) rollbackToSavepoint() error {
-	_, err := o.Raw(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) Begin() error {
-	txOrmer, err := o.Ormer.Begin()
-	if err != nil {
+	if o.TxOrmer != nil {
 		return o.createSavepoint()
 	}
-
-	o.txOrmer = txOrmer
-	return err
+	txOrmer, err := o.Ormer.Begin()
+	if err != nil {
+		return err
+	}
+	o.TxOrmer = txOrmer
+	return nil
 }
 
 func (o *ormerTx) Commit() error {
@@ -78,7 +80,7 @@ func (o *ormerTx) Commit() error {
 		return o.releaseSavepoint()
 	}
 
-	return o.txOrmer.Commit()
+	return o.TxOrmer.Commit()
 }
 
 func (o *ormerTx) Rollback() error {
@@ -86,5 +88,5 @@ func (o *ormerTx) Rollback() error {
 		return o.rollbackToSavepoint()
 	}
 
-	return o.txOrmer.Rollback()
+	return o.TxOrmer.Rollback()
 }

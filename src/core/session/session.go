@@ -92,6 +92,9 @@ func (rs *Store) SessionRelease(ctx context.Context, w http.ResponseWriter) {
 		return
 	}
 
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
 	if rdb, ok := rs.c.(*redis.Cache); ok {
 		cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
@@ -115,12 +118,18 @@ func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url stri
 		return err
 	}
 
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	return rp.c.Ping(ctx)
 }
 
 // SessionRead read redis session by sid
 func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store, error) {
 	kv := make(map[interface{}]interface{})
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	err := rp.c.Fetch(ctx, sid, &kv)
 	if err != nil && !strings.Contains(err.Error(), goredis.Nil.Error()) {
 		return nil, err
@@ -132,11 +141,17 @@ func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store,
 
 // SessionExist check redis session exist by sid
 func (rp *Provider) SessionExist(ctx context.Context, sid string) (bool, error) {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	return rp.c.Contains(ctx, sid), nil
 }
 
 // SessionRegenerate generate new sid for redis session
 func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (session.Store, error) {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
 	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
 		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
@@ -171,6 +186,9 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 
 // SessionDestroy delete redis session by id
 func (rp *Provider) SessionDestroy(ctx context.Context, sid string) error {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
 	return rp.c.Delete(ctx, sid)
 }
 
