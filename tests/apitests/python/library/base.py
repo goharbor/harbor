@@ -31,7 +31,8 @@ def _create_client(server, credential, debug, api_type="products"):
     cfg = None
     if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
                     'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
-                    'configure', 'user', 'member', 'health', 'label', 'webhook', 'purge', 'audit_log', 'scan_data_export'):
+                    'configure', 'user', 'member', 'health', 'label', 'webhook', 'purge', 'audit_log', 'scan_data_export',
+                    'statistic', "system_info"):
         cfg = v2_swagger_client.Configuration()
     else:
         cfg = swagger_client.Configuration()
@@ -79,7 +80,9 @@ def _create_client(server, credential, debug, api_type="products"):
         "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg)),
         "purge": v2_swagger_client.PurgeApi(v2_swagger_client.ApiClient(cfg)),
         "audit_log": v2_swagger_client.AuditlogApi(v2_swagger_client.ApiClient(cfg)),
-        "scan_data_export": v2_swagger_client.ScanDataExportApi(v2_swagger_client.ApiClient(cfg))
+        "scan_data_export": v2_swagger_client.ScanDataExportApi(v2_swagger_client.ApiClient(cfg)),
+        "statistic": v2_swagger_client.StatisticApi(v2_swagger_client.ApiClient(cfg)),
+        "system_info": v2_swagger_client.SysteminfoApi(v2_swagger_client.ApiClient(cfg))
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
