@@ -218,4 +218,7 @@ const (
 	SkipAuditLogDatabase = "skip_audit_log_database"
 	// MaxAuditRetentionHour allowed in audit log purge
 	MaxAuditRetentionHour = 240000
+
+	// SessionTimeout defines the web session timeout
+	SessionTimeout = "session_timeout"
 )

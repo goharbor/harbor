@@ -84,6 +84,11 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 	}, nil
 }
 
+// SessionTimeout returns the session timeout for web (in minute).
+func SessionTimeout(ctx context.Context) int64 {
+	return DefaultMgr().Get(ctx, common.SessionTimeout).GetInt64()
+}
+
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration(ctx context.Context) (int, error) {
 	return DefaultMgr().Get(ctx, common.TokenExpiration).GetInt(), nil

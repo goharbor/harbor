@@ -8631,6 +8631,9 @@ definitions:
                 type: integer
                 description: 'The offset in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
             description: 'The parameters of the policy, the values are dependent on the type of the policy.'
+      session_timeout:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The session timeout in minutes
   Configurations:
     type: object
     properties:
@@ -8883,7 +8886,12 @@ definitions:
         type: boolean
         description: Skip audit log database
         x-omitempty: true
-        x-isnullable: true          
+        x-isnullable: true
+      session_timeout:
+        type: integer
+        description: The session timeout for harbor, in minutes.
+        x-omitempty: true
+        x-isnullable: true
   StringConfigItem:
     type: object
     properties:
