@@ -870,6 +870,8 @@
         "SAVE_SUCCESS": "变更的配置项成功保存。",
         "VERIFY_REMOTE_CERT": "验证远程证书",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
+        "SESSION_TIMEOUT": "会话过期时间（分钟）",
+        "SESSION_TIMEOUT_INFO": "设置 Harbor UI 的会话过期时间。默认值为60分钟。",
         "AUTH_MODE": "认证模式",
         "PRO_CREATION_RESTRICTION": "项目创建",
         "SELF_REGISTRATION": "允许自注册",

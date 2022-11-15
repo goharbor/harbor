@@ -868,6 +868,8 @@
         "SAVE_SUCCESS": "Yapılandırma başarıyla kaydedildi.",
         "VERIFY_REMOTE_CERT": "Uzaktan Sertifikayı Doğrula",
         "TOKEN_EXPIRATION": "Token Sonu (Dakika)",
+        "SESSION_TIMEOUT": "Session Timeout (Minutes)",
+        "SESSION_TIMEOUT_INFO": "Set the session timeout for Harbor UI. The default is 60 minutes.",
         "AUTH_MODE": "Yetkilendirme Modu",
         "PRO_CREATION_RESTRICTION": "Proje oluşturma",
         "SELF_REGISTRATION": "Kendi Kendine Kayıt Yapmaya İzin Ver",

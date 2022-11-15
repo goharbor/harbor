@@ -65,6 +65,15 @@ export class SystemSettingsComponent implements OnInit {
         this.currentConfig.token_expiration.value = +v;
     }
 
+    get sessionTimeout() {
+        return this.currentConfig.session_timeout.value;
+    }
+
+    set sessionTimeout(v) {
+        // convert string to number
+        this.currentConfig.session_timeout.value = +v;
+    }
+
     get robotTokenExpirationValue() {
         return this.currentConfig.robot_token_duration.value;
     }
@@ -112,7 +121,8 @@ export class SystemSettingsComponent implements OnInit {
                 prop === 'notification_enable' ||
                 prop === 'robot_name_prefix' ||
                 prop === 'audit_log_forward_endpoint' ||
-                prop === 'skip_audit_log_database'
+                prop === 'skip_audit_log_database' ||
+                prop === 'session_timeout'
             ) {
                 changes[prop] = allChanges[prop];
             }

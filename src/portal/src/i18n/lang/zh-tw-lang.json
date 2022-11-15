@@ -865,6 +865,8 @@
     "SAVE_SUCCESS": "變更的配置項成功保存。",
     "VERIFY_REMOTE_CERT": "驗證遠程證書",
     "TOKEN_EXPIRATION": "令牌過期時間（分鐘）",
+    "SESSION_TIMEOUT": "Session Timeout (Minutes)",
+    "SESSION_TIMEOUT_INFO": "Set the session timeout for Harbor UI. The default is 60 minutes.",
     "AUTH_MODE": "認證模式",
     "PRO_CREATION_RESTRICTION": "項目創建",
     "SELF_REGISTRATION": "允許自註冊",

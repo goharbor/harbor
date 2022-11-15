@@ -868,6 +868,8 @@
         "SAVE_SUCCESS": "Configuration has been successfully saved.",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
+        "SESSION_TIMEOUT": "Session Timeout (Minutes)",
+        "SESSION_TIMEOUT_INFO": "Set the session timeout for Harbor UI. The default is 60 minutes.",
         "AUTH_MODE": "Auth Mode",
         "PRO_CREATION_RESTRICTION": "Project Creation",
         "SELF_REGISTRATION": "Allow Self-Registration",
