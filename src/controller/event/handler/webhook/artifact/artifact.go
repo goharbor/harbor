@@ -18,13 +18,11 @@ import (
 	"context"
 	"fmt"
 
-	beegorm "github.com/beego/beego/orm"
-
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
@@ -42,6 +40,11 @@ func (a *Handler) Name() string {
 
 // Handle preprocess artifact event data and then publish hook event
 func (a *Handler) Handle(ctx context.Context, value interface{}) error {
+	if !config.NotificationEnable(ctx) {
+		log.Debug("notification feature is not enabled")
+		return nil
+	}
+
 	switch v := value.(type) {
 	case *event.PushArtifactEvent:
 		return a.handle(ctx, v.ArtifactEvent)
@@ -72,13 +75,15 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 		log.Errorf("failed to find policy for %s event: %v", event.EventType, err)
 		return err
 	}
-	log.Info(policies)
+
+	log.Debugf("find %d policies for %s event", len(policies), event.EventType)
+
 	if len(policies) == 0 {
 		log.Debugf("cannot find policy for %s event: %v", event.EventType, event)
 		return nil
 	}
 
-	payload, err := a.constructArtifactPayload(event, prj)
+	payload, err := a.constructArtifactPayload(ctx, event, prj)
 	if err != nil {
 		return err
 	}
@@ -90,7 +95,7 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *proModels.Project) (*notifyModel.Payload, error) {
+func (a *Handler) constructArtifactPayload(ctx context.Context, event *event.ArtifactEvent, project *proModels.Project) (*notifyModel.Payload, error) {
 	repoName := event.Repository
 	if repoName == "" {
 		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
@@ -117,7 +122,6 @@ func (a *Handler) constructArtifactPayload(event *event.ArtifactEvent, project *
 		Operator: event.Operator,
 	}
 
-	ctx := orm.NewContext(context.Background(), beegorm.NewOrm())
 	repoRecord, err := pkg.RepositoryMgr.GetByName(ctx, repoName)
 	if err != nil {
 		log.Errorf("failed to get repository with name %s: %v", repoName, err)
