@@ -12,15 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { Retention, RuleMetadate } from './retention';
-import { Observable, throwError as observableThrowError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { Project } from '../../project';
-import {
-    buildHttpRequestOptionsWithObserveResponse,
-    CURRENT_BASE_HREF,
-} from '../../../../shared/units/utils';
+import { CURRENT_BASE_HREF } from '../../../../shared/units/utils';
 
 @Injectable()
 export class TagRetentionService {
@@ -55,106 +47,11 @@ export class TagRetentionService {
         'Parameters latestPulledN is too large': 'COUNT_LARGE',
     };
 
-    constructor(private http: HttpClient) {}
-
     getI18nKey(str: string): string {
         if (this.I18nMap[str.trim()]) {
             return 'TAG_RETENTION.' + this.I18nMap[str.trim()];
         }
         return str;
-    }
-
-    getRetentionMetadata(): Observable<RuleMetadate> {
-        return this.http
-            .get(`${CURRENT_BASE_HREF}/retentions/metadatas`)
-            .pipe(map(response => response as RuleMetadate))
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    getRetention(retentionId): Observable<Retention> {
-        return this.http
-            .get(`${CURRENT_BASE_HREF}/retentions/${retentionId}`)
-            .pipe(map(response => response as Retention))
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    createRetention(retention: Retention) {
-        return this.http
-            .post(`${CURRENT_BASE_HREF}/retentions`, retention)
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    updateRetention(retentionId, retention: Retention) {
-        return this.http
-            .put(`${CURRENT_BASE_HREF}/retentions/${retentionId}`, retention)
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    getProjectInfo(projectId) {
-        return this.http
-            .get(`${CURRENT_BASE_HREF}/projects/${projectId}`)
-            .pipe(map(response => response as Project))
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    runNowTrigger(retentionId) {
-        return this.http
-            .post(`${CURRENT_BASE_HREF}/retentions/${retentionId}/executions`, {
-                dry_run: false,
-            })
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    whatIfRunTrigger(retentionId) {
-        return this.http
-            .post(`${CURRENT_BASE_HREF}/retentions/${retentionId}/executions`, {
-                dry_run: true,
-            })
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    AbortRun(retentionId, executionId) {
-        return this.http
-            .patch(
-                `${CURRENT_BASE_HREF}/retentions/${retentionId}/executions/${executionId}`,
-                { action: 'stop' }
-            )
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    getRunNowList(retentionId, page: number, pageSize: number) {
-        let params = new HttpParams();
-        if (page && pageSize) {
-            params = params
-                .set('page', page + '')
-                .set('page_size', pageSize + '');
-        }
-        return this.http
-            .get<HttpResponse<Array<any>>>(
-                `${CURRENT_BASE_HREF}/retentions/${retentionId}/executions`,
-                buildHttpRequestOptionsWithObserveResponse(params)
-            )
-            .pipe(catchError(error => observableThrowError(error)));
-    }
-
-    getExecutionHistory(
-        retentionId,
-        executionId,
-        page: number,
-        pageSize: number
-    ) {
-        let params = new HttpParams();
-        if (page && pageSize) {
-            params = params
-                .set('page', page + '')
-                .set('page_size', pageSize + '');
-        }
-        return this.http
-            .get<HttpResponse<Array<any>>>(
-                `${CURRENT_BASE_HREF}/retentions/${retentionId}/executions/${executionId}/tasks`,
-                buildHttpRequestOptionsWithObserveResponse(params)
-            )
-            .pipe(catchError(error => observableThrowError(error)));
     }
 
     seeLog(retentionId, executionId, taskId) {
