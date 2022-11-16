@@ -1,0 +1,24 @@
+---
+# This assigns a PR to its author
+addAssignees: true
+
+addReviewers: false
+
+reviewers:
+  - wy65701436
+  - Vad1mo
+  - OrlinVasilev
+  - stonezdj
+  - chlins
+  - zyyw
+  - MinerYang
+  - AllForNothing
+
+options:
+  ignore_draft: true
+  ignored_keywords:
+    - WIP
+    - wip
+    - DO NOT MERGE
+  enable_group_assignment: true
+  number_of_reviewers: 3
