@@ -17,7 +17,7 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -48,10 +48,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return resources, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return resources, err
 	}
@@ -96,10 +96,10 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 		if code == 404 {
 			return false, nil, nil
 		}
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return exist, nil, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return exist, nil, err
 	}
@@ -140,7 +140,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("[%d][%s]", code, string(body))
 	}
 
@@ -219,10 +219,10 @@ func getJwtToken(a *adapter, repository string) (token jwtToken, err error) {
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return token, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return token, err
 	}

@@ -3,7 +3,6 @@ package chartserver
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -69,7 +68,7 @@ func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 		return nil, err
 	}
 
-	content, err := ioutil.ReadAll(response.Body)
+	content, err := io.ReadAll(response.Body)
 	if err != nil {
 		err = errors.Wrap(err, "Read response body error")
 		return nil, err
@@ -97,7 +96,7 @@ func (cc *ChartClient) DeleteContent(addr string) error {
 		return err
 	}
 
-	content, err := ioutil.ReadAll(response.Body)
+	content, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}

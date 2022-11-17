@@ -17,7 +17,7 @@ package annotation
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -191,12 +191,12 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Require().Nil(err)
 
 	metadata := map[string]interface{}{}
-	configBlob := ioutil.NopCloser(strings.NewReader(ormbConfig))
+	configBlob := io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
 	art := &artifact.Artifact{ManifestMediaType: manifestMediaType, ExtraAttrs: metadata}
 
-	blob := ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
+	blob := io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
 	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), blob, nil)
 	err = p.v1alpha1Parser.Parse(nil, art, content)
 	p.Require().Nil(err)
@@ -214,12 +214,12 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Require().Nil(err)
 
 	metadata = map[string]interface{}{}
-	configBlob = ioutil.NopCloser(strings.NewReader(ormbConfig))
+	configBlob = io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
 	art = &artifact.Artifact{ManifestMediaType: manifestMediaType, ExtraAttrs: metadata}
 
-	blob = ioutil.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
+	blob = io.NopCloser(base64.NewDecoder(base64.StdEncoding, strings.NewReader(ormbIcon)))
 	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), blob, nil)
 	err = p.v1alpha1Parser.Parse(nil, art, content)
 	p.Require().Nil(err)
@@ -237,7 +237,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Require().Nil(err)
 
 	metadata = map[string]interface{}{}
-	configBlob = ioutil.NopCloser(strings.NewReader(ormbConfig))
+	configBlob = io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
 	art = &artifact.Artifact{ManifestMediaType: manifestMediaType, ExtraAttrs: metadata}

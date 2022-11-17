@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -75,7 +75,7 @@ func (rth *reviewTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	if req.Method != http.MethodPost {
 		http.Error(rw, "", http.StatusMethodNotAllowed)
 	}
-	bodyBytes, err := ioutil.ReadAll(req.Body)
+	bodyBytes, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(rw, html.EscapeString(fmt.Sprintf("failed to read request body, error: %v", err)), http.StatusBadRequest)
 	}

@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -344,7 +344,7 @@ func (suite *APIHandlerTestSuite) postReq(url string, data []byte) ([]byte, int)
 		_ = res.Body.Close()
 	}()
 	if res.ContentLength > 0 {
-		resData, err = ioutil.ReadAll(res.Body)
+		resData, err = io.ReadAll(res.Body)
 		if err != nil {
 			return nil, 0
 		}
@@ -371,7 +371,7 @@ func (suite *APIHandlerTestSuite) getReq(url string) ([]byte, int) {
 		_ = res.Body.Close()
 	}()
 
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, 0
 	}

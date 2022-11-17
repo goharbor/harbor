@@ -19,7 +19,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -110,7 +109,7 @@ func getKeyAndCertPath() (string, string) {
 }
 
 func getPublicKey(crtPath string) (*rsa.PublicKey, error) {
-	crt, err := ioutil.ReadFile(crtPath)
+	crt, err := os.ReadFile(crtPath)
 	if err != nil {
 		return nil, err
 	}

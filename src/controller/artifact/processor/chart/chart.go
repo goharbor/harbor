@@ -17,7 +17,7 @@ package chart
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
@@ -85,7 +85,7 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 			if err != nil {
 				return nil, err
 			}
-			content, err := ioutil.ReadAll(blob)
+			content, err := io.ReadAll(blob)
 			if err != nil {
 				return nil, err
 			}

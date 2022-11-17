@@ -18,7 +18,7 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // GenerateKey generates aes key
@@ -32,7 +32,7 @@ func GenerateKey(path string) (string, error) {
 		return "", fmt.Errorf("the length of random bytes %d != %d", n, aes.BlockSize)
 	}
 
-	if err = ioutil.WriteFile(path, data, 0777); err != nil {
+	if err = os.WriteFile(path, data, 0777); err != nil {
 		return "", fmt.Errorf("failed write secret key to file %s: %v", path, err)
 	}
 

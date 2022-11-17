@@ -17,7 +17,6 @@ package image
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -88,11 +87,11 @@ func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
 	return false, nil
 }
 func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
-	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
+	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
 }
 func (f *fakeRegistry) PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error) {
-	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
+	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
 }
 func (f *fakeRegistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {

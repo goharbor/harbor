@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -119,7 +119,7 @@ func (hc *HTTPClient) get(url string, cred *auth.Credential, parmas map[string]s
 
 	// If failed, read error message; if succeeded, read content.
 	defer res.Body.Close()
-	bytes, err := ioutil.ReadAll(res.Body)
+	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (hc *HTTPClient) post(url string, cred *auth.Credential, body interface{}, 
 	}
 
 	defer res.Body.Close()
-	bytes, err := ioutil.ReadAll(res.Body)
+	bytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}

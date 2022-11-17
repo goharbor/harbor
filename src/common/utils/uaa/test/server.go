@@ -17,9 +17,9 @@ package test
 import (
 	"fmt"
 	"html"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path"
 	"runtime"
 	"strings"
@@ -76,7 +76,7 @@ func serveToken(rw http.ResponseWriter) {
 }
 
 func serveJSONFile(rw http.ResponseWriter, filename string) {
-	data, err := ioutil.ReadFile(path.Join(currPath(), filename))
+	data, err := os.ReadFile(path.Join(currPath(), filename))
 	if err != nil {
 		panic(err)
 	}
@@ -143,7 +143,7 @@ func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 		cfg.Username,
 		cfg.Password,
 	})
-	token, err := ioutil.ReadFile(path.Join(currPath(), "./good-access-token.txt"))
+	token, err := os.ReadFile(path.Join(currPath(), "./good-access-token.txt"))
 	if err != nil {
 		panic(err)
 	}

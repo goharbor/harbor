@@ -18,8 +18,8 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -142,7 +142,7 @@ type LoggerConfig struct {
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if !utils.IsEmptyStr(yamlFilePath) {
 		// Try to load from file first
-		data, err := ioutil.ReadFile(yamlFilePath)
+		data, err := os.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
 		}

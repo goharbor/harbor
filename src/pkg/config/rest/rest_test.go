@@ -17,7 +17,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -58,7 +58,7 @@ var configMapForTest = map[string]interface{}{}
 
 func ConfigPutHandler(w http.ResponseWriter, r *http.Request) {
 	cfgs := map[string]interface{}{}
-	content, err := ioutil.ReadAll(r.Body)
+	content, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

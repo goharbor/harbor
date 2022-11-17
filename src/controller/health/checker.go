@@ -17,7 +17,7 @@ package health
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -59,7 +59,7 @@ func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != statusCode {
-			data, err := ioutil.ReadAll(resp.Body)
+			data, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Debugf("failed to read response body: %v", err)
 			}

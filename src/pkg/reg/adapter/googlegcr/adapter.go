@@ -17,7 +17,7 @@ package googlegcr
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/opencontainers/go-digest"
@@ -170,7 +170,7 @@ func (a adapter) listGcrTagsByRef(repository, reference string) ([]string, strin
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}

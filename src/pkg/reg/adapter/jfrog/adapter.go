@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -300,7 +299,7 @@ func (a *adapter) PushBlob(repository, digest string, size int64, blob io.Reader
 		return a.ackPushBlob(repository, digest, location, rangeSize)
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -330,7 +329,7 @@ func (a *adapter) preparePushBlob(repository string) (string, error) {
 		return resp.Header.Get("Docker-Upload-Uuid"), nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -361,7 +360,7 @@ func (a *adapter) ackPushBlob(repository, digest, location, size string) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

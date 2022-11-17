@@ -14,9 +14,7 @@
 
 package encrypt
 
-import (
-	"io/ioutil"
-)
+import "os"
 
 // KeyProvider provides the key used to encrypt and decrypt attrs
 type KeyProvider interface {
@@ -40,7 +38,7 @@ func NewFileKeyProvider(path string) KeyProvider {
 
 // Get returns the key read from file
 func (f *FileKeyProvider) Get(params map[string]interface{}) (string, error) {
-	b, err := ioutil.ReadFile(f.path)
+	b, err := os.ReadFile(f.path)
 	if err != nil {
 		return "", err
 	}

@@ -16,7 +16,7 @@ package image
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -142,7 +142,7 @@ func (m *manifestV2ProcessorTestSuite) SetupTest() {
 
 func (m *manifestV2ProcessorTestSuite) TestAbstractMetadata() {
 	artifact := &artifact.Artifact{}
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(bytes.NewReader([]byte(config))), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(bytes.NewReader([]byte(config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(manifest))
 	m.Require().Nil(err)
 	m.NotNil(artifact.ExtraAttrs["created"])
@@ -163,7 +163,7 @@ func (m *manifestV2ProcessorTestSuite) TestAbstractAddition() {
 	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, []byte(manifest))
 	m.Require().Nil(err)
 	m.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(config)), nil)
 	addition, err := m.processor.AbstractAddition(nil, artifact, AdditionTypeBuildHistory)
 	m.Require().Nil(err)
 	m.Equal("application/json; charset=utf-8", addition.ContentType)

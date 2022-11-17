@@ -3,7 +3,6 @@ package export
 import (
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -17,7 +16,7 @@ type DigestCalculatorTestSuite struct {
 func (suite *DigestCalculatorTestSuite) TestDigestCalculation() {
 	fileName := "/tmp/testfile.txt"
 	data := []byte("test")
-	ioutil.WriteFile(fileName, data, os.ModePerm)
+	os.WriteFile(fileName, data, os.ModePerm)
 	digestCalc := SHA256ArtifactDigestCalculator{}
 	digest, err := digestCalc.Calculate(fileName)
 	suite.NoError(err)

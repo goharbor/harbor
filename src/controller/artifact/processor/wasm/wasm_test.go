@@ -17,7 +17,7 @@ package wasm
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -124,7 +124,7 @@ func (m *WASMProcessorTestSuite) SetupTest() {
 
 func (m *WASMProcessorTestSuite) TestAbstractMetadataForAnnotationFashion() {
 	artifact := &artifact.Artifact{}
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(bytes.NewReader([]byte(annnotated_config))), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(bytes.NewReader([]byte(annnotated_config))), nil)
 	err := m.processor.AbstractMetadata(nil, artifact, []byte(annnotated_manifest))
 	m.Require().Nil(err)
 	m.NotNil(artifact.ExtraAttrs["created"])
@@ -158,7 +158,7 @@ func (m *WASMProcessorTestSuite) TestAbstractAdditionForAnnotationFashion() {
 	deserializedManifest, err := schema2.FromStruct(manifest)
 	m.Require().Nil(err)
 	m.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(deserializedManifest, "", nil)
-	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(annnotated_config)), nil)
+	m.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(annnotated_config)), nil)
 	addition, err := m.processor.AbstractAddition(nil, artifact, AdditionTypeBuildHistory)
 	m.Require().Nil(err)
 	m.Equal("application/json; charset=utf-8", addition.ContentType)

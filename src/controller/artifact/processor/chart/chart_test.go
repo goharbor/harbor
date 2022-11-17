@@ -15,7 +15,7 @@
 package chart
 
 import (
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -105,7 +105,7 @@ func (p *processorTestSuite) TestAbstractAddition() {
 	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(chartManifest))
 	p.Require().Nil(err)
 	p.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
-	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), ioutil.NopCloser(strings.NewReader(chartYaml)), nil)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(strings.NewReader(chartYaml)), nil)
 	p.chartOptr.On("GetDetails").Return(chartDetails, nil)
 
 	// values.yaml

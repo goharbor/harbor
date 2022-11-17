@@ -16,7 +16,7 @@
 package api
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -135,7 +135,7 @@ func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (in
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
 
-	body, err := ioutil.ReadAll(w.Body)
+	body, err := io.ReadAll(w.Body)
 	return w.Code, w.Header(), body, err
 }
 

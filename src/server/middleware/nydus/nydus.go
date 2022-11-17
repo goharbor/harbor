@@ -3,7 +3,7 @@ package nydus
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -84,7 +84,7 @@ func AcceleratorMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return err
 		}

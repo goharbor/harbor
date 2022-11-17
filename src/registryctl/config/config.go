@@ -16,7 +16,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/docker/distribution/configuration"
@@ -47,7 +46,7 @@ type Configuration struct {
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if len(yamlFilePath) != 0 {
 		// Try to load from file first
-		data, err := ioutil.ReadFile(yamlFilePath)
+		data, err := os.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
 		}

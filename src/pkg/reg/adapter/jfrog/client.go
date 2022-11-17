@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -74,7 +74,7 @@ func (c *client) getDockerRepositories() ([]*repository, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return repositories, err
 	}
@@ -109,7 +109,7 @@ func (c *client) createDockerRepository(name string) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

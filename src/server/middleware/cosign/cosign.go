@@ -3,7 +3,7 @@ package cosign
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 
@@ -76,7 +76,7 @@ func SignatureMiddleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return err
 		}

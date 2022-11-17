@@ -17,7 +17,6 @@ package chart
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -47,7 +46,7 @@ func (f *fakeRegistry) ChartExist(name, version string) (bool, error) {
 	return true, nil
 }
 func (f *fakeRegistry) DownloadChart(name, version, contentURL string) (io.ReadCloser, error) {
-	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
+	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return r, nil
 }
 func (f *fakeRegistry) UploadChart(name, version string, chart io.Reader) error {
