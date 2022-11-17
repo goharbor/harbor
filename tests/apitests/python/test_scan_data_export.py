@@ -14,6 +14,7 @@ from library.artifact import Artifact
 from library.scan import Scan
 from library.repository import push_self_build_image_to_project
 
+
 class TestScanDataExport(unittest.TestCase):
 
     @suppress_urllib3_warning
@@ -45,25 +46,26 @@ class TestScanDataExport(unittest.TestCase):
             11. Verify that the export scan data execution triggered by the user (UA) cannot be download by other users;
             12. User (UA) should be able to download the triggered export scan data execution
             13. Verify that the downloaded export scan data execution cannot be downloaded again
+            14. Verify the status message if no cve found or matched
         """
         url = ADMIN_CLIENT["endpoint"]
         user_password = "Aa123456"
 
         # 1. Create user(UA)
-        user_id, user_name = self.user.create_user(user_password = user_password, **ADMIN_CLIENT)
-        user_client = dict(endpoint = url, username = user_name, password = user_password)
+        user_id, user_name = self.user.create_user(user_password=user_password, **ADMIN_CLIENT)
+        user_client = dict(endpoint=url, username=user_name, password=user_password)
 
         # 2.1. Create private project(PA) by user(UA)
-        project_id, project_name = self.project.create_project(metadata = {"public": "false"}, **user_client)
+        project_id, project_name = self.project.create_project(metadata={"public": "false"}, **user_client)
         # 2.2. Get private project of uesr-001, uesr-001 can see only one private project which is project-001
-        self.project.projects_should_exist(dict(public=False), expected_count = 1, expected_project_id = project_id, **user_client)
+        self.project.projects_should_exist(dict(public=False), expected_count=1, expected_project_id=project_id, **user_client)
 
         # 3. Push a new image(IA) in project(PA) by user(UA)
         push_self_build_image_to_project(project_name, harbor_server, user_name, user_password, self.image, self.tag)
 
         # 4. Send scan image command and get tag(TA) information to check scan result, it should be finished
         self.scan.scan_artifact(project_name, self.image, self.tag, **user_client)
-        self.artifact.check_image_scan_result(project_name, self.image, self.tag, with_scan_overview = True, **user_client)
+        self.artifact.check_image_scan_result(project_name, self.image, self.tag, with_scan_overview=True, **user_client)
 
         # 5. Verify trigger export scan data execution but does not specify Scan-Data-Type status code should be 422
         self.scan_data_export.export_scan_data("", projects=[project_id], expect_status_code=422, expect_response_body="X-Scan-Data-Type in header is required")
@@ -90,26 +92,31 @@ class TestScanDataExport(unittest.TestCase):
         self.assertEqual(user_name, execution_list.items[0].user_name)
 
         # 10. Wait for the export scan data execution to succeed
-        executio_status = None
+        execution = None
         for i in range(5):
             print("wait for the job to finish:", i)
             execution = self.scan_data_export.get_scan_data_export_execution(execution_id, **user_client)
-            executio_status = execution.status
-            if executio_status == "Success":
+            if execution.status == "Success":
                 self.assertEqual(user_name, execution.user_name)
                 self.assertEqual(user_id, execution.user_id)
                 break
             time.sleep(2)
-        self.assertEqual(executio_status, "Success")
+        self.assertEqual(execution.status, "Success")
 
         # 11. Verify that the export scan data execution triggered by the user (UA) cannot be download by other users
         self.scan_data_export.download_scan_data(execution_id, expect_status_code=403)
 
-        # 12. User (UA) should be able to download the triggered export scan data execution
-        self.scan_data_export.download_scan_data(execution_id, **user_client)
+        # The csv file will not be able to downloaded if it is empty, so only check download if the file is present, otherwise check the status message
+        if execution.file_present:
+            # 12. User (UA) should be able to download the triggered export scan data execution
+            self.scan_data_export.download_scan_data(execution_id, **user_client)
 
-        # 13. Verify that the downloaded export scan data execution cannot be downloaded again
-        self.scan_data_export.download_scan_data(execution_id, expect_status_code=404, **user_client)
+            # 13. Verify that the downloaded export scan data execution cannot be downloaded again
+            self.scan_data_export.download_scan_data(execution_id, expect_status_code=404, **user_client)
+        else:
+            # 14. Verify the status message if no cve found or matched
+            self.assertEqual("No vulnerabilities found or matched", execution.status_text)
+
 
 if __name__ == '__main__':
     unittest.main()
