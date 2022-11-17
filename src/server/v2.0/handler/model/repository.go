@@ -14,8 +14,14 @@ type RepoRecord struct {
 
 // ToSwagger converts the repository into the swagger model
 func (r *RepoRecord) ToSwagger() *models.Repository {
+	var createTime *strfmt.DateTime
+	if !r.CreationTime.IsZero() {
+		t := strfmt.DateTime(r.CreationTime)
+		createTime = &t
+	}
+
 	return &models.Repository{
-		CreationTime: strfmt.DateTime(r.CreationTime),
+		CreationTime: createTime,
 		Description:  r.Description,
 		ID:           r.RepositoryID,
 		Name:         r.Name,

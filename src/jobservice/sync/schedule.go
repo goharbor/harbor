@@ -21,14 +21,18 @@ import (
 
 	o "github.com/beego/beego/orm"
 
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/jobmonitor"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -60,6 +64,10 @@ type Worker struct {
 	coreTaskManager task.Manager
 	// Loader for loading polices from the js store.
 	policyLoader PolicyLoader
+	// queueStatusManager
+	queueStatusManager queuestatus.Manager
+	// monitorRedisClient
+	monitorRedisClient jobmonitor.RedisClient
 }
 
 // New sync worker.
@@ -108,6 +116,22 @@ func (w *Worker) UseCoreExecutionManager(executionMgr task.ExecutionManager) *Wo
 // UseCoreTaskManager refers the core task manager.
 func (w *Worker) UseCoreTaskManager(taskManager task.Manager) *Worker {
 	w.coreTaskManager = taskManager
+	return w
+}
+
+// UseQueueStatusManager refers the queue status manager.
+func (w *Worker) UseQueueStatusManager(queueStatusManager queuestatus.Manager) *Worker {
+	w.queueStatusManager = queueStatusManager
+	return w
+}
+
+// UseMonitorRedisClient refers the monitor redis client.
+func (w *Worker) UseMonitorRedisClient(redisConfig *config.RedisPoolConfig) *Worker {
+	client, err := jobmonitor.NewRedisClient(redisConfig)
+	if err != nil {
+		log.Errorf("failed to create redis client for job monitor: %v", err)
+	}
+	w.monitorRedisClient = client
 	return w
 }
 
@@ -164,6 +188,9 @@ func (w *Worker) Start() error {
 func (w *Worker) Run(ctx context.Context) error {
 	// Start sync schedules.
 	logger.Infof("Start to sync schedules in database to jobservice: round[%d].", w.round)
+
+	// sync queue status from db to redis
+	w.syncQueueStatus(ctx)
 
 	// Get all the schedules from the database first.
 	// Use the default scheduler.
@@ -366,4 +393,28 @@ func (w *Worker) getTask(ctx context.Context, schedule *scheduler.Schedule) (*ta
 	}
 
 	return tasks[0], nil
+}
+
+func (w *Worker) syncQueueStatus(ctx context.Context) {
+	queues, err := w.queueStatusManager.List(ctx)
+	if err != nil {
+		log.Errorf("failed to sync queue status because of %v", err)
+		return
+	}
+	if len(queues) == 0 {
+		log.Info("no queue status need to sync")
+		return
+	}
+	for _, queue := range queues {
+		// update the queue status in redis
+		if queue.Paused {
+			if err = w.monitorRedisClient.PauseJob(ctx, queue.JobType); err != nil {
+				log.Errorf("failed to pause job %s because of %v", queue.JobType, err)
+			}
+		} else {
+			if err = w.monitorRedisClient.UnpauseJob(ctx, queue.JobType); err != nil {
+				log.Errorf("failed to resume job %s because of %v", queue.JobType, err)
+			}
+		}
+	}
 }

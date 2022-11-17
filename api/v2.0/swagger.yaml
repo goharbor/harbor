@@ -4593,6 +4593,120 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /jobservice/queues:
+    get:
+      operationId: listJobQueues
+      summary: list job queues
+      description: list job queue
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: List job queue successfully.
+          schema:
+            type: array
+            items:
+             $ref: '#/definitions/JobQueue'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /jobservice/queues/{job_type}:
+    put:
+      operationId: actionPendingJobs
+      summary: stop and clean, pause, resume pending jobs in the queue
+      description: stop and clean, pause, resume pending jobs in the queue
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_type
+          in: path
+          required: true
+          type: string
+          description: The type of the job. 'all' stands for all job types
+        - name: action_request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ActionRequest'
+      responses:
+        '200':
+          description: take action to the jobs in the queue successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /schedules:
+    get:
+      operationId: listSchedules
+      description: List schedules
+      tags:
+        - schedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: list schedule successfully.
+          schema:
+            type: array
+            items:
+              type: object
+              $ref: '#/definitions/ScheduleTask'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /schedules/{job_type}/paused:
+    get:
+      operationId: getSchedulePaused
+      description: Get scheduler paused status
+      tags:
+        - schedule
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_type
+          in: path
+          required: true
+          type: string
+          description: The type of the job. 'all' stands for all job types, current only support query with all
+      responses:
+        '200':
+          description: Get scheduler status successfully.
+          schema:
+            type: object
+            $ref: '#/definitions/SchedulerStatus'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /ping:
     get:
       operationId: getPing
@@ -6238,6 +6352,8 @@ definitions:
         type: string
         format: date-time
         description: The creation time of the repository
+        x-nullable: true
+        x-omitempty: true
       update_time:
         type: string
         format: date-time
@@ -9329,6 +9445,8 @@ definitions:
         type: string
         format: date-time
         description: The start time of the worker
+        x-nullable: true
+        x-omitempty: true
       args:
         type: string
         description: The args of the worker
@@ -9338,4 +9456,61 @@ definitions:
       checkin_at:
         type: string
         format: date-time
-        description: The checkin time of the running job in the worker
+        description: The checkin time of the worker
+        x-nullable: true
+        x-omitempty: true
+  ActionRequest:
+    type: object
+    description: The request to stop, pause or resume
+    properties:
+      action:
+        type: string
+        description: The action of the request, should be stop, pause or resume
+        enum: 
+          - stop
+          - pause
+          - resume
+  JobQueue:
+    type: object
+    description: the job queue info
+    properties:
+      job_type:
+        type: string
+        description: The type of the job queue
+      count:
+        type: integer
+        description: The count of jobs in the job queue
+      latency:
+        type: integer
+        description: The latency the job queue (seconds)
+      paused:
+        type: boolean
+        description: The paused status of the job queue
+        x-omitempty: false
+  ScheduleTask:
+    type: object
+    description: the schedule task info
+    properties:
+      id:
+        type: integer
+        description: the id of the Schedule task
+      vendor_type:
+        type: string
+        description: the vendor type of the current schedule task
+      vendor_id:
+        type: integer
+        description: the vendor id of the current task
+      extra_attrs:
+        type: string
+        description: the extra attributes
+      creation_time:
+        type: string
+        format: date-time
+  SchedulerStatus:
+    type: object
+    description: the scheduler status
+    properties:
+      paused:
+        type: boolean
+        description: if the scheduler is paused
+        x-omitempty: false

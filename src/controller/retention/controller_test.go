@@ -310,6 +310,10 @@ func (s *ControllerTestSuite) TestExecution() {
 type fakeRetentionScheduler struct {
 }
 
+func (f *fakeRetentionScheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, error) {
+	panic("implement me")
+}
+
 func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
 	return 111, nil
 }

@@ -54,6 +54,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/metric"
 	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -199,6 +200,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 				UseCoreScheduler(scheduler.Sched).
 				UseCoreExecutionManager(task.ExecMgr).
 				UseCoreTaskManager(task.Mgr).
+				UseQueueStatusManager(queuestatus.Mgr).
+				UseMonitorRedisClient(cfg.PoolConfig.RedisPoolCfg).
 				WithPolicyLoader(func() ([]*period.Policy, error) {
 					conn := redisPool.Get()
 					defer conn.Close()

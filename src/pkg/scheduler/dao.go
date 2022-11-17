@@ -47,6 +47,7 @@ type schedule struct {
 type DAO interface {
 	Create(ctx context.Context, s *schedule) (id int64, err error)
 	List(ctx context.Context, query *q.Query) (schedules []*schedule, err error)
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	Get(ctx context.Context, id int64) (s *schedule, err error)
 	Delete(ctx context.Context, id int64) (err error)
 	Update(ctx context.Context, s *schedule, props ...string) (err error)
@@ -144,4 +145,13 @@ func (d *dao) UpdateRevision(ctx context.Context, id, revision int64) (int64, er
 	return ormer.QueryTable(&schedule{}).Filter("ID", id).Filter("Revision__lt", revision).Update(beegoorm.Params{
 		"Revision": revision,
 	})
+}
+
+func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error) {
+	query = q.MustClone(query)
+	qs, err := orm.QuerySetterForCount(ctx, &schedule{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
 }

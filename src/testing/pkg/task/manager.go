@@ -148,6 +148,27 @@ func (_m *Manager) Stop(ctx context.Context, id int64) error {
 	return r0
 }
 
+// Update provides a mock function with given fields: ctx, _a1, props
+func (_m *Manager) Update(ctx context.Context, _a1 *task.Task, props ...string) error {
+	_va := make([]interface{}, len(props))
+	for _i := range props {
+		_va[_i] = props[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, _a1)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *task.Task, ...string) error); ok {
+		r0 = rf(ctx, _a1, props...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateExtraAttrs provides a mock function with given fields: ctx, id, extraAttrs
 func (_m *Manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
 	ret := _m.Called(ctx, id, extraAttrs)

@@ -68,6 +68,8 @@ type Scheduler interface {
 	GetSchedule(ctx context.Context, id int64) (*Schedule, error)
 	// ListSchedules according to the query
 	ListSchedules(ctx context.Context, query *q.Query) ([]*Schedule, error)
+	// CountSchedules counts the schedules according to the query
+	CountSchedules(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // New returns an instance of the default scheduler
@@ -83,6 +85,10 @@ type scheduler struct {
 	dao     DAO
 	execMgr task.ExecutionManager
 	taskMgr task.Manager
+}
+
+func (s *scheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, error) {
+	return s.dao.Count(ctx, query)
 }
 
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,

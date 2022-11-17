@@ -56,6 +56,8 @@ type Manager interface {
 	// Count counts total of tasks according to the query.
 	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (int64, error)
+	// Update the status of the specified task
+	Update(ctx context.Context, task *Task, props ...string) error
 }
 
 // NewManager creates an instance of the default task manager
@@ -73,6 +75,13 @@ type manager struct {
 	execDAO  dao.ExecutionDAO
 	jsClient cjob.Client
 	coreURL  string
+}
+
+func (m *manager) Update(ctx context.Context, task *Task, props ...string) error {
+	return m.dao.Update(ctx, &dao.Task{
+		ID:     task.ID,
+		Status: task.Status,
+	}, props...)
 }
 
 func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
