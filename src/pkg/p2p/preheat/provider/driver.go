@@ -18,9 +18,10 @@ const (
 
 // Driver defines the capabilities one distribution provider should have.
 // Includes:
-//   Self descriptor
-//   Health checking
-//   Preheat related : Preheat means transfer the preheating image to the network of distribution provider in advance.
+//
+//	Self descriptor
+//	Health checking
+//	Preheat related : Preheat means transfer the preheating image to the network of distribution provider in advance.
 type Driver interface {
 	// Self returns the metadata of the driver.
 	// The metadata includes: name, icon(optional), maintainers(optional), version and source repo.

@@ -52,7 +52,7 @@ func (j *Job) Validate(params job.Parameters) error {
 }
 
 func (j *Job) parseParams(params job.Parameters) {
-	if params == nil || len(params) == 0 {
+	if len(params) == 0 {
 		return
 	}
 	retHr, exist := params[common.PurgeAuditRetentionHour]

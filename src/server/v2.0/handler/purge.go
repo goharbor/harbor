@@ -36,7 +36,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
-	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
 )
 
 type purgeAPI struct {
@@ -189,7 +188,7 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 		results = append(results, h.ToSwagger())
 	}
 
-	return operation.NewGetPurgeHistoryOK().
+	return purge.NewGetPurgeHistoryOK().
 		WithXTotalCount(total).
 		WithLink(p.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(results)
@@ -226,7 +225,7 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 		UpdateTime:   exec.UpdateTime,
 	}
 
-	return operation.NewGetPurgeJobOK().WithPayload(res.ToSwagger())
+	return purge.NewGetPurgeJobOK().WithPayload(res.ToSwagger())
 }
 
 func (p *purgeAPI) GetPurgeJobLog(ctx context.Context, params purge.GetPurgeJobLogParams) middleware.Responder {
@@ -249,7 +248,7 @@ func (p *purgeAPI) GetPurgeJobLog(ctx context.Context, params purge.GetPurgeJobL
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
-	return operation.NewGetPurgeJobLogOK().WithPayload(string(taskLog))
+	return purge.NewGetPurgeJobLogOK().WithPayload(string(taskLog))
 }
 
 func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, params purge.GetPurgeScheduleParams) middleware.Responder {
@@ -258,7 +257,7 @@ func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, params purge.GetPurgeSc
 	}
 	sch, err := p.schedulerCtl.Get(ctx, pg.VendorType)
 	if errors.IsNotFoundErr(err) {
-		return operation.NewGetPurgeScheduleOK()
+		return purge.NewGetPurgeScheduleOK()
 	}
 	if err != nil {
 		return p.SendError(ctx, err)
@@ -278,7 +277,7 @@ func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, params purge.GetPurgeSc
 		CreationTime: strfmt.DateTime(sch.CreationTime),
 		UpdateTime:   strfmt.DateTime(sch.UpdateTime),
 	}
-	return operation.NewGetPurgeScheduleOK().WithPayload(execHistory)
+	return purge.NewGetPurgeScheduleOK().WithPayload(execHistory)
 }
 
 func (p *purgeAPI) UpdatePurgeSchedule(ctx context.Context, params purge.UpdatePurgeScheduleParams) middleware.Responder {
@@ -292,10 +291,10 @@ func (p *purgeAPI) UpdatePurgeSchedule(ctx context.Context, params purge.UpdateP
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
-	return operation.NewUpdatePurgeScheduleOK()
+	return purge.NewUpdatePurgeScheduleOK()
 }
 
-func verifyUpdateRequest(params operation.UpdatePurgeScheduleParams) error {
+func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 	if params.Schedule == nil || params.Schedule.Schedule == nil {
 		return errors.BadRequestError(fmt.Errorf("schedule cann't be empty"))
 	}
@@ -326,12 +325,12 @@ func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronTy
 	return nil
 }
 
-func (p *purgeAPI) StopPurge(ctx context.Context, params operation.StopPurgeParams) middleware.Responder {
+func (p *purgeAPI) StopPurge(ctx context.Context, params purge.StopPurgeParams) middleware.Responder {
 	if err := p.RequireSystemAccess(ctx, rbac.ActionStop, rbac.ResourcePurgeAuditLog); err != nil {
 		return p.SendError(ctx, err)
 	}
 	if err := p.purgeCtr.Stop(ctx, params.PurgeID); err != nil {
 		return p.SendError(ctx, err)
 	}
-	return operation.NewStopPurgeOK()
+	return purge.NewStopPurgeOK()
 }

@@ -309,11 +309,11 @@ func (se *scanDataExportAPI) requireProjectsAccess(ctx context.Context, pids []i
 // validateScanExportParams validates scan data export request parameters by
 // following policies.
 // rules:
-//   1. check the scan data type
-//   2. the criteria should not be empty
-//   3. currently only the export of single project is open
-//   4. check the existence of project
-//   5. do not allow to input space in the repo/tag/cve_id (space will lead to misjudge for doublestar filter)
+//  1. check the scan data type
+//  2. the criteria should not be empty
+//  3. currently only the export of single project is open
+//  4. check the existence of project
+//  5. do not allow to input space in the repo/tag/cve_id (space will lead to misjudge for doublestar filter)
 func (se *scanDataExportAPI) validateScanExportParams(ctx context.Context, params operation.ExportScanDataParams) error {
 	// check if the MIME type for the export is the Generic vulnerability data
 	if params.XScanDataType != v1.MimeTypeGenericVulnerabilityReport {

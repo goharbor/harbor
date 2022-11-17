@@ -85,8 +85,9 @@ func NewChartCache(config *ChartCacheConfig) *ChartCache {
 
 // IsEnabled to indicate if the chart cache is successfully enabled
 // The cache may be disabled if
-//  user does not set
-//  wrong configurations
+//
+//	user does not set
+//	wrong configurations
 func (chc *ChartCache) IsEnabled() bool {
 	return chc.isEnabled
 }

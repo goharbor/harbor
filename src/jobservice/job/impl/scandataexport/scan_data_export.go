@@ -47,7 +47,8 @@ func (sde *ScanDataExport) MaxCurrency() uint {
 // still less that the number declared by the method 'MaxFails'.
 //
 // Returns:
-//  true for retry and false for none-retry
+//
+//	true for retry and false for none-retry
 func (sde *ScanDataExport) ShouldRetry() bool {
 	return true
 }
@@ -66,8 +67,8 @@ func (sde *ScanDataExport) Validate(params job.Parameters) error {
 // params map[string]interface{} : parameters with key-pair style for the job execution.
 //
 // Returns:
-//  error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned
 //
+//	error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned
 func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	if _, ok := params[export.JobModeKey]; !ok {
 		return errors.Errorf("no mode specified for scan data export execution")

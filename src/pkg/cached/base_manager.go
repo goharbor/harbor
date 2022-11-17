@@ -91,7 +91,7 @@ func (bm *BaseManager) CacheClient(ctx context.Context) cache.Cache {
 	return bm.cacheClient
 }
 
-//  ResourceType returns the resource type.
+// ResourceType returns the resource type.
 func (bm *BaseManager) ResourceType(ctx context.Context) string {
 	return bm.resourceType
 }

@@ -36,7 +36,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
-	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
 )
 
 func newNotificationPolicyAPI() *notificationPolicyAPI {
@@ -102,7 +101,7 @@ func (n *notificationPolicyAPI) ListWebhookPoliciesOfProject(ctx context.Context
 		results = append(results, model.NewNotifiactionPolicy(p).ToSwagger())
 	}
 
-	return operation.NewListWebhookPoliciesOfProjectOK().
+	return webhook.NewListWebhookPoliciesOfProjectOK().
 		WithXTotalCount(total).
 		WithLink(n.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(results)
@@ -137,7 +136,7 @@ func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context
 	}
 
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), id)
-	return operation.NewCreateWebhookPolicyOfProjectCreated().WithLocation(location)
+	return webhook.NewCreateWebhookPolicyOfProjectCreated().WithLocation(location)
 }
 
 func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params webhook.UpdateWebhookPolicyOfProjectParams) middleware.Responder {
@@ -171,7 +170,7 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context
 		return n.SendError(ctx, err)
 	}
 
-	return operation.NewUpdateWebhookPolicyOfProjectOK()
+	return webhook.NewUpdateWebhookPolicyOfProjectOK()
 }
 
 func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context, params webhook.DeleteWebhookPolicyOfProjectParams) middleware.Responder {
@@ -185,7 +184,7 @@ func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context
 	if err := n.webhookPolicyMgr.Delete(ctx, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
-	return operation.NewDeleteWebhookPolicyOfProjectOK()
+	return webhook.NewDeleteWebhookPolicyOfProjectOK()
 }
 
 func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, params webhook.GetWebhookPolicyOfProjectParams) middleware.Responder {
@@ -206,7 +205,7 @@ func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, p
 		return n.SendError(ctx, err)
 	}
 
-	return operation.NewGetWebhookPolicyOfProjectOK().WithPayload(model.NewNotifiactionPolicy(policy).ToSwagger())
+	return webhook.NewGetWebhookPolicyOfProjectOK().WithPayload(model.NewNotifiactionPolicy(policy).ToSwagger())
 }
 
 func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.LastTriggerParams) middleware.Responder {
@@ -234,7 +233,7 @@ func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.
 		return n.SendError(ctx, err)
 	}
 
-	return operation.NewLastTriggerOK().WithPayload(triggers)
+	return webhook.NewLastTriggerOK().WithPayload(triggers)
 }
 
 func (n *notificationPolicyAPI) GetSupportedEventTypes(ctx context.Context, params webhook.GetSupportedEventTypesParams) middleware.Responder {
@@ -252,7 +251,7 @@ func (n *notificationPolicyAPI) GetSupportedEventTypes(ctx context.Context, para
 		notificationTypes.EventType = append(notificationTypes.EventType, models.EventType(key))
 	}
 
-	return operation.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
+	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
 
 func (n *notificationPolicyAPI) getLastTriggerTimeGroupByEventType(ctx context.Context, eventType string, policyID int64) (time.Time, error) {

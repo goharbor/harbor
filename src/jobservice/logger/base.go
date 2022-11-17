@@ -22,7 +22,7 @@ var singletons sync.Map
 // GetLogger gets an unified logger entry for logging per the passed settings.
 // The logger may built based on the multiple registered logger backends.
 //
-//  loggerOptions ...Option : logger options
+//	loggerOptions ...Option : logger options
 //
 // If failed, a nil logger and a non-nil error will be returned.
 // Otherwise, a non nil logger is returned with nil error.
@@ -125,11 +125,13 @@ func GetSweeper(context context.Context, sweeperOptions ...Option) (sweeper.Inte
 
 // GetLogDataGetter return the 1st matched log data getter interface
 //
-//  loggerOptions ...Option : logger options
+//	loggerOptions ...Option : logger options
 //
 // If failed,
-//   configured but initialize failed: a nil log data getter and a non-nil error will be returned.
-//   no getter configured: a nil log data getter with a nil error are returned
+//
+//	configured but initialize failed: a nil log data getter and a non-nil error will be returned.
+//	no getter configured: a nil log data getter with a nil error are returned
+//
 // Otherwise, a non nil log data getter is returned with nil error.
 func GetLogDataGetter(loggerOptions ...Option) (getter.Interface, error) {
 	if len(loggerOptions) == 0 {

@@ -44,7 +44,7 @@ func (j *Job) ShouldRetry() bool {
 
 // Validate is implementation of same method in Interface.
 func (j *Job) Validate(params job.Parameters) error {
-	if params == nil || len(params) == 0 {
+	if len(params) == 0 {
 		return errors.New("parameters required for replication job")
 	}
 	name, ok := params["image"]
