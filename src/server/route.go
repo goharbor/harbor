@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/beego/beego/v2/server/web"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/controllers"

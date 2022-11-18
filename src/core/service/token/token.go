@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/beego/beego/v2/server/web"
+
 	"github.com/goharbor/harbor/src/lib/log"
 )
 

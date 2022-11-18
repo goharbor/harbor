@@ -19,6 +19,7 @@ import (
 	"regexp"
 
 	"github.com/beego/beego/v2/server/web"
+
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
