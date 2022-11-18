@@ -287,10 +287,9 @@ export class OperationComponent implements OnInit, OnDestroy {
                                         'yyyyMMddHHmmss'
                                     )}`,
                                     id: item.id,
-                                    errorInf:
-                                        item.status === ExportJobStatus.ERROR
-                                            ? item.status_text
-                                            : null,
+                                    errorInf: item.status_text
+                                        ? item.status_text
+                                        : null,
                                 },
                                 timeStamp: new Date(item.start_time).getTime(),
                                 timeDiff: 'OPERATION.SECOND_AGO',
