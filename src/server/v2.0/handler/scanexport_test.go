@@ -514,7 +514,7 @@ func (suite *ScanExportTestSuite) TestDownloadScanDataNoCsvFilePresent() {
 		StartTime:        startTime,
 		EndTime:          endTime,
 		ExportDataDigest: "datadigest",
-		UserName:         "test-user",
+		UserName:         "test-user1",
 		FilePresent:      false,
 	}
 	mock.OnAnything(suite.scanExportCtl, "GetExecution").Return(execution, nil)

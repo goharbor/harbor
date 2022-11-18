@@ -160,13 +160,6 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 		return se.SendError(ctx, err)
 	}
 
-	// check if the CSV artifact for the execution exists
-	if !execution.FilePresent {
-		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
-			writer.WriteHeader(http.StatusNotFound)
-		})
-	}
-
 	// check if the execution being downloaded is owned by the current user
 	secContext, err := se.GetSecurityContext(ctx)
 	if err != nil {
@@ -176,6 +169,13 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	if secContext.GetUsername() != execution.UserName {
 		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
 			writer.WriteHeader(http.StatusForbidden)
+		})
+	}
+
+	// check if the CSV artifact for the execution exists
+	if !execution.FilePresent {
+		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+			writer.WriteHeader(http.StatusNotFound)
 		})
 	}
 

@@ -185,9 +185,7 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 	if userName, ok := exec.ExtraAttrs[export.UserNameAttribute]; ok {
 		execStatus.UserName = userName.(string)
 	}
-	// Do not define the 'status_message' as const because this is not the final solution,
-	// should refactor this part.
-	if statusMessage, ok := exec.ExtraAttrs["status_message"]; ok {
+	if statusMessage, ok := exec.ExtraAttrs[export.StatusMessageAttribute]; ok {
 		execStatus.StatusMessage = statusMessage.(string)
 	}
 	artifactExists := c.isCsvArtifactPresent(ctx, exec.ID, execStatus.ExportDataDigest)
