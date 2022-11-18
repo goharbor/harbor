@@ -31,7 +31,7 @@ jobs:
           go-version: 1.19.3
         id: go
       - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
+        uses: docker-practice/actions-setup-docker@4.12.0
         with:
           docker_version: 18.09
           docker_channel: stable
