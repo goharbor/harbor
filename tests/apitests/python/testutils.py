@@ -32,7 +32,8 @@ notary_url = os.environ.get('NOTARY_URL', 'https://'+harbor_server+':4443')
 DOCKER_USER = os.environ.get('DOCKER_USER', '')
 DOCKER_PWD = os.environ.get('DOCKER_PWD', '')
 METRIC_URL = os.environ.get('METRIC_URL', 'http://'+harbor_server+':9090')
-LOG_PATH = os.environ.get('LOG_PATH', '/var/log/harbor/')
+SYSLOG_ENDPOINT = os.environ.get('SYSLOG_ENDPOINT', '')
+ES_ENDPOINT = os.environ.get('ES_ENDPOINT', '')
 BASE_IMAGE = dict(name='busybox', tag='latest')
 BASE_IMAGE_ABS_PATH_NAME = '/' + BASE_IMAGE['name'] + '.tar'
 

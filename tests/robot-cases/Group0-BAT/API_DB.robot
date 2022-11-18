@@ -16,7 +16,6 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
 *** Test Cases ***
-
 Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
@@ -183,7 +182,10 @@ Test Case - Log Rotation
 
 Test Case - Log Forward
     [Tags]  log_forward
-    Harbor API Test  ./tests/apitests/python/test_audit_log_forward.py
+    ${SYSLOG_ENDPOINT_VALUE}=  Get Variable Value  ${SYSLOG_ENDPOINT}  ${EMPTY}
+    ${ES_ENDPOINT_VALUE}=  Get Variable Value  ${ES_ENDPOINT}  ${EMPTY}
+    Skip If  '${SYSLOG_ENDPOINT_VALUE}' == '${EMPTY}' or '${ES_ENDPOINT_VALUE}' == '${EMPTY}'
+    Harbor API Test  ./tests/apitests/python/test_audit_log_forward.py  SYSLOG_ENDPOINT=${SYSLOG_ENDPOINT_VALUE} ES_ENDPOINT=${ES_ENDPOINT_VALUE}
 
 Test Case - Scan Data Export
     [Tags]  scan_data_export

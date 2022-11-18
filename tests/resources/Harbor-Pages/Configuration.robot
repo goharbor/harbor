@@ -363,7 +363,7 @@ Edit A Distribution
 Set Audit Log Forward
     [Arguments]  ${syslog_endpoint}  ${expected_msg}
     Switch To System Settings
-    Run Keyword If  '${syslog_endpoint}' == '${null}'  Retry Clear Element Text By Press Keys  ${audit_log_forward_syslog_endpoint_input_id}
+    Run Keyword If  '${syslog_endpoint}' == '${null}'  Press Keys  ${audit_log_forward_syslog_endpoint_input_id}  CTRL+a  BACKSPACE
     ...  ELSE  Retry Text Input  ${audit_log_forward_syslog_endpoint_input_id}  ${syslog_endpoint}
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  ${expected_msg}
 
