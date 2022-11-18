@@ -147,6 +147,27 @@
             {{ 'BUTTON.CANCEL' | translate }}
         </button>
     </div>
+    <div *ngIf="paused && oriCron" class="clr-row mb-1">
+        <span class="font-style" [style.width]="labelWidth"></span>
+        <div class="alert alert-warning" role="alert">
+            <div class="alert-items p-0">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <cds-icon
+                            class="alert-icon"
+                            shape="exclamation-triangle"></cds-icon>
+                    </div>
+                    <span class="alert-text">{{
+                        'JOB_SERVICE_DASHBOARD.SCHEDULE_BEEN_PAUSED'
+                            | translate
+                                : {
+                                      param: labelCurrent
+                                  }
+                    }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </ng-container>
 <ng-container *ngIf="isInlineModel">
     <div class="normal-wrapper-box height-1rem" *ngIf="!isEditMode">

@@ -1,0 +1,44 @@
+$big: 150px;
+$small: 100px;
+
+.loading {
+    display: flex;
+    width: $big;
+    height: $big;
+    position: relative;
+    border-radius: 50%;
+}
+
+.center {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: $small;
+    height: $small;
+    position: absolute;
+    border-radius: 50%;
+    line-height: $small;
+    text-align: center;
+    font-size: 30px;
+}
+
+.left,
+.right {
+    flex: 1;
+}
+
+.left {
+    border-radius: $big 0 0 $big;
+    transform-origin: right center;
+}
+
+.right {
+    border-radius: 0 $big $big 0;
+    transform-origin: left center;
+}
+
+
+
+

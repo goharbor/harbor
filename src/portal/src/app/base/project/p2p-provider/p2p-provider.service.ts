@@ -66,6 +66,7 @@ export enum EXECUTION_STATUS {
 export enum TRIGGER {
     MANUAL = 'manual',
     SCHEDULED = 'scheduled',
+    SCHEDULED_PAUSED = 'scheduled(paused)',
     EVENT_BASED = 'event_based',
 }
 
@@ -73,6 +74,7 @@ export const TRIGGER_I18N_MAP = {
     manual: 'P2P_PROVIDER.MANUAL',
     scheduled: 'P2P_PROVIDER.SCHEDULED',
     event_based: 'P2P_PROVIDER.EVENT_BASED',
+    'scheduled(paused)': 'JOB_SERVICE_DASHBOARD.SCHEDULE_PAUSED',
 };
 
 export const TIME_OUT: number = 7000;

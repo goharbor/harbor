@@ -169,6 +169,19 @@
                         </a>
                         <a
                             clrVerticalNavLink
+                            *ngIf="hasAdminRole"
+                            routerLink="/harbor/job-service-dashboard"
+                            routerLinkActive="active">
+                            <clr-icon
+                                shape="dashboard"
+                                clrVerticalNavIcon></clr-icon>
+                            {{
+                                'JOB_SERVICE_DASHBOARD.JOB_SERVICE_DASHBOARD'
+                                    | translate
+                            }}
+                        </a>
+                        <a
+                            clrVerticalNavLink
                             routerLinkActive="active"
                             routerLink="/harbor/configs">
                             <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>

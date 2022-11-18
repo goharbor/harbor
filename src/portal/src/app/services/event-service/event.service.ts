@@ -79,4 +79,5 @@ export enum HarborEvent {
     STOP_SCAN_ARTIFACT = 'stopScanArtifact',
     UPDATE_VULNERABILITY_INFO = 'UpdateVulnerabilityInfo',
     REFRESH_EXPORT_JOBS = 'refreshExportJobs',
+    REFRESH_JOB_SERVICE_DASHBOARD = 'refreshJobServiceDashboard',
 }

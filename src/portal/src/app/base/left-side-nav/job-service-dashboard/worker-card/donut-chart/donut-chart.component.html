@@ -1,0 +1,16 @@
+<div class="loading" [style.background-color]="getBigBGColor()">
+    <div
+        class="left"
+        [style.background-color]="getLeftBGColor()"
+        [style.transform]="getLeftRotate()"></div>
+    <div
+        class="right"
+        [style.background-color]="getRightBGColor()"
+        [style.transform]="getRightRotate()"></div>
+    <div
+        class="center"
+        [style.color]="getBigBGColor()"
+        [style.background-color]="getSmallBGColor()">
+        {{ numerator }}/{{ denominator }}
+    </div>
+</div>

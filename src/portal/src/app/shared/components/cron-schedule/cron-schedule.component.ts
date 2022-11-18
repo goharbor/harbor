@@ -6,11 +6,15 @@ import {
     OnChanges,
     SimpleChanges,
     SimpleChange,
+    OnInit,
 } from '@angular/core';
 import { OriginCron } from '../../services/interface';
 import { cronRegex } from '../../units/utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../../units/error-handler/error-handler';
+import { JobserviceService } from '../../../../../ng-swagger-gen/services/jobservice.service';
+import { ScheduleService } from '../../../../../ng-swagger-gen/services/schedule.service';
+import { JobType } from '../../../base/left-side-nav/job-service-dashboard/job-service-dashboard.interface';
 const SCHEDULE_TYPE = {
     NONE: 'None',
     DAILY: 'Daily',
@@ -24,7 +28,7 @@ const PREFIX: string = '0 ';
     templateUrl: './cron-schedule.component.html',
     styleUrls: ['./cron-schedule.component.scss'],
 })
-export class CronScheduleComponent implements OnChanges {
+export class CronScheduleComponent implements OnChanges, OnInit {
     @Input() externalValidation: boolean = true; //extra check
     @Input() isInlineModel: boolean = false;
     @Input() originCron: OriginCron;
@@ -40,10 +44,25 @@ export class CronScheduleComponent implements OnChanges {
     SCHEDULE_TYPE = SCHEDULE_TYPE;
     scheduleType: string;
     @Output() inputvalue = new EventEmitter<string>();
+    paused: boolean = false;
     constructor(
         private translate: TranslateService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private scheduleService: ScheduleService
     ) {}
+
+    ngOnInit() {
+        if (this.labelCurrent) {
+            this.translate
+                .get(this.labelCurrent)
+                .subscribe(res => (this.labelCurrent = res));
+        }
+        this.scheduleService
+            .getSchedulePaused({ jobType: JobType.ALL })
+            .subscribe(res => {
+                this.paused = res?.paused;
+            });
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         let cronChange: SimpleChange = changes['originCron'];
