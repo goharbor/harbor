@@ -15,7 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhookjob"
-	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhookjob"
 )
 
 func newNotificationJobAPI() *notificationJobAPI {
@@ -72,7 +71,7 @@ func (n *notificationJobAPI) ListWebhookJobs(ctx context.Context, params webhook
 		results = append(results, model.NewNotificationJob(j).ToSwagger())
 	}
 
-	return operation.NewListWebhookJobsOK().
+	return webhookjob.NewListWebhookJobsOK().
 		WithXTotalCount(total).
 		WithLink(n.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(results)

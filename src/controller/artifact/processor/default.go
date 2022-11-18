@@ -65,32 +65,33 @@ func (d *defaultProcessor) ListAdditionTypes(ctx context.Context, artifact *arti
 // AbstractMetadata will abstract data in a specific way.
 // Annotation keys in artifact annotation will decide which content will be processed in artifact.
 // Here is a manifest example:
-// {
-//   "schemaVersion": 2,
-//   "config": {
-//       "mediaType": "application/vnd.caicloud.model.config.v1alpha1+json",
-//       "digest": "sha256:be948daf0e22f264ea70b713ea0db35050ae659c185706aa2fad74834455fe8c",
-//       "size": 187,
-//       "annotations": {
-//           "io.goharbor.artifact.v1alpha1.skip-list": "metrics,git"
-//       }
-//   },
-//   "layers": [
-//       {
-//           "mediaType": "image/png",
-//           "digest": "sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0",
-//           "size": 166015,
-//           "annotations": {
-//               "io.goharbor.artifact.v1alpha1.icon": ""
-//           }
-//       },
-//       {
-//           "mediaType": "application/tar+gzip",
-//           "digest": "sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0",
-//           "size": 166015
-//       }
-//   ]
-// }
+//
+//	{
+//	  "schemaVersion": 2,
+//	  "config": {
+//	      "mediaType": "application/vnd.caicloud.model.config.v1alpha1+json",
+//	      "digest": "sha256:be948daf0e22f264ea70b713ea0db35050ae659c185706aa2fad74834455fe8c",
+//	      "size": 187,
+//	      "annotations": {
+//	          "io.goharbor.artifact.v1alpha1.skip-list": "metrics,git"
+//	      }
+//	  },
+//	  "layers": [
+//	      {
+//	          "mediaType": "image/png",
+//	          "digest": "sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0",
+//	          "size": 166015,
+//	          "annotations": {
+//	              "io.goharbor.artifact.v1alpha1.icon": ""
+//	          }
+//	      },
+//	      {
+//	          "mediaType": "application/tar+gzip",
+//	          "digest": "sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0",
+//	          "size": 166015
+//	      }
+//	  ]
+//	}
 func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	if artifact.ManifestMediaType != v1.MediaTypeImageManifest && artifact.ManifestMediaType != schema2.MediaTypeManifest {
 		return nil

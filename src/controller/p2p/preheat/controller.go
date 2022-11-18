@@ -124,7 +124,6 @@ type Controller interface {
 var _ Controller = (*controller)(nil)
 
 // controller is the default implementation of Controller interface.
-//
 type controller struct {
 	// For instance
 	iManager instance.Manager

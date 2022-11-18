@@ -148,10 +148,11 @@ func parseModel(model interface{}) *metadata {
 
 // parseFilterable parses whether the field is filterable according to the field annotation
 // For the following struct definition, "Field1" isn't filterable and "Field2" is filterable
-// type Model struct {
-//	 Field1 string `filter:"false"`
-//	 Field2 string
-// }
+//
+//	type Model struct {
+//		 Field1 string `filter:"false"`
+//		 Field2 string
+//	}
 func parseFilterable(field reflect.StructField) bool {
 	return field.Tag.Get("filter") != "false"
 }
@@ -159,13 +160,14 @@ func parseFilterable(field reflect.StructField) bool {
 // parseSortable parses whether the field is sortable according to the field annotation
 // If the field is sortable and is also specified as the default sort, return a q.Sort model as well
 // For the following struct definition, "Field1" isn't sortable and "Field2", "Field2", "Field4", "Field5" are all sortable
-// type Model struct {
-//	 Field1 string `sort:"false"`
-//	 Field2 string `sort:"true;default"`
-//	 Field3 string `sort:"true;default:desc"`
-//	 Field4 string `sort:"default"`
-//   Field5 string
-// }
+//
+//	type Model struct {
+//		 Field1 string `sort:"false"`
+//		 Field2 string `sort:"true;default"`
+//		 Field3 string `sort:"true;default:desc"`
+//		 Field4 string `sort:"default"`
+//	  Field5 string
+//	}
 func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 	var defaultSort *q.Sort
 	for _, item := range strings.Split(field.Tag.Get("sort"), ";") {
@@ -188,10 +190,12 @@ func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 }
 
 // parseColumn parses the column name according to the field annotation
-// type Model struct {
-//	 Field1 string `orm:"column(customized_field1)"`
-//	 Field2 string
-// }
+//
+//	type Model struct {
+//		 Field1 string `orm:"column(customized_field1)"`
+//		 Field2 string
+//	}
+//
 // It returns "customized_field1" for "Field1" and returns "field2" for "Field2"
 func parseColumn(field reflect.StructField) string {
 	column := ""

@@ -248,16 +248,17 @@ func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 }
 
 // SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
-// {
-//	"errors:" [{
-//			"code": <error identifier>,
-//			"message": <message describing condition>,
-//			// optional
-//			"detail": <unstructured>
-//		},
-//		...
-//	]
-// }
+//
+//	{
+//		"errors:" [{
+//				"code": <error identifier>,
+//				"message": <message describing condition>,
+//				// optional
+//				"detail": <unstructured>
+//			},
+//			...
+//		]
+//	}
 func (b *BaseAPI) SendError(err error) {
 	lib_http.SendError(b.Ctx.ResponseWriter, err)
 }

@@ -270,8 +270,8 @@ func ParamPlaceholderForIn(n int) string {
 // to DDL and other statements that do not accept parameters) to be used as part
 // of an SQL statement.  For example:
 //
-//    exp_date := pq.QuoteLiteral("2023-01-05 15:00:00Z")
-//    err := db.Exec(fmt.Sprintf("CREATE ROLE my_user VALID UNTIL %s", exp_date))
+//	exp_date := pq.QuoteLiteral("2023-01-05 15:00:00Z")
+//	err := db.Exec(fmt.Sprintf("CREATE ROLE my_user VALID UNTIL %s", exp_date))
 //
 // Any single quotes in name will be escaped. Any backslashes (i.e. "\") will be
 // replaced by two backslashes (i.e. "\\") and the C-style escape identifier

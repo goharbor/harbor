@@ -16,7 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/auditlog"
-	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/auditlog"
 )
 
 func newAuditLogAPI() *auditlogAPI {
@@ -92,7 +91,7 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 			OpTime:       strfmt.DateTime(log.OpTime),
 		})
 	}
-	return operation.NewListAuditLogsOK().
+	return auditlog.NewListAuditLogsOK().
 		WithXTotalCount(total).
 		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(auditLogs)
