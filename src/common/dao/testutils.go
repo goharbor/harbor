@@ -16,9 +16,10 @@ package dao
 
 import (
 	"fmt"
-	"github.com/beego/beego/v2/client/orm"
 	"os"
 	"strconv"
+
+	"github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -108,6 +109,8 @@ func initDatabaseForTest(db *models.Database) orm.Ormer {
 
 // PrepareTestData -- Clean and Create data
 func PrepareTestData(clearSqls []string, initSqls []string) {
+	o := GetOrmer()
+
 	for _, sql := range clearSqls {
 		fmt.Printf("Exec sql:%v\n", sql)
 		_, err := o.Raw(sql).Exec()
@@ -126,6 +129,8 @@ func PrepareTestData(clearSqls []string, initSqls []string) {
 
 // ExecuteBatchSQL ...
 func ExecuteBatchSQL(sqls []string) {
+	o := GetOrmer()
+
 	for _, sql := range sqls {
 		fmt.Printf("Exec sql:%v\n", sql)
 		_, err := o.Raw(sql).Exec()
@@ -152,6 +157,7 @@ func ArrayEqual(arrayA, arrayB []int) bool {
 // ClearHTTPAuthProxyUsers remove the records from harbor_users to delete all user imported via
 // HTTP Auth Proxy
 func ClearHTTPAuthProxyUsers() error {
+	o := GetOrmer()
 	sql := "DELETE FROM harbor_user WHERE comment='By Authproxy'"
 	_, err := o.Raw(sql).Exec()
 	return err

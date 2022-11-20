@@ -187,8 +187,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.7.2/go.mod h1:8EzeIqfWt2wWT4rJVu3f21
 github.com/aws/smithy-go v1.7.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/aws/smithy-go v1.8.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/baiyubin/aliyun-sts-go-sdk v0.0.0-20180326062324-cfa1a18b161f/go.mod h1:AuiFmCCPBSrqvVMvuqFuk0qogytodnVFVSN5CeJB8Gc=
-github.com/beego/beego/v2 v2.0.5 h1:fa2TBWfKGDs35Ck9an9SVnpS0zM8sRTXlW8rFjpeYlE=
-github.com/beego/beego/v2 v2.0.5/go.mod h1:CH2/JIaB4ceGYVQlYqTAFft4pVk/ol1ZkakUrUvAyns=
+github.com/beego/beego/v2 v2.0.6 h1:21Aqz3+RzUE1yP9a5xdU6LK54n9Z7NLEJtR4PE7NrPQ=
+github.com/beego/beego/v2 v2.0.6/go.mod h1:CH2/JIaB4ceGYVQlYqTAFft4pVk/ol1ZkakUrUvAyns=
 github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0 h1:fQaDnUQvBXHHQdGBu9hz8nPznB4BeiPQokvmQVjmNEw=
 github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0/go.mod h1:KLeFCpAMq2+50NkXC8iiJxLLiiTfTqrGtKEVm+2fk7s=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
@@ -422,6 +422,7 @@ github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
 github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
+github.com/elazarl/go-bindata-assetfs v1.0.1 h1:m0kkaHRKEu7tUIUFVwhGGGYClXvyl4RE03qmvRTNfbw=
 github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153/go.mod h1:/Zj4wYkgs4iZTTu3o/KG3Itv/qCCa8VVMlb3i9OVuzc=
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/emicklei/go-restful v2.9.5+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
