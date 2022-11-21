@@ -170,31 +170,31 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
 
-	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, string(desc.Digest)), &content)
+	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
 	if err != nil {
 		if errors.Is(err, cache.ErrNotFound) {
-			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
+			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, art))
 		} else {
 			log.Errorf("Failed to get manifest list from cache, error: %v", err)
 		}
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil
 	}
-	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, string(desc.Digest)), &contentType)
+	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, art), &contentType)
 	if err != nil {
 		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
 		return false, nil, nil
 	}
-	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, string(desc.Digest)))
+	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
 	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
 }
 
-func manifestListKey(repo, dig string) string {
-	// actual redis key format is cache:manifestlist:<repo name>:sha256:xxxx
-	return "manifestlist:" + repo + ":" + dig
+func manifestListKey(repo string, art lib.ArtifactInfo) string {
+	// actual redis key format is cache:manifestlist:<repo name>:<tag> or cache:manifestlist:<repo name>:sha256:xxxx
+	return "manifestlist:" + repo + ":" + getReference(art)
 }
 
-func manifestListContentTypeKey(rep, dig string) string {
-	return manifestListKey(rep, dig) + ":contenttype"
+func manifestListContentTypeKey(rep string, art lib.ArtifactInfo) string {
+	return manifestListKey(rep, art) + ":contenttype"
 }
 
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
