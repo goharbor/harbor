@@ -1825,9 +1825,9 @@
         "NO_WORKER": "We could not find any worker",
         "JOB_QUEUE": "Job Queues",
         "JOB_SERVICE_DASHBOARD": "Job Service Dashboard",
-        "QUEUE_STOP_BTN_INFO": "STOP — Stop all jobs in the queue and remove them from the queue.",
-        "QUEUE_PAUSE_BTN_INFO": "PAUSE — Pause to execute jobs in this type of job queue,  jobs can be enqueued when the queue is paused.",
-        "QUEUE_RESUME_BTN_INFO": "RESUME — Resume to execute jobs in this type of job queue.",
+        "QUEUE_STOP_BTN_INFO": "STOP — Stop and remove all jobs in the selected queue(s).",
+        "QUEUE_PAUSE_BTN_INFO": "PAUSE — Pause the execution of jobs in this type of job queue. Jobs can be enqueued when the queue is paused.",
+        "QUEUE_RESUME_BTN_INFO": "RESUME — Resume the execution of jobs in this type of job queue.",
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
         "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedule to execute.",
         "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker"
