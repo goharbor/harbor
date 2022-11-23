@@ -138,11 +138,13 @@ func toScheduleResponse(schs []*scheduler.Schedule) []*models.ScheduleTask {
 			}
 		}
 		result = append(result, &models.ScheduleTask{
-			ID:           s.ID,
-			VendorType:   s.VendorType,
-			VendorID:     s.VendorID,
-			ExtraAttrs:   string(extraAttr),
-			CreationTime: strfmt.DateTime(s.CreationTime),
+			ID:         s.ID,
+			VendorType: s.VendorType,
+			VendorID:   s.VendorID,
+			ExtraAttrs: string(extraAttr),
+			Cron:       s.CRON,
+			CronType:   s.CRONType,
+			UpdateTime: strfmt.DateTime(s.UpdateTime),
 		})
 	}
 	return result
