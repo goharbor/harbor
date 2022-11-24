@@ -150,7 +150,7 @@ describe('AuditLogComponent', () => {
             fixture.whenStable().then(() => {
                 fixture.detectChanges();
                 expect(component.auditLogs).toBeTruthy();
-                expect(component.auditLogs.length).toEqual(1);
+                expect(component.auditLogs.length).toEqual(15);
             });
         });
     }));
