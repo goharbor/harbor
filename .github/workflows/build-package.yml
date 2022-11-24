@@ -16,7 +16,7 @@ jobs:
       - ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - uses: 'google-github-actions/auth@v0'
+      - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v0
