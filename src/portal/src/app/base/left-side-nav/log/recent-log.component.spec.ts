@@ -142,7 +142,7 @@ describe('RecentLogComponent (inline template)', () => {
       fixture.whenStable().then(() => {
         fixture.detectChanges();
         expect(component.recentLogs).toBeTruthy();
-        expect(component.recentLogs.length).toEqual(1);
+        expect(component.recentLogs.length).toEqual(15);
       });
     });
   }));
