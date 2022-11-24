@@ -12,7 +12,6 @@ import { OriginCron } from '../../services/interface';
 import { cronRegex } from '../../units/utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../../units/error-handler/error-handler';
-import { JobserviceService } from '../../../../../ng-swagger-gen/services/jobservice.service';
 import { ScheduleService } from '../../../../../ng-swagger-gen/services/schedule.service';
 import { JobType } from '../../../base/left-side-nav/job-service-dashboard/job-service-dashboard.interface';
 const SCHEDULE_TYPE = {

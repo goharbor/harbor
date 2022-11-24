@@ -15,6 +15,7 @@ import {
 } from '../../../../services/event-service/event.service';
 import { Subscription } from 'rxjs';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
+import { CronTypeI18nMap } from '../job-service-dashboard.interface';
 
 @Component({
     selector: 'app-schedule-list',
@@ -95,5 +96,9 @@ export class ScheduleListComponent implements OnInit, OnDestroy {
             return JSON.parse(v);
         }
         return null;
+    }
+
+    toI18nString(v: string): string {
+        return CronTypeI18nMap[v] ? CronTypeI18nMap[v] : v;
     }
 }

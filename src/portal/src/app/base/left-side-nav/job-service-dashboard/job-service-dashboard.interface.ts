@@ -24,3 +24,11 @@ export enum JobType {
     SCHEDULER = 'scheduler',
     ALL = 'all',
 }
+
+export const CronTypeI18nMap = {
+    None: 'SCHEDULE.NONE',
+    Daily: 'SCHEDULE.DAILY',
+    Weekly: 'SCHEDULE.WEEKLY',
+    Hourly: 'SCHEDULE.HOURLY',
+    Custom: 'SCHEDULE.CUSTOM',
+};
