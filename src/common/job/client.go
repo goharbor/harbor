@@ -15,6 +15,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var (
@@ -231,6 +232,7 @@ func (d *DefaultClient) GetJobServiceConfig() (*job.Config, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
+		log.Infof("failed to get job service config from jobservice:8080/api/v1/config, job service container version maybe mismatch")
 		return nil, &commonhttp.Error{
 			Code:    resp.StatusCode,
 			Message: string(data),

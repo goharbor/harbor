@@ -55,7 +55,7 @@ type MonitorController interface {
 	// ListWorkers lists the workers in the pool
 	ListWorkers(ctx context.Context, poolID string) ([]*jm.Worker, error)
 
-	// StopRunningJob stop the running job
+	// StopRunningJobs stop the running job
 	StopRunningJobs(ctx context.Context, jobID string) error
 	// StopPendingJobs stop the pending jobs
 	StopPendingJobs(ctx context.Context, jobType string) error

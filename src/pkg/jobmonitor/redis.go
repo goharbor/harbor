@@ -16,6 +16,7 @@ package jobmonitor
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -69,9 +70,23 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 	redisKeyJobQueue := fmt.Sprintf("{%s}:jobs:%v", r.namespace, jobType)
 	conn := r.redisPool.Get()
 	defer conn.Close()
-	jobIDs, err = redis.Strings(conn.Do("LRANGE", redisKeyJobQueue, 0, -1))
+	var jobInfo struct {
+		ID string `json:"id"`
+	}
+	jobs, err := redis.Strings(conn.Do("LRANGE", redisKeyJobQueue, 0, -1))
 	if err != nil {
 		return []string{}, err
+	}
+	if len(jobs) == 0 {
+		log.Infof("no pending job for job type %v", jobType)
+		return []string{}, nil
+	}
+	for _, j := range jobs {
+		if err := json.Unmarshal([]byte(j), &jobInfo); err != nil {
+			log.Errorf("failed to parse the job info %v, %v", j, err)
+			continue
+		}
+		jobIDs = append(jobIDs, jobInfo.ID)
 	}
 	log.Infof("updated %d tasks in pending status to stop", len(jobIDs))
 	ret, err := redis.Int64(conn.Do("DEL", redisKeyJobQueue))
@@ -83,6 +98,7 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 		return []string{}, fmt.Errorf("no job in the queue removed")
 	}
 	log.Infof("deleted %d keys in waiting queue for %s", ret, jobType)
+	log.Debugf("job id to be deleted %v", jobIDs)
 	return jobIDs, nil
 }
 
@@ -110,6 +126,7 @@ func (r *redisClientImpl) UnpauseJob(ctx context.Context, jobName string) error 
 	return err
 }
 
+// JobServiceRedisClient function to create redis client for job service
 func JobServiceRedisClient() (RedisClient, error) {
 	cfg, err := job.GlobalClient.GetJobServiceConfig()
 	if err != nil {
