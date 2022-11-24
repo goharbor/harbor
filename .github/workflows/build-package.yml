@@ -3,34 +3,32 @@ env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
 on:
-    push:
-        branches:
-          - main
-          - release-*
+  push:
+    branches:
+      - main
+      - release-*
 
 jobs:
   BUILD_PACKAGE:
     env:
         BUILD_PACKAGE: true
     runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      - ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+      - uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v0
         with:
           version: '285.0.0'
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
       - run: gcloud info
       - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
           go-version: 1.19.3
         id: go
-      - name: setup Docker
+      - name: Setup Docker
         uses: docker-practice/actions-setup-docker@1.0.11
         with:
           docker_version: 18.09
