@@ -15,7 +15,7 @@
 package models
 
 import (
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 // HTTPAuthProxy wraps the settings for HTTP auth proxy

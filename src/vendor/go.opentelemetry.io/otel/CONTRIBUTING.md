@@ -228,11 +228,11 @@ all options to create a configured `config`.
 
 ```go
 // newConfig returns an appropriately configured config.
-func newConfig([]Option) config {
+func newConfig(options ...Option) config {
 	// Set default values for config.
 	config := config{/* […] */}
 	for _, option := range options {
-		option.apply(&config)
+		config = option.apply(config)
 	}
 	// Preform any validation here.
 	return config
@@ -253,13 +253,16 @@ To set the value of the options a `config` contains, a corresponding
 
 ```go
 type Option interface {
-	apply(*config)
+	apply(config) config
 }
 ```
 
 Having `apply` unexported makes sure that it will not be used externally.
 Moreover, the interface becomes sealed so the user cannot easily implement
 the interface on its own.
+
+The `apply` method should return a modified version of the passed config.
+This approach, instead of passing a pointer, is used to prevent the config from being allocated to the heap.
 
 The name of the interface should be prefixed in the same way the
 corresponding `config` is (if at all).
@@ -283,8 +286,9 @@ func With*(…) Option { … }
 ```go
 type defaultFalseOption bool
 
-func (o defaultFalseOption) apply(c *config) {
+func (o defaultFalseOption) apply(c config) config {
 	c.Bool = bool(o)
+    return c
 }
 
 // WithOption sets a T to have an option included.
@@ -296,8 +300,9 @@ func WithOption() Option {
 ```go
 type defaultTrueOption bool
 
-func (o defaultTrueOption) apply(c *config) {
+func (o defaultTrueOption) apply(c config) config {
 	c.Bool = bool(o)
+    return c
 }
 
 // WithoutOption sets a T to have Bool option excluded.
@@ -313,8 +318,9 @@ type myTypeOption struct {
 	MyType MyType
 }
 
-func (o myTypeOption) apply(c *config) {
+func (o myTypeOption) apply(c config) config {
 	c.MyType = o.MyType
+    return c
 }
 
 // WithMyType sets T to have include MyType.
@@ -326,16 +332,17 @@ func WithMyType(t MyType) Option {
 ##### Functional Options
 
 ```go
-type optionFunc func(*config)
+type optionFunc func(config) config
 
-func (fn optionFunc) apply(c *config) {
-	fn(c)
+func (fn optionFunc) apply(c config) config {
+	return fn(c)
 }
 
 // WithMyType sets t as MyType.
 func WithMyType(t MyType) Option {
-	return optionFunc(func(c *config) {
+	return optionFunc(func(c config) config {
 		c.MyType = t
+        return c
 	})
 }
 ```
@@ -370,12 +377,12 @@ type config struct {
 
 // DogOption apply Dog specific options.
 type DogOption interface {
-	applyDog(*config)
+	applyDog(config) config
 }
 
 // BirdOption apply Bird specific options.
 type BirdOption interface {
-	applyBird(*config)
+	applyBird(config) config
 }
 
 // Option apply options for all animals.
@@ -385,17 +392,36 @@ type Option interface {
 }
 
 type weightOption float64
-func (o weightOption) applyDog(c *config)  { c.Weight = float64(o) }
-func (o weightOption) applyBird(c *config) { c.Weight = float64(o) }
-func WithWeight(w float64) Option          { return weightOption(w) }
+
+func (o weightOption) applyDog(c config) config {
+	c.Weight = float64(o)
+	return c
+}
+
+func (o weightOption) applyBird(c config) config {
+	c.Weight = float64(o)
+	return c
+}
+
+func WithWeight(w float64) Option { return weightOption(w) }
 
 type furColorOption string
-func (o furColorOption) applyDog(c *config) { c.Color = string(o) }
-func WithFurColor(c string) DogOption       { return furColorOption(c) }
+
+func (o furColorOption) applyDog(c config) config {
+	c.Color = string(o)
+	return c
+}
+
+func WithFurColor(c string) DogOption { return furColorOption(c) }
 
 type maxAltitudeOption float64
-func (o maxAltitudeOption) applyBird(c *config) { c.MaxAltitude = float64(o) }
-func WithMaxAltitude(a float64) BirdOption      { return maxAltitudeOption(a) }
+
+func (o maxAltitudeOption) applyBird(c config) config {
+	c.MaxAltitude = float64(o)
+	return c
+}
+
+func WithMaxAltitude(a float64) BirdOption { return maxAltitudeOption(a) }
 
 func NewDog(name string, o ...DogOption) Dog    {…}
 func NewBird(name string, o ...BirdOption) Bird {…}
@@ -478,16 +504,21 @@ Approvers:
 
 - [Evan Torrie](https://github.com/evantorrie), Verizon Media
 - [Josh MacDonald](https://github.com/jmacd), LightStep
-- [Sam Xie](https://github.com/XSAM)
+- [Sam Xie](https://github.com/XSAM), Cisco/AppDynamics
 - [David Ashpole](https://github.com/dashpole), Google
-- [Gustavo Silva Paiva](https://github.com/paivagustavo), LightStep
 - [Robert Pająk](https://github.com/pellared), Splunk
+- [Chester Cheung](https://github.com/hanyuancheung), Tencent
+- [Damien Mathieu](https://github.com/dmathieu), Auth0/Okta
 
 Maintainers:
 
 - [Aaron Clawson](https://github.com/MadVikingGod), LightStep
 - [Anthony Mirabella](https://github.com/Aneurysm9), AWS
 - [Tyler Yahn](https://github.com/MrAlias), Splunk
+
+Emeritus:
+
+- [Gustavo Silva Paiva](https://github.com/paivagustavo), LightStep
 
 ### Become an Approver or a Maintainer
 

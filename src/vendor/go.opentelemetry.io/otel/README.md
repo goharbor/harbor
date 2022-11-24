@@ -41,16 +41,16 @@ This project is tested on the following systems.
 
 | OS      | Go Version | Architecture |
 | ------- | ---------- | ------------ |
+| Ubuntu  | 1.18       | amd64        |
 | Ubuntu  | 1.17       | amd64        |
-| Ubuntu  | 1.16       | amd64        |
+| Ubuntu  | 1.18       | 386          |
 | Ubuntu  | 1.17       | 386          |
-| Ubuntu  | 1.16       | 386          |
+| MacOS   | 1.18       | amd64        |
 | MacOS   | 1.17       | amd64        |
-| MacOS   | 1.16       | amd64        |
+| Windows | 1.18       | amd64        |
 | Windows | 1.17       | amd64        |
-| Windows | 1.16       | amd64        |
+| Windows | 1.18       | 386          |
 | Windows | 1.17       | 386          |
-| Windows | 1.16       | 386          |
 
 While this project should work for other systems, no compatibility guarantees
 are made for those systems currently.
@@ -76,7 +76,7 @@ libraries](https://github.com/open-telemetry/opentelemetry-go-contrib/tree/main/
 If you need to extend the telemetry an instrumentation library provides or want
 to build your own instrumentation for your application directly you will need
 to use the
-[go.opentelemetry.io/otel/api](https://pkg.go.dev/go.opentelemetry.io/otel/api)
+[Go otel](https://pkg.go.dev/go.opentelemetry.io/otel)
 package. The included [examples](./example/) are a good way to see some
 practical uses of this process.
 
@@ -94,8 +94,6 @@ All officially supported exporters for the OpenTelemetry project are contained i
 | [Prometheus](./exporters/prometheus/) | ✓       |        |
 | [stdout](./exporters/stdout/)         | ✓       | ✓      |
 | [Zipkin](./exporters/zipkin/)         |         | ✓      |
-
-Additionally, OpenTelemetry community supported exporters can be found in the [contrib repository](https://github.com/open-telemetry/opentelemetry-go-contrib/tree/main/exporters).
 
 ## Contributing
 

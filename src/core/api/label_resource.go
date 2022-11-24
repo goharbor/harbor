@@ -6,6 +6,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/label"
+	"github.com/goharbor/harbor/src/lib/log"
 	pkg_label "github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 )
@@ -34,7 +35,11 @@ func (lra *LabelResourceAPI) getLabelsOfResource(rType string, rIDOrName interfa
 	}
 
 	lra.Data["json"] = labels
-	lra.ServeJSON()
+	if err := lra.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json, %v", err)
+		lra.handleErrors(err)
+		return
+	}
 }
 
 func (lra *LabelResourceAPI) markLabelToResource(rl *models.ResourceLabel) {

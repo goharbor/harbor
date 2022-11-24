@@ -137,7 +137,11 @@ func (b *BaseController) SendPermissionError() {
 // WriteJSONData writes the JSON data to the client.
 func (b *BaseController) WriteJSONData(object interface{}) {
 	b.Data["json"] = object
-	b.ServeJSON()
+	if err := b.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json, %v", err)
+		b.SendInternalServerError(err)
+		return
+	}
 }
 
 // WriteYamlData writes the yaml data to the client.
@@ -162,7 +166,11 @@ func (b *BaseController) PopulateUserSession(u models.User) {
 		b.SendError(err)
 		return
 	}
-	b.SetSession(userSessionKey, u)
+	if err := b.SetSession(userSessionKey, u); err != nil {
+		log.Errorf("failed to set user into session, error: %v", err)
+		b.SendError(err)
+		return
+	}
 }
 
 // Init related objects/configurations for the API controllers

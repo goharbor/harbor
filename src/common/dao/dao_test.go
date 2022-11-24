@@ -19,8 +19,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/beego/beego/orm"
-
+	"github.com/beego/beego/v2/client/orm"
+	
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	libOrm "github.com/goharbor/harbor/src/lib/orm"
@@ -29,7 +29,7 @@ import (
 
 var testCtx context.Context
 
-func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
+func execUpdate(o orm.TxOrmer, sql string, params ...interface{}) error {
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
 		return err
@@ -46,9 +46,9 @@ func cleanByUser(username string) {
 	var err error
 
 	o := GetOrmer()
-	o.Begin()
+	txOrm, err := o.Begin()
 
-	err = execUpdate(o, `delete
+	err = execUpdate(txOrm, `delete
 		from project_member
 		where entity_id = (
 			select user_id
@@ -56,11 +56,11 @@ func cleanByUser(username string) {
 			where username = ?
 		) `, username)
 	if err != nil {
-		o.Rollback()
+		txOrm.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete
+	err = execUpdate(txOrm, `delete
 		from project_member
 		where project_id = (
 			select project_id
@@ -68,30 +68,30 @@ func cleanByUser(username string) {
 			where name = ?
 		)`, projectName)
 	if err != nil {
-		o.Rollback()
+		txOrm.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete from project where name = ?`, projectName)
+	err = execUpdate(txOrm, `delete from project where name = ?`, projectName)
 	if err != nil {
-		o.Rollback()
+		txOrm.Rollback()
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete from harbor_user where username = ?`, username)
+	err = execUpdate(txOrm, `delete from harbor_user where username = ?`, username)
 	if err != nil {
-		o.Rollback()
+		txOrm.Rollback()
 		log.Error(err)
 	}
-	err = execUpdate(o, `delete from replication_policy where id < 99`)
-	if err != nil {
-		log.Error(err)
-	}
-	err = execUpdate(o, `delete from registry where id < 99`)
+	err = execUpdate(txOrm, `delete from replication_policy where id < 99`)
 	if err != nil {
 		log.Error(err)
 	}
-	o.Commit()
+	err = execUpdate(txOrm, `delete from registry where id < 99`)
+	if err != nil {
+		log.Error(err)
+	}
+	txOrm.Commit()
 }
 
 const username string = "Tester01"

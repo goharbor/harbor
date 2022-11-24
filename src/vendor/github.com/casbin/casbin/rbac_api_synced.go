@@ -15,23 +15,23 @@
 package casbin
 
 // GetRolesForUser gets the roles that a user has.
-func (e *SyncedEnforcer) GetRolesForUser(name string) []string {
-	e.m.Lock()
-	defer e.m.Unlock()
+func (e *SyncedEnforcer) GetRolesForUser(name string) ([]string, error) {
+	e.m.RLock()
+	defer e.m.RUnlock()
 	return e.Enforcer.GetRolesForUser(name)
 }
 
 // GetUsersForRole gets the users that has a role.
-func (e *SyncedEnforcer) GetUsersForRole(name string) []string {
-	e.m.Lock()
-	defer e.m.Unlock()
+func (e *SyncedEnforcer) GetUsersForRole(name string) ([]string, error) {
+	e.m.RLock()
+	defer e.m.RUnlock()
 	return e.Enforcer.GetUsersForRole(name)
 }
 
 // HasRoleForUser determines whether a user has a role.
-func (e *SyncedEnforcer) HasRoleForUser(name string, role string) bool {
-	e.m.Lock()
-	defer e.m.Unlock()
+func (e *SyncedEnforcer) HasRoleForUser(name string, role string) (bool, error) {
+	e.m.RLock()
+	defer e.m.RUnlock()
 	return e.Enforcer.HasRoleForUser(name, role)
 }
 
@@ -108,14 +108,14 @@ func (e *SyncedEnforcer) DeletePermissionsForUser(user string) bool {
 
 // GetPermissionsForUser gets permissions for a user or role.
 func (e *SyncedEnforcer) GetPermissionsForUser(user string) [][]string {
-	e.m.Lock()
-	defer e.m.Unlock()
+	e.m.RLock()
+	defer e.m.RUnlock()
 	return e.Enforcer.GetPermissionsForUser(user)
 }
 
 // HasPermissionForUser determines whether a user has a permission.
 func (e *SyncedEnforcer) HasPermissionForUser(user string, permission ...string) bool {
-	e.m.Lock()
-	defer e.m.Unlock()
+	e.m.RLock()
+	defer e.m.RUnlock()
 	return e.Enforcer.HasPermissionForUser(user, permission...)
 }

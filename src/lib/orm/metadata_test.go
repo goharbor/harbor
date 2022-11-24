@@ -18,7 +18,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

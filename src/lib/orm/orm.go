@@ -16,15 +16,15 @@ package orm
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
@@ -71,8 +71,8 @@ func init() {
 }
 
 // FromContext returns orm from context
-func FromContext(ctx context.Context) (orm.Ormer, error) {
-	o, ok := ctx.Value(ormKey{}).(orm.Ormer)
+func FromContext(ctx context.Context) (orm.QueryExecutor, error) {
+	o, ok := ctx.Value(ormKey{}).(orm.QueryExecutor)
 	if !ok {
 		return nil, errors.New("cannot get the ORM from context")
 	}
@@ -80,7 +80,7 @@ func FromContext(ctx context.Context) (orm.Ormer, error) {
 }
 
 // NewContext returns new context with orm
-func NewContext(ctx context.Context, o orm.Ormer) context.Context {
+func NewContext(ctx context.Context, o orm.QueryExecutor) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -105,7 +105,7 @@ func Copy(ctx context.Context) context.Context {
 
 type operationNameKey struct{}
 
-// SetTransactionOpName sets the transaction operation name
+// SetTransactionOpNameToContext sets the transaction operation name
 func SetTransactionOpNameToContext(ctx context.Context, name string) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
@@ -136,13 +136,24 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 
-		tx := ormerTx{Ormer: o}
+		var tx ormerTx
+		if _, ok := o.(orm.Ormer); ok {
+			tx = ormerTx{Ormer: o.(orm.Ormer)}
+		} else if _, ok := o.(orm.TxOrmer); ok {
+			tx = ormerTx{TxOrmer: o.(orm.TxOrmer)}
+		} else {
+			return errors.New("no orm found in the context")
+		}
+
 		if err := tx.Begin(); err != nil {
 			tracelib.RecordError(span, err, "begin transaction failed")
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
 
+		// When set multiple times, context.WithValue returns only the last ormer.
+		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
+		cx = NewContext(cx, tx.TxOrmer)
 		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
 			if e := tx.Rollback(); e != nil {
@@ -164,7 +175,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 	}
 }
 
-// ReadOrCreate read or create instance to datebase, retry to read when met a duplicate key error after the creating
+// ReadOrCreate read or create instance to database, retry to read when met a duplicate key error after the creating
 func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...string) (created bool, id int64, err error) {
 	getter, ok := md.(interface {
 		GetID() int64

@@ -125,21 +125,26 @@ github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/beego/beego v1.12.11
-## explicit; go 1.13
-github.com/beego/beego
-github.com/beego/beego/cache
-github.com/beego/beego/cache/redis
-github.com/beego/beego/config
-github.com/beego/beego/context
-github.com/beego/beego/context/param
-github.com/beego/beego/grace
-github.com/beego/beego/logs
-github.com/beego/beego/orm
-github.com/beego/beego/session
-github.com/beego/beego/toolbox
-github.com/beego/beego/utils
-github.com/beego/beego/validation
+# github.com/beego/beego/v2 v2.0.6
+## explicit; go 1.18
+github.com/beego/beego/v2
+github.com/beego/beego/v2/client/cache
+github.com/beego/beego/v2/client/cache/redis
+github.com/beego/beego/v2/client/orm
+github.com/beego/beego/v2/client/orm/clauses
+github.com/beego/beego/v2/client/orm/clauses/order_clause
+github.com/beego/beego/v2/client/orm/hints
+github.com/beego/beego/v2/core/admin
+github.com/beego/beego/v2/core/berror
+github.com/beego/beego/v2/core/config
+github.com/beego/beego/v2/core/logs
+github.com/beego/beego/v2/core/utils
+github.com/beego/beego/v2/core/validation
+github.com/beego/beego/v2/server/web
+github.com/beego/beego/v2/server/web/context
+github.com/beego/beego/v2/server/web/context/param
+github.com/beego/beego/v2/server/web/grace
+github.com/beego/beego/v2/server/web/session
 # github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 ## explicit
 github.com/beego/i18n
@@ -153,11 +158,12 @@ github.com/bmatcuk/doublestar
 ## explicit
 # github.com/bugsnag/panicwrap v1.2.0
 ## explicit
-# github.com/casbin/casbin v1.7.0
+# github.com/casbin/casbin v1.9.1
 ## explicit
 github.com/casbin/casbin
 github.com/casbin/casbin/config
 github.com/casbin/casbin/effect
+github.com/casbin/casbin/errors
 github.com/casbin/casbin/log
 github.com/casbin/casbin/model
 github.com/casbin/casbin/persist
@@ -380,7 +386,7 @@ github.com/go-redis/redis/v8/internal/pool
 github.com/go-redis/redis/v8/internal/proto
 github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
-# github.com/go-sql-driver/mysql v1.5.0
+# github.com/go-sql-driver/mysql v1.6.0
 ## explicit; go 1.10
 github.com/go-sql-driver/mysql
 # github.com/go-stack/stack v1.8.0
@@ -579,7 +585,7 @@ github.com/miekg/pkcs11
 # github.com/mitchellh/copystructure v1.2.0
 ## explicit; go 1.15
 github.com/mitchellh/copystructure
-# github.com/mitchellh/mapstructure v1.4.1
+# github.com/mitchellh/mapstructure v1.4.3
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.2
@@ -666,7 +672,7 @@ github.com/robfig/cron/v3
 # github.com/satori/go.uuid v1.2.0
 ## explicit
 github.com/satori/go.uuid
-# github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644
+# github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 ## explicit
 github.com/shiena/ansicolor
 # github.com/sirupsen/logrus v1.8.1
@@ -765,8 +771,8 @@ go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux
 # go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.22.0
 ## explicit; go 1.15
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
-# go.opentelemetry.io/otel v1.3.0
-## explicit; go 1.16
+# go.opentelemetry.io/otel v1.8.0
+## explicit; go 1.17
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/attribute
 go.opentelemetry.io/otel/baggage
@@ -775,8 +781,9 @@ go.opentelemetry.io/otel/internal
 go.opentelemetry.io/otel/internal/baggage
 go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
+go.opentelemetry.io/otel/semconv/internal
+go.opentelemetry.io/otel/semconv/v1.10.0
 go.opentelemetry.io/otel/semconv/v1.4.0
-go.opentelemetry.io/otel/semconv/v1.7.0
 # go.opentelemetry.io/otel/exporters/jaeger v1.0.0
 ## explicit; go 1.15
 go.opentelemetry.io/otel/exporters/jaeger
@@ -805,14 +812,15 @@ go.opentelemetry.io/otel/metric/global
 go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/registry
 go.opentelemetry.io/otel/metric/unit
-# go.opentelemetry.io/otel/sdk v1.3.0
-## explicit; go 1.16
+# go.opentelemetry.io/otel/sdk v1.8.0
+## explicit; go 1.17
 go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
+go.opentelemetry.io/otel/sdk/internal/env
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
-# go.opentelemetry.io/otel/trace v1.3.0
-## explicit; go 1.16
+# go.opentelemetry.io/otel/trace v1.8.0
+## explicit; go 1.17
 go.opentelemetry.io/otel/trace
 # go.opentelemetry.io/proto/otlp v0.11.0
 ## explicit; go 1.14

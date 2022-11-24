@@ -3,7 +3,7 @@
 package orm
 
 import (
-	orm "github.com/beego/beego/orm"
+	orm "github.com/beego/beego/v2/client/orm"
 	mock "github.com/stretchr/testify/mock"
 )
 

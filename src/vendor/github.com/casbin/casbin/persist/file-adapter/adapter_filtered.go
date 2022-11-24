@@ -41,6 +41,7 @@ type Filter struct {
 // NewFilteredAdapter is the constructor for FilteredAdapter.
 func NewFilteredAdapter(filePath string) *FilteredAdapter {
 	a := FilteredAdapter{}
+	a.filtered = true
 	a.Adapter = NewAdapter(filePath)
 	return &a
 }

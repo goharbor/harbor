@@ -1,14 +1,15 @@
 package chartserver
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math"
 	"time"
 
-	beego_cache "github.com/beego/beego/cache"
+	beego_cache "github.com/beego/beego/v2/client/cache"
 	// Enable redis cache adaptor
-	_ "github.com/beego/beego/cache/redis"
+	_ "github.com/beego/beego/v2/client/cache/redis"
 
 	hlog "github.com/goharbor/harbor/src/lib/log"
 )
@@ -94,6 +95,7 @@ func (chc *ChartCache) IsEnabled() bool {
 
 // PutChart caches the detailed data of chart version
 func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
+	ctx := context.Background()
 	// If cache is not enabled, do nothing
 	if !chc.IsEnabled() {
 		return
@@ -107,12 +109,12 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 		switch chc.driverType {
 		case cacheDriverMem:
 			// Directly put object in
-			err = chc.cache.Put(chart.Metadata.Digest, chart, standardExpireTime)
+			err = chc.cache.Put(ctx, chart.Metadata.Digest, chart, standardExpireTime)
 		case cacheDriverRedis, cacheDriverRedisSentinel:
 			// Marshal to json data before saving
 			var jsonData []byte
 			if jsonData, err = json.Marshal(chart); err == nil {
-				err = chc.cache.Put(chart.Metadata.Digest, jsonData, standardExpireTime)
+				err = chc.cache.Put(ctx, chart.Metadata.Digest, jsonData, standardExpireTime)
 			}
 		default:
 			// Should not reach here, but still put guard code here
@@ -132,11 +134,15 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 // otherwise, nil object is returned
 func (chc *ChartCache) GetChart(chartDigest string) *ChartVersionDetails {
 	// If cache is not enabled, do nothing
+	ctx := context.Background()
 	if !chc.IsEnabled() {
 		return nil
 	}
 
-	object := chc.cache.Get(chartDigest)
+	object, err := chc.cache.Get(ctx, chartDigest)
+	if err != nil {
+		hlog.Warningf("Failed to get cache value by key with error: %s", err)
+	}
 	if object != nil {
 		// Try to convert data
 		// First try the normal way

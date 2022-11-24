@@ -33,7 +33,7 @@ var globalLoggerLock = &sync.RWMutex{}
 // SetLogger overrides the globalLogger with l.
 //
 // To see Info messages use a logger with `l.V(1).Enabled() == true`
-// To see Debug messages use a logger with `l.V(5).Enabled() == true`
+// To see Debug messages use a logger with `l.V(5).Enabled() == true`.
 func SetLogger(l logr.Logger) {
 	globalLoggerLock.Lock()
 	defer globalLoggerLock.Unlock()
@@ -41,7 +41,7 @@ func SetLogger(l logr.Logger) {
 }
 
 // Info prints messages about the general state of the API or SDK.
-// This should usually be less then 5 messages a minute
+// This should usually be less then 5 messages a minute.
 func Info(msg string, keysAndValues ...interface{}) {
 	globalLoggerLock.RLock()
 	defer globalLoggerLock.RUnlock()

@@ -24,4 +24,6 @@ type Watcher interface {
 	// It is usually called after changing the policy in DB, like Enforcer.SavePolicy(),
 	// Enforcer.AddPolicy(), Enforcer.RemovePolicy(), etc.
 	Update() error
+	// Close stops and releases the watcher, the callback function will not be called any more.
+	Close()
 }

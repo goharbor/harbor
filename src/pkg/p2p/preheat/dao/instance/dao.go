@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	beego_orm "github.com/beego/beego/orm"
-
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -40,8 +38,7 @@ var _ DAO = (*dao)(nil)
 
 // Create adds a new distribution instance.
 func (d *dao) Create(ctx context.Context, instance *provider.Instance) (id int64, err error) {
-	var o beego_orm.Ormer
-	o, err = orm.FromContext(ctx)
+	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}

@@ -19,8 +19,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/beego/beego"
-	beegocontext "github.com/beego/beego/context"
+	"github.com/beego/beego/v2/server/web"
+	beegocontext "github.com/beego/beego/v2/server/web/context"
 
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -84,7 +84,7 @@ func (r *Route) Handler(handler http.Handler) {
 	}
 
 	middlewares = append(middlewares, r.middlewares...)
-	filterFunc := beego.FilterFunc(func(ctx *beegocontext.Context) {
+	filterFunc := web.FilterFunc(func(ctx *beegocontext.Context) {
 		ctx.Request = ctx.Request.WithContext(
 			context.WithValue(ctx.Request.Context(), ContextKeyInput{}, ctx.Input))
 		// TODO remove the WithMiddlewares?
@@ -93,25 +93,25 @@ func (r *Route) Handler(handler http.Handler) {
 	})
 
 	if len(methods) == 0 {
-		beego.Any(path, filterFunc)
+		web.Any(path, filterFunc)
 		return
 	}
 	for _, method := range methods {
 		switch method {
 		case http.MethodGet:
-			beego.Get(path, filterFunc)
+			web.Get(path, filterFunc)
 		case http.MethodHead:
-			beego.Head(path, filterFunc)
+			web.Head(path, filterFunc)
 		case http.MethodPut:
-			beego.Put(path, filterFunc)
+			web.Put(path, filterFunc)
 		case http.MethodPatch:
-			beego.Patch(path, filterFunc)
+			web.Patch(path, filterFunc)
 		case http.MethodPost:
-			beego.Post(path, filterFunc)
+			web.Post(path, filterFunc)
 		case http.MethodDelete:
-			beego.Delete(path, filterFunc)
+			web.Delete(path, filterFunc)
 		case http.MethodOptions:
-			beego.Options(path, filterFunc)
+			web.Options(path, filterFunc)
 		}
 	}
 }

@@ -17,7 +17,7 @@ package dao
 import (
 	"fmt"
 
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	// _ "github.com/mattn/go-sqlite3" // register sqlite driver
 )
 

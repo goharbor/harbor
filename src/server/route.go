@@ -17,7 +17,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2/server/web"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
@@ -38,18 +38,18 @@ func registerRoutes() {
 	router.NewRoute().Method(http.MethodGet).Path("/api/version").HandlerFunc(GetAPIVersion)
 
 	// Controller API:
-	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
-	beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
-	beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
-	beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
-	beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
-	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
-	beego.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
+	web.Router("/c/login", &controllers.CommonController{}, "post:Login")
+	web.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
+	web.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
+	web.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
+	web.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
+	web.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
+	web.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
-	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
-	beego.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")
+	web.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
+	web.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")
 
-	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
+	web.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/adminjob/:id([0-9]+)").Handler(handler.NewJobStatusHandler())         // legacy job status hook endpoint for adminjob
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/scan/:uuid").HandlerFunc(ignoreNotification)                          // ignore legacy scan job notifaction
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/schedules/:id([0-9]+)").Handler(handler.NewJobStatusHandler())             // legacy job status hook endpoint for scheduler
@@ -58,25 +58,25 @@ func registerRoutes() {
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/retention/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler())
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
 
-	beego.Router("/service/token", &token.Handler{})
+	web.Router("/service/token", &token.Handler{})
 
 	// chart repository services
 	if config.WithChartMuseum() {
 		chartRepositoryAPIType := &api.ChartRepositoryAPI{}
-		beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
-		beego.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
-		beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
-		beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-		beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-		beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-		beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-		beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-		beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-		beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-		beego.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-		beego.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+		web.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
+		web.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
+		web.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
+		web.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
+		web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
+		web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
+		web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
+		web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
+		web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
+		web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+		web.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
+		web.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
 	}
 
 	// Error pages
-	beego.ErrorController(&controllers.ErrorController{})
+	web.ErrorController(&controllers.ErrorController{})
 }

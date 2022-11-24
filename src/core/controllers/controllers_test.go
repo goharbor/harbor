@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
@@ -41,13 +41,13 @@ func init() {
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")
 	apppath, _ := filepath.Abs(dir)
-	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.TestBeegoInit(apppath)
-	beego.AddTemplateExt("htm")
+	web.BConfig.WebConfig.Session.SessionOn = true
+	web.TestBeegoInit(apppath)
+	web.AddTemplateExt("htm")
 
-	beego.Router("/c/login", &CommonController{}, "post:Login")
-	beego.Router("/c/log_out", &CommonController{}, "get:LogOut")
-	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
+	web.Router("/c/login", &CommonController{}, "post:Login")
+	web.Router("/c/log_out", &CommonController{}, "get:LogOut")
+	web.Router("/c/userExists", &CommonController{}, "post:UserExists")
 }
 
 func TestMain(m *testing.M) {
@@ -71,7 +71,7 @@ func TestRedirectForOIDC(t *testing.T) {
 func TestAll(t *testing.T) {
 	config.InitWithSettings(utilstest.GetUnitTestConfig())
 	assert := assert.New(t)
-	handler := http.Handler(beego.BeeApp.Handlers)
+	handler := http.Handler(web.BeeApp.Handlers)
 	mws := middlewares.MiddleWares()
 	for i := len(mws) - 1; i >= 0; i-- {
 		if mws[i] == nil {

@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 )
 
 type pidProvider func() int
@@ -39,7 +39,12 @@ var (
 	defaultExecutablePathProvider executablePathProvider = os.Executable
 	defaultCommandArgsProvider    commandArgsProvider    = func() []string { return os.Args }
 	defaultOwnerProvider          ownerProvider          = user.Current
-	defaultRuntimeNameProvider    runtimeNameProvider    = func() string { return runtime.Compiler }
+	defaultRuntimeNameProvider    runtimeNameProvider    = func() string {
+		if runtime.Compiler == "gc" {
+			return "go"
+		}
+		return runtime.Compiler
+	}
 	defaultRuntimeVersionProvider runtimeVersionProvider = runtime.Version
 	defaultRuntimeOSProvider      runtimeOSProvider      = func() string { return runtime.GOOS }
 	defaultRuntimeArchProvider    runtimeArchProvider    = func() string { return runtime.GOARCH }

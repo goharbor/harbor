@@ -16,61 +16,70 @@ package transaction
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
 type mockOrmer struct {
 	o.Ormer
-	records   []interface{}
-	beginErr  error
-	commitErr error
+	tx       mockTxOrmer
+	beginErr error
 }
 
-func (m *mockOrmer) Insert(i interface{}) (int64, error) {
-	m.records = append(m.records, i)
-
-	return int64(len(m.records)), nil
-}
-
-func (m *mockOrmer) Begin() error {
-	return m.beginErr
-}
-
-func (m *mockOrmer) Commit() error {
-	return m.commitErr
-}
-
-func (m *mockOrmer) Rollback() error {
-	m.ResetRecords()
-
-	return nil
-}
-
-func (m *mockOrmer) ResetRecords() {
-	m.records = nil
+func (m *mockOrmer) Begin() (o.TxOrmer, error) {
+	return &m.tx, m.beginErr
 }
 
 func (m *mockOrmer) Reset() {
-	m.ResetRecords()
-
+	m.tx.Reset()
 	m.beginErr = nil
+}
+
+type mockTxOrmer struct {
+	o.TxOrmer
+	commitErr error
+	records   []interface{}
+}
+
+func (m *mockTxOrmer) Insert(i interface{}) (int64, error) {
+	m.records = append(m.records, i)
+	return int64(len(m.records)), nil
+}
+
+func (m *mockTxOrmer) Commit() error {
+	return m.commitErr
+}
+
+func (m *mockTxOrmer) Rollback() error {
+	m.ResetRecords()
+	return nil
+}
+
+func (m *mockTxOrmer) ResetRecords() {
+	m.records = nil
+}
+
+func (m *mockTxOrmer) Reset() {
+	m.ResetRecords()
 	m.commitErr = nil
 }
 
 func TestTransaction(t *testing.T) {
 	assert := assert.New(t)
 
-	mo := &mockOrmer{}
+	tx := mockTxOrmer{}
+	mo := &mockOrmer{
+		tx: tx,
+	}
 
 	newRequest := func(method, target string, body io.Reader) *http.Request {
 		req := httptest.NewRequest(http.MethodGet, "/req1", nil)
@@ -79,7 +88,7 @@ func TestTransaction(t *testing.T) {
 
 	next := func(status int) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			mo.Insert("record1")
+			mo.tx.Insert("record1")
 			w.WriteHeader(status)
 		})
 	}
@@ -89,17 +98,17 @@ func TestTransaction(t *testing.T) {
 	rec1 := httptest.NewRecorder()
 	Middleware()(next(http.StatusOK)).ServeHTTP(rec1, req1)
 	assert.Equal(http.StatusOK, rec1.Code)
-	assert.NotEmpty(mo.records)
+	assert.NotEmpty(mo.tx.records)
 
-	mo.ResetRecords()
-	assert.Empty(mo.records)
+	mo.tx.ResetRecords()
+	assert.Empty(mo.tx.records)
 
 	// test response status code not accepted
 	req2 := newRequest(http.MethodGet, "/req", nil)
 	rec2 := httptest.NewRecorder()
 	Middleware()(next(http.StatusBadRequest)).ServeHTTP(rec2, req2)
 	assert.Equal(http.StatusBadRequest, rec2.Code)
-	assert.Empty(mo.records)
+	assert.Empty(mo.tx.records)
 
 	// test begin transaction failed
 	mo.beginErr = errors.New("begin tx failed")
@@ -107,11 +116,11 @@ func TestTransaction(t *testing.T) {
 	rec3 := httptest.NewRecorder()
 	Middleware()(next(http.StatusBadRequest)).ServeHTTP(rec3, req3)
 	assert.Equal(http.StatusInternalServerError, rec3.Code)
-	assert.Empty(mo.records)
+	assert.Empty(mo.tx.records)
 
 	// test commit transaction failed
 	mo.beginErr = nil
-	mo.commitErr = errors.New("commit tx failed")
+	mo.tx.commitErr = errors.New("commit tx failed")
 	req4 := newRequest(http.MethodGet, "/req", nil)
 	rec4 := httptest.NewRecorder()
 	Middleware()(next(http.StatusOK)).ServeHTTP(rec4, req4)
@@ -119,12 +128,12 @@ func TestTransaction(t *testing.T) {
 
 	// test MustCommit
 	mo.Reset()
-	assert.Empty(mo.records)
+	assert.Empty(mo.tx.records)
 
 	txMustCommit := func(status int) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer MustCommit(r)
-			mo.Insert("record1")
+			mo.tx.Insert("record1")
 			w.WriteHeader(status)
 		})
 	}
@@ -139,7 +148,7 @@ func TestTransaction(t *testing.T) {
 
 	Middleware()(m1((txMustCommit(http.StatusBadRequest)))).ServeHTTP(rec5, req5)
 	assert.Equal(http.StatusBadRequest, rec2.Code)
-	assert.NotEmpty(mo.records)
+	assert.NotEmpty(mo.tx.records)
 }
 
 func TestMustCommit(t *testing.T) {

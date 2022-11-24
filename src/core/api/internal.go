@@ -17,7 +17,7 @@ package api
 import (
 	"context"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -66,7 +66,10 @@ func (ia *InternalAPI) RenameAdmin() {
 		return
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
-	ia.DestroySession()
+	if err := ia.DestroySession(); err != nil {
+		log.Errorf("failed to destroy session for admin user, error: %v", err)
+		return
+	}
 }
 
 // SyncQuota ...

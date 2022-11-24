@@ -26,7 +26,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2/server/web"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -120,8 +120,10 @@ func main() {
 	runMode := flag.String("mode", "normal", "The harbor-core container run mode, it could be normal, migrate or skip-migrate, default is normal")
 	flag.Parse()
 
-	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+	web.BConfig.WebConfig.Session.SessionOn = true
+	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+	web.BConfig.MaxMemory = 1 << 35     // (32GB)
+	web.BConfig.MaxUploadSize = 1 << 35 // (32GB)
 
 	redisURL := os.Getenv("_REDIS_URL_CORE")
 	if len(redisURL) > 0 {
@@ -130,8 +132,8 @@ func main() {
 			panic("bad _REDIS_URL")
 		}
 
-		beego.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
-		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+		web.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
+		web.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 
 		log.Info("initializing cache ...")
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
@@ -141,7 +143,7 @@ func main() {
 		// enable config cache explicitly when the cache is ready
 		dbCfg.EnableConfigCache()
 	}
-	beego.AddTemplateExt("htm")
+	web.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
 	config.Init()
@@ -223,12 +225,12 @@ func main() {
 		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
 
 		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
-		beego.BConfig.Listen.EnableHTTP = false
-		beego.BConfig.Listen.EnableHTTPS = true
-		beego.BConfig.Listen.HTTPSPort = 8443
-		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
-		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
-		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
+		web.BConfig.Listen.EnableHTTP = false
+		web.BConfig.Listen.EnableHTTPS = true
+		web.BConfig.Listen.HTTPSPort = 8443
+		web.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		web.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+		web.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
@@ -257,7 +259,7 @@ func main() {
 		}
 		systemartifact.ScheduleCleanupTask(ctx)
 	}()
-	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+	web.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
 const (

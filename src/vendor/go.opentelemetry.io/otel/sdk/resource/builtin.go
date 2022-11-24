@@ -22,7 +22,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 )
 
 type (
@@ -92,7 +92,7 @@ func (sd stringDetector) Detect(ctx context.Context) (*Resource, error) {
 	return NewWithAttributes(sd.schemaURL, sd.K.String(value)), nil
 }
 
-// Detect implements Detector
+// Detect implements Detector.
 func (defaultServiceNameDetector) Detect(ctx context.Context) (*Resource, error) {
 	return StringDetector(
 		semconv.SchemaURL,

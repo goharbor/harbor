@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	beego_orm "github.com/beego/beego/orm"
+	beego_orm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/orm"
 	q2 "github.com/goharbor/harbor/src/lib/q"

@@ -17,7 +17,7 @@ package policy
 import (
 	"context"
 
-	beego_orm "github.com/beego/beego/orm"
+	beego_orm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -62,8 +62,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error
 
 // Create a policy schema.
 func (d *dao) Create(ctx context.Context, schema *policy.Schema) (id int64, err error) {
-	var ormer beego_orm.Ormer
-	ormer, err = orm.FromContext(ctx)
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}
@@ -81,8 +80,7 @@ func (d *dao) Create(ctx context.Context, schema *policy.Schema) (id int64, err 
 
 // Update a policy schema.
 func (d *dao) Update(ctx context.Context, schema *policy.Schema, props ...string) (err error) {
-	var ormer beego_orm.Ormer
-	ormer, err = orm.FromContext(ctx)
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -101,8 +99,7 @@ func (d *dao) Update(ctx context.Context, schema *policy.Schema, props ...string
 
 // Get a policy schema by id.
 func (d *dao) Get(ctx context.Context, id int64) (schema *policy.Schema, err error) {
-	var ormer beego_orm.Ormer
-	ormer, err = orm.FromContext(ctx)
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}
@@ -120,8 +117,7 @@ func (d *dao) Get(ctx context.Context, id int64) (schema *policy.Schema, err err
 
 // GetByName gets a policy schema by name.
 func (d *dao) GetByName(ctx context.Context, projectID int64, name string) (schema *policy.Schema, err error) {
-	var ormer beego_orm.Ormer
-	ormer, err = orm.FromContext(ctx)
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}
@@ -139,8 +135,7 @@ func (d *dao) GetByName(ctx context.Context, projectID int64, name string) (sche
 
 // Delete a policy schema by id.
 func (d *dao) Delete(ctx context.Context, id int64) (err error) {
-	var ormer beego_orm.Ormer
-	ormer, err = orm.FromContext(ctx)
+	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}

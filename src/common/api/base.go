@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/beego/beego"
-	"github.com/beego/beego/validation"
+	"github.com/beego/beego/v2/core/validation"
+	"github.com/beego/beego/v2/server/web"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
@@ -40,7 +40,7 @@ const (
 
 // BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
-	beego.Controller
+	web.Controller
 }
 
 // Context returns the context.Context from http.Request
@@ -79,10 +79,10 @@ func (b *BaseAPI) RenderError(code int, text string) {
 
 // DecodeJSONReq decodes a json request
 func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
-	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
+	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<35), v)
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
-			err, string(b.Ctx.Input.CopyBody(1 << 32)[:]))
+			err, string(b.Ctx.Input.CopyBody(1 << 35)[:]))
 		return errors.New("invalid json request")
 	}
 	return nil

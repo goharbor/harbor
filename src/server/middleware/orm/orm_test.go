@@ -19,7 +19,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/lib/orm"

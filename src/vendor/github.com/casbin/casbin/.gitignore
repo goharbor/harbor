@@ -25,3 +25,6 @@ _testmain.go
 
 .idea/
 *.iml
+
+# vendor files
+vendor

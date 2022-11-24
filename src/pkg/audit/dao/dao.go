@@ -18,7 +18,7 @@ import (
 	"context"
 	"strings"
 
-	beegorm "github.com/beego/beego/orm"
+	beegorm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -90,7 +90,7 @@ func (*dao) Purge(ctx context.Context, retentionHour int, includeOperations []st
 	return delRows, err
 }
 
-func dryRunPurge(ormer beegorm.Ormer, retentionHour int, includeOperations []string) (int64, error) {
+func dryRunPurge(ormer beegorm.QueryExecutor, retentionHour int, includeOperations []string) (int64, error) {
 	sql := "SELECT count(1) cnt FROM audit_log WHERE op_time < NOW() - ? * interval '1 hour' "
 	filterOps := permitOps(includeOperations)
 	if len(filterOps) == 0 {

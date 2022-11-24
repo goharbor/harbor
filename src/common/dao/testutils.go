@@ -19,11 +19,14 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var defaultRegistered = false
+var o orm.Ormer
 
 // PrepareTestForMySQL is for test only.
 func PrepareTestForMySQL() {
@@ -72,13 +75,14 @@ func PrepareTestForPostgresSQL() {
 	}
 
 	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-	initDatabaseForTest(database)
+	o = initDatabaseForTest(database)
 }
 
-func initDatabaseForTest(db *models.Database) {
+func initDatabaseForTest(db *models.Database) orm.Ormer {
 	database, err := getDatabase(db)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 
 	log.Infof("initializing database: %s", database.String())
@@ -89,17 +93,18 @@ func initDatabaseForTest(db *models.Database) {
 		alias = "default"
 	}
 	if err := database.Register(alias); err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 	if err := database.UpgradeSchema(); err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
 
 	if alias != "default" {
-		if err = GetOrmer().Using(alias); err != nil {
-			log.Fatalf("failed to create new orm: %v", err)
-		}
+		return orm.NewOrmUsingDB(alias)
 	}
+	return GetOrmer()
 }
 
 // PrepareTestData -- Clean and Create data
