@@ -1820,11 +1820,21 @@
     "NO_WORKER": "We could not find any worker",
     "JOB_QUEUE": "Job Queues",
     "JOB_SERVICE_DASHBOARD": "Job Service Dashboard",
+    "OPERATION_STOP_ALL_QUEUES": "Stop all job queues",
+    "OPERATION_STOP_SPECIFIED_QUEUES": "Stop specified job queues",
+    "OPERATION_PAUSE_SPECIFIED_QUEUES": "Pause specified job queues",
+    "OPERATION_RESUME_SPECIFIED_QUEUES": "Resume specified job queues",
+    "OPERATION_PAUSE_SCHEDULE": "Pause all schedules",
+    "OPERATION_RESUME_SCHEDULE": "Resume all schedules",
+    "OPERATION_FREE_ALL": "Free all workers",
+    "OPERATION_FREE_SPECIFIED_WORKERS": "Free specified workers",
     "QUEUE_STOP_BTN_INFO": "STOP — Stop and remove all jobs in the selected queue(s).",
     "QUEUE_PAUSE_BTN_INFO": "PAUSE — Pause the execution of jobs in this type of job queue. Jobs can be enqueued when the queue is paused.",
     "QUEUE_RESUME_BTN_INFO": "RESUME — Resume the execution of jobs in this type of job queue.",
     "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
     "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedule to execute.",
-    "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker"
+    "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
+    "CRON": "Cron",
+    "CRON_TYPE": "Cron Type"
   }
 }
