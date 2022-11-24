@@ -9500,12 +9500,19 @@ definitions:
       vendor_id:
         type: integer
         description: the vendor id of the current task
+      cron:
+        type: string
+        description: the cron of the current schedule task
+      cron_type:
+        type: string
+        description: the cron type of the current schedule task
       extra_attrs:
         type: string
         description: the extra attributes
-      creation_time:
+      update_time:
         type: string
         format: date-time
+        description: the update time of the schedule task
   SchedulerStatus:
     type: object
     description: the scheduler status
