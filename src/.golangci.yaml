@@ -56,7 +56,7 @@ run:
     - ".*test.go"
   skip-dirs:
     - "testing"
-  timeout: 5m
+  timeout: 20m
 
 issue:
   max-same-issues: 0
