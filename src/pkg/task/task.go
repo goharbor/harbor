@@ -58,6 +58,10 @@ type Manager interface {
 	Count(ctx context.Context, query *q.Query) (int64, error)
 	// Update the status of the specified task
 	Update(ctx context.Context, task *Task, props ...string) error
+	// UpdateStatusInBatch updates the status of tasks in batch
+	UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) error
+	// ExecutionIDsByVendorAndStatus retrieve execution id by vendor type and status
+	ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType, status string) ([]int64, error)
 }
 
 // NewManager creates an instance of the default task manager
@@ -246,4 +250,12 @@ func (m *manager) GetLog(ctx context.Context, id int64) ([]byte, error) {
 		return nil, err
 	}
 	return m.jsClient.GetJobLog(task.JobID)
+}
+
+func (m *manager) UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) error {
+	return m.dao.UpdateStatusInBatch(ctx, jobIDs, status, batchSize)
+}
+
+func (m *manager) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType, status string) ([]int64, error) {
+	return m.dao.ExecutionIDsByVendorAndStatus(ctx, vendorType, status)
 }
