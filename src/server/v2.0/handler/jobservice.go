@@ -16,13 +16,11 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -100,7 +98,6 @@ func toWorkerResponse(wks []*jm.Worker) []*models.Worker {
 				JobName:   w.JobName,
 				JobID:     w.JobID,
 				PoolID:    w.PoolID,
-				Args:      w.Args,
 				StartAt:   startAtTime,
 				CheckinAt: checkInAtTime,
 			})
@@ -135,22 +132,11 @@ func covertTime(t int64) strfmt.DateTime {
 func toScheduleResponse(schs []*scheduler.Schedule) []*models.ScheduleTask {
 	result := make([]*models.ScheduleTask, 0)
 	for _, s := range schs {
-		extraAttr := []byte("")
-		if s.ExtraAttrs != nil {
-			extra, err := json.Marshal(s.ExtraAttrs)
-			if err != nil {
-				log.Warningf("failed to extract extra attribute, error %v", err)
-			} else {
-				extraAttr = extra
-			}
-		}
 		result = append(result, &models.ScheduleTask{
 			ID:         s.ID,
 			VendorType: s.VendorType,
 			VendorID:   s.VendorID,
-			ExtraAttrs: string(extraAttr),
 			Cron:       s.CRON,
-			CronType:   s.CRONType,
 			UpdateTime: strfmt.DateTime(s.UpdateTime),
 		})
 	}
