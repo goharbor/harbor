@@ -86,16 +86,23 @@ func toWorkerResponse(wks []*jm.Worker) []*models.Worker {
 				PoolID: w.PoolID,
 			})
 		} else {
-			startAtTime := covertTime(w.StartedAt)
-			checkInAtTime := covertTime(w.CheckInAt)
+			var startAtTime, checkInAtTime *strfmt.DateTime
+			if w.StartedAt != 0 {
+				t := covertTime(w.StartedAt)
+				startAtTime = &t
+			}
+			if w.CheckInAt != 0 {
+				t := covertTime(w.CheckInAt)
+				checkInAtTime = &t
+			}
 			workers = append(workers, &models.Worker{
 				ID:        w.ID,
 				JobName:   w.JobName,
 				JobID:     w.JobID,
 				PoolID:    w.PoolID,
 				Args:      w.Args,
-				StartAt:   &startAtTime,
-				CheckinAt: &checkInAtTime,
+				StartAt:   startAtTime,
+				CheckinAt: checkInAtTime,
 			})
 		}
 	}
