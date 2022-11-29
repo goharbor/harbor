@@ -35,16 +35,17 @@ jobs:
         add-snippets: true
 
 
-    - name: Debug Analysis
-      uses: zbazztian/codeql-tools/debug@main
+    # - name: Debug Analysis
+    #   uses: zbazztian/codeql-tools/debug@main
+    #   with:
+    #     threads: 2
 
-
-    - name: Upload loc as a Build Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: codeql-debug-results
-        path: codeql-debug-results
-        retention-days: 30
+    # - name: Upload loc as a Build Artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: codeql-debug-results
+    #     path: codeql-debug-results
+    #     retention-days: 30
 
     - name: Upload loc as a Build Artifact
       uses: actions/upload-artifact@v3
@@ -57,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: codeql_result
-        path:  ${{ github.workspace }}/result
+        path:  ../results
         retention-days: 30
 
 #如果需要可以上传database数据库
