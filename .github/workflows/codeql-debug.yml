@@ -9,15 +9,16 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'java', 'go','python' ]
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     language: [ 'java', 'go','python' ]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-  
+      with:
+        fetch-depth: 1
 
     - name: Initialize CodeQL
       id: codeqlinit
@@ -30,6 +31,8 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
+      with:
+        add-snippets: true
 
 
     - name: Debug Analysis
@@ -48,6 +51,13 @@ jobs:
       with:
         name: codeql_databases
         path: /home/runner/work/_temp/codeql_databases
+        retention-days: 30
+
+    - name: Upload loc as a Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: codeql_result
+        path:  ${{ github.workspace }}/result
         retention-days: 30
 
 #如果需要可以上传database数据库
