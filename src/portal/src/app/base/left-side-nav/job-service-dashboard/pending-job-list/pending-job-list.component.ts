@@ -15,10 +15,6 @@ import { PendingJobsActions } from '../job-service-dashboard.interface';
 import { forkJoin, Subscription } from 'rxjs';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
 import {
-    EventService,
-    HarborEvent,
-} from '../../../../services/event-service/event.service';
-import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
@@ -30,6 +26,7 @@ import {
 } from '../../../../shared/components/operation/operate';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { errorHandler } from '../../../../shared/units/shared.utils';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 @Component({
     selector: 'app-pending-job-list',
@@ -42,23 +39,20 @@ export class PendingListComponent implements OnInit, OnDestroy {
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.PENDING_LIST_COMPONENT
     );
-    jobQueue: JobQueue[] = [];
     loadingStop: boolean = false;
     loadingPause: boolean = false;
     loadingResume: boolean = false;
     confirmSub: Subscription;
-    eventSub: Subscription;
     constructor(
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
         private operateDialogService: ConfirmationDialogService,
-        private eventService: EventService,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
     ) {}
 
     ngOnInit() {
         this.getJobs();
-        this.initEventSub();
         this.initSub();
     }
     ngOnDestroy() {
@@ -66,10 +60,10 @@ export class PendingListComponent implements OnInit, OnDestroy {
             this.confirmSub.unsubscribe();
             this.confirmSub = null;
         }
-        if (this.eventSub) {
-            this.eventSub.unsubscribe();
-            this.eventSub = null;
-        }
+    }
+
+    get jobQueue() {
+        return this.jobServiceDashboardSharedDataService.getJobQueues();
     }
 
     initSub() {
@@ -105,27 +99,14 @@ export class PendingListComponent implements OnInit, OnDestroy {
         }
     }
 
-    initEventSub() {
-        if (!this.eventSub) {
-            this.eventSub = this.eventService.subscribe(
-                HarborEvent.REFRESH_JOB_SERVICE_DASHBOARD,
-                () => {
-                    this.getJobs();
-                }
-            );
-        }
-    }
-
     getJobs() {
         this.selectedRows = [];
         this.loading = true;
-        this.jobServiceService
-            .listJobQueues()
+        this.jobServiceDashboardSharedDataService
+            .retrieveJobQueues()
             .pipe(finalize(() => (this.loading = false)))
             .subscribe({
-                next: res => {
-                    this.jobQueue = res;
-                },
+                next: res => {},
                 error: err => {
                     this.messageHandlerService.error(err);
                 },

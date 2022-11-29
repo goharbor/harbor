@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
 import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { JobQueue } from '../../../../../../ng-swagger-gen/models/job-queue';
 import { finalize } from 'rxjs/operators';
 import {
     INTERVAL,
@@ -14,11 +13,7 @@ import {
     ConfirmationState,
     ConfirmationTargets,
 } from '../../../../shared/entities/shared.const';
-import { of, Subscription } from 'rxjs';
-import {
-    EventService,
-    HarborEvent,
-} from '../../../../services/event-service/event.service';
+import { Subscription } from 'rxjs';
 import {
     operateChanges,
     OperateInfo,
@@ -26,6 +21,7 @@ import {
 } from '../../../../shared/components/operation/operate';
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 @Component({
     selector: 'app-pending-job-card',
@@ -34,7 +30,6 @@ import { OperationService } from '../../../../shared/components/operation/operat
 })
 export class PendingCardComponent implements OnInit, OnDestroy {
     loading: boolean = false;
-    jobQueue: JobQueue[] = [];
     timeout: any;
     loadingStopAll: boolean = false;
     confirmSub: Subscription;
@@ -42,8 +37,8 @@ export class PendingCardComponent implements OnInit, OnDestroy {
         private operateDialogService: ConfirmationDialogService,
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
-        private eventService: EventService,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
     ) {}
 
     ngOnInit() {
@@ -60,7 +55,15 @@ export class PendingCardComponent implements OnInit, OnDestroy {
             this.confirmSub = null;
         }
     }
-
+    get jobQueue() {
+        return this.jobServiceDashboardSharedDataService
+            .getJobQueues()
+            .sort((a, b) => {
+                const ACount: number = a?.count | 0;
+                const BCount: number = b?.count | 0;
+                return BCount - ACount;
+            });
+    }
     initSub() {
         if (!this.confirmSub) {
             this.confirmSub =
@@ -86,17 +89,10 @@ export class PendingCardComponent implements OnInit, OnDestroy {
         if (withLoading) {
             this.loading = true;
         }
-        this.jobServiceService
-            .listJobQueues()
+        this.jobServiceDashboardSharedDataService
+            .retrieveJobQueues(true)
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(res => {
-                if (res?.length) {
-                    this.jobQueue = res.sort((a, b) => {
-                        const ACount: number = a?.count | 0;
-                        const BCount: number = b?.count | 0;
-                        return BCount - ACount;
-                    });
-                }
                 this.timeout = setTimeout(() => {
                     this.loopGetPendingJobs();
                 }, INTERVAL);
@@ -159,9 +155,6 @@ export class PendingCardComponent implements OnInit, OnDestroy {
                         'JOB_SERVICE_DASHBOARD.STOP_ALL_SUCCESS'
                     );
                     this.refreshNow();
-                    this.eventService.publish(
-                        HarborEvent.REFRESH_JOB_SERVICE_DASHBOARD
-                    );
                     operateChanges(operationMessage, OperationState.success);
                 },
                 error: err => {

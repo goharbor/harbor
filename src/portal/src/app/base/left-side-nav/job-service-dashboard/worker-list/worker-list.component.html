@@ -2,7 +2,7 @@
 <clr-datagrid
     [clrDgLoading]="loadingPools"
     (clrDgRefresh)="clrLoadPool($event)"
-    (clrDgSelectedChange)="selectionChanged()"
+    (clrDgSelectedChange)="refreshWorkers()"
     [(clrDgSingleSelected)]="selectedPool">
     <clr-dg-action-bar class="action-bar mt-0">
         <span class="refresh-btn" (click)="getPools()">
@@ -86,7 +86,7 @@
                     </clr-tooltip-content>
                 </clr-tooltip>
             </div>
-            <span class="refresh-btn" (click)="selectionChanged()">
+            <span class="refresh-btn" (click)="refreshWorkers()">
                 <clr-icon shape="refresh"></clr-icon>
             </span>
         </clr-dg-action-bar>

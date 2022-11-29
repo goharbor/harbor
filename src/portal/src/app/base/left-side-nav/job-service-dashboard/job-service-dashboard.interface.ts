@@ -1,3 +1,5 @@
+import { ScheduleTask } from '../../../../../ng-swagger-gen/models/schedule-task';
+
 export enum All {
     ALL_WORKERS = 'all',
 }
@@ -32,3 +34,10 @@ export const CronTypeI18nMap = {
     Hourly: 'SCHEDULE.HOURLY',
     Custom: 'SCHEDULE.CUSTOM',
 };
+
+export interface ScheduleListResponse {
+    pageSize: number;
+    currentPage: number;
+    total: number;
+    scheduleList: ScheduleTask[];
+}

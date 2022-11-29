@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SharedTestingModule } from '../../../../shared/shared.module';
-import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
 import { of } from 'rxjs';
 import { WorkerCardComponent } from './worker-card.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Worker } from '../../../../../../ng-swagger-gen/models/worker';
+import { ScheduleListResponse } from '../job-service-dashboard.interface';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 describe('WorkerCardComponent', () => {
     let component: WorkerCardComponent;
@@ -15,8 +16,12 @@ describe('WorkerCardComponent', () => {
         { id: '2', job_id: '2', job_name: 'test2' },
     ];
 
-    const fakedJobserviceService = {
-        getWorkers() {
+    const fakedJobServiceDashboardSharedDataService = {
+        _allWorkers: mockedWorkers,
+        getAllWorkers(): ScheduleListResponse {
+            return this._allWorkers;
+        },
+        retrieveAllWorkers() {
             return of(mockedWorkers);
         },
     };
@@ -28,8 +33,8 @@ describe('WorkerCardComponent', () => {
             imports: [SharedTestingModule],
             providers: [
                 {
-                    provide: JobserviceService,
-                    useValue: fakedJobserviceService,
+                    provide: JobServiceDashboardSharedDataService,
+                    useValue: fakedJobServiceDashboardSharedDataService,
                 },
             ],
         }).compileComponents();

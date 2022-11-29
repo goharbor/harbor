@@ -10,10 +10,6 @@ import {
 } from 'src/app/shared/entities/shared.const';
 import { MessageHandlerService } from 'src/app/shared/services/message-handler.service';
 import { All, INTERVAL } from '../job-service-dashboard.interface';
-import {
-    EventService,
-    HarborEvent,
-} from '../../../../services/event-service/event.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import {
     operateChanges,
@@ -21,6 +17,7 @@ import {
     OperationState,
 } from '../../../../shared/components/operation/operate';
 import { errorHandler } from '../../../../shared/units/shared.utils';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 @Component({
     selector: 'app-worker-card',
@@ -38,8 +35,8 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
         private operateDialogService: ConfirmationDialogService,
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
-        private eventService: EventService,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
     ) {}
 
     ngOnInit(): void {
@@ -78,9 +75,9 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
         }
     }
 
-    loopWorkerStatus() {
-        this.jobServiceService
-            .getWorkers({ poolId: All.ALL_WORKERS.toString() })
+    loopWorkerStatus(isAutoRefresh?: boolean) {
+        this.jobServiceDashboardSharedDataService
+            .retrieveAllWorkers(isAutoRefresh)
             .subscribe(res => {
                 if (res) {
                     this.denominator = res.length;
@@ -91,7 +88,7 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
                         }
                     });
                     this.statusTimeout = setTimeout(() => {
-                        this.loopWorkerStatus();
+                        this.loopWorkerStatus(true);
                     }, INTERVAL);
                 }
             });
@@ -123,9 +120,6 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
                         'JOB_SERVICE_DASHBOARD.FREE_ALL_SUCCESS'
                     );
                     this.refreshNow();
-                    this.eventService.publish(
-                        HarborEvent.REFRESH_JOB_SERVICE_DASHBOARD
-                    );
                     operateChanges(operationMessage, OperationState.success);
                 },
                 error: err => {
