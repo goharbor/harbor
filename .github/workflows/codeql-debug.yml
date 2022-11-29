@@ -33,6 +33,7 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         add-snippets: true
+        output: SARIF_results
 
 
     - name: Debug Analysis
@@ -58,8 +59,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: codeql_result
-        path:  ../results
+        path:  ${{ github.workspace }}/SARIF_results
         retention-days: 30
 
-#如果需要可以上传database数据库
-#/home/runner/work/_temp/codeql_databases/java.zip
