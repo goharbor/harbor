@@ -18,12 +18,6 @@
     <clr-dg-column>{{
         'JOB_SERVICE_DASHBOARD.CRON' | translate
     }}</clr-dg-column>
-    <clr-dg-column>{{
-        'JOB_SERVICE_DASHBOARD.CRON_TYPE' | translate
-    }}</clr-dg-column>
-    <clr-dg-column>{{
-        'JOB_SERVICE_DASHBOARD.EXTRA_ATTR' | translate
-    }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'creation_time'">{{
         'REPLICATION.UPDATE_TIME' | translate
     }}</clr-dg-column>
@@ -35,23 +29,6 @@
         <clr-dg-cell>{{ p.vendor_type }}</clr-dg-cell>
         <clr-dg-cell>{{ p.vendor_id }}</clr-dg-cell>
         <clr-dg-cell>{{ p.cron }}</clr-dg-cell>
-        <clr-dg-cell>{{ toI18nString(p.cron_type) | translate }}</clr-dg-cell>
-        <clr-dg-cell class="flex">
-            <clr-signpost>
-                <a class="btn btn-link link-normal" clrSignpostTrigger>{{
-                    p.extra_attrs
-                }}</a>
-                <clr-signpost-content
-                    class="pre"
-                    [clrPosition]="'top-middle'"
-                    *clrIfOpen>
-                    <pre
-                        [innerHTML]="
-                            json(p.extra_attrs) | json | markdown
-                        "></pre>
-                </clr-signpost-content>
-            </clr-signpost>
-        </clr-dg-cell>
         <clr-dg-cell>{{ p.update_time | harborDatetime }}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>

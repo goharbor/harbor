@@ -99,9 +99,6 @@
         <clr-dg-column [clrDgField]="'job_id'">{{
             'JOB_SERVICE_DASHBOARD.JOB_ID' | translate
         }}</clr-dg-column>
-        <clr-dg-column>{{
-            'JOB_SERVICE_DASHBOARD.JOB_PARAM' | translate
-        }}</clr-dg-column>
         <clr-dg-column [clrDgField]="'start_at'">{{
             'JOB_SERVICE_DASHBOARD.START_AT' | translate
         }}</clr-dg-column>
@@ -115,19 +112,6 @@
             <clr-dg-cell>{{ w.id }}</clr-dg-cell>
             <clr-dg-cell>{{ w.job_name }}</clr-dg-cell>
             <clr-dg-cell>{{ w.job_id }}</clr-dg-cell>
-            <clr-dg-cell class="flex">
-                <clr-signpost>
-                    <a class="btn btn-link link-normal" clrSignpostTrigger>{{
-                        w.args
-                    }}</a>
-                    <clr-signpost-content
-                        class="pre"
-                        [clrPosition]="'top-middle'"
-                        *clrIfOpen>
-                        <pre [innerHTML]="json(w.args) | json | markdown"></pre>
-                    </clr-signpost-content>
-                </clr-signpost>
-            </clr-dg-cell>
             <clr-dg-cell>{{ w.start_at | harborDatetime }}</clr-dg-cell>
             <clr-dg-cell>{{ w.checkin_at | harborDatetime }}</clr-dg-cell>
         </clr-dg-row>
