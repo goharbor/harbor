@@ -35,17 +35,17 @@ jobs:
         add-snippets: true
 
 
-    # - name: Debug Analysis
-    #   uses: zbazztian/codeql-tools/debug@main
-    #   with:
-    #     threads: 2
+    - name: Debug Analysis
+      uses: zbazztian/codeql-tools/debug@main
+      with:
+        threads: 2
 
-    # - name: Upload loc as a Build Artifact
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: codeql-debug-results
-    #     path: codeql-debug-results
-    #     retention-days: 30
+    - name: Upload loc as a Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: codeql-debug-report
+        path: codeql-debug-report
+        retention-days: 30
 
     - name: Upload loc as a Build Artifact
       uses: actions/upload-artifact@v3
