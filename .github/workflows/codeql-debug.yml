@@ -1,0 +1,54 @@
+name: "CodeQL Debugging"
+on: [workflow_dispatch,push]
+
+jobs:
+  debug:
+    name: CodeQL Debug Job
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'java', 'go','python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+  
+
+    - name: Initialize CodeQL
+      id: codeqlinit
+      uses: github/codeql-action/init@v2
+
+    
+    - name: Auto Build CodeQL Databases
+      uses: github/codeql-action/autobuild@v2
+      
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+
+    - name: Debug Analysis
+      uses: zbazztian/codeql-tools/debug@main
+
+
+    - name: Upload loc as a Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: codeql-debug-results
+        path: codeql-debug-results
+        retention-days: 30
+
+    - name: Upload loc as a Build Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: codeql_databases
+        path: /home/runner/work/_temp/codeql_databases
+        retention-days: 30
+
+#如果需要可以上传database数据库
+#/home/runner/work/_temp/codeql_databases/java.zip
