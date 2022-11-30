@@ -36,14 +36,16 @@ import (
 const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
-	host         string
-	port         string
-	usr          string
-	pwd          string
-	database     string
-	sslmode      string
-	maxIdleConns int
-	maxOpenConns int
+	host            string
+	port            string
+	usr             string
+	pwd             string
+	database        string
+	sslmode         string
+	maxIdleConns    int
+	maxOpenConns    int
+	connMaxLifetime time.Duration
+	connMaxIdleTime time.Duration
 }
 
 // Name returns the name of PostgreSQL
@@ -58,19 +60,21 @@ func (p *pgsql) String() string {
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int, connMaxLifetime time.Duration, connMaxIdleTime time.Duration) Database {
 	if len(sslmode) == 0 {
 		sslmode = "disable"
 	}
 	return &pgsql{
-		host:         host,
-		port:         port,
-		usr:          usr,
-		pwd:          pwd,
-		database:     database,
-		sslmode:      sslmode,
-		maxIdleConns: maxIdleConns,
-		maxOpenConns: maxOpenConns,
+		host:            host,
+		port:            port,
+		usr:             usr,
+		pwd:             pwd,
+		database:        database,
+		sslmode:         sslmode,
+		maxIdleConns:    maxIdleConns,
+		maxOpenConns:    maxOpenConns,
+		connMaxLifetime: connMaxLifetime,
+		connMaxIdleTime: connMaxIdleTime,
 	}
 }
 
@@ -92,9 +96,15 @@ func (p *pgsql) Register(alias ...string) error {
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
 	if err := orm.RegisterDataBase(an, "pgx", info, orm.MaxIdleConnections(p.maxIdleConns),
-		orm.MaxOpenConnections(p.maxOpenConns), orm.ConnMaxLifetime(5*time.Minute)); err != nil {
+		orm.MaxOpenConnections(p.maxOpenConns), orm.ConnMaxLifetime(p.connMaxLifetime)); err != nil {
 		return err
 	}
+
+	db, err := orm.GetDB(an)
+	if err != nil {
+		return err
+	}
+	db.SetConnMaxIdleTime(p.connMaxIdleTime)
 
 	return nil
 }
