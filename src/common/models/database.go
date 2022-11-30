@@ -20,15 +20,6 @@ type Database struct {
 	PostGreSQL *PostGreSQL `json:"postgresql,omitempty"`
 }
 
-// MySQL ...
-type MySQL struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-	Database string `json:"database"`
-}
-
 // SQLite ...
 type SQLite struct {
 	File string `json:"file"`
