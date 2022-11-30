@@ -232,11 +232,4 @@ export class WorkerListComponent implements OnInit, OnDestroy {
                 },
             });
     }
-
-    json(v: string): object {
-        if (v) {
-            return JSON.parse(v);
-        }
-        return null;
-    }
 }

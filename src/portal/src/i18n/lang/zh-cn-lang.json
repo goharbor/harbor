@@ -964,7 +964,7 @@
             "OIDC_ADMIN_GROUP": "OIDC管理员组",
             "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。",
             "OIDC_GROUP_FILTER": "OIDC 组过滤器",
-            "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组"
+            "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组。若不填，则表示匹配所有。"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "停止扫描所有镜像任务成功!",
@@ -1802,7 +1802,6 @@
         "RESUME_ALL_SUCCESS": "重启所有定时任务成功",
         "VENDOR_TYPE": "供应商类型",
         "VENDOR_ID": "供应商 ID",
-        "EXTRA_ATTR": "其他属性",
         "NO_SCHEDULE": "未发现任何定时任务",
         "WORKERS": "工作者",
         "FREE_ALL": "停下全部",
@@ -1822,7 +1821,6 @@
         "FREE": "停下",
         "WORKER_ID": "工作者 ID",
         "JOB_ID": "任务 ID",
-        "JOB_PARAM": "任务参数",
         "CHECK_IN_AT": "检查时间",
         "NO_WORKER": "未发现任何工作者",
         "JOB_QUEUE": "任务栈",
@@ -1841,7 +1839,6 @@
         "SCHEDULE_PAUSE_BTN_INFO": "暂停 — 暂停所有定时任务，暂停中的定时任务将不会被执行。",
         "SCHEDULE_RESUME_BTN_INFO": "重启 — 重启所有定时任务，定时任务在触发时会正常执行。",
         "WORKER_FREE_BTN_INFO": "停下选中的工作者当前正在执行的任务以便释放该工作者，被释放的工作者会继续执行其他任务。",
-        "CRON": "Cron",
-        "CRON_TYPE": "Cron 类型"
+        "CRON": "Cron"
     }
 }

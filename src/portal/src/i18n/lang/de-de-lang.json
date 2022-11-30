@@ -963,7 +963,7 @@
 	        "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
 	        "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Exclude OIDC groups who match the provided regular expression."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
@@ -1804,7 +1804,6 @@
         "RESUME_ALL_SUCCESS": "Alle Pläne erfolgreich fortgesetzt",
         "VENDOR_TYPE": "Hersteller Typ",
         "VENDOR_ID": "Hersteller ID",
-        "EXTRA_ATTR": "Extra Attribute",
         "NO_SCHEDULE": "Es konnte kein Plan gefunden werden",
         "WORKERS": "Arbeiter",
         "FREE_ALL": "Alle befreien",
@@ -1824,7 +1823,6 @@
         "FREE": "Frei",
         "WORKER_ID": "Arbeiter-ID",
         "JOB_ID": "Job-ID",
-        "JOB_PARAM": "Job-Parameter",
         "CHECK_IN_AT": "Eingecheckt um",
         "NO_WORKER": "Es konnte kein Arbeiter gefunden werden",
         "JOB_QUEUE": "Job-Warteschlange",
@@ -1843,7 +1841,6 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSIEREN — Pausiert die Ausführung aller Pläne.",
         "SCHEDULE_RESUME_BTN_INFO": "FORTSETZEN — Setzt die Ausführung aller Pläne fort.",
         "WORKER_FREE_BTN_INFO": "Halte den aktuell laufenden Job an um den Arbeiter zu befreien.",
-        "CRON": "Cron",
-        "CRON_TYPE": "Cron Type"
+        "CRON": "Cron"
     }
 }
