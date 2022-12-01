@@ -65,6 +65,29 @@ func (_m *Manager) Create(ctx context.Context, executionID int64, job *task.Job,
 	return r0, r1
 }
 
+// ExecutionIDsByVendorAndStatus provides a mock function with given fields: ctx, vendorType, status
+func (_m *Manager) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType string, status string) ([]int64, error) {
+	ret := _m.Called(ctx, vendorType, status)
+
+	var r0 []int64
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) []int64); ok {
+		r0 = rf(ctx, vendorType, status)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int64)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, vendorType, status)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *Manager) Get(ctx context.Context, id int64) (*task.Task, error) {
 	ret := _m.Called(ctx, id)
@@ -176,6 +199,20 @@ func (_m *Manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs ma
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, map[string]interface{}) error); ok {
 		r0 = rf(ctx, id, extraAttrs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateStatusInBatch provides a mock function with given fields: ctx, jobIDs, status, batchSize
+func (_m *Manager) UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) error {
+	ret := _m.Called(ctx, jobIDs, status, batchSize)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string, string, int) error); ok {
+		r0 = rf(ctx, jobIDs, status, batchSize)
 	} else {
 		r0 = ret.Error(0)
 	}
