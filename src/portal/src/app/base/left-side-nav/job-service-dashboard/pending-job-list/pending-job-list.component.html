@@ -65,10 +65,10 @@
     <clr-dg-column [clrDgField]="'job_type'">{{
         'JOB_SERVICE_DASHBOARD.JOB_TYPE' | translate
     }}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'count'" [clrDgColType]="'number'">{{
+    <clr-dg-column [clrDgSortBy]="'count'">{{
         'JOB_SERVICE_DASHBOARD.PENDING_COUNT' | translate
     }}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'latency'" [clrDgColType]="'number'">{{
+    <clr-dg-column [clrDgSortBy]="'latency'">{{
         'JOB_SERVICE_DASHBOARD.LATENCY' | translate
     }}</clr-dg-column>
     <clr-dg-column>{{

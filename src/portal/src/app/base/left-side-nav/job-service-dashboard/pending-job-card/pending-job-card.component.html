@@ -1,35 +1,35 @@
 <div class="card">
-    <div class="card-header">
+    <div class="card-header text-truncate">
         {{ 'JOB_SERVICE_DASHBOARD.PENDING_JOBS' | translate }}
     </div>
     <div class="card-block">
-        <div class="duration">
+        <div class="duration text-truncate">
             {{ 'REPLICATION.TOTAL' | translate }}: {{ total() }}
         </div>
         <ng-container *ngIf="!loading">
             <div class="clr-row" *ngIf="jobQueue?.length">
-                <div class="clr-col-5 center">
-                    <label class="clr-control-label">
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">
                         {{ jobQueue[0]?.job_type }}
                     </label>
                 </div>
-                <div class="clr-col-7">{{ jobQueue[0]?.count || 0 }}</div>
+                <div class="clr-col">{{ jobQueue[0]?.count || 0 }}</div>
             </div>
             <div class="clr-row" *ngIf="jobQueue?.length > 1">
-                <div class="clr-col-5 center">
-                    <label class="clr-control-label">
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">
                         {{ jobQueue[1]?.job_type }}
                     </label>
                 </div>
-                <div class="clr-col-7">{{ jobQueue[1]?.count || 0 }}</div>
+                <div class="clr-col">{{ jobQueue[1]?.count || 0 }}</div>
             </div>
             <div class="clr-row" *ngIf="jobQueue?.length > 2">
-                <div class="clr-col-5 center">
-                    <label class="clr-control-label">{{
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">{{
                         'JOB_SERVICE_DASHBOARD.OTHERS' | translate
                     }}</label>
                 </div>
-                <div class="clr-col-7">{{ otherCount() }}</div>
+                <div class="clr-col">{{ otherCount() }}</div>
             </div>
         </ng-container>
         <div *ngIf="loading" class="loading">

@@ -17,10 +17,6 @@ import {
     ConfirmationTargets,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
-import {
-    EventService,
-    HarborEvent,
-} from '../../../../services/event-service/event.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import {
     operateChanges,
@@ -28,6 +24,7 @@ import {
     OperationState,
 } from '../../../../shared/components/operation/operate';
 import { errorHandler } from '../../../../shared/units/shared.utils';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 @Component({
     selector: 'app-worker-list',
@@ -39,7 +36,6 @@ export class WorkerListComponent implements OnInit, OnDestroy {
     selectedPool: WorkerPool;
     pools: WorkerPool[] = [];
     loadingWorkers: boolean = false;
-    workers: Worker[] = [];
     selected: Worker[] = [];
 
     poolPageSize: number = getPageSizeFromLocalStorage(
@@ -52,29 +48,29 @@ export class WorkerListComponent implements OnInit, OnDestroy {
     );
     loadingFree: boolean = false;
     confirmSub: Subscription;
-    eventSub: Subscription;
     constructor(
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
         private operateDialogService: ConfirmationDialogService,
-        private eventService: EventService,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
     ) {}
 
     ngOnInit(): void {
         this.getPools();
         this.initSub();
-        this.initEventSub();
     }
     ngOnDestroy() {
         if (this.confirmSub) {
             this.confirmSub.unsubscribe();
             this.confirmSub = null;
         }
-        if (this.eventSub) {
-            this.eventSub.unsubscribe();
-            this.eventSub = null;
-        }
+    }
+
+    get workers(): Worker[] {
+        return this.jobServiceDashboardSharedDataService
+            .getAllWorkers()
+            .filter(item => item.pool_id === this.selectedPool?.worker_pool_id);
     }
 
     initSub() {
@@ -98,17 +94,6 @@ export class WorkerListComponent implements OnInit, OnDestroy {
         }
     }
 
-    initEventSub() {
-        if (!this.eventSub) {
-            this.eventSub = this.eventService.subscribe(
-                HarborEvent.REFRESH_JOB_SERVICE_DASHBOARD,
-                () => {
-                    this.selectionChanged();
-                }
-            );
-        }
-    }
-
     getPools() {
         this.loadingPools = true;
         this.jobServiceService
@@ -119,23 +104,7 @@ export class WorkerListComponent implements OnInit, OnDestroy {
                     this.pools = res;
                     if (res?.length) {
                         this.selectedPool = res[0];
-                        this.selectionChanged();
                     }
-                },
-                error: err => {
-                    this.messageHandlerService.error(err);
-                },
-            });
-    }
-
-    selectionChanged() {
-        this.loadingWorkers = true;
-        this.jobServiceService
-            .getWorkers({ poolId: this.selectedPool?.worker_pool_id })
-            .pipe(finalize(() => (this.loadingWorkers = false)))
-            .subscribe({
-                next: res => {
-                    this.workers = res;
                 },
                 error: err => {
                     this.messageHandlerService.error(err);
@@ -196,6 +165,14 @@ export class WorkerListComponent implements OnInit, OnDestroy {
         this.operateDialogService.openComfirmDialog(deletionMessage);
     }
 
+    refreshWorkers() {
+        this.loadingWorkers = true;
+        this.jobServiceDashboardSharedDataService
+            .retrieveAllWorkers()
+            .pipe(finalize(() => (this.loadingWorkers = false)))
+            .subscribe();
+    }
+
     executeFreeWorkers() {
         this.loadingFree = true;
         const operationMessage = new OperateInfo();
@@ -219,7 +196,7 @@ export class WorkerListComponent implements OnInit, OnDestroy {
                     this.messageHandlerService.info(
                         'JOB_SERVICE_DASHBOARD.FREE_WORKER_SUCCESS'
                     );
-                    this.selectionChanged();
+                    this.refreshWorkers();
                     operateChanges(operationMessage, OperationState.success);
                 },
                 error: err => {

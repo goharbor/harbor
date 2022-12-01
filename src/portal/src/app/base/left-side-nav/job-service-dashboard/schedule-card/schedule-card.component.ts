@@ -16,10 +16,7 @@ import {
     ConfirmationTargets,
 } from '../../../../shared/entities/shared.const';
 import { Subscription } from 'rxjs';
-import {
-    EventService,
-    HarborEvent,
-} from '../../../../services/event-service/event.service';
+import { EventService } from '../../../../services/event-service/event.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import {
     operateChanges,
@@ -28,6 +25,7 @@ import {
 } from '../../../../shared/components/operation/operate';
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 @Component({
     selector: 'app-schedule-card',
@@ -35,7 +33,6 @@ import { ScheduleService } from '../../../../../../ng-swagger-gen/services/sched
     styleUrls: ['./schedule-card.component.scss'],
 })
 export class ScheduleCardComponent implements OnInit, OnDestroy {
-    scheduleCount: number = 0;
     isPaused: boolean = false;
     loadingStatus: boolean = false;
     confirmSub: Subscription;
@@ -47,7 +44,8 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
         private messageHandlerService: MessageHandlerService,
         private eventService: EventService,
         private operationService: OperationService,
-        private scheduleService: ScheduleService
+        private scheduleService: ScheduleService,
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
     ) {}
 
     ngOnInit() {
@@ -65,6 +63,13 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
             this.confirmSub.unsubscribe();
             this.confirmSub = null;
         }
+    }
+
+    get scheduleCount(): number {
+        return (
+            this.jobServiceDashboardSharedDataService.getScheduleListResponse()
+                ?.total | 0
+        );
     }
 
     initSub() {
@@ -113,21 +118,10 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
     }
 
     getScheduleCount() {
-        this.scheduleService
-            .listSchedulesResponse({
-                page: 1,
-                pageSize: 1,
-            })
+        this.jobServiceDashboardSharedDataService
+            .retrieveScheduleListResponse()
             .subscribe({
-                next: res => {
-                    // Get total count
-                    if (res.headers) {
-                        let xHeader: string = res.headers.get('x-total-count');
-                        if (xHeader) {
-                            this.scheduleCount = Number.parseInt(xHeader, 10);
-                        }
-                    }
-                },
+                next: res => {},
                 error: err => {
                     this.messageHandlerService.error(err);
                 },
@@ -198,9 +192,9 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
                         );
                     }
                     this.refreshNow();
-                    this.eventService.publish(
-                        HarborEvent.REFRESH_JOB_SERVICE_DASHBOARD
-                    );
+                    this.jobServiceDashboardSharedDataService
+                        .retrieveJobQueues()
+                        .subscribe();
                     operateChanges(operationMessage, OperationState.success);
                 },
                 error: err => {

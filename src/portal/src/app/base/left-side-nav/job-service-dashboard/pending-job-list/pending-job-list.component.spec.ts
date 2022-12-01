@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PendingListComponent } from './pending-job-list.component';
 import { JobQueue } from '../../../../../../ng-swagger-gen/models/job-queue';
 import { of } from 'rxjs';
-import { delay, finalize } from 'rxjs/operators';
+import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
-import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 describe('PendingListComponent', () => {
     let component: PendingListComponent;
@@ -25,8 +25,12 @@ describe('PendingListComponent', () => {
         },
     ];
 
-    const fakedJobserviceService = {
-        listJobQueues() {
+    const fakedJobServiceDashboardSharedDataService = {
+        _jobQueues: mockedJobs,
+        getJobQueues(): JobQueue[] {
+            return this._jobQueues;
+        },
+        retrieveJobQueues() {
             return of(mockedJobs).pipe(delay(0));
         },
     };
@@ -37,8 +41,8 @@ describe('PendingListComponent', () => {
             imports: [SharedTestingModule],
             providers: [
                 {
-                    provide: JobserviceService,
-                    useValue: fakedJobserviceService,
+                    provide: JobServiceDashboardSharedDataService,
+                    useValue: fakedJobServiceDashboardSharedDataService,
                 },
             ],
         }).compileComponents();
