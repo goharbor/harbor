@@ -248,7 +248,7 @@ func main() {
 		options := []retry.Option{
 			retry.InitialInterval(time.Millisecond * 500),
 			retry.MaxInterval(time.Second * 10),
-			retry.Timeout(time.Minute),
+			retry.Timeout(time.Minute * 5),
 			retry.Callback(func(err error, sleep time.Duration) {
 				log.Debugf("failed to ping %s, retry after %s : %v", url, sleep, err)
 			}),
