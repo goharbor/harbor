@@ -223,4 +223,7 @@ const (
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
+
+	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
+	UIMaxLengthLimitedOfNumber = 10
 )
