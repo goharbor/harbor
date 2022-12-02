@@ -82,6 +82,11 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         checked: true,
     },
     {
+        resource: 'artifact',
+        action: 'create',
+        checked: true,
+    },
+    {
         resource: 'artifact-label',
         action: 'create',
         checked: true,
