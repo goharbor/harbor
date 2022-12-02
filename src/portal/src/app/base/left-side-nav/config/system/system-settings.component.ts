@@ -56,33 +56,6 @@ export class SystemSettingsComponent implements OnInit {
         );
     }
 
-    get tokenExpirationValue() {
-        return this.currentConfig.token_expiration.value;
-    }
-
-    set tokenExpirationValue(v) {
-        // convert string to number
-        this.currentConfig.token_expiration.value = +v;
-    }
-
-    get sessionTimeout() {
-        return this.currentConfig.session_timeout.value;
-    }
-
-    set sessionTimeout(v) {
-        // convert string to number
-        this.currentConfig.session_timeout.value = +v;
-    }
-
-    get robotTokenExpirationValue() {
-        return this.currentConfig.robot_token_duration.value;
-    }
-
-    set robotTokenExpirationValue(v) {
-        // convert string to number
-        this.currentConfig.robot_token_duration.value = +v;
-    }
-
     robotNamePrefixEditable(): boolean {
         return (
             this.currentConfig &&
