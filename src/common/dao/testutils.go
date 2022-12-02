@@ -28,10 +28,6 @@ import (
 var defaultRegistered = false
 var o orm.Ormer
 
-// PrepareTestForMySQL is for test only.
-func PrepareTestForMySQL() {
-}
-
 // PrepareTestForSQLite is for test only.
 func PrepareTestForSQLite() {
 }
