@@ -63,3 +63,60 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 		})
 	}
 }
+
+func Test_maxValueLimitedByLength(t *testing.T) {
+	type args struct {
+		length int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int64
+	}{
+		{name: "negative length should return -1", args: args{0}, want: -1},
+		{name: "input length 1 should return 9", args: args{1}, want: 9},
+		{name: "input length 5 should return 99999", args: args{5}, want: 99999},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := maxValueLimitedByLength(tt.args.length); got != tt.want {
+				t.Errorf("maxValueLimitedByLength() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_verifyValueLengthCfg(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		cfgs map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "valid config", args: args{context.TODO(), map[string]interface{}{
+			common.TokenExpiration:    float64(100),
+			common.RobotTokenDuration: float64(100),
+			common.SessionTimeout:     float64(100),
+		}}, wantErr: false},
+		{name: "invalid config with negative value", args: args{context.TODO(), map[string]interface{}{
+			common.TokenExpiration:    float64(-1),
+			common.RobotTokenDuration: float64(100),
+			common.SessionTimeout:     float64(100),
+		}}, wantErr: true},
+		{name: "invalid config with value over length limit", args: args{context.TODO(), map[string]interface{}{
+			common.TokenExpiration:    float64(100),
+			common.RobotTokenDuration: float64(100000000000000000),
+			common.SessionTimeout:     float64(100),
+		}}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := verifyValueLengthCfg(tt.args.ctx, tt.args.cfgs); (err != nil) != tt.wantErr {
+				t.Errorf("verifyMaxLengthCfg() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

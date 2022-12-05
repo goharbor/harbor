@@ -134,7 +134,16 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 		return errors.BadRequestError(err)
 	}
 
-	return verifySkipAuditLogCfg(ctx, cfgs, mgr)
+	// verify the skip audit log related cfgs
+	if err = verifySkipAuditLogCfg(ctx, cfgs, mgr); err != nil {
+		return err
+	}
+	// verify the value length related cfgs
+	if err = verifyValueLengthCfg(ctx, cfgs); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr config.Manager) error {
@@ -157,6 +166,52 @@ func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr
 		}
 	}
 	return nil
+}
+
+// verifyValueLengthCfg verifies the cfgs which need to check the value max length to align with frontend.
+func verifyValueLengthCfg(ctx context.Context, cfgs map[string]interface{}) error {
+	maxValue := maxValueLimitedByLength(common.UIMaxLengthLimitedOfNumber)
+	validateCfgs := []string{
+		common.TokenExpiration,
+		common.RobotTokenDuration,
+		common.SessionTimeout,
+	}
+
+	for _, c := range validateCfgs {
+		if v, exist := cfgs[c]; exist {
+			// the cfgs is unmarshal from json string, the number type will be float64
+			if vf, ok := v.(float64); ok {
+				if vf <= 0 {
+					return errors.BadRequestError(nil).WithMessage("the %s value must be positive", c)
+				}
+
+				if int64(vf) > maxValue {
+					return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("the %s value is over the limit value: %d", c, maxValue))
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// maxValueLimitedByLength returns the max value can be equaled limited by the fixed length.
+func maxValueLimitedByLength(length int) int64 {
+	// return -1 if length is negative
+	if length <= 0 {
+		return -1
+	}
+
+	// the sum value
+	var value int64
+	// the times for multiple, should *10 for every time
+	times := 1
+	for i := 0; i < length; i++ {
+		value = value + int64(9*times)
+		times = times * 10
+	}
+
+	return value
 }
 
 // ScanAllPolicy is represent the json request and object for scan all policy
