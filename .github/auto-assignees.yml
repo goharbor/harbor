@@ -21,4 +21,5 @@ options:
     - wip
     - DO NOT MERGE
   enable_group_assignment: true
-  number_of_reviewers: 3
+  # number_of_reviewers: 3
+  numberOfAssignees: 3
