@@ -50,21 +50,27 @@ type RegistryCtl struct {
 }
 
 // Start the registry controller
-func (s *RegistryCtl) Start() {
+func (s *RegistryCtl) Start(ctx context.Context) (err error) {
+	ctx, done := context.WithCancel(ctx)
+
 	regCtl := &http.Server{
 		Addr:      ":" + s.ServerConf.Port,
 		Handler:   s.Handler,
 		TLSConfig: common_http.NewServerTLSConfig(),
 	}
-	ctx := context.Background()
 	regCtl.RegisterOnShutdown(tracelib.InitGlobalTracer(ctx))
+
 	// graceful shutdown
 	go func() {
+		defer done()
+
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		<-sig
+
 		context, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
+
 		log.Infof("Got an interrupt, shutting down...")
 		if err := regCtl.Shutdown(context); err != nil {
 			log.Fatalf("Failed to shutdown registry controller: %v", err)
@@ -72,7 +78,6 @@ func (s *RegistryCtl) Start() {
 		log.Infof("Registry controller is shut down properly")
 	}()
 
-	var err error
 	if s.ServerConf.Protocol == "https" {
 		if common_http.InternalEnableVerifyClientCert() {
 			regCtl.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
@@ -81,10 +86,9 @@ func (s *RegistryCtl) Start() {
 	} else {
 		err = regCtl.ListenAndServe()
 	}
+
 	<-ctx.Done()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return
 }
 
 func main() {
@@ -99,11 +103,14 @@ func main() {
 		log.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
 
-	cfgLib.InitTraceConfig(context.Background())
+	ctx := context.Background()
+	cfgLib.InitTraceConfig(ctx)
 
 	regCtl := &RegistryCtl{
 		ServerConf: *config.DefaultConfig,
 		Handler:    handlers.NewHandlerChain(*config.DefaultConfig),
 	}
-	regCtl.Start()
+	if err := regCtl.Start(ctx); err != nil {
+		log.Fatal(err)
+	}
 }
