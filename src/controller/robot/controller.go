@@ -395,12 +395,12 @@ func CreateSec(salt ...string) (string, string, string, error) {
 	return secret, pwd, saltTmp, nil
 }
 
+var (
+	hasLower  = regexp.MustCompile(`[a-z]`)
+	hasUpper  = regexp.MustCompile(`[A-Z]`)
+	hasNumber = regexp.MustCompile(`\d`)
+)
+
 func IsValidSec(secret string) bool {
-	hasLower := regexp.MustCompile(`[a-z]`)
-	hasUpper := regexp.MustCompile(`[A-Z]`)
-	hasNumber := regexp.MustCompile(`\d`)
-	if len(secret) >= 8 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret) {
-		return true
-	}
-	return false
+	return len(secret) >= 8 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret)
 }
