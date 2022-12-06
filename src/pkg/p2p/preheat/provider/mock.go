@@ -95,6 +95,61 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 			bytes, _ := json.Marshal(status)
 			_, _ = w.Write(bytes)
+		case strings.Replace(preheatTaskEndpoint, "{task_id}", "preheat-job-exist-with-no-id", 1):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			status := &dragonflyPreheatInfo{
+				ID:         "preheat-exist-with-no-id",
+				StartTime:  time.Now().UTC().String(),
+				FinishTime: time.Now().Add(5 * time.Minute).UTC().String(),
+				Status:     "FAILED",
+				ErrorMsg:   "{\"Code\":208,\"Msg\":\"preheat task already exists, id:\"}",
+			}
+			bytes, _ := json.Marshal(status)
+			_, _ = w.Write(bytes)
+		case strings.Replace(preheatTaskEndpoint, "{task_id}", "preheat-job-normal-failed", 1):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			status := &dragonflyPreheatInfo{
+				ID:         "preheat-job-exist-with-id-1",
+				StartTime:  time.Now().UTC().String(),
+				FinishTime: time.Now().Add(5 * time.Minute).UTC().String(),
+				Status:     "FAILED",
+				ErrorMsg:   "{\"Code\":208,\"Msg\":\"some msg\"}",
+			}
+			bytes, _ := json.Marshal(status)
+			_, _ = w.Write(bytes)
+		case strings.Replace(preheatTaskEndpoint, "{task_id}", "preheat-job-exist-with-id-1", 1):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			status := &dragonflyPreheatInfo{
+				ID:         "preheat-job-exist-with-id-1",
+				StartTime:  time.Now().UTC().String(),
+				FinishTime: time.Now().Add(5 * time.Minute).UTC().String(),
+				Status:     "FAILED",
+				ErrorMsg:   "{\"Code\":208,\"Msg\":\"preheat task already exists, id:preheat-job-exist-with-id-1-1\"}",
+			}
+			bytes, _ := json.Marshal(status)
+			_, _ = w.Write(bytes)
+		case strings.Replace(preheatTaskEndpoint, "{task_id}", "preheat-job-exist-with-id-1-1", 1):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+		case strings.Replace(preheatTaskEndpoint, "{task_id}", "preheat-job-err-body-json", 1):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+			bodyStr := "\"err body\""
+			_, _ = w.Write([]byte(bodyStr))
 		default:
 			w.WriteHeader(http.StatusNotImplemented)
 		}
