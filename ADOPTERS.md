@@ -1,4 +1,5 @@
-# Harbor Adopters
+Signed-off-by: OrlinVasilev <ovasilev@vmware.com>
+klajsldkjasdlkjaskldj# Harbor Adopters
 
 Below is a list of adopters of Harbor in **production environments** that have
 publicly shared the details of their usage as well as the benefits provided by
