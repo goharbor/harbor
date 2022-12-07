@@ -4,7 +4,7 @@ addAssignees: true
 
 addReviewers: false
 
-reviewers:
+assignees:
   - wy65701436
   - Vad1mo
   - OrlinVasilev
