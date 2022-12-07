@@ -202,7 +202,7 @@ PR are always welcome, even if they only contain small fixes like typos or a few
 
 Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete.
+Note: If you split your pull request to small changes, please make sure any of the changes goes to `main` will not break anything. Otherwise, it can not be merged until this feature complete.
 
 ### Fork and clone
 
@@ -221,21 +221,21 @@ user={your github profile name}
 Both `$working_dir` and `$user` are mentioned in the figure above.
 
 ### Branch
-Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of master without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
+Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of `main` without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
 ```
 #goharbor is the origin upstream
 
 cd $working_dir/harbor
 git fetch goharbor
-git checkout master
-git rebase goharbor/master
+git checkout main
+git rebase goharbor/main
 ```
 
-Branch from the updated `master` branch:
+Branch from the updated `main` branch:
 
 ```
-git checkout -b my_feature master
+git checkout -b my_feature main
 ```
 
 ### Develop, Build and Test
@@ -281,11 +281,11 @@ As now Harbor uses `controller/manager/dao` programming model, we suggest to use
 ###  Keep sync with upstream
 
 
-Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
+Once your branch gets out of sync with the goharbor/main branch, use the following commands to update:
 ```bash
 git checkout my_feature
 git fetch -a
-git rebase goharbor/master
+git rebase goharbor/main
 
 ```
 
