@@ -326,6 +326,14 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 					continue
 				}
 
+				gc.logger.Infof("[%d/%d] delete artifact blob record from database: %d, %s, %s", idx, total, art.ID, art.RepositoryName, art.Digest)
+				if err := ignoreNotFound(func() error {
+					return gc.blobMgr.CleanupAssociationsForArtifact(ctx.SystemContext(), art.Digest)
+				}); err != nil {
+					gc.logger.Errorf("[%d/%d] failed to call gc.blobMgr.CleanupAssociationsForArtifact(): %v, errMsg=%v", idx, total, art.Digest, err)
+					return err
+				}
+
 				gc.logger.Infof("[%d/%d] delete artifact trash record from database: %d, %s, %s", idx, total, art.ID, art.RepositoryName, art.Digest)
 				if err := ignoreNotFound(func() error {
 					return gc.artrashMgr.Delete(ctx.SystemContext(), art.ID)
