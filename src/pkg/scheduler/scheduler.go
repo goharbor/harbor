@@ -196,7 +196,13 @@ func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 		executionID := executions[0].ID
 		// stop the execution
 		if err = s.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
-			return err
+			if err == task.ErrTimeOut {
+				// Avoid return this error to the UI, log time out error and continue
+				// the execution will be finally stopped by jobservice
+				log.Debugf("time out when stopping the execution %d, but the execution will be stopped eventually", executionID)
+			} else {
+				return err
+			}
 		}
 		// delete execution
 		if err = s.execMgr.Delete(ctx, executionID); err != nil {
