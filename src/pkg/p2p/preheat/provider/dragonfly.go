@@ -117,7 +117,7 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 	}
 
 	// If preheat job already exists
-	if strings.Index(status.ErrorMsg, "preheat task already exists, id:") >= 0 {
+	if strings.Contains(status.ErrorMsg, "preheat task already exists, id:") {
 		if taskID, err = getTaskExistedFromErrMsg(status.ErrorMsg); err != nil {
 			return nil, err
 		}
