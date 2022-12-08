@@ -17,7 +17,6 @@ package task
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
@@ -34,6 +33,7 @@ var (
 	// ExecMgr is a global execution manager instance
 	ExecMgr               = NewExecutionManager()
 	executionSweeperCount = map[string]uint8{}
+	ErrTimeOut            = errors.New("stopping the execution timeout")
 )
 
 // ExecutionManager manages executions.
@@ -333,7 +333,7 @@ func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout ti
 		lock.Lock()
 		overtime = true
 		lock.Unlock()
-		return fmt.Errorf("stopping the execution %d timeout", id)
+		return ErrTimeOut
 	case err := <-errChan:
 		return err
 	}
