@@ -523,7 +523,7 @@ GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
-	@cd ./src/; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
+	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
 # go install golang.org/x/vuln/cmd/govulncheck@latest
 GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
