@@ -58,6 +58,9 @@ export class JobServiceDashboardSharedDataService {
                     if (!item.count) {
                         item.count = 0;
                     }
+                    if (!item.latency) {
+                        item.latency = 0;
+                    }
                 });
                 return this._jobQueues;
             })

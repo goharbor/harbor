@@ -659,7 +659,8 @@
         "UNREACHABLE_SOURCE_REGISTRY": "Verbindung zur Quell-Registry fehlgeschlagen, bitte sicherstellen, dass die Quell-Registry verfügbar ist, bevor diese Regel angepasst wird: {{error}}",
         "CRON_ERROR_TIP": "Das Feld ist erforderlich und \"*\" ist im \"Minuten\" Feld nicht erlaubt",
         "COPY_BY_CHUNK": "Copy by chunk",
-        "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests."
+        "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
+        "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Neuer Endpunkt",
