@@ -19,6 +19,7 @@ on:
   push:
     paths-ignore:
     - 'docs/**'
+    - '**.md'
 
 jobs:
   UTTEST:
