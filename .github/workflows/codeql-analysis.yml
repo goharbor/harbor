@@ -6,6 +6,9 @@ on:
       - 'docs/**'
       - '**.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   schedule:
     - cron: '0 16 * * 6'
 
