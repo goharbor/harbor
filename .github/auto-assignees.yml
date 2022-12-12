@@ -4,7 +4,7 @@ addAssignees: true
 
 addReviewers: false
 
-reviewers:
+assignees:
   - wy65701436
   - Vad1mo
   - OrlinVasilev
@@ -14,12 +14,4 @@ reviewers:
   - MinerYang
   - AllForNothing
 
-options:
-  ignore_draft: true
-  ignored_keywords:
-    - WIP
-    - wip
-    - DO NOT MERGE
-  enable_group_assignment: true
-  # number_of_reviewers: 3
-  numberOfAssignees: 3
+numberOfAssignees: 3
