@@ -245,7 +245,8 @@ func (t *DurationType) validate(str string) error {
 }
 
 func (t *DurationType) get(str string) (interface{}, error) {
-	return time.ParseDuration(str)
+	// should not parse the duration to avoid duplicate parse.
+	return str, nil
 }
 
 // parseInt64 returns int64 from string which support scientific notation
