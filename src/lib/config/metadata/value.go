@@ -153,10 +153,18 @@ func (c *ConfigureValue) GetDuration() time.Duration {
 			log.Errorf("GetDuration failed, error: %+v", err)
 			return 0
 		}
-		if durationValue, suc := val.(time.Duration); suc {
-			return durationValue
+
+		if durationStr, suc := val.(string); suc {
+			durationVal, err := time.ParseDuration(durationStr)
+			if err != nil {
+				log.Errorf("Parse %s to time duration failed, error: %v", durationStr, err)
+				return 0
+			}
+
+			return durationVal
 		}
 	}
+
 	log.Errorf("GetDuration failed, the current value's metadata is not defined, %+v", c)
 	return 0
 }
