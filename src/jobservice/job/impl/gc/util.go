@@ -20,7 +20,7 @@ func delKeys(con redis.Conn, pattern string) error {
 	for {
 		arr, err := redis.Values(con.Do("SCAN", iter, "MATCH", pattern))
 		if err != nil {
-			return fmt.Errorf("error retrieving '%s' keys", pattern)
+			return fmt.Errorf("error retrieving '%s' keys: %s", pattern, err)
 		}
 		iter, err = redis.Int(arr[0], nil)
 		if err != nil {
