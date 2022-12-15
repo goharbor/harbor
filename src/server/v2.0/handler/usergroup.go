@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
 	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -208,28 +209,10 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 		return u.SendError(ctx, err)
 	}
 	result := getUserGroupSearchItem(ug)
-	sortMostMatch(result, params.Groupname)
+	sort.Slice(result, func(i, j int) bool {
+		return utils.MostMatchSorter(result[i].GroupName, result[j].GroupName, params.Groupname)
+	})
 	return operation.NewSearchUserGroupsOK().WithXTotalCount(total).
 		WithPayload(result).
 		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
-}
-
-// sortMostMatch given a  matchWord, sort the input by the most match,
-// for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
-// it returns with this order {"user", "users", "admin_user", "harbor_user"}
-func sortMostMatch(input []*models.UserGroupSearchItem, matchWord string) {
-	sort.Slice(input, func(i, j int) bool {
-		// exact match always first
-		if input[i].GroupName == matchWord {
-			return true
-		}
-		if input[j].GroupName == matchWord {
-			return false
-		}
-		// sort by length, then sort by alphabet
-		if len(input[i].GroupName) == len(input[j].GroupName) {
-			return input[i].GroupName < input[j].GroupName
-		}
-		return len(input[i].GroupName) < len(input[j].GroupName)
-	})
 }
