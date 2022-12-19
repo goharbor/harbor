@@ -2,7 +2,13 @@ name: "Code scanning - action"
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   schedule:
     - cron: '0 16 * * 6'
 

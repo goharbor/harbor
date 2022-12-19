@@ -16,9 +16,13 @@ env:
 
 on:
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   push:
     paths-ignore:
-    - 'docs/**'
+      - 'docs/**'
+      - '**.md'
 
 jobs:
   UTTEST:
