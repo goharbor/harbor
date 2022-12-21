@@ -89,7 +89,7 @@ trivy:
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
   # exist in the local repositories. It means a number of detected vulnerabilities might be fewer in offline mode.
   # It would work if all the dependencies are in local.
-  # This option doesn’t affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
+  # This option doesn't affect DB download. You need to specify "skip-update" as well as "offline-scan" in an air-gapped environment.
   offline_scan: false
   #
   # Comma-separated list of what security issues to detect. Possible values are `vuln`, `config` and `secret`. Defaults to `vuln`.
@@ -246,7 +246,7 @@ proxy:
 #   #   insecure: true
 #   #   timeout: 10s
 
-# enable purge _upload directories
+# Enable purge _upload directories
 upload_purging:
   enabled: true
   # remove files in _upload directories which exist for a period of time, default is one week.
@@ -255,7 +255,7 @@ upload_purging:
   interval: 24h
   dryrun: false
 
-# cache layer configurations
+# Cache layer configurations
 # If this feature enabled, harbor will cache the resource
 # `project/project_metadata/repository/artifact/manifest` in the redis
 # which can especially help to improve the performance of high concurrent
