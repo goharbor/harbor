@@ -80,7 +80,7 @@
         "FULL_NAME": "Maksimum uzunluk 20 karakter olmalıdır.",
         "COMMENT": "Yorumun uzunluğu 30 karakterden az olmalıdır.",
         "CURRENT_PWD": "Geçerli şifre gerekli.",
-        "PASSWORD": "Şifre en az 1 büyük harf, 1 küçük harf ve 1 sayı ile 8-20 karakter uzunluğunda olmalıdır.",
+        "PASSWORD": "Şifre en az 1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter uzunluğunda olmalıdır.",
         "CONFIRM_PWD": "Parolalar uyuşmuyor.",
         "SIGN_IN_USERNAME": "Kullanıcı adı gerekli.",
         "SIGN_IN_PWD": "Şifre gereklidir.",
@@ -148,7 +148,7 @@
         "NEW_PWD": "Yeni Şifre",
         "CONFIRM_PWD": "Şifreyi Onayla",
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
-        "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-20 karakter"
+        "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
@@ -1642,7 +1642,7 @@
         "UPDATE_ROBOT": "Update Robot",
         "UPDATE_ROBOT_SUCCESSFULLY": "Updated robot successfully",
         "PLACEHOLDER": "Input new secret",
-        "SECRET": "Secret should be 8-20 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
+        "SECRET": "Secret should be 8-128 characters long with at least 1 uppercase, 1 lowercase and 1 number.",
         "REFRESH_SECRET": "Refresh Secret",
         "REFRESH_SECRET_SUCCESS": "Refreshed secret successfully",
         "DELETE_ROBOT": "Delete Robot",

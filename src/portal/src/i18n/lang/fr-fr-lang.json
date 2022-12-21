@@ -77,7 +77,7 @@
         "FULL_NAME": "La longueur maximale est de 20 caractères.",
         "COMMENT": "La longueur des commentaires doit être inférieure à 30 caractères.",
         "CURRENT_PWD": "Le mot de passe actuel est requis.",
-        "PASSWORD": "Le mot de passe doit être composé de 8 à 20 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
+        "PASSWORD": "Le mot de passe doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
         "CONFIRM_PWD": "Les mots de passe ne correspondent pas.",
         "SIGN_IN_USERNAME": "Le nom d'utilisateur est obligatoire.",
         "SIGN_IN_PWD": "Le mot de passe obligatoire.",
@@ -100,7 +100,7 @@
         "OIDC_VERIFYCERT": "Décocher cette case si votre serveur oidc est hébergé avec un certificat auto-signé.",
         "OIDC_AUTOONBOARD": "Ignorer l'écran d'accueil afin que l'utilisateur ne puisse pas modifier son nom d'utilisateur. Le nom d'utilisateur est fourni à partir du  ID Token",
         "OIDC_USER_CLAIM": "Le nom de la réclamation dans le ID Token à partir duquel le nom d'utilisateur est récupéré. S'il n'est pas spécifié, la valeur par défaut sera 'name'",
-        "NEW_SECRET": "Le secret doit être composé de 8 à 20 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
+        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -1612,7 +1612,7 @@
         "UPDATE_ROBOT": "Mettre à jour le Robot",
         "UPDATE_ROBOT_SUCCESSFULLY": "Robot mis à jour avec succès",
         "PLACEHOLDER": "Entrer un nouveau secret",
-        "SECRET": "Le secret doit comporter de 8 à 20 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
+        "SECRET": "Le secret doit comporter de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
         "REFRESH_SECRET": "Rafraîchir le Secret",
         "REFRESH_SECRET_SUCCESS": "Secret rafraîchi avec succès",
         "DELETE_ROBOT": "Supprimer le Robot",
