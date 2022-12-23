@@ -81,10 +81,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
                         debounceTime(500),
                         switchMap(name => {
                             if (name) {
-                                return this.userService.listUsers({
+                                return this.userService.searchUsers({
                                     page: 1,
                                     pageSize: 10,
-                                    q: encodeURIComponent(`username=~${name}`),
+                                    username: name,
                                 });
                             } else {
                                 return of([]);
