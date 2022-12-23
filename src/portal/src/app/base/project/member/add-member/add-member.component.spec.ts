@@ -17,7 +17,7 @@ describe('AddMemberComponent', () => {
         },
     };
     const mockUserService = {
-        listUsers: () => {
+        searchUsers: () => {
             return of([[], []]);
         },
     };

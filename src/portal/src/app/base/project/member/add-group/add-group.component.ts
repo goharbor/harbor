@@ -225,7 +225,7 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             group_name: '',
         };
         this.isGroupNameValid = true;
-        this.groupTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
+        this.groupTooltip = 'MEMBER.GROUP_NAME_REQUIRED';
         this.searchedGroups = [];
     }
     isValid(): boolean {
