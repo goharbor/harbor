@@ -877,6 +877,32 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
         <clr-checkbox-container>
+            <label for="oidc_disable_remote_user_info"
+                >{{ 'CONFIG.OIDC.DISABLE_REMOTE_USER_INFO' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{ 'TOOLTIP.DISABLE_REMOTE_USER_INFO' | translate }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="oidc_disable_remote_user_info"
+                    id="oidc_disable_remote_user_info"
+                    [disabled]="disabled(currentConfig.oidc_disable_remote_user_info)"
+                    [(ngModel)]="currentConfig.oidc_disable_remote_user_info.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container>
             <label for="oidcAutoOnboard"
                 >{{ 'CONFIG.OIDC.OIDC_AUTOONBOARD' | translate }}
                 <clr-tooltip>

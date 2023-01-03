@@ -100,6 +100,7 @@ export class Configuration {
     oidc_client_id?: StringValueItem;
     oidc_client_secret?: StringValueItem;
     oidc_verify_cert?: BoolValueItem;
+    oidc_disable_remote_user_info?: BoolValueItem;
     oidc_auto_onboard?: BoolValueItem;
     oidc_scope?: StringValueItem;
     oidc_user_claim?: StringValueItem;
@@ -175,6 +176,7 @@ export class Configuration {
         this.oidc_client_id = new StringValueItem('', true);
         this.oidc_client_secret = new StringValueItem('', true);
         this.oidc_verify_cert = new BoolValueItem(false, true);
+        this.oidc_disable_remote_user_info = new BoolValueItem(false, true);
         this.oidc_auto_onboard = new BoolValueItem(false, true);
         this.oidc_scope = new StringValueItem('', true);
         this.oidc_groups_claim = new StringValueItem('', true);

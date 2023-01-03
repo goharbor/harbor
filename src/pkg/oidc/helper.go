@@ -267,9 +267,12 @@ func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	remote, err := userInfoFromRemote(ctx, token, setting)
-	if err != nil {
-		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
+	var remote *UserInfo
+	if !setting.DisableRemoteUserInfo {
+		remote, err = userInfoFromRemote(ctx, token, setting)
+		if err != nil {
+			log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
+		}
 	}
 	if remote != nil && local != nil {
 		if remote.Subject != local.Subject {
