@@ -2,6 +2,10 @@ body {
   overflow-y: hidden;
 }
 
+a {
+  text-decoration: none;
+}
+
 .app-loading {
   position: absolute !important;
   top: 0;
