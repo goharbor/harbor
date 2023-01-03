@@ -158,6 +158,10 @@ describe('ProjectComponent', () => {
                     value: false,
                     editable: true,
                 },
+                oidc_disable_remote_user_info: {
+                    value: false,
+                    editable: true
+                },
                 project_creation_restriction: {
                     value: 'everyone',
                     editable: true,
@@ -217,8 +221,8 @@ describe('ProjectComponent', () => {
         },
     };
     const mockMessageHandlerService = {
-        refresh() {},
-        showSuccess() {},
+        refresh() { },
+        showSuccess() { },
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({

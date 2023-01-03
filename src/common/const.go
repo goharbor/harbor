@@ -111,6 +111,7 @@ const (
 	OIDCCLientID                     = "oidc_client_id"
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
+	OIDCDisableRemoteUserInfo        = "oidc_disable_remote_user_info"
 	OIDCAdminGroup                   = "oidc_admin_group"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
 	OIDCGroupFilter                  = "oidc_group_filter"
