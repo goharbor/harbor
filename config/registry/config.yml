@@ -1,0 +1,36 @@
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+storage:
+  cache:
+    layerinfo: redis
+  filesystem:
+    rootdirectory: /storage
+  maintenance:
+    uploadpurging:
+      enabled: false
+  delete:
+    enabled: true
+redis:
+  addr: localhost:6379
+  password:
+  db: 1
+http:
+  addr: :5000
+  secret: password
+  debug:
+    addr: localhost:5001
+auth:
+  htpasswd:
+    realm: harbor-registry-basic-realm
+    path: /etc/registry/passwd
+notifications:
+  endpoints:
+  - name: harbor
+    disabled: false
+    url: http://localhost:8080/service/notifications
+    timeout: 3000ms
+    threshold: 5
+    backoff: 1s

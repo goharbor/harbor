@@ -1,0 +1,156 @@
+version: '3.3'
+
+# uffizzi integration
+x-uffizzi:
+  ingress:
+    service: portal
+    port: 8082
+
+services:
+
+  portal:
+    image: "${PORTAL_IMAGE}"
+
+  jobservice:
+    image: "${JOBSERVICE_IMAGE}"
+    environment:
+      - CORE_SECRET=password
+      - JOBSERVICE_SECRET=password
+      - CORE_URL=http://localhost:8080
+      - REGISTRY_CONTROLLER_URL=http://localhost:8085
+      - REGISTRY_CREDENTIAL_USERNAME=password
+      - REGISTRY_CREDENTIAL_PASSWORD=password
+    volumes:
+      - jobservice_data:/var/log/jobs
+      - ./config/jobservice/config.yml:/etc/jobservice/config.yml:ro
+
+  registryctl:
+    image: "${REGISTRY_CTL_IMAGE}"
+    environment:
+      - CORE_SECRET=password
+      - JOBSERVICE_SECRET=password
+      - REGISTRY_HTTP_SECRET=password
+    volumes:
+      - registry_data:/storage
+      - ./config/registry/:/etc/registry/:ro
+      - ./config/registryctl/config.yml:/etc/registryctl/config.yml:ro
+
+  registry:
+    image: bitnami/harbor-registry:latest
+    environment:
+      - REGISTRY_HTTP_SECRET=password
+      - HARBOR_NGINX_ENDPOINT=http://localhost:8081
+      - CORE_SECRET=password
+      - JOBSERVICE_SECRET=password
+    restart: always
+    deploy:
+          resources:
+            limits:
+              memory: 2000M
+    volumes:
+      # - /data/registry:/storage
+      - ./config/registry/:/etc/registry/
+    #   - /etc/core/ca/ca.crt:/etc/registry/root.crt
+    ports:
+      - 5000:5000
+
+  core:
+    image: goharbor/harbor-core:v2.6.3
+    deploy:
+          resources:
+            limits:
+              memory: 2000M
+    environment:
+      - CORE_KEY=password
+      - _REDIS_URL_CORE=redis://localhost:6379/0
+      - _REDIS_URL_=redis://localhost:6379, 100
+      - SYNC_REGISTRY=false
+      - CHART_CACHE_DRIVER=redis
+      - _REDIS_URL_REG=redis://localhost:6379/1
+      - PORT=8080
+      - LOG_LEVEL=info
+      - DATABASE_TYPE=postgresql
+      - REGISTRY_CONTROLLER_URL=http://localhost:8085
+      - REGISTRYCTL_URL=http://localhost:8085
+      - POSTGRESQL_HOST=127.0.0.1
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_DATABASE=harbor
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - REGISTRY_URL=http://localhost:5000
+      - REGISTRY_HTTP_SECRET=password
+      - TOKEN_SERVICE_URL=http://localhost:8080/service/token
+      - HARBOR_ADMIN_PASSWORD=password
+      - CORE_SECRET=password
+      - JOBSERVICE_SECRET=password
+      - HARBOR_NGINX_ENDPOINT=http://localhost:8081
+      # - ADMIRAL_URL=
+      - PORTAL_URL=http://localhost:8081
+      - WITH_NOTARY=false
+      - WITH_CLAIR=false
+      - WITH_CHARTMUSEUM=true
+      - CHART_REPOSITORY_URL=http://localhost:8083
+      - CORE_URL=http://localhost:8080
+      - JOBSERVICE_URL=http://localhost:8086
+      - REGISTRY_STORAGE_PROVIDER_NAME=filesystem
+      - REGISTRY_CREDENTIAL_USERNAME=password
+      - REGISTRY_CREDENTIAL_PASSWORD=password
+      - NO_PROXY=localhost
+    volumes:
+      - core_data:/data
+      - ./config/core/app.conf:/etc/core/app.conf:ro
+      - ./config/core/private_key.pem:/etc/core/private_key.pem:ro
+
+  chartmuseum:
+    image: bitnami/chartmuseum:latest
+    environment:
+      - CACHE=redis
+      - CACHE_REDIS_ADDR=redis://localhost:6379
+      - CACHE_REDIS_DB=1
+      - DEPTH=1
+      - PORT=8083
+      - STORAGE=local
+      - STORAGE_LOCAL_ROOTDIR=/bitnami/data
+      - ALLOW_OVERWRITE=true
+      - INDEX_LIMIT=0
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+      # - ./make/migrations/postgresql/:/docker-entrypoint-initdb.d/
+    environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+     - POSTGRES_DB=harbor
+     - PGDATA=/tmp
+    ports:
+      - 5432:5432
+    deploy:
+          resources:
+            limits:
+              memory: 1000M
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    deploy:
+          resources:
+            limits:
+              memory: 1000M
+
+
+volumes:
+  registry_data:
+    driver: local
+  core_data:
+    driver: local
+  jobservice_data:
+    driver: local
+  postgres_volume:
+    driver: local
+  chartmuseum_data:
+    driver: local

@@ -1,0 +1,28 @@
+ARG harbor_base_image_version
+ARG harbor_base_namespace
+
+FROM ${harbor_base_namespace}/harbor-registryctl-base:${harbor_base_image_version}
+
+COPY ./make/photon/common/install_cert.sh /home/harbor
+COPY ./make/photon/registryctl/start.sh /home/harbor
+COPY ./make/photon/registryctl/ /home/harbor
+
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
+    && chown harbor:harbor /home/harbor/ && chmod u+x /home/harbor/ \
+    && chown harbor:harbor /home/harbor/start.sh && chmod u+x /home/harbor/start.sh \
+    && chown harbor:harbor /home/harbor/install_cert.sh && chmod u+x /home/harbor/install_cert.sh
+
+FROM golang:1.17-alpine
+RUN mkdir /home/harbor
+WORKDIR /home/harbor
+COPY ../../../config/registryctl/config.yml .
+RUN mv config.yml config_registry.yml
+COPY ../../../config/registry/config.yml .
+COPY ../../../src/registryctl/main.go .
+RUN go env -w GO111MODULE=on
+RUN go mod init registryctl
+RUN go mod tidy -compat=1.17
+RUN chmod +x .
+RUN go build -o main .
+CMD ["./main","-c", "config_registry.yml"]
+

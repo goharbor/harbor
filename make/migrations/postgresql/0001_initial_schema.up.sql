@@ -364,4 +364,3 @@ CREATE TABLE IF NOT EXISTS alembic_version (
 );
 
 insert into alembic_version values ('1.6.0');
-
