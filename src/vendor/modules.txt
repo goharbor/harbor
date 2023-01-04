@@ -1056,7 +1056,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# helm.sh/helm/v3 v3.10.1
+# helm.sh/helm/v3 v3.10.3
 ## explicit; go 1.18
 helm.sh/helm/v3/cmd/helm/search
 helm.sh/helm/v3/internal/fileutil
