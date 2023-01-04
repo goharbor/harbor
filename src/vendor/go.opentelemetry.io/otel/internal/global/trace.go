@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package global
+package global // import "go.opentelemetry.io/otel/internal/global"
 
 /*
 This file contains the forwarding implementation of the TracerProvider used as

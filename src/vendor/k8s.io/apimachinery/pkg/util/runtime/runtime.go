@@ -27,9 +27,10 @@ import (
 )
 
 var (
-	// ReallyCrash controls the behavior of HandleCrash and now defaults
-	// true. It's still exposed so components can optionally set to false
-	// to restore prior behavior.
+	// ReallyCrash controls the behavior of HandleCrash and defaults to
+	// true. It's exposed so components can optionally set to false
+	// to restore prior behavior. This flag is mostly used for tests to validate
+	// crash conditions.
 	ReallyCrash = true
 )
 
@@ -141,7 +142,7 @@ func GetCaller() string {
 	runtime.Callers(3, pc[:])
 	f := runtime.FuncForPC(pc[0])
 	if f == nil {
-		return fmt.Sprintf("Unable to find caller")
+		return "Unable to find caller"
 	}
 	return f.Name()
 }

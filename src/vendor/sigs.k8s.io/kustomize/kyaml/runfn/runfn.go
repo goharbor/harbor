@@ -101,6 +101,9 @@ type RunFns struct {
 	// If it is true, the empty result will be provided as input to the next
 	// function in the list.
 	ContinueOnEmptyResult bool
+
+	// WorkingDir specifies which working directory an exec function should run in.
+	WorkingDir string
 }
 
 // Execute runs the command
@@ -326,8 +329,11 @@ func (r RunFns) getFunctionFilters(global bool, fns ...*yaml.RNode) (
 			continue
 		}
 		cf, ok := c.(*container.Filter)
-		if global && ok {
-			cf.Exec.GlobalScope = true
+		if ok {
+			if global {
+				cf.Exec.GlobalScope = true
+			}
+			cf.Exec.WorkingDir = r.WorkingDir
 		}
 		fltrs = append(fltrs, c)
 	}
@@ -340,6 +346,12 @@ func sortFns(buff *kio.PackageBuffer) error {
 	// sort the nodes so that we traverse them depth first
 	// functions deeper in the file system tree should be run first
 	sort.Slice(buff.Nodes, func(i, j int) bool {
+		if err := kioutil.CopyLegacyAnnotations(buff.Nodes[i]); err != nil {
+			return false
+		}
+		if err := kioutil.CopyLegacyAnnotations(buff.Nodes[j]); err != nil {
+			return false
+		}
 		mi, _ := buff.Nodes[i].GetMeta()
 		pi := filepath.ToSlash(mi.Annotations[kioutil.PathAnnotation])
 
@@ -459,11 +471,17 @@ func (r *RunFns) ffp(spec runtimeutil.FunctionSpec, api *yaml.RNode, currentUser
 		if err != nil {
 			return nil, err
 		}
+
+		// Storage mounts can either come from kustomize fn run --mounts,
+		// or from the declarative function mounts field.
+		storageMounts := spec.Container.StorageMounts
+		storageMounts = append(storageMounts, r.StorageMounts...)
+
 		c := container.NewContainer(
 			runtimeutil.ContainerSpec{
 				Image:         spec.Container.Image,
 				Network:       spec.Container.Network,
-				StorageMounts: r.StorageMounts,
+				StorageMounts: storageMounts,
 				Env:           spec.Container.Env,
 			},
 			uidgid,
@@ -484,7 +502,12 @@ func (r *RunFns) ffp(spec runtimeutil.FunctionSpec, api *yaml.RNode, currentUser
 
 		var p string
 		if spec.Starlark.Path != "" {
-			p = filepath.ToSlash(path.Clean(m.Annotations[kioutil.PathAnnotation]))
+			pathAnno := m.Annotations[kioutil.PathAnnotation]
+			if pathAnno == "" {
+				pathAnno = m.Annotations[kioutil.LegacyPathAnnotation]
+			}
+			p = filepath.ToSlash(path.Clean(pathAnno))
+
 			spec.Starlark.Path = filepath.ToSlash(path.Clean(spec.Starlark.Path))
 			if filepath.IsAbs(spec.Starlark.Path) || path.IsAbs(spec.Starlark.Path) {
 				return nil, errors.Errorf(
@@ -507,7 +530,10 @@ func (r *RunFns) ffp(spec runtimeutil.FunctionSpec, api *yaml.RNode, currentUser
 	}
 
 	if r.EnableExec && spec.Exec.Path != "" {
-		ef := &exec.Filter{Path: spec.Exec.Path}
+		ef := &exec.Filter{
+			Path:       spec.Exec.Path,
+			WorkingDir: r.WorkingDir,
+		}
 
 		ef.FunctionConfig = api
 		ef.GlobalScope = r.GlobalScope

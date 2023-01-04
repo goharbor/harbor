@@ -133,7 +133,6 @@ func (kvl *loader) keyValuesFromLines(content []byte) ([]types.Pair, error) {
 }
 
 // KeyValuesFromLine returns a kv with blank key if the line is empty or a comment.
-// The value will be retrieved from the environment if necessary.
 func (kvl *loader) keyValuesFromLine(line []byte, currentLine int) (types.Pair, error) {
 	kv := types.Pair{}
 
@@ -164,7 +163,12 @@ func (kvl *loader) keyValuesFromLine(line []byte, currentLine int) (types.Pair, 
 		kv.Value = data[1]
 	} else {
 		// No value (no `=` in the line) is a signal to obtain the value
-		// from the environment.
+		// from the environment. This behaviour was accidentally imported from kubectl code, and
+		// will be removed in the next major release of Kustomize.
+		_, _ = fmt.Fprintln(os.Stderr, "WARNING: "+
+			"This Kustomization is relying on a bug that loads values from the environment "+
+			"when they are omitted from an env file. "+
+			"This behaviour will be removed in the next major release of Kustomize.")
 		kv.Value = os.Getenv(key)
 	}
 	kv.Key = key
@@ -209,5 +213,17 @@ func parseLiteralSource(source string) (keyName, value string, err error) {
 	if len(items) != 2 {
 		return "", "", fmt.Errorf("invalid literal source %v, expected key=value", source)
 	}
-	return items[0], strings.Trim(items[1], "\"'"), nil
+	return items[0], removeQuotes(items[1]), nil
+}
+
+// removeQuotes removes the surrounding quotes from the provided string only if it is surrounded on both sides
+// rather than blindly trimming all quotation marks on either side.
+func removeQuotes(str string) string {
+	if len(str) == 0 || str[0] != str[len(str)-1] {
+		return str
+	}
+	if str[0] == '"' || str[0] == '\'' {
+		return str[1 : len(str)-1]
+	}
+	return str
 }

@@ -259,7 +259,7 @@ func WithStackTrace(b bool) SpanEndEventOption {
 }
 
 // WithLinks adds links to a Span. The links are added to the existing Span
-// links, i.e. this does not overwrite.
+// links, i.e. this does not overwrite. Links with invalid span context are ignored.
 func WithLinks(links ...Link) SpanStartOption {
 	return spanOptionFunc(func(cfg *SpanConfig) {
 		cfg.links = append(cfg.links, links...)

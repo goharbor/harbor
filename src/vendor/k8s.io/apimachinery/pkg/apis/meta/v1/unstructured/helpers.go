@@ -340,6 +340,7 @@ func (s unstructuredJSONScheme) Decode(data []byte, _ *schema.GroupVersionKind, 
 	if len(gvk.Kind) == 0 {
 		return nil, &gvk, runtime.NewMissingKindErr(string(data))
 	}
+	// TODO(109023): require apiVersion here as well
 
 	return obj, &gvk, nil
 }
@@ -382,7 +383,7 @@ func (unstructuredJSONScheme) Identifier() runtime.Identifier {
 
 func (s unstructuredJSONScheme) decode(data []byte) (runtime.Object, error) {
 	type detector struct {
-		Items gojson.RawMessage
+		Items gojson.RawMessage `json:"items"`
 	}
 	var det detector
 	if err := json.Unmarshal(data, &det); err != nil {
@@ -425,7 +426,7 @@ func (unstructuredJSONScheme) decodeToUnstructured(data []byte, unstruct *Unstru
 
 func (s unstructuredJSONScheme) decodeToList(data []byte, list *UnstructuredList) error {
 	type decodeList struct {
-		Items []gojson.RawMessage
+		Items []gojson.RawMessage `json:"items"`
 	}
 
 	var dList decodeList

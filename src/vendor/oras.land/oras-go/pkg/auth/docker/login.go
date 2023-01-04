@@ -25,6 +25,8 @@ import (
 	iface "oras.land/oras-go/pkg/auth"
 )
 
+const IndexHostname = "index.docker.io"
+
 // Login logs in to a docker registry identified by the hostname.
 // Deprecated: use LoginWithOpts
 func (c *Client) Login(ctx context.Context, hostname, username, secret string, insecure bool) error {
@@ -78,9 +80,19 @@ func (c *Client) login(settings *iface.LoginSettings) error {
 	if userAgent == "" {
 		userAgent = "oras"
 	}
-	if _, token, err := remote.Auth(ctx, &cred, userAgent); err != nil {
+
+	var token string
+	if (settings.CertFile != "" && settings.KeyFile != "") || settings.CAFile != "" {
+		_, token, err = c.loginWithTLS(ctx, remote, settings.CertFile, settings.KeyFile, settings.CAFile, &cred, userAgent)
+	} else {
+		_, token, err = remote.Auth(ctx, &cred, userAgent)
+	}
+
+	if err != nil {
 		return err
-	} else if token != "" {
+	}
+
+	if token != "" {
 		cred.Username = ""
 		cred.Password = ""
 		cred.IdentityToken = token
