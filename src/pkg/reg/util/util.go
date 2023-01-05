@@ -33,6 +33,7 @@ func GetHTTPTransport(insecure bool) http.RoundTripper {
 	return commonhttp.GetHTTPTransport()
 }
 
+// Ping sends the ping request to registry.
 func Ping(registry *model.Registry) (string, string, error) {
 	client := &http.Client{
 		Transport: GetHTTPTransport(registry.Insecure),

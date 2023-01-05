@@ -41,6 +41,7 @@ type User struct {
 	OIDCUserMeta    *OIDCUser `json:"oidc_user_meta,omitempty"`
 }
 
+// Users holds the slice of User.
 type Users []*User
 
 // MapByUserID returns map which key is UserID of the user and value is the user itself

@@ -16,10 +16,11 @@ package http
 
 import (
 	"crypto/tls"
-	"github.com/goharbor/harbor/src/lib/trace"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/trace"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -45,6 +46,7 @@ func init() {
 	}
 }
 
+// AddTracingWithGlobalTransport adds the global transport for tracing.
 func AddTracingWithGlobalTransport() {
 	insecureHTTPTransport = otelhttp.NewTransport(insecureHTTPTransport, trace.HarborHTTPTraceOptions...)
 	secureHTTPTransport = otelhttp.NewTransport(secureHTTPTransport, trace.HarborHTTPTraceOptions...)
@@ -86,14 +88,14 @@ func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	}
 }
 
-// WithMaxIdleConnsPerHost returns a TransportOption that configures the transport to use the specified number of idle connections per host
+// WithMaxIdleConns returns a TransportOption that configures the transport to use the specified number of idle connections per host
 func WithMaxIdleConns(maxIdleConns int) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.MaxIdleConns = maxIdleConns
 	}
 }
 
-// WithIdleConnTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
+// WithIdleconnectionTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
 func WithIdleconnectionTimeout(idleConnectionTimeout time.Duration) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.IdleConnTimeout = idleConnectionTimeout

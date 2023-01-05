@@ -113,7 +113,7 @@ func (s ShutdownFunc) Shutdown() {
 	s()
 }
 
-// Init initializes the trace provider
+// InitGlobalTracer initializes the trace provider
 func InitGlobalTracer(ctx context.Context) ShutdownFunc {
 	if !Enabled() {
 		otel.SetTracerProvider(oteltrace.NewNoopTracerProvider())

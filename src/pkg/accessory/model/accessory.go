@@ -17,9 +17,10 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 const (
@@ -31,11 +32,13 @@ const (
 	RefHard = "hard"
 )
 
+// RefProvider is the interface for ref provider.
 type RefProvider interface {
 	// Kind returns reference Kind.
 	Kind() string
 }
 
+// RefIdentifier is the interface for ref identifier.
 /*
 RefIdentifier
 
@@ -43,10 +46,12 @@ Soft reference: The accessory is not tied to the subject manifest.
 Hard reference: The accessory is tied to the subject manifest.
 
 	Deletion
+
 1. Soft Reference:  If the linkage is Soft Reference, when the subject artifact is removed, the linkage will be removed as well, the accessory artifact becomes an individual artifact.
 2. Hard Reference:  If the linkage is Hard Reference, the accessory artifact will be removed together with the subject artifact.
 
 	Garbage Collection
+
 1. Soft Reference:  If the linkage is Soft Reference, Harbor treats the accessory as normal artifact and will not set it as the GC candidate.
 2. Hard Reference:  If the linkage is Hard Reference, Harbor treats the accessory as an extra stuff of the subject artifact. It means, it being tied to the subject artifact and will be GCed whenever the subject artifact is marked and deleted.
 */
