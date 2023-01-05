@@ -13,7 +13,7 @@ jobs:
         # maintain the versions of harbor that need to be actively
         # security scanned
         # TODO have to add 2.7 version also once it is released
-        versions: [dev]
+        versions: [dev, v2.7.0]
         # list of images that need to be scanned
         images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare]
     permissions:
