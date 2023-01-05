@@ -79,32 +79,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
 import { RemainingTimeComponent } from './components/remaining-time/remaining-time.component';
-
-import { registerLocaleData } from '@angular/common';
-import locale_en from '@angular/common/locales/en';
-import locale_zh_CN from '@angular/common/locales/zh-Hans';
-import locale_zh_TW from '@angular/common/locales/zh-Hans-HK';
-import locale_es from '@angular/common/locales/es';
-import locale_fr from '@angular/common/locales/fr';
-import locale_pt from '@angular/common/locales/pt-PT';
-import locale_tr from '@angular/common/locales/tr';
-import locale_de from '@angular/common/locales/de';
-import { SupportedLanguage } from './entities/shared.const';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
-
-const localesForSupportedLangs: Record<SupportedLanguage, unknown[]> = {
-    'en-us': locale_en,
-    'zh-cn': locale_zh_CN,
-    'zh-tw': locale_zh_TW,
-    'es-es': locale_es,
-    'fr-fr': locale_fr,
-    'pt-br': locale_pt,
-    'tr-tr': locale_tr,
-    'de-de': locale_de,
-};
-for (const [lang, locale] of Object.entries(localesForSupportedLangs)) {
-    registerLocaleData(locale, lang);
-}
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;

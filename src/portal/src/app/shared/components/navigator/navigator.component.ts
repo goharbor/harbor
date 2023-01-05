@@ -14,7 +14,7 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { PlatformLocation } from '@angular/common';
+import { PlatformLocation, registerLocaleData } from '@angular/common';
 import { ModalEvent } from '../../../base/modal-event';
 import { modalEvents } from '../../../base/modal-events.const';
 import { SessionService } from '../../services/session.service';
@@ -70,6 +70,12 @@ export class NavigatorComponent implements OnInit {
         // custom skin
         this.customStyle = this.skinableConfig.getSkinConfig();
         this.selectedLang = this.translate.currentLang as SupportedLanguage;
+        if (this.selectedLang) {
+            registerLocaleData(
+                LANGUAGES[this.selectedLang][1],
+                this.selectedLang
+            );
+        }
         this.selectedDatetimeRendering = getDatetimeRendering();
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
@@ -91,7 +97,7 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get currentLang(): string {
-        return LANGUAGES[this.selectedLang];
+        return LANGUAGES[this.selectedLang][0] as string;
     }
 
     public get currentDatetimeRendering(): string {
@@ -180,6 +186,7 @@ export class NavigatorComponent implements OnInit {
     // Switch languages
     switchLanguage(lang: SupportedLanguage): void {
         this.selectedLang = lang;
+        registerLocaleData(LANGUAGES[this.selectedLang][1], this.selectedLang);
         localStorage.setItem(DEFAULT_LANG_LOCALSTORAGE_KEY, lang);
         // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
         // have to reload

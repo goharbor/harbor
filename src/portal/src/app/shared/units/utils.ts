@@ -17,8 +17,6 @@ import {
 import { AbstractControl } from '@angular/forms';
 import { isValidCron } from 'cron-validator';
 import { ClrDatagridStateInterface } from '@clr/angular';
-import { ScheduleListComponent } from '../../base/left-side-nav/job-service-dashboard/schedule-list/schedule-list.component';
-import { PendingListComponent } from '../../base/left-side-nav/job-service-dashboard/pending-job-list/pending-job-list.component';
 
 /**
  * Api levels
