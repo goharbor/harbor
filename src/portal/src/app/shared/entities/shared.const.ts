@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import locale_en from '@angular/common/locales/en';
+import locale_zh_CN from '@angular/common/locales/zh-Hans';
+import locale_zh_TW from '@angular/common/locales/zh-Hans-HK';
+import locale_es from '@angular/common/locales/es';
+import locale_fr from '@angular/common/locales/fr';
+import locale_pt from '@angular/common/locales/pt-PT';
+import locale_tr from '@angular/common/locales/tr';
+import locale_de from '@angular/common/locales/de';
+
 export const enum AlertType {
     DANGER,
     WARNING,
@@ -223,16 +232,16 @@ export const REFRESH_TIME_DIFFERENCE = 10000;
 //
 
 export const DeFaultLang = 'en-us';
-export type SupportedLanguage = keyof typeof LANGUAGES;
+export type SupportedLanguage = string;
 export const LANGUAGES = {
-    'en-us': 'English',
-    'zh-cn': '中文简体',
-    'zh-tw': '中文繁體',
-    'es-es': 'Español',
-    'fr-fr': 'Français',
-    'pt-br': 'Português do Brasil',
-    'tr-tr': 'Türkçe',
-    'de-de': 'Deutsch',
+    'en-us': ['English', locale_en],
+    'zh-cn': ['中文简体', locale_zh_CN],
+    'zh-tw': ['中文繁體', locale_zh_TW],
+    'es-es': ['Español', locale_es],
+    'fr-fr': ['Français', locale_fr],
+    'pt-br': ['Português do Brasil', locale_pt],
+    'tr-tr': ['Türkçe', locale_tr],
+    'de-de': ['Deutsch', locale_de],
 } as const;
 export const supportedLangs = Object.keys(LANGUAGES) as SupportedLanguage[];
 /**
@@ -240,7 +249,7 @@ export const supportedLangs = Object.keys(LANGUAGES) as SupportedLanguage[];
  */
 export const DEFAULT_LANG_LOCALSTORAGE_KEY = 'harbor-lang';
 
-export type DatetimeRendering = keyof typeof DATETIME_RENDERINGS;
+export type DatetimeRendering = string;
 export const DATETIME_RENDERINGS = {
     'locale-default': 'TOP_NAV.DATETIME_RENDERING_DEFAULT',
     'iso-8601': 'ISO 8601',

@@ -53,10 +53,15 @@ export function dateValidator(): ValidatorFn {
         let valid = true;
         if (controlValue) {
             const regYMD =
-                /^(19|20)\d\d([- /.])(0[1-9]|1[012])\2(0[1-9]|[12][0-9]|3[01])$/g;
+                /^(19|20)\d\d([- /.])(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/g;
             const regDMY =
                 /^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/g;
-            valid = regYMD.test(controlValue) || regDMY.test(controlValue);
+            const regMDY =
+                /^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/g;
+            valid =
+                regYMD.test(controlValue) ||
+                regDMY.test(controlValue) ||
+                regMDY.test(controlValue);
         }
         return valid ? null : { dateValidator: { value: controlValue } };
     };
