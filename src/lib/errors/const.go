@@ -88,6 +88,7 @@ func IsConflictErr(err error) bool {
 	return IsErr(err, ConflictCode)
 }
 
+// IsChallengesUnsupportedErr checks whether the err chain contains ChallengesUnsupportedError
 func IsChallengesUnsupportedErr(err error) bool {
 	return IsErr(err, ChallengesUnsupportedCode)
 }

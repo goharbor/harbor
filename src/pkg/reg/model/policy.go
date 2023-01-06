@@ -40,6 +40,7 @@ type Filter struct {
 	Decoration string      `json:"decoration,omitempty"`
 }
 
+// Validate checks the correctness of filter.
 func (f *Filter) Validate() error {
 	switch f.Type {
 	case FilterTypeResource, FilterTypeName, FilterTypeTag:

@@ -103,7 +103,7 @@ func (p *Project) ContentTrustEnabled() bool {
 	return isTrue(enabled)
 }
 
-// VulPrevented ...
+// ContentTrustCosignEnabled ...
 func (p *Project) ContentTrustCosignEnabled() bool {
 	enabled, exist := p.GetMetadata(ProMetaEnableContentTrustCosign)
 	if !exist {

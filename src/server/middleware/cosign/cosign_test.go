@@ -2,6 +2,12 @@ package cosign
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -12,11 +18,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 type MiddlewareTestSuite struct {
@@ -127,15 +128,15 @@ func (suite *MiddlewareTestSuite) TestCosignSignature() {
 		ref := fmt.Sprintf("%s.sig", strings.ReplaceAll(subArtDigest, "sha256:", "sha256-"))
 		_, descriptor, req := suite.prepare(name, ref)
 
-		_, repoId, err := repository.Ctl.Ensure(suite.Context(), name)
+		_, repoID, err := repository.Ctl.Ensure(suite.Context(), name)
 		suite.Nil(err)
-		subjectArtID := suite.addArt(projectID, repoId, name, subArtDigest)
-		artID := suite.addArt(projectID, repoId, name, descriptor.Digest.String())
+		subjectArtID := suite.addArt(projectID, repoID, name, subArtDigest)
+		artID := suite.addArt(projectID, repoID, name, descriptor.Digest.String())
 		suite.Nil(err)
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		Middleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
@@ -158,13 +159,13 @@ func (suite *MiddlewareTestSuite) TestCosignSignatureDup() {
 		ref := fmt.Sprintf("%s.sig", strings.ReplaceAll(subArtDigest, "sha256:", "sha256-"))
 		_, descriptor, req := suite.prepare(name, ref)
 
-		_, repoId, err := repository.Ctl.Ensure(suite.Context(), name)
+		_, repoID, err := repository.Ctl.Ensure(suite.Context(), name)
 		suite.Nil(err)
-		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, descriptor.Digest.String())
+		accID := suite.addArtAcc(projectID, repoID, name, subArtDigest, descriptor.Digest.String())
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		Middleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{

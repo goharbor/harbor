@@ -3,6 +3,10 @@ package cosign
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
@@ -14,9 +18,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 	digest "github.com/opencontainers/go-digest"
-	"io/ioutil"
-	"net/http"
-	"regexp"
 )
 
 var (
@@ -29,7 +30,7 @@ var (
 	mediaTypeCosignLayer = "application/vnd.dev.cosign.simplesigning.v1+json"
 )
 
-// CosignSignatureMiddleware middleware to record the linkeage of artifact and its accessory
+// Middleware to record the linkeage of artifact and its accessory
 /* PUT /v2/library/hello-world/manifests/sha256-1b26826f602946860c279fce658f31050cff2c596583af237d971f4629b57792.sig
 {
 	"schemaVersion":2,
@@ -50,7 +51,7 @@ var (
 	]
 }
 */
-func CosignSignatureMiddleware() func(http.Handler) http.Handler {
+func Middleware() func(http.Handler) http.Handler {
 	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {
 			return nil

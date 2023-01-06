@@ -9,6 +9,7 @@ import (
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
 
+// InitTraceConfig inits trace config.
 func InitTraceConfig(ctx context.Context) {
 	cfgMgr, err := GetManager(common.InMemoryCfgManager)
 	if err != nil {

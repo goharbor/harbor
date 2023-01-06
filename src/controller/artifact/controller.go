@@ -19,9 +19,10 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"strings"
 	"time"
+
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
@@ -141,6 +142,7 @@ type controller struct {
 	accessoryMgr accessory.Manager
 }
 
+// ArtOption is the model type of artifact option.
 type ArtOption struct {
 	Tags []string
 	Accs []accessorymodel.AccessoryData

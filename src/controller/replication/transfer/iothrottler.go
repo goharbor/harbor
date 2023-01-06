@@ -13,10 +13,12 @@ type reader struct {
 	limiter *rate.Limiter
 }
 
+// RateOpts is the model type of rate option.
 type RateOpts struct {
 	Rate float64
 }
 
+// KBRATE is the pre-calculated const variable for KB.
 const KBRATE = 1024 / 8
 
 // NewReader returns a Reader that is rate limited

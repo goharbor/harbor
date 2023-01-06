@@ -6,7 +6,7 @@ import (
 
 var testcases = []struct {
 	url         string
-	expectedUrl string
+	expectedURL string
 	valid       bool
 }{
 	{"http://harbor.foo.com", "http://harbor.foo.com", true},
@@ -37,8 +37,8 @@ func TestValidateHTTPURL(t *testing.T) {
 			if err != nil {
 				t.Errorf("ValidateHTTPURL:%q gave err %v; want no error", test.url, err)
 			}
-			if url != test.expectedUrl {
-				t.Errorf("ValidateHTTPURL:%q gave %s; want %s", test.url, url, test.expectedUrl)
+			if url != test.expectedURL {
+				t.Errorf("ValidateHTTPURL:%q gave %s; want %s", test.url, url, test.expectedURL)
 			}
 		} else if !test.valid && err == nil {
 			t.Errorf("ValidateHTTPURL:%q gave <nil> error; want some error", test.url)

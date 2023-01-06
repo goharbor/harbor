@@ -31,7 +31,7 @@ type Robot struct {
 	Permissions []*Permission `json:"permissions"`
 }
 
-// IsSysLevel, true is a system level robot, others are project level.
+// IsSysLevel return true if is a system level robot, others are project level.
 func (r *Robot) IsSysLevel() bool {
 	return r.Level == LEVELSYSTEM
 }

@@ -148,6 +148,7 @@ func (t *Int64Type) get(str string) (interface{}, error) {
 	return parseInt64(str)
 }
 
+// Float64Type ...
 type Float64Type struct{}
 
 func (f *Float64Type) validate(str string) error {
