@@ -20,6 +20,7 @@ import locale_fr from '@angular/common/locales/fr';
 import locale_pt from '@angular/common/locales/pt-PT';
 import locale_tr from '@angular/common/locales/tr';
 import locale_de from '@angular/common/locales/de';
+import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
 
 export const enum AlertType {
     DANGER,
@@ -328,3 +329,58 @@ export enum ScheduleType {
     CUSTOM = 'Custom',
     MANUAL = 'Manual',
 }
+
+export const stringsForClarity: Partial<ClrCommonStrings> = {
+    open: 'CLARITY.OPEN',
+    close: 'CLARITY.CLOSE',
+    show: 'CLARITY.SHOW',
+    hide: 'CLARITY.HIDE',
+    expand: 'CLARITY.EXPAND',
+    collapse: 'CLARITY.COLLAPSE',
+    more: 'CLARITY.MORE',
+    select: 'CLARITY.SELECT',
+    selectAll: 'CLARITY.SELECT_ALL',
+    previous: 'CLARITY.PREVIOUS',
+    next: 'CLARITY.NEXT',
+    current: 'CLARITY.CURRENT',
+    info: 'CLARITY.INFO',
+    success: 'CLARITY.SUCCESS',
+    warning: 'CLARITY.WARNING',
+    danger: 'CLARITY.DANGER',
+    rowActions: 'CLARITY.ROW_ACTION',
+    pickColumns: 'CLARITY.PICK_COLUMNS',
+    showColumns: 'CLARITY.SHOW_COLUMNS',
+    sortColumn: 'CLARITY.SORT_COLUMNS',
+    firstPage: 'CLARITY.FIRST_PAGE',
+    lastPage: 'CLARITY.LAST_PAGE',
+    nextPage: 'CLARITY.NEXT_PAGE',
+    previousPage: 'CLARITY.PREVIOUS_PAGE',
+    currentPage: 'CLARITY.CURRENT_PAGE',
+    totalPages: 'CLARITY.TOTAL_PAGE',
+    filterItems: 'CLARITY.FILTER_ITEMS',
+    minValue: 'CLARITY.MIN_VALUE',
+    maxValue: 'CLARITY.MAX_VALUE',
+    modalContentStart: 'CLARITY.MODAL_CONTENT_START',
+    modalContentEnd: 'CLARITY.MODAL_CONTENT_END',
+    showColumnsMenuDescription: 'CLARITY.SHOW_COLUMNS_MENU_DESCRIPTION',
+    allColumnsSelected: 'CLARITY.ALL_COLUMNS_SELECTED',
+    signpostToggle: 'CLARITY.SIGNPOST_TOGGLE',
+    signpostClose: 'CLARITY.SIGNPOST_CLOSE',
+    loading: 'CLARITY.LOADING',
+    // Date Picker
+    datepickerDialogLabel: 'CLARITY.DATE_PICKER_DIALOG_LABEL',
+    datepickerToggle: 'CLARITY.DATE_PICKER_TOGGLE',
+    datepickerToggleChooseDateLabel:
+        'CLARITY.DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL',
+    datepickerToggleChangeDateLabel:
+        'CLARITY.DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL',
+    datepickerPreviousMonth: 'CLARITY.DATE_PICKER_PREVIOUS_MONTH',
+    datepickerCurrentMonth: 'CLARITY.DATE_PICKER_CURRENT_MONTH',
+    datepickerNextMonth: 'CLARITY.DATE_PICKER_NEXT_MONTH',
+    datepickerPreviousDecade: 'CLARITY.DATE_PICKER_PREVIOUS_DECADE',
+    datepickerNextDecade: 'CLARITY.DATE_PICKER_NEXT_DECADE',
+    datepickerCurrentDecade: 'CLARITY.DATE_PICKER_CURRENT_DECADE',
+    datepickerSelectMonthText: 'CLARITY.DATE_PICKER_SELECT_MONTH_TEXT',
+    datepickerSelectYearText: 'CLARITY.DATE_PICKER_SELECT_YEAR_TEXT',
+    datepickerSelectedLabel: 'CLARITY.DATE_PICKER_SELECTED_LABEL',
+};
