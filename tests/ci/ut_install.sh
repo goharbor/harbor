@@ -4,6 +4,7 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
+sudo go env -w GO111MODULE=auto
 go get -d github.com/docker/distribution
 go get -d github.com/docker/libtrust
 go get golang.org/x/lint/golint
