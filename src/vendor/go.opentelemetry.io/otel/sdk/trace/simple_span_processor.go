@@ -88,10 +88,24 @@ func (ssp *simpleSpanProcessor) Shutdown(ctx context.Context) error {
 
 		go shutdown()
 
+		// Wait for the exporter to shut down or the deadline to expire.
 		select {
 		case err = <-done:
 		case <-ctx.Done():
-			err = ctx.Err()
+			// It is possible for the exporter to have immediately shut down
+			// and the context to be done simultaneously. In that case this
+			// outer select statement will randomly choose a case. This will
+			// result in a different returned error for similar scenarios.
+			// Instead, double check if the exporter shut down at the same
+			// time and return that error if so. This will ensure consistency
+			// as well as ensure the caller knows the exporter shut down
+			// successfully (they can already determine if the deadline is
+			// expired given they passed the context).
+			select {
+			case err = <-done:
+			default:
+				err = ctx.Err()
+			}
 		}
 	})
 	return err

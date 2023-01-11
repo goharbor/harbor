@@ -20,7 +20,6 @@ import (
 	"sync"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform"
-
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 

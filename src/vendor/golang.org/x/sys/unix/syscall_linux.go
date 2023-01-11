@@ -13,6 +13,7 @@ package unix
 
 import (
 	"encoding/binary"
+	"strconv"
 	"syscall"
 	"time"
 	"unsafe"
@@ -233,7 +234,7 @@ func Futimesat(dirfd int, path string, tv []Timeval) error {
 func Futimes(fd int, tv []Timeval) (err error) {
 	// Believe it or not, this is the best we can do on Linux
 	// (and is what glibc does).
-	return Utimes("/proc/self/fd/"+itoa(fd), tv)
+	return Utimes("/proc/self/fd/"+strconv.Itoa(fd), tv)
 }
 
 const ImplementsGetwd = true
@@ -512,24 +513,24 @@ func (sa *SockaddrL2) sockaddr() (unsafe.Pointer, _Socklen, error) {
 //
 // Server example:
 //
-//      fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
-//      _ = unix.Bind(fd, &unix.SockaddrRFCOMM{
-//      	Channel: 1,
-//      	Addr:    [6]uint8{0, 0, 0, 0, 0, 0}, // BDADDR_ANY or 00:00:00:00:00:00
-//      })
-//      _ = Listen(fd, 1)
-//      nfd, sa, _ := Accept(fd)
-//      fmt.Printf("conn addr=%v fd=%d", sa.(*unix.SockaddrRFCOMM).Addr, nfd)
-//      Read(nfd, buf)
+//	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
+//	_ = unix.Bind(fd, &unix.SockaddrRFCOMM{
+//		Channel: 1,
+//		Addr:    [6]uint8{0, 0, 0, 0, 0, 0}, // BDADDR_ANY or 00:00:00:00:00:00
+//	})
+//	_ = Listen(fd, 1)
+//	nfd, sa, _ := Accept(fd)
+//	fmt.Printf("conn addr=%v fd=%d", sa.(*unix.SockaddrRFCOMM).Addr, nfd)
+//	Read(nfd, buf)
 //
 // Client example:
 //
-//      fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
-//      _ = Connect(fd, &SockaddrRFCOMM{
-//      	Channel: 1,
-//      	Addr:    [6]byte{0x11, 0x22, 0x33, 0xaa, 0xbb, 0xcc}, // CC:BB:AA:33:22:11
-//      })
-//      Write(fd, []byte(`hello`))
+//	fd, _ := Socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)
+//	_ = Connect(fd, &SockaddrRFCOMM{
+//		Channel: 1,
+//		Addr:    [6]byte{0x11, 0x22, 0x33, 0xaa, 0xbb, 0xcc}, // CC:BB:AA:33:22:11
+//	})
+//	Write(fd, []byte(`hello`))
 type SockaddrRFCOMM struct {
 	// Addr represents a bluetooth address, byte ordering is little-endian.
 	Addr [6]uint8
@@ -556,12 +557,12 @@ func (sa *SockaddrRFCOMM) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // The SockaddrCAN struct must be bound to the socket file descriptor
 // using Bind before the CAN socket can be used.
 //
-//      // Read one raw CAN frame
-//      fd, _ := Socket(AF_CAN, SOCK_RAW, CAN_RAW)
-//      addr := &SockaddrCAN{Ifindex: index}
-//      Bind(fd, addr)
-//      frame := make([]byte, 16)
-//      Read(fd, frame)
+//	// Read one raw CAN frame
+//	fd, _ := Socket(AF_CAN, SOCK_RAW, CAN_RAW)
+//	addr := &SockaddrCAN{Ifindex: index}
+//	Bind(fd, addr)
+//	frame := make([]byte, 16)
+//	Read(fd, frame)
 //
 // The full SocketCAN documentation can be found in the linux kernel
 // archives at: https://www.kernel.org/doc/Documentation/networking/can.txt
@@ -632,13 +633,13 @@ func (sa *SockaddrCANJ1939) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // Here is an example of using an AF_ALG socket with SHA1 hashing.
 // The initial socket setup process is as follows:
 //
-//      // Open a socket to perform SHA1 hashing.
-//      fd, _ := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
-//      addr := &unix.SockaddrALG{Type: "hash", Name: "sha1"}
-//      unix.Bind(fd, addr)
-//      // Note: unix.Accept does not work at this time; must invoke accept()
-//      // manually using unix.Syscall.
-//      hashfd, _, _ := unix.Syscall(unix.SYS_ACCEPT, uintptr(fd), 0, 0)
+//	// Open a socket to perform SHA1 hashing.
+//	fd, _ := unix.Socket(unix.AF_ALG, unix.SOCK_SEQPACKET, 0)
+//	addr := &unix.SockaddrALG{Type: "hash", Name: "sha1"}
+//	unix.Bind(fd, addr)
+//	// Note: unix.Accept does not work at this time; must invoke accept()
+//	// manually using unix.Syscall.
+//	hashfd, _, _ := unix.Syscall(unix.SYS_ACCEPT, uintptr(fd), 0, 0)
 //
 // Once a file descriptor has been returned from Accept, it may be used to
 // perform SHA1 hashing. The descriptor is not safe for concurrent use, but
@@ -647,39 +648,39 @@ func (sa *SockaddrCANJ1939) sockaddr() (unsafe.Pointer, _Socklen, error) {
 // When hashing a small byte slice or string, a single Write and Read may
 // be used:
 //
-//      // Assume hashfd is already configured using the setup process.
-//      hash := os.NewFile(hashfd, "sha1")
-//      // Hash an input string and read the results. Each Write discards
-//      // previous hash state. Read always reads the current state.
-//      b := make([]byte, 20)
-//      for i := 0; i < 2; i++ {
-//          io.WriteString(hash, "Hello, world.")
-//          hash.Read(b)
-//          fmt.Println(hex.EncodeToString(b))
-//      }
-//      // Output:
-//      // 2ae01472317d1935a84797ec1983ae243fc6aa28
-//      // 2ae01472317d1935a84797ec1983ae243fc6aa28
+//	// Assume hashfd is already configured using the setup process.
+//	hash := os.NewFile(hashfd, "sha1")
+//	// Hash an input string and read the results. Each Write discards
+//	// previous hash state. Read always reads the current state.
+//	b := make([]byte, 20)
+//	for i := 0; i < 2; i++ {
+//	    io.WriteString(hash, "Hello, world.")
+//	    hash.Read(b)
+//	    fmt.Println(hex.EncodeToString(b))
+//	}
+//	// Output:
+//	// 2ae01472317d1935a84797ec1983ae243fc6aa28
+//	// 2ae01472317d1935a84797ec1983ae243fc6aa28
 //
 // For hashing larger byte slices, or byte streams such as those read from
 // a file or socket, use Sendto with MSG_MORE to instruct the kernel to update
 // the hash digest instead of creating a new one for a given chunk and finalizing it.
 //
-//      // Assume hashfd and addr are already configured using the setup process.
-//      hash := os.NewFile(hashfd, "sha1")
-//      // Hash the contents of a file.
-//      f, _ := os.Open("/tmp/linux-4.10-rc7.tar.xz")
-//      b := make([]byte, 4096)
-//      for {
-//          n, err := f.Read(b)
-//          if err == io.EOF {
-//              break
-//          }
-//          unix.Sendto(hashfd, b[:n], unix.MSG_MORE, addr)
-//      }
-//      hash.Read(b)
-//      fmt.Println(hex.EncodeToString(b))
-//      // Output: 85cdcad0c06eef66f805ecce353bec9accbeecc5
+//	// Assume hashfd and addr are already configured using the setup process.
+//	hash := os.NewFile(hashfd, "sha1")
+//	// Hash the contents of a file.
+//	f, _ := os.Open("/tmp/linux-4.10-rc7.tar.xz")
+//	b := make([]byte, 4096)
+//	for {
+//	    n, err := f.Read(b)
+//	    if err == io.EOF {
+//	        break
+//	    }
+//	    unix.Sendto(hashfd, b[:n], unix.MSG_MORE, addr)
+//	}
+//	hash.Read(b)
+//	fmt.Println(hex.EncodeToString(b))
+//	// Output: 85cdcad0c06eef66f805ecce353bec9accbeecc5
 //
 // For more information, see: http://www.chronox.de/crypto-API/crypto/userspace-if.html.
 type SockaddrALG struct {
@@ -1499,18 +1500,13 @@ func KeyctlRestrictKeyring(ringid int, keyType string, restriction string) error
 //sys	keyctlRestrictKeyringByType(cmd int, arg2 int, keyType string, restriction string) (err error) = SYS_KEYCTL
 //sys	keyctlRestrictKeyring(cmd int, arg2 int) (err error) = SYS_KEYCTL
 
-func recvmsgRaw(fd int, p, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
+func recvmsgRaw(fd int, iov []Iovec, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
 	msg.Name = (*byte)(unsafe.Pointer(rsa))
 	msg.Namelen = uint32(SizeofSockaddrAny)
-	var iov Iovec
-	if len(p) > 0 {
-		iov.Base = &p[0]
-		iov.SetLen(len(p))
-	}
 	var dummy byte
 	if len(oob) > 0 {
-		if len(p) == 0 {
+		if emptyIovecs(iov) {
 			var sockType int
 			sockType, err = GetsockoptInt(fd, SOL_SOCKET, SO_TYPE)
 			if err != nil {
@@ -1518,15 +1514,19 @@ func recvmsgRaw(fd int, p, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn 
 			}
 			// receive at least one normal byte
 			if sockType != SOCK_DGRAM {
-				iov.Base = &dummy
-				iov.SetLen(1)
+				var iova [1]Iovec
+				iova[0].Base = &dummy
+				iova[0].SetLen(1)
+				iov = iova[:]
 			}
 		}
 		msg.Control = &oob[0]
 		msg.SetControllen(len(oob))
 	}
-	msg.Iov = &iov
-	msg.Iovlen = 1
+	if len(iov) > 0 {
+		msg.Iov = &iov[0]
+		msg.SetIovlen(len(iov))
+	}
 	if n, err = recvmsg(fd, &msg, flags); err != nil {
 		return
 	}
@@ -1535,18 +1535,15 @@ func recvmsgRaw(fd int, p, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn 
 	return
 }
 
-func sendmsgN(fd int, p, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags int) (n int, err error) {
+func sendmsgN(fd int, iov []Iovec, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags int) (n int, err error) {
 	var msg Msghdr
 	msg.Name = (*byte)(ptr)
 	msg.Namelen = uint32(salen)
-	var iov Iovec
-	if len(p) > 0 {
-		iov.Base = &p[0]
-		iov.SetLen(len(p))
-	}
 	var dummy byte
+	var empty bool
 	if len(oob) > 0 {
-		if len(p) == 0 {
+		empty = emptyIovecs(iov)
+		if empty {
 			var sockType int
 			sockType, err = GetsockoptInt(fd, SOL_SOCKET, SO_TYPE)
 			if err != nil {
@@ -1554,19 +1551,23 @@ func sendmsgN(fd int, p, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags i
 			}
 			// send at least one normal byte
 			if sockType != SOCK_DGRAM {
-				iov.Base = &dummy
-				iov.SetLen(1)
+				var iova [1]Iovec
+				iova[0].Base = &dummy
+				iova[0].SetLen(1)
+				iov = iova[:]
 			}
 		}
 		msg.Control = &oob[0]
 		msg.SetControllen(len(oob))
 	}
-	msg.Iov = &iov
-	msg.Iovlen = 1
+	if len(iov) > 0 {
+		msg.Iov = &iov[0]
+		msg.SetIovlen(len(iov))
+	}
 	if n, err = sendmsg(fd, &msg, flags); err != nil {
 		return 0, err
 	}
-	if len(oob) > 0 && len(p) == 0 {
+	if len(oob) > 0 && empty {
 		n = 0
 	}
 	return n, nil
@@ -1892,17 +1893,28 @@ func PrctlRetInt(option int, arg2 uintptr, arg3 uintptr, arg4 uintptr, arg5 uint
 	return int(ret), nil
 }
 
-// issue 1435.
-// On linux Setuid and Setgid only affects the current thread, not the process.
-// This does not match what most callers expect so we must return an error
-// here rather than letting the caller think that the call succeeded.
-
 func Setuid(uid int) (err error) {
-	return EOPNOTSUPP
+	return syscall.Setuid(uid)
 }
 
-func Setgid(uid int) (err error) {
-	return EOPNOTSUPP
+func Setgid(gid int) (err error) {
+	return syscall.Setgid(gid)
+}
+
+func Setreuid(ruid, euid int) (err error) {
+	return syscall.Setreuid(ruid, euid)
+}
+
+func Setregid(rgid, egid int) (err error) {
+	return syscall.Setregid(rgid, egid)
+}
+
+func Setresuid(ruid, euid, suid int) (err error) {
+	return syscall.Setresuid(ruid, euid, suid)
+}
+
+func Setresgid(rgid, egid, sgid int) (err error) {
+	return syscall.Setresgid(rgid, egid, sgid)
 }
 
 // SetfsgidRetGid sets fsgid for current thread and returns previous fsgid set.
@@ -1961,36 +1973,46 @@ func Signalfd(fd int, sigmask *Sigset_t, flags int) (newfd int, err error) {
 //sys	preadv2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PREADV2
 //sys	pwritev2(fd int, iovs []Iovec, offs_l uintptr, offs_h uintptr, flags int) (n int, err error) = SYS_PWRITEV2
 
-func bytes2iovec(bs [][]byte) []Iovec {
-	iovecs := make([]Iovec, len(bs))
-	for i, b := range bs {
-		iovecs[i].SetLen(len(b))
+// minIovec is the size of the small initial allocation used by
+// Readv, Writev, etc.
+//
+// This small allocation gets stack allocated, which lets the
+// common use case of len(iovs) <= minIovs avoid more expensive
+// heap allocations.
+const minIovec = 8
+
+// appendBytes converts bs to Iovecs and appends them to vecs.
+func appendBytes(vecs []Iovec, bs [][]byte) []Iovec {
+	for _, b := range bs {
+		var v Iovec
+		v.SetLen(len(b))
 		if len(b) > 0 {
-			iovecs[i].Base = &b[0]
+			v.Base = &b[0]
 		} else {
-			iovecs[i].Base = (*byte)(unsafe.Pointer(&_zero))
+			v.Base = (*byte)(unsafe.Pointer(&_zero))
 		}
+		vecs = append(vecs, v)
 	}
-	return iovecs
+	return vecs
 }
 
-// offs2lohi splits offs into its lower and upper unsigned long. On 64-bit
-// systems, hi will always be 0. On 32-bit systems, offs will be split in half.
-// preadv/pwritev chose this calling convention so they don't need to add a
-// padding-register for alignment on ARM.
+// offs2lohi splits offs into its low and high order bits.
 func offs2lohi(offs int64) (lo, hi uintptr) {
-	return uintptr(offs), uintptr(uint64(offs) >> SizeofLong)
+	const longBits = SizeofLong * 8
+	return uintptr(offs), uintptr(uint64(offs) >> longBits)
 }
 
 func Readv(fd int, iovs [][]byte) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	n, err = readv(fd, iovecs)
 	readvRacedetect(iovecs, n, err)
 	return n, err
 }
 
 func Preadv(fd int, iovs [][]byte, offset int64) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	lo, hi := offs2lohi(offset)
 	n, err = preadv(fd, iovecs, lo, hi)
 	readvRacedetect(iovecs, n, err)
@@ -1998,7 +2020,8 @@ func Preadv(fd int, iovs [][]byte, offset int64) (n int, err error) {
 }
 
 func Preadv2(fd int, iovs [][]byte, offset int64, flags int) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	lo, hi := offs2lohi(offset)
 	n, err = preadv2(fd, iovecs, lo, hi, flags)
 	readvRacedetect(iovecs, n, err)
@@ -2025,7 +2048,8 @@ func readvRacedetect(iovecs []Iovec, n int, err error) {
 }
 
 func Writev(fd int, iovs [][]byte) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
 	}
@@ -2035,7 +2059,8 @@ func Writev(fd int, iovs [][]byte) (n int, err error) {
 }
 
 func Pwritev(fd int, iovs [][]byte, offset int64) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
 	}
@@ -2046,7 +2071,8 @@ func Pwritev(fd int, iovs [][]byte, offset int64) (n int, err error) {
 }
 
 func Pwritev2(fd int, iovs [][]byte, offset int64, flags int) (n int, err error) {
-	iovecs := bytes2iovec(iovs)
+	iovecs := make([]Iovec, 0, minIovec)
+	iovecs = appendBytes(iovecs, iovs)
 	if raceenabled {
 		raceReleaseMerge(unsafe.Pointer(&ioSync))
 	}
@@ -2241,7 +2267,7 @@ func (fh *FileHandle) Bytes() []byte {
 	if n == 0 {
 		return nil
 	}
-	return (*[1 << 30]byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&fh.fileHandle.Type)) + 4))[:n:n]
+	return unsafe.Slice((*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&fh.fileHandle.Type))+4)), n)
 }
 
 // NameToHandleAt wraps the name_to_handle_at system call; it obtains
@@ -2357,6 +2383,16 @@ func Setitimer(which ItimerWhich, it Itimerval) (Itimerval, error) {
 	return prev, nil
 }
 
+//sysnb	rtSigprocmask(how int, set *Sigset_t, oldset *Sigset_t, sigsetsize uintptr) (err error) = SYS_RT_SIGPROCMASK
+
+func PthreadSigmask(how int, set, oldset *Sigset_t) error {
+	if oldset != nil {
+		// Explicitly clear in case Sigset_t is larger than _C__NSIG.
+		*oldset = Sigset_t{}
+	}
+	return rtSigprocmask(how, set, oldset, _C__NSIG/8)
+}
+
 /*
  * Unimplemented
  */
@@ -2415,7 +2451,6 @@ func Setitimer(which ItimerWhich, it Itimerval) (Itimerval, error) {
 // RestartSyscall
 // RtSigaction
 // RtSigpending
-// RtSigprocmask
 // RtSigqueueinfo
 // RtSigreturn
 // RtSigsuspend

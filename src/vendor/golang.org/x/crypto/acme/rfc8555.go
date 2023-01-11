@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -24,6 +23,9 @@ import (
 //
 // It only works with CAs implementing RFC 8555.
 func (c *Client) DeactivateReg(ctx context.Context) error {
+	if _, err := c.Discover(ctx); err != nil { // required by c.accountKID
+		return err
+	}
 	url := string(c.accountKID(ctx))
 	if url == "" {
 		return ErrNoAccount
@@ -78,7 +80,7 @@ func (c *Client) registerRFC(ctx context.Context, acct *Account, prompt func(tos
 	}
 	// Cache Account URL even if we return an error to the caller.
 	// It is by all means a valid and usable "kid" value for future requests.
-	c.kid = keyID(a.URI)
+	c.KID = KeyID(a.URI)
 	if res.StatusCode == http.StatusOK {
 		return nil, ErrAccountAlreadyExists
 	}
@@ -146,6 +148,42 @@ func responseAccount(res *http.Response) (*Account, error) {
 		Contact:   v.Contact,
 		OrdersURL: v.Orders,
 	}, nil
+}
+
+// accountKeyRollover attempts to perform account key rollover.
+// On success it will change client.Key to the new key.
+func (c *Client) accountKeyRollover(ctx context.Context, newKey crypto.Signer) error {
+	dir, err := c.Discover(ctx) // Also required by c.accountKID
+	if err != nil {
+		return err
+	}
+	kid := c.accountKID(ctx)
+	if kid == noKeyID {
+		return ErrNoAccount
+	}
+	oldKey, err := jwkEncode(c.Key.Public())
+	if err != nil {
+		return err
+	}
+	payload := struct {
+		Account string          `json:"account"`
+		OldKey  json.RawMessage `json:"oldKey"`
+	}{
+		Account: string(kid),
+		OldKey:  json.RawMessage(oldKey),
+	}
+	inner, err := jwsEncodeJSON(payload, newKey, noKeyID, noNonce, dir.KeyChangeURL)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.post(ctx, nil, dir.KeyChangeURL, base64.RawURLEncoding.EncodeToString(inner), wantStatus(http.StatusOK))
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	c.Key = newKey
+	return nil
 }
 
 // AuthorizeOrder initiates the order-based application for certificate issuance,
@@ -351,7 +389,7 @@ func (c *Client) fetchCertRFC(ctx context.Context, url string, bundle bool) ([][
 	// Get all the bytes up to a sane maximum.
 	// Account very roughly for base64 overhead.
 	const max = maxCertChainSize + maxCertChainSize/33
-	b, err := ioutil.ReadAll(io.LimitReader(res.Body, max+1))
+	b, err := io.ReadAll(io.LimitReader(res.Body, max+1))
 	if err != nil {
 		return nil, fmt.Errorf("acme: fetch cert response stream: %v", err)
 	}
@@ -430,7 +468,7 @@ func (c *Client) ListCertAlternates(ctx context.Context, url string) ([]string, 
 
 	// We don't need the body but we need to discard it so we don't end up
 	// preventing keep-alive
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res.Body); err != nil {
 		return nil, fmt.Errorf("acme: cert alternates response stream: %v", err)
 	}
 	alts := linkHeader(res.Header, "alternate")
