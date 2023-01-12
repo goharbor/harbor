@@ -18,42 +18,114 @@ package content
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/errdefs"
+	"github.com/containerd/containerd/remotes"
 	digest "github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/pkg/errors"
 )
 
-// ensure interface
-var (
-	_ content.Provider = &Memorystore{}
-	_ content.Ingester = &Memorystore{}
-)
-
-// Memorystore provides content from the memory
-type Memorystore struct {
+// Memory provides content from the memory
+type Memory struct {
 	descriptor map[digest.Digest]ocispec.Descriptor
 	content    map[digest.Digest][]byte
 	nameMap    map[string]ocispec.Descriptor
+	refMap     map[string]ocispec.Descriptor
 	lock       *sync.Mutex
 }
 
-// NewMemoryStore creats a new memory store
-func NewMemoryStore() *Memorystore {
-	return &Memorystore{
+// NewMemory creats a new memory store
+func NewMemory() *Memory {
+	return &Memory{
 		descriptor: make(map[digest.Digest]ocispec.Descriptor),
 		content:    make(map[digest.Digest][]byte),
 		nameMap:    make(map[string]ocispec.Descriptor),
+		refMap:     make(map[string]ocispec.Descriptor),
 		lock:       &sync.Mutex{},
 	}
 }
 
-// Add adds content
-func (s *Memorystore) Add(name, mediaType string, content []byte) ocispec.Descriptor {
+func (s *Memory) Resolver() remotes.Resolver {
+	return s
+}
+
+func (s *Memory) Resolve(ctx context.Context, ref string) (name string, desc ocispec.Descriptor, err error) {
+	desc, ok := s.refMap[ref]
+	if !ok {
+		return "", ocispec.Descriptor{}, fmt.Errorf("unknown reference: %s", ref)
+	}
+	return ref, desc, nil
+}
+
+func (s *Memory) Fetcher(ctx context.Context, ref string) (remotes.Fetcher, error) {
+	if _, ok := s.refMap[ref]; !ok {
+		return nil, fmt.Errorf("unknown reference: %s", ref)
+	}
+	return s, nil
+}
+
+// Fetch get an io.ReadCloser for the specific content
+func (s *Memory) Fetch(ctx context.Context, desc ocispec.Descriptor) (io.ReadCloser, error) {
+	_, content, ok := s.Get(desc)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return ioutil.NopCloser(bytes.NewReader(content)), nil
+}
+
+func (s *Memory) Pusher(ctx context.Context, ref string) (remotes.Pusher, error) {
+	var tag, hash string
+	parts := strings.SplitN(ref, "@", 2)
+	if len(parts) > 0 {
+		tag = parts[0]
+	}
+	if len(parts) > 1 {
+		hash = parts[1]
+	}
+	return &memoryPusher{
+		store: s,
+		ref:   tag,
+		hash:  hash,
+	}, nil
+}
+
+type memoryPusher struct {
+	store *Memory
+	ref   string
+	hash  string
+}
+
+func (s *memoryPusher) Push(ctx context.Context, desc ocispec.Descriptor) (content.Writer, error) {
+	name, _ := ResolveName(desc)
+	now := time.Now()
+	// is this the root?
+	if desc.Digest.String() == s.hash {
+		s.store.refMap[s.ref] = desc
+	}
+	return &memoryWriter{
+		store:    s.store,
+		buffer:   bytes.NewBuffer(nil),
+		desc:     desc,
+		digester: digest.Canonical.Digester(),
+		status: content.Status{
+			Ref:       name,
+			Total:     desc.Size,
+			StartedAt: now,
+			UpdatedAt: now,
+		},
+	}, nil
+}
+
+// Add adds content, generating a descriptor and returning it.
+func (s *Memory) Add(name, mediaType string, content []byte) (ocispec.Descriptor, error) {
 	var annotations map[string]string
 	if name != "" {
 		annotations = map[string]string{
@@ -73,52 +145,11 @@ func (s *Memorystore) Add(name, mediaType string, content []byte) ocispec.Descri
 	}
 
 	s.Set(desc, content)
-	return desc
-}
-
-// ReaderAt provides contents
-func (s *Memorystore) ReaderAt(ctx context.Context, desc ocispec.Descriptor) (content.ReaderAt, error) {
-	desc, content, ok := s.Get(desc)
-	if !ok {
-		return nil, ErrNotFound
-	}
-
-	return sizeReaderAt{
-		readAtCloser: nopCloser{
-			ReaderAt: bytes.NewReader(content),
-		},
-		size: desc.Size,
-	}, nil
-}
-
-// Writer begins or resumes the active writer identified by desc
-func (s *Memorystore) Writer(ctx context.Context, opts ...content.WriterOpt) (content.Writer, error) {
-	var wOpts content.WriterOpts
-	for _, opt := range opts {
-		if err := opt(&wOpts); err != nil {
-			return nil, err
-		}
-	}
-	desc := wOpts.Desc
-
-	name, _ := ResolveName(desc)
-	now := time.Now()
-	return &memoryWriter{
-		store:    s,
-		buffer:   bytes.NewBuffer(nil),
-		desc:     desc,
-		digester: digest.Canonical.Digester(),
-		status: content.Status{
-			Ref:       name,
-			Total:     desc.Size,
-			StartedAt: now,
-			UpdatedAt: now,
-		},
-	}, nil
+	return desc, nil
 }
 
 // Set adds the content to the store
-func (s *Memorystore) Set(desc ocispec.Descriptor, content []byte) {
+func (s *Memory) Set(desc ocispec.Descriptor, content []byte) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -131,7 +162,7 @@ func (s *Memorystore) Set(desc ocispec.Descriptor, content []byte) {
 }
 
 // Get finds the content from the store
-func (s *Memorystore) Get(desc ocispec.Descriptor) (ocispec.Descriptor, []byte, bool) {
+func (s *Memory) Get(desc ocispec.Descriptor) (ocispec.Descriptor, []byte, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -144,7 +175,7 @@ func (s *Memorystore) Get(desc ocispec.Descriptor) (ocispec.Descriptor, []byte, 
 }
 
 // GetByName finds the content from the store by name (i.e. AnnotationTitle)
-func (s *Memorystore) GetByName(name string) (ocispec.Descriptor, []byte, bool) {
+func (s *Memory) GetByName(name string) (ocispec.Descriptor, []byte, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -156,8 +187,36 @@ func (s *Memorystore) GetByName(name string) (ocispec.Descriptor, []byte, bool) 
 	return desc, content, ok
 }
 
+// StoreManifest stores a manifest linked to by the provided ref. The children of the
+// manifest, such as layers and config, should already exist in the file store, either
+// as files linked via Add(), or via Set(). If they do not exist, then a typical
+// Fetcher that walks the manifest will hit an unresolved hash.
+//
+// StoreManifest does *not* validate their presence.
+func (s *Memory) StoreManifest(ref string, desc ocispec.Descriptor, manifest []byte) error {
+	s.refMap[ref] = desc
+	s.Add("", desc.MediaType, manifest)
+	return nil
+}
+
+func descFromBytes(b []byte, mediaType string) (ocispec.Descriptor, error) {
+	digest, err := digest.FromReader(bytes.NewReader(b))
+	if err != nil {
+		return ocispec.Descriptor{}, err
+	}
+
+	if mediaType == "" {
+		mediaType = DefaultBlobMediaType
+	}
+	return ocispec.Descriptor{
+		MediaType: mediaType,
+		Digest:    digest,
+		Size:      int64(len(b)),
+	}, nil
+}
+
 type memoryWriter struct {
-	store    *Memorystore
+	store    *Memory
 	buffer   *bytes.Buffer
 	desc     ocispec.Descriptor
 	digester digest.Digester

@@ -40,7 +40,8 @@ type CommandHeaderRoundTripper struct {
 // CommandHeaderRoundTripper adds Request headers before delegating to standard
 // round tripper. These headers are kubectl command headers which
 // detail the kubectl command. See SIG CLI KEP 859:
-//   https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/859-kubectl-headers
+//
+//	https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/859-kubectl-headers
 func (c *CommandHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	for header, value := range c.Headers {
 		req.Header.Set(header, value)
@@ -50,7 +51,9 @@ func (c *CommandHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response
 
 // ParseCommandHeaders fills in a map of custom headers into the CommandHeaderRoundTripper. These
 // headers are then filled into each request. For details on the custom headers see:
-//   https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/859-kubectl-headers
+//
+//	https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/859-kubectl-headers
+//
 // Each call overwrites the previously parsed command headers (not additive).
 // TODO(seans3): Parse/add flags removing PII from flag values.
 func (c *CommandHeaderRoundTripper) ParseCommandHeaders(cmd *cobra.Command, args []string) {
@@ -75,5 +78,17 @@ func (c *CommandHeaderRoundTripper) ParseCommandHeaders(cmd *cobra.Command, args
 	cmdStrs = append([]string{currName}, cmdStrs...)
 	if len(cmdStrs) > 0 {
 		c.Headers[kubectlCommandHeader] = strings.Join(cmdStrs, " ")
+	}
+}
+
+// CancelRequest is propagated to the Delegate RoundTripper within
+// if the wrapped RoundTripper implements this function.
+func (c *CommandHeaderRoundTripper) CancelRequest(req *http.Request) {
+	type canceler interface {
+		CancelRequest(*http.Request)
+	}
+	// If possible, call "CancelRequest" on the wrapped Delegate RoundTripper.
+	if cr, ok := c.Delegate.(canceler); ok {
+		cr.CancelRequest(req)
 	}
 }

@@ -7,7 +7,6 @@ package autocert
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -41,14 +40,14 @@ type DirCache string
 
 // Get reads a certificate data from the specified file name.
 func (d DirCache) Get(ctx context.Context, name string) ([]byte, error) {
-	name = filepath.Join(string(d), name)
+	name = filepath.Join(string(d), filepath.Clean("/"+name))
 	var (
 		data []byte
 		err  error
 		done = make(chan struct{})
 	)
 	go func() {
-		data, err = ioutil.ReadFile(name)
+		data, err = os.ReadFile(name)
 		close(done)
 	}()
 	select {
@@ -82,7 +81,7 @@ func (d DirCache) Put(ctx context.Context, name string, data []byte) error {
 		case <-ctx.Done():
 			// Don't overwrite the file if the context was canceled.
 		default:
-			newName := filepath.Join(string(d), name)
+			newName := filepath.Join(string(d), filepath.Clean("/"+name))
 			err = os.Rename(tmp, newName)
 		}
 	}()
@@ -96,7 +95,7 @@ func (d DirCache) Put(ctx context.Context, name string, data []byte) error {
 
 // Delete removes the specified file name.
 func (d DirCache) Delete(ctx context.Context, name string) error {
-	name = filepath.Join(string(d), name)
+	name = filepath.Join(string(d), filepath.Clean("/"+name))
 	var (
 		err  error
 		done = make(chan struct{})
@@ -119,7 +118,7 @@ func (d DirCache) Delete(ctx context.Context, name string) error {
 // writeTempFile writes b to a temporary file, closes the file and returns its path.
 func (d DirCache) writeTempFile(prefix string, b []byte) (name string, reterr error) {
 	// TempFile uses 0600 permissions
-	f, err := ioutil.TempFile(string(d), prefix)
+	f, err := os.CreateTemp(string(d), prefix)
 	if err != nil {
 		return "", err
 	}

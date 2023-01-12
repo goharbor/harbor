@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otlpconfig
+package otlpconfig // import "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig"
 
 import (
 	"crypto/tls"
@@ -20,7 +20,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"regexp"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -28,24 +28,17 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-var httpSchemeRegexp = regexp.MustCompile(`(?i)^(http://|https://)`)
+var DefaultEnvOptionsReader = EnvOptionsReader{
+	GetEnv:   os.Getenv,
+	ReadFile: ioutil.ReadFile,
+}
 
 func ApplyGRPCEnvConfigs(cfg *Config) {
-	e := EnvOptionsReader{
-		GetEnv:   os.Getenv,
-		ReadFile: ioutil.ReadFile,
-	}
-
-	e.ApplyGRPCEnvConfigs(cfg)
+	DefaultEnvOptionsReader.ApplyGRPCEnvConfigs(cfg)
 }
 
 func ApplyHTTPEnvConfigs(cfg *Config) {
-	e := EnvOptionsReader{
-		GetEnv:   os.Getenv,
-		ReadFile: ioutil.ReadFile,
-	}
-
-	e.ApplyHTTPEnvConfigs(cfg)
+	DefaultEnvOptionsReader.ApplyHTTPEnvConfigs(cfg)
 }
 
 type EnvOptionsReader struct {
@@ -71,23 +64,55 @@ func (e *EnvOptionsReader) GetOptionsFromEnv() []GenericOption {
 	var opts []GenericOption
 
 	// Endpoint
-	if v, ok := e.getEnvValue("ENDPOINT"); ok {
-		if isInsecureEndpoint(v) {
-			opts = append(opts, WithInsecure())
-		} else {
-			opts = append(opts, WithSecure())
-		}
-
-		opts = append(opts, WithEndpoint(trimSchema(v)))
-	}
 	if v, ok := e.getEnvValue("TRACES_ENDPOINT"); ok {
-		if isInsecureEndpoint(v) {
-			opts = append(opts, WithInsecure())
-		} else {
-			opts = append(opts, WithSecure())
+		u, err := url.Parse(v)
+		// Ignore invalid values.
+		if err == nil {
+			// This is used to set the scheme for OTLP/HTTP.
+			if insecureSchema(u.Scheme) {
+				opts = append(opts, WithInsecure())
+			} else {
+				opts = append(opts, WithSecure())
+			}
+			opts = append(opts, newSplitOption(func(cfg *Config) {
+				cfg.Traces.Endpoint = u.Host
+				// For endpoint URLs for OTLP/HTTP per-signal variables, the
+				// URL MUST be used as-is without any modification. The only
+				// exception is that if an URL contains no path part, the root
+				// path / MUST be used.
+				path := u.Path
+				if path == "" {
+					path = "/"
+				}
+				cfg.Traces.URLPath = path
+			}, func(cfg *Config) {
+				// For OTLP/gRPC endpoints, this is the target to which the
+				// exporter is going to send telemetry.
+				cfg.Traces.Endpoint = path.Join(u.Host, u.Path)
+			}))
 		}
-
-		opts = append(opts, WithEndpoint(trimSchema(v)))
+	} else if v, ok = e.getEnvValue("ENDPOINT"); ok {
+		u, err := url.Parse(v)
+		// Ignore invalid values.
+		if err == nil {
+			// This is used to set the scheme for OTLP/HTTP.
+			if insecureSchema(u.Scheme) {
+				opts = append(opts, WithInsecure())
+			} else {
+				opts = append(opts, WithSecure())
+			}
+			opts = append(opts, newSplitOption(func(cfg *Config) {
+				cfg.Traces.Endpoint = u.Host
+				// For OTLP/HTTP endpoint URLs without a per-signal
+				// configuration, the passed endpoint is used as a base URL
+				// and the signals are sent to these paths relative to that.
+				cfg.Traces.URLPath = path.Join(u.Path, DefaultTracesPath)
+			}, func(cfg *Config) {
+				// For OTLP/gRPC endpoints, this is the target to which the
+				// exporter is going to send telemetry.
+				cfg.Traces.Endpoint = path.Join(u.Host, u.Path)
+			}))
+		}
 	}
 
 	// Certificate File
@@ -136,12 +161,13 @@ func (e *EnvOptionsReader) GetOptionsFromEnv() []GenericOption {
 	return opts
 }
 
-func isInsecureEndpoint(endpoint string) bool {
-	return strings.HasPrefix(strings.ToLower(endpoint), "http://") || strings.HasPrefix(strings.ToLower(endpoint), "unix://")
-}
-
-func trimSchema(endpoint string) string {
-	return httpSchemeRegexp.ReplaceAllString(endpoint, "")
+func insecureSchema(schema string) bool {
+	switch strings.ToLower(schema) {
+	case "http", "unix":
+		return true
+	default:
+		return false
+	}
 }
 
 // getEnvValue gets an OTLP environment variable value of the specified key using the GetEnv function.

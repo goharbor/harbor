@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otlptracehttp
+package otlptracehttp // import "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 
 import (
 	"bytes"
@@ -23,21 +23,20 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
-
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/retry"
-
 	"google.golang.org/protobuf/proto"
 
+	"go.opentelemetry.io/otel/exporters/otlp/internal/retry"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/otlpconfig"
 	coltracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
 )
 
 const contentTypeProto = "application/x-protobuf"
@@ -73,6 +72,7 @@ type client struct {
 	requestFunc retry.RequestFunc
 	client      *http.Client
 	stopCh      chan struct{}
+	stopOnce    sync.Once
 }
 
 var _ otlptrace.Client = (*client)(nil)
@@ -134,7 +134,9 @@ func (d *client) Start(ctx context.Context) error {
 
 // Stop shuts down the client and interrupt any in-flight request.
 func (d *client) Stop(ctx context.Context) error {
-	close(d.stopCh)
+	d.stopOnce.Do(func() {
+		close(d.stopCh)
+	})
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -200,8 +202,8 @@ func (d *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 }
 
 func (d *client) newRequest(body []byte) (request, error) {
-	address := fmt.Sprintf("%s://%s%s", d.getScheme(), d.cfg.Endpoint, d.cfg.URLPath)
-	r, err := http.NewRequest(http.MethodPost, address, nil)
+	u := url.URL{Scheme: d.getScheme(), Host: d.cfg.Endpoint, Path: d.cfg.URLPath}
+	r, err := http.NewRequest(http.MethodPost, u.String(), nil)
 	if err != nil {
 		return request{Request: r}, err
 	}

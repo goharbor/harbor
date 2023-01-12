@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"strconv"
@@ -156,7 +156,7 @@ func (c *Client) get(ctx context.Context, url string, ok resOkay) (*http.Respons
 	}
 }
 
-// postAsGet is POST-as-GET, a replacement for GET in RFC8555
+// postAsGet is POST-as-GET, a replacement for GET in RFC 8555
 // as described in https://tools.ietf.org/html/rfc8555#section-6.3.
 // It makes a POST request in KID form with zero JWS payload.
 // See nopayload doc comments in jws.go.
@@ -310,7 +310,7 @@ func isRetriable(code int) bool {
 func responseError(resp *http.Response) error {
 	// don't care if ReadAll returns an error:
 	// json.Unmarshal will fail in that case anyway
-	b, _ := ioutil.ReadAll(resp.Body)
+	b, _ := io.ReadAll(resp.Body)
 	e := &wireError{Status: resp.StatusCode}
 	if err := json.Unmarshal(b, e); err != nil {
 		// this is not a regular error response:
