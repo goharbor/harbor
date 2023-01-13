@@ -84,10 +84,6 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         this.closeSub = this.searchTrigger.searchClearChan$.subscribe(clear => {
             this.searchTerm = '';
         });
-
-        if (this.appConfigService.isIntegrationMode()) {
-            this.placeholderText = 'GLOBAL_SEARCH.PLACEHOLDER_VIC';
-        }
         // init _searchTerm from queryParams
         this._searchTerm = this.activatedRoute.snapshot.queryParams[SEARCH_KEY];
         if (this._searchTerm) {

@@ -22,7 +22,6 @@ export enum RouteConfigId {
 const ShouldNotReuseRouteRegExps: RegExp[] = [
     /\/harbor\/projects\/(\d+)\/repositories$/,
     /\/harbor\/projects\/(\d+)\/repositories\/(\S+)\/artifacts-tab$/,
-    /\/harbor\/projects\/(\d+)\/helm-charts\/(\S+)\/versions\/(\S+)/,
 ];
 
 function testRoute(url: string) {

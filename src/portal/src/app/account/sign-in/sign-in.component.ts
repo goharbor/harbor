@@ -118,13 +118,6 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // App title
     public get appTitle(): string {
-        if (
-            this.appConfigService.getConfig() &&
-            this.appConfigService.getConfig().with_admiral
-        ) {
-            return 'APP_TITLE.VIC';
-        }
-
         return 'APP_TITLE.VMW_HARBOR';
     }
 

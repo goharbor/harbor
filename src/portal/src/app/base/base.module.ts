@@ -161,17 +161,6 @@ const routes: Routes = [
                     projectResolver: ProjectRoutingResolver,
                 },
             },
-            {
-                path: 'projects/:id/helm-charts',
-                canActivate: [MemberGuard],
-                resolve: {
-                    projectResolver: ProjectRoutingResolver,
-                },
-                loadChildren: () =>
-                    import(
-                        './project/helm-chart/helm-chart-detail/helm-chart-detail.module'
-                    ).then(m => m.HelmChartListModule),
-            },
         ],
     },
 ];
