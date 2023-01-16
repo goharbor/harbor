@@ -160,6 +160,15 @@ func (a *abstractor) abstractIndexMetadata(ctx context.Context, art *artifact.Ar
 	// populate the referenced artifacts
 	for _, mani := range index.Manifests {
 		digest := mani.Digest.String()
+
+		// Buildx can reference layer in manifest
+		// see: https://github.com/docker/buildx/issues/173#issuecomment-873152302
+		switch mani.MediaType {
+		case v1.MediaTypeImageLayer, v1.MediaTypeImageLayerGzip, v1.MediaTypeImageLayerNonDistributable, v1.MediaTypeImageLayerNonDistributableGzip, "application/vnd.buildkit.cacheconfig.v0":
+			art.Size += mani.Size
+			continue
+		}
+
 		// make sure the child artifact exist
 		ar, err := a.artMgr.GetByDigest(ctx, art.RepositoryName, digest)
 		if err != nil {
