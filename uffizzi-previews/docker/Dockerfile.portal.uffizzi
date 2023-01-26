@@ -26,7 +26,7 @@ FROM nginx:1.17
 
 COPY --from=builder /build_dir/dist /usr/share/nginx/html
 COPY --from=builder /build_dir/app-swagger-ui/dist /usr/share/nginx/html
-COPY src/portal/docker-build/nginx.conf /etc/nginx/nginx.conf
+COPY ./uffizzi-previews/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8082
 VOLUME /var/cache/nginx /var/log/nginx /run

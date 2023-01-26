@@ -15,9 +15,9 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
 FROM golang:1.17-alpine
 RUN mkdir /home/harbor
 WORKDIR /home/harbor
-COPY ../../../config/registryctl/config.yml .
+COPY ../../../uffizzi-previews/config/registryctl/config.yml .
 RUN mv config.yml config_registry.yml
-COPY ../../../config/registry/config.yml .
+COPY ../../../uffizzi-previews/config/registry/config.yml .
 COPY ../../../src/registryctl/main.go .
 RUN go env -w GO111MODULE=on
 RUN go mod init registryctl

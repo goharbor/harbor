@@ -22,7 +22,7 @@ services:
       - REGISTRY_CREDENTIAL_PASSWORD=password
     volumes:
       - jobservice_data:/var/log/jobs
-      - ./config/jobservice/config.yml:/etc/jobservice/config.yml:ro
+      - ./uffizzi-previews/config/jobservice/config.yml:/etc/jobservice/config.yml:ro
 
   registryctl:
     image: "${REGISTRY_CTL_IMAGE}"
@@ -32,8 +32,8 @@ services:
       - REGISTRY_HTTP_SECRET=password
     volumes:
       - registry_data:/storage
-      - ./config/registry/:/etc/registry/:ro
-      - ./config/registryctl/config.yml:/etc/registryctl/config.yml:ro
+      - ./uffizzi-previews/config/registry/:/etc/registry/:ro
+      - ./uffizzi-previews/config/registryctl/config.yml:/etc/registryctl/config.yml:ro
 
   registry:
     image: bitnami/harbor-registry:latest
@@ -48,9 +48,7 @@ services:
             limits:
               memory: 2000M
     volumes:
-      # - /data/registry:/storage
-      - ./config/registry/:/etc/registry/
-    #   - /etc/core/ca/ca.crt:/etc/registry/root.crt
+      - ./uffizzi-previews/config/registry/:/etc/registry/
     ports:
       - 5000:5000
 
@@ -98,8 +96,7 @@ services:
       - NO_PROXY=localhost
     volumes:
       - core_data:/data
-      - ./config/core/app.conf:/etc/core/app.conf:ro
-      - ./config/core/private_key.pem:/etc/core/private_key.pem:ro
+      - ./uffizzi-previews/config/core/app.conf:/etc/core/app.conf:ro
 
   chartmuseum:
     image: bitnami/chartmuseum:latest
@@ -119,7 +116,6 @@ services:
     restart: always
     volumes:
       - postgres_volume:/var/lib/postgresql/data/
-      # - ./make/migrations/postgresql/:/docker-entrypoint-initdb.d/
     environment:
      - POSTGRES_USER=postgres
      - POSTGRES_PASSWORD=postgres

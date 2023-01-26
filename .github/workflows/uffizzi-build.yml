@@ -4,7 +4,6 @@ on:
     types: [opened, synchronize, reopened, closed, review_requested]
 
 jobs:
-
   build-harbor-portal:
     name: Build and push `Harbor Portal`
     runs-on: ubuntu-latest
@@ -37,7 +36,7 @@ jobs:
           build-args: |
             harbor_base_image_version=v2.5.5
             harbor_base_namespace=goharbor
-          file: ./src/portal/docker-build/Dockerfile.uffizzi
+          file: ./uffizzi-previews/docker/Dockerfile.portal.uffizzi
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
@@ -76,7 +75,7 @@ jobs:
           build-args: |
             harbor_base_image_version=v2.5.5
             harbor_base_namespace=goharbor
-          file: ./make/photon/jobservice/Dockerfile.uffizzi
+          file: ./uffizzi-previews/docker/Dockerfile.jobservice.uffizzi
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
@@ -115,7 +114,7 @@ jobs:
           build-args: |
             harbor_base_image_version=v2.5.5
             harbor_base_namespace=goharbor
-          file: ./make/photon/registryctl/Dockerfile.uffizzi
+          file: ./uffizzi-previews/docker/Dockerfile.registryctl.uffizzi
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
@@ -143,7 +142,7 @@ jobs:
           export PORTAL_IMAGE REGISTRY_CTL_IMAGE JOBSERVICE_IMAGE
           export UFFIZZI_URL=\$UFFIZZI_URL
           # Render simple template from environment variables.
-          envsubst < docker-compose.uffizzi.yml > docker-compose.rendered.yml
+          envsubst < ./uffizzi-previews/docker-compose.uffizzi.yml > docker-compose.rendered.yml
           cat docker-compose.rendered.yml
       - name: Upload Rendered Compose File as Artifact
         uses: actions/upload-artifact@v3
