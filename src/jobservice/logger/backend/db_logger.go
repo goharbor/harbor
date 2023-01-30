@@ -26,7 +26,7 @@ func NewDBLogger(key string, level string, depth int) (*DBLogger, error) {
 	bw := bufio.NewWriter(buffer)
 	logLevel := parseLevel(level)
 
-	backendLogger := log.New(bw, log.NewTextFormatter(), logLevel, depth)
+	backendLogger := log.New(bw, log.NewFormatter(), logLevel, depth)
 
 	return &DBLogger{
 		backendLogger: backendLogger,

@@ -45,7 +45,7 @@ func (a *LoggerManager) Init(ctx context.Context, logEndpoint string) {
 		w = os.Stdout
 		a.initialized = false
 	}
-	a.remoteLogger = log.New(w, log.NewTextFormatter(), log.InfoLevel, 3)
+	a.remoteLogger = log.New(w, log.NewFormatter(), log.InfoLevel, 3)
 	a.remoteLogger.SetFallback(log.DefaultLogger())
 }
 

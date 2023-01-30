@@ -26,7 +26,7 @@ func NewStdOutputLogger(level string, output string, depth int) *StdOutputLogger
 	if output == StdErr {
 		logStream = os.Stderr
 	}
-	backendLogger := log.New(logStream, log.NewTextFormatter(), logLevel, depth)
+	backendLogger := log.New(logStream, log.NewFormatter(), logLevel, depth)
 
 	return &StdOutputLogger{
 		backendLogger: backendLogger,

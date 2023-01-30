@@ -21,7 +21,7 @@ func NewFileLogger(level string, logPath string, depth int) (*FileLogger, error)
 		return nil, err
 	}
 	logLevel := parseLevel(level)
-	backendLogger := log.New(f, log.NewTextFormatter(), logLevel, depth)
+	backendLogger := log.New(f, log.NewFormatter(), logLevel, depth)
 
 	return &FileLogger{
 		backendLogger: backendLogger,

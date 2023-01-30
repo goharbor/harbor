@@ -14,7 +14,20 @@
 
 package log
 
+import "os"
+
 // Formatter formats records in different ways: text, json, etc.
 type Formatter interface {
 	Format(*Record) ([]byte, error)
+}
+
+// NewTextFormatter returns a TextFormatter, the format of time is time.RFC3339
+func NewFormatter() Formatter {
+	switch os.Getenv("LOG_FORMAT") {
+	case "json":
+		return NewJsonFormatter()
+	default:
+		return NewTextFormatter()
+	}
+
 }

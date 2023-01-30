@@ -15,6 +15,7 @@
 package log
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 )
@@ -27,7 +28,7 @@ type TextFormatter struct {
 }
 
 // NewTextFormatter returns a TextFormatter, the format of time is time.RFC3339
-func NewTextFormatter() *TextFormatter {
+func NewTextFormatter() Formatter {
 	return &TextFormatter{
 		timeFormat: defaultTimeFormat,
 	}
@@ -35,10 +36,14 @@ func NewTextFormatter() *TextFormatter {
 
 // Format formats the logs as "time [level] line message"
 func (t *TextFormatter) Format(r *Record) (b []byte, err error) {
-	s := fmt.Sprintf("%s [%s] ", r.Time.Format(t.timeFormat), r.Lvl.string())
+	s := fmt.Sprintf("%s [%s] ", (time.Time(r.Time)).Format(t.timeFormat), r.Lvl.string())
 
 	if len(r.Line) != 0 {
 		s = s + r.Line + " "
+	}
+	if len(r.Fields) != 0 {
+		s = s + mapToString(r.Fields)
+
 	}
 
 	if len(r.Msg) != 0 {
@@ -59,4 +64,17 @@ func (t *TextFormatter) SetTimeFormat(fmt string) {
 	if len(fmt) != 0 {
 		t.timeFormat = fmt
 	}
+}
+
+func mapToString(m map[string]interface{}) string {
+	b := new(bytes.Buffer)
+	b.WriteByte('[')
+	for key, value := range m {
+		if b.Len() > 1 {
+			b.WriteByte(' ')
+		}
+		fmt.Fprintf(b, "%s=\"%s\"", key, value)
+	}
+	b.WriteByte(']')
+	return b.String()
 }

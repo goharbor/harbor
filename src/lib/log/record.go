@@ -20,18 +20,22 @@ import (
 
 // Record holds information about log
 type Record struct {
-	Time time.Time // time when the log produced
-	Msg  string    // content of the log
-	Line string    // in which file and line that the log produced
-	Lvl  Level     // level of the log
+	Time   RecordTime // time when the log produced
+	Msg    string     // content of the log
+	Line   string     // in which file and line that the log produced
+	Lvl    Level      `json:"level"` // level of the log
+	Fields map[string]interface{}
 }
 
+type RecordTime time.Time
+
 // NewRecord creates a record according to the arguments provided and returns it
-func NewRecord(time time.Time, msg, line string, lvl Level) *Record {
+func NewRecord(time time.Time, msg, line string, lvl Level, fields map[string]interface{}) *Record {
 	return &Record{
-		Time: time,
-		Msg:  msg,
-		Line: line,
-		Lvl:  lvl,
+		Time:   RecordTime(time),
+		Msg:    msg,
+		Line:   line,
+		Lvl:    lvl,
+		Fields: fields,
 	}
 }

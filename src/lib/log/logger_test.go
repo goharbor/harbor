@@ -30,10 +30,30 @@ func contains(t *testing.T, str string, lvl string, line, msg string) bool {
 	return strings.Contains(str, lvl) && strings.Contains(str, line) && strings.Contains(str, msg)
 }
 
-func TestSetx(t *testing.T) {
+func TestTextSetx(t *testing.T) {
 	logger := New(nil, nil, WarningLevel)
 	logger.SetOutput(os.Stdout)
 	fmt := NewTextFormatter()
+	logger.setFormatter(fmt)
+	logger.setLevel(DebugLevel)
+
+	if logger.out != os.Stdout {
+		t.Errorf("unexpected outer: %v != %v", logger.out, os.Stdout)
+	}
+
+	if logger.fmtter != fmt {
+		t.Errorf("unexpected formatter: %v != %v", logger.fmtter, fmt)
+	}
+
+	if logger.lvl != DebugLevel {
+		t.Errorf("unexpected log level: %v != %v", logger.lvl, DebugLevel)
+	}
+}
+
+func TestJsonSetx(t *testing.T) {
+	logger := New(nil, nil, WarningLevel)
+	logger.SetOutput(os.Stdout)
+	fmt := NewJsonFormatter()
 	logger.setFormatter(fmt)
 	logger.setLevel(DebugLevel)
 
@@ -54,13 +74,13 @@ func TestWithFields(t *testing.T) {
 	buf := enter()
 	defer exit()
 
-	logger.WithFields(Fields{"action": "create"}).Info(message)
+	logger.WithFields(Fields{"action": "create", "field2": "value2"}).Info(message)
 
 	str := buf.String()
 
 	var (
 		expectedLevel = InfoLevel.string()
-		expectLine    = `[action="create"]`
+		expectLine    = `[action="create" field2="value2"]`
 		expectMsg     = "message"
 	)
 
@@ -168,7 +188,7 @@ func TestWarningf(t *testing.T) {
 func TestError(t *testing.T) {
 	var (
 		expectedLevel = ErrorLevel.string()
-		expectLine    = "logger_test.go:178"
+		expectLine    = "logger_test.go:198"
 		expectMsg     = "message"
 	)
 
@@ -186,7 +206,7 @@ func TestError(t *testing.T) {
 func TestErrorf(t *testing.T) {
 	var (
 		expectedLevel = ErrorLevel.string()
-		expectLine    = "logger_test.go:196"
+		expectLine    = "logger_test.go:216"
 		expectMsg     = "message"
 	)
 
@@ -204,7 +224,7 @@ func TestErrorf(t *testing.T) {
 func TestDefaultLoggerErrorf(t *testing.T) {
 	var (
 		expectedLevel = ErrorLevel.string()
-		expectLine    = "logger_test.go:214"
+		expectLine    = "logger_test.go:234"
 		expectMsg     = "message"
 	)
 
@@ -214,6 +234,29 @@ func TestDefaultLoggerErrorf(t *testing.T) {
 	DefaultLogger().Errorf("%s", message)
 
 	str := buf.String()
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
+	}
+}
+
+func TestJsonFormatWithFields(t *testing.T) {
+	var (
+		expectedLevel = InfoLevel.string()
+		expectLine    = `{"action":"create"}`
+		expectMsg     = "message"
+	)
+
+	logger := New(nil, nil, InfoLevel)
+	b := make([]byte, 0, 32)
+	buf := bytes.NewBuffer(b)
+	logger.SetOutput(buf)
+
+	fmt := NewJsonFormatter()
+	logger.setFormatter(fmt)
+	logger.WithFields(Fields{"action": "create"}).Info(message)
+
+	str := buf.String()
+
 	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
 		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
