@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 import { ScheduleListResponse } from '../job-service-dashboard.interface';
+import { delay } from 'rxjs/operators';
 
 describe('ScheduleListComponent', () => {
     let component: ScheduleListComponent;
@@ -18,12 +19,13 @@ describe('ScheduleListComponent', () => {
     const fakedJobServiceDashboardSharedDataService = {
         _scheduleListResponse: {
             scheduleList: mockedSchedules,
+            total: mockedSchedules.length,
         },
         getScheduleListResponse(): ScheduleListResponse {
             return this._scheduleListResponse;
         },
         retrieveScheduleListResponse() {
-            return of({});
+            return of(this._scheduleListResponse).pipe(delay(0));
         },
     };
 
@@ -41,7 +43,6 @@ describe('ScheduleListComponent', () => {
 
         fixture = TestBed.createComponent(ScheduleListComponent);
         component = fixture.componentInstance;
-        component.loadingSchedules = false;
         fixture.detectChanges();
     });
 
@@ -55,5 +56,14 @@ describe('ScheduleListComponent', () => {
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
         expect(rows.length).toEqual(2);
+    });
+
+    it('should show the right total count', async () => {
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const span: HTMLSpanElement =
+            fixture.nativeElement.querySelector('#total');
+        expect(span.innerText).toEqual('2');
     });
 });
