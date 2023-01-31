@@ -39,6 +39,13 @@ def push_special_image_to_project(project_name, registry, username, password, im
         return
     _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
 
+def push_image_to_project_by_cmd(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
+    _docker_api = DockerAPI()
+    ret = _docker_api.docker_image_pull(image, tag = tag)
+    base.run_command(["docker", "tag", "{}:{}".format(image, tag), "{}/{}/{}:{}".format(registry, project_name, image, tag)])
+    _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
+    _docker_api.docker_image_push("{}/{}/{}".format(registry, project_name, image), tag, expected_error_message = expected_error_message)
+
 def is_repo_exist_in_project(repositories, repo_name):
     result = False
     for reop in repositories:
