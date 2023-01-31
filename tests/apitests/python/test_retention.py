@@ -6,7 +6,7 @@ import time
 from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
 from testutils import harbor_server
-from library.repository import push_special_image_to_project
+from library.repository import push_image_to_project_by_cmd
 
 from library.retention import Retention
 from library.project import Project
@@ -51,13 +51,14 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_src_repo_id, project_src_repo_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_RA_CLIENT)
 
         # Push image test1:1.0, test1:2.0, test1:3.0,latest, test2:1.0, test2:latest, test3:1.0
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['1.0'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['2.0'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test1", ['3.0','latest'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test2", ['1.0'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test2", ['latest'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test3", ['1.0'])
-        push_special_image_to_project(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test4", ['1.0'])
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test1", "1.0")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test1", "2.0")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test1", "3.0")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test1", "latest")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test2", "1.0")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test2", "latest")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test3", "1.0")
+        push_image_to_project_by_cmd(project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "goharbor/test4", "1.0")
 
         resp=self.repo.get_repository(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
         self.assertEqual(len(resp), 4)
@@ -66,7 +67,7 @@ class TestProjects(unittest.TestCase):
         retention_id = self.retention.create_retention_policy(TestProjects.project_src_repo_id, selector_repository="**", selector_tag="latest*", expect_status_code = 201, **TestProjects.USER_RA_CLIENT)
 
         # Add rule
-        self.retention.update_retention_add_rule(retention_id,selector_repository="test3*", selector_tag="**", expect_status_code = 200, **TestProjects.USER_RA_CLIENT)
+        self.retention.update_retention_add_rule(retention_id,selector_repository="goharbor/test3*", selector_tag="**", expect_status_code = 200, **TestProjects.USER_RA_CLIENT)
 
         # Dry run
         self.retention.trigger_retention_policy(retention_id, dry_run=True, **TestProjects.USER_RA_CLIENT)
