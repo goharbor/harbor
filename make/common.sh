@@ -134,3 +134,4 @@ function check_dockercompose {
 		exit 1
 	fi
 }
+
