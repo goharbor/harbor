@@ -34,7 +34,6 @@ linters:
     - revive
     - whitespace
     - bodyclose
-    # - deadcode //deprecated since golangci-lint v1.49.0
     - errcheck
     # - gosec
     - gosimple
@@ -43,12 +42,10 @@ linters:
     # - noctx
     # - rowserrcheck
     - staticcheck
-    # - structcheck //deprecated since golangci-lint v1.49.0
     - stylecheck
     # - unconvert
     # - unparam
     # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282
-    # - varcheck //deprecated since golangci-lint v1.49.0
  
 run:
   skip-files:
