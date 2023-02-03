@@ -133,22 +133,6 @@ func (a *artifactLabelFilter) Filter(artifacts []*model.Artifact) ([]*model.Arti
 	return result, nil
 }
 
-// filter artifacts according to whether the artifact is tagged or untagged artifact
-type artifactTaggedFilter struct {
-	tagged bool
-}
-
-func (a *artifactTaggedFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
-	var result []*model.Artifact
-	for _, artifact := range artifacts {
-		if a.tagged && len(artifact.Tags) > 0 ||
-			!a.tagged && len(artifact.Tags) == 0 {
-			result = append(result, artifact)
-		}
-	}
-	return result, nil
-}
-
 type artifactTagFilter struct {
 	pattern string
 	// "matches", "excludes"

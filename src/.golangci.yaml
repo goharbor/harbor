@@ -45,7 +45,7 @@ linters:
     - stylecheck
     # - unconvert
     # - unparam
-    # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282
+    - unused
  
 run:
   skip-files:

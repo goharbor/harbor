@@ -84,8 +84,6 @@ func NewController() Controller {
 }
 
 type controller struct {
-	reservedExpiration time.Duration
-
 	quotaMgr quota.Manager
 }
 

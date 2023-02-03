@@ -154,29 +154,6 @@ func (d *dao) ReadOrCreate(ctx context.Context, g *model.UserGroup, keyAttribute
 	return o.ReadOrCreate(g, keyAttribute, combinedKeyAttributes...)
 }
 
-func (d *dao) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
-	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
-	created, ID, err := d.ReadOrCreate(ctx, g, keyAttribute, combinedKeyAttributes...)
-	if err != nil {
-		return err
-	}
-
-	if created {
-		g.ID = int(ID)
-	} else {
-		prevGroup, err := d.Get(ctx, int(ID))
-		if err != nil {
-			return err
-		}
-		g.ID = prevGroup.ID
-		g.GroupName = prevGroup.GroupName
-		g.GroupType = prevGroup.GroupType
-		g.LdapGroupDN = prevGroup.LdapGroupDN
-	}
-
-	return nil
-}
-
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	query = q.MustClone(query)
 	qs, err := orm.QuerySetterForCount(ctx, &model.UserGroup{}, query)

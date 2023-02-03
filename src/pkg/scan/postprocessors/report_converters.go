@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -217,17 +216,6 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, repo
 		return "", err
 	}
 	return string(data), nil
-}
-
-// GetNativeV1ReportFromResolvedData returns the native V1 scan report from the resolved
-// interface data.
-func (c *nativeToRelationalSchemaConverter) getNativeV1ReportFromResolvedData(ctx job.Context, rp interface{}) (*vuln.Report, error) {
-	report, ok := rp.(*vuln.Report)
-	if !ok {
-		return nil, errors.New("Data cannot be converted to v1 report format")
-	}
-	ctx.GetLogger().Infof("Converted raw data to report. Count of Vulnerabilities in report : %d", len(report.Vulnerabilities))
-	return report, nil
 }
 
 func toVulnerabilityRecord(item *vuln.VulnerabilityItem, registrationUUID string) *scan.VulnerabilityRecord {
