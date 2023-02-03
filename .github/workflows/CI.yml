@@ -324,18 +324,24 @@ jobs:
 
   UI_UT:
     env:
-      UI_UT: true
+      CHROME_BIN: /opt/hostedtoolcache/chromium/848897/x64/chrome
     runs-on:
       #- self-hosted
       - ubuntu-latest
     timeout-minutes: 100
     steps:
+      - name: uninstall chrome
+        run: |
+          sudo apt --purge remove google-chrome-stable
       - uses: actions/setup-node@v1
         with:
           node-version: '16'
       - uses: actions/checkout@v2
         with:
           path: src/github.com/goharbor/harbor
+      - uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: 848897
       - name: script
         run: |
           echo IP: $IP
