@@ -81,6 +81,9 @@ func (ia *immutableAPI) DeleteImmuRule(ctx context.Context, params operation.Del
 }
 
 func (ia *immutableAPI) UpdateImmuRule(ctx context.Context, params operation.UpdateImmuRuleParams) middleware.Responder {
+	if params.ImmutableRuleID != params.ImmutableRule.ID {
+		return ia.SendError(ctx, errors.BadRequestError(fmt.Errorf("the immutable_rule_id doesn't match the id in the payload body of ImmutableRule")))
+	}
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := ia.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate, rbac.ResourceImmutableTag); err != nil {
 		return ia.SendError(ctx, err)
