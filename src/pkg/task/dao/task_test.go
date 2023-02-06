@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -25,10 +26,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type taskDAOTestSuite struct {
-	suite.Suite
+	htesting.Suite
 	ctx          context.Context
 	taskDAO      *taskDAO
 	executionDAO *executionDAO
@@ -37,6 +39,7 @@ type taskDAOTestSuite struct {
 }
 
 func (t *taskDAOTestSuite) SetupSuite() {
+	t.Suite.SetupSuite()
 	t.ctx = orm.Context()
 	t.taskDAO = &taskDAO{}
 	t.executionDAO = &executionDAO{}
@@ -226,6 +229,53 @@ func (t *taskDAOTestSuite) TestGetMaxEndTime() {
 	endTime, err := t.taskDAO.GetMaxEndTime(t.ctx, t.executionID)
 	t.Require().Nil(err)
 	t.Equal(now.Unix(), endTime.Unix())
+}
+
+func (t *taskDAOTestSuite) TestUpdateStatusInBatch() {
+	jobIDs := make([]string, 0)
+	taskIDs := make([]int64, 0)
+	for i := 0; i < 300; i++ {
+		jobID := fmt.Sprintf("job-%d", i)
+		tid, err := t.taskDAO.Create(t.ctx, &Task{
+			JobID:       jobID,
+			ExecutionID: t.executionID,
+			Status:      "Pending",
+			StatusCode:  1,
+			ExtraAttrs:  "{}",
+		})
+		t.Require().Nil(err)
+		jobIDs = append(jobIDs, jobID)
+		taskIDs = append(taskIDs, tid)
+	}
+
+	err := t.taskDAO.UpdateStatusInBatch(t.ctx, jobIDs, "Stopped", 10)
+	t.Require().Nil(err)
+	for i := 0; i < 300; i++ {
+		tasks, err := t.taskDAO.List(t.ctx, &q.Query{
+			Keywords: q.KeyWords{"job_id": jobIDs[i]}})
+		t.Require().Nil(err)
+		t.Require().Len(tasks, 1)
+		t.Equal("Stopped", tasks[0].Status)
+	}
+	for _, taskID := range taskIDs {
+		t.taskDAO.Delete(t.ctx, taskID)
+	}
+}
+
+func (t *taskDAOTestSuite) TestExecutionIDsByVendorAndStatus() {
+	tid, err := t.taskDAO.Create(t.ctx, &Task{
+		JobID:       "job123",
+		ExecutionID: t.executionID,
+		Status:      "Pending",
+		StatusCode:  1,
+		ExtraAttrs:  "{}",
+		VendorType:  "MYREPLICATION",
+	})
+	t.Require().Nil(err)
+	exeIDs, err := t.taskDAO.ExecutionIDsByVendorAndStatus(t.ctx, "MYREPLICATION", "Pending")
+	t.Require().Nil(err)
+	t.Require().Len(exeIDs, 1)
+	defer t.taskDAO.Delete(t.ctx, tid)
 }
 
 func TestTaskDAOSuite(t *testing.T) {

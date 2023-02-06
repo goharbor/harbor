@@ -74,6 +74,29 @@ func (_m *mockTaskDAO) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
+// ExecutionIDsByVendorAndStatus provides a mock function with given fields: ctx, vendorType, status
+func (_m *mockTaskDAO) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType string, status string) ([]int64, error) {
+	ret := _m.Called(ctx, vendorType, status)
+
+	var r0 []int64
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) []int64); ok {
+		r0 = rf(ctx, vendorType, status)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int64)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, vendorType, status)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *mockTaskDAO) Get(ctx context.Context, id int64) (*dao.Task, error) {
 	ret := _m.Called(ctx, id)
@@ -192,6 +215,20 @@ func (_m *mockTaskDAO) UpdateStatus(ctx context.Context, id int64, status string
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, string, int64) error); ok {
 		r0 = rf(ctx, id, status, statusRevision)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateStatusInBatch provides a mock function with given fields: ctx, jobIDs, status, batchSize
+func (_m *mockTaskDAO) UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) error {
+	ret := _m.Called(ctx, jobIDs, status, batchSize)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []string, string, int) error); ok {
+		r0 = rf(ctx, jobIDs, status, batchSize)
 	} else {
 		r0 = ret.Error(0)
 	}

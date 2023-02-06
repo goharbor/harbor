@@ -73,6 +73,16 @@ func TestMatch(t *testing.T) {
 			str:     "1.01",
 			match:   false,
 		},
+		{
+			pattern: "v2.[4-6].*", // match v2.4.*~v2.7.* version
+			str:     "v2.4.0",
+			match:   true,
+		},
+		{
+			pattern: "v2.[4-7].*", // match v2.4.*~v2.7.* version
+			str:     "v2.7.0",
+			match:   true,
+		},
 	}
 	for _, c := range cases {
 		match, err := Match(c.pattern, c.str)

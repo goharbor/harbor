@@ -109,8 +109,8 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.0-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.32.1
-TRIVYADAPTERVERSION=v0.30.2
+TRIVYVERSION=v0.35.0
+TRIVYADAPTERVERSION=v0.30.6
 
 # version of chartmuseum for pulling the source code
 CHARTMUSEUM_SRC_TAG=v0.14.0
@@ -155,7 +155,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.19.3
+GOBUILDIMAGE=golang:1.19.4
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -523,7 +523,7 @@ GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
-	@cd ./src/; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
+	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
 # go install golang.org/x/vuln/cmd/govulncheck@latest
 GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck

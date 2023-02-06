@@ -185,7 +185,7 @@ func logResults(logger logger.Interface, all []*selector.Candidate, results []*s
 
 	var buf bytes.Buffer
 
-	data := make([][]string, len(all))
+	data := make([][]string, 0, len(all))
 
 	for _, c := range all {
 		row := []string{

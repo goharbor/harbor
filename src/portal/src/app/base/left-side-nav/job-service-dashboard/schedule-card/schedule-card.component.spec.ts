@@ -4,10 +4,14 @@ import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
-import { ScheduleStatusString } from '../job-service-dashboard.interface';
+import {
+    ScheduleListResponse,
+    ScheduleStatusString,
+} from '../job-service-dashboard.interface';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ScheduleTask } from '../../../../../../ng-swagger-gen/models/schedule-task';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 describe('ScheduleCardComponent', () => {
     let component: ScheduleCardComponent;
@@ -30,6 +34,16 @@ describe('ScheduleCardComponent', () => {
         },
     };
 
+    const fakedJobServiceDashboardSharedDataService = {
+        _scheduleListResponse: {},
+        getScheduleListResponse(): ScheduleListResponse {
+            return this._scheduleListResponse;
+        },
+        retrieveScheduleListResponse() {
+            return of({});
+        },
+    };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [ScheduleCardComponent],
@@ -42,6 +56,10 @@ describe('ScheduleCardComponent', () => {
                 {
                     provide: ScheduleService,
                     useValue: fakedScheduleService,
+                },
+                {
+                    provide: JobServiceDashboardSharedDataService,
+                    useValue: fakedJobServiceDashboardSharedDataService,
                 },
             ],
         }).compileComponents();

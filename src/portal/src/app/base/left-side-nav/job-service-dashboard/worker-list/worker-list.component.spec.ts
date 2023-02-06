@@ -5,14 +5,16 @@ import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
 import { Worker, WorkerPool } from 'ng-swagger-gen/models';
+import { ScheduleListResponse } from '../job-service-dashboard.interface';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
 
 describe('WorkerListComponent', () => {
     let component: WorkerListComponent;
     let fixture: ComponentFixture<WorkerListComponent>;
 
     const mockedWorkers: Worker[] = [
-        { id: '1', job_id: '1', job_name: 'test1' },
-        { id: '2', job_id: '2', job_name: 'test2' },
+        { id: '1', job_id: '1', job_name: 'test1', pool_id: '1' },
+        { id: '2', job_id: '2', job_name: 'test2', pool_id: '1' },
     ];
 
     const mockedPools: WorkerPool[] = [
@@ -20,11 +22,17 @@ describe('WorkerListComponent', () => {
     ];
 
     const fakedJobserviceService = {
-        getWorkers() {
-            return of(mockedWorkers).pipe(delay(0));
-        },
         getWorkerPools() {
             return of(mockedPools).pipe(delay(0));
+        },
+    };
+    const fakedJobServiceDashboardSharedDataService = {
+        _allWorkers: mockedWorkers,
+        getAllWorkers(): ScheduleListResponse {
+            return this._allWorkers;
+        },
+        retrieveAllWorkers() {
+            return of([]);
         },
     };
 
@@ -36,6 +44,10 @@ describe('WorkerListComponent', () => {
                 {
                     provide: JobserviceService,
                     useValue: fakedJobserviceService,
+                },
+                {
+                    provide: JobServiceDashboardSharedDataService,
+                    useValue: fakedJobServiceDashboardSharedDataService,
                 },
             ],
         }).compileComponents();
@@ -49,10 +61,10 @@ describe('WorkerListComponent', () => {
     });
 
     it('should render worker list', async () => {
-        component.selectionChanged();
         await fixture.whenStable();
         component.loadingPools = false;
         component.loadingWorkers = false;
+        component.selectedPool = mockedPools[0];
         fixture.detectChanges();
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');

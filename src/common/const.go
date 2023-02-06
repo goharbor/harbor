@@ -60,6 +60,8 @@ const (
 	PostGreSQLSSLMode                = "postgresql_sslmode"
 	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
 	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
+	PostGreSQLConnMaxLifetime        = "postgresql_conn_max_lifetime"
+	PostGreSQLConnMaxIdleTime        = "postgresql_conn_max_idle_time"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
@@ -222,4 +224,7 @@ const (
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
+
+	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
+	UIMaxLengthLimitedOfNumber = 10
 )

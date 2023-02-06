@@ -111,7 +111,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		logger.Errorf("failed to purge audit log, error: %v", err)
 		return err
 	}
-	logger.Infof("Purge operation parameter, renention_hour=%v, include_operations:%v, dry_run:%v",
+	logger.Infof("Purge operation parameter, retention_hour=%v, include_operations:%v, dry_run:%v",
 		j.retentionHour, j.includeOperations, j.dryRun)
 	if j.dryRun {
 		logger.Infof("[DRYRUN]Purged %d rows of audit logs", n)

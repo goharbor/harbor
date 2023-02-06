@@ -85,6 +85,8 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.SSLMode,
 			database.PostGreSQL.MaxIdleConns,
 			database.PostGreSQL.MaxOpenConns,
+			database.PostGreSQL.ConnMaxLifetime,
+			database.PostGreSQL.ConnMaxIdleTime,
 		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)

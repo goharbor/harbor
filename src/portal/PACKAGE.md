@@ -1,7 +1,7 @@
 ```text
 {
   "name": "harbor",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
@@ -47,28 +47,28 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "~14.1.0",
-    "@angular/common": "~14.1.0",
-    "@angular/compiler": "~14.1.0",
-    "@angular/core": "~14.1.0",
-    "@angular/forms": "~14.1.0",
-    "@angular/localize": "~14.1.0",
-    "@angular/platform-browser": "~14.1.0",
-    "@angular/platform-browser-dynamic": "~14.1.0",
-    "@angular/router": "~14.1.0",
+    "@angular/animations": "^15.0.4",
+    "@angular/common": "^15.0.4",
+    "@angular/compiler": "^15.0.4,
+    "@angular/core": "^15.0.4",
+    "@angular/forms": "^15.0.4",
+    "@angular/localize": "^15.0.4",
+    "@angular/platform-browser": "^15.0.4",
+    "@angular/platform-browser-dynamic": "^15.0.4",
+    "@angular/router": "^15.0.4",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
 
     // Clarity UI. Required
-    "@clr/angular": "13.7.0",
-    "@cds/core": "6.0.0",
+    "@clr/angular": "15.0.0-beta.3",
+    "@cds/core": "6.2.3",
     "@clr/icons": "13.0.2",
-    "@clr/ui": "13.7.0",
+    "@clr/ui": "15.0.0-beta.3",
 
     // For Harbor i18n functionality. Required
-    "@ngx-translate/core": "^13.0.0",
-    "@ngx-translate/http-loader": "^6.0.0",
+    "@ngx-translate/core": "^14.0.0",
+    "@ngx-translate/http-loader": "^7.0.0",
 
     // For cron string checking. Required
     "cron-validator": "^1.2.1",
@@ -87,15 +87,15 @@
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "~14.1.0",
-    "@angular/cli": "~14.1.0",
-    "@angular/compiler-cli": "~14.1.0",
-    "@types/jasmine": "~3.10.1",
+    "@angular-devkit/build-angular": "^15.0.4",
+    "@angular/cli": "^15.0.4",
+    "@angular/compiler-cli": "^15.0.4",
+    "@types/jasmine": "~4.3.0",
     "@types/node": "^16.11.6",
-    "typescript": "~4.5.4",
+    "typescript": "~4.8.2",
 
     // For unit test. Required
-    "jasmine-core": "^4.0.0",
+    "jasmine-core": "~4.5.0",
     "jasmine-spec-reporter": "~7.0.0",
     "karma": "^6.3.17",
     "karma-chrome-launcher": "~3.1.0",
@@ -116,10 +116,10 @@
 
     // For code grammar checking. Optional
     "eslint": "^8.12.0",
-    "@angular-eslint/eslint-plugin": "14.0.2",
-    "@angular-eslint/eslint-plugin-template": "14.0.2",
-    "@angular-eslint/schematics": "14.0.2",
-    "@angular-eslint/template-parser": "14.0.2",
+    "@angular-eslint/eslint-plugin": "15.1.0",
+    "@angular-eslint/eslint-plugin-template": "15.1.0",
+    "@angular-eslint/schematics": "15.1.0",
+    "@angular-eslint/template-parser": "15.1.0",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
 

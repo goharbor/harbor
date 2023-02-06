@@ -29,7 +29,10 @@ import { NavigatorComponent } from '../../shared/components/navigator/navigator.
 import { SessionService } from '../../shared/services/session.service';
 import { AboutDialogComponent } from '../../shared/components/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../../shared/components/global-search/search-trigger.service';
-import { CommonRoutes } from '../../shared/entities/shared.const';
+import {
+    CommonRoutes,
+    CONFIG_AUTH_MODE,
+} from '../../shared/entities/shared.const';
 import { THEME_ARRAY, ThemeInterface } from '../../services/theme';
 import { clone, DEFAULT_PAGE_SIZE } from '../../shared/units/utils';
 import { ThemeService } from '../../services/theme.service';
@@ -70,9 +73,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     searchSub: Subscription;
     searchCloseSub: Subscription;
-    isLdapMode: boolean;
-    isOidcMode: boolean;
-    isHttpAuthMode: boolean;
     showScannerInfo: boolean = false;
     scannerDocUrl: string = SCANNERS_DOC;
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
@@ -104,13 +104,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
                 }
             );
         }
-        if (this.appConfigService.isLdapMode()) {
-            this.isLdapMode = true;
-        } else if (this.appConfigService.isHttpAuthMode()) {
-            this.isHttpAuthMode = true;
-        } else if (this.appConfigService.isOidcMode()) {
-            this.isOidcMode = true;
-        }
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(
             searchEvt => {
                 if (searchEvt && searchEvt.trim() !== '') {
@@ -139,6 +132,16 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
         }
     }
+    isDBAuth(): boolean {
+        if (this.appConfigService?.configurations?.auth_mode) {
+            return (
+                this.appConfigService.configurations.auth_mode ===
+                CONFIG_AUTH_MODE.DB_AUTH
+            );
+        }
+        return true;
+    }
+
     publishScrollEvent() {
         if (this.scrollDiv && this.scrollDiv.nativeElement) {
             this.event.publish(HarborEvent.SCROLL, {

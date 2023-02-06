@@ -57,13 +57,13 @@
             <input
                 clrInput
                 name="tokenExpiration"
-                type="text"
+                type="number"
                 #tokenExpirationInput="ngModel"
-                [(ngModel)]="tokenExpirationValue"
+                [(ngModel)]="currentConfig.token_expiration.value"
                 required
                 pattern="^[1-9]{1}[0-9]*$"
                 id="tokenExpiration"
-                size="20"
+                max="9999999999"
                 [disabled]="!editable" />
             <clr-control-error>{{
                 'TOOLTIP.NUMBER_REQUIRED' | translate
@@ -90,13 +90,13 @@
             <input
                 clrInput
                 name="sessionTimeout"
-                type="text"
+                type="number"
                 #ngSessionTimeout="ngModel"
-                [(ngModel)]="sessionTimeout"
+                [(ngModel)]="currentConfig.session_timeout.value"
                 required
                 pattern="^[1-9]{1}[0-9]*$"
                 id="sessionTimeout"
-                size="10"
+                max="9999999999"
                 [disabled]="!editable" />
             <clr-control-error>{{
                 'TOOLTIP.NUMBER_REQUIRED' | translate
@@ -155,13 +155,13 @@
             <input
                 clrInput
                 name="robotTokenExpiration"
-                type="text"
+                type="number"
                 #robotTokenExpirationInput="ngModel"
-                [(ngModel)]="robotTokenExpirationValue"
+                [(ngModel)]="currentConfig.robot_token_duration.value"
                 required
                 pattern="^[1-9]{1}[0-9]*$"
                 id="robotTokenExpiration"
-                size="20"
+                max="9999999999"
                 [disabled]="!robotExpirationEditable" />
             <clr-control-error>{{
                 'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate

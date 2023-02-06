@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	jobSvc "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/queuestatus"
 
@@ -32,10 +33,12 @@ import (
 	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	jm "github.com/goharbor/harbor/src/pkg/jobmonitor"
 	"github.com/goharbor/harbor/src/pkg/task"
+	taskDao "github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 const (
-	all = "all"
+	all             = "all"
+	batchUpdateSize = 1000
 )
 
 // Ctl the controller instance of the worker pool controller
@@ -76,6 +79,7 @@ type monitorController struct {
 	queueStatusManager    queuestatus.Manager
 	monitorClient         func() (jm.JobServiceMonitorClient, error)
 	jobServiceRedisClient func() (jm.RedisClient, error)
+	executionDAO          taskDao.ExecutionDAO
 }
 
 // NewMonitorController ...
@@ -88,6 +92,7 @@ func NewMonitorController() MonitorController {
 		queueStatusManager:    queuestatus.Mgr,
 		monitorClient:         jobServiceMonitorClient,
 		jobServiceRedisClient: jm.JobServiceRedisClient,
+		executionDAO:          taskDao.NewExecutionDAO(),
 	}
 }
 
@@ -209,28 +214,33 @@ func (w *monitorController) stopPendingJob(ctx context.Context, jobType string) 
 	if err != nil {
 		return err
 	}
-	return w.updateJobStatusInTask(ctx, jobIDs, "Stopped")
+	go func() {
+		if err = w.updateJobStatusInTask(orm.Context(), jobType, jobIDs, jobSvc.StoppedStatus.String()); err != nil {
+			log.Errorf("failed to update job status in task: %v", err)
+		}
+	}()
+	return nil
 }
 
-func (w *monitorController) updateJobStatusInTask(ctx context.Context, jobIDs []string, status string) error {
+func (w *monitorController) updateJobStatusInTask(ctx context.Context, vendorType string, jobIDs []string, status string) error {
 	if ctx == nil {
 		log.Debug("context is nil, update job status in task")
 		return nil
 	}
-	for _, jobID := range jobIDs {
-		ts, err := w.taskManager.List(ctx, q.New(q.KeyWords{"job_id": jobID}))
-		if err != nil {
-			return err
-		}
-		if len(ts) == 0 {
+	// Task count could be huge, to avoid query executionID by each task, query with vendor type and status
+	// it might include extra executions, but it won't change these executions final status
+	pendingExecs, err := w.taskManager.ExecutionIDsByVendorAndStatus(ctx, vendorType, jobSvc.PendingStatus.String())
+	if err != nil {
+		return err
+	}
+	if err := w.taskManager.UpdateStatusInBatch(ctx, jobIDs, status, batchUpdateSize); err != nil {
+		log.Errorf("failed to update task status in batch: %v", err)
+	}
+	// Update execution status
+	for _, executionID := range pendingExecs {
+		if _, _, err := w.executionDAO.RefreshStatus(ctx, executionID); err != nil {
+			log.Errorf("failed to refresh execution status: %v", err)
 			continue
-		}
-		ts[0].Status = status
-		// use local transaction to avoid rollback batch success tasks to previous state when one fail
-		if err := orm.WithTransaction(func(ctx context.Context) error {
-			return w.taskManager.Update(ctx, ts[0], "Status")
-		})(orm.SetTransactionOpNameToContext(ctx, "tx-update-task")); err != nil {
-			return err
 		}
 	}
 	return nil

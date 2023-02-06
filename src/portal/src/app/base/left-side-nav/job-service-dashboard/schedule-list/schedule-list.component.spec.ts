@@ -2,10 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScheduleListComponent } from './schedule-list.component';
 import { ScheduleTask } from '../../../../../../ng-swagger-gen/models/schedule-task';
 import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
+import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import { ScheduleListResponse } from '../job-service-dashboard.interface';
 
 describe('ScheduleListComponent', () => {
     let component: ScheduleListComponent;
@@ -16,15 +15,15 @@ describe('ScheduleListComponent', () => {
         { id: 2, vendor_type: 'test2' },
     ];
 
-    const fakedScheduleService = {
-        listSchedulesResponse() {
-            const res: HttpResponse<Array<ScheduleTask>> = new HttpResponse<
-                Array<ScheduleTask>
-            >({
-                headers: new HttpHeaders({ 'x-total-count': '2' }),
-                body: mockedSchedules,
-            });
-            return of(res).pipe(delay(0));
+    const fakedJobServiceDashboardSharedDataService = {
+        _scheduleListResponse: {
+            scheduleList: mockedSchedules,
+        },
+        getScheduleListResponse(): ScheduleListResponse {
+            return this._scheduleListResponse;
+        },
+        retrieveScheduleListResponse() {
+            return of({});
         },
     };
 
@@ -34,15 +33,15 @@ describe('ScheduleListComponent', () => {
             imports: [SharedTestingModule],
             providers: [
                 {
-                    provide: ScheduleService,
-                    useValue: fakedScheduleService,
+                    provide: JobServiceDashboardSharedDataService,
+                    useValue: fakedJobServiceDashboardSharedDataService,
                 },
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ScheduleListComponent);
         component = fixture.componentInstance;
-        component.loadingSchedules = true;
+        component.loadingSchedules = false;
         fixture.detectChanges();
     });
 
@@ -52,7 +51,6 @@ describe('ScheduleListComponent', () => {
 
     it('should render list', async () => {
         await fixture.whenStable();
-        component.loadingSchedules = false;
         fixture.detectChanges();
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');

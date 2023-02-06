@@ -92,7 +92,7 @@
                             {{ 'SYSTEM_ROBOT.ROBOT_ACCOUNT_NAV' | translate }}
                         </a>
                         <a
-                            *ngIf="isLdapMode || isHttpAuthMode || isOidcMode"
+                            *ngIf="!isDBAuth()"
                             clrVerticalNavLink
                             routerLink="/harbor/groups"
                             routerLinkActive="active">

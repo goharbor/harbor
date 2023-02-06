@@ -9461,9 +9461,6 @@ definitions:
         description: The start time of the worker
         x-nullable: true
         x-omitempty: true
-      args:
-        type: string
-        description: The args of the worker
       check_in:
         type: string
         description: the checkin of the running job in the worker
@@ -9517,12 +9514,6 @@ definitions:
       cron:
         type: string
         description: the cron of the current schedule task
-      cron_type:
-        type: string
-        description: the cron type of the current schedule task
-      extra_attrs:
-        type: string
-        description: the extra attributes
       update_time:
         type: string
         format: date-time

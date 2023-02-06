@@ -32,7 +32,6 @@ type Worker struct {
 	JobName   string `json:"job_name"`
 	JobID     string `json:"job_id"`
 	StartedAt int64  `json:"start_at"`
-	Args      string `json:"args"`
 	CheckIn   string `json:"check_in"`
 	CheckInAt int64  `json:"check_in_at"`
 }

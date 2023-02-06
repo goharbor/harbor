@@ -21,6 +21,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 )
@@ -232,6 +233,20 @@ func (t *QuotaType) validate(str string) error {
 	}
 
 	return nil
+}
+
+// DurationType ...
+type DurationType struct {
+}
+
+func (t *DurationType) validate(str string) error {
+	_, err := time.ParseDuration(str)
+	return err
+}
+
+func (t *DurationType) get(str string) (interface{}, error) {
+	// should not parse the duration to avoid duplicate parse.
+	return str, nil
 }
 
 // parseInt64 returns int64 from string which support scientific notation

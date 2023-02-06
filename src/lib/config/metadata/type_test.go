@@ -110,6 +110,17 @@ func TestStringToStringMapType_get(t *testing.T) {
 	assert.Equal(t, map[string]string{"sample": "abc", "another": "welcome"}, result)
 }
 
+func TestDurationType(t *testing.T) {
+	test := &DurationType{}
+	// test get
+	result, err := test.get("5m")
+	assert.Nil(t, err)
+	assert.Equal(t, "5m", result)
+	// test validate
+	assert.Nil(t, test.validate("5m"))
+	assert.NotNil(t, test.validate("100"))
+}
+
 func Test_parseInt64(t *testing.T) {
 	type args struct {
 		str string

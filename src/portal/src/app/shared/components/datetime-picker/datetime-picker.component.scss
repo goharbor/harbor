@@ -12,4 +12,9 @@
         left: 75%;
         background-color: #c92100;
     }
+
+    >.tooltip-content::before {
+        border-left-color:#c92100;
+        border-top-color: #c92100;
+    }
 }

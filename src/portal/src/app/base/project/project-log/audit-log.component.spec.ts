@@ -3,13 +3,16 @@ import { AuditLogComponent } from './audit-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, LOCALE_ID } from '@angular/core';
 import { delay } from 'rxjs/operators';
 import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { click } from '../../../shared/units/utils';
 import { SharedTestingModule } from '../../../shared/shared.module';
+import { registerLocaleData } from '@angular/common';
+import locale_en from '@angular/common/locales/en';
+import { DatePickerComponent } from '../../../shared/components/datetime-picker/datetime-picker.component';
 
 describe('AuditLogComponent', () => {
     let component: AuditLogComponent;
@@ -78,8 +81,18 @@ describe('AuditLogComponent', () => {
             }
         },
     };
-
+    registerLocaleData(locale_en, 'en-us');
     beforeEach(async () => {
+        TestBed.overrideComponent(DatePickerComponent, {
+            set: {
+                providers: [
+                    {
+                        provide: LOCALE_ID,
+                        useValue: 'en-us',
+                    },
+                ],
+            },
+        });
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [SharedTestingModule],

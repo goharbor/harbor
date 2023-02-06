@@ -5,13 +5,21 @@ import {
     EventEmitter,
     ViewChild,
     OnChanges,
+    LOCALE_ID,
 } from '@angular/core';
 import { NgModel } from '@angular/forms';
+import { DEFAULT_LANG_LOCALSTORAGE_KEY } from '../../entities/shared.const';
 
 @Component({
     selector: 'hbr-datetime',
     templateUrl: './datetime-picker.component.html',
     styleUrls: ['./datetime-picker.component.scss'],
+    providers: [
+        {
+            provide: LOCALE_ID,
+            useValue: localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY),
+        },
+    ],
 })
 export class DatePickerComponent implements OnChanges {
     @Input() dateInput: string;
