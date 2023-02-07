@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	task.SetExecutionSweeperCount(job.ScanDataExport, 50)
+	task.SetExecutionSweeperCount(job.ScanDataExportVendorType, 50)
 }
 
 var Ctl = NewController()
@@ -48,7 +48,7 @@ type controller struct {
 
 func (c *controller) ListExecutions(ctx context.Context, userName string) ([]*export.Execution, error) {
 	keywords := make(map[string]interface{})
-	keywords["VendorType"] = job.ScanDataExport
+	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords[fmt.Sprintf("ExtraAttrs.%s", export.UserNameAttribute)] = userName
 
 	q := q2.New(q2.KeyWords{})
@@ -69,7 +69,7 @@ func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task
 	query := q2.New(q2.KeyWords{})
 
 	keywords := make(map[string]interface{})
-	keywords["VendorType"] = job.ScanDataExport
+	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords["ExecutionID"] = executionID
 	query.Keywords = keywords
 	query.Sorts = append(query.Sorts, &q2.Sort{
@@ -119,7 +119,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
 	extraAttrs[export.UserNameAttribute] = request.UserName
-	id, err := c.execMgr.Create(ctx, job.ScanDataExport, vendorID, task.ExecutionTriggerManual, extraAttrs)
+	id, err := c.execMgr.Create(ctx, job.ScanDataExportVendorType, vendorID, task.ExecutionTriggerManual, extraAttrs)
 	logger.Infof("Created an execution record with id : %d for vendorID: %d", id, vendorID)
 	if err != nil {
 		logger.Errorf("Encountered error when creating job : %v", err)
@@ -133,7 +133,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	params[export.JobModeKey] = export.JobModeExport
 
 	j := &task.Job{
-		Name: job.ScanDataExport,
+		Name: job.ScanDataExportVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

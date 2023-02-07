@@ -12,19 +12,12 @@ import (
 
 func init() {
 	// keep only the latest created 50 gc execution records
-	task.SetExecutionSweeperCount(GCVendorType, 50)
+	task.SetExecutionSweeperCount(job.GarbageCollectionVendorType, 50)
 }
 
 var (
 	// Ctl is a global garbage collection controller instance
 	Ctl = NewController()
-)
-
-const (
-	// SchedulerCallback ...
-	SchedulerCallback = "GARBAGE_COLLECTION"
-	// GCVendorType ...
-	GCVendorType = "GARBAGE_COLLECTION"
 )
 
 // Controller manages the tags
@@ -79,12 +72,12 @@ func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (
 	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
 	para["time_window"] = policy.ExtraAttrs["time_window"]
 
-	execID, err := c.exeMgr.Create(ctx, GCVendorType, -1, trigger, para)
+	execID, err := c.exeMgr.Create(ctx, job.GarbageCollectionVendorType, -1, trigger, para)
 	if err != nil {
 		return -1, err
 	}
 	_, err = c.taskMgr.Create(ctx, execID, &task.Job{
-		Name: job.GarbageCollection,
+		Name: job.GarbageCollectionVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},
@@ -103,14 +96,14 @@ func (c *controller) Stop(ctx context.Context, id int64) error {
 
 // ExecutionCount ...
 func (c *controller) ExecutionCount(ctx context.Context, query *q.Query) (int64, error) {
-	query.Keywords["VendorType"] = GCVendorType
+	query.Keywords["VendorType"] = job.GarbageCollectionVendorType
 	return c.exeMgr.Count(ctx, query)
 }
 
 // ListExecutions ...
 func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Execution, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = GCVendorType
+	query.Keywords["VendorType"] = job.GarbageCollectionVendorType
 
 	execs, err := c.exeMgr.List(ctx, query)
 	if err != nil {
@@ -128,7 +121,7 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 	execs, err := c.exeMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ID":         id,
-			"VendorType": GCVendorType,
+			"VendorType": job.GarbageCollectionVendorType,
 		},
 	})
 	if err != nil {
@@ -146,7 +139,7 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	tasks, err := c.taskMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ID":         id,
-			"VendorType": GCVendorType,
+			"VendorType": job.GarbageCollectionVendorType,
 		},
 	})
 	if err != nil {
@@ -162,7 +155,7 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 // ListTasks ...
 func (c *controller) ListTasks(ctx context.Context, query *q.Query) ([]*Task, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = GCVendorType
+	query.Keywords["VendorType"] = job.GarbageCollectionVendorType
 	tks, err := c.taskMgr.List(ctx, query)
 	if err != nil {
 		return nil, err
@@ -185,7 +178,7 @@ func (c *controller) GetTaskLog(ctx context.Context, id int64) ([]byte, error) {
 
 // GetSchedule ...
 func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, error) {
-	sch, err := c.schedulerMgr.ListSchedules(ctx, q.New(q.KeyWords{"VendorType": GCVendorType}))
+	sch, err := c.schedulerMgr.ListSchedules(ctx, q.New(q.KeyWords{"VendorType": job.GarbageCollectionVendorType}))
 	if err != nil {
 		return nil, err
 	}
@@ -202,12 +195,12 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
 	extras := make(map[string]interface{})
 	extras["delete_untagged"] = policy.DeleteUntagged
-	return c.schedulerMgr.Schedule(ctx, GCVendorType, -1, cronType, cron, SchedulerCallback, policy, extras)
+	return c.schedulerMgr.Schedule(ctx, job.GarbageCollectionVendorType, -1, cronType, cron, job.GarbageCollectionVendorType, policy, extras)
 }
 
 // DeleteSchedule ...
 func (c *controller) DeleteSchedule(ctx context.Context) error {
-	return c.schedulerMgr.UnScheduleByVendor(ctx, GCVendorType, -1)
+	return c.schedulerMgr.UnScheduleByVendor(ctx, job.GarbageCollectionVendorType, -1)
 }
 
 func convertExecution(exec *task.Execution) *Execution {

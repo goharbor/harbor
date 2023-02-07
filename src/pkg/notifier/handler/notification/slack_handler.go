@@ -96,7 +96,7 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 		},
 	}
 	// Create a slackJob to send message to slack
-	j.Name = job.SlackJob
+	j.Name = job.SlackJobVendorType
 
 	// Convert payload to slack format
 	payload, err := s.convert(event.Payload)
