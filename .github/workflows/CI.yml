@@ -29,10 +29,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-           go-version: 1.18.8
+           go-version: 1.19.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -95,10 +95,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.8
+          go-version: 1.19.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -155,10 +155,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.8
+          go-version: 1.19.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -215,10 +215,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.8
+          go-version: 1.19.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1
@@ -273,10 +273,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.18
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.18.8
+          go-version: 1.19.5
         id: go
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@0.0.1

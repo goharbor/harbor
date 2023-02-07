@@ -4,7 +4,7 @@ set +e
 
 usage(){
   echo "Usage: builder <golang image:version> <code path> <code release tag> <main.go path> <binary name>"
-  echo "e.g: builder golang:1.18.8 github.com/helm/chartmuseum v0.14.0 cmd/chartmuseum chartm"
+  echo "e.g: builder golang:1.19.5 github.com/helm/chartmuseum v0.14.0 cmd/chartmuseum chartm"
   exit 1
 }
 
