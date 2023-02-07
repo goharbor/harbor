@@ -4714,6 +4714,39 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /jobservice/jobs/{job_id}/log:
+    get:
+      operationId: actionGetJobLog
+      summary: Get job log by job id
+      description: Get job log by job id, it is only used by administrator
+      produces:
+        - text/plain  
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_id
+          in: path
+          required: true
+          type: string
+          description: The id of the job.
+      responses:
+        '200':
+          description: Get job log successfully.
+          headers:
+            Content-Type:
+              description: The content type of response body
+              type: string
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /jobservice/queues:
     get:
       operationId: listJobQueues

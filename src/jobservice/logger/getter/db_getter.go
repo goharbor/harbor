@@ -30,5 +30,15 @@ func (dbg *DBGetter) Retrieve(logID string) ([]byte, error) {
 		return nil, errs.NoObjectFoundError(fmt.Sprintf("log entity: %s", logID))
 	}
 
-	return []byte(jobLog.Content), nil
+	sz := int64(len(jobLog.Content))
+	var buf []byte
+	sizeLimit := logSizeLimit()
+	if sizeLimit <= 0 {
+		buf = []byte(jobLog.Content)
+		return buf, nil
+	}
+	if sz > sizeLimit {
+		buf = []byte(jobLog.Content[sz-sizeLimit:])
+	}
+	return buf, nil
 }

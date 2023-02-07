@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,6 +86,7 @@ func (suite *ConfigurationTestSuite) TestDefaultConfig() {
 	err := DefaultConfig.Load("../config_test.yml", true)
 	require.Nil(suite.T(), err, "load config from yaml file, expect nil error but got error '%s'", err)
 
+	assert.Equal(suite.T(), 10, DefaultConfig.MaxLogSizeReturnedMB, "expect max log size returned 10MB but got %d", DefaultConfig.MaxLogSizeReturnedMB)
 	redisURL := DefaultConfig.PoolConfig.RedisPoolCfg.RedisURL
 	assert.Equal(suite.T(), "redis://localhost:6379", redisURL, "expect redisURL '%s' but got '%s'", "redis://localhost:6379", redisURL)
 
