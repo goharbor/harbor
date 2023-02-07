@@ -26,7 +26,7 @@ import { MessageHandlerService } from '../services/message-handler.service';
 import { SearchTriggerService } from '../components/global-search/search-trigger.service';
 import { Observable } from 'rxjs';
 import { UN_LOGGED_PARAM, YES } from '../../account/sign-in/sign-in.service';
-import {CommonRoutes, CONFIG_AUTH_MODE} from '../entities/shared.const';
+import { CommonRoutes, CONFIG_AUTH_MODE } from '../entities/shared.const';
 
 @Injectable({
     providedIn: 'root',
