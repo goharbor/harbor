@@ -160,7 +160,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.EnableContentTrust = nil
 	}
 
-	// validate the RegistryID and StorageLimit in the body of the request
+	// validate the RetentionID, RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -204,6 +204,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		RegistryID: lib.Int64Value(req.RegistryID),
 	}
 	lib.JSONCopy(&p.Metadata, req.Metadata)
+	delete(p.Metadata, "retention_id")
 
 	projectID, err := a.projectCtl.Create(ctx, p)
 	if err != nil {
@@ -551,6 +552,18 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	}
 	lib.JSONCopy(&p.Metadata, params.Project.Metadata)
 
+	// validate retention_id
+	if ridParam, ok := p.Metadata["retention_id"]; ok {
+		md, err := a.metadataMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
+			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
+			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf(errMsg)))
+		}
+	}
+
 	if err := a.projectCtl.Update(ctx, p); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -671,6 +684,10 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}
 }
 
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
+	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
+		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
+	}
+
 	if req.RegistryID != nil {
 		if *req.RegistryID <= 0 {
 			return errors.BadRequestError(fmt.Errorf("%d is invalid value of registry_id, it should be geater than 0", *req.RegistryID))
