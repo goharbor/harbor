@@ -15,7 +15,6 @@
 package clients
 
 import (
-	"github.com/goharbor/harbor/src/chartserver"
 	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 )
 
@@ -36,19 +35,5 @@ func (d *DumbCoreClient) DeleteArtifact(project, repository, digest string) erro
 // DeleteArtifactRepository ...
 func (d *DumbCoreClient) DeleteArtifactRepository(project, repository string) error {
 	return nil
-}
 
-// ListAllCharts ...
-func (d *DumbCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
-	return nil, nil
-}
-
-// DeleteChart ...
-func (d *DumbCoreClient) DeleteChart(project, repository, version string) error {
-	return nil
-}
-
-// DeleteChartRepository ...
-func (d *DumbCoreClient) DeleteChartRepository(project, repository string) error {
-	return nil
 }

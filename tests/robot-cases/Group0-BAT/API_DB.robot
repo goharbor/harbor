@@ -48,10 +48,6 @@ Test Case - User View Logs
     [Tags]  view_logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
 
-Test Case - List Helm Charts
-    [Tags]  list_helm_charts
-    Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
-
 Test Case - Assign Sys Admin
     [Tags]  assign_adin
     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
@@ -139,10 +135,6 @@ Test Case - Push Image With Special Name
 Test Case - Push Artifact With ORAS CLI
     [Tags]  oras
     Harbor API Test  ./tests/apitests/python/test_push_files_by_oras.py
-
-Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
-    [Tags]  helm2
-    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm2_helm3_with_robot_Account.py
 
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub

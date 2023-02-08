@@ -46,7 +46,6 @@ const (
 	ResourceTypeProject    = "p"
 	ResourceTypeRepository = "r"
 	ResourceTypeImage      = "i"
-	ResourceTypeChart      = "c"
 
 	ExtEndpoint                      = "ext_endpoint"
 	AUTHMode                         = "auth_mode"
@@ -137,9 +136,6 @@ const (
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
-	WithChartMuseum                   = "with_chartmuseum"
-	ChartRepoURL                      = "chart_repository_url"
-	DefaultChartRepoURL               = "http://chartmuseum:9999"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
@@ -155,9 +151,6 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	AuthProxyRediretPath = "/c/authproxy/redirect"
-
-	ChartUploadCtxKey   = contextKey("chart_upload_event")
-	ChartDownloadCtxKey = contextKey("chart_download_event")
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"

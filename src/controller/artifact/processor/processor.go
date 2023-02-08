@@ -44,7 +44,7 @@ type Processor interface {
 	AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error
 	// AbstractAddition abstracts the addition of the artifact.
 	// The additions are different for different artifacts:
-	// build history for image; values.yaml, readme and dependencies for chart, etc
+	// build history for image;
 	AbstractAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (addition *Addition, err error)
 }
 

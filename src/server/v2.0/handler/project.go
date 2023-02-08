@@ -37,7 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/user"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -371,8 +370,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	summary := &models.ProjectSummary{
-		ChartCount: int64(p.ChartCount),
-		RepoCount:  p.RepoCount,
+		RepoCount: p.RepoCount,
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
@@ -668,9 +666,6 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	if p.RepoCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains repositories, can not be deleted"
-	} else if p.ChartCount > 0 {
-		result.Deletable = false
-		result.Message = "the project contains helm charts, can not be deleted"
 	}
 
 	return p, result, nil
@@ -743,16 +738,6 @@ func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project)
 	}
 	p.RepoCount = total
 
-	// Populate chart count property
-	if config.WithChartMuseum() {
-		count, err := api.GetChartController().GetCountOfCharts([]string{p.Name})
-		if err != nil {
-			err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", p.ProjectID))
-			return err
-		}
-
-		p.ChartCount = count
-	}
 	return nil
 }
 

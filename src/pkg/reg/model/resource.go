@@ -23,7 +23,6 @@ import (
 const (
 	ResourceTypeArtifact = "artifact"
 	ResourceTypeImage    = "image"
-	ResourceTypeChart    = "chart"
 )
 
 // Resource represents the general replicating content

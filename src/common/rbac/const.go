@@ -35,32 +35,29 @@ const (
 
 // const resource variables
 const (
-	ResourceAll                   = Resource("*")             // resource match any other resources
-	ResourceConfiguration         = Resource("configuration") // project configuration compatible for portal only
-	ResourceHelmChart             = Resource("helm-chart")
-	ResourceHelmChartVersion      = Resource("helm-chart-version")
-	ResourceHelmChartVersionLabel = Resource("helm-chart-version-label")
-	ResourceLabel                 = Resource("label")
-	ResourceLog                   = Resource("log")
-	ResourceLdapUser              = Resource("ldap-user")
-	ResourceMember                = Resource("member")
-	ResourceMetadata              = Resource("metadata")
-	ResourceQuota                 = Resource("quota")
-	ResourceRepository            = Resource("repository")
-	ResourceTagRetention          = Resource("tag-retention")
-	ResourceImmutableTag          = Resource("immutable-tag")
-	ResourceRobot                 = Resource("robot")
-	ResourceNotificationPolicy    = Resource("notification-policy")
-	ResourceScan                  = Resource("scan")
-	ResourceScanner               = Resource("scanner")
-	ResourceArtifact              = Resource("artifact")
-	ResourceTag                   = Resource("tag")
-	ResourceAccessory             = Resource("accessory")
-	ResourceArtifactAddition      = Resource("artifact-addition")
-	ResourceArtifactLabel         = Resource("artifact-label")
-	ResourcePreatPolicy           = Resource("preheat-policy")
-	ResourcePreatInstance         = Resource("preheat-instance")
-	ResourceSelf                  = Resource("") // subresource for self
+	ResourceAll                = Resource("*")             // resource match any other resources
+	ResourceConfiguration      = Resource("configuration") // project configuration compatible for portal only
+	ResourceLabel              = Resource("label")
+	ResourceLog                = Resource("log")
+	ResourceLdapUser           = Resource("ldap-user")
+	ResourceMember             = Resource("member")
+	ResourceMetadata           = Resource("metadata")
+	ResourceQuota              = Resource("quota")
+	ResourceRepository         = Resource("repository")
+	ResourceTagRetention       = Resource("tag-retention")
+	ResourceImmutableTag       = Resource("immutable-tag")
+	ResourceRobot              = Resource("robot")
+	ResourceNotificationPolicy = Resource("notification-policy")
+	ResourceScan               = Resource("scan")
+	ResourceScanner            = Resource("scanner")
+	ResourceArtifact           = Resource("artifact")
+	ResourceTag                = Resource("tag")
+	ResourceAccessory          = Resource("accessory")
+	ResourceArtifactAddition   = Resource("artifact-addition")
+	ResourceArtifactLabel      = Resource("artifact-label")
+	ResourcePreatPolicy        = Resource("preheat-policy")
+	ResourcePreatInstance      = Resource("preheat-instance")
+	ResourceSelf               = Resource("") // subresource for self
 
 	ResourceAuditLog           = Resource("audit-log")
 	ResourceCatalog            = Resource("catalog")

@@ -24,12 +24,11 @@ func TestCfgMetaData_InitFromArray(t *testing.T) {
 	testArray := []Item{
 		{Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", Name: common.AdminInitialPassword, ItemType: &PasswordType{}, Editable: true},
 		{Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", Name: common.AUTHMode, ItemType: &StringType{}, Editable: false},
-		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", Name: common.ChartRepoURL, ItemType: &StringType{}, Editable: false},
 	}
 	curInst := Instance()
 	curInst.initFromArray(testArray)
 
-	if len(metaDataInstance.metaMap) != 3 {
+	if len(metaDataInstance.metaMap) != 2 {
 		t.Errorf("Can not initial metadata, size %v", len(metaDataInstance.metaMap))
 	}
 	item, ok := curInst.GetByName(common.AdminInitialPassword)
