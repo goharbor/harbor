@@ -176,6 +176,7 @@ export interface SystemInfo {
     with_chartmuseum?: boolean;
     admiral_endpoint?: string;
     auth_mode?: string;
+    primary_auth_mode?: boolean;
     registry_url?: string;
     project_creation_restriction?: string;
     self_registration?: boolean;

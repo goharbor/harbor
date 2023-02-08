@@ -4269,7 +4269,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '500':
-          $ref: '#/responses/500'        
+          $ref: '#/responses/500'
   /system/purgeaudit/{purge_id}/log:
     get:
       summary: Get purge job log.
@@ -7666,6 +7666,11 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: The auth mode of current Harbor instance.
+      primary_auth_mode:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       project_creation_restriction:
         type: string
         x-nullable: true
@@ -7793,7 +7798,7 @@ definitions:
       update_time:
         type: string
         format: date-time
-        description: the update time of purge job.        
+        description: the update time of purge job.
   Schedule:
     type: object
     properties:
@@ -8593,6 +8598,9 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
+      primary_auth_mode:
+        $ref: '#/definitions/BoolConfigItem'
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       ldap_base_dn:
         $ref: '#/definitions/StringConfigItem'
         description: The Base DN for LDAP binding.
@@ -8697,7 +8705,7 @@ definitions:
         description: The OIDC group which has the harbor admin privileges
       oidc_group_filter:
         $ref: '#/definitions/StringConfigItem'
-        description: The OIDC group filter which filters out the group doesn't match the regular expression   
+        description: The OIDC group filter which filters out the group doesn't match the regular expression
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
         description: The scope of the OIDC provider
@@ -8758,6 +8766,11 @@ definitions:
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
         x-omitempty: true
         x-isnullable: true
+      primary_auth_mode:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       ldap_base_dn:
         type: string
         description: The Base DN for LDAP binding.
@@ -8942,7 +8955,7 @@ definitions:
         type: string
         description: The OIDC group filter which filters out the group name doesn't match the regular expression
         x-omitempty: true
-        x-isnullable: true        
+        x-isnullable: true
       oidc_scope:
         type: string
         description: The scope of the OIDC provider
@@ -8997,7 +9010,7 @@ definitions:
         type: string
         description: The audit log forward endpoint
         x-omitempty: true
-        x-isnullable: true  
+        x-isnullable: true
       skip_audit_log_database:
         type: boolean
         description: Skip audit log database
@@ -9401,10 +9414,11 @@ definitions:
         items:
           $ref: '#/definitions/ScanDataExportExecution'
         description: The list of scan data export executions
+
   WorkerPool:
     type: object
     description: the worker pool of job service
-    properties: 
+    properties:
       pid:
         type: integer
         description: the process id of jobservice
@@ -9422,13 +9436,13 @@ definitions:
       concurrency:
         type: integer
         description: The concurrency of the work pool
-      host: 
+      host:
         type: string
-        description: The host of the work pool 
+        description: The host of the work pool
   Worker:
     type: object
     description: worker in the pool
-    properties: 
+    properties:
       id:
         type: string
         description: the id of the worker
@@ -9463,7 +9477,7 @@ definitions:
       action:
         type: string
         description: The action of the request, should be stop, pause or resume
-        enum: 
+        enum:
           - stop
           - pause
           - resume

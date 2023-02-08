@@ -50,6 +50,7 @@ const (
 
 	ExtEndpoint                      = "ext_endpoint"
 	AUTHMode                         = "auth_mode"
+	PrimaryAuthMode                  = "primary_auth_mode"
 	DatabaseType                     = "database_type"
 	PostGreSQLHOST                   = "postgresql_host"
 	PostGreSQLPort                   = "postgresql_port"

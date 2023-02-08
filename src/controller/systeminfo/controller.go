@@ -44,6 +44,7 @@ var Ctl = NewController()
 // Data wraps common systeminfo data
 type Data struct {
 	AuthMode          string
+	PrimaryAuthMode   bool
 	SelfRegistration  bool
 	HarborVersion     string
 	AuthProxySettings *models.HTTPAuthProxy
@@ -93,6 +94,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	}
 	res := &Data{
 		AuthMode:         utils.SafeCastString(cfg[common.AUTHMode]),
+		PrimaryAuthMode:  utils.SafeCastBool(cfg[common.PrimaryAuthMode]),
 		SelfRegistration: utils.SafeCastBool(cfg[common.SelfRegistration]),
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 	}
