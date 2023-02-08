@@ -52,20 +52,6 @@ const routes: Routes = [
                     ),
             },
             {
-                path: 'helm-charts',
-                canActivate: [MemberPermissionGuard],
-                data: {
-                    permissionParam: {
-                        resource: USERSTATICPERMISSION.HELM_CHART.KEY,
-                        action: USERSTATICPERMISSION.HELM_CHART.VALUE.LIST,
-                    },
-                },
-                loadChildren: () =>
-                    import(
-                        './helm-chart/helm-chart-list/helm-chart-list.module'
-                    ).then(m => m.HelmChartListModule),
-            },
-            {
                 path: 'members',
                 canActivate: [MemberPermissionGuard],
                 data: {

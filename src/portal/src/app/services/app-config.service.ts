@@ -62,14 +62,6 @@ export class AppConfigService {
         return this.configurations;
     }
 
-    public isIntegrationMode(): boolean {
-        return (
-            this.configurations &&
-            this.configurations.with_admiral &&
-            this.configurations.admiral_endpoint.trim() !== ''
-        );
-    }
-
     public isLdapMode(): boolean {
         return (
             this.configurations &&

@@ -101,12 +101,10 @@ export class CreateEditEndpointComponent
         this.endpointService.getAdapters().subscribe(
             adapters => {
                 this.adapterList = adapters || [];
-                if (!this.appConfigService.getConfig().with_chartmuseum) {
-                    // disable helm-hub
-                    for (let i = 0; i < this.adapterList.length; i++) {
-                        if (this.adapterList[i] === HELM_HUB) {
-                            this.adapterList.splice(i, 1);
-                        }
+                // disable helm-hub
+                for (let i = 0; i < this.adapterList.length; i++) {
+                    if (this.adapterList[i] === HELM_HUB) {
+                        this.adapterList.splice(i, 1);
                     }
                 }
             },

@@ -140,7 +140,6 @@ describe('SummaryComponent', () => {
     it('should show two cards', async () => {
         component.summaryInformation = mockedSummaryInformation;
         component.isCardView = true;
-        component.hasReadChartPermission = true;
         fixture.detectChanges();
         await fixture.whenStable();
         const cards = fixture.nativeElement.querySelectorAll('.card');

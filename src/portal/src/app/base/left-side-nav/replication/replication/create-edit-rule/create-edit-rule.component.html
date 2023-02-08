@@ -246,12 +246,7 @@
                                                 ?.values
                                         "
                                         value="{{ value }}">
-                                        {{ value
-                                        }}{{
-                                            value === 'chart'
-                                                ? ' (chartmuseum)'
-                                                : ''
-                                        }}
+                                        {{ value }}
                                     </option>
                                 </select>
                             </div>
@@ -610,7 +605,6 @@
                                             | translate
                                     }}
                                 </div>
-                                <div>{{ 'REPLICATION.NOTE' | translate }}</div>
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
