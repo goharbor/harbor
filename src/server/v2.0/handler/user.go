@@ -316,7 +316,12 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	if err := requireValidSecret(newPwd); err != nil {
 		return u.SendError(ctx, err)
 	}
-	ok, err := u.ctl.VerifyPassword(ctx, sctx.GetUsername(), newPwd)
+	user, err := u.getUserByID(ctx, uid)
+	if err != nil {
+		log.G(ctx).Errorf("Failed to get user profile for uid: %d, error: %v", uid, err)
+		return u.SendError(ctx, err)
+	}
+	ok, err := u.ctl.VerifyPassword(ctx, user.Username, newPwd)
 	if err != nil {
 		log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
 		return u.SendError(ctx, errors.UnknownError(nil).WithMessage("Failed to verify password"))
