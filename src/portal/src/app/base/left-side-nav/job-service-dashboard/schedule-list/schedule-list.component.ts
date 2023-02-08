@@ -55,6 +55,7 @@ export class ScheduleListComponent {
             .pipe(finalize(() => (this.loadingSchedules = false)))
             .subscribe({
                 next: res => {
+                    this.total = res.total;
                     doSorting(res.scheduleList, state);
                 },
                 error: err => {
