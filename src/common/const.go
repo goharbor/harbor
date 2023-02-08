@@ -142,6 +142,8 @@ const (
 	RobotPrefix = "robot$"
 	// System admin defined the robot name prefix.
 	RobotNamePrefix = "robot_name_prefix"
+	// Scanner robot name prefix
+	RobotScannerNamePrefix = "robot_scanner_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
 	CoreConfigPath          = "/api/v2.0/internalconfig"
@@ -214,6 +216,8 @@ const (
 	SkipAuditLogDatabase = "skip_audit_log_database"
 	// MaxAuditRetentionHour allowed in audit log purge
 	MaxAuditRetentionHour = 240000
+	// ScannerSkipUpdatePullTime
+	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"

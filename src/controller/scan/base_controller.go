@@ -847,10 +847,11 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 	}
 
 	projectName := strings.Split(repository, "/")[0]
+	scannerPrefix := config.ScannerRobotPrefix(ctx)
 
 	robotReq := &robot.Robot{
 		Robot: model.Robot{
-			Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
+			Name:        fmt.Sprintf("%s-%s-%s", scannerPrefix, registration.Name, UUID),
 			Description: "for scan",
 			ProjectID:   projectID,
 		},
