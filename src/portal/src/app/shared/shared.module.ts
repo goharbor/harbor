@@ -62,17 +62,12 @@ import { LabelComponent } from './components/label/label.component';
 import { LabelSignPostComponent } from './components/label/label-signpost/label-signpost.component';
 import { LabelPieceComponent } from './components/label/label-piece/label-piece.component';
 import { CreateEditLabelComponent } from './components/label/create-edit-label/create-edit-label.component';
-import { ListChartVersionRoComponent } from './components/list-chart-version-ro/list-chart-version-ro.component';
 import { DatePickerComponent } from './components/datetime-picker/datetime-picker.component';
 import {
     EndpointDefaultService,
     EndpointService,
 } from './services/endpoint.service';
 import { ImageNameInputComponent } from './components/image-name-input/image-name-input.component';
-import {
-    HelmChartDefaultService,
-    HelmChartService,
-} from '../base/project/helm-chart/helm-chart-detail/helm-chart.service';
 import { MessageHandlerService } from './services/message-handler.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -142,7 +137,6 @@ ClarityIcons.add({
         LabelPieceComponent,
         CreateEditLabelComponent,
         CronScheduleComponent,
-        ListChartVersionRoComponent,
         DatePickerComponent,
         ImageNameInputComponent,
         HarborDatetimePipe,
@@ -182,7 +176,6 @@ ClarityIcons.add({
         LabelPieceComponent,
         CreateEditLabelComponent,
         CronScheduleComponent,
-        ListChartVersionRoComponent,
         DatePickerComponent,
         ImageNameInputComponent,
         HarborDatetimePipe,
@@ -198,7 +191,6 @@ ClarityIcons.add({
             provide: ScanningResultService,
             useClass: ScanningResultDefaultService,
         },
-        { provide: HelmChartService, useClass: HelmChartDefaultService },
     ],
 })
 export class SharedModule {}

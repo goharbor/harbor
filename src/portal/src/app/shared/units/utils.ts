@@ -957,8 +957,6 @@ export enum PageSizeMapKeys {
     ARTIFACT_LIST_TAB_COMPONENT = 'ArtifactListTabComponent',
     ARTIFACT_TAGS_COMPONENT = 'ArtifactTagComponent',
     ARTIFACT_VUL_COMPONENT = 'ArtifactVulnerabilitiesComponent',
-    HELM_CHART_COMPONENT = 'HelmChartComponent',
-    CHART_VERSION_COMPONENT = 'ChartVersionComponent',
     MEMBER_COMPONENT = 'MemberComponent',
     LABEL_COMPONENT = 'LabelComponent',
     P2P_POLICY_COMPONENT = 'P2pPolicyComponent',

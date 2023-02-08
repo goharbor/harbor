@@ -35,3 +35,8 @@
 .search-dropdown-toggle {
   margin-right: 5px;
 }
+
+.no-outline:focus {
+  border: none;
+  background: none;
+}

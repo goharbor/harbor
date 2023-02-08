@@ -130,5 +130,6 @@ export interface ArtifactFilterEvent {
     type?: string;
     stringValue?: string;
     isLabel?: boolean;
+    isInputTag?: boolean;
     label?: Label;
 }

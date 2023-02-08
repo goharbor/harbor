@@ -9,9 +9,6 @@ import { MessageHandlerService } from '../../services/message-handler.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { SkinableConfig } from '../../../services/skinable-config.service';
 import { SharedTestingModule } from '../../shared.module';
-import { TranslateService } from '@ngx-translate/core';
-import { DeFaultLang } from '../../entities/shared.const';
-import { of } from 'rxjs';
 
 describe('NavigatorComponent', () => {
     let component: TestComponentWrapperComponent;

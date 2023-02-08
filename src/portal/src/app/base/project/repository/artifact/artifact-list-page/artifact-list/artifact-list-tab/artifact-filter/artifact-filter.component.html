@@ -36,11 +36,13 @@
                 <div class="clr-control-container" *ngIf="!selectedValue">
                     <div class="clr-input-wrapper">
                         <input
-                            readonly
+                            [readonly]="filterByType !== 'tags'"
                             placeholder="{{
                                 'ARTIFACT.FILTER_FOR_ARTIFACTS' | translate
                             }}"
-                            class="clr-input" />
+                            [(ngModel)]="inputTag"
+                            (keyup)="searchByInputTag()"
+                            class="clr-input no-outline" />
                     </div>
                 </div>
                 <span *ngIf="selectedValue">

@@ -3,19 +3,23 @@ import {
     ElementRef,
     EventEmitter,
     Input,
+    OnDestroy,
+    OnInit,
     Output,
     Renderer2,
     ViewChild,
 } from '@angular/core';
 import { ArtifactFilterEvent, multipleFilter } from '../../../../artifact';
 import { Label } from '../../../../../../../../../../ng-swagger-gen/models/label';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
     selector: 'app-artifact-filter',
     templateUrl: './artifact-filter.component.html',
     styleUrls: ['./artifact-filter.component.scss'],
 })
-export class ArtifactFilterComponent {
+export class ArtifactFilterComponent implements OnInit, OnDestroy {
     @Input()
     withDivider: boolean = false;
     @ViewChild('filterArea')
@@ -31,6 +35,9 @@ export class ArtifactFilterComponent {
     filterEvent = new EventEmitter<ArtifactFilterEvent>();
     readonly searchId: string = 'search-btn';
     readonly typeSelectId: string = 'type-select';
+    inputTag: string;
+    private _keyupEventSubject: Subject<string> = new Subject();
+    private _keyupEventSubscription: Subscription;
     constructor(private renderer: Renderer2) {
         // click  outside, then close dropdown
         this.renderer.listen('window', 'click', (e: Event) => {
@@ -44,6 +51,26 @@ export class ArtifactFilterComponent {
                 this.dropdownOpened = false;
             }
         });
+    }
+    ngOnInit(): void {
+        if (!this._keyupEventSubscription) {
+            this._keyupEventSubscription = this._keyupEventSubject
+                .pipe(debounceTime(500))
+                .subscribe(inputTag => {
+                    this.filterEvent.emit({
+                        type: this.filterByType,
+                        isLabel: false,
+                        isInputTag: true,
+                        stringValue: inputTag,
+                    });
+                });
+        }
+    }
+    ngOnDestroy(): void {
+        if (this._keyupEventSubscription) {
+            this._keyupEventSubscription.unsubscribe();
+            this._keyupEventSubscription = null;
+        }
     }
 
     selectFilterType() {
@@ -86,5 +113,8 @@ export class ArtifactFilterComponent {
             return [this.selectedValue as Label];
         }
         return [];
+    }
+    searchByInputTag() {
+        this._keyupEventSubject.next(this.inputTag);
     }
 }

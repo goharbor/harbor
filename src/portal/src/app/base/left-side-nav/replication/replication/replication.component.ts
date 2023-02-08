@@ -111,7 +111,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     @Input() projectId: number | string;
     @Input() projectName: string;
     @Input() isSystemAdmin: boolean;
-    @Input() withAdmiral: boolean;
     @Input() withReplicationJob: boolean;
     @Input() hasCreateReplicationPermission: boolean;
     @Input() hasUpdateReplicationPermission: boolean;
