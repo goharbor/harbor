@@ -21,9 +21,8 @@ security:
 paths:
   /health:
     get:
-      security: []
       summary: Check the status of Harbor components
-      description: Check the status of Harbor components
+      description: Check the status of Harbor components. This path does not require authentication.
       tags:
         - health
       operationId: getHealth
@@ -4710,10 +4709,9 @@ paths:
           $ref: '#/responses/500'
   /ping:
     get:
-      security: []
       operationId: getPing
       summary: Ping Harbor to check if the API server is alive.
-      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components.
+      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components. This path does not require any authentication.
       tags:
         - ping
       produces:
