@@ -43,8 +43,8 @@ type UserTestSuite struct {
 
 func (uts *UserTestSuite) SetupSuite() {
 	uts.user = &commonmodels.User{
-		UserID:          1,
-		Username:        "admin",
+		UserID:   1,
+		Username: "admin",
 	}
 
 	uts.uCtl = &usertesting.Controller{}
