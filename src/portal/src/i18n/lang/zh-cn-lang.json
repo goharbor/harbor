@@ -837,7 +837,7 @@
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
             "AUTH_MODE": "默认认证模式为数据库认证，即用户凭证存储在本地数据库。如果使用LDAP来认证用户，则设置为LDAP。",
-            "PRIMARY_AUTH_MODE": "This auth mode becomes the default way for users to login. The login screen where the user selects to login via the identity provider or via local DB will automatically redirect the user to this identity provider. Login via DB is possible when visiting the url '/account/sign-in' explicitly.",
+            "PRIMARY_AUTH_MODE": "使得此认证模式变为用户的默认登录方式。开启此项后，登录操作将被直接导航至该认证模式指定的提供商登录页面。显式访问路径 '/account/sign-in' 时可打开 Harbor 的登录页面。",
             "LDAP_SEARCH_DN": "有搜索权限的LDAP用户DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN及其密码。",
             "LDAP_BASE_DN": "用来在LDAP和AD中搜寻用户的基础DN。",
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
