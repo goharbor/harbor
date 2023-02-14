@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -66,6 +65,7 @@ func (c *controller) ListExecutions(ctx context.Context, userName string) ([]*ex
 }
 
 func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task, error) {
+	logger := log.GetLogger(ctx)
 	query := q2.New(q2.KeyWords{})
 
 	keywords := make(map[string]interface{})
@@ -90,6 +90,7 @@ func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task
 }
 
 func (c *controller) GetExecution(ctx context.Context, executionID int64) (*export.Execution, error) {
+	logger := log.GetLogger(ctx)
 	exec, err := c.execMgr.Get(ctx, executionID)
 	if err != nil {
 		logger.Errorf("Error when fetching execution status for ExecutionId: %d error : %v", executionID, err)
@@ -103,6 +104,7 @@ func (c *controller) GetExecution(ctx context.Context, executionID int64) (*expo
 }
 
 func (c *controller) DeleteExecution(ctx context.Context, executionID int64) error {
+	logger := log.GetLogger(ctx)
 	err := c.execMgr.Delete(ctx, executionID)
 	if err != nil {
 		logger.Errorf("Error when deleting execution  for ExecutionId: %d, error : %v", executionID, err)
@@ -188,12 +190,17 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 	if statusMessage, ok := exec.ExtraAttrs[export.StatusMessageAttribute]; ok {
 		execStatus.StatusMessage = statusMessage.(string)
 	}
-	artifactExists := c.isCsvArtifactPresent(ctx, exec.ID, execStatus.ExportDataDigest)
-	execStatus.FilePresent = artifactExists
+
+	if len(execStatus.ExportDataDigest) > 0 {
+		artifactExists := c.isCsvArtifactPresent(ctx, exec.ID, execStatus.ExportDataDigest)
+		execStatus.FilePresent = artifactExists
+	}
+
 	return execStatus
 }
 
 func (c *controller) isCsvArtifactPresent(ctx context.Context, execID int64, digest string) bool {
+	logger := log.GetLogger(ctx)
 	repositoryName := fmt.Sprintf("scandata_export_%v", execID)
 	exists, err := c.sysArtifactMgr.Exists(ctx, strings.ToLower(export.Vendor), repositoryName, digest)
 	if err != nil {
