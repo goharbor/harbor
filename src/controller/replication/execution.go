@@ -163,6 +163,12 @@ func (c *controller) markError(ctx context.Context, executionID int64, err error
 }
 
 func (c *controller) Stop(ctx context.Context, id int64) error {
+	// check whether the replication execution existed
+	_, err := c.GetExecution(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	return c.execMgr.Stop(ctx, id)
 }
 
