@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	usertesting "github.com/goharbor/harbor/src/testing/controller/user"
@@ -36,9 +37,16 @@ func TestRequireValidSecret(t *testing.T) {
 type UserTestSuite struct {
 	htesting.Suite
 	uCtl *usertesting.Controller
+
+	user *commonmodels.User
 }
 
 func (uts *UserTestSuite) SetupSuite() {
+	uts.user = &commonmodels.User{
+		UserID:   1,
+		Username: "admin",
+	}
+
 	uts.uCtl = &usertesting.Controller{}
 	uts.Config = &restapi.Config{
 		UserAPI: &usersAPI{
@@ -69,8 +77,8 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/1/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
-		uts.Security.On("GetUsername").Return("admin").Times(1)
 
+		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
 		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", "Passw0rd").Return(true, nil).Times(1)
 		res, err := uts.Suite.PutJSON(url, &body)
 		uts.NoError(err)
@@ -79,8 +87,8 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/1/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
-		uts.Security.On("GetUsername").Return("admin").Times(1)
 
+		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
 		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", mock.Anything).Return(false, nil).Times(1)
 		uts.uCtl.On("UpdatePassword", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		res, err := uts.Suite.PutJSON(url, &body)
