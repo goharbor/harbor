@@ -816,7 +816,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         } else {
             if (e?.stringValue) {
-                this.filters.push(`${e.type}=${e?.stringValue}`);
+                if (e?.isInputTag) {
+                    // for input tag, use fuzzy match
+                    this.filters.push(`${e.type}=~${e?.stringValue}`);
+                } else {
+                    this.filters.push(`${e.type}=${e?.stringValue}`);
+                }
             }
         }
         this.refresh();

@@ -275,7 +275,7 @@ define _build_base
 		if [ -n "$(REGISTRYUSER)"  ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
 			docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
 		else \
-			echo "No docker credentials provided, please be aware of priviledges to access docker hub!" ; \
+			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
 		fi ;\
 		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \

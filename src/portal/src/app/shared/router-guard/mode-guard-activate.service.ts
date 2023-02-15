@@ -38,26 +38,11 @@ export class ModeGuard implements CanActivate, CanActivateChild {
     ): Observable<boolean> | boolean {
         // Show the right sign-in page for different modes
         return new Observable(observer => {
-            if (this.appConfigService.isIntegrationMode()) {
-                if (state.url.startsWith(CommonRoutes.SIGN_IN)) {
-                    this.router.navigate(
-                        [CommonRoutes.EMBEDDED_SIGN_IN],
-                        route.queryParams
-                    );
-                    observer.next(false);
-                } else {
-                    observer.next(true);
-                }
+            if (state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+                this.router.navigate([CommonRoutes.SIGN_IN], route.queryParams);
+                observer.next(false);
             } else {
-                if (state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
-                    this.router.navigate(
-                        [CommonRoutes.SIGN_IN],
-                        route.queryParams
-                    );
-                    observer.next(false);
-                } else {
-                    observer.next(true);
-                }
+                observer.next(true);
             }
         });
     }

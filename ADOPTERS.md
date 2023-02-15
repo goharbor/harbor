@@ -75,7 +75,7 @@ and manages more than 3,000 images.
 CI/CD pipeline for more than a year housing hundreds of images for various
 environments.
 
-**AWN:** Utilizes Harbor as a secure image repository for all of internal
+**AWN:** Utilizes Harbor as a secure image repository for all internal
 container-based workloads. Harbor provides developers and sysadmins a secure
 and easy-to-use repository. AWN leverages the image vulnerability scanning
 feature within Harbor before deploying images into production.

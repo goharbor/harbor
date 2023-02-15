@@ -20,10 +20,5 @@
             <list-repository-ro
                 [repositories]="searchResults.repository"></list-repository-ro>
         </div>
-        <div *ngIf="withHelmChart" id="chart-results">
-            <h2>{{ 'HELM_CHART.HELMCHARTS' | translate }}</h2>
-            <list-chart-version-ro
-                [charts]="searchResults.chart"></list-chart-version-ro>
-        </div>
     </div>
 </div>

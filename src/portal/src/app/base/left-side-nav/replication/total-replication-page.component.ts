@@ -80,8 +80,4 @@ export class TotalReplicationPageComponent implements OnInit, OnDestroy {
         let account = this.session.getCurrentUser();
         return account != null && account.has_admin_role;
     }
-
-    get withAdmiral(): boolean {
-        return this.appConfigService.getConfig().with_admiral;
-    }
 }

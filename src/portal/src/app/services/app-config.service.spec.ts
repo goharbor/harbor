@@ -47,7 +47,6 @@ describe('AppConfigService', () => {
         expect(req.request.method).toBe('GET');
         req.flush(systeminfo);
         expect(service.getConfig()).toEqual(systeminfo);
-        expect(service.isIntegrationMode()).toBeFalsy();
         expect(service.isLdapMode()).toBeFalsy();
         expect(service.isHttpAuthMode()).toBeFalsy();
         expect(service.isOidcMode()).toBeFalsy();

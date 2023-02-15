@@ -132,11 +132,6 @@ export class ListProjectComponent implements OnDestroy {
         }
         return false;
     }
-
-    get withChartMuseum(): boolean {
-        return this.appConfigService.getConfig().with_chartmuseum;
-    }
-
     public get isSystemAdmin(): boolean {
         let account = this.session.getCurrentUser();
         return account != null && account.has_admin_role;

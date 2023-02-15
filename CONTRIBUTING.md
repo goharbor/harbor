@@ -11,7 +11,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 
 * [Bi-weekly public community meetings][community-meetings]
   * Catch up with [past meetings on YouTube][past-meetings]
-* Chat with us on the CNCF Slack ([get an invite here][cncf-slack] )
+* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack] )
   * [#harbor][users-slack] for end-user discussions
   * [#harbor-dev][dev-slack] for development of Harbor
 * Want long-form communication instead of Slack? We have two distributions lists:
@@ -47,7 +47,7 @@ To build the project, please refer the [build](https://goharbor.io/docs/edge/bui
 
 ### Repository Structure
 
-Here is the basic structure of the harbor code base. Some of the key folders / files are commented for your references.
+Here is the basic structure of the harbor code base. Some key folders / files are commented for your references.
 ```
 .
 ...
@@ -200,7 +200,7 @@ To run the code, please refer to the [build](https://goharbor.io/docs/edge/build
 
 PR are always welcome, even if they only contain small fixes like typos or a few lines of code. If there will be a significant effort, please document it as an issue and get a discussion going before starting to work on it.
 
-Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
+Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot of features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
 Note: If you split your pull request to small changes, please make sure any of the changes goes to `main` will not break anything. Otherwise, it can not be merged until this feature complete.
 
@@ -293,7 +293,7 @@ Please use `fetch / rebase` (as shown above) instead of `git pull`. `git pull` d
 
 ### Commit
 
-As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign-off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
+As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
 
 ```bash
 $ git commit -s -m 'This is my commit message'
@@ -316,7 +316,7 @@ curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/ho
 
 ### Automated Testing
 Once your pull request has been opened, harbor will run two CI pipelines against it.
-1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
+1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also, all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
 2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:

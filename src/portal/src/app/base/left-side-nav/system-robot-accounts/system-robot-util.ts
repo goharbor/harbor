@@ -28,8 +28,6 @@ export enum PermissionsKinds {
 
 export enum Resource {
     REPO = 'repository',
-    HELM_CHART = 'helm-chart',
-    HELM_CHART_VERSION = 'helm-chart-version',
     ARTIFACT = 'artifact',
 }
 
@@ -116,31 +114,6 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         action: 'stop',
         checked: true,
     },
-    {
-        resource: 'helm-chart',
-        action: 'read',
-        checked: true,
-    },
-    {
-        resource: 'helm-chart-version',
-        action: 'create',
-        checked: true,
-    },
-    {
-        resource: 'helm-chart-version',
-        action: 'delete',
-        checked: true,
-    },
-    {
-        resource: 'helm-chart-version-label',
-        action: 'create',
-        checked: true,
-    },
-    {
-        resource: 'helm-chart-version-label',
-        action: 'delete',
-        checked: true,
-    },
 ];
 
 export const ACTION_RESOURCE_I18N_MAP = {
@@ -151,11 +124,8 @@ export const ACTION_RESOURCE_I18N_MAP = {
     delete: 'SYSTEM_ROBOT.DELETE',
     repository: 'SYSTEM_ROBOT.REPOSITORY',
     artifact: 'SYSTEM_ROBOT.ARTIFACT',
-    'helm-chart': 'SYSTEM_ROBOT.HELM',
-    'helm-chart-version': 'SYSTEM_ROBOT.HELM_VERSION',
     tag: 'REPLICATION.TAG',
     'artifact-label': 'SYSTEM_ROBOT.ARTIFACT_LABEL',
-    'helm-chart-version-label': 'SYSTEM_ROBOT.HELM_LABEL',
     scan: 'SYSTEM_ROBOT.SCAN',
     'scanner-pull': 'SYSTEM_ROBOT.SCANNER_PULL',
     stop: 'SYSTEM_ROBOT.STOP',
