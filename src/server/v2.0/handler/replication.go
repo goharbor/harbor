@@ -350,6 +350,12 @@ func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operat
 	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplication); err != nil {
 		return r.SendError(ctx, err)
 	}
+	// check the existence of the replication execution
+	_, err := r.ctl.GetExecution(ctx, params.ID)
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+
 	query, err := r.BuildQuery(ctx, nil, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
