@@ -54,8 +54,10 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 		return se.SendError(ctx, err)
 	}
 
-	if err := se.RequireProjectAccess(ctx, params.Criteria.Projects[0], rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
-		return se.SendError(ctx, err)
+	for _, pid := range params.Criteria.Projects {
+		if err := se.RequireProjectAccess(ctx, pid, rbac.ActionCreate, rbac.ResourceExportCVE); err != nil {
+			return se.SendError(ctx, err)
+		}
 	}
 
 	scanDataExportJob := new(models.ScanDataExportJob)

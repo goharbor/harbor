@@ -74,6 +74,9 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 	mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
+	mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 
 	execAttrs := make(map[string]interface{})
 	execAttrs[export.JobNameAttribute] = "test-job"
@@ -83,6 +86,9 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	params := job.Parameters{}
 	params[export.JobModeKey] = export.JobModeExport
 	params["JobId"] = JobId
+	params["Request"] = map[string]interface{}{
+		"projects": []int64{1},
+	}
 	ctx := &mockjobservice.MockJobContext{}
 
 	err := suite.job.Run(ctx, params)
@@ -144,7 +150,9 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 
 	data := suite.createDataRecords(3, 1)
 	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
+	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 
 	execAttrs := make(map[string]interface{})
@@ -155,6 +163,9 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 	params := job.Parameters{}
 	params[export.JobModeKey] = export.JobModeExport
 	params["JobId"] = JobId
+	params["Request"] = map[string]interface{}{
+		"projects": []int{1},
+	}
 	ctx := &mockjobservice.MockJobContext{}
 
 	err := suite.job.Run(ctx, params)
@@ -211,7 +222,6 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 
 		repoCandidates := []int64{1}
 		artCandidates := []*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1, Digest: "digest1"}}}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{1}, nil).Once()
 		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
 		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(artCandidates, nil)
 		mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return(artCandidates, nil)
@@ -276,7 +286,6 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 
 		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
 		repoCandidates := []*selector.Candidate{repoCandidate1}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{1}, nil).Once()
 		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
 		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
 
@@ -323,115 +332,6 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 	}
 }
 
-func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForProjectIdFilter() {
-	{
-		data := suite.createDataRecords(3, 1)
-
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
-		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
-		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
-		execAttrs[export.JobNameAttribute] = "test-job"
-		execAttrs[export.UserNameAttribute] = "test-user"
-		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
-
-		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
-		repoCandidates := []*selector.Candidate{repoCandidate1}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return(nil, errors.New("test error")).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
-
-		criteria := export.Request{
-			CVEIds:       "CVE-123",
-			Labels:       []int64{1},
-			Projects:     []int64{1},
-			Repositories: "test-repo",
-			Tags:         "test-tag",
-		}
-		criteriaMap := make(map[string]interface{})
-		bytes, _ := json.Marshal(criteria)
-		json.Unmarshal(bytes, &criteriaMap)
-		params := job.Parameters{}
-		params[export.JobModeKey] = export.JobModeExport
-		params["JobId"] = JobId
-		params["Request"] = criteriaMap
-
-		ctx := &mockjobservice.MockJobContext{}
-		ctx.On("SystemContext").Return(context.TODO()).Once()
-
-		err := suite.job.Run(ctx, params)
-		suite.Error(err)
-		sysArtifactRecordMatcher := testifymock.MatchedBy(func(sa *model.SystemArtifact) bool {
-			return sa.Repository == "scandata_export_100" && sa.Vendor == strings.ToLower(export.Vendor) && sa.Digest == MockDigest
-		})
-		suite.sysArtifactMgr.AssertNotCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
-		suite.execMgr.AssertNotCalled(suite.T(), "UpdateExtraAttrs", mock.Anything, int64(JobId), mock.Anything)
-		_, err = os.Stat("/tmp/scandata_export_100.csv")
-
-		suite.exportMgr.AssertNotCalled(suite.T(), "Fetch", mock.Anything, mock.Anything)
-
-		suite.Truef(os.IsNotExist(err), "Expected CSV file to be deleted")
-	}
-
-	// empty list of projects
-	{
-		data := suite.createDataRecords(3, 1)
-
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
-		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
-		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
-		execAttrs[export.JobNameAttribute] = "test-job"
-		execAttrs[export.UserNameAttribute] = "test-user"
-		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
-
-		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
-		repoCandidates := []*selector.Candidate{repoCandidate1}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{}, nil).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
-
-		criteria := export.Request{
-			CVEIds:       "CVE-123",
-			Labels:       []int64{1},
-			Projects:     []int64{1},
-			Repositories: "test-repo",
-			Tags:         "test-tag",
-		}
-		criteriaMap := make(map[string]interface{})
-		bytes, _ := json.Marshal(criteria)
-		json.Unmarshal(bytes, &criteriaMap)
-		params := job.Parameters{}
-		params[export.JobModeKey] = export.JobModeExport
-		params["JobId"] = JobId
-		params["Request"] = criteriaMap
-
-		ctx := &mockjobservice.MockJobContext{}
-		ctx.On("SystemContext").Return(context.TODO()).Once()
-
-		err := suite.job.Run(ctx, params)
-		suite.NoError(err)
-		sysArtifactRecordMatcher := testifymock.MatchedBy(func(sa *model.SystemArtifact) bool {
-			return sa.Repository == "scandata_export_100" && sa.Vendor == strings.ToLower(export.Vendor) && sa.Digest == MockDigest
-		})
-		suite.sysArtifactMgr.AssertCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
-
-		suite.execMgr.AssertCalled(suite.T(), "UpdateExtraAttrs", mock.Anything, int64(JobId), mock.Anything)
-		_, err = os.Stat("/tmp/scandata_export_100.csv")
-
-		suite.exportMgr.AssertNotCalled(suite.T(), "Fetch", mock.Anything, mock.Anything)
-
-		suite.Truef(os.IsNotExist(err), "Expected CSV file to be deleted")
-	}
-
-}
-
 func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilter() {
 	{
 		data := suite.createDataRecords(3, 1)
@@ -447,11 +347,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
 
-		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
-		repoCandidates := []*selector.Candidate{repoCandidate1}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{1}, errors.New("test error")).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(nil, errors.New("test error"))
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
+		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, errors.New("test error")).Once()
+		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 
 		criteria := export.Request{
 			CVEIds:       "CVE-123",
@@ -500,10 +397,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
 
-		repoCandidates := make([]*selector.Candidate, 0)
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{}, nil).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(repoCandidates, nil)
+		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{}, nil).Once()
+		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{}, nil).Once()
 
 		criteria := export.Request{
 			CVEIds:       "CVE-123",
@@ -554,11 +449,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
 
-		repoCandidate1 := &selector.Candidate{NamespaceID: 1}
-		repoCandidates := []*selector.Candidate{repoCandidate1}
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{1}, errors.New("test error")).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(nil, errors.New("test error"))
+		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
+		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(nil, errors.New("test error")).Once()
 
 		criteria := export.Request{
 			CVEIds:       "CVE-123",
@@ -607,10 +499,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: int64(JobId), ExtraAttrs: execAttrs}, nil).Once()
 
-		repoCandidates := make([]*selector.Candidate, 0)
-		mock.OnAnything(suite.filterProcessor, "ProcessProjectFilter").Return([]int64{}, nil).Once()
-		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return(repoCandidates, nil)
-		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(make([]*selector.Candidate, 0), nil)
+		mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{}, nil).Once()
+		mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return(nil, nil).Once()
 
 		criteria := export.Request{
 			CVEIds:       "CVE-123",
