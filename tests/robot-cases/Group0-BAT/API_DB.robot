@@ -182,3 +182,7 @@ Test Case - Log Forward
 Test Case - Scan Data Export
     [Tags]  scan_data_export
     Harbor API Test  ./tests/apitests/python/test_scan_data_export.py
+
+Test Case - Job Service Dashboard
+    [Tags]  job_service_dashboard
+    Harbor API Test  ./tests/apitests/python/test_job_service_dashboard.py
