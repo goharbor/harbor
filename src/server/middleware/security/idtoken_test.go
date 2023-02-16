@@ -34,13 +34,6 @@ func TestIDToken(t *testing.T) {
 	ctx := idToken.Generate(req)
 	assert.Nil(t, ctx)
 
-	// not the candidate request
-	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/chartrepo/", nil)
-	require.Nil(t, err)
-	req = req.WithContext(lib.WithAuthMode(req.Context(), common.DBAuth))
-	ctx = idToken.Generate(req)
-	assert.Nil(t, ctx)
-
 	// contains no authorization header
 	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)

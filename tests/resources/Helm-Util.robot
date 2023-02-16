@@ -23,23 +23,6 @@ Prepare Helm Plugin
     Wait Unitl Command Success  helm plugin install https://github.com/chartmuseum/helm-push
     Wait Unitl Command Success  helm3 plugin install https://github.com/chartmuseum/helm-push
 
-Helm Repo Add
-    [Arguments]  ${harbor_url}  ${user}  ${pwd}  ${project_name}=library  ${helm_repo_name}=myrepo
-    ${rc}  ${output}=  Run And Return Rc And Output  helm repo remove ${project_name}
-    Log To Console  ${output}
-    Wait Unitl Command Success  helm repo add --username=${user} --password=${pwd} ${helm_repo_name} ${harbor_url}/chartrepo/${project_name}
-
-Helm Repo Push
-    [Arguments]  ${user}  ${pwd}  ${chart_filename}  ${helm_repo_name}=myrepo  ${helm_cmd}=helm
-    ${current_dir}=  Run  pwd
-    Run  cd ${current_dir}
-    Run  wget ${harbor_chart_file_url}
-    Wait Unitl Command Success  ${helm_cmd} cm-push --username=${user} --password=${pwd} ${chart_filename} ${helm_repo_name}
-
-Helm Chart Push
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${chart_file}  ${archive}  ${project}  ${repo_name}  ${verion}
-    Wait Unitl Command Success  ./tests/robot-cases/Group0-Util/helm_push_chart.sh ${ip} ${user} ${pwd} ${chart_file} ${archive} ${project} ${repo_name} ${verion}
-
 Helm3.7 Registry Login
     [Arguments]  ${ip}  ${user}  ${password}
     Wait Unitl Command Success  helm3.7 registry login ${ip} -u ${user} -p ${password}

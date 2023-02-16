@@ -53,11 +53,6 @@ func (s *stageTestSuite) TestInitialize() {
 
 func (s *stageTestSuite) TestFetchResources() {
 	adapter := &mockAdapter{}
-	adapter.On("Info").Return(&model.RegistryInfo{
-		SupportedResourceTypes: []string{
-			model.ResourceTypeArtifact,
-		},
-	}, nil)
 	adapter.On("FetchArtifacts", mock.Anything).Return([]*model.Resource{
 		{},
 		{},
@@ -72,7 +67,7 @@ func (s *stageTestSuite) TestFetchResources() {
 func (s *stageTestSuite) TestAssembleSourceResources() {
 	resources := []*model.Resource{
 		{
-			Type: model.ResourceTypeChart,
+			Type: model.ResourceTypeArtifact,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
 					Name: "library/hello-world",
@@ -95,7 +90,7 @@ func (s *stageTestSuite) TestAssembleSourceResources() {
 func (s *stageTestSuite) TestAssembleDestinationResources() {
 	resources := []*model.Resource{
 		{
-			Type: model.ResourceTypeChart,
+			Type: model.ResourceTypeArtifact,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
 					Name: "library/hello-world",
@@ -114,7 +109,7 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 	res, err := assembleDestinationResources(resources, policy, "")
 	s.Require().Nil(err)
 	s.Len(res, 1)
-	s.Equal(model.ResourceTypeChart, res[0].Type)
+	s.Equal(model.ResourceTypeArtifact, res[0].Type)
 	s.Equal("test/hello-world", res[0].Metadata.Repository.Name)
 	s.Equal(1, len(res[0].Metadata.Vtags))
 	s.Equal("latest", res[0].Metadata.Vtags[0])

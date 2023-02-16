@@ -7646,11 +7646,6 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: If the Harbor instance is deployed with nested notary.
-      with_chartmuseum:
-        type: boolean
-        x-nullable: true
-        x-omitempty: true
-        description: If the Harbor instance is deployed with nested chartmuseum.
       registry_url:
         type: string
         x-nullable: true

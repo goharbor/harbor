@@ -103,14 +103,6 @@ func (suite *DaoTestSuite) preparePermissionPolicy() {
 	suite.rbacPolicyID3 = id3
 	suite.Nil(err)
 
-	rp4 := &model.PermissionPolicy{
-		Scope:    "/project/2",
-		Resource: "helm-chart",
-		Action:   "create",
-	}
-	id4, err := suite.dao.CreateRbacPolicy(orm.Context(), rp4)
-	suite.rbacPolicyID4 = id4
-	suite.Nil(err)
 }
 
 func (suite *DaoTestSuite) TestCreatePermission() {

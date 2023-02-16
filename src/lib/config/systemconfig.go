@@ -30,7 +30,6 @@ package config
 
 import (
 	"context"
-	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -150,21 +149,6 @@ func WithNotary() bool {
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
-}
-
-// WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
-func WithChartMuseum() bool {
-	return DefaultMgr().Get(backgroundCtx, common.WithChartMuseum).GetBool()
-}
-
-// GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
-// otherwise an non nil error is returned
-func GetChartMuseumEndpoint() (string, error) {
-	chartEndpoint := strings.TrimSpace(DefaultMgr().Get(backgroundCtx, common.ChartRepoURL).GetString())
-	if len(chartEndpoint) == 0 {
-		return "", errors.New("empty chartmuseum endpoint")
-	}
-	return chartEndpoint, nil
 }
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port

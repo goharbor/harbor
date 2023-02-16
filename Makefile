@@ -82,8 +82,6 @@ TRIVYFLAG=false
 HTTPPROXY=
 BUILDBIN=true
 NPM_REGISTRY=https://registry.npmjs.org
-# enable/disable chart repo supporting
-CHARTFLAG=false
 BUILDTARGET=build
 GEN_TLS=
 
@@ -94,7 +92,7 @@ VERSIONTAG=dev
 BUILD_BASE=true
 PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
+BUILDBASETARGET=trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
 IMAGENAMESPACE=goharbor
 BASEIMAGENAMESPACE=goharbor
 # #input true/false only
@@ -112,17 +110,10 @@ NOTARYMIGRATEVERSION=v4.11.0
 TRIVYVERSION=v0.37.2
 TRIVYADAPTERVERSION=v0.30.7
 
-# version of chartmuseum for pulling the source code
-CHARTMUSEUM_SRC_TAG=v0.14.0
-
-# version of chartmuseum
-CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
-
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.0
 
 # dependency binaries
-CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
 NOTARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
@@ -134,7 +125,6 @@ REGISTRY_VERSION: $(REGISTRYVERSION)
 NOTARY_VERSION: $(NOTARYVERSION)
 TRIVY_VERSION: $(TRIVYVERSION)
 TRIVY_ADAPTER_VERSION: $(TRIVYADAPTERVERSION)
-CHARTMUSEUM_VERSION: $(CHARTMUSEUMVERSION)
 endef
 
 # docker parameters
@@ -216,10 +206,6 @@ endif
 ifeq ($(TRIVYFLAG), true)
 	PREPARECMD_PARA+= --with-trivy
 endif
-# append chartmuseum parameters if set
-ifeq ($(CHARTFLAG), true)
-    PREPARECMD_PARA+= --with-chartmuseum
-endif
 
 # makefile
 MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
@@ -234,7 +220,6 @@ DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/harbor-jobservice
 DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/harbor-log
 DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/harbor-db
-DOCKERIMAGENAME_CHART_SERVER=$(IMAGENAMESPACE)/chartmuseum-photon
 DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/harbor-registryctl
 DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-exporter
 
@@ -294,10 +279,6 @@ ifeq ($(NOTARYFLAG), true)
 endif
 ifeq ($(TRIVYFLAG), true)
 	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
-endif
-# append chartmuseum parameters if set
-ifeq ($(CHARTFLAG), true)
-	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(VERSIONTAG)
 endif
 
 
@@ -430,9 +411,8 @@ build:
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
-	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
-	 -e CHARTURL=$(CHARTURL) -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
+	 -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
