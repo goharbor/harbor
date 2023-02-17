@@ -31,7 +31,7 @@ jobs:
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@1.0.11
         with:
-          docker_version: 18.09
+          docker_version: 20.10
           docker_channel: stable
       - uses: actions/checkout@v3
       - uses: jitterbit/get-changed-files@v1

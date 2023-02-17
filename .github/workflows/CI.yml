@@ -38,11 +38,6 @@ jobs:
         with:
            go-version: 1.19.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
-        with:
-          docker_version: 20.04
-          docker_channel: stable
       - uses: actions/checkout@v3
         with:
          path: src/github.com/goharbor/harbor
@@ -104,11 +99,6 @@ jobs:
         with:
           go-version: 1.19.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
-        with:
-          docker_version: 18.09
-          docker_channel: stable
       - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
@@ -164,11 +154,6 @@ jobs:
         with:
           go-version: 1.19.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
-        with:
-          docker_version: 18.09
-          docker_channel: stable
       - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
@@ -224,11 +209,6 @@ jobs:
         with:
           go-version: 1.19.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
-        with:
-          docker_version: 18.09
-          docker_channel: stable
       - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
@@ -282,11 +262,6 @@ jobs:
         with:
           go-version: 1.19.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
-        with:
-          docker_version: 18.09
-          docker_channel: stable
       - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
