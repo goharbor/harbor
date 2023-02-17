@@ -30,6 +30,27 @@ class ScanAll(base.Base):
                 raise Exception(r"Create scan all schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
         base._assert_status_code(expect_status_code, status_code)
 
+    def update_scan_all_schedule(self, schedule_type, cron=None, expect_status_code=200, expect_response_body=None, **kwargs):
+        schedule_obj = v2_swagger_client.ScheduleObj()
+        schedule_obj.type = schedule_type
+        if cron is not None:
+            schedule_obj.cron = cron
+
+        schedule = v2_swagger_client.Schedule()
+        schedule.schedule = schedule_obj
+
+        try:
+            _, status_code, _ = self._get_client(**kwargs).update_scan_all_schedule_with_http_info(schedule)
+        except ApiException as e:
+            if e.status == expect_status_code:
+                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
+                    raise Exception(r"Update scan all schedule response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
+                else:
+                    return e.reason, e.body
+            else:
+                raise Exception(r"Update scan all schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+        base._assert_status_code(expect_status_code, status_code)
+
     def scan_all_now(self, **kwargs):
         self.create_scan_all_schedule('Manual', **kwargs)
 
