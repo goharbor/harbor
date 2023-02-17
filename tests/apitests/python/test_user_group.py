@@ -34,7 +34,6 @@ from pprint import pprint
 
 class TestUserGroup(unittest.TestCase):
     """UserGroup unit test stubs"""
-    product_api = testutils.GetProductApi("admin", "Harbor12345")
     usergroup_api = testutils.GetUserGroupApi("admin", "Harbor12345")
     groupId = 0
     def setUp(self):

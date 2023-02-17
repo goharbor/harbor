@@ -16,7 +16,6 @@ print(sys.path)
 files_directory = os.getcwd() + "/tests/files/"
 
 import v2_swagger_client
-import swagger_client.models
 
 admin_user = "admin"
 admin_pwd = "Harbor12345"
@@ -37,17 +36,6 @@ ES_ENDPOINT = os.environ.get('ES_ENDPOINT', '')
 BASE_IMAGE = dict(name='busybox', tag='latest')
 BASE_IMAGE_ABS_PATH_NAME = '/' + BASE_IMAGE['name'] + '.tar'
 
-def GetProductApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
-
-    cfg = swagger_client.Configuration()
-    cfg.host = "https://"+harbor_server+"/api/v2.0"
-    cfg.username = username
-    cfg.password = password
-    cfg.verify_ssl = False
-    cfg.debug = True
-    api_client = swagger_client.ApiClient(cfg)
-    api_instance = swagger_client.ProductsApi(api_client)
-    return api_instance
 
 def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
 
