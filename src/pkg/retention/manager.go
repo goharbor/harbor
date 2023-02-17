@@ -21,7 +21,9 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
+	"github.com/go-openapi/strfmt"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -92,6 +94,12 @@ func (d *DefaultManager) GetPolicy(ctx context.Context, id int64) (*policy.Metad
 		return nil, err
 	}
 	p.ID = id
+	if p.Trigger.Kind == policy.TriggerKindSchedule {
+		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
+		if ok && len(cron.(string)) > 0 {
+			p.Trigger.Settings[policy.TriggerSettingNextScheduledTime] = strfmt.DateTime(utils.NextSchedule(cron.(string), time.Now()))
+		}
+	}
 	return p, nil
 }
 
