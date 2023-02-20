@@ -8,7 +8,7 @@ docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'do
 docker_compose_yml_path = '/compose_location/docker-compose.yml'
 
 # render docker-compose
-def prepare_docker_compose(configs, with_trivy, with_notary, with_chartmuseum):
+def prepare_docker_compose(configs, with_trivy, with_notary):
     versions = parse_versions()
     VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
 
@@ -18,7 +18,6 @@ def prepare_docker_compose(configs, with_trivy, with_notary, with_chartmuseum):
         'redis_version': VERSION_TAG,
         'notary_version': VERSION_TAG,
         'trivy_adapter_version': VERSION_TAG,
-        'chartmuseum_version': VERSION_TAG,
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],
         'protocol': configs['protocol'],
@@ -27,7 +26,6 @@ def prepare_docker_compose(configs, with_trivy, with_notary, with_chartmuseum):
         'external_database': configs['external_database'],
         'with_notary': with_notary,
         'with_trivy': with_trivy,
-        'with_chartmuseum': with_chartmuseum
     }
 
     # if configs.get('registry_custom_ca_bundle_path'):

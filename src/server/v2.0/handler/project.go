@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -36,13 +37,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/user"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
@@ -62,7 +63,7 @@ const defaultDaysToRetentionForProxyCacheProject = 7
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
-		metadataMgr:   metadata.Mgr,
+		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
 		projectCtl:    project.Ctl,
@@ -147,13 +148,20 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
+	// validate metadata.public value, should only be "true" or "false"
+	if p := req.Metadata.Public; p != "" {
+		if p != "true" && p != "false" {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+		}
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
 		req.Metadata.EnableContentTrust = nil
 	}
 
-	// validate the RegistryID and StorageLimit in the body of the request
+	// validate the RetentionID, RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -196,7 +204,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		OwnerID:    ownerID,
 		RegistryID: lib.Int64Value(req.RegistryID),
 	}
-	lib.JSONCopy(&p.Metadata, req.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, req.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when CreateProject, error: %v", err)
+	}
+	delete(p.Metadata, "retention_id")
 
 	projectID, err := a.projectCtl.Create(ctx, p)
 	if err != nil {
@@ -359,8 +370,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	summary := &models.ProjectSummary{
-		ChartCount: int64(p.ChartCount),
-		RepoCount:  p.RepoCount,
+		RepoCount: p.RepoCount,
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
@@ -542,7 +552,21 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
 	}
-	lib.JSONCopy(&p.Metadata, params.Project.Metadata)
+	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
+		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
+	}
+
+	// validate retention_id
+	if ridParam, ok := p.Metadata["retention_id"]; ok {
+		md, err := a.metadataMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
+			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
+			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf(errMsg)))
+		}
+	}
 
 	if err := a.projectCtl.Update(ctx, p); err != nil {
 		return a.SendError(ctx, err)
@@ -642,9 +666,6 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	if p.RepoCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains repositories, can not be deleted"
-	} else if p.ChartCount > 0 {
-		result.Deletable = false
-		result.Message = "the project contains helm charts, can not be deleted"
 	}
 
 	return p, result, nil
@@ -664,6 +685,10 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}
 }
 
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
+	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
+		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
+	}
+
 	if req.RegistryID != nil {
 		if *req.RegistryID <= 0 {
 			return errors.BadRequestError(fmt.Errorf("%d is invalid value of registry_id, it should be geater than 0", *req.RegistryID))
@@ -713,16 +738,6 @@ func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project)
 	}
 	p.RepoCount = total
 
-	// Populate chart count property
-	if config.WithChartMuseum() {
-		count, err := api.GetChartController().GetCountOfCharts([]string{p.Name})
-		if err != nil {
-			err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", p.ProjectID))
-			return err
-		}
-
-		p.ChartCount = count
-	}
 	return nil
 }
 
@@ -735,7 +750,7 @@ func (a *projectAPI) isSysAdmin(ctx context.Context, action rbac.Action) bool {
 
 func getProjectQuotaSummary(ctx context.Context, p *project.Project, summary *models.ProjectSummary) {
 	if !config.QuotaPerProjectEnable(ctx) {
-		log.Debug("Quota per project disabled")
+		log.Debug("Quota per project deactivated")
 		return
 	}
 
@@ -793,7 +808,9 @@ func getProjectRegistrySummary(ctx context.Context, p *project.Project, summary 
 		log.Warningf("failed to get registry %d: %v", p.RegistryID, err)
 	} else if registry != nil {
 		registry.Credential = nil
-		lib.JSONCopy(&summary.Registry, registry)
+		if err := lib.JSONCopy(&summary.Registry, registry); err != nil {
+			log.Warningf("failed to call JSONCopy on project registry summary, error: %v", err)
+		}
 	}
 }
 

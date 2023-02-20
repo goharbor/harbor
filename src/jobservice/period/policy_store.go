@@ -19,11 +19,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gomodule/redigo/redis"
+
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/gomodule/redigo/redis"
-	"github.com/robfig/cron"
 )
 
 // Policy ...
@@ -64,7 +65,7 @@ func (p *Policy) Validate() error {
 		}
 	}
 
-	if _, err := cron.Parse(p.CronSpec); err != nil {
+	if _, err := comUtils.CronParser().Parse(p.CronSpec); err != nil {
 		return err
 	}
 

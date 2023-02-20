@@ -17,14 +17,16 @@ package googlegcr
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/opencontainers/go-digest"
-	"io/ioutil"
-	"net/http"
 )
 
 func init() {
@@ -139,21 +141,21 @@ func (a adapter) HealthCheck() (string, error) {
 }
 
 /*
-{
-	"child": [],
-	"manifest": {
-		"sha256:400ee2ed939df769d4681023810d2e4fb9479b8401d97003c710d0e20f7c49c6": {
-			"imageSizeBytes": "763789",
-			"layerId": "",
-			"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-			"tag": ["another", "latest"],
-			"timeCreatedMs": "1595895577054",
-			"timeUploadedMs": "1597767277119"
-		}
-	},
-	"name": "eminent-nation-87317/testgcr/busybox",
-	"tags": ["another", "latest"]
-}
+	{
+		"child": [],
+		"manifest": {
+			"sha256:400ee2ed939df769d4681023810d2e4fb9479b8401d97003c710d0e20f7c49c6": {
+				"imageSizeBytes": "763789",
+				"layerId": "",
+				"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+				"tag": ["another", "latest"],
+				"timeCreatedMs": "1595895577054",
+				"timeUploadedMs": "1597767277119"
+			}
+		},
+		"name": "eminent-nation-87317/testgcr/busybox",
+		"tags": ["another", "latest"]
+	}
 */
 func (a adapter) listGcrTagsByRef(repository, reference string) ([]string, string, error) {
 	u := buildTagListURL(a.registry.URL, repository)
@@ -168,7 +170,7 @@ func (a adapter) listGcrTagsByRef(repository, reference string) ([]string, strin
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}

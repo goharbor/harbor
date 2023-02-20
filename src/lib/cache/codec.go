@@ -41,3 +41,8 @@ func (*msgpackCodec) Encode(v interface{}) ([]byte, error) {
 func (*msgpackCodec) Decode(data []byte, v interface{}) error {
 	return msgpack.Unmarshal(data, v)
 }
+
+// DefaultCodec returns default codec.
+func DefaultCodec() Codec {
+	return codec
+}

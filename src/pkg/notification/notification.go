@@ -3,14 +3,14 @@ package notification
 import (
 	"container/list"
 	"context"
-	"github.com/goharbor/harbor/src/controller/event"
-	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
 
+	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
+	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 var (
@@ -52,9 +52,6 @@ func initSupportedNotifyType() {
 		event.TopicPushArtifact,
 		event.TopicPullArtifact,
 		event.TopicDeleteArtifact,
-		event.TopicUploadChart,
-		event.TopicDeleteChart,
-		event.TopicDownloadChart,
 		event.TopicQuotaExceed,
 		event.TopicQuotaWarning,
 		event.TopicScanningFailed,
@@ -112,5 +109,4 @@ func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
 		e.MustNotify = notify[0]
 	}
 	e.Events.PushBack(m)
-	return
 }

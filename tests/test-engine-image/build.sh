@@ -28,5 +28,5 @@ $CMD_BASE $SRC_FILE >> $DST_FILE
 
 echo "Starting to build image ..."
 TARGET_IMAGE=goharbor/harbor-e2e-engine:${VERSION}-${IMAGE_FOR}
-docker build  -t $TARGET_IMAGE .
+docker build -t $TARGET_IMAGE .
 

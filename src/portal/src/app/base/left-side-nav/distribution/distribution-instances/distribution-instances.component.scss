@@ -1,5 +1,7 @@
 @import "../base";
+
 $refrsh-btn-color: #007CBB;
+
 .refresh-btn {
     @include refresh-button
 }
@@ -22,12 +24,15 @@ $refrsh-btn-color: #007CBB;
     display: flex;
     justify-content: flex-end;
 }
+
 .no-wrapper {
     white-space: nowrap;
 }
+
 .margin-top-5px {
     margin-top: 5px;
 }
+
 .height-24 {
     height: 24px;
 }

@@ -17,9 +17,6 @@ package testing
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/config"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"io"
 	"math/rand"
 	"net/http"
@@ -27,12 +24,16 @@ import (
 	"sync"
 	"time"
 
-	o "github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/orm"
+	o "github.com/beego/beego/v2/client/orm"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 func init() {

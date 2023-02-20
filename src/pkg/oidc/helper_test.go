@@ -16,6 +16,16 @@ package oidc
 
 import (
 	"encoding/json"
+	"net/url"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
@@ -23,15 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"net/url"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -534,5 +535,27 @@ func TestInjectGroupsToUser(t *testing.T) {
 		u := c.old
 		InjectGroupsToUser(c.userInfo, u, mockPopulateGroups)
 		assert.Equal(t, *c.new, *u)
+	}
+}
+
+func Test_filterGroup(t *testing.T) {
+	type args struct {
+		groupNames []string
+		filter     string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"normal", args{[]string{"admin_user"}, "^admin.*"}, []string{"admin_user"}},
+		{"multiple ", args{[]string{"admin_user", "harbor_admin"}, "^admin.*"}, []string{"admin_user"}},
+		{"no match", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, "^admin.*"}, []string{}},
+		{"empty filter", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, ""}, []string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, filterGroup(tt.args.groupNames, tt.args.filter), "filterGroup(%v, %v)", tt.args.groupNames, tt.args.filter)
+		})
 	}
 }

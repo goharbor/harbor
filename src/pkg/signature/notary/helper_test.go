@@ -16,22 +16,21 @@ package notary
 import (
 	"encoding/json"
 	"fmt"
+	"net/http/httptest"
+	"os"
+	"path"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	test2 "github.com/goharbor/harbor/src/pkg/signature/notary/test"
-
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/stretchr/testify/assert"
-
-	"net/http/httptest"
-	"os"
-	"path"
-	"testing"
-
-	"github.com/goharbor/harbor/src/common"
 )
 
 var endpoint = "jt-dev.local.goharbor.io"

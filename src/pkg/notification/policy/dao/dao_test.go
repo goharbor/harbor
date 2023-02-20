@@ -1,14 +1,16 @@
 package dao
 
 import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 var (
@@ -17,7 +19,7 @@ var (
 		Description:  "webhook test policy1 description",
 		ProjectID:    111,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
-		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
+		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
 		CreationTime: time.Now(),
 		UpdateTime:   time.Now(),
@@ -31,7 +33,7 @@ var (
 		Description:  "webhook test policy2 description",
 		ProjectID:    222,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
-		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
+		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
 		CreationTime: time.Now(),
 		UpdateTime:   time.Now(),
@@ -45,7 +47,7 @@ var (
 		Description:  "webhook test policy3 description",
 		ProjectID:    333,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
-		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
+		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
 		CreationTime: time.Now(),
 		UpdateTime:   time.Now(),
@@ -116,7 +118,7 @@ func (suite *DaoTestSuite) TestGet() {
 		Description:  "webhook test policy4 description",
 		ProjectID:    444,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
-		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
+		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
 		CreationTime: time.Now(),
 		UpdateTime:   time.Now(),

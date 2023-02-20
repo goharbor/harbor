@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${artifact_action_xpath}  //clr-dg-action-bar/clr-dropdown/span[contains(@class,'dropdown-toggle')]
+${artifact_action_xpath}  //*[@id='artifact-list-action']
 ${artifact_action_delete_xpath}  //clr-dropdown-menu//div[contains(.,'Delete')]
 ${artifact_action_copy_xpath}  //clr-dropdown-menu//div[contains(.,'Copy') and @aria-label='retag']
 ${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a

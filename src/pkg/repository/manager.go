@@ -23,9 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 )
 
-// Mgr is the global repository manager instance
-var Mgr = New()
-
 // Manager is used for repository management
 type Manager interface {
 	// Count returns the total count of repositories according to the query

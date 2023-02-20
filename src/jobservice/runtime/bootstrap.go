@@ -24,6 +24,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -35,8 +37,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/systemartifact"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -49,11 +54,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/metric"
 	redislib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -131,7 +136,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Create stats manager
 		manager = mgt.NewManager(ctx, namespace, redisPool)
 		// Create hook agent, it's a singleton object
-		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
+		// the retryConcurrency keep same with worker num
+		hookAgent := hook.NewAgent(rootContext, namespace, redisPool, workerNum)
 		hookCallback := func(URL string, change *job.StatusChange) error {
 			msg := fmt.Sprintf(
 				"status change: job=%s, status=%s, revision=%d",
@@ -194,6 +200,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 				UseCoreScheduler(scheduler.Sched).
 				UseCoreExecutionManager(task.ExecMgr).
 				UseCoreTaskManager(task.Mgr).
+				UseQueueStatusManager(queuestatus.Mgr).
+				UseMonitorRedisClient(cfg.PoolConfig.RedisPoolCfg).
 				WithPolicyLoader(func() ([]*period.Policy, error) {
 					conn := redisPool.Get()
 					defer conn.Close()
@@ -219,7 +227,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Listen to the system signals
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	terminated := false
 	go func(errChan chan error) {
 		defer func() {
@@ -306,20 +314,23 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:           (*scan.Job)(nil),
-			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
-			job.Replication:            (*replication.Replication)(nil),
-			job.Retention:              (*retention.Job)(nil),
-			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
-			job.WebhookJob:             (*notification.WebhookJob)(nil),
-			job.SlackJob:               (*notification.SlackJob)(nil),
-			job.P2PPreheat:             (*preheat.Job)(nil),
+			job.ImageScanJobVendorType:      (*scan.Job)(nil),
+			job.PurgeAuditVendorType:        (*purge.Job)(nil),
+			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
+			job.ReplicationVendorType:       (*replication.Replication)(nil),
+			job.RetentionVendorType:         (*retention.Job)(nil),
+			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
+			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),
+			job.SlackJobVendorType:          (*notification.SlackJob)(nil),
+			job.P2PPreheatVendorType:        (*preheat.Job)(nil),
+			job.ScanDataExportVendorType:    (*scandataexport.ScanDataExport)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases
-			"IMAGE_REPLICATE": (*legacy.ReplicationScheduler)(nil),
-			"IMAGE_GC":        (*legacy.GarbageCollectionScheduler)(nil),
-			"IMAGE_SCAN_ALL":  (*legacy.ScanAllScheduler)(nil),
+			"IMAGE_REPLICATE":                   (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":                          (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":                    (*legacy.ScanAllScheduler)(nil),
+			job.SystemArtifactCleanupVendorType: (*systemartifact.Cleanup)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

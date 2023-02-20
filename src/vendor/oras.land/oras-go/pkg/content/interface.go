@@ -15,10 +15,12 @@ limitations under the License.
 
 package content
 
-import "github.com/containerd/containerd/content"
+import (
+	"github.com/containerd/containerd/remotes"
+)
 
 // ProvideIngester is the interface that groups the basic Read and Write methods.
-type ProvideIngester interface {
-	content.Provider
-	content.Ingester
+type Store interface {
+	remotes.Pusher
+	remotes.Fetcher
 }

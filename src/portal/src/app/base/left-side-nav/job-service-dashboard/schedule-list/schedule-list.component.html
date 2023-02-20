@@ -1,0 +1,51 @@
+<clr-datagrid
+    [clrDgLoading]="loadingSchedules"
+    (clrDgRefresh)="clrLoad($event)">
+    <clr-dg-action-bar class="action-bar">
+        <span class="refresh-btn" (click)="clrLoad()">
+            <clr-icon shape="refresh"></clr-icon>
+        </span>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgSortBy]="'id'">{{
+        'TAG_RETENTION.SERIAL' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'vendor_type'">{{
+        'JOB_SERVICE_DASHBOARD.VENDOR_TYPE' | translate
+    }}</clr-dg-column>
+    <clr-dg-column>{{
+        'JOB_SERVICE_DASHBOARD.VENDOR_ID' | translate
+    }}</clr-dg-column>
+    <clr-dg-column>{{
+        'JOB_SERVICE_DASHBOARD.CRON' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="'update_time'">{{
+        'REPLICATION.UPDATE_TIME' | translate
+    }}</clr-dg-column>
+    <clr-dg-placeholder>{{
+        'JOB_SERVICE_DASHBOARD.NO_SCHEDULE' | translate
+    }}</clr-dg-placeholder>
+    <clr-dg-row *ngFor="let p of schedules" [clrDgItem]="p">
+        <clr-dg-cell>{{ p.id }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.vendor_type }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.vendor_id }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.cron }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.update_time | harborDatetime }}</clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <clr-dg-pagination
+            #pagination
+            [clrDgPageSize]="pageSize"
+            [(clrDgPage)]="page"
+            [clrDgTotalItems]="total">
+            <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                'PAGINATION.PAGE_SIZE' | translate
+            }}</clr-dg-page-size>
+            <span *ngIf="total">
+                {{ pagination.firstItem + 1 }} -
+                {{ pagination.lastItem + 1 }}
+                {{ 'GROUP.OF' | translate }}
+            </span>
+            <span id="total">{{ total }}</span> {{ 'GROUP.ITEMS' | translate }}
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>

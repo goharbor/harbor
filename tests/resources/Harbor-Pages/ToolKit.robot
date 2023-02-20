@@ -44,9 +44,8 @@ Filter Object
     Sleep  3
 
 Filter Project
-#Filter project repo user tag.
     [Arguments]    ${kw}
-    Retry Element Click  ${log_xpath}
+    Retry Element Click  ${logs_xpath}
     Retry Element Click  ${projects_xpath}
     Filter Object  ${kw}
 
@@ -70,7 +69,7 @@ Multi-delete Object
 
 # This func cannot support as the delete user flow changed.
 Multi-delete Artifact
-    [Arguments]    ${delete_btn}  @{obj}
+    [Arguments]  @{obj}
     FOR  ${obj}  IN  @{obj}
         ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
         Retry Element Click  ${element}

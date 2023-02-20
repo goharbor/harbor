@@ -17,9 +17,10 @@ package model
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIsScheduledTrigger(t *testing.T) {

@@ -15,41 +15,28 @@
 package policy
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
-
-	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
-
-	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
-
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
-	"github.com/goharbor/harbor/src/lib/errors"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
-
-	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
-
-	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
+	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 )
 
 // TestBuilderSuite is the suite to test builder

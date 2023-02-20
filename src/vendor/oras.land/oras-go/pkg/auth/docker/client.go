@@ -64,6 +64,39 @@ func NewClient(configPaths ...string) (auth.Client, error) {
 	}, nil
 }
 
+// NewClientWithDockerFallback creates a new auth client
+// which falls back on Docker's default config path.
+// This allows support for ~/.docker/config.json as a fallback,
+// as well as support for the DOCKER_CONFIG environment variable.
+func NewClientWithDockerFallback(configPaths ...string) (auth.Client, error) {
+	if len(configPaths) == 0 {
+		return NewClient()
+	}
+
+	var configs []*configfile.ConfigFile
+	for _, path := range configPaths {
+		cfg, err := loadConfigFile(path)
+		if err != nil {
+			return nil, errors.Wrap(err, path)
+		}
+		configs = append(configs, cfg)
+	}
+
+	// Add the Docker default config last
+	dockerFallbackCfg, err := config.Load(config.Dir())
+	if err != nil {
+		return nil, err
+	}
+	if !dockerFallbackCfg.ContainsAuth() {
+		dockerFallbackCfg.CredentialsStore = credentials.DetectDefaultStore(dockerFallbackCfg.CredentialsStore)
+	}
+	configs = append(configs, dockerFallbackCfg)
+
+	return &Client{
+		configs: configs,
+	}, nil
+}
+
 func (c *Client) primaryCredentialsStore(hostname string) credentials.Store {
 	return c.configs[0].GetCredentialsStore(hostname)
 }

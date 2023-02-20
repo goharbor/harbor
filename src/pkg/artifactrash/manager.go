@@ -16,9 +16,10 @@ package artifactrash
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/artifactrash/dao"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
-	"time"
 )
 
 var (

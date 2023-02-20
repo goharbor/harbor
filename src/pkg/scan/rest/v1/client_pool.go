@@ -128,7 +128,7 @@ func (bcp *basicClientPool) deadCheck(key string, item *poolItem) {
 		// As we do not have a global context, let's watch the system signal to
 		// exit the goroutine correctly.
 		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
 		tk := time.NewTicker(bcp.config.DeadCheckInterval)
 		defer tk.Stop()

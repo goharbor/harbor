@@ -19,26 +19,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/goharbor/harbor/src/lib/config"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
 	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/registry/auth"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
+	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 )
 
 var (
@@ -46,7 +49,7 @@ var (
 	Cli = func() Client {
 		url, _ := config.RegistryURL()
 		username, password := config.RegistryCredential()
-		return NewClient(url, username, password, false)
+		return NewClient(url, username, password, false, readonly.NewInterceptor())
 	}()
 
 	accepts = []string{
@@ -62,7 +65,27 @@ var (
 // const definition
 const (
 	UserAgent = "harbor-registry-client"
+	// DefaultHTTPClientTimeout is the default timeout for registry http client.
+	DefaultHTTPClientTimeout = 30 * time.Minute
 )
+
+var (
+	// registryHTTPClientTimeout is the timeout for registry http client.
+	registryHTTPClientTimeout time.Duration
+)
+
+func init() {
+	registryHTTPClientTimeout = DefaultHTTPClientTimeout
+	// override it if read from environment variable, in minutes
+	timeout, err := strconv.ParseInt(os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"), 10, 64)
+	if err != nil {
+		log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
+	} else {
+		if timeout > 0 {
+			registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
+		}
+	}
+}
 
 // Client defines the methods that a registry client should implements
 type Client interface {
@@ -84,8 +107,12 @@ type Client interface {
 	BlobExist(repository, digest string) (exist bool, err error)
 	// PullBlob pulls the specified blob. The caller must close the returned "blob"
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	// PullBlobChunk pulls the specified blob, but by chunked
+	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
 	// PushBlob pushes the specified blob
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
+	// PushBlobChunk pushes the specified blob, but by chunked
+	PushBlobChunk(repository, digest string, blobSize int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error)
 	// MountBlob mounts the blob from the source repository
 	MountBlob(srcRepository, digest, dstRepository string) (err error)
 	// DeleteBlob deletes the specified blob
@@ -101,32 +128,29 @@ type Client interface {
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
-func NewClient(url, username, password string, insecure bool) Client {
-	return &client{
-		url:        url,
-		authorizer: auth.NewAuthorizer(username, password, insecure),
-		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
-			Timeout:   30 * time.Minute,
-		},
-	}
+func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure)
+	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	return &client{
-		url:        url,
-		authorizer: authorizer,
+		url:          url,
+		authorizer:   authorizer,
+		interceptors: interceptors,
 		client: &http.Client{
 			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
+			Timeout:   registryHTTPClientTimeout,
 		},
 	}
 }
 
 type client struct {
-	url        string
-	authorizer lib.Authorizer
-	client     *http.Client
+	url          string
+	authorizer   lib.Authorizer
+	interceptors []interceptor.Interceptor
+	client       *http.Client
 }
 
 func (c *client) Ping() error {
@@ -176,7 +200,7 @@ func (c *client) catalog(url string) ([]string, string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}
@@ -223,7 +247,7 @@ func (c *client) listTags(url string) ([]string, string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}
@@ -242,7 +266,7 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 		return false, nil, err
 	}
 	for _, mediaType := range accepts {
-		req.Header.Add(http.CanonicalHeaderKey("Accept"), mediaType)
+		req.Header.Add("Accept", mediaType)
 	}
 	resp, err := c.do(req)
 	if err != nil {
@@ -252,9 +276,9 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 		return false, nil, err
 	}
 	defer resp.Body.Close()
-	dig := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	dig := resp.Header.Get("Docker-Content-Digest")
+	contentType := resp.Header.Get("Content-Type")
+	contentLen := resp.Header.Get("Content-Length")
 	len, _ := strconv.Atoi(contentLen)
 	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(len)}, nil
 }
@@ -269,23 +293,23 @@ func (c *client) PullManifest(repository, reference string, acceptedMediaTypes .
 		acceptedMediaTypes = accepts
 	}
 	for _, mediaType := range acceptedMediaTypes {
-		req.Header.Add(http.CanonicalHeaderKey("Accept"), mediaType)
+		req.Header.Add("Accept", mediaType)
 	}
 	resp, err := c.do(req)
 	if err != nil {
 		return nil, "", err
 	}
 	defer resp.Body.Close()
-	payload, err := ioutil.ReadAll(resp.Body)
+	payload, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}
-	mediaType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
+	mediaType := resp.Header.Get("Content-Type")
 	manifest, _, err := distribution.UnmarshalManifest(mediaType, payload)
 	if err != nil {
 		return nil, "", err
 	}
-	digest := resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
+	digest := resp.Header.Get("Docker-Content-Digest")
 	return manifest, digest, nil
 }
 
@@ -295,13 +319,13 @@ func (c *client) PushManifest(repository, reference, mediaType string, payload [
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Type"), mediaType)
+	req.Header.Set("Content-Type", mediaType)
 	resp, err := c.do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest")), nil
+	return resp.Header.Get("Docker-Content-Digest"), nil
 }
 
 func (c *client) DeleteManifest(repository, reference string) error {
@@ -352,14 +376,42 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 		return 0, nil, err
 	}
 
-	req.Header.Add(http.CanonicalHeaderKey("Accept-Encoding"), "identity")
+	req.Header.Add("Accept-Encoding", "identity")
 	resp, err := c.do(req)
 	if err != nil {
 		return 0, nil, err
 	}
 
 	var size int64
-	n := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	n := resp.Header.Get("Content-Length")
+	// no content-length is acceptable, which can taken from manifests
+	if len(n) > 0 {
+		size, err = strconv.ParseInt(n, 10, 64)
+		if err != nil {
+			defer resp.Body.Close()
+			return 0, nil, err
+		}
+	}
+
+	return size, resp.Body, nil
+}
+
+// PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
+func (c *client) PullBlobChunk(repository, digest string, blobSize int64, start, end int64) (int64, io.ReadCloser, error) {
+	req, err := http.NewRequest(http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	req.Header.Add("Accept-Encoding", "identity")
+	req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+	resp, err := c.do(req)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var size int64
+	n := resp.Header.Get("Content-Length")
 	// no content-length is acceptable, which can taken from manifests
 	if len(n) > 0 {
 		size, err = strconv.ParseInt(n, 10, 64)
@@ -380,19 +432,102 @@ func (c *client) PushBlob(repository, digest string, size int64, blob io.Reader)
 	return c.monolithicBlobUpload(location, digest, size, blob)
 }
 
+// PushBlobChunk pushes the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#push for more details.
+func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk io.Reader, start, end int64, location string) (string, int64, error) {
+	var err error
+	// first chunk need to initialize blob upload location
+	if start == 0 {
+		location, _, err = c.initiateBlobUpload(repository)
+		if err != nil {
+			return location, end, err
+		}
+	}
+
+	// the range is from 0 to (blobSize-1), so (end == blobSize-1) means it is last chunk
+	lastChunk := end == blobSize-1
+	url, err := buildChunkBlobUploadURL(c.url, location, digest, lastChunk)
+	if err != nil {
+		return location, end, err
+	}
+
+	// use PUT instead of PATCH for last chunk which can reduce a final request
+	method := http.MethodPatch
+	if lastChunk {
+		method = http.MethodPut
+	}
+	req, err := http.NewRequest(method, url, chunk)
+	if err != nil {
+		return location, end, err
+	}
+
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
+	req.Header.Set("Content-Range", fmt.Sprintf("%d-%d", start, end))
+	resp, err := c.do(req)
+	if err != nil {
+		// if push chunk error, we should query the upload progress for new location and end range.
+		newLocation, newEnd, err1 := c.getUploadStatus(location)
+		if err1 == nil {
+			return newLocation, newEnd, err
+		}
+		// end should return start-1 to re-push this chunk
+		return location, start - 1, fmt.Errorf("failed to get upload status: %w", err1)
+	}
+
+	defer resp.Body.Close()
+	// return the location for next chunk upload
+	return resp.Header.Get("Location"), end, nil
+}
+
+func (c *client) getUploadStatus(location string) (string, int64, error) {
+	req, err := http.NewRequest(http.MethodGet, location, nil)
+	if err != nil {
+		return location, -1, err
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		return location, -1, err
+	}
+
+	defer resp.Body.Close()
+
+	_, end, err := parseContentRange(resp.Header.Get("Range"))
+	if err != nil {
+		return location, -1, err
+	}
+
+	return resp.Header.Get("Location"), end, nil
+}
+
+func parseContentRange(cr string) (int64, int64, error) {
+	ranges := strings.Split(cr, "-")
+	if len(ranges) != 2 {
+		return -1, -1, fmt.Errorf("invalid content range format, %s", cr)
+	}
+	start, err := strconv.ParseInt(ranges[0], 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+	end, err := strconv.ParseInt(ranges[1], 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+
+	return start, end, nil
+}
+
 func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 	req, err := http.NewRequest(http.MethodPost, buildInitiateBlobUploadURL(c.url, repository), nil)
 	if err != nil {
 		return "", "", err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+	req.Header.Set("Content-Length", "0")
 	resp, err := c.do(req)
 	if err != nil {
 		return "", "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get(http.CanonicalHeaderKey("Location")),
-		resp.Header.Get(http.CanonicalHeaderKey("Docker-Upload-UUID")), nil
+	return resp.Header.Get("Location"), resp.Header.Get("Docker-Upload-UUID"), nil
 }
 
 func (c *client) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
@@ -418,7 +553,7 @@ func (c *client) MountBlob(srcRepository, digest, dstRepository string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+	req.Header.Set("Content-Length", "0")
 	resp, err := c.do(req)
 	if err != nil {
 		return err
@@ -511,19 +646,24 @@ func (c *client) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (c *client) do(req *http.Request) (*http.Response, error) {
+	for _, interceptor := range c.interceptors {
+		if err := interceptor.Intercept(req); err != nil {
+			return nil, err
+		}
+	}
 	if c.authorizer != nil {
 		if err := c.authorizer.Modify(req); err != nil {
 			return nil, err
 		}
 	}
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), UserAgent)
+	req.Header.Set("User-Agent", UserAgent)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -580,6 +720,23 @@ func buildMountBlobURL(endpoint, repository, digest, from string) string {
 
 func buildInitiateBlobUploadURL(endpoint, repository string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repository)
+}
+
+func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {
+	url, err := url.Parse(location)
+	if err != nil {
+		return "", err
+	}
+	q := url.Query()
+	if lastChunk {
+		q.Set("digest", digest)
+	}
+	url.RawQuery = q.Encode()
+	if url.IsAbs() {
+		return url.String(), nil
+	}
+	// the "relativeurls" is enabled in registry
+	return endpoint + url.String(), nil
 }
 
 func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {

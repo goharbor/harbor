@@ -1,6 +1,8 @@
 package contenttrust
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
@@ -9,7 +11,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/util"
-	"net/http"
 )
 
 // Cosign handle docker pull content trust check
@@ -29,11 +30,6 @@ func Cosign() func(http.Handler) http.Handler {
 			return err
 		}
 
-		if util.SkipPolicyChecking(r, pro.ProjectID) {
-			logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", af.Repository, af.Digest)
-			return nil
-		}
-
 		// If cosign policy enabled, it has to at least have one cosign signature.
 		if pro.ContentTrustCosignEnabled() {
 			art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, &artifact.Option{
@@ -41,6 +37,15 @@ func Cosign() func(http.Handler) http.Handler {
 			})
 			if err != nil {
 				return err
+			}
+
+			ok, err := util.SkipPolicyChecking(r, pro.ProjectID, art.ID)
+			if err != nil {
+				return err
+			}
+			if ok {
+				logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", af.Repository, af.Digest)
+				return nil
 			}
 
 			if len(art.Accessories) == 0 {

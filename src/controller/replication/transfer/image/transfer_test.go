@@ -17,17 +17,17 @@ package image
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
-	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type fakeRegistry struct{}
@@ -87,11 +87,18 @@ func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
 	return false, nil
 }
 func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
-	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
+	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
+	return 1, r, nil
+}
+func (f *fakeRegistry) PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error) {
+	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
 }
 func (f *fakeRegistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {
 	return nil
+}
+func (f *fakeRegistry) PushBlobChunk(repository, digest string, blobSize int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error) {
+	return "", -1, nil
 }
 func (f *fakeRegistry) DeleteTag(repository, tag string) error {
 	return nil
@@ -102,7 +109,6 @@ func (f *fakeRegistry) CanBeMount(digest string) (bool, string, error) {
 func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) error {
 	return nil
 }
-
 func (f *fakeRegistry) ListTags(repository string) (tags []string, err error) {
 	return nil, nil
 }
@@ -148,7 +154,28 @@ func TestCopy(t *testing.T) {
 		repository: "destination",
 		tags:       []string{"b1", "b2"},
 	}
-	err := tr.copy(src, dst, true, 0)
+	err := tr.copy(src, dst, true, trans.NewOptions())
+	require.Nil(t, err)
+}
+
+func TestCopyByChunk(t *testing.T) {
+	stopFunc := func() bool { return false }
+	tr := &transfer{
+		logger:    log.DefaultLogger(),
+		isStopped: stopFunc,
+		src:       &fakeRegistry{},
+		dst:       &fakeRegistry{},
+	}
+
+	src := &repository{
+		repository: "source",
+		tags:       []string{"a1", "a2"},
+	}
+	dst := &repository{
+		repository: "destination",
+		tags:       []string{"b1", "b2"},
+	}
+	err := tr.copy(src, dst, true, trans.NewOptions(trans.WithCopyByChunk(true)))
 	require.Nil(t, err)
 }
 

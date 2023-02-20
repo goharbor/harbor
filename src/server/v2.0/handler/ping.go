@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/ping"
 )
 

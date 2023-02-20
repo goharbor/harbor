@@ -22,8 +22,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/validation"
+	"github.com/beego/beego/v2/core/validation"
+	"github.com/beego/beego/v2/server/web"
+
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -39,7 +40,7 @@ const (
 
 // BaseAPI wraps common methods for controllers to host API
 type BaseAPI struct {
-	beego.Controller
+	web.Controller
 }
 
 // Context returns the context.Context from http.Request
@@ -78,10 +79,10 @@ func (b *BaseAPI) RenderError(code int, text string) {
 
 // DecodeJSONReq decodes a json request
 func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
-	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
+	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<35), v)
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
-			err, string(b.Ctx.Input.CopyBody(1 << 32)[:]))
+			err, string(b.Ctx.Input.CopyBody(1 << 35)[:]))
 		return errors.New("invalid json request")
 	}
 	return nil
@@ -149,9 +150,6 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 		q := u.Query()
 		q.Set("page", strconv.FormatInt(page-1, 10))
 		u.RawQuery = q.Encode()
-		if len(link) != 0 {
-			link += ", "
-		}
 		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
 	}
 
@@ -250,16 +248,17 @@ func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 }
 
 // SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
-// {
-//	"errors:" [{
-//			"code": <error identifier>,
-//			"message": <message describing condition>,
-//			// optional
-//			"detail": <unstructured>
-//		},
-//		...
-//	]
-// }
+//
+//	{
+//		"errors:" [{
+//				"code": <error identifier>,
+//				"message": <message describing condition>,
+//				// optional
+//				"detail": <unstructured>
+//			},
+//			...
+//		]
+//	}
 func (b *BaseAPI) SendError(err error) {
 	lib_http.SendError(b.Ctx.ResponseWriter, err)
 }

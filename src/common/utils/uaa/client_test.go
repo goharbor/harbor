@@ -2,15 +2,16 @@ package uaa
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/uaa/test"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"net/http/httptest"
 	"os"
 	"path"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/utils/uaa/test"
 )
 
 var mockUAAServer *httptest.Server
@@ -53,7 +54,7 @@ func TestUserInfo(t *testing.T) {
 	assert := assert.New(t)
 	client, err := NewDefaultClient(getCfg())
 	assert.Nil(err)
-	token, err := ioutil.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
+	token, err := os.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
 	if err != nil {
 		panic(err)
 	}

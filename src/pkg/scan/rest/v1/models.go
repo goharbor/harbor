@@ -37,12 +37,12 @@ type Scanner struct {
 // report MIME types. For example, a scanner capable of analyzing Docker images and producing
 // a vulnerabilities report recognizable by Harbor web console might be represented with the
 // following capability:
-// - consumes MIME types:
-//   -- application/vnd.oci.image.manifest.v1+json
-//   -- application/vnd.docker.distribution.manifest.v2+json
-// - produces MIME types
-//   -- application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
-//   -- application/vnd.scanner.adapter.vuln.report.raw
+//   - consumes MIME types:
+//     -- application/vnd.oci.image.manifest.v1+json
+//     -- application/vnd.docker.distribution.manifest.v2+json
+//   - produces MIME types
+//     -- application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
+//     -- application/vnd.scanner.adapter.vuln.report.raw
 type ScannerCapability struct {
 	// The set of MIME types of the artifacts supported by the scanner to produce the reports
 	// specified in the "produces_mime_types". A given mime type should only be present in one
@@ -143,7 +143,6 @@ type Artifact struct {
 	// For example, `library/oracle/nosql`.
 	Repository string `json:"repository"`
 	// The info used to identify the version of the artifact,
-	// e.g: tag of image or version of the chart.
 	Tag string `json:"tag"`
 	// The artifact's digest, consisting of an algorithm and hex portion.
 	// For example, `sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b`,

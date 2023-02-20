@@ -14,6 +14,8 @@
 
 package quota
 
+import "github.com/goharbor/harbor/src/lib/retry"
+
 // Option option for `Refresh` method of `Controller`
 type Option func(*Options)
 
@@ -21,6 +23,8 @@ type Option func(*Options)
 type Options struct {
 	IgnoreLimitation    bool
 	WithReferenceObject bool
+	// RetryOptions is the sets of options but for retry function.
+	RetryOptions []retry.Option
 }
 
 // IgnoreLimitation set IgnoreLimitation for the Options
@@ -34,6 +38,13 @@ func IgnoreLimitation(ignoreLimitation bool) func(*Options) {
 func WithReferenceObject() func(*Options) {
 	return func(opts *Options) {
 		opts.WithReferenceObject = true
+	}
+}
+
+// WithRetryOptions set RetryOptions to Options
+func WithRetryOptions(retryOpts []retry.Option) func(*Options) {
+	return func(opts *Options) {
+		opts.RetryOptions = retryOpts
 	}
 }
 

@@ -23,11 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
 )
 
-var (
-	// Mgr is the global project metadata manager
-	Mgr = New()
-)
-
 // Manager defines the operations that a project metadata manager should implement
 type Manager interface {
 	// Add metadatas for project specified by projectID
@@ -118,9 +113,7 @@ func makeQuery(projectID int64, meta ...string) *q.Query {
 	}
 	if len(meta) > 0 {
 		var names []string
-		for _, name := range meta {
-			names = append(names, name)
-		}
+		names = append(names, meta...)
 		kw["name__in"] = names
 	}
 

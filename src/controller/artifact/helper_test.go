@@ -16,16 +16,17 @@ package artifact
 
 import (
 	"context"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/q"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type IteratorTestSuite struct {

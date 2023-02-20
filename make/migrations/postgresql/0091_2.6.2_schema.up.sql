@@ -1,0 +1,1 @@
+ALTER TABLE replication_policy ADD COLUMN IF NOT EXISTS copy_by_chunk boolean;

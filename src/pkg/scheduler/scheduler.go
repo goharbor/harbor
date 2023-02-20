@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
-	cronlib "github.com/robfig/cron"
 )
 
 var (
@@ -68,6 +68,8 @@ type Scheduler interface {
 	GetSchedule(ctx context.Context, id int64) (*Schedule, error)
 	// ListSchedules according to the query
 	ListSchedules(ctx context.Context, query *q.Query) ([]*Schedule, error)
+	// CountSchedules counts the schedules according to the query
+	CountSchedules(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // New returns an instance of the default scheduler
@@ -85,12 +87,16 @@ type scheduler struct {
 	taskMgr task.Manager
 }
 
+func (s *scheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, error) {
+	return s.dao.Count(ctx, query)
+}
+
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
 	cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
-	if _, err := cronlib.Parse(cron); err != nil {
+	if _, err := utils.CronParser().Parse(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("invalid cron %s: %v", cron, err)
 	}
@@ -114,7 +120,13 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 	sched.CallbackFuncParam = string(paramsData)
-
+	params := map[string]interface{}{}
+	if len(paramsData) > 0 {
+		err = json.Unmarshal(paramsData, &params)
+		if err != nil {
+			log.Debugf("current paramsData is not a json string")
+		}
+	}
 	extrasData, err := json.Marshal(extraAttrs)
 	if err != nil {
 		return 0, err
@@ -129,7 +141,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 
-	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual)
+	execID, err := s.execMgr.Create(ctx, JobNameScheduler, id, task.ExecutionTriggerManual, params)
 	if err != nil {
 		return 0, err
 	}
@@ -184,7 +196,13 @@ func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 		executionID := executions[0].ID
 		// stop the execution
 		if err = s.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
-			return err
+			if err == task.ErrTimeOut {
+				// Avoid return this error to the UI, log time out error and continue
+				// the execution will be finally stopped by jobservice
+				log.Debugf("time out when stopping the execution %d, but the execution will be stopped eventually", executionID)
+			} else {
+				return err
+			}
 		}
 		// delete execution
 		if err = s.execMgr.Delete(ctx, executionID); err != nil {

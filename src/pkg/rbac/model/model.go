@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/astaxie/beego/orm"
 	"time"
+
+	"github.com/beego/beego/v2/client/orm"
 )
 
 func init() {

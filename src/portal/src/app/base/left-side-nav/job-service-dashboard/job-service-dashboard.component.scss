@@ -1,0 +1,25 @@
+@mixin v-center {
+  display: flex;
+  align-items: center;
+}
+
+
+.title {
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+}
+
+.dashboard {
+  margin-right: 0.5rem;
+}
+
+.pr-10 {
+  padding-right: 2rem;
+}
+
+.card-block {
+  height: 9rem;
+}
+
+

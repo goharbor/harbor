@@ -15,14 +15,14 @@
 package null
 
 import (
-	"github.com/goharbor/harbor/src/lib"
 	"net/http"
+
+	"github.com/goharbor/harbor/src/lib"
 )
 
 // NewAuthorizer returns a null authorizer
 func NewAuthorizer() lib.Authorizer {
 	return &authorizer{}
-
 }
 
 type authorizer struct{}

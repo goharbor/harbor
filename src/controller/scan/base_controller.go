@@ -22,6 +22,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	ar "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
@@ -46,7 +48,6 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
-	"github.com/google/uuid"
 )
 
 // DefaultController is a default singleton scan API controller.
@@ -226,7 +227,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is disabled", r.Name)
+		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is deactivated", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -300,7 +301,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				"name": r.Name,
 			},
 		}
-		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJob, r.ID, task.ExecutionTriggerManual, extraAttrs)
+		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, r.ID, task.ExecutionTriggerManual, extraAttrs)
 		if err != nil {
 			return err
 		}
@@ -362,7 +363,8 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 				return
 			}
 
-			bc.startScanAll(ctx, executionID)
+			err = bc.startScanAll(ctx, executionID)
+			log.Errorf("failed to start scan all, executionID=%d, error: %v", executionID, err)
 		}(bc.makeCtx())
 	} else {
 		if err := bc.startScanAll(ctx, executionID); err != nil {
@@ -451,7 +453,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		message := fmt.Sprintf("%d artifact(s) found", summary.TotalCount)
 
 		if summary.PreconditionCount > 0 {
-			message = fmt.Sprintf("%s, scanner not found or disabled for %d of them", message, summary.PreconditionCount)
+			message = fmt.Sprintf("%s, scanner not found or deactivated for %d of them", message, summary.PreconditionCount)
 		}
 
 		if summary.UnknowCount > 0 {
@@ -632,11 +634,23 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 }
 
 // GetScanLog ...
-func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte, error) {
+func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact, uuid string) ([]byte, error) {
 	if len(uuid) == 0 {
 		return nil, errors.New("empty uuid to get scan log")
 	}
+	r, err := bc.sc.GetRegistrationByProject(ctx, artifact.ProjectID)
+	if err != nil {
+		return nil, err
+	}
 
+	artifacts, _, err := bc.collectScanningArtifacts(ctx, r, artifact)
+	if err != nil {
+		return nil, err
+	}
+	artifactMap := map[int64]interface{}{}
+	for _, a := range artifacts {
+		artifactMap[a.ID] = struct{}{}
+	}
 	reportUUIDs := vuln.ParseReportIDs(uuid)
 	tasks, err := bc.listScanTasks(ctx, reportUUIDs)
 	if err != nil {
@@ -648,9 +662,12 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	reportUUIDToTasks := map[string]*task.Task{}
-	for _, task := range tasks {
-		for _, reportUUID := range getReportUUIDs(task.ExtraAttrs) {
-			reportUUIDToTasks[reportUUID] = task
+	for _, t := range tasks {
+		if !scanTaskForArtifacts(t, artifactMap) {
+			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
+		}
+		for _, reportUUID := range getReportUUIDs(t.ExtraAttrs) {
+			reportUUIDToTasks[reportUUID] = t
 		}
 	}
 
@@ -716,6 +733,18 @@ func (bc *basicController) GetScanLog(ctx context.Context, uuid string) ([]byte,
 	}
 
 	return b.Bytes(), nil
+}
+
+func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bool {
+	if task == nil {
+		return false
+	}
+	artifactID := int64(task.GetNumFromExtraAttrs(artifactIDKey))
+	if artifactID == 0 {
+		return false
+	}
+	_, exist := artifactMap[artifactID]
+	return exist
 }
 
 // DeleteReports ...
@@ -818,10 +847,11 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 	}
 
 	projectName := strings.Split(repository, "/")[0]
+	scannerPrefix := config.ScannerRobotPrefix(ctx)
 
 	robotReq := &robot.Robot{
 		Robot: model.Robot{
-			Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
+			Name:        fmt.Sprintf("%s-%s-%s", scannerPrefix, registration.Name, UUID),
 			Description: "for scan",
 			ProjectID:   projectID,
 		},
@@ -925,7 +955,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 	params[sca.JobParameterRobot] = robotJSON
 
 	j := &task.Job{
-		Name: job.ImageScanJob,
+		Name: job.ImageScanJobVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

@@ -17,7 +17,6 @@ package utils
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/api"
@@ -38,7 +37,7 @@ type StatusRespHandler struct {
 func (s StatusRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode != s.status {
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -63,8 +62,8 @@ type JobLogRespHandler struct {
 func (h JobLogRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		h.theAPI.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
-		h.theAPI.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
+		h.theAPI.Ctx.ResponseWriter.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+		h.theAPI.Ctx.ResponseWriter.Header().Set("Content-Type", "text/plain")
 
 		if _, err := io.Copy(h.theAPI.Ctx.ResponseWriter, resp.Body); err != nil {
 			log.Errorf("failed to write log to response; %v", err)
@@ -73,7 +72,7 @@ func (h JobLogRespHandler) Handle(resp *http.Response) error {
 		return nil
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorf("failed to read response body: %v", err)
 		return err

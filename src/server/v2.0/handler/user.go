@@ -17,12 +17,14 @@ package handler
 import (
 	"context"
 	"fmt"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
@@ -34,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -59,6 +62,13 @@ func (u *usersAPI) SetCliSecret(ctx context.Context, params operation.SetCliSecr
 	uid := int(params.UserID)
 	if err := u.requireForCLISecret(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
+	}
+	if params.Secret.Secret == "" {
+		rSec, err := getRandomSecret()
+		if err != nil {
+			return u.SendError(ctx, err)
+		}
+		params.Secret.Secret = rSec
 	}
 	if err := requireValidSecret(params.Secret.Secret); err != nil {
 		return u.SendError(ctx, err)
@@ -94,7 +104,6 @@ func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserPa
 	}
 	location := fmt.Sprintf("%s/%d", strings.TrimSuffix(params.HTTPRequest.URL.Path, "/"), uid)
 	return operation.NewCreateUserCreated().WithLocation(location)
-
 }
 
 func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersParams) middleware.Responder {
@@ -197,7 +206,6 @@ func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params operation.GetC
 	}
 	resp, err := u.getUserByID(ctx, lsc.User().UserID)
 	if err != nil {
-
 		return u.SendError(ctx, err)
 	}
 	return operation.NewGetCurrentUserInfoOK().WithPayload(resp)
@@ -308,7 +316,12 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	if err := requireValidSecret(newPwd); err != nil {
 		return u.SendError(ctx, err)
 	}
-	ok, err := u.ctl.VerifyPassword(ctx, sctx.GetUsername(), newPwd)
+	user, err := u.getUserByID(ctx, uid)
+	if err != nil {
+		log.G(ctx).Errorf("Failed to get user profile for uid: %d, error: %v", uid, err)
+		return u.SendError(ctx, err)
+	}
+	ok, err := u.ctl.VerifyPassword(ctx, user.Username, newPwd)
 	if err != nil {
 		log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
 		return u.SendError(ctx, errors.UnknownError(nil).WithMessage("Failed to verify password"))
@@ -421,7 +434,6 @@ func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
 func modifiable(ctx context.Context, authMode string, id int) bool {
 	sctx, _ := security.FromContext(ctx)
 	if authMode == common.DBAuth {
-
 		// In db auth, admin can update anyone's info, and regular user can update his own
 		return sctx.Can(ctx, rbac.ActionUpdate, userResource) || matchUserID(sctx, id)
 	}
@@ -444,6 +456,29 @@ func requireValidSecret(in string) error {
 		return nil
 	}
 	return errors.BadRequestError(nil).WithMessage("the password or secret must be longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number")
+}
+
+func getRandomSecret() (string, error) {
+	var cliSecret string
+	options := []retry.Option{
+		retry.InitialInterval(time.Millisecond * 500),
+		retry.MaxInterval(time.Second * 10),
+		retry.Timeout(time.Minute),
+		retry.Callback(func(err error, sleep time.Duration) {
+			log.Debugf("failed to generate secret for cli, retry after %s : %v", sleep, err)
+		}),
+	}
+
+	if err := retry.Retry(func() error {
+		cliSecret = utils.GenerateRandomStringWithLen(9)
+		if err := requireValidSecret(cliSecret); err != nil {
+			return errors.New(nil).WithMessage("invalid cli secret format")
+		}
+		return nil
+	}, options...); err != nil {
+		return "", errors.Wrap(err, "failed to generate an valid random secret for cli in one minute, please try again")
+	}
+	return cliSecret, nil
 }
 
 func validateUserProfile(user *commonmodels.User) error {

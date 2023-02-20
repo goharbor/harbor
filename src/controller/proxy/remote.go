@@ -20,6 +20,7 @@ import (
 	"io"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -56,7 +57,6 @@ func NewRemoteHelper(ctx context.Context, regID int64) (RemoteInterface, error) 
 }
 
 func (r *remoteHelper) init(ctx context.Context) error {
-
 	if r.registry != nil {
 		return nil
 	}

@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
@@ -20,7 +21,7 @@ func (a *Accessory) ToSwagger() *models.Accessory {
 		Size:              a.Size,
 		Digest:            a.Digest,
 		Type:              a.Type,
-		Icon:              "",
+		Icon:              a.Icon,
 		CreationTime:      strfmt.DateTime(a.CreatTime),
 	}
 }

@@ -15,14 +15,16 @@
 package blob
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/controller/blob"
 )
 
 type PatchBlobUploadMiddlewareTestSuite struct {
@@ -50,7 +52,7 @@ func (suite *PatchBlobUploadMiddlewareTestSuite) TestMiddleware() {
 	PatchBlobUploadMiddleware()(next("0-511")).ServeHTTP(res, req)
 	suite.Equal(http.StatusAccepted, res.Code)
 
-	size, err := blob.Ctl.GetAcceptedBlobSize(sessionID)
+	size, err := blob.Ctl.GetAcceptedBlobSize(context.TODO(), sessionID)
 	suite.Nil(err)
 	suite.Equal(int64(512), size)
 }

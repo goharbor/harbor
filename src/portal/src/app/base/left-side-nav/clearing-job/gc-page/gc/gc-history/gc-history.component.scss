@@ -1,0 +1,20 @@
+.history-header {
+    margin:20px 0 6px;
+    display: inline-block;
+    width: 97%;
+}
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.refresh-btn {
+    margin-right: 2rem;
+    cursor: pointer;
+
+    &:hover {
+        color: #007CBB;
+    }
+}

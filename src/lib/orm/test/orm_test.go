@@ -17,14 +17,15 @@ package test
 import (
 	"context"
 	"errors"
-	. "github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/lib/q"
 	"sync"
 	"testing"
 
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	. "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 type Foo struct {

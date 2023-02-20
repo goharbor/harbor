@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddWebhookComponent } from './add-webhook.component';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
-import { SharedTestingModule } from "../../../../shared/shared.module";
+import { SharedTestingModule } from '../../../../shared/shared.module';
 
 describe('AddWebhookComponent', () => {
     let component: AddWebhookComponent;
@@ -9,13 +9,8 @@ describe('AddWebhookComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA,
-                NO_ERRORS_SCHEMA
-            ],
-            imports: [
-                SharedTestingModule
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [AddWebhookComponent],
         }).compileComponents();
     });
@@ -34,9 +29,11 @@ describe('AddWebhookComponent', () => {
         component.isOpen = true;
         fixture.detectChanges();
         await fixture.whenStable();
-        const body: HTMLElement = fixture.nativeElement.querySelector(".modal-body");
+        const body: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-body');
         expect(body).toBeTruthy();
-        const title: HTMLElement = fixture.nativeElement.querySelector(".modal-title");
+        const title: HTMLElement =
+            fixture.nativeElement.querySelector('.modal-title');
         expect(title.innerText).toEqual('WEBHOOK.EDIT_WEBHOOK');
     });
 });

@@ -11,7 +11,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 
 * [Bi-weekly public community meetings][community-meetings]
   * Catch up with [past meetings on YouTube][past-meetings]
-* Chat with us on the CNCF Slack ([get an invite here][cncf-slack] )
+* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack] )
   * [#harbor][users-slack] for end-user discussions
   * [#harbor-dev][dev-slack] for development of Harbor
 * Want long-form communication instead of Slack? We have two distributions lists:
@@ -47,7 +47,7 @@ To build the project, please refer the [build](https://goharbor.io/docs/edge/bui
 
 ### Repository Structure
 
-Here is the basic structure of the harbor code base. Some of the key folders / files are commented for your references.
+Here is the basic structure of the harbor code base. Some key folders / files are commented for your references.
 ```
 .
 ...
@@ -163,6 +163,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.3    |    1.15.12    |
 |   2.4    |    1.17.7     |
 |   2.5    |    1.17.7     |
+|   2.6    |    1.18.6     |
+|   2.7    |    1.19.4     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -198,9 +200,9 @@ To run the code, please refer to the [build](https://goharbor.io/docs/edge/build
 
 PR are always welcome, even if they only contain small fixes like typos or a few lines of code. If there will be a significant effort, please document it as an issue and get a discussion going before starting to work on it.
 
-Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
+Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot of features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete.
+Note: If you split your pull request to small changes, please make sure any of the changes goes to `main` will not break anything. Otherwise, it can not be merged until this feature complete.
 
 ### Fork and clone
 
@@ -219,21 +221,21 @@ user={your github profile name}
 Both `$working_dir` and `$user` are mentioned in the figure above.
 
 ### Branch
-Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of master without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
+Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of `main` without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
 ```
 #goharbor is the origin upstream
 
 cd $working_dir/harbor
 git fetch goharbor
-git checkout master
-git rebase goharbor/master
+git checkout main
+git rebase goharbor/main
 ```
 
-Branch from the updated `master` branch:
+Branch from the updated `main` branch:
 
 ```
-git checkout -b my_feature master
+git checkout -b my_feature main
 ```
 
 ### Develop, Build and Test
@@ -256,7 +258,7 @@ go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
 
 ```
 
-Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](http://jasmine.github.io/2.4/introduction.html) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
+Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
 
 Run go test cases:
 ```
@@ -274,16 +276,16 @@ To build the code, please refer to [build](https://goharbor.io/docs/edge/build-c
 
 **Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
 
-As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](github.com/stretchr/testify/mock) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add `//go:generate mockery xxx` comment with mockery command in the subpackages of `src/testing`, then run `make gen_mocks` to generate mocks.
+As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add `//go:generate mockery xxx` comment with mockery command in the subpackages of `src/testing`, then run `make gen_mocks` to generate mocks.
 
 ###  Keep sync with upstream
 
 
-Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
+Once your branch gets out of sync with the goharbor/main branch, use the following commands to update:
 ```bash
 git checkout my_feature
 git fetch -a
-git rebase goharbor/master
+git rebase goharbor/main
 
 ```
 
@@ -291,7 +293,7 @@ Please use `fetch / rebase` (as shown above) instead of `git pull`. `git pull` d
 
 ### Commit
 
-As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign-off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
+As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
 
 ```bash
 $ git commit -s -m 'This is my commit message'
@@ -314,7 +316,7 @@ curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/ho
 
 ### Automated Testing
 Once your pull request has been opened, harbor will run two CI pipelines against it.
-1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
+1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also, all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
 2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:

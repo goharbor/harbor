@@ -17,7 +17,8 @@ package dao
 import (
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/lib/q"
 )
 

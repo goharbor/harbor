@@ -3,11 +3,13 @@ import os
 import yaml
 from urllib.parse import urlencode
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric, Trace, PurgeUpload
+from models import InternalTLS, Metric, Trace, PurgeUpload, Cache
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
-default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
-default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+# NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+default_db_max_idle_conns = 2
+# NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+default_db_max_open_conns = 0
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
 
@@ -49,7 +51,8 @@ def validate(conf: dict, **kwargs):
         raise Exception("Error: storage driver %s is not supported, only the following ones are supported: %s" % (
             storage_provider_name, ",".join(valid_storage_drivers)))
 
-    storage_provider_config = conf.get("storage_provider_config") ## original is registry_storage_provider_config
+    # original is registry_storage_provider_config
+    storage_provider_config = conf.get("storage_provider_config")
     if storage_provider_name != "filesystem":
         if storage_provider_config == "":
             raise Exception(
@@ -78,9 +81,13 @@ def validate(conf: dict, **kwargs):
 
     if conf.get('trace'):
         conf['trace'].validate()
-        
+
     if conf.get('purge_upload'):
         conf['purge_upload'].validate()
+
+    if conf.get('cache'):
+        conf['cache'].validate()
+
 
 def parse_versions():
     if not versions_file_path.is_file():
@@ -90,7 +97,7 @@ def parse_versions():
     return versions
 
 
-def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseum):
+def parse_yaml_config(config_file_path, with_notary, with_trivy):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -109,7 +116,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         'jobservice_url': 'http://jobservice:8080',
         'trivy_adapter_url': 'http://trivy-adapter:8080',
         'notary_url': 'http://notary-server:4443',
-        'chart_repository_url': 'http://chartmuseum:9999'
     }
 
     config_dict['hostname'] = configs["hostname"]
@@ -151,6 +157,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = 'disable'
         config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = db_configs.get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = db_configs.get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
@@ -167,7 +175,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             config_dict['notary_server_db_username'] = 'server'
             config_dict['notary_server_db_password'] = 'password'
             config_dict['notary_server_db_sslmode'] = 'disable'
-
 
     # Data path volume
     config_dict['data_volume'] = configs['data_volume']
@@ -214,25 +221,19 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         all_no_proxy |= set(no_proxy_config.split(','))
 
     for proxy_component in proxy_components:
-      config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
-      config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
-      config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
+        config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
+        config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
+        config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     # Trivy configs, optional
     trivy_configs = configs.get("trivy") or {}
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
+    config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
     config_dict['trivy_insecure'] = trivy_configs.get("insecure") or False
     config_dict['trivy_timeout'] = trivy_configs.get("timeout") or '5m0s'
-
-    # Chart configs
-    chart_configs = configs.get("chart") or {}
-    if chart_configs.get('absolute_url') == 'enabled':
-        config_dict['chart_absolute_url'] = True
-    else:
-        config_dict['chart_absolute_url'] = False
 
     # jobservice config
     js_config = configs.get('jobservice') or {}
@@ -281,6 +282,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = external_db_configs['harbor'].get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = external_db_configs['harbor'].get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
@@ -322,7 +325,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             configs['data_volume'],
             with_notary=with_notary,
             with_trivy=with_trivy,
-            with_chartmuseum=with_chartmuseum,
             external_database=config_dict['external_database'])
     else:
         config_dict['internal_tls'] = InternalTLS()
@@ -348,11 +350,14 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['jobservice_url'] = 'https://jobservice:8443'
         config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
         # config_dict['notary_url'] = 'http://notary-server:4443'
-        config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
 
     # purge upload configs
     purge_upload_config = configs.get('upload_purging')
     config_dict['purge_upload'] = PurgeUpload(purge_upload_config or {})
+
+    # cache configs
+    cache_config = configs.get('cache')
+    config_dict['cache'] = Cache(cache_config or {})
 
     return config_dict
 
@@ -435,7 +440,6 @@ def get_redis_configs(external_redis=None, with_trivy=True):
         'password': '',
         'registry_db_index': 1,
         'jobservice_db_index': 2,
-        'chartmuseum_db_index': 3,
         'trivy_db_index': 5,
         'idle_timeout_seconds': 30,
     }
@@ -444,7 +448,6 @@ def get_redis_configs(external_redis=None, with_trivy=True):
     redis.update({key: value for (key, value) in external_redis.items() if value})
 
     configs['redis_url_core'] = get_redis_url(0, redis)
-    configs['redis_url_chart'] = get_redis_url(redis['chartmuseum_db_index'], redis)
     configs['redis_url_js'] = get_redis_url(redis['jobservice_db_index'], redis)
     configs['redis_url_reg'] = get_redis_url(redis['registry_db_index'], redis)
 

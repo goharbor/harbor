@@ -17,12 +17,14 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func ConfigGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +58,7 @@ var configMapForTest = map[string]interface{}{}
 
 func ConfigPutHandler(w http.ResponseWriter, r *http.Request) {
 	cfgs := map[string]interface{}{}
-	content, err := ioutil.ReadAll(r.Body)
+	content, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

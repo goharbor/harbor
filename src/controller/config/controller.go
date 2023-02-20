@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -92,6 +93,22 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 		log.Errorf("failed to upload configurations: %v", err)
 		return fmt.Errorf("failed to validate configuration")
 	}
+	// update the audit logger to point to the new endpoint
+	return c.updateLogEndpoint(ctx, conf)
+}
+
+func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]interface{}) error {
+	// check if the audit log forward endpoint updated
+	if _, ok := cfgs[common.AuditLogForwardEndpoint]; ok {
+		auditEP := config.AuditLogForwardEndpoint(ctx)
+		if len(auditEP) == 0 {
+			return nil
+		}
+		if !audit.CheckEndpointActive(auditEP) {
+			return errors.BadRequestError(fmt.Errorf("could not connect to the audit endpoint: %v", auditEP))
+		}
+		audit.LogMgr.Init(ctx, auditEP)
+	}
 	return nil
 }
 
@@ -107,7 +124,7 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 			}
 			if !canBeModified {
 				return errors.BadRequestError(nil).
-					WithMessage(fmt.Sprintf("the auth mode cannot be modified as new users have been inserted into database"))
+					WithMessage("the auth mode cannot be modified as new users have been inserted into database")
 			}
 		}
 	}
@@ -116,7 +133,85 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 	if err != nil {
 		return errors.BadRequestError(err)
 	}
+
+	// verify the skip audit log related cfgs
+	if err = verifySkipAuditLogCfg(ctx, cfgs, mgr); err != nil {
+		return err
+	}
+	// verify the value length related cfgs
+	if err = verifyValueLengthCfg(ctx, cfgs); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr config.Manager) error {
+	updated := false
+	endPoint := mgr.Get(ctx, common.AuditLogForwardEndpoint).GetString()
+	skipAuditDB := mgr.Get(ctx, common.SkipAuditLogDatabase).GetBool()
+
+	if skip, exist := cfgs[common.SkipAuditLogDatabase]; exist {
+		skipAuditDB = skip.(bool)
+		updated = true
+	}
+	if endpoint, exist := cfgs[common.AuditLogForwardEndpoint]; exist {
+		endPoint = endpoint.(string)
+		updated = true
+	}
+
+	if updated {
+		if skipAuditDB && len(endPoint) == 0 {
+			return errors.BadRequestError(errors.New("audit log forward endpoint should be configured before enable skip audit log in database"))
+		}
+	}
+	return nil
+}
+
+// verifyValueLengthCfg verifies the cfgs which need to check the value max length to align with frontend.
+func verifyValueLengthCfg(ctx context.Context, cfgs map[string]interface{}) error {
+	maxValue := maxValueLimitedByLength(common.UIMaxLengthLimitedOfNumber)
+	validateCfgs := []string{
+		common.TokenExpiration,
+		common.RobotTokenDuration,
+		common.SessionTimeout,
+	}
+
+	for _, c := range validateCfgs {
+		if v, exist := cfgs[c]; exist {
+			// the cfgs is unmarshal from json string, the number type will be float64
+			if vf, ok := v.(float64); ok {
+				if vf <= 0 {
+					return errors.BadRequestError(nil).WithMessage("the %s value must be positive", c)
+				}
+
+				if int64(vf) > maxValue {
+					return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("the %s value is over the limit value: %d", c, maxValue))
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// maxValueLimitedByLength returns the max value can be equaled limited by the fixed length.
+func maxValueLimitedByLength(length int) int64 {
+	// return -1 if length is negative
+	if length <= 0 {
+		return -1
+	}
+
+	// the sum value
+	var value int64
+	// the times for multiple, should *10 for every time
+	times := 1
+	for i := 0; i < length; i++ {
+		value = value + int64(9*times)
+		times = times * 10
+	}
+
+	return value
 }
 
 // ScanAllPolicy is represent the json request and object for scan all policy
@@ -195,5 +290,5 @@ func (c *controller) authModeCanBeModified(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return cnt == 1, nil // admin user only
+	return cnt == 0, nil
 }

@@ -17,6 +17,12 @@ package artifact
 import (
 	"testing"
 
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -25,12 +31,6 @@ import (
 	tblob "github.com/goharbor/harbor/src/testing/pkg/blob"
 	tpro "github.com/goharbor/harbor/src/testing/pkg/processor"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
-
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/suite"
 )
 
 var (
@@ -208,13 +208,13 @@ type abstractorTestSuite struct {
 	suite.Suite
 	argMgr     *tart.Manager
 	blobMgr    *tblob.Manager
-	regCli     *registry.FakeClient
+	regCli     *registry.Client
 	abstractor *abstractor
 	processor  *tpro.Processor
 }
 
 func (a *abstractorTestSuite) SetupTest() {
-	a.regCli = &registry.FakeClient{}
+	a.regCli = &registry.Client{}
 	a.argMgr = &tart.Manager{}
 	a.blobMgr = &tblob.Manager{}
 	a.abstractor = &abstractor{
@@ -236,7 +236,7 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
 		{Size: 10},
 		{Size: 20},
 	}, nil)
-	a.regCli.On("PullManifest").Return(manifest, "", nil)
+	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
@@ -252,7 +252,7 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
 func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, []byte(v2Manifest))
 	a.Require().Nil(err)
-	a.regCli.On("PullManifest").Return(manifest, "", nil)
+	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
@@ -271,7 +271,7 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 func (a *abstractorTestSuite) TestAbstractMetadataOfIndex() {
 	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageIndex, []byte(index))
 	a.Require().Nil(err)
-	a.regCli.On("PullManifest").Return(manifest, "", nil)
+	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
 	a.argMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID:   2,
 		Size: 10,
@@ -301,7 +301,7 @@ func (u *unknownManifest) Payload() (mediaType string, payload []byte, err error
 
 // unknown
 func (a *abstractorTestSuite) TestAbstractMetadataOfUnsupported() {
-	a.regCli.On("PullManifest").Return(&unknownManifest{}, "", nil)
+	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(&unknownManifest{}, "", nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}

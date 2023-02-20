@@ -17,11 +17,12 @@ package replication
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestParseParam(t *testing.T) {
@@ -48,18 +49,6 @@ func TestParseParam(t *testing.T) {
 	assert.Equal(t, "tom", p.Name)
 }
 
-func TestParseParams(t *testing.T) {
-	params := map[string]interface{}{
-		"src_resource": `{"type":"chart"}`,
-		"dst_resource": `{"type":"chart"}`,
-	}
-	res, dst, speed, err := parseParams(params)
-	require.Nil(t, err)
-	assert.Equal(t, "chart", string(res.Type))
-	assert.Equal(t, "chart", string(dst.Type))
-	assert.Equal(t, int32(0), speed)
-}
-
 func TestMaxFails(t *testing.T) {
 	rep := &Replication{}
 	assert.Equal(t, uint(3), rep.MaxFails())
@@ -83,7 +72,7 @@ var fakedTransferFactory = func(transfer.Logger, transfer.StopFunc) (transfer.Tr
 
 type fakedTransfer struct{}
 
-func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource, speed int32) error {
+func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource, opts *transfer.Options) error {
 	transferred = true
 	return nil
 }

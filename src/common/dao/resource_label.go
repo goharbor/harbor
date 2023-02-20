@@ -15,10 +15,11 @@
 package dao
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
+
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 

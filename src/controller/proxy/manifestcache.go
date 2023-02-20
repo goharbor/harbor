@@ -17,17 +17,19 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/opencontainers/go-digest"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"strings"
-	"time"
 )
 
 const defaultHandler = "default"
@@ -67,18 +69,20 @@ func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string,
 		log.Errorf("failed to get payload, error %v", err)
 		return
 	}
-	key := manifestListKey(art.Repository, art.Digest)
+	if len(getReference(art)) == 0 {
+		log.Errorf("failed to get reference, reference is empty, skip to cache manifest list")
+		return
+	}
+	// some registry will not return the digest in the HEAD request, if no digest returned, cache manifest list content with tag
+	key := manifestListKey(art.Repository, art)
 	log.Debugf("cache manifest list with key=cache:%v", key)
-	err = m.cache.Save(manifestListContentTypeKey(art.Repository, art.Digest), contentType, manifestListCacheInterval)
-	if err != nil {
+	if err := m.cache.Save(ctx, manifestListContentTypeKey(art.Repository, art), contentType, manifestListCacheInterval); err != nil {
 		log.Errorf("failed to cache content type, error %v", err)
 	}
-	err = m.cache.Save(key, payload, manifestListCacheInterval)
-	if err != nil {
+	if err := m.cache.Save(ctx, key, payload, manifestListCacheInterval); err != nil {
 		log.Errorf("failed to cache payload, error %v", err)
 	}
-	err = m.push(ctx, art.Repository, getReference(art), man)
-	if err != nil {
+	if err := m.push(ctx, art.Repository, getReference(art), man); err != nil {
 		log.Errorf("error when push manifest list to local :%v", err)
 	}
 }
@@ -90,13 +94,12 @@ func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig strin
 	}
 	art := lib.GetArtifactInfo(ctx)
 	key := TrimmedManifestlist + string(art.Digest)
-	err := m.cache.Save(key, newDig)
+	err := m.cache.Save(ctx, key, newDig)
 	if err != nil {
 		log.Warningf("failed to cache the trimmed manifest, err %v", err)
 		return
 	}
 	log.Debugf("Saved key:%v, value:%v", key, newDig)
-
 }
 
 func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string, manifest distribution.Manifest) (distribution.Manifest, error) {

@@ -22,27 +22,30 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/beego/beego/v2/client/orm"
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx" // import pgx driver for migrator
 	_ "github.com/golang-migrate/migrate/v4/source/file"  // import local file driver for migrator
 	_ "github.com/jackc/pgx/v4/stdlib"                    // registry pgx driver
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
-	host         string
-	port         string
-	usr          string
-	pwd          string
-	database     string
-	sslmode      string
-	maxIdleConns int
-	maxOpenConns int
+	host            string
+	port            string
+	usr             string
+	pwd             string
+	database        string
+	sslmode         string
+	maxIdleConns    int
+	maxOpenConns    int
+	connMaxLifetime time.Duration
+	connMaxIdleTime time.Duration
 }
 
 // Name returns the name of PostgreSQL
@@ -57,19 +60,21 @@ func (p *pgsql) String() string {
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int, connMaxLifetime time.Duration, connMaxIdleTime time.Duration) Database {
 	if len(sslmode) == 0 {
 		sslmode = "disable"
 	}
 	return &pgsql{
-		host:         host,
-		port:         port,
-		usr:          usr,
-		pwd:          pwd,
-		database:     database,
-		sslmode:      sslmode,
-		maxIdleConns: maxIdleConns,
-		maxOpenConns: maxOpenConns,
+		host:            host,
+		port:            port,
+		usr:             usr,
+		pwd:             pwd,
+		database:        database,
+		sslmode:         sslmode,
+		maxIdleConns:    maxIdleConns,
+		maxOpenConns:    maxOpenConns,
+		connMaxLifetime: connMaxLifetime,
+		connMaxIdleTime: connMaxIdleTime,
 	}
 }
 
@@ -90,16 +95,16 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s timezone=UTC",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	if err := orm.RegisterDataBase(an, "pgx", info, p.maxIdleConns, p.maxOpenConns); err != nil {
+	if err := orm.RegisterDataBase(an, "pgx", info, orm.MaxIdleConnections(p.maxIdleConns),
+		orm.MaxOpenConnections(p.maxOpenConns), orm.ConnMaxLifetime(p.connMaxLifetime)); err != nil {
 		return err
 	}
 
-	// Due to the issues of beego v1.12.1 and v1.12.2, we set the max open conns ourselves.
-	// See https://github.com/goharbor/harbor/issues/12403
-	// and https://github.com/astaxie/beego/issues/4059 for more info.
-	db, _ := orm.GetDB(an)
-	db.SetMaxOpenConns(p.maxOpenConns)
-	db.SetConnMaxLifetime(5 * time.Minute)
+	db, err := orm.GetDB(an)
+	if err != nil {
+		return err
+	}
+	db.SetConnMaxIdleTime(p.connMaxIdleTime)
 
 	return nil
 }

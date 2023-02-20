@@ -69,7 +69,11 @@ func (hc *HealthCollector) getHealthStatus() []prometheus.Metric {
 	}
 	defer res.Body.Close()
 	var healthResponse responseHealth
-	json.NewDecoder(res.Body).Decode(&healthResponse)
+	err = json.NewDecoder(res.Body).Decode(&healthResponse)
+	if err != nil {
+		log.Errorf("failed to decode res.Body into healthResponse, error: %v", err)
+		return result
+	}
 	result = append(result, harborHealth.MustNewConstMetric(healthy(healthResponse.Status)))
 	for _, v := range healthResponse.Components {
 		result = append(result, harborComponentsHealth.MustNewConstMetric(healthy(v.Status), v.Name))

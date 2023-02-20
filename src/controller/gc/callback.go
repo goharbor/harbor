@@ -29,12 +29,12 @@ import (
 )
 
 func init() {
-	err := scheduler.RegisterCallbackFunc(SchedulerCallback, gcCallback)
+	err := scheduler.RegisterCallbackFunc(job.GarbageCollectionVendorType, gcCallback)
 	if err != nil {
 		log.Fatalf("failed to registry GC call back, %v", err)
 	}
 
-	if err := task.RegisterTaskStatusChangePostFunc(GCVendorType, gcTaskStatusChange); err != nil {
+	if err := task.RegisterTaskStatusChangePostFunc(job.GarbageCollectionVendorType, gcTaskStatusChange); err != nil {
 		log.Fatalf("failed to register the task status change post for the gc job, error %v", err)
 	}
 }
@@ -51,7 +51,10 @@ func gcCallback(ctx context.Context, p string) error {
 func gcTaskStatusChange(ctx context.Context, taskID int64, status string) error {
 	if status == job.SuccessStatus.String() && config.QuotaPerProjectEnable(ctx) {
 		go func() {
-			quota.RefreshForProjects(orm.Context())
+			err := quota.RefreshForProjects(orm.Context())
+			if err != nil {
+				log.Warningf("failed to refresh project quota, error: %v", err)
+			}
 		}()
 	}
 

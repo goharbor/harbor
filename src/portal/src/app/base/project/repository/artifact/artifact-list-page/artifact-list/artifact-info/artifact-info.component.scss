@@ -2,36 +2,37 @@
   background: white;
   border: 1px;
   border-style: solid;
-  border-color: #CCCCCC;
-  padding: 12px 12px 12px 12px;
+  border-color: #CCC;
+  padding: 12px;
 }
 
 .info-div {
   border: 1px;
   border-style: solid;
-  border-color: #CCCCCC;
-  padding: 0 12px 24px 12px;
+  border-color: #CCC;
+  padding: 0 12px 24px;
 }
 
 .loading {
   height: 3rem;
   border: 1px;
   border-style: solid;
-  border-color: #CCCCCC;
+  border-color: #CCC;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .info-pre {
-  border: 0px;
+  border: 0;
   max-height: fit-content;
 }
 
 #info-edit-button {
-  margin-top: 0px;
+  margin-top: 0;
   margin-bottom: 12px;
   font-size: 12px;
+
   .markdown {
     position: relative;
     width: 20px;

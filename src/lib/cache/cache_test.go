@@ -18,8 +18,10 @@ import (
 	"fmt"
 	"testing"
 
-	cachetesting "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/stretchr/testify/suite"
+
+	cachetesting "github.com/goharbor/harbor/src/testing/lib/cache"
+	"github.com/goharbor/harbor/src/testing/mock"
 )
 
 type CacheTestSuite struct {
@@ -61,7 +63,7 @@ func (suite *CacheTestSuite) TestInitialize() {
 	{
 		Register("cache", func(opts Options) (Cache, error) {
 			c := &cachetesting.Cache{}
-			c.On("Ping").Return(fmt.Errorf("oops"))
+			c.On("Ping", mock.Anything).Return(fmt.Errorf("oops"))
 
 			return c, nil
 		})
@@ -74,7 +76,7 @@ func (suite *CacheTestSuite) TestInitialize() {
 	{
 		Register("cache", func(opts Options) (Cache, error) {
 			c := &cachetesting.Cache{}
-			c.On("Ping").Return(nil)
+			c.On("Ping", mock.Anything).Return(nil)
 
 			return c, nil
 		})

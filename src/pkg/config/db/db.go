@@ -16,14 +16,14 @@ package db
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/config/models"
-	"github.com/goharbor/harbor/src/lib/encrypt"
-	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 	"os"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
+	"github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 )
 
 // Database - Used to load/save configuration in database
@@ -39,7 +39,6 @@ func (d *Database) Load(ctx context.Context) (map[string]interface{}, error) {
 		return resultMap, err
 	}
 	for _, item := range configEntries {
-
 		itemMetadata, ok := metadata.Instance().GetByName(item.Key)
 		if !ok {
 			log.Debugf("failed to get metadata, key:%v, error:%v, skip to load item", item.Key, err)

@@ -15,10 +15,12 @@
 .refresh-btn:hover {
     color: #007CBB;
 }
+
 :host::ng-deep .btn-group-overflow .dropdown-toggle {
     line-height: 24px;
     height: 24px;
 }
+/* stylelint-disable */
 .rightPos{
     position: absolute;
     z-index: 100;
@@ -35,10 +37,12 @@ clr-datagrid {
 :host::ng-deep clr-checkbox.checkbox.datagrid-foot-select {
     position: inherit;
 }
+
 .content-space {
     margin-top: 28px;
     position: relative;
 }
+
 .datagrid-pt {
     padding-top: 0;
 }

@@ -16,12 +16,12 @@ package report
 
 import (
 	"context"
-	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/google/uuid"
 )
 
 var (
@@ -102,10 +102,6 @@ type Manager interface {
 	//    error        : non nil error if any errors occurred
 	List(ctx context.Context, query *q.Query) ([]*scan.Report, error)
 }
-
-const (
-	reportTimeout = 1 * time.Hour
-)
 
 // basicManager is a default implementation of report manager.
 type basicManager struct {

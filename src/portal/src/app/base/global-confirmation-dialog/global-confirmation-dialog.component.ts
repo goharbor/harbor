@@ -12,41 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnDestroy } from '@angular/core';
-import { Subscription } from "rxjs";
+import { Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationMessage } from './confirmation-message';
-import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../shared/entities/shared.const";
-import { ConfirmationDialogService } from "./confirmation-dialog.service";
-import { ConfirmationAcknowledgement } from "./confirmation-state-message";
-
+import {
+    ConfirmationButtons,
+    ConfirmationState,
+    ConfirmationTargets,
+} from '../../shared/entities/shared.const';
+import { ConfirmationDialogService } from './confirmation-dialog.service';
+import { ConfirmationAcknowledgement } from './confirmation-state-message';
 
 @Component({
     selector: 'global-confirmation-dialog',
     templateUrl: 'global-confirmation-dialog.component.html',
-    styleUrls: ['global-confirmation-dialog.component.scss']
+    styleUrls: ['global-confirmation-dialog.component.scss'],
 })
-
 export class GlobalConfirmationDialogComponent implements OnDestroy {
     opened: boolean = false;
-    dialogTitle: string = "";
-    dialogContent: string = "";
+    dialogTitle: string = '';
+    dialogContent: string = '';
     message: ConfirmationMessage;
     annouceSubscription: Subscription;
     buttons: ConfirmationButtons;
     isDelete: boolean = false;
     constructor(
         private confirmationService: ConfirmationDialogService,
-        private translate: TranslateService) {
-        this.annouceSubscription = confirmationService.confirmationAnnouced$.subscribe(msg => {
-            this.dialogTitle = msg.title;
-            this.dialogContent = msg.message;
-            this.message = msg;
-            this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
-            this.translate.get(this.dialogContent, { 'param': msg.param }).subscribe((res: string) => this.dialogContent = res);
-            // Open dialog
-            this.buttons = msg.buttons;
-            this.open();
-        });
+        private translate: TranslateService
+    ) {
+        this.annouceSubscription =
+            confirmationService.confirmationAnnouced$.subscribe(msg => {
+                this.dialogTitle = msg.title;
+                this.dialogContent = msg.message;
+                this.message = msg;
+                this.translate
+                    .get(this.dialogTitle)
+                    .subscribe((res: string) => (this.dialogTitle = res));
+                this.translate
+                    .get(this.dialogContent, { param: msg.param })
+                    .subscribe((res: string) => (this.dialogContent = res));
+                // Open dialog
+                this.buttons = msg.buttons;
+                this.open();
+            });
     }
 
     ngOnDestroy(): void {
@@ -59,10 +67,14 @@ export class GlobalConfirmationDialogComponent implements OnDestroy {
         if (msg) {
             this.dialogTitle = msg.title;
             this.message = msg;
-            this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
-            this.translate.get(msg.message, { 'param': msg.param }).subscribe((res: string) => {
-                this.dialogContent = res;
-            });
+            this.translate
+                .get(this.dialogTitle)
+                .subscribe((res: string) => (this.dialogTitle = res));
+            this.translate
+                .get(msg.message, { param: msg.param })
+                .subscribe((res: string) => {
+                    this.dialogContent = res;
+                });
             // Open dialog
             this.buttons = msg.buttons;
         }
@@ -81,12 +93,16 @@ export class GlobalConfirmationDialogComponent implements OnDestroy {
         }
 
         let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
-        this.confirmationService.cancel(new ConfirmationAcknowledgement(
-            ConfirmationState.CANCEL,
-            data,
-            target
-        ));
+        let target = this.message.targetId
+            ? this.message.targetId
+            : ConfirmationTargets.EMPTY;
+        this.confirmationService.cancel(
+            new ConfirmationAcknowledgement(
+                ConfirmationState.CANCEL,
+                data,
+                target
+            )
+        );
         this.isDelete = false;
         this.close();
     }
@@ -99,12 +115,16 @@ export class GlobalConfirmationDialogComponent implements OnDestroy {
         }
 
         let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
-        this.confirmationService.confirm(new ConfirmationAcknowledgement(
-            ConfirmationState.CONFIRMED,
-            data,
-            target
-        ));
+        let target = this.message.targetId
+            ? this.message.targetId
+            : ConfirmationTargets.EMPTY;
+        this.confirmationService.confirm(
+            new ConfirmationAcknowledgement(
+                ConfirmationState.CONFIRMED,
+                data,
+                target
+            )
+        );
         this.close();
     }
 }

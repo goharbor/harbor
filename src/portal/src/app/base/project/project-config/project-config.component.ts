@@ -18,33 +18,33 @@ import { SessionUser } from '../../../shared/entities/session-user';
 import { Project } from '../project';
 
 @Component({
-  selector: 'app-project-config',
-  templateUrl: './project-config.component.html',
-  styleUrls: ['./project-config.component.scss']
+    selector: 'app-project-config',
+    templateUrl: './project-config.component.html',
+    styleUrls: ['./project-config.component.scss'],
 })
 export class ProjectConfigComponent implements OnInit {
+    projectId: number;
+    projectName: string;
+    currentUser: SessionUser;
+    hasSignedIn: boolean;
+    isProxyCacheProject: boolean = false;
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private session: SessionService
+    ) {}
 
-  projectId: number;
-  projectName: string;
-  currentUser: SessionUser;
-  hasSignedIn: boolean;
-  isProxyCacheProject: boolean = false;
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private session: SessionService) {}
-
-  ngOnInit() {
-    this.projectId = +this.route.snapshot.parent.parent.params['id'];
-    this.currentUser = this.session.getCurrentUser();
-    this.hasSignedIn = this.session.getCurrentUser() !== null;
-    let resolverData = this.route.snapshot.parent.parent.data;
-    if (resolverData) {
-      let pro: Project = <Project>resolverData['projectResolver'];
-      this.projectName = pro.name;
-      if (pro.registry_id) {
-        this.isProxyCacheProject = true;
-      }
+    ngOnInit() {
+        this.projectId = +this.route.snapshot.parent.parent.params['id'];
+        this.currentUser = this.session.getCurrentUser();
+        this.hasSignedIn = this.session.getCurrentUser() !== null;
+        let resolverData = this.route.snapshot.parent.parent.data;
+        if (resolverData) {
+            let pro: Project = <Project>resolverData['projectResolver'];
+            this.projectName = pro.name;
+            if (pro.registry_id) {
+                this.isProxyCacheProject = true;
+            }
+        }
     }
-  }
 }

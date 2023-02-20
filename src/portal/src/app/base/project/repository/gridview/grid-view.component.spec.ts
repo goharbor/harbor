@@ -11,30 +11,25 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GridViewComponent } from './grid-view.component';
-import { SharedTestingModule } from "../../../../shared/shared.module";
-
+import { SharedTestingModule } from '../../../../shared/shared.module';
 
 describe('GridViewComponent', () => {
-  let component: GridViewComponent;
-  let fixture: ComponentFixture<GridViewComponent>;
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        SharedTestingModule,
-      ],
-      declarations: [
-        GridViewComponent,
-      ],
-      }).compileComponents();
+    let component: GridViewComponent;
+    let fixture: ComponentFixture<GridViewComponent>;
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [SharedTestingModule],
+            declarations: [GridViewComponent],
+        }).compileComponents();
     });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(GridViewComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(GridViewComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

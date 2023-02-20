@@ -17,11 +17,12 @@ package rds
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/jobservice/tests"
 )
 
 // RdsUtilsTestSuite tests functions located in rds package

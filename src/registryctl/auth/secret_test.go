@@ -19,8 +19,9 @@ import (
 	"net/http"
 	"testing"
 
-	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/stretchr/testify/assert"
+
+	commonsecret "github.com/goharbor/harbor/src/common/secret"
 )
 
 func TestAuthorizeRequestInvalid(t *testing.T) {

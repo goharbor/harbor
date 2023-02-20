@@ -11,22 +11,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {ClaritySeedAppHome} from './app.po';
+import { ClaritySeedAppHome } from './app.po';
 
 fdescribe('harbor-portal app', function () {
+    let expectedMsg: string =
+        'This is a Clarity seed application. This is the default page that loads for the application.';
 
-  let expectedMsg: string = 'This is a Clarity seed application. This is the default page that loads for the application.';
+    let page: ClaritySeedAppHome;
 
-  let page: ClaritySeedAppHome;
-
-  beforeEach(() => {
-    page = new ClaritySeedAppHome();
-  });
-
-  it('should display: ' + expectedMsg, () => {
-    page.navigateTo();
-    page.getParagraphText().then(res => {
-      expect(res).toEqual(expectedMsg);
+    beforeEach(() => {
+        page = new ClaritySeedAppHome();
     });
-  });
+
+    it('should display: ' + expectedMsg, () => {
+        page.navigateTo();
+        page.getParagraphText().then(res => {
+            expect(res).toEqual(expectedMsg);
+        });
+    });
 });

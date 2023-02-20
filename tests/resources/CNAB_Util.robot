@@ -20,10 +20,7 @@ Library  Process
 *** Keywords ***
 CNAB Push Bundle
     [Arguments]  ${ip}  ${user}  ${pwd}  ${target}  ${bundle_file}  ${registry}  ${namespace}  ${index1}  ${index2}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file} ${registry} ${namespace} ${index1} ${index2}
-    Log To Console  ${output}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
+    Wait Unitl Command Success  ./tests/robot-cases/Group0-Util/cnab_push_bundle.sh ${ip} ${user} ${pwd} ${target} ${bundle_file} ${registry} ${namespace} ${index1} ${index2}
 
 Prepare Cnab Push Test Data
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${index1_image1}  ${index1_image2}  ${index2_image1}  ${index2_image2}  ${image_tag}=latest

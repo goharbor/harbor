@@ -16,9 +16,12 @@ package v2
 
 import (
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	ctltag "github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
+	labelmodel "github.com/goharbor/harbor/src/pkg/label/model"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
@@ -57,20 +60,26 @@ func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 	var arts []*model.Artifact
 
 	// append the accessory objects behind the subject artifact if it has.
-	var getAccessoryArts = func(art *artifact.Artifact) ([]*model.Artifact, error) {
+	var getAccessoryArts = func(art *artifact.Artifact, labels []*labelmodel.Label, tags []*ctltag.Tag) ([]*model.Artifact, error) {
 		var accArts = []*model.Artifact{}
 		for _, acc := range art.Accessories {
 			accArt := &model.Artifact{
 				Type:   art.Type,
 				Digest: acc.GetData().Digest,
+				IsAcc:  true,
+			}
+			for _, tag := range tags {
+				accArt.ParentTags = append(accArt.ParentTags, tag.Name)
+			}
+			// set the labels belonging to the subject manifest to the accessories.
+			for _, label := range labels {
+				accArt.Labels = append(accArt.Labels, label.Name)
 			}
 			tags, err := c.listTags(project, repo, acc.GetData().Digest)
 			if err != nil {
 				return nil, err
 			}
-			for _, tag := range tags {
-				accArt.Tags = append(accArt.Tags, tag)
-			}
+			accArt.Tags = append(accArt.Tags, tags...)
 
 			accArts = append(accArts, accArt)
 		}
@@ -91,7 +100,7 @@ func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 		arts = append(arts, art)
 
 		// append the accessory of index or individual artifact
-		accArts, err := getAccessoryArts(artItem)
+		accArts, err := getAccessoryArts(artItem, artItem.Labels, artItem.Tags)
 		if err != nil {
 			return nil, err
 		}
@@ -105,7 +114,7 @@ func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 			if err := c.C.Get(url, &artRef); err != nil {
 				return nil, err
 			}
-			accArts, err := getAccessoryArts(&artRef)
+			accArts, err := getAccessoryArts(&artRef, artItem.Labels, artItem.Tags)
 			if err != nil {
 				return nil, err
 			}

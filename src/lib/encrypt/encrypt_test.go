@@ -16,16 +16,16 @@ package encrypt
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
 	secret := []byte("9TXCcHgNAAp1aSHh")
-	filename, err := ioutil.TempFile(os.TempDir(), "keyfile")
-	err = ioutil.WriteFile(filename.Name(), secret, 0644)
+	filename, err := os.CreateTemp(os.TempDir(), "keyfile")
+	err = os.WriteFile(filename.Name(), secret, 0644)
 	if err != nil {
 		fmt.Printf("failed to create temp key file\n")
 	}

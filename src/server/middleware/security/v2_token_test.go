@@ -2,16 +2,16 @@ package security
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/core/service/token"
+	registry_token "github.com/docker/distribution/registry/auth/token"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	registry_token "github.com/docker/distribution/registry/auth/token"
+	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 func TestGenerate(t *testing.T) {

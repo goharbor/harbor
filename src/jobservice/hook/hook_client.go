@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -65,7 +65,7 @@ func NewClient(ctx context.Context) Client {
 	}
 
 	client := &http.Client{
-		Timeout:   15 * time.Second,
+		Timeout:   30 * time.Second,
 		Transport: transport,
 	}
 
@@ -111,7 +111,7 @@ func (bc *basicClient) SendEvent(evt *Event) error {
 	if res.StatusCode != http.StatusOK {
 		if res.ContentLength > 0 {
 			// read error content and return
-			dt, err := ioutil.ReadAll(res.Body)
+			dt, err := io.ReadAll(res.Body)
 			if err != nil {
 				return err
 			}

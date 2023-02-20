@@ -2,17 +2,18 @@ package dao
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

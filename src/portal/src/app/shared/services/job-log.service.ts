@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS_TEXT } from "../units/utils";
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS_TEXT } from '../units/utils';
+import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from 'rxjs';
 /**
  * Define the service methods to handle the job log related things.
  *
@@ -11,21 +11,21 @@ import { Observable, throwError as observableThrowError } from "rxjs";
  * class JobLogService
  */
 export abstract class JobLogService {
-  /**
-   * Get the log of the specified job
-   *
-   * @abstract
-   *  ** deprecated param {string} jobType
-   *  ** deprecated param {(number | string)} jobId
-   * returns {(Observable<string>)}
-   * @memberof JobLogService
-   */
+    /**
+     * Get the log of the specified job
+     *
+     * @abstract
+     *  ** deprecated param {string} jobType
+     *  ** deprecated param {(number | string)} jobId
+     * returns {(Observable<string>)}
+     * @memberof JobLogService
+     */
 
-  abstract getScanJobBaseUrl(): string;
-  abstract getJobLog(
-    jobType: string,
-    jobId: number | string
-  ): Observable<string>;
+    abstract getScanJobBaseUrl(): string;
+    abstract getJobLog(
+        jobType: string,
+        jobId: number | string
+    ): Observable<string>;
 }
 
 /**
@@ -37,54 +37,52 @@ export abstract class JobLogService {
  */
 @Injectable()
 export class JobLogDefaultService extends JobLogService {
-  _replicationJobBaseUrl: string;
-  _scanningJobBaseUrl: string;
-  _supportedJobTypes: string[];
+    _replicationJobBaseUrl: string;
+    _scanningJobBaseUrl: string;
+    _supportedJobTypes: string[];
 
-  constructor(
-    private http: HttpClient,
-  ) {
-    super();
-    this._replicationJobBaseUrl = CURRENT_BASE_HREF + "/replication";
-    this._scanningJobBaseUrl = CURRENT_BASE_HREF + "/jobs/scan";
-    this._supportedJobTypes = ["replication", "scan"];
-  }
-
-  _getJobLog(logUrl: string): Observable<string> {
-    return this.http
-      .get(logUrl, HTTP_GET_OPTIONS_TEXT)
-      .pipe(map(response => response)
-      , catchError(error => observableThrowError(error)));
-  }
-
-  _isSupportedJobType(jobType: string): boolean {
-    if (this._supportedJobTypes.find((t: string) => t === jobType)) {
-      return true;
+    constructor(private http: HttpClient) {
+        super();
+        this._replicationJobBaseUrl = CURRENT_BASE_HREF + '/replication';
+        this._scanningJobBaseUrl = CURRENT_BASE_HREF + '/jobs/scan';
+        this._supportedJobTypes = ['replication', 'scan'];
     }
 
-    return false;
-  }
-
-  public getScanJobBaseUrl() {
-    return this._scanningJobBaseUrl;
-  }
-
-  public getJobLog(
-    jobType: string,
-    jobId: number | string
-  ): Observable<string> {
-    if (!this._isSupportedJobType(jobType)) {
-      return observableThrowError("Unsupport job type: " + jobType);
-    }
-    if (!jobId || jobId <= 0) {
-      return observableThrowError("Bad argument");
+    _getJobLog(logUrl: string): Observable<string> {
+        return this.http.get(logUrl, HTTP_GET_OPTIONS_TEXT).pipe(
+            map(response => response),
+            catchError(error => observableThrowError(error))
+        );
     }
 
-    let logUrl: string = `${this._replicationJobBaseUrl}/${jobId}/log`;
-    if (jobType === "scan") {
-      logUrl = `${this._scanningJobBaseUrl}/${jobId}/log`;
+    _isSupportedJobType(jobType: string): boolean {
+        if (this._supportedJobTypes.find((t: string) => t === jobType)) {
+            return true;
+        }
+
+        return false;
     }
 
-    return this._getJobLog(logUrl);
-  }
+    public getScanJobBaseUrl() {
+        return this._scanningJobBaseUrl;
+    }
+
+    public getJobLog(
+        jobType: string,
+        jobId: number | string
+    ): Observable<string> {
+        if (!this._isSupportedJobType(jobType)) {
+            return observableThrowError('Unsupport job type: ' + jobType);
+        }
+        if (!jobId || jobId <= 0) {
+            return observableThrowError('Bad argument');
+        }
+
+        let logUrl: string = `${this._replicationJobBaseUrl}/${jobId}/log`;
+        if (jobType === 'scan') {
+            logUrl = `${this._scanningJobBaseUrl}/${jobId}/log`;
+        }
+
+        return this._getJobLog(logUrl);
+    }
 }

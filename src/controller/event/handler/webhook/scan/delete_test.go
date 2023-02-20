@@ -19,13 +19,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/q"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
-	"github.com/stretchr/testify/suite"
 )
 
 type DelArtHandlerTestSuite struct {

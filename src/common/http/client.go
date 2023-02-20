@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -127,7 +126,6 @@ func (c *Client) Post(url string, v ...interface{}) error {
 func (c *Client) Put(url string, v ...interface{}) error {
 	var reader io.Reader
 	if len(v) > 0 {
-		data := []byte{}
 		data, err := json.Marshal(v[0])
 		if err != nil {
 			return err
@@ -161,7 +159,7 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +201,7 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return err

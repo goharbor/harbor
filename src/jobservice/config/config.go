@@ -18,14 +18,15 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -141,7 +142,7 @@ type LoggerConfig struct {
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if !utils.IsEmptyStr(yamlFilePath) {
 		// Try to load from file first
-		data, err := ioutil.ReadFile(yamlFilePath)
+		data, err := os.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
 		}
@@ -274,7 +275,6 @@ func (c *Configuration) loadEnvs() {
 			}
 		}
 	}
-
 }
 
 // Check if the configurations are valid settings.

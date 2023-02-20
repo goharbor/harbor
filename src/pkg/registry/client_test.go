@@ -16,14 +16,16 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/docker/distribution/manifest/schema2"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/stretchr/testify/suite"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"testing"
+
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 type clientTestSuite struct {
@@ -317,7 +319,7 @@ func (c *clientTestSuite) TestPullBlob() {
 	c.Require().Nil(err)
 	c.Equal(int64(len(data)), size)
 
-	b, err := ioutil.ReadAll(blob)
+	b, err := io.ReadAll(blob)
 	c.Require().Nil(err)
 	c.EqualValues(data, b)
 }

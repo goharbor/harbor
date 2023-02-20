@@ -17,11 +17,15 @@ package security
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"k8s.io/api/authentication/v1beta1"
 
 	"github.com/goharbor/harbor/src/common"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
@@ -31,9 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"k8s.io/api/authentication/v1beta1"
 )
 
 func TestAuthProxy(t *testing.T) {
@@ -88,7 +89,7 @@ func newAuthProxyTestServer() (*httptest.Server, error) {
 		}
 
 		var review v1beta1.TokenReview
-		bodyData, _ := ioutil.ReadAll(r.Body)
+		bodyData, _ := io.ReadAll(r.Body)
 		if err := json.Unmarshal(bodyData, &review); err != nil {
 			http.Error(w, fmt.Sprintf("failed to decode body: %v", err), http.StatusBadRequest)
 			return

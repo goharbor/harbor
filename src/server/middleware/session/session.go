@@ -15,9 +15,10 @@
 package session
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
-	"net/http"
 )
 
 // Middleware returns a session middleware that populates the information indicates whether

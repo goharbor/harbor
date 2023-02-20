@@ -20,6 +20,9 @@ import (
 	"strings"
 
 	tk "github.com/docker/distribution/registry/auth/token"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
@@ -45,7 +48,7 @@ import (
 
 func init() {
 	// keep only the latest created 50 p2p preheat execution records
-	task.SetExecutionSweeperCount(job.P2PPreheat, 50)
+	task.SetExecutionSweeperCount(job.P2PPreheatVendorType, 50)
 }
 
 const (
@@ -380,7 +383,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 		attrs[extraAttrTriggerSetting] = "-"
 	}
 
-	eid, err := de.executionMgr.Create(ctx, job.P2PPreheat, pl.ID, pl.Trigger.Type, attrs)
+	eid, err := de.executionMgr.Create(ctx, job.P2PPreheatVendorType, pl.ID, pl.Trigger.Type, attrs)
 	if err != nil {
 		return -1, err
 	}
@@ -455,7 +458,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 	}
 
 	j := &task.Job{
-		Name: job.P2PPreheat,
+		Name: job.P2PPreheatVendorType,
 		Parameters: job.Parameters{
 			preheat.PreheatParamProvider: instance,
 			preheat.PreheatParamImage:    piData,
@@ -625,7 +628,8 @@ func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interfa
 	// Append vulnerability filter if vulnerability severity config is set at project configurations
 	if v, ok := pro.Metadata[proMetaKeyVulnerability]; ok && v == "true" {
 		if se, ok := pro.Metadata[proMetaKeySeverity]; ok && len(se) > 0 {
-			se = strings.Title(strings.ToLower(se))
+			title := cases.Title(language.Und)
+			se = title.String(strings.ToLower(se))
 			code := vuln.Severity(se).Code()
 			filters = append(filters, &pol.Filter{
 				Type:  pol.FilterTypeVulnerability,

@@ -15,7 +15,8 @@
 package vuln
 
 import (
-	"strings"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -73,7 +74,8 @@ func (s Severity) String() string {
 
 // ParseSeverityVersion3 returns severity of CVSS v3.0 Ratings
 func ParseSeverityVersion3(str string) Severity {
-	severity := Severity(strings.Title(str))
+	title := cases.Title(language.Und)
+	severity := Severity(title.String(str))
 
 	// There are `None`, `Low`, `Medium`, `High` and `Critical` severity rankings in CVSS v3.0 Ratings,
 	// so map `negligible` severity to `none`

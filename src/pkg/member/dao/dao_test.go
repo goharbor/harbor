@@ -16,10 +16,15 @@ package dao
 
 import (
 	"database/sql"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
-	_ "github.com/goharbor/harbor/src/common/dao"
 	testDao "github.com/goharbor/harbor/src/common/dao"
+	_ "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/user"
@@ -27,8 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type DaoTestSuite struct {
@@ -67,7 +70,7 @@ func (s *DaoTestSuite) SetupSuite() {
 		"delete from project_member where id > 1",
 	}
 	testDao.PrepareTestData(clearSqls, initSqls)
-	s.projectMgr = project.Mgr
+	s.projectMgr = pkg.ProjectMgr
 	s.userMgr = user.Mgr
 	ctx := s.Context()
 	proj, err := s.projectMgr.Get(ctx, "member_test_01")

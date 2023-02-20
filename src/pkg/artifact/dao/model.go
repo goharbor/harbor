@@ -17,7 +17,8 @@ package dao
 import (
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -29,7 +30,7 @@ func init() {
 // Artifact model in database
 type Artifact struct {
 	ID                int64     `orm:"pk;auto;column(id)"`
-	Type              string    `orm:"column(type)"`                // image or chart
+	Type              string    `orm:"column(type)"`                // image, chart or other OCI compatible
 	MediaType         string    `orm:"column(media_type)"`          // the media type of artifact
 	ManifestMediaType string    `orm:"column(manifest_media_type)"` // the media type of manifest/index
 	ProjectID         int64     `orm:"column(project_id)"`          // needed for quota

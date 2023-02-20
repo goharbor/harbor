@@ -18,10 +18,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 type foo struct {

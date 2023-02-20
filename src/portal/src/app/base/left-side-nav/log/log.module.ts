@@ -13,22 +13,17 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
-import { RecentLogComponent } from "./recent-log.component";
-import { RouterModule, Routes } from "@angular/router";
+import { RecentLogComponent } from './recent-log.component';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: RecentLogComponent
-  },
+    {
+        path: '',
+        component: RecentLogComponent,
+    },
 ];
 @NgModule({
-  imports: [
-    SharedModule,
-    RouterModule.forChild(routes),
-  ],
-  declarations: [
-    RecentLogComponent,
-  ]
+    imports: [SharedModule, RouterModule.forChild(routes)],
+    declarations: [RecentLogComponent],
 })
-export class LogModule { }
+export class LogModule {}

@@ -15,18 +15,19 @@
 package rest
 
 import (
+	"os"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/config"
 	"github.com/goharbor/harbor/src/pkg/config/store"
-	"os"
-	"strings"
 )
 
 func init() {
 	unitTest := os.Getenv("UTTEST")
-	if strings.EqualFold(unitTest, "true") == true {
+	if strings.EqualFold(unitTest, "true") {
 		libCfg.Register(common.RestCfgManager, NewRESTCfgManager("sample_url", "sample_secret"))
 		return
 	}

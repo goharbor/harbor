@@ -2,10 +2,10 @@ package oidc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 )
-import "errors"
 
 // This is for testing only
 type fakeVerifier struct {
@@ -22,7 +22,6 @@ func (fv *fakeVerifier) VerifySecret(ctx context.Context, name string, secret st
 		Subject:  "subject",
 		Issuer:   "issuer",
 	}, nil
-
 }
 
 // SetHardcodeVerifierForTest overwrite the default secret manager for testing.

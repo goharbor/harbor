@@ -7,11 +7,14 @@
   padding-top: 0.8rem;
   overflow-y: visible;
   overflow-x: visible;
+
 .body-label {
   font-size: 14px
 }
+
   .clr-form {
     padding-left: 0;
+
     .left-label {
       width: 11.5rem;
       font-weight: 100;
@@ -50,7 +53,7 @@
     }
 
     .quota-input {
-      margin-left: 0rem;
+      margin-left: 0;
     }
 
     .select-div {
@@ -62,9 +65,11 @@
     }
   }
 }
+
 select {
   font-weight: 100;
 }
+
 .progress-block {
   width: 8rem;
 }
@@ -85,7 +90,7 @@ select {
   font-weight: 100;
   font-size: 10px;
 }
-
+/* stylelint-disable */
 ::ng-deep {
   .clr-error {
     .clr-validate-icon {

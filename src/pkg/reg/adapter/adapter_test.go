@@ -17,9 +17,10 @@ package adapter
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type fakedFactory struct {

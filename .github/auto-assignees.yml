@@ -1,0 +1,17 @@
+---
+# This assigns a PR to its author
+addAssignees: true
+
+addReviewers: false
+
+assignees:
+  - wy65701436
+  - Vad1mo
+  - OrlinVasilev
+  - stonezdj
+  - chlins
+  - zyyw
+  - MinerYang
+  - AllForNothing
+
+numberOfAssignees: 3

@@ -2,16 +2,16 @@ package joblog
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/joblog/models"
-	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/goharbor/harbor/src/testing/pkg/joblog/dao"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/joblog/models"
+	"github.com/goharbor/harbor/src/testing/mock"
+	"github.com/goharbor/harbor/src/testing/pkg/joblog/dao"
 )
 
 type managerTestingSuite struct {
@@ -27,13 +27,7 @@ func (m *managerTestingSuite) SetupSuite() {
 	m.assert = assert.New(m.t)
 	m.require = require.New(m.t)
 
-	err := os.Setenv("RUN_MODE", "TEST")
-	m.require.Nil(err)
-}
-
-func (m *managerTestingSuite) TearDownSuite() {
-	err := os.Unsetenv("RUN_MODE")
-	m.require.Nil(err)
+	m.T().Setenv("RUN_MODE", "TEST")
 }
 
 func (m *managerTestingSuite) SetupTest() {

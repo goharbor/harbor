@@ -2,10 +2,11 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"time"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func init() {

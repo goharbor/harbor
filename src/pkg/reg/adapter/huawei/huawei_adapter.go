@@ -17,12 +17,10 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
-
-	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -30,6 +28,7 @@ import (
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 )
 
 func init() {
@@ -115,10 +114,10 @@ func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespac
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return namespaces, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return namespaces, err
 	}
@@ -200,7 +199,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		defer resp.Body.Close()
 		code := resp.StatusCode
 		if code >= 300 || code < 200 {
-			body, _ := ioutil.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 			return fmt.Errorf("[%d][%s]", code, string(body))
 		}
 
@@ -232,10 +231,10 @@ func (a *adapter) GetNamespace(namespaceStr string) (*model.Namespace, error) {
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return namespace, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return namespace, err
 	}
@@ -283,7 +282,6 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 			Transport: transport,
 		},
 	}, nil
-
 }
 
 type hwNamespaceList struct {

@@ -15,10 +15,11 @@
 package q
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseFuzzyMatchValue(t *testing.T) {
@@ -75,6 +76,7 @@ func TestParseRange(t *testing.T) {
 	// valid value
 	value = "[~2]"
 	v, err = parseRange(value)
+	require.NoError(t, err)
 	assert.Equal(t, int64(2), v.Max.(int64))
 	assert.Nil(t, v.Min)
 

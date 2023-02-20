@@ -29,7 +29,6 @@
 package quota
 
 import (
-	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"path"
 	"strconv"
@@ -40,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -64,7 +64,7 @@ func parseRepositoryName(p string) string {
 	return strings.TrimSuffix(parts[1], "/artifacts")
 }
 
-func copyArtifactResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
+func copyArtifactResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
 	query := r.URL.Query()
 	from := query.Get("from")
 	if from == "" {
@@ -83,7 +83,9 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 
 	ctx := r.Context()
 
-	art, err := artifactController.GetByReference(ctx, repository, reference, nil)
+	art, err := artifactController.GetByReference(ctx, repository, reference, &artifact.Option{
+		WithAccessory: true,
+	})
 	if errors.IsNotFoundErr(err) {
 		// artifact not found, discontinue the API request
 		return nil, errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
@@ -103,7 +105,9 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 	err = artifactController.Walk(ctx, art, func(a *artifact.Artifact) error {
 		artifactDigests = append(artifactDigests, a.Digest)
 		return nil
-	}, nil)
+	}, &artifact.Option{
+		WithAccessory: true,
+	})
 	if err != nil {
 		logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 		return nil, err
@@ -132,7 +136,7 @@ func copyArtifactResources(r *http.Request, reference, referenceID string) (type
 }
 
 func copyArtifactResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
-	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+	return func(r *http.Request, _, referenceID string, message string) event.Metadata {
 		ctx := r.Context()
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})

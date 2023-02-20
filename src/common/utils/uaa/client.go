@@ -20,14 +20,15 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -123,7 +124,7 @@ func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +155,7 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	if err != nil {
 		return nil, err
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +186,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	}
 	if !cfg.SkipTLSVerify && len(cfg.CARootPath) > 0 {
 		if _, err := os.Stat(cfg.CARootPath); !os.IsNotExist(err) {
-			content, err := ioutil.ReadFile(cfg.CARootPath)
+			content, err := os.ReadFile(cfg.CARootPath)
 			if err != nil {
 				return err
 			}

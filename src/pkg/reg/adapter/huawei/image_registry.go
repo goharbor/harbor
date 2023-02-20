@@ -17,18 +17,18 @@ package huawei
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // FetchArtifacts gets resources from Huawei SWR
 func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
-
 	resources := []*model.Resource{}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/repositories?filter=center::self", a.registry.URL)
@@ -48,10 +48,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return resources, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return resources, err
 	}
@@ -66,7 +66,6 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		resources = append(resources, resource)
 	}
 	return resources, nil
-
 }
 
 // ManifestExist check the manifest of Huawei SWR
@@ -97,10 +96,10 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 		if code == 404 {
 			return false, nil, nil
 		}
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return exist, nil, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return exist, nil, err
 	}
@@ -110,8 +109,8 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 	if err != nil {
 		return exist, nil, err
 	}
-	contentType := resp.Header.Get(http.CanonicalHeaderKey("Content-Type"))
-	contentLen := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+	contentType := resp.Header.Get("Content-Type")
+	contentLen := resp.Header.Get("Content-Length")
 	len, _ := strconv.Atoi(contentLen)
 
 	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(len)}, nil
@@ -141,7 +140,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("[%d][%s]", code, string(body))
 	}
 
@@ -220,10 +219,10 @@ func getJwtToken(a *adapter, repository string) (token jwtToken, err error) {
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
+		body, _ := io.ReadAll(resp.Body)
 		return token, fmt.Errorf("[%d][%s]", code, string(body))
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return token, err
 	}

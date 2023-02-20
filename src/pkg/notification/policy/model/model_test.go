@@ -1,9 +1,10 @@
 package model
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestPolicy_ConvertFromDBModel(t *testing.T) {

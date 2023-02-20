@@ -16,11 +16,11 @@ package db
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/pkg/config/store"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/config/store"
 )
 
 const cacheKey = "cfgs"
@@ -41,7 +41,7 @@ func (d *Cache) Load(ctx context.Context) (map[string]interface{}, error) {
 
 	// let the cache expired after one minute
 	// because the there no way to rollback the config items been saved when invalidate the cache failed
-	if err := cache.FetchOrSave(d.cache, cacheKey, &result, f, time.Minute); err != nil {
+	if err := cache.FetchOrSave(ctx, d.cache, cacheKey, &result, f, time.Minute); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +54,7 @@ func (d *Cache) Save(ctx context.Context, cfg map[string]interface{}) error {
 		return err
 	}
 
-	if err := d.cache.Delete(cacheKey); err != nil {
+	if err := d.cache.Delete(ctx, cacheKey); err != nil {
 		log.Warningf("failed to invalidate the cache of the configurations immediately, error: %v", err)
 	}
 

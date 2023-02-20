@@ -17,10 +17,10 @@ package dao
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/q"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 )
 
@@ -129,7 +129,10 @@ func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, que
 	if err != nil {
 		return 0, err
 	}
-	o.Raw(sql, queryParam).QueryRow(&count)
+	err = o.Raw(sql, queryParam).QueryRow(&count)
+	if err != nil {
+		return 0, err
+	}
 	return count, err
 }
 

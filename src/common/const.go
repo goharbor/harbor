@@ -46,10 +46,10 @@ const (
 	ResourceTypeProject    = "p"
 	ResourceTypeRepository = "r"
 	ResourceTypeImage      = "i"
-	ResourceTypeChart      = "c"
 
 	ExtEndpoint                      = "ext_endpoint"
 	AUTHMode                         = "auth_mode"
+	PrimaryAuthMode                  = "primary_auth_mode"
 	DatabaseType                     = "database_type"
 	PostGreSQLHOST                   = "postgresql_host"
 	PostGreSQLPort                   = "postgresql_port"
@@ -59,6 +59,8 @@ const (
 	PostGreSQLSSLMode                = "postgresql_sslmode"
 	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
 	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
+	PostGreSQLConnMaxLifetime        = "postgresql_conn_max_lifetime"
+	PostGreSQLConnMaxIdleTime        = "postgresql_conn_max_idle_time"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
@@ -111,6 +113,7 @@ const (
 	OIDCVerifyCert                   = "oidc_verify_cert"
 	OIDCAdminGroup                   = "oidc_admin_group"
 	OIDCGroupsClaim                  = "oidc_groups_claim"
+	OIDCGroupFilter                  = "oidc_group_filter"
 	OIDCAutoOnboard                  = "oidc_auto_onboard"
 	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
@@ -133,15 +136,14 @@ const (
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
-	WithChartMuseum                   = "with_chartmuseum"
-	ChartRepoURL                      = "chart_repository_url"
-	DefaultChartRepoURL               = "http://chartmuseum:9999"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
 	// System admin defined the robot name prefix.
 	RobotNamePrefix = "robot_name_prefix"
+	// Scanner robot name prefix
+	RobotScannerNamePrefix = "robot_scanner_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
 	CoreConfigPath          = "/api/v2.0/internalconfig"
@@ -151,9 +153,6 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	AuthProxyRediretPath = "/c/authproxy/redirect"
-
-	ChartUploadCtxKey   = contextKey("chart_upload_event")
-	ChartDownloadCtxKey = contextKey("chart_download_event")
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
@@ -187,6 +186,8 @@ const (
 	TraceOtelInsecure    = "trace_otel_insecure"
 	TraceOtelTimeout     = "trace_otel_timeout"
 
+	GDPRDeleteUser = "gdpr_delete_user"
+
 	//  These variables are temporary solution for issue: https://github.com/goharbor/harbor/issues/16039
 	//  When user disable the pull count/time/audit log, it will decrease the database access, especially in large concurrency pull scenarios.
 	// TODO: Once we have a complete solution, delete these variables.
@@ -196,4 +197,31 @@ const (
 	PullTimeUpdateDisable = "pull_time_update_disable"
 	// PullAuditLogDisable indicate if pull audit log is disable for pull request.
 	PullAuditLogDisable = "pull_audit_log_disable"
+
+	// Cache layer settings
+	// CacheEnabled indicate whether enable cache layer.
+	CacheEnabled = "cache_enabled"
+	// CacheExpireHours is the cache expiration time, unit is hour.
+	CacheExpireHours = "cache_expire_hours"
+	// DefaultCacheExpireHours is the default cache expire hours, default is
+	// 24h.
+	DefaultCacheExpireHours = 24
+
+	PurgeAuditIncludeOperations = "include_operations"
+	PurgeAuditDryRun            = "dry_run"
+	PurgeAuditRetentionHour     = "audit_retention_hour"
+	// AuditLogForwardEndpoint indicate to forward the audit log to an endpoint
+	AuditLogForwardEndpoint = "audit_log_forward_endpoint"
+	// SkipAuditLogDatabase skip to log audit log in database
+	SkipAuditLogDatabase = "skip_audit_log_database"
+	// MaxAuditRetentionHour allowed in audit log purge
+	MaxAuditRetentionHour = 240000
+	// ScannerSkipUpdatePullTime
+	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
+
+	// SessionTimeout defines the web session timeout
+	SessionTimeout = "session_timeout"
+
+	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
+	UIMaxLengthLimitedOfNumber = 10
 )

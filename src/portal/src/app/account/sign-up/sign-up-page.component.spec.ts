@@ -21,7 +21,7 @@ describe('SignUpPageComponent', () => {
             imports: [
                 FormsModule,
                 RouterTestingModule,
-                TranslateModule.forRoot()
+                TranslateModule.forRoot(),
             ],
             providers: [
                 MessageService,
@@ -29,7 +29,7 @@ describe('SignUpPageComponent', () => {
                 { provide: UserService, useValue: fakeUserService },
                 { provide: SessionService, useValue: fakeSessionService },
             ],
-            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
     });
 
@@ -37,7 +37,7 @@ describe('SignUpPageComponent', () => {
         fixture = TestBed.createComponent(SignUpPageComponent);
         component = fixture.componentInstance;
         component.newUserForm =
-        TestBed.createComponent(NewUserFormComponent).componentInstance;
+            TestBed.createComponent(NewUserFormComponent).componentInstance;
         fixture.detectChanges();
     });
 

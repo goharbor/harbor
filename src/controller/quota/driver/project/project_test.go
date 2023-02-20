@@ -18,11 +18,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	blobtesting "github.com/goharbor/harbor/src/testing/controller/blob"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type DriverTestSuite struct {

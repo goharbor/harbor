@@ -17,21 +17,20 @@ package retention
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/task"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	pq "github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 const (
@@ -123,7 +122,7 @@ func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID
 
 	for _, rule := range ply.Rules {
 		if rule.Disabled {
-			log.Infof("Policy %d rule %d %s is disabled", ply.ID, rule.ID, rule.Template)
+			log.Infof("Policy %d rule %d %s is deactivated", ply.ID, rule.ID, rule.Template)
 			continue
 		}
 		projectCandidates := allProjects
@@ -154,9 +153,7 @@ func (l *launcher) Launch(ctx context.Context, ply *policy.Metadata, executionID
 			if err != nil {
 				return 0, launcherError(err)
 			}
-			for _, repository := range repositories {
-				repositoryCandidates = append(repositoryCandidates, repository)
-			}
+			repositoryCandidates = append(repositoryCandidates, repositories...)
 		}
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {
@@ -213,7 +210,7 @@ func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun 
 	for repository, policy := range repositoryRules {
 		jobData := &jobData{
 			Repository: repository,
-			JobName:    job.Retention,
+			JobName:    job.RetentionVendorType,
 			JobParams:  make(map[string]interface{}, 3),
 		}
 		// set dry run

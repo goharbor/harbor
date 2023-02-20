@@ -20,8 +20,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -47,12 +48,6 @@ func (cc *CommonController) Render() error {
 
 // Prepare overwrites the Prepare func in api.BaseController to ignore unnecessary steps
 func (cc *CommonController) Prepare() {}
-
-type messageDetail struct {
-	Hint string
-	URL  string
-	UUID string
-}
 
 func redirectForOIDC(ctx context.Context, username string) bool {
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
@@ -89,9 +84,12 @@ func (cc *CommonController) Login() {
 		log.Debugf("Redirect user %s to login page of OIDC provider", principal)
 		// Return a json to UI with status code 403, as it cannot handle status 302
 		cc.Ctx.Output.Status = http.StatusForbidden
-		cc.Ctx.Output.JSON(struct {
+		err = cc.Ctx.Output.JSON(struct {
 			Location string `json:"redirect_location"`
 		}{url}, false, false)
+		if err != nil {
+			log.Errorf("Failed to write json to response body, error: %v", err)
+		}
 		return
 	}
 
@@ -112,7 +110,10 @@ func (cc *CommonController) Login() {
 
 // LogOut Habor UI
 func (cc *CommonController) LogOut() {
-	cc.DestroySession()
+	if err := cc.DestroySession(); err != nil {
+		log.Errorf("Error occurred in LogOut: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
 }
 
 // UserExists checks if user exists when user input value in sign in form.
@@ -125,7 +126,7 @@ func (cc *CommonController) UserExists() {
 	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
-		cc.CustomAbort(http.StatusPreconditionFailed, "self registration disabled, only sysadmin can check user existence")
+		cc.CustomAbort(http.StatusPreconditionFailed, "self registration deactivated, only sysadmin can check user existence")
 	}
 
 	target := cc.GetString("target")
@@ -145,7 +146,10 @@ func (cc *CommonController) UserExists() {
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	cc.Data["json"] = n > 0
-	cc.ServeJSON()
+	if err := cc.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
 }
 
 func init() {
@@ -153,9 +157,8 @@ func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+		if err := web.LoadAppConfig("ini", configPath); err != nil {
 			log.Errorf("failed to load app config: %v", err)
 		}
 	}
-
 }

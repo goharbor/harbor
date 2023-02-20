@@ -18,10 +18,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -31,12 +31,10 @@ var (
 	errNonSuccess = errors.New("non success status code")
 )
 
-type committedKey struct{}
-
 // MustCommit mark http.Request as committed so that transaction
 // middleware ignore the status code of the response and commit transaction for this request
 func MustCommit(r *http.Request) error {
-	committed, ok := r.Context().Value(committedKey{}).(*bool)
+	committed, ok := r.Context().Value(orm.CommittedKey{}).(*bool)
 	if !ok {
 		return fmt.Errorf("%s URL %s is not committable, please enable transaction middleware for it", r.Method, r.URL.Path)
 	}
@@ -58,7 +56,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		h := func(ctx context.Context) error {
 			committed := new(bool) // default false, not must commit
 
-			cc := context.WithValue(ctx, committedKey{}, committed)
+			cc := context.WithValue(ctx, orm.CommittedKey{}, committed)
 			next.ServeHTTP(res, r.WithContext(cc))
 
 			if !(*committed) && !res.Success() {

@@ -14,7 +14,7 @@ describe('NewUserModalComponent', () => {
     let fakeSessionService = null;
     let fakeUserService = null;
     let fakeMessageHandlerService = {
-        handleError: function () { }
+        handleError: function () {},
     };
 
     beforeEach(async () => {
@@ -23,16 +23,17 @@ describe('NewUserModalComponent', () => {
             imports: [
                 ClarityModule,
                 SharedTestingModule,
-                TranslateModule.forRoot()
+                TranslateModule.forRoot(),
             ],
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
             providers: [
-                { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakeMessageHandlerService,
+                },
                 { provide: UserService, useValue: fakeUserService },
-                { provide: SessionService, useValue: fakeSessionService }
-            ]
+                { provide: SessionService, useValue: fakeSessionService },
+            ],
         }).compileComponents();
     });
 

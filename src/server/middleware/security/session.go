@@ -18,7 +18,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/astaxie/beego"
+	"github.com/beego/beego/v2/server/web"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
@@ -29,12 +30,12 @@ type session struct{}
 
 func (s *session) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	store, err := beego.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	store, err := web.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
 	if err != nil {
 		log.Errorf("failed to get the session store for request: %v", err)
 		return nil
 	}
-	userInterface := store.Get("user")
+	userInterface := store.Get(req.Context(), "user")
 	if userInterface == nil {
 		return nil
 	}

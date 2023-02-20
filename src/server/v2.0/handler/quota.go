@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/lib"
@@ -48,7 +49,6 @@ func (qa *quotaAPI) GetQuota(ctx context.Context, params operation.GetQuotaParam
 	quota, err := qa.quotaCtl.Get(ctx, params.ID, quota.WithReferenceObject())
 	if err != nil {
 		return qa.SendError(ctx, err)
-
 	}
 	return operation.NewGetQuotaOK().WithPayload(model.NewQuota(quota).ToSwagger(ctx))
 }

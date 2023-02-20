@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -45,6 +46,12 @@ func New() DAO {
 type dao struct{}
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
+	if query != nil {
+		// ignore the page number and size
+		query = &q.Query{
+			Keywords: query.Keywords,
+		}
+	}
 	qs, err := orm.QuerySetterForCount(ctx, &Accessory{}, query)
 	if err != nil {
 		return 0, err

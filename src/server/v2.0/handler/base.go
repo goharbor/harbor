@@ -22,21 +22,20 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+
+	"github.com/goharbor/harbor/src/common/rbac"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/rbac/system"
-
-	"github.com/go-openapi/runtime"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/errors"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
-	"github.com/goharbor/harbor/src/lib/q"
-
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 var (
@@ -86,7 +85,11 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 		p, err := baseProjectCtl.GetByName(ctx, projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
-			return false
+			if errors.IsNotFoundErr(err) {
+				p = &project.Project{}
+			} else {
+				return false
+			}
 		}
 		if p == nil {
 			log.Warningf("project %s not found", projectName)

@@ -15,7 +15,7 @@
 package lib
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -30,22 +30,22 @@ type NopCloseRequestTestSuite struct {
 func (suite *NopCloseRequestTestSuite) TestReusableBody() {
 	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), body)
 
-	body, err = ioutil.ReadAll(r.Body)
+	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte(""), body)
 
 	r, _ = http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
 	r = NopCloseRequest(r)
 
-	body, err = ioutil.ReadAll(r.Body)
+	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), body)
 
-	body, err = ioutil.ReadAll(r.Body)
+	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), body)
 }

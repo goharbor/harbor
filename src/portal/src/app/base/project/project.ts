@@ -23,21 +23,20 @@ export class Project {
     update_time: Date;
     current_user_role_id: number;
     repo_count: number;
-    chart_count: number;
     has_project_admin_role: boolean;
     is_member: boolean;
     role_name: string;
     registry_id: number;
     metadata: {
-      public: string | boolean;
-      enable_content_trust: string | boolean;
-      prevent_vul: string | boolean;
-      severity: string;
-      auto_scan: string | boolean;
-      retention_id: number;
+        public: string | boolean;
+        enable_content_trust: string | boolean;
+        prevent_vul: string | boolean;
+        severity: string;
+        auto_scan: string | boolean;
+        retention_id: number;
     };
-    constructor () {
-      this.metadata = <any>{};
-      this.metadata.public = false;
+    constructor() {
+        this.metadata = <any>{};
+        this.metadata.public = false;
     }
 }

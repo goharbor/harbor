@@ -19,12 +19,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/stretchr/testify/suite"
 )
 
 type executionDAOTestSuite struct {
@@ -330,7 +331,7 @@ func TestExecutionDAOSuite(t *testing.T) {
 	suite.Run(t, &executionDAOTestSuite{})
 }
 
-func Test_buildInClauseSqlForExtraAttrs(t *testing.T) {
+func Test_buildInClauseSQLForExtraAttrs(t *testing.T) {
 	type args struct {
 		keys []string
 	}
@@ -346,8 +347,8 @@ func Test_buildInClauseSqlForExtraAttrs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildInClauseSqlForExtraAttrs(tt.args.keys); got != tt.want {
-				t.Errorf("buildInClauseSqlForExtraAttrs() = %v, want %v", got, tt.want)
+			if got := buildInClauseSQLForExtraAttrs(tt.args.keys); got != tt.want {
+				t.Errorf("buildInClauseSQLForExtraAttrs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

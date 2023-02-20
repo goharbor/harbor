@@ -2,9 +2,11 @@ package artifact
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 )
 
 func TestUnmarshalJSONWithACC(t *testing.T) {

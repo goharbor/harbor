@@ -13,12 +13,11 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin} from "rxjs";
-import { map, share } from "rxjs/operators";
+import { Observable, forkJoin } from 'rxjs';
+import { map, share } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { CacheObservable, FlushAll } from "../units/cache-util";
-import { CURRENT_BASE_HREF } from "../units/utils";
-
+import { CacheObservable, FlushAll } from '../units/cache-util';
+import { CURRENT_BASE_HREF } from '../units/utils';
 
 interface Permission {
     resource: string;
@@ -39,53 +38,92 @@ export abstract class UserPermissionService {
      */
     abstract getPermission(projectId, resource, action): Observable<boolean>;
     abstract clearPermissionCache();
-    abstract hasProjectPermission(projectId: any, permission: Permission): Observable<boolean>;
-    abstract hasProjectPermissions(projectId: any, permissions: Array<Permission>): Observable<Array<boolean>>;
+    abstract hasProjectPermission(
+        projectId: any,
+        permission: Permission
+    ): Observable<boolean>;
+    abstract hasProjectPermissions(
+        projectId: any,
+        permissions: Array<Permission>
+    ): Observable<Array<boolean>>;
 }
 
 // @dynamic
 @Injectable()
 export class UserPermissionDefaultService extends UserPermissionService {
     // to prevent duplicate permissions HTTP requests
-    private _sharedPermissionObservableMap: {[key: string]: Observable<Array<Permission>>} = {};
-    constructor(
-        private http: HttpClient,
-    ) {
+    private _sharedPermissionObservableMap: {
+        [key: string]: Observable<Array<Permission>>;
+    } = {};
+    constructor(private http: HttpClient) {
         super();
     }
 
     @CacheObservable({ maxAge: 1000 * 60 })
-    private getPermissions(scope: string, relative?: boolean): Observable<Array<Permission>> {
-        const url = `${ CURRENT_BASE_HREF }/users/current/permissions?scope=${scope}&relative=${relative ? 'true' : 'false'}`;
+    private getPermissions(
+        scope: string,
+        relative?: boolean
+    ): Observable<Array<Permission>> {
+        const url = `${CURRENT_BASE_HREF}/users/current/permissions?scope=${scope}&relative=${
+            relative ? 'true' : 'false'
+        }`;
         if (this._sharedPermissionObservableMap[url]) {
             return this._sharedPermissionObservableMap[url];
         } else {
-            this._sharedPermissionObservableMap[url] = this.http.get<Array<Permission>>(url).pipe(share());
+            this._sharedPermissionObservableMap[url] = this.http
+                .get<Array<Permission>>(url)
+                .pipe(share());
             return this._sharedPermissionObservableMap[url];
         }
     }
 
-    private hasPermission(permission: Permission, scope: string, relative?: boolean): Observable<boolean> {
-        return this.getPermissions(scope, relative).pipe(map(
-            (permissions: Array<Permission>) => {
-                return permissions.some((p: Permission) => p.resource === permission.resource && p.action === permission.action);
-            }
-        ));
+    private hasPermission(
+        permission: Permission,
+        scope: string,
+        relative?: boolean
+    ): Observable<boolean> {
+        return this.getPermissions(scope, relative).pipe(
+            map((permissions: Array<Permission>) => {
+                return permissions.some(
+                    (p: Permission) =>
+                        p.resource === permission.resource &&
+                        p.action === permission.action
+                );
+            })
+        );
     }
 
-    private hasPermissions(permissions: Array<Permission>, scope: string, relative?: boolean): Observable<Array<boolean>> {
-        return forkJoin(permissions.map((permission) => this.hasPermission(permission, scope, relative)));
+    private hasPermissions(
+        permissions: Array<Permission>,
+        scope: string,
+        relative?: boolean
+    ): Observable<Array<boolean>> {
+        return forkJoin(
+            permissions.map(permission =>
+                this.hasPermission(permission, scope, relative)
+            )
+        );
     }
 
-    public hasProjectPermission(projectId: any, permission: Permission): Observable<boolean> {
+    public hasProjectPermission(
+        projectId: any,
+        permission: Permission
+    ): Observable<boolean> {
         return this.hasPermission(permission, `/project/${projectId}`, true);
     }
 
-    public hasProjectPermissions(projectId: any, permissions: Array<Permission>): Observable<Array<boolean>> {
+    public hasProjectPermissions(
+        projectId: any,
+        permissions: Array<Permission>
+    ): Observable<Array<boolean>> {
         return this.hasPermissions(permissions, `/project/${projectId}`, true);
     }
 
-    public getPermission(projectId: any, resource: string, action: string): Observable<boolean> {
+    public getPermission(
+        projectId: any,
+        resource: string,
+        action: string
+    ): Observable<boolean> {
         return this.hasProjectPermission(projectId, { resource, action });
     }
 

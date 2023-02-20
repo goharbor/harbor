@@ -2,17 +2,19 @@ package blob
 
 import (
 	"fmt"
-	beego_orm "github.com/astaxie/beego/orm"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	beego_orm "github.com/beego/beego/v2/client/orm"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type HeadBlobUploadMiddlewareTestSuite struct {

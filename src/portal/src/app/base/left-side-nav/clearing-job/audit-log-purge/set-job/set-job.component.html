@@ -1,0 +1,220 @@
+<div [hidden]="!loadingGcStatus" class="clr-row mt-2 center">
+    <span class="spinner spinner-md"></span>
+</div>
+<div [hidden]="loadingGcStatus">
+    <div class="clr-row mt-1">
+        <div class="clr-col-2 flex-200 font-style">
+            {{ 'WEBHOOK.STATUS' | translate }}
+        </div>
+        <div class="clr-col">
+            <div class="clr-row">
+                <div class="p-06 mr-2">
+                    <span class="mr-1 font-style">{{
+                        'CLEARANCES.LAST_COMPLETED' | translate
+                    }}</span>
+                    <span class="mr-3">
+                        <span
+                            *ngIf="loadingLastCompletedTime"
+                            class="spinner spinner-inline"></span>
+                        <ng-container *ngIf="!loadingLastCompletedTime">
+                            <span *ngIf="!lastCompletedTime">{{
+                                'SCHEDULE.NONE' | translate
+                            }}</span>
+                            <span *ngIf="lastCompletedTime"
+                                >{{ lastCompletedTime | harborDatetime
+                                }}<span *ngIf="isDryRun"
+                                    >({{
+                                        'TAG_RETENTION.DRY_RUN' | translate
+                                    }})</span
+                                ></span
+                            >
+                        </ng-container>
+                    </span>
+                </div>
+                <div class="p-06">
+                    <span class="mr-1 font-style" *ngIf="nextScheduledTime">{{
+                        'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
+                    }}</span>
+                    <span *ngIf="nextScheduledTime">{{
+                        nextScheduledTime | harborDatetime
+                    }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cron-selection">
+        <cron-selection
+            class="w-100"
+            [externalValidation]="isValid()"
+            [labelCurrent]="getLabelCurrent"
+            [labelEdit]="getLabelCurrent"
+            [originCron]="originCron"
+            (inputvalue)="saveGcSchedule($event)"></cron-selection>
+    </div>
+
+    <form #purgeForm="ngForm" class="clr-form clr-form-horizontal p-0">
+        <div class="clr-form-control mt-0">
+            <span class="required font-style flex-200"
+                >{{ 'CLEARANCES.KEEP_IN' | translate
+                }}<clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CLEARANCES.KEEP_IN_TOOLTIP' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip></span
+            >
+            <div
+                class="clr-control-container input-width"
+                [class.clr-error]="
+                    (retentionTimeNgModel.dirty ||
+                        retentionTimeNgModel.touched) &&
+                    (retentionTimeNgModel.invalid || !isRetentionTimeValid())
+                ">
+                <div class="flex">
+                    <div class="clr-input-wrapper">
+                        <input
+                            [disabled]="dryRunOnGoing"
+                            class="clr-input"
+                            name="retentionTime"
+                            type="text"
+                            #retentionTimeNgModel="ngModel"
+                            autocomplete="off"
+                            [(ngModel)]="retentionTime"
+                            required
+                            pattern="^[\-1-9]{1}[0-9]*$"
+                            id="retentionTime"
+                            size="20" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                        <clr-control-error
+                            class="max-width-2rem"
+                            *ngIf="
+                                (retentionTimeNgModel.dirty ||
+                                    retentionTimeNgModel.touched) &&
+                                (retentionTimeNgModel.invalid ||
+                                    !isRetentionTimeValid())
+                            ">
+                            {{ 'CLEARANCES.KEEP_IN_ERROR' | translate }}
+                        </clr-control-error>
+                    </div>
+                    <div
+                        class="clr-select-wrapper unit-select"
+                        [ngClass]="{
+                            pt:
+                                (retentionTimeNgModel.dirty ||
+                                    retentionTimeNgModel.touched) &&
+                                (retentionTimeNgModel.invalid ||
+                                    !isRetentionTimeValid())
+                        }">
+                        <select
+                            [(ngModel)]="retentionUnit"
+                            [ngModelOptions]="{ standalone: true }"
+                            id="expiration-type"
+                            class="clr-select">
+                            <option value="days">
+                                {{ 'CLEARANCES.DAYS' | translate }}
+                            </option>
+                            <option value="hours">
+                                {{ 'CLEARANCES.HOURS' | translate }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div
+            class="clr-form-control"
+            [ngClass]="{
+                'mt-08': !(
+                    (retentionTimeNgModel.dirty ||
+                        retentionTimeNgModel.touched) &&
+                    retentionTimeNgModel.invalid
+                )
+            }">
+            <span class="font-style required flex-200"
+                >{{ 'CLEARANCES.INCLUDED_OPERATIONS' | translate
+                }}<clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CLEARANCES.INCLUDED_OPERATION_TOOLTIP' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip></span
+            >
+            <div
+                class="clr-control-container clr-control-inline"
+                [class.clr-error]="!(selectedOperations?.length > 0)">
+                <div
+                    class="clr-checkbox-wrapper"
+                    *ngFor="let item of operations">
+                    <input
+                        type="checkbox"
+                        id="{{ item }}"
+                        name="operations"
+                        value="{{ item }}"
+                        class="clr-checkbox"
+                        (change)="setOperation(item)"
+                        [checked]="hasOperation(item)" />
+                    <label for="{{ item }}" class="clr-control-label">{{
+                        operationsToText(item) | translate
+                    }}</label>
+                </div>
+                <div
+                    class="clr-subtext-wrapper"
+                    *ngIf="!(selectedOperations?.length > 0)">
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <span class="clr-subtext">{{
+                        'CLEARANCES.INCLUDED_OPERATION_ERROR' | translate
+                    }}</span>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="clr-row">
+        <div class="clr-col-2 flex-200">
+            <button
+                id="gc-now"
+                class="btn btn-primary gc-start-btn"
+                (click)="gcNow()"
+                [disabled]="
+                    disableGC ||
+                    purgeForm.invalid ||
+                    !(selectedOperations?.length > 0)
+                ">
+                {{ 'CLEARANCES.PURGE_NOW' | translate }}
+            </button>
+        </div>
+        <div class="clr-col">
+            <button
+                id="gc-dry-run"
+                class="btn btn-outline gc-start-btn"
+                (click)="dryRun()"
+                [disabled]="
+                    dryRunOnGoing ||
+                    purgeForm.invalid ||
+                    !(selectedOperations?.length > 0)
+                ">
+                {{ 'TAG_RETENTION.WHAT_IF_RUN' | translate }}
+            </button>
+        </div>
+    </div>
+    <app-purge-history></app-purge-history>
+</div>

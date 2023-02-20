@@ -17,6 +17,7 @@ package metadata
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -60,6 +61,12 @@ func TestConfigureValue_GetStringToStringMap(t *testing.T) {
 	assert.Equal(t, val, map[string]interface{}{"sample": "abc"})
 	Instance().init()
 }
+
+func TestConfigureValue_GetDuration(t *testing.T) {
+	assert.Equal(t, createCfgValue("postgresql_conn_max_lifetime", "5m").GetDuration(), 5*time.Minute)
+	assert.Equal(t, createCfgValue("postgresql_conn_max_lifetime", "").GetDuration(), time.Duration(0))
+}
+
 func TestConfigureValue_GetInt(t *testing.T) {
 	assert.Equal(t, createCfgValue("ldap_timeout", "5").GetInt(), 5)
 }

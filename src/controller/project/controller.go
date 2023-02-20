@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/allowlist"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -68,8 +69,8 @@ type Controller interface {
 // NewController creates an instance of the default project controller
 func NewController() Controller {
 	return &controller{
-		projectMgr:   project.Mgr,
-		metaMgr:      metadata.Mgr,
+		projectMgr:   pkg.ProjectMgr,
+		metaMgr:      pkg.ProjectMetaMgr,
 		allowlistMgr: allowlist.NewDefaultManager(),
 		userMgr:      user.Mgr,
 	}
@@ -354,7 +355,7 @@ func (c *controller) loadOwners(ctx context.Context, projects models.Projects) e
 	for _, p := range projects {
 		owner, ok := m[p.OwnerID]
 		if !ok {
-			log.G(ctx).Warningf("the owner of project %s is not found, owner id is %d", p.Name, p.OwnerID)
+			log.G(ctx).Debugf("the owner of project %s is not found, owner id is %d", p.Name, p.OwnerID)
 			continue
 		}
 

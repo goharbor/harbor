@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -130,8 +131,6 @@ func New(in interface{}) *Error {
 	switch in := in.(type) {
 	case error:
 		err = in
-	case *Error:
-		err = in.Cause
 	default:
 		err = fmt.Errorf("%v", in)
 	}

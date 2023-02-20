@@ -22,11 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 )
 
-var (
-	// Mgr is a global artifact manager instance
-	Mgr = NewManager()
-)
-
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
 	// Count returns the total count of artifacts according to the query.

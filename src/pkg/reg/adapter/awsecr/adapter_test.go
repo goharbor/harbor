@@ -3,21 +3,21 @@ package awsecr
 import (
 	"errors"
 	"fmt"
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
-	"github.com/stretchr/testify/require"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
 	"testing"
 	"time"
 
+	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/common/utils/test"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAdapter_NewAdapter(t *testing.T) {
@@ -139,7 +139,7 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			Pattern: "/",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(r.Method, r.URL)
-				if buf, e := ioutil.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
+				if buf, e := io.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
 					fmt.Println("\t", string(buf))
 				}
 				w.WriteHeader(http.StatusOK)
@@ -249,7 +249,7 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 			Pattern: "/",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(r.Method, r.URL)
-				if buf, e := ioutil.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
+				if buf, e := io.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
 					fmt.Println("\t", string(buf))
 				}
 				w.WriteHeader(http.StatusOK)
@@ -288,18 +288,18 @@ var urlForBenchmark = []string{
 	"https://test-region.amazonaws.com",
 }
 
-func compileRegexpEveryTime(url string) (string, error) {
-	rs := regexp.MustCompile(regionPattern).FindStringSubmatch(url)
+func compileRegexpEveryTime(url string) (string, string, error) {
+	rs := regexp.MustCompile(ecrPattern).FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("bad aws url")
+		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], nil
+	return rs[1], rs[2], nil
 }
 
-func BenchmarkGetRegion(b *testing.B) {
+func BenchmarkGetAccountRegion(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, url := range urlForBenchmark {
-			parseRegion(url)
+			parseAccountRegion(url)
 		}
 	}
 }

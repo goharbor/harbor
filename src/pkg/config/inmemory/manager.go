@@ -16,11 +16,12 @@ package inmemory
 
 import (
 	"context"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common"
 	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/config"
 	"github.com/goharbor/harbor/src/pkg/config/store"
-	"sync"
 )
 
 func init() {

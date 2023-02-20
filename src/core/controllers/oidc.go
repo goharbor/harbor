@@ -35,6 +35,7 @@ import (
 const tokenKey = "oidc_token"
 const stateKey = "oidc_state"
 const userInfoKey = "oidc_user_info"
+const redirectURLKey = "oidc_redirect_url"
 const oidcUserComment = "Onboarded via OIDC provider"
 
 // OIDCController handles requests for OIDC login, callback and user onboard
@@ -62,7 +63,16 @@ func (oc *OIDCController) RedirectLogin() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	oc.SetSession(stateKey, state)
+	if err := oc.SetSession(redirectURLKey, oc.Ctx.Request.URL.Query().Get("redirect_url")); err != nil {
+		log.Errorf("failed to set session for key: %s, error: %v", redirectURLKey, err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	if err := oc.SetSession(stateKey, state); err != nil {
+		log.Errorf("failed to set session for key: %s, error: %v", stateKey, err)
+		oc.SendInternalServerError(err)
+		return
+	}
 	log.Debugf("State dumped to session: %s", state)
 	// Force to use the func 'Redirect' of beego.Controller
 	oc.Controller.Redirect(url, http.StatusFound)
@@ -85,7 +95,16 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
 		return
 	}
-
+	var redirectURLStr string
+	redirectURL := oc.GetSession(redirectURLKey)
+	if redirectURL != nil {
+		redirectURLStr = redirectURL.(string)
+		if err := oc.DelSession(redirectURLKey); err != nil {
+			log.Errorf("failed to delete session for key:%s, error: %v", redirectURLKey, err)
+			oc.SendInternalServerError(err)
+			return
+		}
+	}
 	code := oc.Ctx.Request.URL.Query().Get("code")
 	ctx := oc.Ctx.Request.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
@@ -115,7 +134,11 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	oc.SetSession(tokenKey, tokenBytes)
+	if err := oc.SetSession(tokenKey, tokenBytes); err != nil {
+		log.Errorf("failed to set session for key: %s, error: %v", tokenKey, err)
+		oc.SendInternalServerError(err)
+		return
+	}
 	u, err := ctluser.Ctl.GetBySubIss(ctx, info.Subject, info.Issuer)
 	if errors.IsNotFoundErr(err) { // User is not onboarded, kickoff the onboard flow
 		// Recover the username from d.Username by default
@@ -136,15 +159,19 @@ func (oc *OIDCController) Callback() {
 				return
 			}
 			userRec, onboarded := userOnboard(ctx, oc, info, username, tokenBytes)
-			if onboarded == false {
+			if !onboarded {
 				log.Error("User not onboarded\n")
 				return
 			}
 			log.Debug("User automatically onboarded\n")
 			u = userRec
 		} else {
-			oc.SetSession(userInfoKey, string(ouDataStr))
-			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s", username), http.StatusFound)
+			if err := oc.SetSession(userInfoKey, string(ouDataStr)); err != nil {
+				log.Errorf("failed to set session for key: %s, error: %v", userInfoKey, err)
+				oc.SendInternalServerError(err)
+				return
+			}
+			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s&redirect_url=%s", username, redirectURLStr), http.StatusFound)
 			// Once redirected, no further actions are done
 			return
 		}
@@ -159,6 +186,10 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	_, t, err := secretAndToken(tokenBytes)
+	if err != nil {
+		oc.SendInternalServerError(err)
+		return
+	}
 	oidcUser := um.OIDCUserMeta
 	oidcUser.Token = t
 	if err := ctluser.Ctl.UpdateOIDCMeta(ctx, oidcUser); err != nil {
@@ -166,7 +197,11 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	oc.PopulateUserSession(*u)
-	oc.Controller.Redirect("/", http.StatusFound)
+
+	if redirectURLStr == "" {
+		redirectURLStr = "/"
+	}
+	oc.Controller.Redirect(redirectURLStr, http.StatusFound)
 }
 
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
@@ -238,10 +273,13 @@ func (oc *OIDCController) Onboard() {
 	ctx := oc.Ctx.Request.Context()
 	if user, onboarded := userOnboard(ctx, oc, d, username, tb); onboarded {
 		user.OIDCUserMeta = nil
-		oc.DelSession(userInfoKey)
+		if err := oc.DelSession(userInfoKey); err != nil {
+			log.Errorf("failed to delete session for key:%s, error: %v", userInfoKey, err)
+			oc.SendInternalServerError(err)
+			return
+		}
 		oc.PopulateUserSession(*user)
 	}
-
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {

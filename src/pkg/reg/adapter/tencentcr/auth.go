@@ -5,9 +5,10 @@ import (
 	"strings"
 	"time"
 
+	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
+
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib/log"
-	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 )
 
 // Credential ...
@@ -29,7 +30,7 @@ func (q *qcloudAuthCredential) Modify(r *http.Request) (err error) {
 }
 
 func (q *qcloudAuthCredential) isCacheTokenValid() (ok bool) {
-	if &q.cacheTokenExpiredAt == nil {
+	if q.cacheTokenExpiredAt.IsZero() {
 		return
 	}
 	if q.cacheTokener == nil {

@@ -20,12 +20,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
-	"github.com/robfig/cron"
 )
 
 // Policy defines the structure of a replication policy
@@ -46,6 +46,7 @@ type Policy struct {
 	CreationTime              time.Time       `json:"creation_time"`
 	UpdateTime                time.Time       `json:"update_time"`
 	Speed                     int32           `json:"speed"`
+	CopyByChunk               bool            `json:"copy_by_chunk"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -103,7 +104,7 @@ func (p *Policy) Validate() error {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("the cron string cannot be empty when the trigger type is %s", model.TriggerTypeScheduled)
 			}
-			if _, err := cron.Parse(p.Trigger.Settings.Cron); err != nil {
+			if _, err := utils.CronParser().Parse(p.Trigger.Settings.Cron); err != nil {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
 			}
@@ -132,6 +133,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.CreationTime = policy.CreationTime
 	p.UpdateTime = policy.UpdateTime
 	p.Speed = policy.Speed
+	p.CopyByChunk = policy.CopyByChunk
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -176,6 +178,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		CreationTime:              p.CreationTime,
 		UpdateTime:                p.UpdateTime,
 		Speed:                     p.Speed,
+		CopyByChunk:               p.CopyByChunk,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

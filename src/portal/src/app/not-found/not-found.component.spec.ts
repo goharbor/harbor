@@ -7,16 +7,12 @@ describe('PageNotFoundComponent', () => {
     let component: PageNotFoundComponent;
     let fixture: ComponentFixture<PageNotFoundComponent>;
     const mockRouter = {
-        navigate: () => {}
+        navigate: () => {},
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            schemas: [
-                CUSTOM_ELEMENTS_SCHEMA
-            ],
-            imports: [
-                SharedTestingModule
-            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            imports: [SharedTestingModule],
             declarations: [PageNotFoundComponent],
         }).compileComponents();
     });

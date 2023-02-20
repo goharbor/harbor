@@ -1,6 +1,10 @@
 package gc
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -8,8 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type gcCtrTestSuite struct {
@@ -78,7 +80,7 @@ func (g *gcCtrTestSuite) TestGetExecution() {
 		{
 			ID:            1,
 			Trigger:       "Manual",
-			VendorType:    GCVendorType,
+			VendorType:    job.GarbageCollectionVendorType,
 			StatusMessage: "Success",
 		},
 	}, nil)

@@ -17,10 +17,11 @@ import (
 	"context"
 	"testing"
 
+	testifymock "github.com/stretchr/testify/mock"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testinguserpkg "github.com/goharbor/harbor/src/testing/pkg/user"
-	testifymock "github.com/stretchr/testify/mock"
 )
 
 func TestSearchUser(t *testing.T) {

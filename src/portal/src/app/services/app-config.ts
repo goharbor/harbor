@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-import { ClairDBStatus } from "../shared/services";
+import { ClairDBStatus } from '../shared/services';
 
 export class AppConfig {
     with_notary: boolean;
-    with_admiral: boolean;
     with_trivy: boolean;
     admiral_endpoint: string;
     auth_mode: string;
+    primary_auth_mode: boolean;
     registry_url: string;
     project_creation_restriction: string;
     self_registration: boolean;
@@ -30,29 +29,27 @@ export class AppConfig {
     next_scan_all: number;
     registry_storage_provider_name: string;
     read_only: boolean;
-    with_chartmuseum: boolean;
     show_popular_repo: boolean;
 
     constructor() {
         // Set default value
         this.with_notary = false;
-        this.with_admiral = false;
         this.with_trivy = false;
-        this.admiral_endpoint = "";
-        this.auth_mode = "db_auth";
-        this.registry_url = "";
-        this.project_creation_restriction = "everyone";
+        this.admiral_endpoint = '';
+        this.auth_mode = 'db_auth';
+        this.primary_auth_mode = false;
+        this.registry_url = '';
+        this.project_creation_restriction = 'everyone';
         this.self_registration = true;
         this.has_ca_root = false;
-        this.harbor_version = "unknown";
+        this.harbor_version = 'unknown';
         this.clair_vulnerability_status = {
             overall_last_update: 0,
-            details: []
+            details: [],
         };
         this.next_scan_all = 0;
-        this.registry_storage_provider_name = "";
+        this.registry_storage_provider_name = '';
         this.read_only = false;
-        this.with_chartmuseum = false;
         this.show_popular_repo = false;
     }
 }

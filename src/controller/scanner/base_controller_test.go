@@ -19,6 +19,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -26,10 +31,6 @@ import (
 	metadatatesting "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	v1testing "github.com/goharbor/harbor/src/testing/pkg/scan/rest/v1"
 	scannertesting "github.com/goharbor/harbor/src/testing/pkg/scan/scanner"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // ControllerTestSuite is test suite to test the basic api controller.

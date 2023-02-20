@@ -12,32 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+    NgModule,
+    APP_INITIALIZER,
+    CUSTOM_ELEMENTS_SCHEMA,
+} from '@angular/core';
 import { AppComponent } from './app.component';
 import { InterceptHttpService } from './services/intercept-http.service';
 import { HarborRoutingModule } from './harbor-routing.module';
 import { AppConfigService } from './services/app-config.service';
-import { SkinableConfig } from "./services/skinable-config.service";
+import { SkinableConfig } from './services/skinable-config.service';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { CookieModule } from "ngx-cookie";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CookieModule } from 'ngx-cookie';
 import {
     MissingTranslationHandler,
     MissingTranslationHandlerParams,
     TranslateLoader,
-    TranslateModule
-} from "@ngx-translate/core";
+    TranslateModule,
+} from '@ngx-translate/core';
 import {
     ProjectDefaultService,
     ProjectService,
     UserPermissionDefaultService,
-    UserPermissionService
-} from "./shared/services";
-import { ErrorHandler } from "./shared/units/error-handler";
-import { MessageHandlerService } from "./shared/services/message-handler.service";
-import { HarborTranslateLoaderService } from "./services/harbor-translate-loader.service";
+    UserPermissionService,
+} from './shared/services';
+import { ErrorHandler } from './shared/units/error-handler';
+import { MessageHandlerService } from './shared/services/message-handler.service';
+import { HarborTranslateLoaderService } from './services/harbor-translate-loader.service';
 
-function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
+function initConfig(
+    configService: AppConfigService,
+    skinableService: SkinableConfig
+) {
     return () => {
         skinableService.getCustomFile().subscribe();
         configService.load().subscribe();
@@ -46,25 +53,23 @@ function initConfig(configService: AppConfigService, skinableService: SkinableCo
 
 class MyMissingTranslationHandler implements MissingTranslationHandler {
     handle(params: MissingTranslationHandlerParams) {
-        const missingText: string = "{Harbor}";
+        const missingText: string = '{Harbor}';
         return params.key || missingText;
     }
 }
 
 @NgModule({
-    declarations: [
-        AppComponent,
-    ],
+    declarations: [AppComponent],
     imports: [
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
-                useClass: HarborTranslateLoaderService
+                useClass: HarborTranslateLoaderService,
             },
             missingTranslationHandler: {
                 provide: MissingTranslationHandler,
-                useClass: MyMissingTranslationHandler
-            }
+                useClass: MyMissingTranslationHandler,
+            },
         }),
         BrowserModule,
         BrowserAnimationsModule,
@@ -79,16 +84,21 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
             provide: APP_INITIALIZER,
             useFactory: initConfig,
             deps: [AppConfigService, SkinableConfig],
-            multi: true
+            multi: true,
         },
-        { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: InterceptHttpService,
+            multi: true,
+        },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: ErrorHandler, useClass: MessageHandlerService },
-        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        {
+            provide: UserPermissionService,
+            useClass: UserPermissionDefaultService,
+        },
     ],
-    schemas: [
-        CUSTOM_ELEMENTS_SCHEMA
-    ],
-    bootstrap: [AppComponent]
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

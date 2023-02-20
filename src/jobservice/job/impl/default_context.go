@@ -17,7 +17,9 @@ package impl
 import (
 	"context"
 	"errors"
-	o "github.com/astaxie/beego/orm"
+
+	o "github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/orm"

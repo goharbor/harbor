@@ -20,22 +20,23 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
-
-	gooidc "github.com/coreos/go-oidc/v3/oidc"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib/log"
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -55,7 +56,7 @@ type providerHelper struct {
 
 func (p *providerHelper) get() (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
-		if time.Now().Sub(p.creationTime) > 3*time.Second {
+		if time.Since(p.creationTime) > 3*time.Second {
 			if err := p.create(); err != nil {
 				return nil, err
 			}
@@ -405,7 +406,33 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 type populate func(groupNames []string) ([]int, error)
 
 func populateGroupsDB(groupNames []string) ([]int, error) {
-	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(groupNames, common.OIDCGroupType))
+	ctx := orm.Context()
+	cfg, err := config.OIDCSetting(ctx)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("populateGroupsDB, group filter %v", cfg.GroupFilter)
+	return usergroup.Mgr.Populate(orm.Context(), model.UserGroupsFromName(filterGroup(groupNames, cfg.GroupFilter), common.OIDCGroupType))
+}
+
+// filterGroup filter group with a regular expression filter
+func filterGroup(groupNames []string, filter string) []string {
+	if len(filter) == 0 {
+		return groupNames
+	}
+	pattern, err := regexp.Compile(filter)
+	if err != nil {
+		log.Errorf("failed to filter group, invalid filter %v", filter)
+		return groupNames
+	}
+	result := make([]string, 0)
+	for _, name := range groupNames {
+		if pattern.MatchString(name) {
+			result = append(result, name)
+		}
+	}
+	log.Debugf("filter is %v, result is %v", filter, result)
+	return result
 }
 
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
@@ -438,7 +465,6 @@ type Conn struct {
 // TestEndpoint tests whether the endpoint is a valid OIDC endpoint.
 // The nil return value indicates the success of the test
 func TestEndpoint(conn Conn) error {
-
 	// gooidc will try to call the discovery api when creating the provider and that's all we need to check
 	ctx := clientCtx(context.Background(), conn.VerifyCert)
 	_, err := gooidc.NewProvider(ctx, conn.URL)

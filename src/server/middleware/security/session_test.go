@@ -15,30 +15,32 @@
 package security
 
 import (
-	"github.com/astaxie/beego"
-	beegosession "github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+
+	"github.com/beego/beego/v2/server/web"
+	beegosession "github.com/beego/beego/v2/server/web/session"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestSession(t *testing.T) {
 	var err error
 	// initialize beego session manager
 	conf := &beegosession.ManagerConfig{
-		CookieName:      beego.BConfig.WebConfig.Session.SessionName,
-		Gclifetime:      beego.BConfig.WebConfig.Session.SessionGCMaxLifetime,
-		ProviderConfig:  filepath.ToSlash(beego.BConfig.WebConfig.Session.SessionProviderConfig),
-		Secure:          beego.BConfig.Listen.EnableHTTPS,
-		EnableSetCookie: beego.BConfig.WebConfig.Session.SessionAutoSetCookie,
-		Domain:          beego.BConfig.WebConfig.Session.SessionDomain,
-		CookieLifeTime:  beego.BConfig.WebConfig.Session.SessionCookieLifeTime,
+		CookieName:      web.BConfig.WebConfig.Session.SessionName,
+		Gclifetime:      web.BConfig.WebConfig.Session.SessionGCMaxLifetime,
+		ProviderConfig:  filepath.ToSlash(web.BConfig.WebConfig.Session.SessionProviderConfig),
+		Secure:          web.BConfig.Listen.EnableHTTPS,
+		EnableSetCookie: web.BConfig.WebConfig.Session.SessionAutoSetCookie,
+		Domain:          web.BConfig.WebConfig.Session.SessionDomain,
+		CookieLifeTime:  web.BConfig.WebConfig.Session.SessionCookieLifeTime,
 	}
-	beego.GlobalSessions, err = beegosession.NewManager("memory", conf)
+	web.GlobalSessions, err = beegosession.NewManager("memory", conf)
 	require.Nil(t, err)
 
 	user := models.User{
@@ -49,9 +51,9 @@ func TestSession(t *testing.T) {
 	}
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
-	store, err := beego.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	store, err := web.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
 	require.Nil(t, err)
-	err = store.Set("user", user)
+	err = store.Set(req.Context(), "user", user)
 	require.Nil(t, err)
 
 	session := &session{}

@@ -19,6 +19,10 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -45,9 +49,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 // TODO find another way to test artifact controller, it's hard to maintain currently
@@ -72,7 +73,7 @@ type controllerTestSuite struct {
 	labelMgr     *label.Manager
 	abstractor   *fakeAbstractor
 	immutableMtr *immutable.FakeMatcher
-	regCli       *registry.FakeClient
+	regCli       *registry.Client
 	accMgr       *accessory.Manager
 }
 
@@ -86,7 +87,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.abstractor = &fakeAbstractor{}
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.accMgr = &accessorytesting.Manager{}
-	c.regCli = &registry.FakeClient{}
+	c.regCli = &registry.Client{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
@@ -561,7 +562,7 @@ func (c *controllerTestSuite) TestCopy() {
 	}, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	c.regCli.On("Copy").Return(nil)
+	c.regCli.On("Copy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
 	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
@@ -598,6 +599,15 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 	c.Require().NotNil(err)
 	c.tagCtl.AssertExpectations(c.T())
 
+	// if no tag, should not update tag
+	c.SetupTest()
+	c.tagCtl.On("Update").Return(nil)
+	c.artMgr.On("UpdatePullTime", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = c.ctl.UpdatePullTime(nil, 1, 0, time.Now())
+	c.Require().Nil(err)
+	c.artMgr.AssertExpectations(c.T())
+	// should not call tag Update
+	c.tagCtl.AssertNotCalled(c.T(), "Update")
 }
 
 func (c *controllerTestSuite) TestGetAddition() {

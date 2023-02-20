@@ -5,8 +5,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 )
 
 // TestKnownLoggers

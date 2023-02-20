@@ -42,13 +42,13 @@ type tagHandler struct {
 // Content-Type: application/json
 // Link: <<url>?n=<n from the request>&last=<last tag value from previous response>>; rel="next"
 //
-// {
-//    "name": "<name>",
-//    "tags": [
-//      "<tag>",
-//      ...
-//    ]
-// }
+//	{
+//	   "name": "<name>",
+//	   "tags": [
+//	     "<tag>",
+//	     ...
+//	   ]
+//	}
 func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	n, _, err := util.ParseNAndLastParameters(req)
 	if err != nil {

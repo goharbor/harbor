@@ -16,12 +16,13 @@ package event
 
 import (
 	"fmt"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/audit/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -43,9 +44,6 @@ const (
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
 	TopicQuotaWarning    = "QUOTA_WARNING"
 	TopicQuotaExceed     = "QUOTA_EXCEED"
-	TopicUploadChart     = "UPLOAD_CHART"
-	TopicDownloadChart   = "DOWNLOAD_CHART"
-	TopicDeleteChart     = "DELETE_CHART"
 	TopicReplication     = "REPLICATION"
 	TopicArtifactLabeled = "ARTIFACT_LABELED"
 	TopicTagRetention    = "TAG_RETENTION"
@@ -65,7 +63,7 @@ func (c *CreateProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    c.ProjectID,
 		OpTime:       c.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     c.Operator,
 		ResourceType: "project",
 		Resource:     c.Project}
@@ -91,7 +89,7 @@ func (d *DeleteProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "project",
 		Resource:     d.Project}
@@ -117,7 +115,7 @@ func (d *DeleteRepositoryEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "repository",
 		Resource:     d.Repository,
@@ -156,7 +154,7 @@ func (p *PushArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    p.Artifact.ProjectID,
 		OpTime:       p.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     p.Operator,
 		ResourceType: "artifact"}
 
@@ -185,7 +183,7 @@ func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    p.Artifact.ProjectID,
 		OpTime:       p.OccurAt,
-		Operation:    "pull",
+		Operation:    rbac.ActionPull.String(),
 		Username:     p.Operator,
 		ResourceType: "artifact"}
 
@@ -221,7 +219,7 @@ func (d *DeleteArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.Artifact.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "artifact",
 		Resource:     fmt.Sprintf("%s:%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
@@ -247,7 +245,7 @@ func (c *CreateTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    c.AttachedArtifact.ProjectID,
 		OpTime:       c.OccurAt,
-		Operation:    "create",
+		Operation:    rbac.ActionCreate.String(),
 		Username:     c.Operator,
 		ResourceType: "tag",
 		Resource:     fmt.Sprintf("%s:%s", c.Repository, c.Tag)}
@@ -275,7 +273,7 @@ func (d *DeleteTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 	auditLog := &model.AuditLog{
 		ProjectID:    d.AttachedArtifact.ProjectID,
 		OpTime:       d.OccurAt,
-		Operation:    "delete",
+		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "tag",
 		Resource:     fmt.Sprintf("%s:%s", d.Repository, d.Tag)}
@@ -299,21 +297,6 @@ type ScanImageEvent struct {
 func (s *ScanImageEvent) String() string {
 	return fmt.Sprintf("Artifact-%+v Operator-%s OccurAt-%s",
 		s.Artifact, s.Operator, s.OccurAt.Format("2006-01-02 15:04:05"))
-}
-
-// ChartEvent is chart related event data to publish
-type ChartEvent struct {
-	EventType   string
-	ProjectName string
-	ChartName   string
-	Versions    []string
-	OccurAt     time.Time
-	Operator    string
-}
-
-func (c *ChartEvent) String() string {
-	return fmt.Sprintf("ProjectName-%s ChartName-%s Versions-%s Operator-%s OccurAt-%s",
-		c.ProjectName, c.ChartName, c.Versions, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
 }
 
 // QuotaEvent is project quota related event data to publish

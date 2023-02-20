@@ -102,7 +102,10 @@ func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
 	Init()
 	DefaultCfgManager = common.InMemoryCfgManager
 	mgr := DefaultMgr()
-	mgr.UpdateConfig(backgroundCtx, cfgs)
+	err := mgr.UpdateConfig(backgroundCtx, cfgs)
+	if err != nil {
+		log.Warningf("failed to update config, error: %v", err)
+	}
 	if len(kp) > 0 {
 		keyProvider = kp[0]
 	}

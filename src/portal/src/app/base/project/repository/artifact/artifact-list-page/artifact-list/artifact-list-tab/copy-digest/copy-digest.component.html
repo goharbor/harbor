@@ -1,0 +1,27 @@
+<clr-modal
+    class="hidden-tag"
+    [(clrModalOpen)]="showTagManifestOpened"
+    [clrModalStaticBackdrop]="true"
+    [clrModalClosable]="false">
+    <h3 class="modal-title">{{ 'REPOSITORY.COPY_DIGEST_ID' | translate }}</h3>
+    <div class="modal-body">
+        <div class="row col-md-12">
+            <textarea class="clr-textarea w-100" rows="2" #digestTarget>{{
+                digestId
+            }}</textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <span class="copy-failed" [hidden]="!copyFailed">{{
+            'TAG.COPY_ERROR' | translate
+        }}</span>
+        <button
+            type="button"
+            class="btn btn-primary"
+            [ngxClipboard]="digestTarget"
+            (cbOnSuccess)="onSuccess($event)"
+            (cbOnError)="onError($event)">
+            {{ 'BUTTON.COPY' | translate }}
+        </button>
+    </div>
+</clr-modal>

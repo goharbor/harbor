@@ -16,19 +16,15 @@ package policy
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
-
-	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
-
-	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
-
-	index2 "github.com/goharbor/harbor/src/lib/selector/selectors/index"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/selector"
+	index2 "github.com/goharbor/harbor/src/lib/selector/selectors/index"
+	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
+	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 )
 
 // Builder builds the runnable processor from the raw policy

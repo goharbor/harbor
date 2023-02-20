@@ -7,7 +7,7 @@ import { CookieService } from 'ngx-cookie';
 import { AppConfigService } from '../../../services/app-config.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { SkinableConfig } from "../../../services/skinable-config.service";
+import { SkinableConfig } from '../../../services/skinable-config.service';
 import { SharedTestingModule } from '../../shared.module';
 
 describe('NavigatorComponent', () => {
@@ -17,9 +17,9 @@ describe('NavigatorComponent', () => {
         getCurrentUser: function () {
             return {
                 username: 'abc',
-                has_admin_role: true
+                has_admin_role: true,
             };
-        }
+        },
     };
     let fakePlatformLocation = null;
     let fakeCookieService = null;
@@ -30,44 +30,45 @@ describe('NavigatorComponent', () => {
         getConfig: function () {
             return {
                 has_ca_root: true,
-                read_only: false
+                read_only: false,
             };
         },
-        getAdmiralEndpoint: function () {
-
-        }
+        getAdmiralEndpoint: function () {},
     };
     let fakeMessageHandlerService = null;
     let fakeSkinableConfig = {
         getSkinConfig: function () {
-            return { projects: "abc" };
-        }
+            return { projects: 'abc' };
+        },
     };
     let fakeSearchTriggerService = {
         searchClearChan$: {
-            subscribe: function () {
-            }
+            subscribe: function () {},
         },
         triggerSearch() {
             return undefined;
-        }
+        },
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                SharedTestingModule
-            ],
+            imports: [SharedTestingModule],
             declarations: [NavigatorComponent, TestComponentWrapperComponent],
             providers: [
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: PlatformLocation, useValue: fakePlatformLocation },
                 { provide: CookieService, useValue: fakeCookieService },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
-                { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
-                { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
-                { provide: SkinableConfig, useValue: fakeSkinableConfig }
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakeMessageHandlerService,
+                },
+                {
+                    provide: SearchTriggerService,
+                    useValue: fakeSearchTriggerService,
+                },
+                { provide: SkinableConfig, useValue: fakeSkinableConfig },
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
@@ -85,7 +86,7 @@ describe('NavigatorComponent', () => {
 // clr-header should only be used inside of a clr-main-container
 @Component({
     selector: 'test-component-wrapper',
-    template: '<clr-main-container><navigator></navigator></clr-main-container>'
+    template:
+        '<clr-main-container><navigator></navigator></clr-main-container>',
 })
-class TestComponentWrapperComponent {
-}
+class TestComponentWrapperComponent {}

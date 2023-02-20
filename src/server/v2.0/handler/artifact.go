@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"strings"
 	"time"
@@ -26,6 +25,9 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/opencontainers/go-digest"
+
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -36,35 +38,39 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory"
+	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
-	"github.com/opencontainers/go-digest"
 )
 
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
-		accMgr:  accessory.Mgr,
-		artCtl:  artifact.Ctl,
-		proCtl:  project.Ctl,
-		repoCtl: repository.Ctl,
-		scanCtl: scan.DefaultController,
-		tagCtl:  tag.Ctl,
+		accMgr:   accessory.Mgr,
+		artCtl:   artifact.Ctl,
+		proCtl:   project.Ctl,
+		repoCtl:  repository.Ctl,
+		scanCtl:  scan.DefaultController,
+		tagCtl:   tag.Ctl,
+		labelMgr: label.Mgr,
 	}
 }
 
 type artifactAPI struct {
 	BaseAPI
-	accMgr  accessory.Manager
-	artCtl  artifact.Controller
-	proCtl  project.Controller
-	repoCtl repository.Controller
-	scanCtl scan.Controller
-	tagCtl  tag.Controller
+	accMgr   accessory.Manager
+	artCtl   artifact.Controller
+	proCtl   project.Controller
+	repoCtl  repository.Controller
+	scanCtl  scan.Controller
+	tagCtl   tag.Controller
+	labelMgr label.Manager
 }
 
 func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
@@ -107,7 +113,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	for _, art := range arts {
 		artifact := &model.Artifact{}
 		artifact.Artifact = *art
-		assembler.WithArtifacts(artifact).Assemble(ctx)
+		_ = assembler.WithArtifacts(artifact).Assemble(ctx)
 		artifacts = append(artifacts, artifact.ToSwagger())
 	}
 
@@ -133,7 +139,10 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	art := &model.Artifact{}
 	art.Artifact = *artifact
 
-	assembler.NewVulAssembler(lib.BoolValue(params.WithScanOverview), parseScanReportMimeTypes(params.XAcceptVulnerabilities)).WithArtifacts(art).Assemble(ctx)
+	err = assembler.NewVulAssembler(lib.BoolValue(params.WithScanOverview), parseScanReportMimeTypes(params.XAcceptVulnerabilities)).WithArtifacts(art).Assemble(ctx)
+	if err != nil {
+		log.Warningf("failed to assemble vulnerabilities with artifact, error: %v", err)
+	}
 
 	return operation.NewGetArtifactOK().WithPayload(art.ToSwagger())
 }
@@ -366,19 +375,22 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 	query.Keywords["SubjectArtifactID"] = artifact.ID
 
 	// list accessories according to the query
+	total, err := a.accMgr.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
 	accs, err := a.accMgr.List(ctx, query)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	total := len(accs)
 
 	var res []*models.Accessory
 	for _, acc := range accs {
 		res = append(res, model.NewAccessory(acc.GetData()).ToSwagger())
 	}
 	return operation.NewListAccessoriesOK().
-		WithXTotalCount(int64(total)).
-		WithLink(a.Links(ctx, params.HTTPRequest.URL, int64(total), query.PageNumber, query.PageSize).String()).
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(res)
 }
 
@@ -420,7 +432,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 
 	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(content)
+		_, _ = w.Write(content)
 	})
 }
 
@@ -441,12 +453,19 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 
 	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
 		w.Header().Set("Content-Type", addition.ContentType)
-		w.Write(addition.Content)
+		_, _ = w.Write(addition.Content)
 	})
 }
 
 func (a *artifactAPI) AddLabel(ctx context.Context, params operation.AddLabelParams) middleware.Responder {
-	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+	projectID, err := getProjectID(ctx, params.ProjectName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireProjectAccess(ctx, projectID, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err := a.RequireLabelInProject(ctx, projectID, params.Label.ID); err != nil {
 		return a.SendError(ctx, err)
 	}
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
@@ -471,6 +490,17 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 		return a.SendError(ctx, err)
 	}
 	return operation.NewRemoveLabelOK()
+}
+
+func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labelID int64) error {
+	l, err := a.labelMgr.Get(ctx, labelID)
+	if err != nil {
+		return err
+	}
+	if l.Scope == common.LabelScopeProject && l.ProjectID != projectID {
+		return errors.NotFoundError(nil).WithMessage("project id %d, label %d not found", projectID, labelID)
+	}
+	return nil
 }
 
 func option(withTag, withImmutableStatus, withLabel, withSignature, withAccessory *bool) *artifact.Option {

@@ -19,12 +19,13 @@ import (
 	"encoding/json"
 
 	"github.com/docker/distribution/manifest/schema2"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // const definitions
@@ -64,11 +65,20 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 	artifact.ExtraAttrs["architecture"] = config.Architecture
 	artifact.ExtraAttrs["os"] = config.OS
 	artifact.ExtraAttrs["config"] = config.Config
+
+	author := config.Author
+
 	// if the author is null, try to get it from labels:
 	// https://docs.docker.com/engine/reference/builder/#maintainer-deprecated
-	author := config.Author
+	// https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+	authorlist := []string{"org.opencontainers.image.authors", "maintainer"}
 	if len(author) == 0 && len(config.Config.Labels) > 0 {
-		author = config.Config.Labels["maintainer"]
+		for _, authorlabel := range authorlist {
+			if val, ok := config.Config.Labels[string(authorlabel)]; ok && len(val) > 0 {
+				author = val
+				break
+			}
+		}
 	}
 	artifact.ExtraAttrs["author"] = author
 	return nil

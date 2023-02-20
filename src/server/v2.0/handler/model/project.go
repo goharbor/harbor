@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -40,7 +41,10 @@ func (p *Project) ToSwagger() *models.Project {
 	var md *models.ProjectMetadata
 	if p.Metadata != nil {
 		var m models.ProjectMetadata
-		lib.JSONCopy(&m, p.Metadata)
+		err := lib.JSONCopy(&m, p.Metadata)
+		if err != nil {
+			log.Warningf("failed to copy Metadata %T, error: %v", p.Metadata, err)
+		}
 
 		// Transform the severity to severity of CVSS v3.0 Ratings
 		if m.Severity != nil {
@@ -57,7 +61,6 @@ func (p *Project) ToSwagger() *models.Project {
 	}
 
 	return &models.Project{
-		ChartCount:         int64(p.ChartCount),
 		CreationTime:       strfmt.DateTime(p.CreationTime),
 		CurrentUserRoleID:  int64(p.Role),
 		CurrentUserRoleIds: currentUserRoleIds,

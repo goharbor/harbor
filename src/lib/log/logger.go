@@ -1,16 +1,16 @@
-// Copyright Project Harbor Authors
+//  Copyright Project Harbor Authors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 package log
 
@@ -59,6 +59,7 @@ type Logger struct {
 	fields    map[string]interface{}
 	fieldsStr string
 	mu        *sync.Mutex // ptr here to share one sync.Mutex for clone method
+	fallback  *Logger     // fallback logger when current out fail
 }
 
 // New returns a customized Logger
@@ -87,6 +88,11 @@ func New(out io.Writer, fmtter Formatter, lvl Level, options ...interface{}) *Lo
 // DefaultLogger returns the default logger within the pkg, i.e. the one used in log.Infof....
 func DefaultLogger() *Logger {
 	return logger
+}
+
+// SetFallback enable fallback when error happen
+func (l *Logger) SetFallback(logger *Logger) {
+	l.fallback = logger
 }
 
 func (l *Logger) clone() *Logger {
@@ -146,8 +152,8 @@ func (l *Logger) WithField(key string, value interface{}) *Logger {
 	return l.WithFields(Fields{key: value})
 }
 
-// setOutput sets the output of Logger l
-func (l *Logger) setOutput(out io.Writer) {
+// SetOutput sets the output of Logger l
+func (l *Logger) SetOutput(out io.Writer) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -175,12 +181,17 @@ func (l *Logger) output(record *Record) (err error) {
 	if err != nil {
 		return
 	}
-
+	defer func() {
+		if err := recover(); err != nil && l.fallback != nil {
+			_ = l.fallback.output(record)
+		}
+	}()
 	l.mu.Lock()
 	defer l.mu.Unlock()
-
 	_, err = l.out.Write(b)
-
+	if err != nil && l.fallback != nil {
+		_ = l.fallback.output(record)
+	}
 	return
 }
 
@@ -188,7 +199,7 @@ func (l *Logger) output(record *Record) (err error) {
 func (l *Logger) Debug(v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), DebugLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -196,7 +207,7 @@ func (l *Logger) Debug(v ...interface{}) {
 func (l *Logger) Debugf(format string, v ...interface{}) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), DebugLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -204,7 +215,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 func (l *Logger) Info(v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), InfoLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -212,7 +223,7 @@ func (l *Logger) Info(v ...interface{}) {
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), InfoLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -220,7 +231,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 func (l *Logger) Warning(v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), WarningLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -228,7 +239,7 @@ func (l *Logger) Warning(v ...interface{}) {
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), WarningLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -236,7 +247,7 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 func (l *Logger) Error(v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), ErrorLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -244,7 +255,7 @@ func (l *Logger) Error(v ...interface{}) {
 func (l *Logger) Errorf(format string, v ...interface{}) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), ErrorLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 }
 
@@ -252,7 +263,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 func (l *Logger) Fatal(v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), FatalLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 	os.Exit(1)
 }
@@ -261,7 +272,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 func (l *Logger) Fatalf(format string, v ...interface{}) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), FatalLevel)
-		l.output(record)
+		_ = l.output(record)
 	}
 	os.Exit(1)
 }

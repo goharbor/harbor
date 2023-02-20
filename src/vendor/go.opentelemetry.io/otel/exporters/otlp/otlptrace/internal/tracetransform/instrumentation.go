@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tracetransform
+package tracetransform // import "go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform"
 
 import (
-	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
-
 	"go.opentelemetry.io/otel/sdk/instrumentation"
+	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 )
 
 func InstrumentationLibrary(il instrumentation.Library) *commonpb.InstrumentationLibrary {

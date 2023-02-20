@@ -4,13 +4,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
 // FileGetter is responsible for retrieving file log data
@@ -35,7 +34,7 @@ func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
 		return nil, errs.NoObjectFoundError(logID)
 	}
 
-	return ioutil.ReadFile(fPath)
+	return os.ReadFile(fPath)
 }
 
 func isValidLogID(id string) error {

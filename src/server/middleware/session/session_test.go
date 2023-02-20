@@ -15,16 +15,18 @@
 package session
 
 import (
-	"github.com/astaxie/beego"
-	beegosession "github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+
+	"github.com/beego/beego/v2/server/web"
+	beegosession "github.com/beego/beego/v2/server/web/session"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 func TestSession(t *testing.T) {
@@ -39,19 +41,19 @@ func TestSession(t *testing.T) {
 	assert.False(t, carrySession)
 
 	// contains session
-	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 	conf := &beegosession.ManagerConfig{
-		CookieName:      beego.BConfig.WebConfig.Session.SessionName,
-		Gclifetime:      beego.BConfig.WebConfig.Session.SessionGCMaxLifetime,
-		ProviderConfig:  filepath.ToSlash(beego.BConfig.WebConfig.Session.SessionProviderConfig),
-		Secure:          beego.BConfig.Listen.EnableHTTPS,
-		EnableSetCookie: beego.BConfig.WebConfig.Session.SessionAutoSetCookie,
-		Domain:          beego.BConfig.WebConfig.Session.SessionDomain,
-		CookieLifeTime:  beego.BConfig.WebConfig.Session.SessionCookieLifeTime,
+		CookieName:      web.BConfig.WebConfig.Session.SessionName,
+		Gclifetime:      web.BConfig.WebConfig.Session.SessionGCMaxLifetime,
+		ProviderConfig:  filepath.ToSlash(web.BConfig.WebConfig.Session.SessionProviderConfig),
+		Secure:          web.BConfig.Listen.EnableHTTPS,
+		EnableSetCookie: web.BConfig.WebConfig.Session.SessionAutoSetCookie,
+		Domain:          web.BConfig.WebConfig.Session.SessionDomain,
+		CookieLifeTime:  web.BConfig.WebConfig.Session.SessionCookieLifeTime,
 	}
-	beego.GlobalSessions, err = beegosession.NewManager("memory", conf)
+	web.GlobalSessions, err = beegosession.NewManager("memory", conf)
 	require.Nil(t, err)
-	_, err = beego.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	_, err = web.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
 	require.Nil(t, err)
 	Middleware()(handler).ServeHTTP(nil, req)
 	assert.True(t, carrySession)

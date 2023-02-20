@@ -13,12 +13,12 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError as observableThrowError } from 'rxjs';
 import { SearchResults } from './search-results';
-import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../units/utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from '../../units/utils';
 
-const searchEndpoint = CURRENT_BASE_HREF + "/search";
+const searchEndpoint = CURRENT_BASE_HREF + '/search';
 /**
  * Declare service to handle the global search
  *
@@ -28,8 +28,7 @@ const searchEndpoint = CURRENT_BASE_HREF + "/search";
  */
 @Injectable()
 export class GlobalSearchService {
-
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
     /**
      * Search related artifacts with the provided keyword
@@ -40,10 +39,11 @@ export class GlobalSearchService {
      * @memberOf GlobalSearchService
      */
     doSearch(term: string): Observable<SearchResults> {
-        let searchUrl = searchEndpoint + "?q=" + term;
+        let searchUrl = searchEndpoint + '?q=' + term;
 
-        return this.http.get(searchUrl, HTTP_GET_OPTIONS)
-            .pipe(map(response => response as SearchResults)
-            , catchError(error => observableThrowError(error)));
+        return this.http.get(searchUrl, HTTP_GET_OPTIONS).pipe(
+            map(response => response as SearchResults),
+            catchError(error => observableThrowError(error))
+        );
     }
 }

@@ -15,10 +15,11 @@
 package lib
 
 import (
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type responseBufferTestSuite struct {
@@ -61,6 +62,14 @@ func (r *responseBufferTestSuite) TestHeader() {
 	r.Equal("v", r.buffer.header.Get("k"))
 	r.Empty(r.recorder.Header())
 }
+
+func (r *responseBufferTestSuite) TestBuffer() {
+	body := []byte{'a'}
+	_, err := r.buffer.Write(body)
+	r.NoError(err)
+	r.Equal(body, r.buffer.Buffer())
+}
+
 func (r *responseBufferTestSuite) TestFlush() {
 	r.buffer.WriteHeader(http.StatusOK)
 	_, err := r.buffer.Write([]byte{'a'})

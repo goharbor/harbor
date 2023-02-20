@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { NgModule } from "@angular/core";
-import { SharedModule } from "../../../shared/shared.module";
-import { ConfigurationComponent } from "./config.component";
-import { ConfigurationAuthComponent } from "./auth/config-auth.component";
-import { ConfigurationEmailComponent } from "./email/config-email.component";
-import { SystemSettingsComponent } from "./system/system-settings.component";
-import { RouterModule, Routes } from "@angular/router";
-import { ConfigService } from "./config.service";
+import { NgModule } from '@angular/core';
+import { SharedModule } from '../../../shared/shared.module';
+import { ConfigurationComponent } from './config.component';
+import { ConfigurationAuthComponent } from './auth/config-auth.component';
+import { SystemSettingsComponent } from './system/system-settings.component';
+import { RouterModule, Routes } from '@angular/router';
+import { ConfigService } from './config.service';
+import { SecurityComponent } from './security/security.component';
 
 const routes: Routes = [
     {
@@ -28,38 +28,32 @@ const routes: Routes = [
         children: [
             {
                 path: 'auth',
-                component: ConfigurationAuthComponent
+                component: ConfigurationAuthComponent,
             },
             {
-                path: 'email',
-                component: ConfigurationEmailComponent
+                path: 'security',
+                component: SecurityComponent,
             },
             {
                 path: 'setting',
-                component: SystemSettingsComponent
+                component: SystemSettingsComponent,
             },
             {
                 path: '',
                 redirectTo: 'auth',
-                pathMatch: 'full'
-            }
-        ]
-    }
+                pathMatch: 'full',
+            },
+        ],
+    },
 ];
 @NgModule({
-    imports: [
-        SharedModule,
-        RouterModule.forChild(routes)
-    ],
+    imports: [SharedModule, RouterModule.forChild(routes)],
     declarations: [
         ConfigurationComponent,
         ConfigurationAuthComponent,
-        ConfigurationEmailComponent,
-        SystemSettingsComponent
+        SystemSettingsComponent,
+        SecurityComponent,
     ],
-    providers: [
-        ConfigService,
-    ]
+    providers: [ConfigService],
 })
-export class ConfigurationModule {
-}
+export class ConfigurationModule {}

@@ -41,17 +41,10 @@ func IsInvalidErr(err error) bool {
 	return ok
 }
 
-const cveIDPattern = `^CVE-\d{4}-\d+$`
-
 // Validate help validates the CVE allowlist, to ensure the CVE ID is valid and there's no duplication
 func Validate(wl models2.CVEAllowlist) error {
 	m := map[string]struct{}{}
-	//	re := regexp.MustCompile(cveIDPattern)
 	for _, it := range wl.Items {
-		//	 Bypass the cve format checking
-		//		if !re.MatchString(it.CVEID) {
-		//			return &invalidErr{fmt.Sprintf("invalid CVE ID: %s", it.CVEID)}
-		//		}
 		if _, ok := m[it.CVEID]; ok {
 			return &invalidErr{fmt.Sprintf("duplicate CVE ID in allowlist: %s", it.CVEID)}
 		}

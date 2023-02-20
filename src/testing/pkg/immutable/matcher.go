@@ -2,8 +2,10 @@ package immutable
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/selector"
+
 	"github.com/stretchr/testify/mock"
+
+	"github.com/goharbor/harbor/src/lib/selector"
 )
 
 // FakeMatcher ...

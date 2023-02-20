@@ -20,8 +20,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -29,9 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
-	"github.com/gomodule/redigo/redis"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // EnqueuerTestSuite tests functions of enqueuer

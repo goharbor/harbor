@@ -23,7 +23,7 @@ import (
 )
 
 // ValidateHTTPURL checks whether the provided string is a valid HTTP URL.
-// If it it, return the URL in format "scheme://host:port" to avoid the SSRF
+// If it is, return the URL in format "scheme://host:port" to avoid the SSRF
 func ValidateHTTPURL(s string) (string, error) {
 	s = strings.Trim(s, " ")
 	s = strings.TrimRight(s, "/")
@@ -33,8 +33,7 @@ func ValidateHTTPURL(s string) (string, error) {
 	if !strings.Contains(s, "://") {
 		s = "http://" + s
 	}
-
-	url, err := url.ParseRequestURI(s)
+	url, err := url.Parse(s)
 	if err != nil {
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid URL: %s", err.Error())
 	}

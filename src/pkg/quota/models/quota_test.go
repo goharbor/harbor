@@ -17,8 +17,9 @@ package models
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/pkg/quota/types"
 )
 
 func TestGetWarningResources(t *testing.T) {

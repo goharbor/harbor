@@ -2,15 +2,16 @@ package googlegcr
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Server) {
@@ -67,7 +68,7 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			Pattern: "/",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(r.Method, r.URL)
-				if buf, e := ioutil.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
+				if buf, e := io.ReadAll(&io.LimitedReader{R: r.Body, N: 80}); e == nil {
 					fmt.Println("\t", string(buf))
 				}
 				w.WriteHeader(http.StatusOK)

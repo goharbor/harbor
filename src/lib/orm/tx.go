@@ -15,16 +15,29 @@
 package orm
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/google/uuid"
 )
+
+type CommittedKey struct{}
+
+// HasCommittedKey checks whether exist committed key in context.
+func HasCommittedKey(ctx context.Context) bool {
+	if value := ctx.Value(CommittedKey{}); value != nil {
+		return true
+	}
+
+	return false
+}
 
 // ormerTx transaction which support savepoint
 type ormerTx struct {
 	orm.Ormer
+	orm.TxOrmer
 	savepoint string
 }
 
@@ -36,28 +49,30 @@ func (o *ormerTx) createSavepoint() error {
 	val := uuid.New()
 	o.savepoint = fmt.Sprintf("p%s", hex.EncodeToString(val[:]))
 
-	_, err := o.Raw(fmt.Sprintf("SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) releaseSavepoint() error {
-	_, err := o.Raw(fmt.Sprintf("RELEASE SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("RELEASE SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) rollbackToSavepoint() error {
-	_, err := o.Raw(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", o.savepoint)).Exec()
+	_, err := o.TxOrmer.Raw(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", o.savepoint)).Exec()
 	return err
 }
 
 func (o *ormerTx) Begin() error {
-	err := o.Ormer.Begin()
-	if err == orm.ErrTxHasBegan {
-		// transaction has began for the ormer, so begin nested transaction by savepoint
+	if o.TxOrmer != nil {
 		return o.createSavepoint()
 	}
-
-	return err
+	txOrmer, err := o.Ormer.Begin()
+	if err != nil {
+		return err
+	}
+	o.TxOrmer = txOrmer
+	return nil
 }
 
 func (o *ormerTx) Commit() error {
@@ -65,7 +80,7 @@ func (o *ormerTx) Commit() error {
 		return o.releaseSavepoint()
 	}
 
-	return o.Ormer.Commit()
+	return o.TxOrmer.Commit()
 }
 
 func (o *ormerTx) Rollback() error {
@@ -73,5 +88,5 @@ func (o *ormerTx) Rollback() error {
 		return o.rollbackToSavepoint()
 	}
 
-	return o.Ormer.Rollback()
+	return o.TxOrmer.Rollback()
 }

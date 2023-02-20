@@ -2,12 +2,14 @@ package policy
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/notification/policy/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {
@@ -95,14 +97,14 @@ func (m *managerTestSuite) TestGetRelatedPolices() {
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 		{
 			ID:           2,
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 	}, nil)
 	rpers, err := m.mgr.GetRelatedPolices(context.Background(), 1, "PULL_IMAGE")

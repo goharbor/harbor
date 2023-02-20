@@ -19,26 +19,33 @@ import (
 	"testing"
 	"time"
 
-	beegoorm "github.com/astaxie/beego/orm"
+	beegoorm "github.com/beego/beego/v2/client/orm"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
-	repo "github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/stretchr/testify/suite"
+	scannerCtlMock "github.com/goharbor/harbor/src/testing/controller/scanner"
+	projectMock "github.com/goharbor/harbor/src/testing/pkg/project"
 )
 
 // ArtifactHandlerTestSuite is test suite for artifact handler.
 type ArtifactHandlerTestSuite struct {
 	suite.Suite
 
-	ctx     context.Context
-	handler *Handler
+	ctx            context.Context
+	handler        *Handler
+	projectManager project.Manager
+	scannerCtl     scanner.Controller
 }
 
 // TestArtifactHandler tests ArtifactHandler.
@@ -52,12 +59,14 @@ func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	config.Init()
 	suite.handler = &Handler{}
 	suite.ctx = orm.NewContext(context.TODO(), beegoorm.NewOrm())
+	suite.projectManager = &projectMock.Manager{}
+	suite.scannerCtl = &scannerCtlMock.Controller{}
 
 	// mock artifact
-	_, err := artifact.Mgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
+	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
 	suite.Nil(err)
 	// mock repository
-	_, err = repo.Mgr.Create(suite.ctx, &model.RepoRecord{RepositoryID: 1})
+	_, err = pkg.RepositoryMgr.Create(suite.ctx, &model.RepoRecord{RepositoryID: 1})
 	suite.Nil(err)
 	// mock tag
 	_, err = tag.Mgr.Create(suite.ctx, &tagmodel.Tag{ID: 1, RepositoryID: 1, ArtifactID: 1, Name: "latest"})
@@ -70,10 +79,10 @@ func (suite *ArtifactHandlerTestSuite) TearDownSuite() {
 	err := tag.Mgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 	// delete artifact
-	err = artifact.Mgr.Delete(suite.ctx, 1)
+	err = pkg.ArtifactMgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 	// delete repository
-	err = repo.Mgr.Delete(suite.ctx, 1)
+	err = pkg.RepositoryMgr.Delete(suite.ctx, 1)
 	suite.Nil(err)
 
 }
@@ -107,12 +116,12 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Nil(err, "onPull should return nil")
 	// sync mode should update db immediately
 	// pull_time
-	art, err := artifact.Mgr.Get(suite.ctx, 1)
+	art, err := pkg.ArtifactMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.False(art.PullTime.IsZero(), "sync update pull_time")
 	lastPullTime := art.PullTime
 	// pull_count
-	repository, err := repo.Mgr.Get(suite.ctx, 1)
+	repository, err := pkg.RepositoryMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(int64(1), repository.PullCount, "sync update pull_count")
 
@@ -122,23 +131,71 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 	suite.Nil(err, "onPull should return nil")
 	// async mode should not update db immediately
 	// pull_time
-	art, err = artifact.Mgr.Get(suite.ctx, 1)
+	art, err = pkg.ArtifactMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(lastPullTime, art.PullTime, "pull_time should not be updated immediately")
 	// pull_count
-	repository, err = repo.Mgr.Get(suite.ctx, 1)
+	repository, err = pkg.RepositoryMgr.Get(suite.ctx, 1)
 	suite.Nil(err)
 	suite.Equal(int64(1), repository.PullCount, "pull_count should not be updated immediately")
 	// wait for db update
 	suite.Eventually(func() bool {
-		art, err = artifact.Mgr.Get(suite.ctx, 1)
+		art, err = pkg.ArtifactMgr.Get(suite.ctx, 1)
 		suite.Nil(err)
 		return art.PullTime.After(lastPullTime)
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_time async update")
 
 	suite.Eventually(func() bool {
-		repository, err = repo.Mgr.Get(suite.ctx, 1)
+		repository, err = pkg.RepositoryMgr.Get(suite.ctx, 1)
 		suite.Nil(err)
 		return int64(2) == repository.PullCount
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_count async update")
+}
+
+func (suite *ArtifactHandlerTestSuite) TestIsScannerUser() {
+	type args struct {
+		prefix string
+		event  *event.ArtifactEvent
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"normal_true", args{"robot$", &event.ArtifactEvent{Operator: "robot$library+scanner+Trivy-2e6240a1-f3be-11ec-8fba-0242ac1e0009", Repository: "library/nginx"}}, true},
+		{"no_scanner_prefix_false", args{"robot$", &event.ArtifactEvent{Operator: "robot$library+Trivy-2e6240a1-f3be-11ec-8fba-0242ac1e0009", Repository: "library/nginx"}}, false},
+		{"operator_empty", args{"robot$", &event.ArtifactEvent{Operator: "", Repository: "library/nginx"}}, false},
+		{"normal_user", args{"robot$", &event.ArtifactEvent{Operator: "Trivy_sample", Repository: "library/nginx"}}, false},
+		{"normal_user_with_robotname", args{"robot$", &event.ArtifactEvent{Operator: "robot_Trivy", Repository: "library/nginx"}}, false},
+	}
+
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			if got := isScannerUser(suite.ctx, tt.args.event); got != tt.want {
+				suite.Errorf(nil, "isScannerUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_parseProjectName(t *testing.T) {
+	type args struct {
+		repoName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal repo name", args{"library/nginx"}, "library"},
+		{"three levels of repository", args{"library/nginx/nginx"}, "library"},
+		{"repo name without project name", args{"nginx"}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parseProjectName(tt.args.repoName); got != tt.want {
+				t.Errorf("parseProjectName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

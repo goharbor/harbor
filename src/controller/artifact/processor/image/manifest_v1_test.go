@@ -17,9 +17,10 @@ package image
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/stretchr/testify/suite"
 )
 
 type manifestV1ProcessorTestSuite struct {

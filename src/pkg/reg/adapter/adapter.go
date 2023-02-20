@@ -21,6 +21,7 @@ import (
 	"sort"
 
 	"github.com/docker/distribution"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
@@ -59,20 +60,13 @@ type ArtifactRegistry interface {
 	DeleteManifest(repository, reference string) error // the "reference" can be "tag" or "digest", the function needs to handle both
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
+	PushBlobChunk(repository, digest string, size int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
 	MountBlob(srcRepository, digest, dstRepository string) (err error)
 	CanBeMount(digest string) (mount bool, repository string, err error) // check whether the blob can be mounted from the remote registry
 	DeleteTag(repository, tag string) error
 	ListTags(repository string) (tags []string, err error)
-}
-
-// ChartRegistry defines the capabilities that a chart registry should have
-type ChartRegistry interface {
-	FetchCharts(filters []*model.Filter) ([]*model.Resource, error)
-	ChartExist(name, version string) (bool, error)
-	DownloadChart(name, version, contentURL string) (io.ReadCloser, error)
-	UploadChart(name, version string, chart io.Reader) error
-	DeleteChart(name, version string) error
 }
 
 // RegisterFactory registers one adapter factory to the registry

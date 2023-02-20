@@ -14,29 +14,29 @@
 import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { UserService } from "../user.service";
-import { TranslateService } from "@ngx-translate/core";
-import { InlineAlertComponent } from "../../../../shared/components/inline-alert/inline-alert.component";
+import { UserService } from '../user.service';
+import { TranslateService } from '@ngx-translate/core';
+import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'change-password',
-    templateUrl: "change-password.component.html",
-    styleUrls: ['./change-password.component.scss', '../../../../common.scss']
+    templateUrl: 'change-password.component.html',
+    styleUrls: ['./change-password.component.scss', '../../../../common.scss'],
 })
 export class ChangePasswordComponent {
     showNewPwd: boolean = false;
     showConfirmPwd: boolean = false;
     opened: boolean = false;
     onGoing: boolean = false;
-    password: string = "";
+    password: string = '';
     private validationState: any = {
-        "newPassword": true,
-        "reNewPassword": true
+        newPassword: true,
+        reNewPassword: true,
     };
-    confirmPwd: string = "";
+    confirmPwd: string = '';
     userId: number;
 
-    @ViewChild("resetPwdForm") resetPwdForm: NgForm;
+    @ViewChild('resetPwdForm') resetPwdForm: NgForm;
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
 
@@ -44,19 +44,21 @@ export class ChangePasswordComponent {
         private userService: UserService,
         private msgHandler: MessageHandlerService,
         private translateService: TranslateService,
-        private ref: ChangeDetectorRef) { }
+        private ref: ChangeDetectorRef
+    ) {}
 
     public get showProgress(): boolean {
         return this.onGoing;
     }
 
     public get isValid(): boolean {
-        return this.resetPwdForm && this.resetPwdForm.valid && this.samePassword();
+        return (
+            this.resetPwdForm && this.resetPwdForm.valid && this.samePassword()
+        );
     }
 
     public getValidationState(key: string): boolean {
-        return this.validationState &&
-            this.validationState[key];
+        return this.validationState && this.validationState[key];
     }
 
     confirmCancel(event: boolean): void {
@@ -68,8 +70,8 @@ export class ChangePasswordComponent {
         this.showNewPwd = false;
         this.onGoing = false;
         this.validationState = {
-            "newPassword": true,
-            "reNewPassword": true
+            newPassword: true,
+            reNewPassword: true,
         };
         this.resetPwdForm.resetForm();
         this.inlineAlert.close();
@@ -81,12 +83,11 @@ export class ChangePasswordComponent {
         if (this.password || this.confirmPwd) {
             // Need user confirmation
             this.inlineAlert.showInlineConfirmation({
-                message: "ALERT.FORM_CHANGE_CONFIRMATION"
+                message: 'ALERT.FORM_CHANGE_CONFIRMATION',
             });
         } else {
             this.opened = false;
         }
-
     }
 
     public send(): void {
@@ -100,25 +101,32 @@ export class ChangePasswordComponent {
         }
 
         this.onGoing = true;
-        this.userService.changePassword(this.userId, this.password, this.confirmPwd)
-            .subscribe(() => {
-                this.onGoing = false;
-                this.opened = false;
-                this.msgHandler.showSuccess("USER.RESET_OK");
+        this.userService
+            .changePassword(this.userId, this.password, this.confirmPwd)
+            .subscribe(
+                () => {
+                    this.onGoing = false;
+                    this.opened = false;
+                    this.msgHandler.showSuccess('USER.RESET_OK');
 
-                let hnd = setInterval(() => this.ref.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 2000);
-            }, error => {
-                this.onGoing = false;
-                if (error.status === 400) {
-                    this.translateService.get("USER.EXISTING_PASSWORD").subscribe(
-                        res => { this.inlineAlert.showInlineError(res); });
-                } else {
-                    this.inlineAlert.showInlineError(error);
+                    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+                    setTimeout(() => clearInterval(hnd), 2000);
+                },
+                error => {
+                    this.onGoing = false;
+                    if (error.status === 400) {
+                        this.translateService
+                            .get('USER.EXISTING_PASSWORD')
+                            .subscribe(res => {
+                                this.inlineAlert.showInlineError(res);
+                            });
+                    } else {
+                        this.inlineAlert.showInlineError(error);
+                    }
+                    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+                    setTimeout(() => clearInterval(hnd), 2000);
                 }
-                let hnd = setInterval(() => this.ref.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 2000);
-            });
+            );
     }
 
     public handleValidation(key: string, flag: boolean): void {
@@ -127,7 +135,7 @@ export class ChangePasswordComponent {
         } else {
             this.validationState[key] = this.getControlValidationState(key);
             if (this.validationState[key]) {
-                this.validationState["reNewPassword"] = this.samePassword();
+                this.validationState['reNewPassword'] = this.samePassword();
             }
         }
     }
@@ -144,8 +152,8 @@ export class ChangePasswordComponent {
 
     samePassword(): boolean {
         if (this.resetPwdForm) {
-            let control1 = this.resetPwdForm.controls["newPassword"];
-            let control2 = this.resetPwdForm.controls["reNewPassword"];
+            let control1 = this.resetPwdForm.controls['newPassword'];
+            let control2 = this.resetPwdForm.controls['reNewPassword'];
             if (control1 && control2) {
                 return control1.value === control2.value;
             }

@@ -2,9 +2,11 @@ package jobservice
 
 import (
 	"context"
+
+	"github.com/stretchr/testify/mock"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/stretchr/testify/mock"
 )
 
 // MockJobContext mocks job context interface.
