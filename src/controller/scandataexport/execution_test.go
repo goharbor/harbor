@@ -332,7 +332,7 @@ func (suite *ScanDataExportExecutionTestSuite) validateExecutionManagerInvocatio
 		userName, userNamePresent := m[export.UserNameAttribute]
 		return jobNamePresent && userNamePresent && jobName == "test-job" && userName == "test-user"
 	})
-	suite.execMgr.AssertCalled(suite.T(), "Create", ctx, job.ScanDataExport, int64(-1), task.ExecutionTriggerManual, extraAttsMatcher)
+	suite.execMgr.AssertCalled(suite.T(), "Create", ctx, job.ScanDataExportVendorType, int64(-1), task.ExecutionTriggerManual, extraAttsMatcher)
 }
 
 func TestScanDataExportExecutionTestSuite(t *testing.T) {

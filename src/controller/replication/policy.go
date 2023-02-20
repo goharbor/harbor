@@ -121,7 +121,7 @@ func (c *controller) CreatePolicy(ctx context.Context, policy *model.Policy) (in
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
-		if _, err = c.scheduler.Schedule(ctx, job.Replication, id, "", policy.Trigger.Settings.Cron,
+		if _, err = c.scheduler.Schedule(ctx, job.ReplicationVendorType, id, "", policy.Trigger.Settings.Cron,
 			callbackFuncName, id, map[string]interface{}{}); err != nil {
 			return 0, err
 		}
@@ -134,7 +134,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy, pro
 		return err
 	}
 	// delete the schedule
-	if err := c.scheduler.UnScheduleByVendor(ctx, job.Replication, policy.ID); err != nil {
+	if err := c.scheduler.UnScheduleByVendor(ctx, job.ReplicationVendorType, policy.ID); err != nil {
 		return err
 	}
 
@@ -148,7 +148,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy, pro
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
-		if _, err := c.scheduler.Schedule(ctx, job.Replication, policy.ID, "", policy.Trigger.Settings.Cron,
+		if _, err := c.scheduler.Schedule(ctx, job.ReplicationVendorType, policy.ID, "", policy.Trigger.Settings.Cron,
 			callbackFuncName, policy.ID, map[string]interface{}{}); err != nil {
 			return err
 		}
@@ -175,11 +175,11 @@ func (c *controller) validatePolicy(ctx context.Context, policy *model.Policy) e
 
 func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
 	// delete the executions
-	if err := c.execMgr.DeleteByVendor(ctx, job.Replication, id); err != nil {
+	if err := c.execMgr.DeleteByVendor(ctx, job.ReplicationVendorType, id); err != nil {
 		return err
 	}
 	// delete the schedule
-	if err := c.scheduler.UnScheduleByVendor(ctx, job.Replication, id); err != nil {
+	if err := c.scheduler.UnScheduleByVendor(ctx, job.ReplicationVendorType, id); err != nil {
 		return err
 	}
 	// delete the policy

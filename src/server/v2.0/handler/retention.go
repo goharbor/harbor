@@ -429,7 +429,7 @@ func (r *retentionAPI) requireExecutionInProject(ctx context.Context, p *policy.
 	if exec.PolicyID != p.ID {
 		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
-	if exec.Type != job.Retention {
+	if exec.Type != job.RetentionVendorType {
 		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	return nil

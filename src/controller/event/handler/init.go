@@ -57,7 +57,7 @@ func init() {
 	_ = notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
 	_ = notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{})
 
-	_ = task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
+	_ = task.RegisterTaskStatusChangePostFunc(job.ReplicationVendorType, func(ctx context.Context, taskID int64, status string) error {
 		notification.AddEvent(ctx, &metadata.ReplicationMetaData{
 			ReplicationTaskID: taskID,
 			Status:            status,

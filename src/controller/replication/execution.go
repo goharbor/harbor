@@ -37,7 +37,7 @@ import (
 
 func init() {
 	// keep only the latest created 50 replication execution records
-	task.SetExecutionSweeperCount(job.Replication, 50)
+	task.SetExecutionSweeperCount(job.ReplicationVendorType, 50)
 }
 
 // Ctl is a global replication controller instance
@@ -109,7 +109,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			WithMessage("the policy %d is disabled", policy.ID)
 	}
 	// create an execution record
-	id, err := c.execMgr.Create(ctx, job.Replication, policy.ID, trigger)
+	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger)
 	if err != nil {
 		return 0, err
 	}
@@ -191,7 +191,7 @@ func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Exe
 func (c *controller) buildExecutionQuery(query *q.Query) *q.Query {
 	// as the following logic may change the content of the query, clone it first
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Replication
+	query.Keywords["VendorType"] = job.ReplicationVendorType
 	// convert the query keyword "PolicyID" or "policy_id" to the "VendorID"
 	if value, exist := query.Keywords["PolicyID"]; exist {
 		query.Keywords["VendorID"] = value
@@ -208,7 +208,7 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 	execs, err := c.execMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ID":         id,
-			"VendorType": job.Replication,
+			"VendorType": job.ReplicationVendorType,
 		},
 	})
 	if err != nil {
@@ -223,13 +223,13 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 
 func (c *controller) TaskCount(ctx context.Context, query *q.Query) (int64, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Replication
+	query.Keywords["VendorType"] = job.ReplicationVendorType
 	return c.taskMgr.Count(ctx, query)
 }
 
 func (c *controller) ListTasks(ctx context.Context, query *q.Query) ([]*Task, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Replication
+	query.Keywords["VendorType"] = job.ReplicationVendorType
 	tks, err := c.taskMgr.List(ctx, query)
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	tasks, err := c.taskMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ID":         id,
-			"VendorType": job.Replication,
+			"VendorType": job.ReplicationVendorType,
 		},
 	})
 	if err != nil {
