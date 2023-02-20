@@ -253,6 +253,14 @@ func CacheExpireHours() int {
 	return hours
 }
 
+// ScannerRobotPrefix returns the scanner of robot account prefix.
+func ScannerRobotPrefix(ctx context.Context) string {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(ctx, common.RobotScannerNamePrefix).GetString()
+	}
+	return os.Getenv("ROBOT_SCANNER_NAME_PREFIX")
+}
+
 // Database returns database settings
 func Database() (*models.Database, error) {
 	database := &models.Database{}

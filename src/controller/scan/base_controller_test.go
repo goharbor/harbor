@@ -184,7 +184,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rc := &robottesting.Controller{}
 
-	rname := fmt.Sprintf("%s-%s", suite.registration.Name, "the-uuid-123")
+	rname := fmt.Sprintf("%s-%s-%s", config.ScannerRobotPrefix(context.TODO()), suite.registration.Name, "the-uuid-123")
 
 	conf := map[string]interface{}{
 		common.RobotTokenDuration: "30",

@@ -8737,6 +8737,9 @@ definitions:
       skip_audit_log_database:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether skip the audit log in database
+      scanner_skip_update_pulltime:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether or not to skip update the pull time for scanner
       scan_all_policy:
         type: object
         properties:
@@ -9014,6 +9017,11 @@ definitions:
       session_timeout:
         type: integer
         description: The session timeout for harbor, in minutes.
+        x-omitempty: true
+        x-isnullable: true
+      scanner_skip_update_pulltime:
+        type: boolean
+        description: Whether or not to skip update pull time for scanner
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:

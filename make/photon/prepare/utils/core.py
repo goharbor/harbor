@@ -24,6 +24,7 @@ def prepare_core(config_dict, with_notary, with_trivy):
         with_notary=with_notary,
         with_trivy=with_trivy,
         csrf_key=generate_random_string(32),
+        scan_robot_prefix=generate_random_string(8),
         **config_dict)
 
     render_jinja(
