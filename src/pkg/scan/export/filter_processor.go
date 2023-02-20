@@ -3,24 +3,19 @@ package export
 import (
 	"context"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg"
 	artpkg "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 type FilterProcessor interface {
-	ProcessProjectFilter(ctx context.Context, userName string, projectsToFilter []int64) ([]int64, error)
 	ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error)
 	ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error)
 	ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error)
@@ -41,50 +36,6 @@ func NewFilterProcessor() FilterProcessor {
 		usrMgr:     user.Mgr,
 		projectMgr: pkg.ProjectMgr,
 	}
-}
-
-func (dfp *DefaultFilterProcessor) ProcessProjectFilter(ctx context.Context, userName string, projectIdsToFilter []int64) ([]int64, error) {
-	// get the user id of the current user
-
-	usr, err := dfp.usrMgr.GetByName(ctx, userName)
-	if err != nil {
-		return nil, err
-	}
-	logger.Infof("Retrieved user id :%d for user name : %s", usr.UserID, userName)
-
-	if err != nil {
-		return nil, err
-	}
-
-	query := dfp.getProjectQueryFilter(usr)
-	projects, err := dfp.projectMgr.List(ctx, query)
-
-	if err != nil {
-		return nil, err
-	}
-	logger.Infof("Selected %d projects administered by user %s ", len(projects), userName)
-	projectIds := make([]int64, 0)
-	for _, proj := range projects {
-		projectIds = append(projectIds, proj.ProjectID)
-	}
-
-	// check if the project ids specified in the filter are present in the list
-	// of projects of which the current user is a project admin
-	if len(projectIdsToFilter) == 0 {
-		return projectIds, nil
-	}
-	m := make(map[int64]bool)
-	for _, projectID := range projectIds {
-		m[projectID] = true
-	}
-	filtered := make([]int64, 0)
-
-	for _, filteredProjID := range projectIdsToFilter {
-		if m[filteredProjID] {
-			filtered = append(filtered, filteredProjID)
-		}
-	}
-	return filtered, nil
 }
 
 func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error) {
@@ -222,15 +173,4 @@ func (dfp *DefaultFilterProcessor) ProcessLabelFilter(ctx context.Context, label
 	}
 
 	return filteredArts, nil
-}
-
-func (dfp *DefaultFilterProcessor) getProjectQueryFilter(user *commonmodels.User) *q.Query {
-	secContext := local.NewSecurityContext(user)
-	if secContext.IsSysAdmin() {
-		logger.Infof("User %v is sys admin. Selecting all projects for export.", user.Username)
-		return q.New(q.KeyWords{})
-	}
-
-	logger.Infof("User %v is not sys admin. Selecting projects with admin roles for export.", user.Username)
-	return q.New(q.KeyWords{"member": &models.MemberQuery{UserID: user.UserID, GroupIDs: user.GroupIDs}})
 }
