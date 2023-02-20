@@ -19,6 +19,7 @@ export class AppConfig {
     with_trivy: boolean;
     admiral_endpoint: string;
     auth_mode: string;
+    primary_auth_mode: boolean;
     registry_url: string;
     project_creation_restriction: string;
     self_registration: boolean;
@@ -36,6 +37,7 @@ export class AppConfig {
         this.with_trivy = false;
         this.admiral_endpoint = '';
         this.auth_mode = 'db_auth';
+        this.primary_auth_mode = false;
         this.registry_url = '';
         this.project_creation_restriction = 'everyone';
         this.self_registration = true;

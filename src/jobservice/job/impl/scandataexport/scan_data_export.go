@@ -184,14 +184,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			return err
 		}
 
-		// check if any projects are specified. If not then fetch all the projects
-		// of which the current user is a project admin.
-		projectIds, err := sde.filterProcessor.ProcessProjectFilter(systemContext, filterCriteria.UserName, filterCriteria.Projects)
-
-		if err != nil {
-			return err
-		}
-
+		projectIds := filterCriteria.Projects
 		if len(projectIds) == 0 {
 			return nil
 		}

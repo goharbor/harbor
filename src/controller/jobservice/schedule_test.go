@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/purge"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -50,27 +51,27 @@ func (s *ScheduleTestSuite) TestCreateSchedule() {
 
 	dataMap := make(map[string]interface{})
 	p := purge.JobPolicy{}
-	id, err := s.ctl.Create(nil, purge.VendorType, "Daily", "* * * * * *", purge.SchedulerCallback, p, dataMap)
+	id, err := s.ctl.Create(nil, job.PurgeAuditVendorType, "Daily", "* * * * * *", purge.SchedulerCallback, p, dataMap)
 	s.Nil(err)
 	s.Equal(int64(1), id)
 }
 
 func (s *ScheduleTestSuite) TestDeleteSchedule() {
 	s.scheduler.On("UnScheduleByVendor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	s.Nil(s.ctl.Delete(nil, purge.VendorType))
+	s.Nil(s.ctl.Delete(nil, job.PurgeAuditVendorType))
 }
 
 func (s *ScheduleTestSuite) TestGetSchedule() {
 	s.scheduler.On("ListSchedules", mock.Anything, mock.Anything).Return([]*scheduler.Schedule{
 		{
 			ID:         1,
-			VendorType: purge.VendorType,
+			VendorType: job.PurgeAuditVendorType,
 		},
 	}, nil).Once()
 
-	schedule, err := s.ctl.Get(nil, purge.VendorType)
+	schedule, err := s.ctl.Get(nil, job.PurgeAuditVendorType)
 	s.Nil(err)
-	s.Equal(purge.VendorType, schedule.VendorType)
+	s.Equal(job.PurgeAuditVendorType, schedule.VendorType)
 }
 
 func (s *ScheduleTestSuite) TestListSchedule() {

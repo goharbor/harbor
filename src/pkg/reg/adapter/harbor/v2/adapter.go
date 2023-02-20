@@ -27,7 +27,6 @@ import (
 
 var _ adp.Adapter = &adapter{}
 var _ adp.ArtifactRegistry = &adapter{}
-var _ adp.ChartRegistry = &adapter{}
 
 // New creates a Adapter for Harbor 2.x
 func New(base *base.Adapter) adp.Adapter {

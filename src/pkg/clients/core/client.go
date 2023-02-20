@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/chartserver"
 	chttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
@@ -29,7 +28,6 @@ import (
 // and we should expand it when needed
 type Client interface {
 	ArtifactClient
-	ChartClient
 }
 
 // ArtifactClient defines the methods that an image client should implement
@@ -37,13 +35,6 @@ type ArtifactClient interface {
 	ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error)
 	DeleteArtifact(project, repository, digest string) error
 	DeleteArtifactRepository(project, repository string) error
-}
-
-// ChartClient defines the methods that a chart client should implement
-type ChartClient interface {
-	ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error)
-	DeleteChart(project, repository, version string) error
-	DeleteChartRepository(project, repository string) error
 }
 
 // New returns an instance of the client which is a default implement for Client

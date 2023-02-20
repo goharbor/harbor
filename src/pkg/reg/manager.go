@@ -25,8 +25,6 @@ import (
 
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
-	// register the Artifact Hub adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/artifacthub"
 	// register the AwsEcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/awsecr"
 	// register the AzureAcr adapter
@@ -43,8 +41,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
-	// register the Helm Hub adapter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/helmhub"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
 	// register the Jfrog Artifactory adapter

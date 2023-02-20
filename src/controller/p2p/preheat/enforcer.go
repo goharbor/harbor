@@ -48,7 +48,7 @@ import (
 
 func init() {
 	// keep only the latest created 50 p2p preheat execution records
-	task.SetExecutionSweeperCount(job.P2PPreheat, 50)
+	task.SetExecutionSweeperCount(job.P2PPreheatVendorType, 50)
 }
 
 const (
@@ -383,7 +383,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 		attrs[extraAttrTriggerSetting] = "-"
 	}
 
-	eid, err := de.executionMgr.Create(ctx, job.P2PPreheat, pl.ID, pl.Trigger.Type, attrs)
+	eid, err := de.executionMgr.Create(ctx, job.P2PPreheatVendorType, pl.ID, pl.Trigger.Type, attrs)
 	if err != nil {
 		return -1, err
 	}
@@ -458,7 +458,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 	}
 
 	j := &task.Job{
-		Name: job.P2PPreheat,
+		Name: job.P2PPreheatVendorType,
 		Parameters: job.Parameters{
 			preheat.PreheatParamProvider: instance,
 			preheat.PreheatParamImage:    piData,

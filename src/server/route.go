@@ -24,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/core/controllers"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/server/handler"
 	"github.com/goharbor/harbor/src/server/router"
 )
@@ -59,23 +58,6 @@ func registerRoutes() {
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
 
 	web.Router("/service/token", &token.Handler{})
-
-	// chart repository services
-	if config.WithChartMuseum() {
-		chartRepositoryAPIType := &api.ChartRepositoryAPI{}
-		web.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
-		web.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
-		web.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
-		web.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-		web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-		web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-		web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-		web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-		web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-		web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-		web.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-		web.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-	}
 
 	// Error pages
 	web.ErrorController(&controllers.ErrorController{})

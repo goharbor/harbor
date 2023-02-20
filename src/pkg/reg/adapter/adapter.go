@@ -69,15 +69,6 @@ type ArtifactRegistry interface {
 	ListTags(repository string) (tags []string, err error)
 }
 
-// ChartRegistry defines the capabilities that a chart registry should have
-type ChartRegistry interface {
-	FetchCharts(filters []*model.Filter) ([]*model.Resource, error)
-	ChartExist(name, version string) (bool, error)
-	DownloadChart(name, version, contentURL string) (io.ReadCloser, error)
-	UploadChart(name, version string, chart io.Reader) error
-	DeleteChart(name, version string) error
-}
-
 // RegisterFactory registers one adapter factory to the registry
 func RegisterFactory(t string, factory Factory) error {
 	if len(t) == 0 {

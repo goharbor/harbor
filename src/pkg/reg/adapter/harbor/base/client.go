@@ -60,17 +60,6 @@ func (c *Client) GetAPIVersion() (string, error) {
 	return "", err
 }
 
-// ChartRegistryEnabled returns whether the chart registry is enabled for the Harbor instance
-func (c *Client) ChartRegistryEnabled() (bool, error) {
-	sys := &struct {
-		ChartRegistryEnabled bool `json:"with_chartmuseum"`
-	}{}
-	if err := c.C.Get(c.BasePath()+"/systeminfo", sys); err != nil {
-		return false, err
-	}
-	return sys.ChartRegistryEnabled, nil
-}
-
 // ListLabels lists system level labels
 func (c *Client) ListLabels() ([]string, error) {
 	labels := []*struct {

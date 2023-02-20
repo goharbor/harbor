@@ -51,7 +51,6 @@ func New(registry *model.Registry) (*Adapter, error) {
 			Adapter:    native.NewAdapterWithAuthorizer(registry, authorizer),
 			Registry:   registry,
 			Client:     client,
-			url:        registry.URL,
 			httpClient: httpClient,
 		}, nil
 	}
@@ -73,7 +72,6 @@ func New(registry *model.Registry) (*Adapter, error) {
 		Adapter:    native.NewAdapter(registry),
 		Registry:   registry,
 		Client:     client,
-		url:        registry.URL,
 		httpClient: httpClient,
 	}, nil
 }
@@ -84,8 +82,6 @@ type Adapter struct {
 	Registry *model.Registry
 	Client   *Client
 
-	// url and httpClient can be removed if we don't support replicate chartmuseum charts anymore
-	url        string
 	httpClient *common_http.Client
 }
 
@@ -117,14 +113,6 @@ func (a *Adapter) Info() (*model.RegistryInfo, error) {
 		},
 		SupportedRepositoryPathComponentType: model.RepositoryPathComponentTypeAtLeastTwo,
 		SupportedCopyByChunk:                 true,
-	}
-
-	enabled, err := a.Client.ChartRegistryEnabled()
-	if err != nil {
-		return nil, err
-	}
-	if enabled {
-		info.SupportedResourceTypes = append(info.SupportedResourceTypes, model.ResourceTypeChart)
 	}
 
 	labels, err := a.Client.ListLabels()

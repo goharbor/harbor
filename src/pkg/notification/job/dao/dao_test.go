@@ -99,7 +99,7 @@ func (suite *DaoTestSuite) TestGet() {
 
 	id, err := suite.dao.Create(orm.Context(), &model.Job{
 		PolicyID:   2222,
-		EventType:  "pushChart",
+		EventType:  "pullImage",
 		NotifyType: "http",
 		Status:     "pending",
 		JobDetail:  "{\"type\":\"pushImage\",\"occur_at\":1563536782,\"event_data\":{\"resources\":[{\"digest\":\"sha256:bf1684a6e3676389ec861c602e97f27b03f14178e5bc3f70dce198f9f160cce9\",\"tag\":\"v1.0\",\"resource_url\":\"10.194.32.23/myproj/alpine:v1.0\"}],\"repository\":{\"date_created\":1563505587,\"name\":\"alpine\",\"namespace\":\"myproj\",\"repo_full_name\":\"myproj/alpine\",\"repo_type\":\"private\"}},\"operator\":\"admin\"}",
@@ -109,7 +109,7 @@ func (suite *DaoTestSuite) TestGet() {
 
 	r, err := suite.dao.Get(orm.Context(), id)
 	suite.Nil(err)
-	suite.Equal("pushChart", r.EventType)
+	suite.Equal("pullImage", r.EventType)
 }
 
 func (suite *DaoTestSuite) TestUpdate() {
@@ -163,7 +163,7 @@ func (suite *DaoTestSuite) TestDeleteByPolicyID() {
 func (suite *DaoTestSuite) TestGetLastTriggerJobsGroupByEventType() {
 	_, err := suite.dao.Create(orm.Context(), &model.Job{
 		PolicyID:   3333,
-		EventType:  "pushChart",
+		EventType:  "replicateImage",
 		NotifyType: "http",
 		Status:     "pending",
 		JobDetail:  "{\"type\":\"pushImage\",\"occur_at\":1563536782,\"event_data\":{\"resources\":[{\"digest\":\"sha256:bf1684a6e3676389ec861c602e97f27b03f14178e5bc3f70dce198f9f160cce9\",\"tag\":\"v1.0\",\"resource_url\":\"10.194.32.23/myproj/alpine:v1.0\"}],\"repository\":{\"date_created\":1563505587,\"name\":\"alpine\",\"namespace\":\"myproj\",\"repo_full_name\":\"myproj/alpine\",\"repo_type\":\"private\"}},\"operator\":\"admin\"}",
@@ -172,7 +172,7 @@ func (suite *DaoTestSuite) TestGetLastTriggerJobsGroupByEventType() {
 	suite.Nil(err)
 	_, err = suite.dao.Create(orm.Context(), &model.Job{
 		PolicyID:   3333,
-		EventType:  "pullChart",
+		EventType:  "pullImage",
 		NotifyType: "http",
 		Status:     "pending",
 		JobDetail:  "{\"type\":\"pushImage\",\"occur_at\":1563536782,\"event_data\":{\"resources\":[{\"digest\":\"sha256:bf1684a6e3676389ec861c602e97f27b03f14178e5bc3f70dce198f9f160cce9\",\"tag\":\"v1.0\",\"resource_url\":\"10.194.32.23/myproj/alpine:v1.0\"}],\"repository\":{\"date_created\":1563505587,\"name\":\"alpine\",\"namespace\":\"myproj\",\"repo_full_name\":\"myproj/alpine\",\"repo_type\":\"private\"}},\"operator\":\"admin\"}",

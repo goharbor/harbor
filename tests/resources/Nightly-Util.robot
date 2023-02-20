@@ -41,7 +41,6 @@ Nightly Test Setup In Photon
     Log To Console  Start Containerd Daemon Locally ...
     Start Containerd Daemon Locally
     Log To Console  wget mariadb ...
-    Run  wget ${prometheus_chart_file_url}
     Prepare Helm Plugin
 
 Nightly Test Setup In Ubuntu
@@ -88,7 +87,6 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
     SSHLibrary.Get File  /var/log/harbor/notary-server.log
     SSHLibrary.Get File  /var/log/harbor/notary-signer.log
-    SSHLibrary.Get File  /var/log/harbor/chartmuseum.log
     SSHLibrary.Get File  /var/log/harbor/registryctl.log
     Run  rename 's/^/${ip}/' *.log
     Close All Connections

@@ -249,3 +249,9 @@ func AuditLogForwardEndpoint(ctx context.Context) string {
 func SkipAuditLogDatabase(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.SkipAuditLogDatabase).GetBool()
 }
+
+// ScannerSkipUpdatePullTime returns the scanner skip update pull time setting
+func ScannerSkipUpdatePullTime(ctx context.Context) bool {
+	log.Infof("skip_update_pull_time:%v", DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool())
+	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()
+}

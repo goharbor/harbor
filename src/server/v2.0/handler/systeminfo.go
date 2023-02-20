@@ -69,6 +69,7 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 	}
 	res := &models.GeneralInfo{
 		AuthMode:         &d.AuthMode,
+		PrimaryAuthMode:  &d.PrimaryAuthMode,
 		SelfRegistration: &d.SelfRegistration,
 		HarborVersion:    &d.HarborVersion,
 	}
@@ -87,7 +88,6 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.ProjectCreationRestriction = &d.Protected.ProjectCreationRestrict
 		res.ExternalURL = &d.Protected.ExtURL
 		res.RegistryURL = &d.Protected.RegistryURL
-		res.WithChartmuseum = &d.Protected.WithChartMuseum
 		res.WithNotary = &d.Protected.WithNotary
 		res.ReadOnly = &d.Protected.ReadOnly
 		res.RegistryStorageProviderName = &d.Protected.RegistryStorageProviderName

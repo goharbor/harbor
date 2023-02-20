@@ -46,10 +46,10 @@ const (
 	ResourceTypeProject    = "p"
 	ResourceTypeRepository = "r"
 	ResourceTypeImage      = "i"
-	ResourceTypeChart      = "c"
 
 	ExtEndpoint                      = "ext_endpoint"
 	AUTHMode                         = "auth_mode"
+	PrimaryAuthMode                  = "primary_auth_mode"
 	DatabaseType                     = "database_type"
 	PostGreSQLHOST                   = "postgresql_host"
 	PostGreSQLPort                   = "postgresql_port"
@@ -136,15 +136,14 @@ const (
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
-	WithChartMuseum                   = "with_chartmuseum"
-	ChartRepoURL                      = "chart_repository_url"
-	DefaultChartRepoURL               = "http://chartmuseum:9999"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
 	// System admin defined the robot name prefix.
 	RobotNamePrefix = "robot_name_prefix"
+	// Scanner robot name prefix
+	RobotScannerNamePrefix = "robot_scanner_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.
 	AuthProxyUserNamePrefix = "tokenreview$"
 	CoreConfigPath          = "/api/v2.0/internalconfig"
@@ -154,9 +153,6 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	AuthProxyRediretPath = "/c/authproxy/redirect"
-
-	ChartUploadCtxKey   = contextKey("chart_upload_event")
-	ChartDownloadCtxKey = contextKey("chart_download_event")
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
@@ -220,6 +216,8 @@ const (
 	SkipAuditLogDatabase = "skip_audit_log_database"
 	// MaxAuditRetentionHour allowed in audit log purge
 	MaxAuditRetentionHour = 240000
+	// ScannerSkipUpdatePullTime
+	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"

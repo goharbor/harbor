@@ -210,7 +210,7 @@ func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun 
 	for repository, policy := range repositoryRules {
 		jobData := &jobData{
 			Repository: repository,
-			JobName:    job.Retention,
+			JobName:    job.RetentionVendorType,
 			JobParams:  make(map[string]interface{}, 3),
 		}
 		// set dry run

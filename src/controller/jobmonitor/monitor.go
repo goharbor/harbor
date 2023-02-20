@@ -49,6 +49,7 @@ var skippedJobTypes = []string{
 	"IMAGE_REPLICATE",
 	"IMAGE_SCAN_ALL",
 	"IMAGE_GC",
+	"PURGE_AUDIT",
 }
 
 // MonitorController defines the worker pool operations

@@ -115,17 +115,6 @@ echo subjectAltName = DNS.1:notary-server > extfile.cnf
 openssl x509 -req -days $DAYS -sha256 -in notary_server.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -extfile extfile.cnf -out notary_server.crt
 
 
-# generate chartmuseum key
-openssl req -new \
-        -newkey rsa:4096 -nodes -sha256 -keyout chartmuseum.key \
-        -out chartmuseum.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=chartmuseum"
-
-# sign chartmuseum csr with CA certificate and key
-echo subjectAltName = DNS.1:chartmuseum > extfile.cnf
-openssl x509 -req -days $DAYS -sha256 -in chartmuseum.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -extfile extfile.cnf -out chartmuseum.crt
-
-
 # generate harbor_db key
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout harbor_db.key \
