@@ -3,7 +3,6 @@ FROM node:16.10.0 as builder
 WORKDIR /build_dir
 
 COPY src/portal /build_dir
-COPY api/v2.0/legacy_swagger.yaml /build_dir/swagger.yaml
 COPY api/v2.0/swagger.yaml /build_dir/swagger2.yaml
 COPY api/swagger.yaml /build_dir/swagger3.yaml
 

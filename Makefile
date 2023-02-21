@@ -568,7 +568,6 @@ swagger_client:
 	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/swagger.yaml -g python -o harborclient/harbor_client --package-name client
-	java -jar openapi-generator-cli.jar generate -i api/v2.0/legacy_swagger.yaml -g python -o harborclient/harbor_swagger_client --package-name swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
 	cd harborclient/harbor_client; python ./setup.py install
 	cd harborclient/harbor_swagger_client; python ./setup.py install
