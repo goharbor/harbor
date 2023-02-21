@@ -7,13 +7,13 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
-// NotifiactionPolicy ...
-type NotifiactionPolicy struct {
+// WebhookPolicy ...
+type WebhookPolicy struct {
 	*model.Policy
 }
 
 // ToSwagger ...
-func (n *NotifiactionPolicy) ToSwagger() *models.WebhookPolicy {
+func (n *WebhookPolicy) ToSwagger() *models.WebhookPolicy {
 	return &models.WebhookPolicy{
 		ID:           n.ID,
 		CreationTime: strfmt.DateTime(n.CreationTime),
@@ -29,7 +29,7 @@ func (n *NotifiactionPolicy) ToSwagger() *models.WebhookPolicy {
 }
 
 // ToTargets ...
-func (n *NotifiactionPolicy) ToTargets() []*models.WebhookTargetObject {
+func (n *WebhookPolicy) ToTargets() []*models.WebhookTargetObject {
 	var results []*models.WebhookTargetObject
 	for _, t := range n.Targets {
 		results = append(results, &models.WebhookTargetObject{
@@ -43,8 +43,8 @@ func (n *NotifiactionPolicy) ToTargets() []*models.WebhookTargetObject {
 }
 
 // NewNotifiactionPolicy ...
-func NewNotifiactionPolicy(p *model.Policy) *NotifiactionPolicy {
-	return &NotifiactionPolicy{
+func NewWebhookPolicy(p *model.Policy) *WebhookPolicy {
+	return &WebhookPolicy{
 		Policy: p,
 	}
 }
