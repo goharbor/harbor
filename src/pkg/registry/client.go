@@ -77,12 +77,14 @@ var (
 func init() {
 	registryHTTPClientTimeout = DefaultHTTPClientTimeout
 	// override it if read from environment variable, in minutes
-	timeout, err := strconv.ParseInt(os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"), 10, 64)
-	if err != nil {
-		log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
-	} else {
-		if timeout > 0 {
-			registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
+	if env := os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"); len(env) > 0 {
+		timeout, err := strconv.ParseInt(env, 10, 64)
+		if err != nil {
+			log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
+		} else {
+			if timeout > 0 {
+				registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
+			}
 		}
 	}
 }
