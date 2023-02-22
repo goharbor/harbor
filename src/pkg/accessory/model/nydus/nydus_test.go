@@ -13,16 +13,18 @@ type NydusTestSuite struct {
 	htesting.Suite
 	accessory model.Accessory
 	digest    string
+	subDigest string
 }
 
 func (suite *NydusTestSuite) SetupSuite() {
 	suite.digest = suite.DigestString()
+	suite.subDigest = suite.DigestString()
 	suite.accessory, _ = model.New(model.TypeNydusAccelerator,
 		model.AccessoryData{
-			ArtifactID:    1,
-			SubArtifactID: 2,
-			Size:          4321,
-			Digest:        suite.digest,
+			ArtifactID:        1,
+			SubArtifactDigest: suite.subDigest,
+			Size:              4321,
+			Digest:            suite.digest,
 		})
 }
 
@@ -35,7 +37,7 @@ func (suite *NydusTestSuite) TestGetArtID() {
 }
 
 func (suite *NydusTestSuite) TestSubGetArtID() {
-	suite.Equal(int64(2), suite.accessory.GetData().SubArtifactID)
+	suite.Equal(suite.subDigest, suite.accessory.GetData().SubArtifactDigest)
 }
 
 func (suite *NydusTestSuite) TestSubGetSize() {

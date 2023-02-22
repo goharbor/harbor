@@ -15,8 +15,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -114,7 +114,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	subafid, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
+	_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	af := &artifact.Artifact{
@@ -131,11 +131,11 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	accid, err := accessory.Mgr.Create(suite.Context(), accessorymodel.AccessoryData{
-		ID:            1,
-		ArtifactID:    afid,
-		SubArtifactID: subafid,
-		Digest:        accdgt,
-		Type:          accessorymodel.TypeNydusAccelerator,
+		ID:                1,
+		ArtifactID:        afid,
+		SubArtifactDigest: subaf.Digest,
+		Digest:            accdgt,
+		Type:              accessorymodel.TypeNydusAccelerator,
 	})
 	suite.Nil(err, fmt.Sprintf("Add artifact accesspry failed for %d", repositoryID))
 	return accid
@@ -152,7 +152,7 @@ func (suite *MiddlewareTestSuite) TestNydusAccelerator() {
 		suite.Nil(err)
 
 		// add subject artifact
-		subjectArtID := suite.addArt(projectID, repoId, name, subArtDigest)
+		suite.addArt(projectID, repoId, name, subArtDigest)
 
 		// add nydus artifact
 		artID := suite.addArt(projectID, repoId, name, descriptor.Digest.String())
@@ -165,11 +165,11 @@ func (suite *MiddlewareTestSuite) TestNydusAccelerator() {
 
 		accs, _ := accessory.Mgr.List(suite.Context(), &q.Query{
 			Keywords: map[string]interface{}{
-				"SubjectArtifactID": subjectArtID,
+				"SubjectArtifactDigest": subArtDigest,
 			},
 		})
 		suite.Equal(1, len(accs))
-		suite.Equal(subjectArtID, accs[0].GetData().SubArtifactID)
+		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
 		suite.Equal(artID, accs[0].GetData().ArtifactID)
 		suite.True(accs[0].IsHard())
 		suite.Equal(model.TypeNydusAccelerator, accs[0].GetData().Type)
