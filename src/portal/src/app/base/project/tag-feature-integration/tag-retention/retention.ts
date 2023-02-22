@@ -30,6 +30,7 @@ export class Retention extends BaseRetention {
         references: object;
         settings: {
             cron: string;
+            next_scheduled_time?: string;
         };
     };
     constructor() {
