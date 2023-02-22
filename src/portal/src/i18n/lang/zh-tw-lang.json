@@ -425,7 +425,10 @@
     "NAME_REQUIRED": "名稱為必填項",
     "NOTIFY_TYPE": "通知類型",
     "EVENT_TYPE": "事件類型",
-    "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型"
+    "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型",
+    "PAYLOAD_FORMAT": "Payload Format",
+    "CLOUD_EVENT": "CloudEvents",
+    "PAYLOAD_DATA": "Payload Data"
   },
   "GROUP":{
     "GROUP":"組",

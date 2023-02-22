@@ -101,6 +101,23 @@
                     </option>
                 </select>
             </clr-select-container>
+            <!-- payload format -->
+            <clr-select-container *ngIf="webhook.targets[0].type === 'http'">
+                <label>{{ 'WEBHOOK.PAYLOAD_FORMAT' | translate }}</label>
+                <select
+                    class="width-238"
+                    clrSelect
+                    name="payloadFormat"
+                    id="payload-format"
+                    [(ngModel)]="webhook.targets[0].payload_format"
+                    [disabled]="checking">
+                    <option
+                        *ngFor="let item of getPayLoadFormats()"
+                        value="{{ item }}">
+                        {{ getI18nKey(item) | translate }}
+                    </option>
+                </select>
+            </clr-select-container>
 
             <div class="clr-form-control">
                 <label class="clr-control-label required">{{

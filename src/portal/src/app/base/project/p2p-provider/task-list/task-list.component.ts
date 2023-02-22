@@ -328,15 +328,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
                 }
             );
     }
-    onBack(): void {
-        this.router.navigate([
-            'harbor',
-            'projects',
-            `${this.projectId}`,
-            'p2p-provider',
-            'policies',
-        ]);
-    }
+
     // refresh icon
     refreshTasks(): void {
         this.currentPage = 1;
