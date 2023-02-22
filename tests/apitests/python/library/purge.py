@@ -6,11 +6,11 @@ from v2_swagger_client.rest import ApiException
 
 
 class Purge(base.Base):
-    
+
     def __init__(self):
         super(Purge, self).__init__(api_type="purge")
 
-    def create_purge_schedule(self, type, cron, dry_run, audit_retention_hour=24, include_operations="create,delete,pull", expect_status_code=201, expect_response_body=None, **kwargs):
+    def create_purge_schedule(self, type, cron, dry_run=True, audit_retention_hour=24, include_operations="create,delete,pull", expect_status_code=201, expect_response_body=None, **kwargs):
         scheduleObj = v2_swagger_client.ScheduleObj(type=type)
         if cron is not None:
             scheduleObj.cron = cron

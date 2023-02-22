@@ -831,6 +831,7 @@
         "ROOT_CERT_LINK": "Descargar",
         "REGISTRY_CERTIFICATE": "Certificado de registro",
         "NO_CHANGE": "Save abort because nothing changed",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",
@@ -852,7 +853,8 @@
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *."
+            "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
 
         },
         "LDAP": {

@@ -44,9 +44,6 @@ const (
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
 	TopicQuotaWarning    = "QUOTA_WARNING"
 	TopicQuotaExceed     = "QUOTA_EXCEED"
-	TopicUploadChart     = "UPLOAD_CHART"
-	TopicDownloadChart   = "DOWNLOAD_CHART"
-	TopicDeleteChart     = "DELETE_CHART"
 	TopicReplication     = "REPLICATION"
 	TopicArtifactLabeled = "ARTIFACT_LABELED"
 	TopicTagRetention    = "TAG_RETENTION"
@@ -300,21 +297,6 @@ type ScanImageEvent struct {
 func (s *ScanImageEvent) String() string {
 	return fmt.Sprintf("Artifact-%+v Operator-%s OccurAt-%s",
 		s.Artifact, s.Operator, s.OccurAt.Format("2006-01-02 15:04:05"))
-}
-
-// ChartEvent is chart related event data to publish
-type ChartEvent struct {
-	EventType   string
-	ProjectName string
-	ChartName   string
-	Versions    []string
-	OccurAt     time.Time
-	Operator    string
-}
-
-func (c *ChartEvent) String() string {
-	return fmt.Sprintf("ProjectName-%s ChartName-%s Versions-%s Operator-%s OccurAt-%s",
-		c.ProjectName, c.ChartName, c.Versions, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
 }
 
 // QuotaEvent is project quota related event data to publish

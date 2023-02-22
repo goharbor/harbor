@@ -97,14 +97,14 @@ func (m *managerTestSuite) TestGetRelatedPolices() {
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 		{
 			ID:           2,
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 	}, nil)
 	rpers, err := m.mgr.GetRelatedPolices(context.Background(), 1, "PULL_IMAGE")

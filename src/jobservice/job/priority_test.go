@@ -42,12 +42,12 @@ func (suite *PrioritySamplerSuite) Test() {
 	p1 := suite.sampler.For(SampleJob)
 	suite.Equal((uint)(1), p1, "Job priority for %s", SampleJob)
 
-	p2 := suite.sampler.For(Retention)
-	suite.Equal(defaultPriority, p2, "Job priority for %s", Retention)
+	p2 := suite.sampler.For(RetentionVendorType)
+	suite.Equal(defaultPriority, p2, "Job priority for %s", RetentionVendorType)
 
-	p3 := suite.sampler.For(Replication)
-	suite.Equal(defaultPriority, p3, "Job priority for %s", Replication)
+	p3 := suite.sampler.For(ReplicationVendorType)
+	suite.Equal(defaultPriority, p3, "Job priority for %s", ReplicationVendorType)
 
-	p4 := suite.sampler.For(SlackJob)
-	suite.Equal((uint)(1), p4, "Job priority for %s", SlackJob)
+	p4 := suite.sampler.For(SlackJobVendorType)
+	suite.Equal((uint)(1), p4, "Job priority for %s", SlackJobVendorType)
 }

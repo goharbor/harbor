@@ -76,9 +76,7 @@ func (o *oidcCli) valid(req *http.Request) bool {
 	path := strings.TrimSuffix(req.URL.Path, "/")
 
 	if path == "/service/token" ||
-		strings.HasPrefix(path, "/v2") ||
-		strings.HasPrefix(path, "/chartrepo") ||
-		strings.HasPrefix(path, "/api/chartrepo") {
+		strings.HasPrefix(path, "/v2") {
 		// The request was sent by CLI to upload/download artifacts
 		return true
 	}

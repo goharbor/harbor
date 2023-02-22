@@ -45,7 +45,7 @@ func (h *HTTPHandler) process(ctx context.Context, event *model.HookEvent) error
 			JobKind: job.KindGeneric,
 		},
 	}
-	j.Name = job.WebhookJob
+	j.Name = job.WebhookJobVendorType
 
 	payload, err := json.Marshal(event.Payload)
 	if err != nil {

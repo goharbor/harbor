@@ -301,7 +301,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				"name": r.Name,
 			},
 		}
-		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJob, r.ID, task.ExecutionTriggerManual, extraAttrs)
+		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, r.ID, task.ExecutionTriggerManual, extraAttrs)
 		if err != nil {
 			return err
 		}
@@ -847,10 +847,11 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 	}
 
 	projectName := strings.Split(repository, "/")[0]
+	scannerPrefix := config.ScannerRobotPrefix(ctx)
 
 	robotReq := &robot.Robot{
 		Robot: model.Robot{
-			Name:        fmt.Sprintf("%s-%s", registration.Name, UUID),
+			Name:        fmt.Sprintf("%s-%s-%s", scannerPrefix, registration.Name, UUID),
 			Description: "for scan",
 			ProjectID:   projectID,
 		},
@@ -954,7 +955,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 	params[sca.JobParameterRobot] = robotJSON
 
 	j := &task.Job{
-		Name: job.ImageScanJob,
+		Name: job.ImageScanJobVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

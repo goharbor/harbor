@@ -31,7 +31,7 @@ import (
 // for all users.
 type Artifact struct {
 	ID                int64                  `json:"id"`
-	Type              string                 `json:"type"`                // image, chart, etc
+	Type              string                 `json:"type"`                // image, chart or other OCI compatible
 	MediaType         string                 `json:"media_type"`          // the media type of artifact. Mostly, it's the value of `manifest.config.mediatype`
 	ManifestMediaType string                 `json:"manifest_media_type"` // the media type of manifest/index
 	ProjectID         int64                  `json:"project_id"`

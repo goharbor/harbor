@@ -56,57 +56,16 @@ func initialize(policy *repctlmodel.Policy) (adp.Adapter, adp.Adapter, error) {
 
 // fetch resources from the source registry
 func fetchResources(adapter adp.Adapter, policy *repctlmodel.Policy) ([]*model.Resource, error) {
-	var resTypes []string
-	for _, filter := range policy.Filters {
-		if filter.Type == model.FilterTypeResource {
-			resTypes = append(resTypes, filter.Value.(string))
-		}
-	}
-	if len(resTypes) == 0 {
-		info, err := adapter.Info()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get the adapter info: %v", err)
-		}
-		resTypes = append(resTypes, info.SupportedResourceTypes...)
-	}
-
-	fetchArtifact := false
-	fetchChart := false
-	for _, resType := range resTypes {
-		if resType == model.ResourceTypeChart {
-			fetchChart = true
-			continue
-		}
-		fetchArtifact = true
-	}
-
 	var resources []*model.Resource
-	// artifacts
-	if fetchArtifact {
-		reg, ok := adapter.(adp.ArtifactRegistry)
-		if !ok {
-			return nil, fmt.Errorf("the adapter doesn't implement the ArtifactRegistry interface")
-		}
-		res, err := reg.FetchArtifacts(policy.Filters)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
-		}
-		resources = append(resources, res...)
-		log.Debug("fetch artifacts completed")
+	reg, ok := adapter.(adp.ArtifactRegistry)
+	if !ok {
+		return nil, fmt.Errorf("the adapter doesn't implement the ArtifactRegistry interface")
 	}
-	// charts
-	if fetchChart {
-		reg, ok := adapter.(adp.ChartRegistry)
-		if !ok {
-			return nil, fmt.Errorf("the adapter doesn't implement the ChartRegistry interface")
-		}
-		res, err := reg.FetchCharts(policy.Filters)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch charts: %v", err)
-		}
-		resources = append(resources, res...)
-		log.Debug("fetch charts completed")
+	res, err := reg.FetchArtifacts(policy.Filters)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
 	}
+	resources = append(resources, res...)
 
 	log.Debug("fetch resources from the source registry completed")
 	return resources, nil

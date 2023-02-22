@@ -91,6 +91,28 @@ class GC(base.Base, object):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
 
+    def update_gc_schedule(self, schedule_type, cron = None, expect_status_code = 200, expect_response_body = None, **kwargs):
+        gc_schedule = v2_swagger_client.ScheduleObj()
+        gc_schedule.type = schedule_type
+        if cron is not None:
+            gc_schedule.cron = cron
+
+        gc_job = v2_swagger_client.Schedule()
+        gc_job.schedule = gc_schedule
+
+        try:
+            _, status_code, header = self._get_client(**kwargs).update_gc_schedule_with_http_info(gc_job)
+        except ApiException as e:
+            if e.status == expect_status_code:
+                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
+                    raise Exception(r"Update GC schedule response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
+                else:
+                    return e.reason, e.body
+            else:
+                raise Exception(r"Update GC schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+        base._assert_status_code(expect_status_code, status_code)
+        return base._get_id_from_header(header)
+
     def gc_now(self, is_delete_untagged=False, **kwargs):
         gc_id = self.create_gc_schedule('Manual', is_delete_untagged, **kwargs)
         return gc_id

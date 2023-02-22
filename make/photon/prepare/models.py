@@ -29,11 +29,6 @@ class InternalTLS:
         'notary_server.crt', 'notary_server.key'
     }
 
-    chart_museum_filename = {
-        'chartmuseum.crt',
-        'chartmuseum.key'
-    }
-
     db_certs_filename = {
         'harbor_db.crt', 'harbor_db.key'
     }
@@ -47,8 +42,6 @@ class InternalTLS:
             self.required_filenames = self.harbor_certs_filename
             if kwargs.get('with_notary'):
                 self.required_filenames.update(self.notary_certs_filename)
-            if kwargs.get('with_chartmuseum'):
-                self.required_filenames.update(self.chart_museum_filename)
             if kwargs.get('with_trivy'):
                 self.required_filenames.update(self.trivy_certs_filename)
             if not kwargs.get('external_database'):
