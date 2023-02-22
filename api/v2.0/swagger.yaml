@@ -37,9 +37,9 @@ paths:
           $ref: '#/responses/500'
   /search:
     get:
-      summary: 'Search for projects, repositories and helm charts'
+      summary: 'Search for projects and repositories'
       description: |-
-        The Search endpoint returns information about the projects, repositories and helm charts offered at public status or related to the current logged in user. The response includes the project, repository list and charts in a proper display order.
+        The Search endpoint returns information about the projects and repositories offered at public status or related to the current logged in user. The response includes the project and repository list in a proper display order.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: q
@@ -6206,13 +6206,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/SearchRepository'
-      chart:
-        description: Search results of the charts that macthed the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/SearchResult'
-        x-omitempty: true
-        x-isnullable: true
   SearchRepository:
     type: object
     properties:
@@ -6234,93 +6227,6 @@ definitions:
       artifact_count:
         type: integer
         description: The count of artifacts in the repository
-  SearchResult:
-    type: object
-    description: The chart search result item
-    properties:
-      Name:
-        type: string
-        description: The chart name with repo name
-      Score:
-        type: integer
-        description: The matched level
-      Chart:
-        $ref: '#/definitions/ChartVersion'
-  ChartVersion:
-    type: object
-    description: A specified chart entry
-    allOf:
-      - $ref: '#/definitions/ChartMetadata'
-      - type: object
-        properties:
-          created:
-            type: string
-            description: The created time of the chart entry
-          removed:
-            type: boolean
-            description: A flag to indicate if the chart entry is removed
-          digest:
-            type: string
-            description: The digest value of the chart entry
-          urls:
-            type: array
-            description: The urls of the chart entry
-            items:
-              type: string
-    properties:
-      labels:
-        type: array
-        description: A list of label
-        items:
-          $ref: '#/definitions/Label'
-  ChartMetadata:
-    type: object
-    description: The metadata of chart version
-    required:
-      - name
-      - version
-      - engine
-      - icon
-      - apiVersion
-      - appVersion
-    properties:
-      name:
-        type: string
-        description: The name of the chart
-      home:
-        type: string
-        description: The URL to the relevant project page
-      sources:
-        type: array
-        description: The URL to the source code of chart
-        items:
-          type: string
-      version:
-        type: string
-        description: A SemVer 2 version of chart
-      description:
-        type: string
-        description: A one-sentence description of chart
-      keywords:
-        type: array
-        description: A list of string keywords
-        items:
-          type: string
-      engine:
-        type: string
-        description: The name of template engine
-      icon:
-        type: string
-        description: The URL to an icon file
-      apiVersion:
-        type: string
-        description: The API version of this chart
-      appVersion:
-        type: string
-        description: The version of the application enclosed in the chart
-      deprecated:
-        type: boolean
-        description: Whether or not this chart is deprecated
   Repository:
     type: object
     properties:
@@ -6956,10 +6862,6 @@ definitions:
         type: integer
         description: The number of the repositories under this project.
         x-omitempty: false
-      chart_count:
-        type: integer
-        description: The total number of charts under this project.
-        x-omitempty: false
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
@@ -7016,10 +6918,6 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
-        x-omitempty: false
-      chart_count:
-        type: integer
-        description: The total number of charts under this project.
         x-omitempty: false
       project_admin_count:
         type: integer
