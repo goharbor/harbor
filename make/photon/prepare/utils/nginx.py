@@ -63,7 +63,8 @@ def render_nginx_template(config_dict):
             ssl_cert=SSL_CERT_PATH,
             ssl_cert_key=SSL_CERT_KEY_PATH,
             internal_tls=config_dict['internal_tls'],
-            metric=config_dict['metric'])
+            metric=config_dict['metric'],
+            gzip_enabled=config_dict['https_gzip_enabled'])
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
 
     else:
@@ -73,7 +74,8 @@ def render_nginx_template(config_dict):
             uid=DEFAULT_UID,
             gid=DEFAULT_GID,
             internal_tls=config_dict['internal_tls'],
-            metric=config_dict['metric'])
+            metric=config_dict['metric'],
+            gzip_enabled=config_dict['https_gzip_enabled'])
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP
     copy_nginx_location_configs_if_exist(nginx_template_ext_dir, nginx_confd_dir, location_file_pattern)
 

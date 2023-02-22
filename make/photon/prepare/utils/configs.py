@@ -123,6 +123,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
     config_dict['protocol'] = 'http'
     http_config = configs.get('http') or {}
     config_dict['http_port'] = http_config.get('port', 80)
+    config_dict['http_gzip_enabled'] = http_config.get('gzip_enabled', False)
 
     https_config = configs.get('https')
     if https_config:
@@ -130,6 +131,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
         config_dict['https_port'] = https_config.get('port', 443)
         config_dict['cert_path'] = https_config["certificate"]
         config_dict['cert_key_path'] = https_config["private_key"]
+        config_dict['https_gzip_enabled'] = http_config.get('gzip_enabled', False)
 
     if configs.get('external_url'):
         config_dict['public_url'] = configs.get('external_url')

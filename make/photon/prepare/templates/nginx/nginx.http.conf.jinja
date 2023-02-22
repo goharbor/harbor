@@ -59,6 +59,14 @@ http {
     # customized location config file can place to /etc/nginx/etc with prefix harbor.http. and suffix .conf
     include /etc/nginx/conf.d/harbor.http.*.conf;
 
+{% if gzip_enabled %}
+    # enable gzip
+    gzip on;
+    gzip_min_length 1000;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript application/x-yaml text/x-yaml;
+{% endif %}
+
     location / {
 {% if internal_tls.enabled %}
       proxy_pass https://portal/;
