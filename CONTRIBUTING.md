@@ -31,7 +31,7 @@ export GOPATH=$HOME/go
 mkdir -p $GOPATH/src/github.com/goharbor
 
 #Get code
-go get github.com/goharbor/harbor
+git clone git@github.com:goharbor/harbor.git
 cd $GOPATH/src/github.com/goharbor/harbor
 
 #Track repository under your personal account
