@@ -22,7 +22,7 @@ paths:
   /health:
     get:
       summary: Check the status of Harbor components
-      description: Check the status of Harbor components
+      description: Check the status of Harbor components. This path does not require authentication.
       tags:
         - health
       operationId: getHealth
@@ -4710,8 +4710,8 @@ paths:
   /ping:
     get:
       operationId: getPing
-      summary: Ping Harbor to check if it's alive.
-      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components.
+      summary: Ping Harbor to check if the API server is alive.
+      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components. This path does not require any authentication.
       tags:
         - ping
       produces:
@@ -7485,7 +7485,7 @@ definitions:
         description: The ID of the robot
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       description:
         type: string
         description: The description of the robot
@@ -7510,7 +7510,7 @@ definitions:
       expires_at:
         type: integer
         format: int64
-        description: The expiration data of the robot
+        description: The expiration date of the robot
       permissions:
         type: array
         items:
@@ -7529,7 +7529,7 @@ definitions:
     properties:
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       description:
         type: string
         description: The description of the robot
@@ -7560,7 +7560,7 @@ definitions:
         description: The ID of the robot
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       secret:
         type: string
         description: The secret of the robot
@@ -7571,7 +7571,7 @@ definitions:
       expires_at:
         type: integer
         format: int64
-        description: The expiration data of the robot
+        description: The expiration date of the robot
   RobotSec:
     type: object
     description: The response for refresh/update robot account secret.
@@ -7597,10 +7597,10 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access
+        description: The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference).
       action:
         type: string
-        description: The action of the access
+        description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
       effect:
         type: string
         description: The effect of the access
@@ -9254,7 +9254,7 @@ definitions:
         description: The component name
       status:
         type: string
-        description: The health status of component
+        description: The health status of component. Is either "healthy" or "unhealthy".
       error:
         type: string
         description: (optional) The error message when the status is "unhealthy"
