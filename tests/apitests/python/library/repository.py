@@ -2,10 +2,10 @@
 
 import time
 import base
-import swagger_client
+import v2_swagger_client
 import docker_api
 from docker_api import DockerAPI
-from swagger_client.rest import ApiException
+from v2_swagger_client.rest import ApiException
 from testutils import DOCKER_USER, DOCKER_PWD
 
 def pull_harbor_image(registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
@@ -124,7 +124,7 @@ class Repository(base.Base, object):
 
     def add_label_to_tag(self, repo_name, tag, label_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
-        label = swagger_client.Label(id=label_id)
+        label = v2_swagger_client.Label(id=label_id)
         _, status_code, _ = client.repositories_repo_name_tags_tag_labels_post_with_http_info(repo_name, tag, label)
         base._assert_status_code(expect_status_code, status_code)
 
@@ -160,7 +160,7 @@ class Repository(base.Base, object):
 
     def retag_image(self, repo_name, tag, src_image, override=True, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        request = swagger_client.RetagReq(tag=tag, src_image=src_image, override=override)
+        request = v2_swagger_client.RetagReq(tag=tag, src_image=src_image, override=override)
 
         try:
             data, status_code, _ = client.repositories_repo_name_tags_post_with_http_info(repo_name, request)

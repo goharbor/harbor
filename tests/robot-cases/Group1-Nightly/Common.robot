@@ -529,7 +529,7 @@ Test Case - Copy A Image And Accessory
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
     Docker Logout  ${ip}
     Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
-    
+
     Copy Image  ${tag}  ${target_project}  ${image}
     Retry Wait Until Page Contains  Copy artifact successfully
 
@@ -1007,3 +1007,11 @@ Test Case - Export CVE
     ${actual_cve_data}=  Split To Lines  @{csv_file_content}  1
     Lists Should Be Equal  ${expected_cve_data}  ${actual_cve_data}  ignore_order=True
     Close Browser
+
+Test Case - Helm3.7 CLI Push And Pull In Harbor
+    [Tags]  helm_push_and_push
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}

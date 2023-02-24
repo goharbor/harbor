@@ -53,7 +53,6 @@ Test Case - Project Tab Routing
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     &{routing}=	 Create Dictionary  harbor/projects/1/summary=//project-detail//summary
     ...  harbor/projects/1/repositories=//project-detail//hbr-repository-gridview
-    ...  harbor/projects/1/helm-charts=//project-detail//project-list-charts
     ...  harbor/projects/1/members=//project-detail//ng-component//button//span[contains(.,'User')]
     ...  harbor/projects/1/labels=//project-detail//app-project-config//hbr-label
     ...  harbor/projects/1/scanner=//project-detail//scanner
