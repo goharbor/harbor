@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Etkin durum",
         "NUMBER_REQUIRED": "Alan zorunludur ve 0 dışında bir tam sayı olmalıdır.",
         "DESCRIPTION": "Açıklama",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Süre Sonu",
         "TOKEN_EXPIRATION": "Robot Token Sona Ermesi (Günler)",
         "ACTION": "Eylem",
