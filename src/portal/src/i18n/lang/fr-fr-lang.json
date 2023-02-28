@@ -1666,17 +1666,17 @@
         "NO_PURGE_RECORDS": "We couldn't find any purge histories!"
     },
     "CVE_EXPORT": {
-        "EXPORT_SOME_PROJECTS": "Export CVEs",
-        "ALL_PROJECTS": "All projects",
-        "EXPORT_TITLE": "Export CVE",
-        "EXPORT_SUBTITLE": "Set exporting conditions",
-        "EXPORT_CVE_FILTER_HELP_TEXT": "Enter multiple comma separated cveIds",
+        "EXPORT_SOME_PROJECTS": "Exporter les CVEs",
+        "ALL_PROJECTS": "Tous les projets",
+        "EXPORT_TITLE": "Export de CVEs",
+        "EXPORT_SUBTITLE": "Définir les conditions d'exportation",
+        "EXPORT_CVE_FILTER_HELP_TEXT": "Entrer plusieurs cveIDs séparés par des virgules",
         "CVE_IDS": "CVE IDs",
-        "EXPORT_BUTTON": "EXPORT",
-        "JOB_NAME": "Job Name",
-        "JOB_NAME_REQUIRED": "Job name is required",
-        "JOB_NAME_EXISTING": "Job name already exists",
-        "TRIGGER_EXPORT_SUCCESS": "Trigger exporting CVEs successfully!"
+        "EXPORT_BUTTON": "Exporter",
+        "JOB_NAME": "Nom du job",
+        "JOB_NAME_REQUIRED": "Le nom du job est requis",
+        "JOB_NAME_EXISTING": "Le nom du job existe déjà",
+        "TRIGGER_EXPORT_SUCCESS": "Déclenchement avec succès de l'export des CVEs !"
     },
     "JOB_SERVICE_DASHBOARD": {
         "SCHEDULE_PAUSED": "Scheduled(Paused)",
