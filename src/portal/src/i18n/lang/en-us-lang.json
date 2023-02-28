@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Enabled state",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "DESCRIPTION": "Description",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Expiration",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
         "ACTION": "Action",
