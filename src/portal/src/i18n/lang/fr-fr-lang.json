@@ -685,8 +685,7 @@
         "DELETED_FAILED": "Echec de la suppression du Endpoint",
         "CANNOT_EDIT": "Le Endpoint ne peut pas être modifié tant que la règle de réplication est activée.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Echec de la suppression du Endpoint en cours d'utilisation",
-        "PLACEHOLDER": "Nous n'avons trouvé aucun Endpoint !",
-        "DEPRECATED": "Helm Hub migre vers Artifact Hub"
+        "PLACEHOLDER": "Nous n'avons trouvé aucun Endpoint !"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copier le Résumé",

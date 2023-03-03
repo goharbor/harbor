@@ -696,8 +696,7 @@
         "DELETED_FAILED": "Falha ao remover endereço.",
         "CANNOT_EDIT": "Endereço não pode ser alterado enquando a regra de replicação estiver ativa.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Falha ao remover endereço em uso.",
-        "PLACEHOLDER": "Não há endereços cadastrados",
-        "DEPRECATED": "Helm Hub está sendo movido para Artifact Hub"
+        "PLACEHOLDER": "Não há endereços cadastrados"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",

@@ -696,8 +696,7 @@
         "DELETED_FAILED": "Silinen uç noktalar başarısız oldu.",
         "CANNOT_EDIT": "Çoğaltma kuralı etkinken uç noktası değiştirilemez.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Kullanılan uç nokta silinemedi.",
-        "PLACEHOLDER": "Uç noktaları bulamadık!",
-        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
+        "PLACEHOLDER": "Uç noktaları bulamadık!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Özet Kopyala",

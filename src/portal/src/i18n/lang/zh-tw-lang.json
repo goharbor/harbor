@@ -693,8 +693,7 @@
     "DELETED_FAILED": "刪除目標失敗。",
     "CANNOT_EDIT": "當複制規則啟用時目標無法修改。",
     "FAILED_TO_DELETE_TARGET_IN_USED": "無法刪除正在使用的目標。",
-    "PLACEHOLDER": "未發現任何復制目標!",
-    "DEPRECATED": "Helm Hub is moving to Artifact Hub"
+    "PLACEHOLDER": "未發現任何復制目標!"
   },
   "REPOSITORY":{
     "COPY_DIGEST_ID": "複製摘要",
