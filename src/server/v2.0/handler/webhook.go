@@ -18,59 +18,89 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/task"
+	webhook_ctl "github.com/goharbor/harbor/src/controller/webhook"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notification/job"
-	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
 )
 
-func newNotificationPolicyAPI() *notificationPolicyAPI {
-	return &notificationPolicyAPI{
-		webhookjobMgr:    job.Mgr,
-		webhookPolicyMgr: policy.Mgr,
+func newWebhookAPI() *webhookAPI {
+	return &webhookAPI{
+		execCtl:    task.ExecutionCtl,
+		taskCtl:    task.Ctl,
+		webhookCtl: webhook_ctl.Ctl,
 	}
 }
 
-type notificationPolicyAPI struct {
+type webhookAPI struct {
 	BaseAPI
-	webhookjobMgr    job.Manager
-	webhookPolicyMgr policy.Manager
+	execCtl    task.ExecutionController
+	taskCtl    task.Controller
+	webhookCtl webhook_ctl.Controller
 }
 
-func (n *notificationPolicyAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (n *webhookAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
 	return nil
 }
 
-func (n *notificationPolicyAPI) requirePolicyInProject(ctx context.Context, projectIDOrName interface{}, policyID int64) error {
+func (n *webhookAPI) requirePolicyInProject(ctx context.Context, projectIDOrName interface{}, policyID int64) error {
 	projectID, err := getProjectID(ctx, projectIDOrName)
 	if err != nil {
 		return err
 	}
-	l, err := n.webhookPolicyMgr.Get(ctx, policyID)
+
+	l, err := n.webhookCtl.GetPolicy(ctx, policyID)
 	if err != nil {
 		return err
 	}
+
 	if projectID != l.ProjectID {
 		return errors.NotFoundError(fmt.Errorf("project id:%d, webhook policy id: %d not found", projectID, policyID))
 	}
 	return nil
 }
 
-func (n *notificationPolicyAPI) ListWebhookPoliciesOfProject(ctx context.Context, params webhook.ListWebhookPoliciesOfProjectParams) middleware.Responder {
+func (n *webhookAPI) requireExecutionInPolicy(ctx context.Context, execID, policyID int64) error {
+	exec, err := n.execCtl.Get(ctx, execID)
+	if err != nil {
+		return err
+	}
+
+	if exec.VendorID == policyID && (exec.VendorType == job.WebhookJobVendorType || exec.VendorType == job.SlackJobVendorType) {
+		return nil
+	}
+
+	return errors.NotFoundError(fmt.Errorf("execution %d not found in policy %d", execID, policyID))
+}
+
+func (n *webhookAPI) requireTaskInExecution(ctx context.Context, taskID, execID int64) error {
+	task, err := n.taskCtl.Get(ctx, taskID)
+	if err != nil {
+		return err
+	}
+
+	if task.ExecutionID == execID {
+		return nil
+	}
+
+	return errors.NotFoundError(fmt.Errorf("task %d not found in execution %d", taskID, execID))
+}
+
+func (n *webhookAPI) ListWebhookPoliciesOfProject(ctx context.Context, params webhook.ListWebhookPoliciesOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -87,18 +117,18 @@ func (n *notificationPolicyAPI) ListWebhookPoliciesOfProject(ctx context.Context
 	}
 	query.Keywords["ProjectID"] = projectID
 
-	total, err := n.webhookPolicyMgr.Count(ctx, query)
+	total, err := n.webhookCtl.CountPolicies(ctx, query)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
 
-	policies, err := n.webhookPolicyMgr.List(ctx, query)
+	policies, err := n.webhookCtl.ListPolicies(ctx, query)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
 	var results []*models.WebhookPolicy
 	for _, p := range policies {
-		results = append(results, model.NewNotifiactionPolicy(p).ToSwagger())
+		results = append(results, model.NewWebhookPolicy(p).ToSwagger())
 	}
 
 	return webhook.NewListWebhookPoliciesOfProjectOK().
@@ -107,7 +137,7 @@ func (n *notificationPolicyAPI) ListWebhookPoliciesOfProject(ctx context.Context
 		WithPayload(results)
 }
 
-func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context, params webhook.CreateWebhookPolicyOfProjectParams) middleware.Responder {
+func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params webhook.CreateWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionCreate, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -130,7 +160,7 @@ func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context
 		return n.SendError(ctx, err)
 	}
 	policy.ProjectID = projectID
-	id, err := n.webhookPolicyMgr.Create(ctx, policy)
+	id, err := n.webhookCtl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
@@ -139,7 +169,7 @@ func (n *notificationPolicyAPI) CreateWebhookPolicyOfProject(ctx context.Context
 	return webhook.NewCreateWebhookPolicyOfProjectCreated().WithLocation(location)
 }
 
-func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params webhook.UpdateWebhookPolicyOfProjectParams) middleware.Responder {
+func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params webhook.UpdateWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -166,14 +196,14 @@ func (n *notificationPolicyAPI) UpdateWebhookPolicyOfProject(ctx context.Context
 
 	policy.ID = policyID
 	policy.ProjectID = projectID
-	if err := n.webhookPolicyMgr.Update(ctx, policy); err != nil {
+	if err := n.webhookCtl.UpdatePolicy(ctx, policy); err != nil {
 		return n.SendError(ctx, err)
 	}
 
 	return webhook.NewUpdateWebhookPolicyOfProjectOK()
 }
 
-func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context, params webhook.DeleteWebhookPolicyOfProjectParams) middleware.Responder {
+func (n *webhookAPI) DeleteWebhookPolicyOfProject(ctx context.Context, params webhook.DeleteWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionDelete, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -181,13 +211,13 @@ func (n *notificationPolicyAPI) DeleteWebhookPolicyOfProject(ctx context.Context
 	if err := n.requirePolicyInProject(ctx, projectNameOrID, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
-	if err := n.webhookPolicyMgr.Delete(ctx, params.WebhookPolicyID); err != nil {
+	if err := n.webhookCtl.DeletePolicy(ctx, params.WebhookPolicyID); err != nil {
 		return n.SendError(ctx, err)
 	}
 	return webhook.NewDeleteWebhookPolicyOfProjectOK()
 }
 
-func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, params webhook.GetWebhookPolicyOfProjectParams) middleware.Responder {
+func (n *webhookAPI) GetWebhookPolicyOfProject(ctx context.Context, params webhook.GetWebhookPolicyOfProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	projectID, err := getProjectID(ctx, projectNameOrID)
 	if err != nil {
@@ -200,15 +230,127 @@ func (n *notificationPolicyAPI) GetWebhookPolicyOfProject(ctx context.Context, p
 		return n.SendError(ctx, err)
 	}
 
-	policy, err := n.webhookPolicyMgr.Get(ctx, params.WebhookPolicyID)
+	policy, err := n.webhookCtl.GetPolicy(ctx, params.WebhookPolicyID)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
 
-	return webhook.NewGetWebhookPolicyOfProjectOK().WithPayload(model.NewNotifiactionPolicy(policy).ToSwagger())
+	return webhook.NewGetWebhookPolicyOfProjectOK().WithPayload(model.NewWebhookPolicy(policy).ToSwagger())
 }
 
-func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.LastTriggerParams) middleware.Responder {
+func (n *webhookAPI) ListExecutionsOfWebhookPolicy(ctx context.Context, params webhook.ListExecutionsOfWebhookPolicyParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.RequireProjectAccess(ctx, projectID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requirePolicyInProject(ctx, projectID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	query, err := n.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	total, err := n.webhookCtl.CountExecutions(ctx, params.WebhookPolicyID, query)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	executions, err := n.webhookCtl.ListExecutions(ctx, params.WebhookPolicyID, query)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	var payloads []*models.Execution
+	for _, exec := range executions {
+		p, err := convertExecutionToPayload(exec)
+		if err != nil {
+			return n.SendError(ctx, err)
+		}
+		payloads = append(payloads, p)
+	}
+
+	return webhook.NewListExecutionsOfWebhookPolicyOK().WithPayload(payloads).WithXTotalCount(total).
+		WithLink(n.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
+}
+
+func (n *webhookAPI) ListTasksOfWebhookExecution(ctx context.Context, params webhook.ListTasksOfWebhookExecutionParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.RequireProjectAccess(ctx, projectID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requirePolicyInProject(ctx, projectID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requireExecutionInPolicy(ctx, params.ExecutionID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	query, err := n.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	total, err := n.webhookCtl.CountTasks(ctx, params.ExecutionID, query)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	tasks, err := n.webhookCtl.ListTasks(ctx, params.ExecutionID, query)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	var payloads []*models.Task
+	for _, task := range tasks {
+		p, err := convertTaskToPayload(task)
+		if err != nil {
+			return n.SendError(ctx, err)
+		}
+		payloads = append(payloads, p)
+	}
+
+	return webhook.NewListTasksOfWebhookExecutionOK().WithPayload(payloads).WithXTotalCount(total).
+		WithLink(n.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
+}
+
+func (n *webhookAPI) GetLogsOfWebhookTask(ctx context.Context, params webhook.GetLogsOfWebhookTaskParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.RequireProjectAccess(ctx, projectID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requirePolicyInProject(ctx, projectID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requireExecutionInPolicy(ctx, params.ExecutionID, params.WebhookPolicyID); err != nil {
+		return n.SendError(ctx, err)
+	}
+	if err := n.requireTaskInExecution(ctx, params.TaskID, params.ExecutionID); err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	l, err := n.webhookCtl.GetTaskLog(ctx, params.TaskID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
+	return webhook.NewGetLogsOfWebhookTaskOK().WithPayload(string(l))
+}
+
+func (n *webhookAPI) LastTrigger(ctx context.Context, params webhook.LastTriggerParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
@@ -224,7 +366,7 @@ func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.
 			"ProjectID": projectID,
 		},
 	}
-	policies, err := n.webhookPolicyMgr.List(ctx, query)
+	policies, err := n.webhookCtl.ListPolicies(ctx, query)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
@@ -236,39 +378,25 @@ func (n *notificationPolicyAPI) LastTrigger(ctx context.Context, params webhook.
 	return webhook.NewLastTriggerOK().WithPayload(triggers)
 }
 
-func (n *notificationPolicyAPI) GetSupportedEventTypes(ctx context.Context, params webhook.GetSupportedEventTypesParams) middleware.Responder {
+func (n *webhookAPI) GetSupportedEventTypes(ctx context.Context, params webhook.GetSupportedEventTypesParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
 	}
 
 	var notificationTypes = &models.SupportedWebhookEventTypes{}
-	for key := range notification.SupportedNotifyTypes {
-		notificationTypes.NotifyType = append(notificationTypes.NotifyType, models.NotifyType(key))
+	for _, notifyType := range notification.GetSupportedNotifyTypes() {
+		notificationTypes.NotifyType = append(notificationTypes.NotifyType, models.NotifyType(notifyType))
 	}
 
-	for key := range notification.SupportedEventTypes {
-		notificationTypes.EventType = append(notificationTypes.EventType, models.EventType(key))
+	for _, eventType := range notification.GetSupportedEventTypes() {
+		notificationTypes.EventType = append(notificationTypes.EventType, models.EventType(eventType))
 	}
 
 	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
 
-func (n *notificationPolicyAPI) getLastTriggerTimeGroupByEventType(ctx context.Context, eventType string, policyID int64) (time.Time, error) {
-	jobs, err := n.webhookjobMgr.ListJobsGroupByEventType(ctx, policyID)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	for _, job := range jobs {
-		if eventType == job.EventType {
-			return job.CreationTime, nil
-		}
-	}
-	return time.Time{}, nil
-}
-
-func (n *notificationPolicyAPI) validateTargets(policy *policy_model.Policy) (bool, error) {
+func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) {
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessage("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
@@ -280,21 +408,19 @@ func (n *notificationPolicyAPI) validateTargets(policy *policy_model.Policy) (bo
 		// Prevent SSRF security issue #3755
 		target.Address = url.Scheme + "://" + url.Host + url.Path
 
-		_, ok := notification.SupportedNotifyTypes[target.Type]
-		if !ok {
+		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessage("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
 		}
 	}
 	return true, nil
 }
 
-func (n *notificationPolicyAPI) validateEventTypes(policy *policy_model.Policy) (bool, error) {
+func (n *webhookAPI) validateEventTypes(policy *policy_model.Policy) (bool, error) {
 	if len(policy.EventTypes) == 0 {
 		return false, errors.New(nil).WithMessage("empty event type").WithCode(errors.BadRequestCode)
 	}
 	for _, eventType := range policy.EventTypes {
-		_, ok := notification.SupportedEventTypes[eventType]
-		if !ok {
+		if !isEventTypeSupported(eventType) {
 			return false, errors.New(nil).WithMessage("unsupported event type %s", eventType).WithCode(errors.BadRequestCode)
 		}
 	}
@@ -303,7 +429,7 @@ func (n *notificationPolicyAPI) validateEventTypes(policy *policy_model.Policy) 
 
 // constructPolicyWithTriggerTime construct notification policy information displayed in UI
 // including event type, enabled, creation time, last trigger time
-func (n *notificationPolicyAPI) constructPolicyWithTriggerTime(ctx context.Context, policies []*policy_model.Policy) ([]*models.WebhookLastTrigger, error) {
+func (n *webhookAPI) constructPolicyWithTriggerTime(ctx context.Context, policies []*policy_model.Policy) ([]*models.WebhookLastTrigger, error) {
 	res := []*models.WebhookLastTrigger{}
 	for _, policy := range policies {
 		for _, t := range policy.EventTypes {
@@ -317,7 +443,7 @@ func (n *notificationPolicyAPI) constructPolicyWithTriggerTime(ctx context.Conte
 				ply.CreationTime = strfmt.DateTime(policy.CreationTime)
 			}
 
-			ltTime, err := n.getLastTriggerTimeGroupByEventType(ctx, t, policy.ID)
+			ltTime, err := n.webhookCtl.GetLastTriggerTime(ctx, t, policy.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -328,4 +454,24 @@ func (n *notificationPolicyAPI) constructPolicyWithTriggerTime(ctx context.Conte
 		}
 	}
 	return res, nil
+}
+
+func isEventTypeSupported(eventType string) bool {
+	for _, t := range notification.GetSupportedEventTypes() {
+		if t.String() == eventType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isNotifyTypeSupported(notifyType string) bool {
+	for _, t := range notification.GetSupportedNotifyTypes() {
+		if t.String() == notifyType {
+			return true
+		}
+	}
+
+	return false
 }

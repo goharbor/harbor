@@ -1,3 +1,17 @@
+//  Copyright Project Harbor Authors
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 package handler
 
 import (
@@ -6,10 +20,9 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	webhook_ctl "github.com/goharbor/harbor/src/controller/webhook"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg"
-	"github.com/goharbor/harbor/src/pkg/notification/job"
-	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	policyModel "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -17,28 +30,26 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhookjob"
 )
 
-func newNotificationJobAPI() *notificationJobAPI {
-	return &notificationJobAPI{
-		webhookjobMgr:    job.Mgr,
-		webhookPolicyMgr: policy.Mgr,
-		projectMgr:       pkg.ProjectMgr,
+func newWebhookJobAPI() *webhookJobAPI {
+	return &webhookJobAPI{
+		webhookCtl: webhook_ctl.Ctl,
+		projectMgr: pkg.ProjectMgr,
 	}
 }
 
-type notificationJobAPI struct {
+type webhookJobAPI struct {
 	BaseAPI
-	webhookjobMgr    job.Manager
-	webhookPolicyMgr policy.Manager
-	projectMgr       project.Manager
+	webhookCtl webhook_ctl.Controller
+	projectMgr project.Manager
 }
 
-func (n *notificationJobAPI) ListWebhookJobs(ctx context.Context, params webhookjob.ListWebhookJobsParams) middleware.Responder {
+func (n *webhookJobAPI) ListWebhookJobs(ctx context.Context, params webhookjob.ListWebhookJobsParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := n.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceNotificationPolicy); err != nil {
 		return n.SendError(ctx, err)
 	}
 
-	policy, err := n.webhookPolicyMgr.Get(ctx, params.PolicyID)
+	policy, err := n.webhookCtl.GetPolicy(ctx, params.PolicyID)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
@@ -51,24 +62,24 @@ func (n *notificationJobAPI) ListWebhookJobs(ctx context.Context, params webhook
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
-	query.Keywords["PolicyID"] = policy.ID
+
 	if len(params.Status) != 0 {
-		query.Keywords["Status"] = params.Status
+		query.Keywords["status"] = params.Status
 	}
 
-	total, err := n.webhookjobMgr.Count(ctx, query)
+	total, err := n.webhookCtl.CountExecutions(ctx, params.PolicyID, query)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
-
-	jobs, err := n.webhookjobMgr.List(ctx, query)
+	// the relationship of webhook execution and task is 1:1, so we can think the execution is the job as before.
+	jobs, err := n.webhookCtl.ListExecutions(ctx, params.PolicyID, query)
 	if err != nil {
 		return n.SendError(ctx, err)
 	}
 
 	var results []*models.WebhookJob
 	for _, j := range jobs {
-		results = append(results, model.NewNotificationJob(j).ToSwagger())
+		results = append(results, model.NewWebhookJob(j).ToSwagger())
 	}
 
 	return webhookjob.NewListWebhookJobsOK().
@@ -78,7 +89,7 @@ func (n *notificationJobAPI) ListWebhookJobs(ctx context.Context, params webhook
 }
 
 // requirePolicyAccess checks whether the project has the permission to the policy.
-func (n *notificationJobAPI) requirePolicyAccess(ctx context.Context, projectNameIrID interface{}, policy *policyModel.Policy) error {
+func (n *webhookJobAPI) requirePolicyAccess(ctx context.Context, projectNameIrID interface{}, policy *policyModel.Policy) error {
 	p, err := n.projectMgr.Get(ctx, projectNameIrID)
 	if err != nil {
 		return err

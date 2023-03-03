@@ -2665,8 +2665,128 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions':
+    get:
+      summary: List executions for a specific webhook policy
+      description: |
+        This endpoint returns the executions of a specific webhook policy.
+      tags:
+        - webhook
+      operationId: ListExecutionsOfWebhookPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+      responses:
+        '200':
+          description: List webhook executions success
+          headers:
+            X-Total-Count:
+              description: The total count of executions
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions/{execution_id}/tasks':
+    get:
+      summary: List tasks for a specific webhook execution
+      description: |
+        This endpoint returns the tasks of a specific webhook execution.
+      tags:
+        - webhook
+      operationId: ListTasksOfWebhookExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+      responses:
+        '200':
+          description: List tasks of webhook executions success
+          headers:
+            X-Total-Count:
+              description: The total count of tasks
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Task'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions/{execution_id}/tasks/{task_id}/log':
+    get:
+      summary: Get logs for a specific webhook task
+      description: |
+        This endpoint returns the logs of a specific webhook task.
+      tags:
+        - webhook
+      operationId: GetLogsOfWebhookTask
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Get log success
+          headers:
+            Content-Type:
+              description: Content type of response
+              type: string
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/lasttrigger':
     get:
+      deprecated: true
       summary: Get project webhook policy last trigger info
       description: |
         This endpoint returns last trigger information of project webhook policy.
@@ -2694,6 +2814,7 @@ paths:
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/jobs':
     get:
+      deprecated: true
       summary: List project webhook jobs
       description: |
         This endpoint returns webhook jobs of a project.
@@ -2746,7 +2867,7 @@ paths:
   '/projects/{project_name_or_id}/webhook/events':
     get:
       summary: Get supported event types and notify types.
-      description: Get supportted event types and notify types.
+      description: Get supported event types and notify types.
       tags:
         - webhook
       operationId: GetSupportedEventTypes
@@ -8343,7 +8464,7 @@ definitions:
         description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
   SupportedWebhookEventTypes:
     type: object
-    description: Supportted webhook event types and notify types.
+    description: Supported webhook event types and notify types.
     properties:
       event_type:
         type: array
@@ -8353,14 +8474,33 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/NotifyType'
+      payload_formats:
+        type: array
+        items:
+          $ref: '#/definitions/PayloadFormat'
   EventType:
     type: string
-    description: Webhook supportted event type.
-    example: 'pullImage'
+    description: Webhook supported event type.
+    example: 'PULL_ARTIFACT'
   NotifyType:
     type: string
-    description: Webhook supportted notify type.
+    description: Webhook supported notify type.
     example: 'http'
+  PayloadFormatType:
+    type: string
+    description: The type of webhook paylod format.
+    example: 'cloudevent'
+  PayloadFormat:
+    type: object
+    description: Webhook supported payload format type collections.
+    properties:
+      notify_type:
+        $ref: '#/definitions/NotifyType'
+      formats:
+        type: array
+        description: The supported payload formats for this notify type.
+        items:
+          $ref: '#/definitions/PayloadFormatType'
 
   WebhookTargetObject:
     type: object
@@ -8378,6 +8518,8 @@ definitions:
       skip_cert_verify:
         type: boolean
         description: Whether or not to skip cert verify.
+      payload_format:
+        $ref: '#/definitions/PayloadFormatType'
   WebhookPolicy:
     type: object
     description: The webhook policy object
