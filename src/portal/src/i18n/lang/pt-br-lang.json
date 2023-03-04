@@ -828,6 +828,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Certificado do Repositório",
         "NO_CHANGE": "Sem alterações para salvar.",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",
@@ -849,7 +850,8 @@
             "WEBHOOK_TOOLTIP": "Habilite webhooks para enviar notificações a pontos de serviços remotos quando determinados eventos ocorrerem, como pull, push, análise de imagens, etc.",
             "HOURLY_CRON": "Excutar toda hora, no início de cada hora. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Executar uma vez por semana, à meia noite de sábado para domingo. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *."
+            "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
         },
         "LDAP": {
             "URL": "URL LDAP",

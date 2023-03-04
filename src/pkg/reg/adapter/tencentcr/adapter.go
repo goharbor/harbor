@@ -170,7 +170,6 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 		Type: model.RegistryTypeTencentTcr,
 		SupportedResourceTypes: []string{
 			model.ResourceTypeImage,
-			model.ResourceTypeChart,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{

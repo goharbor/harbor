@@ -80,7 +80,7 @@ func (g *gcCtrTestSuite) TestGetExecution() {
 		{
 			ID:            1,
 			Trigger:       "Manual",
-			VendorType:    GCVendorType,
+			VendorType:    job.GarbageCollectionVendorType,
 			StatusMessage: "Success",
 		},
 	}, nil)

@@ -25,11 +25,6 @@ Create A Random Permission Item List
     ...                                    Pull Repository
     ...                                    Delete Repository
     ...                                    Delete Artifact
-    ...                                    Read Helm Chart
-    ...                                    Create Helm Chart Version
-    ...                                    Delete Helm Chart Version
-    ...                                    Create Helm Chart label
-    ...                                    Delete Helm Chart label
     ...                                    Create Tag
     ...                                    Delete Tag
     ...                                    List Tag

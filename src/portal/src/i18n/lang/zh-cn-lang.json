@@ -831,7 +831,8 @@
         "ROOT_CERT": "镜像库根证书",
         "ROOT_CERT_LINK": "下载",
         "REGISTRY_CERTIFICATE": "注册证书",
-        "NO_CHANGE": "Save abort because nothing changed",
+        "NO_CHANGE": "保存中止，因为没有变化",
+        "SKIP_SCANNER_PULL_TIME": "跳过扫描器对于拉取时间的更新",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "激活注册功能。",
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
@@ -853,7 +854,8 @@
             "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描镜像或 chart 等特定操作时，启用 webhooks 以在指定端点接收回调",
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
-            "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *"
+            "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "当镜像是由扫描器拉取时，不更新该镜像的拉取时间属性。"
         },
         "LDAP": {
             "URL": "LDAP URL",

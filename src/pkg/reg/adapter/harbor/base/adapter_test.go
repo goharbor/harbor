@@ -34,14 +34,10 @@ func TestGetAPIVersion(t *testing.T) {
 }
 
 func TestInfo(t *testing.T) {
-	// chart museum enabled
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
 		Pattern: "/api/systeminfo",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			data := `{"with_chartmuseum":true}`
-			w.Write([]byte(data))
-		},
+		Handler: func(w http.ResponseWriter, r *http.Request) {},
 	})
 	registry := &model.Registry{
 		URL: server.URL,
@@ -53,20 +49,15 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
 	assert.Equal(t, 3, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, 2, len(info.SupportedResourceTypes))
+	assert.Equal(t, 1, len(info.SupportedResourceTypes))
 	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
-	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[1])
 	assert.Equal(t, model.RepositoryPathComponentTypeAtLeastTwo, info.SupportedRepositoryPathComponentType)
 	server.Close()
 
-	// chart museum disabled
 	server = test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
 		Pattern: "/api/systeminfo",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			data := `{"with_chartmuseum":false}`
-			w.Write([]byte(data))
-		},
+		Handler: func(w http.ResponseWriter, r *http.Request) {},
 	})
 	registry = &model.Registry{
 		URL: server.URL,

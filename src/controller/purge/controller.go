@@ -29,8 +29,6 @@ import (
 const (
 	// SchedulerCallback ...
 	SchedulerCallback = "PURGE_AUDIT_LOG_CALLBACK"
-	// VendorType ...
-	VendorType = "PURGE_AUDIT_LOG"
 )
 
 // Ctrl a global purge controller instance
@@ -76,12 +74,12 @@ func (c *controller) Start(ctx context.Context, policy JobPolicy, trigger string
 	para[common.PurgeAuditRetentionHour] = policy.RetentionHour
 	para[common.PurgeAuditIncludeOperations] = policy.IncludeOperations
 
-	execID, err := c.exeMgr.Create(ctx, VendorType, -1, trigger, para)
+	execID, err := c.exeMgr.Create(ctx, job.PurgeAuditVendorType, -1, trigger, para)
 	if err != nil {
 		return -1, err
 	}
 	_, err = c.taskMgr.Create(ctx, execID, &task.Job{
-		Name: job.PurgeAudit,
+		Name: job.PurgeAuditVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

@@ -79,7 +79,6 @@ Body Of Scan Image With Empty Vul
     Go Into Project  library
     Go Into Repo  ${image_argument}
     Scan Repo  ${tag}  Succeed
-    Move To Summary Chart
     Scan Result Should Display In List Row  ${tag}  is_no_vulerabilty=${true}
     Close Browser
 
@@ -127,34 +126,6 @@ Body Of Scan Image On Push
     Go Into Repo  memcached
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
-    Close Browser
-
-Body Of List Helm Charts
-    Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
-    Create An New Project And Go Into Project  project${d}
-
-    Switch To Project Charts
-    Upload Chart files
-    Go Into Chart Version  ${prometheus_chart_name}
-    Retry Wait Until Page Contains  ${prometheus_chart_version}
-    Go Into Chart Detail  ${prometheus_chart_version}
-
-    # Summary tab
-    Retry Wait Until Page Contains Element  ${summary_markdown}
-    Retry Wait Until Page Contains Element  ${summary_container}
-
-    # Dependency tab
-    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_dependency}  Retry Wait Until Page Contains Element  ${dependency_content}
-
-    # Values tab
-    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
-
-    Go Into Project  project${d}  has_image=${false}
-    Retry Keyword N Times When Error  4  Download Chart File  ${prometheus_chart_name}  ${prometheus_chart_filename}
-    Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
 Body Of Push Signed Image
@@ -218,24 +189,6 @@ Manage Project Member Without Sign In Harbor
     User Should Not Be A Member Of Project  ${test_user1}  ${sign_in_pwd}  project${d}    is_oidc_mode=${is_oidc_mode}
     Push image  ${ip}  ${sign_in_user}  ${sign_in_pwd}  project${d}  hello-world
     User Should Be Guest  ${test_user2}  ${sign_in_pwd}  project${d}  is_oidc_mode=${is_oidc_mode}
-
-Helm CLI Push Without Sign In Harbor
-    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
-    ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project And Go Into Project  project${d}
-    Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
-    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
-    Switch To Project Charts
-    Go Into Chart Version  ${harbor_chart_name}
-    Retry Wait Until Page Contains  ${harbor_chart_version}
-
-Helm3 CLI Push Without Sign In Harbor
-    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
-    ${d}=   Get Current Date    result_format=%m%s
-    Create An New Project And Go Into Project  project${d}
-    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}  helm_cmd=helm3
-    Switch To Project Charts
-    Retry Double Keywords When Error  Go Into Chart Version  ${harbor_chart_name}  Retry Wait Until Page Contains  ${harbor_chart_version}
 
 Helm3.7 CLI Work Flow
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
@@ -487,7 +440,7 @@ Verify Webhook By Artifact Pushed Event
     [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
     Switch Window  ${webhook_handle}
     Delete All Requests
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}    
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}
     &{artifact_pushed_property}=  Create Dictionary  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
     Verify Request  &{artifact_pushed_property}
     Clean All Local Images
@@ -563,7 +516,7 @@ Verify Webhook By Replication Finished Event
     Select Rule And Replicate  ${replication_rule_name}
     Retry Wait Until Page Contains  Succeeded
     Switch Window  ${webhook_handle}
-    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}  
+    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
     Verify Request  &{replication_finished_property}
 
 Verify Webhook By Quota Near Threshold Event And Quota Exceed Event

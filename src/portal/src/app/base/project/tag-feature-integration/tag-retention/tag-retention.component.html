@@ -1,6 +1,6 @@
 <div class="clr-row pt-1 fw8">
     <div class="clr-col">
-        <label class="label-left font-size-54">{{
+        <label class="label-left font-style">{{
             'TAG_RETENTION.RETENTION_RULES' | translate
         }}</label
         ><span class="badge badge-3 ml-5"
@@ -168,7 +168,6 @@
 </div>
 <div class="cron-selection">
     <cron-selection
-        class="w-100"
         [labelWidth]="'150px'"
         [disabled]="!(retention?.rules?.length > 0)"
         #cronScheduleComponent
@@ -176,10 +175,18 @@
         [labelEdit]="label"
         [originCron]="originCron()"
         (inputvalue)="openConfirm($event)"></cron-selection>
+    <ng-container *ngIf="retention?.trigger?.settings?.next_scheduled_time">
+        <span class="ml-1 mr-1 font-style">{{
+            'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
+        }}</span>
+        <span>{{
+            retention?.trigger?.settings?.next_scheduled_time | harborDatetime
+        }}</span>
+    </ng-container>
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col-2 pt-2 flex-150">
-        <label class="label-left font-size-54">{{
+        <label class="label-left font-style">{{
             'TAG_RETENTION.RETENTION_RUNS' | translate
         }}</label>
     </div>

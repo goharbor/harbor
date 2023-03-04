@@ -33,7 +33,7 @@ import (
 
 func init() {
 	// keep only the latest created 50 retention execution records
-	task.SetExecutionSweeperCount(job.Retention, 50)
+	task.SetExecutionSweeperCount(job.RetentionVendorType, 50)
 }
 
 // go:generate mockery -name Controller -case snake
@@ -86,7 +86,7 @@ type defaultController struct {
 const (
 	// SchedulerCallback ...
 	SchedulerCallback   = "RETENTION"
-	schedulerVendorType = job.Retention
+	schedulerVendorType = job.RetentionVendorType
 )
 
 // TriggerParam ...
@@ -207,7 +207,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 func (r *defaultController) deleteExecs(ctx context.Context, vendorID int64) error {
 	executions, err := r.execMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType": job.Retention,
+			"VendorType": job.RetentionVendorType,
 			"VendorID":   vendorID,
 		},
 	})
@@ -232,7 +232,7 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		return 0, err
 	}
 
-	id, err := r.execMgr.Create(ctx, job.Retention, policyID, trigger,
+	id, err := r.execMgr.Create(ctx, job.RetentionVendorType, policyID, trigger,
 		map[string]interface{}{
 			"dry_run": dryRun,
 		},
@@ -284,7 +284,7 @@ func (r *defaultController) GetRetentionExec(ctx context.Context, executionID in
 // ListRetentionExecs List Retention Executions
 func (r *defaultController) ListRetentionExecs(ctx context.Context, policyID int64, query *q.Query) ([]*retention.Execution, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Retention
+	query.Keywords["VendorType"] = job.RetentionVendorType
 	query.Keywords["VendorID"] = policyID
 	execs, err := r.execMgr.List(ctx, query)
 	if err != nil {
@@ -314,7 +314,7 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 func (r *defaultController) GetTotalOfRetentionExecs(ctx context.Context, policyID int64) (int64, error) {
 	return r.execMgr.Count(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType": job.Retention,
+			"VendorType": job.RetentionVendorType,
 			"VendorID":   policyID,
 		},
 	})
@@ -323,7 +323,7 @@ func (r *defaultController) GetTotalOfRetentionExecs(ctx context.Context, policy
 // ListRetentionExecTasks List Retention Execution Histories
 func (r *defaultController) ListRetentionExecTasks(ctx context.Context, executionID int64, query *q.Query) ([]*retention.Task, error) {
 	query = q.MustClone(query)
-	query.Keywords["VendorType"] = job.Retention
+	query.Keywords["VendorType"] = job.RetentionVendorType
 	query.Keywords["ExecutionID"] = executionID
 	tks, err := r.taskMgr.List(ctx, query)
 	if err != nil {
@@ -355,7 +355,7 @@ func convertTask(t *task.Task) *retention.Task {
 func (r *defaultController) GetTotalOfRetentionExecTasks(ctx context.Context, executionID int64) (int64, error) {
 	return r.taskMgr.Count(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType":  job.Retention,
+			"VendorType":  job.RetentionVendorType,
 			"ExecutionID": executionID,
 		},
 	})

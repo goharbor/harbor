@@ -529,7 +529,7 @@ Test Case - Copy A Image And Accessory
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
     Docker Logout  ${ip}
     Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
-    
+
     Copy Image  ${tag}  ${target_project}  ${image}
     Retry Wait Until Page Contains  Copy artifact successfully
 
@@ -710,29 +710,6 @@ Test Case - Push Docker Manifest Index and Display
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
     Go Into Index And Contain Artifacts  index_tag${d}  total_artifact_count=2
-    Close Browser
-
-Test Case - Push Helm Chart and Display
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${chart_file}=  Set Variable  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
-    ${archive}=  Set Variable  harbor/
-    ${verion}=  Set Variable  0.2.0
-    ${repo_name}=  Set Variable  harbor_chart_test
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
-    Create An New Project And Go Into Project  test${d}
-
-    Retry Action Keyword  Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/${repo_name}
-
-    Go Into Repo  test${d}/${repo_name}
-    Wait Until Page Contains  ${repo_name}
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/${repo_name}
-    Retry Double Keywords When Error  Go Into Repo  test${d}/${repo_name}  Page Should Contain Element  ${tag_table_column_vulnerabilities}
     Close Browser
 
 Test Case - Can Not Copy Image In ReadOnly Mode
@@ -1030,3 +1007,11 @@ Test Case - Export CVE
     ${actual_cve_data}=  Split To Lines  @{csv_file_content}  1
     Lists Should Be Equal  ${expected_cve_data}  ${actual_cve_data}  ignore_order=True
     Close Browser
+
+Test Case - Helm3.7 CLI Push And Pull In Harbor
+    [Tags]  helm_push_and_push
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}

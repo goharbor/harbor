@@ -333,7 +333,7 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 		return nil
 	}
 	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]interface{}{
-		"vendor_type": job.P2PPreheat,
+		"vendor_type": job.P2PPreheatVendorType,
 		"vendor_id":   policy.ID,
 	}})
 	if err != nil {
@@ -654,7 +654,7 @@ func (api *preheatAPI) ListExecutions(ctx context.Context, params operation.List
 	}
 
 	if query != nil {
-		query.Keywords["vendor_type"] = job.P2PPreheat
+		query.Keywords["vendor_type"] = job.P2PPreheatVendorType
 		query.Keywords["vendor_id"] = policy.ID
 	}
 
@@ -822,7 +822,7 @@ func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNam
 		return err
 	}
 
-	if exec != nil && exec.VendorType == job.P2PPreheat && exec.VendorID == plc.ID {
+	if exec != nil && exec.VendorType == job.P2PPreheatVendorType && exec.VendorID == plc.ID {
 		return nil
 	}
 

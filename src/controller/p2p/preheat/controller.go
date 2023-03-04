@@ -292,7 +292,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		len(schema.Trigger.Settings.Cron) > 0 {
 		// schedule and update policy
 		extras := make(map[string]interface{})
-		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheat, id, "", schema.Trigger.Settings.Cron,
+		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheatVendorType, id, "", schema.Trigger.Settings.Cron,
 			SchedulerCallback, TriggerParam{PolicyID: id}, extras); err != nil {
 			return 0, err
 		}
@@ -302,7 +302,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		}
 
 		if err != nil {
-			if e := c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, id); e != nil {
+			if e := c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheatVendorType, id); e != nil {
 				return 0, errors.Wrap(e, err.Error())
 			}
 
@@ -375,7 +375,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// unschedule old
 	if needUn {
-		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, schema.ID)
+		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheatVendorType, schema.ID)
 		if err != nil {
 			return err
 		}
@@ -384,7 +384,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 	// schedule new
 	if needSch {
 		extras := make(map[string]interface{})
-		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheat, schema.ID, "", cron, SchedulerCallback,
+		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheatVendorType, schema.ID, "", cron, SchedulerCallback,
 			TriggerParam{PolicyID: schema.ID}, extras); err != nil {
 			return err
 		}
@@ -408,7 +408,7 @@ func (c *controller) DeletePolicy(ctx context.Context, id int64) error {
 		return err
 	}
 	if s.Trigger != nil && s.Trigger.Type == policyModels.TriggerTypeScheduled && len(s.Trigger.Settings.Cron) > 0 {
-		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheat, id)
+		err = c.scheduler.UnScheduleByVendor(ctx, job.P2PPreheatVendorType, id)
 		if err != nil {
 			return err
 		}
@@ -440,7 +440,7 @@ func (c *controller) DeletePoliciesOfProject(ctx context.Context, project int64)
 func (c *controller) deleteExecs(ctx context.Context, vendorID int64) error {
 	executions, err := c.executionMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"VendorType": job.P2PPreheat,
+			"VendorType": job.P2PPreheatVendorType,
 			"VendorID":   vendorID,
 		},
 	})

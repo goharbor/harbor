@@ -99,6 +99,9 @@ func (a *Handler) IsStateful() bool {
 }
 
 func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error {
+	if config.ScannerSkipUpdatePullTime(ctx) && isScannerUser(ctx, event) {
+		return nil
+	}
 	// if duration is equal to 0 or negative, keep original sync mode.
 	if asyncFlushDuration <= 0 {
 		var tagName string
@@ -239,4 +242,24 @@ func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error 
 	}()
 
 	return nil
+}
+
+// isScannerUser check if the current user is a scanner user by its prefix
+// usually a scanner user should be named like `robot$<projectName>+<Scanner UUID (8byte)>-<Scanner Name>-<UUID>`
+// verify it by the prefix `robot$<projectName>+<Scanner UUID (8byte)>`
+func isScannerUser(ctx context.Context, event *event.ArtifactEvent) bool {
+	if len(event.Operator) == 0 {
+		return false
+	}
+	robotPrefix := config.RobotPrefix(ctx)
+	scannerPrefix := config.ScannerRobotPrefix(ctx)
+	prefix := fmt.Sprintf("%s%s+%s", robotPrefix, parseProjectName(event.Repository), scannerPrefix)
+	return strings.HasPrefix(event.Operator, prefix)
+}
+
+func parseProjectName(repoName string) string {
+	if strings.Contains(repoName, "/") {
+		return strings.Split(repoName, "/")[0]
+	}
+	return ""
 }

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -290,6 +291,9 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params operation.SearchUsers
 		m := &model.User{User: us}
 		result = append(result, m.ToSearchRespItem())
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return utils.MostMatchSorter(result[i].Username, result[j].Username, params.Username)
+	})
 	return operation.NewSearchUsersOK().
 		WithXTotalCount(total).
 		WithPayload(result).

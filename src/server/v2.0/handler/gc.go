@@ -11,6 +11,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/gc"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -161,7 +162,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 		}
 		hs = append(hs, &model.GCHistory{
 			ID:         exec.ID,
-			Name:       gc.GCVendorType,
+			Name:       job.GarbageCollectionVendorType,
 			Kind:       exec.Trigger,
 			Parameters: string(extraAttrsString),
 			Schedule: &model.ScheduleParam{
@@ -200,7 +201,7 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 
 	res := &model.GCHistory{
 		ID:         exec.ID,
-		Name:       gc.GCVendorType,
+		Name:       job.GarbageCollectionVendorType,
 		Kind:       exec.Trigger,
 		Parameters: string(extraAttrsString),
 		Status:     exec.Status,

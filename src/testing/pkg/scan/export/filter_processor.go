@@ -38,29 +38,6 @@ func (_m *FilterProcessor) ProcessLabelFilter(ctx context.Context, labelIDs []in
 	return r0, r1
 }
 
-// ProcessProjectFilter provides a mock function with given fields: ctx, userName, projectsToFilter
-func (_m *FilterProcessor) ProcessProjectFilter(ctx context.Context, userName string, projectsToFilter []int64) ([]int64, error) {
-	ret := _m.Called(ctx, userName, projectsToFilter)
-
-	var r0 []int64
-	if rf, ok := ret.Get(0).(func(context.Context, string, []int64) []int64); ok {
-		r0 = rf(ctx, userName, projectsToFilter)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int64)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, []int64) error); ok {
-		r1 = rf(ctx, userName, projectsToFilter)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ProcessRepositoryFilter provides a mock function with given fields: ctx, filter, projectIds
 func (_m *FilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error) {
 	ret := _m.Called(ctx, filter, projectIds)

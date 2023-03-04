@@ -9,7 +9,7 @@ This file lists all the files that are referring the swagger yaml file.
 - docs/configure_swagger.md
   - `https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml`
 - make/photon/portal/Dockerfile
-  - `COPY ./api/harbor/swagger.yaml /build_dir`
+  - `COPY ./api/v2.0/swagger.yaml /build_dir/swagger.yaml`
 - tests/swaggerchecker.sh
   - `HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_REPO_SLUG/$TRAVIS_COMMIT/api/harbor/swagger.yaml"`
   - else `HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_PULL_REQUEST_SLUG/$TRAVIS_PULL_REQUEST_SHA/api/harbor/swagger.yaml"`

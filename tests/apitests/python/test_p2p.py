@@ -15,7 +15,6 @@ from library.registry import Registry
 from library.repository import pull_harbor_image
 from library.artifact import Artifact
 from library.preheat import Preheat
-import library.containerd
 import v2_swagger_client
 
 class TestP2P(unittest.TestCase):

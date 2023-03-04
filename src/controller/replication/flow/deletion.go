@@ -74,7 +74,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 		}
 
 		job := &task.Job{
-			Name: job.Replication,
+			Name: job.ReplicationVendorType,
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},

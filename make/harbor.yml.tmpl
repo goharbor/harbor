@@ -56,7 +56,7 @@ data_volume: /data
 # Uncomment storage_service setting If you want to using external storage
 # storage_service:
 #   # ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
-#   # of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
+#   # of registry's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
 #   ca_bundle:
 
 #   # storage backend, default is filesystem, options include filesystem, azure, gcs, s3, swift and oss
@@ -116,10 +116,6 @@ jobservice:
 notification:
   # Maximum retry count for webhook job
   webhook_job_max_retry: 10
-
-chart:
-  # Change the value of absolute_url to enabled can enable absolute url in chart
-  absolute_url: disabled
 
 # Log configurations
 log:
@@ -187,7 +183,6 @@ _version: 2.7.0
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2
-#   chartmuseum_db_index: 3
 #   trivy_db_index: 5
 #   idle_timeout_seconds: 30
 

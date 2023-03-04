@@ -49,21 +49,6 @@ func TestParseParam(t *testing.T) {
 	assert.Equal(t, "tom", p.Name)
 }
 
-func TestParseParams(t *testing.T) {
-	params := map[string]interface{}{
-		"src_resource":  `{"type":"chart"}`,
-		"dst_resource":  `{"type":"chart"}`,
-		"speed":         1024,
-		"copy_by_chunk": true,
-	}
-	res, dst, opts, err := parseParams(params)
-	require.Nil(t, err)
-	assert.Equal(t, "chart", string(res.Type))
-	assert.Equal(t, "chart", string(dst.Type))
-	assert.Equal(t, int32(1024), opts.Speed)
-	assert.True(t, opts.CopyByChunk)
-}
-
 func TestMaxFails(t *testing.T) {
 	rep := &Replication{}
 	assert.Equal(t, uint(3), rep.MaxFails())

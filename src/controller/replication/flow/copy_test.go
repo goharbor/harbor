@@ -43,16 +43,6 @@ func (c *copyFlowTestSuite) TestRun() {
 	}, nil)
 	adp.On("FetchArtifacts", mock.Anything).Return([]*model.Resource{
 		{
-			Type: model.ResourceTypeChart,
-			Metadata: &model.ResourceMetadata{
-				Repository: &model.Repository{
-					Name: "library/hello-world",
-				},
-				Vtags: []string{"latest"},
-			},
-			Override: false,
-		},
-		{
 			Type: model.ResourceTypeArtifact,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
@@ -61,7 +51,6 @@ func (c *copyFlowTestSuite) TestRun() {
 				Vtags: []string{"latest"},
 			},
 			Override: false,
-			Skip:     true,
 		},
 	}, nil)
 	adp.On("PrepareForPush", mock.Anything).Return(nil)

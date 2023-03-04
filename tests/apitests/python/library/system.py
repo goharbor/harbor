@@ -3,8 +3,8 @@
 import time
 import re
 import base
-import swagger_client
-from swagger_client.rest import ApiException
+import v2_swagger_client
+from v2_swagger_client.rest import ApiException
 
 class System(base.Base):
     def get_gc_history(self, expect_status_code = 200, expect_response_body = None, **kwargs):
@@ -73,8 +73,8 @@ class System(base.Base):
 
     def set_cve_allowlist(self, expires_at=None, expected_status_code=200, *cve_ids, **kwargs):
         client = self._get_client(**kwargs)
-        cve_list = [swagger_client.CVEAllowlistItem(cve_id=c) for c in cve_ids]
-        allowlist = swagger_client.CVEAllowlist(expires_at=expires_at, items=cve_list)
+        cve_list = [v2_swagger_client.CVEAllowlistItem(cve_id=c) for c in cve_ids]
+        allowlist = v2_swagger_client.CVEAllowlist(expires_at=expires_at, items=cve_list)
         try:
             r = client.system_cve_allowlist_put_with_http_info(allowlist=allowlist, _preload_content=False)
         except Exception as e:

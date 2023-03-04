@@ -812,6 +812,7 @@
         "GC": "Garbage Collection",
         "REGISTRY_CERTIFICATE": "Certificat du registre",
         "NO_CHANGE": "Enregistrement abandonné, rien n'a changé",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activer l'inscription.",
             "SELF_REGISTRATION_DISABLE": "Désactiver l'inscription.",
@@ -832,7 +833,8 @@
             "WEBHOOK_TOOLTIP": "Activez les webhooks pour recevoir des callbacks à vos endpoint désignés lorsque certaines actions telles que l'image ou le chart est poussé, tiré, supprimé, scanné sont effectuées",
             "HOURLY_CRON": "Exécuter une fois par heure, au début de l'heure. Équivalent à 0 0 * * * *.",
             "WEEKLY_CRON": "Exécuter une fois par semaine, à minuit entre Sam. et Dim. Équivalent à 0 0 0 * * 0.",
-            "DAILY_CRON": "Exécuter une fois par jour, à minuit. Équivalent à 0 0 0 * * *."
+            "DAILY_CRON": "Exécuter une fois par jour, à minuit. Équivalent à 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
         },
         "LDAP": {
             "URL": "URL LDAP",

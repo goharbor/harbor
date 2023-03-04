@@ -65,7 +65,7 @@ type injectVendorType struct{}
 // injectVendorType injects vendor type to request header.
 func (i *injectVendorType) Modify(req *http.Request) error {
 	if req != nil {
-		req.Header.Set("VendorType", job.Retention)
+		req.Header.Set("VendorType", job.RetentionVendorType)
 	}
 
 	return nil

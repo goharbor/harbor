@@ -7,7 +7,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v6.0.1
+      - uses: actions/stale@v7.0.0
         with:
           stale-issue-message: 'This issue is being marked stale due to a period of inactivity. If this issue is still relevant, please comment or remove the stale label. Otherwise, this issue will close in 30 days.'
           stale-pr-message: 'This PR is being marked stale due to a period of inactivty. If this PR is still relevant, please comment or remove the stale label. Otherwise, this PR will close in 30 days.'

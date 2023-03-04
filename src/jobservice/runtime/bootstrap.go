@@ -314,23 +314,23 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:           (*scan.Job)(nil),
-			job.PurgeAudit:             (*purge.Job)(nil),
-			job.GarbageCollection:      (*gc.GarbageCollector)(nil),
-			job.Replication:            (*replication.Replication)(nil),
-			job.Retention:              (*retention.Job)(nil),
-			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
-			job.WebhookJob:             (*notification.WebhookJob)(nil),
-			job.SlackJob:               (*notification.SlackJob)(nil),
-			job.P2PPreheat:             (*preheat.Job)(nil),
-			job.ScanDataExport:         (*scandataexport.ScanDataExport)(nil),
+			job.ImageScanJobVendorType:      (*scan.Job)(nil),
+			job.PurgeAuditVendorType:        (*purge.Job)(nil),
+			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
+			job.ReplicationVendorType:       (*replication.Replication)(nil),
+			job.RetentionVendorType:         (*retention.Job)(nil),
+			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
+			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),
+			job.SlackJobVendorType:          (*notification.SlackJob)(nil),
+			job.P2PPreheatVendorType:        (*preheat.Job)(nil),
+			job.ScanDataExportVendorType:    (*scandataexport.ScanDataExport)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases
-			"IMAGE_REPLICATE":         (*legacy.ReplicationScheduler)(nil),
-			"IMAGE_GC":                (*legacy.GarbageCollectionScheduler)(nil),
-			"IMAGE_SCAN_ALL":          (*legacy.ScanAllScheduler)(nil),
-			job.SystemArtifactCleanup: (*systemartifact.Cleanup)(nil),
+			"IMAGE_REPLICATE":                   (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":                          (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":                    (*legacy.ScanAllScheduler)(nil),
+			job.SystemArtifactCleanupVendorType: (*systemartifact.Cleanup)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
