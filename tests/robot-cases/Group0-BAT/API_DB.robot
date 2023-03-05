@@ -88,10 +88,6 @@ Test Case - Push Index By Docker Manifest
     [Tags]  push_index
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
 
-Test Case - Push Chart By Helm3 Chart CLI
-    [Tags]  push_chart
-    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
-
 Test Case - Push Chart By Helm3.7 Chart CLI
     [Tags]  push_chart_by_Helm3.7
     Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3.7_chart_cli.py

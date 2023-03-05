@@ -18,11 +18,6 @@ Library  OperatingSystem
 Library  Process
 
 *** Keywords ***
-Prepare Helm Plugin
-    Wait Unitl Command Success  helm init --stable-repo-url https://charts.helm.sh/stable --client-only
-    Wait Unitl Command Success  helm plugin install https://github.com/chartmuseum/helm-push
-    Wait Unitl Command Success  helm3 plugin install https://github.com/chartmuseum/helm-push
-
 Helm3.7 Registry Login
     [Arguments]  ${ip}  ${user}  ${password}
     Wait Unitl Command Success  helm3.7 registry login ${ip} -u ${user} -p ${password}

@@ -31,3 +31,8 @@ ${tag_name_xpath}          xpath=//*[@id='name']
 ${add_ok_button}           xpath=//*[@id='add-ok']
 ${delete_tag_button}       xpath=//*[@id='delete-tag']
 ${dialog_delete_button}    xpath=//clr-modal//button[contains(.,'DELETE')]
+
+${harbor_helm_name}  harbor-helm-1.7.3
+${harbor_helm_filename}  harbor-helm-1.7.3.tar.gz
+${harbor_helm_version}  1.7.3
+${harbor_helm_package}  harbor-1.7.3.tgz

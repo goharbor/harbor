@@ -17,14 +17,12 @@ describe('ListProjectROComponent', () => {
     let fixture: ComponentFixture<TestHostComponent>;
     const mockedProjects: Project[] = [
         {
-            chart_count: 0,
             name: 'test1',
             metadata: {},
             project_id: 1,
             repo_count: 1,
         },
         {
-            chart_count: 0,
             name: 'test2',
             metadata: {},
             project_id: 2,

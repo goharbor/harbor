@@ -15,7 +15,6 @@ from library.repository import push_self_build_image_to_project
 from library.base import _assert_status_code
 from library.scan import Scan
 from library.label import Label
-import library.helm
 import base
 import v2_swagger_client
 class TestRobotAccount(unittest.TestCase):
