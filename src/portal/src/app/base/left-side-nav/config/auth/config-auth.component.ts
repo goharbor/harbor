@@ -236,6 +236,7 @@ export class ConfigurationAuthComponent implements OnInit {
                 prop.startsWith('oidc_') ||
                 prop === 'auth_mode' ||
                 prop === 'project_creattion_restriction' ||
+                prop === 'primary_auth_mode' ||
                 prop === 'self_registration' ||
                 prop.startsWith('http_')
             ) {

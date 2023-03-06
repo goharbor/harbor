@@ -27,6 +27,7 @@ const MAX_NUMBER: number = 500;
 const MAX_SAVING_TIME: number = 1000 * 60 * 60 * 24 * 30; // 30 days
 const TIMEOUT = 7000;
 const FILE_NAME_PREFIX: string = 'csv_file_';
+const RETRY_TIMES: number = 50;
 @Component({
     selector: 'hbr-operation-model',
     templateUrl: './operation.component.html',
@@ -34,7 +35,6 @@ const FILE_NAME_PREFIX: string = 'csv_file_';
     animations: [SlideInOutAnimation],
 })
 export class OperationComponent implements OnInit, OnDestroy {
-    fileNamePrefix: string = FILE_NAME_PREFIX;
     batchInfoSubscription: Subscription;
     resultLists: OperateInfo[] = [];
     exportJobs: OperateInfo[] = [];
@@ -59,6 +59,7 @@ export class OperationComponent implements OnInit, OnDestroy {
     }
     timeout;
     refreshExportJobSub: Subscription;
+    retryTimes: number = RETRY_TIMES;
     constructor(
         private session: SessionService,
         private operationService: OperationService,
@@ -74,7 +75,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                     if (this.animationState === 'out') {
                         this._newMessageCount += 1;
                     }
-                    this.refreshExportJobs();
+                    this.refreshExportJobs(false);
                 }
             );
         }
@@ -148,7 +149,7 @@ export class OperationComponent implements OnInit, OnDestroy {
 
     init() {
         if (this.session.getCurrentUser()) {
-            this.refreshExportJobs();
+            this.refreshExportJobs(false);
             const operationInfosString: string = localStorage.getItem(
                 `${OPERATION_KEY}-${this.session.getCurrentUser().user_id}`
             );
@@ -248,6 +249,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                 daysAgo
             );
         });
+        this.refreshExportJobs(false);
     }
 
     calculateTime(
@@ -268,8 +270,13 @@ export class OperationComponent implements OnInit, OnDestroy {
             return s;
         }
     }
-    refreshExportJobs() {
+    refreshExportJobs(isRetry: boolean) {
         if (this.session.getCurrentUser()) {
+            if (isRetry) {
+                this.retryTimes--;
+            } else {
+                this.retryTimes = RETRY_TIMES;
+            }
             this.scanDataExportService
                 .getScanDataExportExecutionList()
                 .subscribe(res => {
@@ -300,9 +307,13 @@ export class OperationComponent implements OnInit, OnDestroy {
                             }
                         });
                         this.refreshTimestampForExportJob();
-                        if (flag) {
+                        if (flag && this.retryTimes > 0) {
+                            if (this.timeout) {
+                                clearTimeout(this.timeout);
+                                this.timeout = null;
+                            }
                             this.timeout = setTimeout(() => {
-                                this.refreshExportJobs();
+                                this.refreshExportJobs(true);
                             }, TIMEOUT);
                         }
                     }
@@ -346,7 +357,7 @@ export class OperationComponent implements OnInit, OnDestroy {
                 .subscribe(
                     res => {
                         downloadCVEs(res, info.data.name);
-                        this.refreshExportJobs();
+                        this.refreshExportJobs(false);
                     },
                     error => {
                         this.msgHandler.error(error);

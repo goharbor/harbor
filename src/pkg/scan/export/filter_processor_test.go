@@ -3,21 +3,15 @@ package export
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
-	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/artifact"
-	project3 "github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/tag"
-	"github.com/goharbor/harbor/src/lib/q"
 	artpkg "github.com/goharbor/harbor/src/pkg/artifact"
 	labelmodel "github.com/goharbor/harbor/src/pkg/label/model"
-	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	artifactctl "github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -51,70 +45,6 @@ func (suite *FilterProcessorTestSuite) SetupTest() {
 		usrMgr:     suite.usrMgr,
 		projectMgr: suite.projectMgr,
 	}
-}
-
-func (suite *FilterProcessorTestSuite) TestProcessProjectFilter() {
-	project1 := &models.Project{ProjectID: 1}
-
-	project2 := &models.Project{ProjectID: 2}
-
-	// no filtered projects returns all projects
-	{
-		suite.usrMgr.On("GetByName", mock.Anything, "test-user").Return(&commonmodels.User{UserID: 1}, nil).Once()
-		suite.projectMgr.On("List", mock.Anything, mock.Anything).Return([]*models.Project{project1, project2}, nil).Once()
-		projectIds, err := suite.filterProcessor.ProcessProjectFilter(context.TODO(), "test-user", []int64{})
-		suite.Equal(2, len(projectIds))
-		suite.NoError(err)
-	}
-
-	// filtered project
-	{
-		suite.usrMgr.On("GetByName", mock.Anything, "test-user").Return(&commonmodels.User{UserID: 1}, nil).Once()
-		suite.projectMgr.On("List", mock.Anything, mock.Anything).Return([]*models.Project{project1, project2}, nil).Once()
-		projectIds, err := suite.filterProcessor.ProcessProjectFilter(context.TODO(), "test-user", []int64{1})
-		suite.Equal(1, len(projectIds))
-		suite.Equal(int64(1), projectIds[0])
-		suite.NoError(err)
-	}
-
-	// filtered project with group ids
-	{
-		groupIDs := []int{4, 5}
-		suite.usrMgr.On("GetByName", mock.Anything, "test-user").Return(&commonmodels.User{UserID: 1, GroupIDs: groupIDs}, nil).Once()
-		suite.projectMgr.On("List", mock.Anything, mock.Anything).Return([]*models.Project{project1, project2}, nil).Once()
-		projectIds, err := suite.filterProcessor.ProcessProjectFilter(context.TODO(), "test-user", []int64{1})
-		suite.Equal(1, len(projectIds))
-		suite.Equal(int64(1), projectIds[0])
-		suite.NoError(err)
-		memberQueryMatcher := testifymock.MatchedBy(func(query *q.Query) bool {
-			memberQuery := query.Keywords["member"].(*project3.MemberQuery)
-			return len(memberQuery.GroupIDs) == 2 && reflect.DeepEqual(memberQuery.GroupIDs, groupIDs) && memberQuery.Role == 0
-		})
-		suite.projectMgr.AssertCalled(suite.T(), "List", mock.Anything, memberQueryMatcher)
-	}
-
-	// project listing for admin user
-	{
-		suite.usrMgr.On("GetByName", mock.Anything, "test-user").Return(&commonmodels.User{UserID: 1, SysAdminFlag: true}, nil).Once()
-		suite.projectMgr.On("List", mock.Anything, mock.Anything).Return([]*models.Project{project1, project2}, nil).Once()
-		_, err := suite.filterProcessor.ProcessProjectFilter(context.TODO(), "test-user", []int64{1})
-		suite.NoError(err)
-		queryArgumentMatcher := testifymock.MatchedBy(func(query *q.Query) bool {
-			return len(query.Keywords) == 0
-		})
-		suite.projectMgr.AssertCalled(suite.T(), "List", mock.Anything, queryArgumentMatcher)
-	}
-
-	// project listing returns an error
-	// filtered project
-	{
-		suite.usrMgr.On("GetByName", mock.Anything, "test-user").Return(&commonmodels.User{UserID: 1}, nil).Once()
-		suite.projectMgr.On("List", mock.Anything, mock.Anything).Return(nil, errors.New("test-error")).Once()
-		projectIds, err := suite.filterProcessor.ProcessProjectFilter(context.TODO(), "test-user", []int64{1})
-		suite.Error(err)
-		suite.Nil(projectIds)
-	}
-
 }
 
 func (suite *FilterProcessorTestSuite) TestProcessRepositoryFilter() {

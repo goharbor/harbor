@@ -53,9 +53,6 @@
     <clr-dg-column>{{ 'PROJECT.ROLE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'PROJECT.TYPE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'PROJECT.REPO_COUNT' | translate }}</clr-dg-column>
-    <clr-dg-column *ngIf="withChartMuseum">{{
-        'PROJECT.CHART_COUNT' | translate
-    }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'creation_time'">{{
         'PROJECT.CREATION_TIME' | translate
     }}</clr-dg-column>
@@ -83,7 +80,6 @@
             projectTypeMap[p.registry_id ? 1 : 0] | translate
         }}</clr-dg-cell>
         <clr-dg-cell>{{ p.repo_count }}</clr-dg-cell>
-        <clr-dg-cell *ngIf="withChartMuseum">{{ p.chart_count }}</clr-dg-cell>
         <clr-dg-cell>{{
             p.creation_time | harborDatetime: 'short'
         }}</clr-dg-cell>

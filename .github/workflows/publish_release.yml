@@ -19,7 +19,7 @@ jobs:
           echo "PRE_TAG=$(echo $release | jq -r '.body' | jq -r '.preTag')" >> $GITHUB_ENV
           echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
-      - uses: 'google-github-actions/auth@v0'
+      - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v0
@@ -52,7 +52,7 @@ jobs:
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@1.0.11
         with:
-          docker_version: 18.09
+          docker_version: 20.10
           docker_channel: stable
       - name: Publish Images
         run: |

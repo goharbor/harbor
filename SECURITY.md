@@ -23,7 +23,7 @@ Provide a descriptive subject line and in the body of the email include the foll
  
 ## When to report a vulnerability
 * When you think Harbor has a potential security vulnerability.
-* When you suspect a potential vulnerability but you are unsure that it impacts Harbor.
+* When you suspect a potential vulnerability, but you are unsure that it impacts Harbor.
 * When you know of or suspect a potential vulnerability on another project that is used by Harbor. For example Harbor has a dependency on Docker, PGSql, Redis, Notary, Trivy, etc.
   
 ## Patch, Release, and Disclosure
@@ -59,7 +59,7 @@ To be eligible to join the cncf-harbor-distributors-announce@lists.cncf.io maili
 4. Not be a downstream or rebuild of another distributor.
 5. Be a participant and active contributor in the Harbor community.
 6. Accept the Embargo Policy that is outlined below. 
-7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
+7. Has someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
 
 **The terms and conditions of the Embargo Policy apply to all members of this mailing list. A request for membership represents your acceptance to the terms and conditions of the Embargo Policy**
 

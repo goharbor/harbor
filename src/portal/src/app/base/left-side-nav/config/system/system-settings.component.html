@@ -194,7 +194,7 @@
                 >
             </div>
         </div>
-        <clr-checkbox-container>
+        <clr-checkbox-container class="center">
             <label id="repo_read_only_lbl" for="repoReadOnly"
                 >{{ 'CONFIG.REPO_READ_ONLY' | translate }}
                 <clr-tooltip>
@@ -250,6 +250,39 @@
                     [ngModel]="currentConfig.notification_enable.value"
                     (ngModelChange)="setWebhookNotificationEnabledValue($event)"
                     [disabled]="!currentConfig.notification_enable.editable" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container class="center">
+            <label for="scannerSkipUpdatePullTime"
+                >{{ 'CONFIG.SKIP_SCANNER_PULL_TIME' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.SKIP_SCANNER_PULL_TIME_TOOLTIP'
+                                | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="scannerSkipUpdatePullTime"
+                    id="scannerSkipUpdatePullTime"
+                    [(ngModel)]="
+                        currentConfig.scanner_skip_update_pulltime.value
+                    "
+                    [disabled]="
+                        !currentConfig.scanner_skip_update_pulltime.editable
+                    " />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
         <clr-input-container>

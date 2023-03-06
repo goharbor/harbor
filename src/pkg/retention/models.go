@@ -24,7 +24,6 @@ const (
 	ExecutionStatusStopped    string = "Stopped"
 
 	CandidateKindImage string = "image"
-	CandidateKindChart string = "chart"
 
 	ExecutionTriggerManual   string = "Manual"
 	ExecutionTriggerSchedule string = "Schedule"

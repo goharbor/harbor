@@ -132,7 +132,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 		}
 
 		job := &task.Job{
-			Name: job.Replication,
+			Name: job.ReplicationVendorType,
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},

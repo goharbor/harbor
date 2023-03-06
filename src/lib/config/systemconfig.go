@@ -30,7 +30,6 @@ package config
 
 import (
 	"context"
-	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -152,21 +151,6 @@ func WithTrivy() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
 }
 
-// WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
-func WithChartMuseum() bool {
-	return DefaultMgr().Get(backgroundCtx, common.WithChartMuseum).GetBool()
-}
-
-// GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
-// otherwise an non nil error is returned
-func GetChartMuseumEndpoint() (string, error) {
-	chartEndpoint := strings.TrimSpace(DefaultMgr().Get(backgroundCtx, common.ChartRepoURL).GetString())
-	if len(chartEndpoint) == 0 {
-		return "", errors.New("empty chartmuseum endpoint")
-	}
-	return chartEndpoint, nil
-}
-
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	return DefaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
@@ -267,6 +251,14 @@ func CacheExpireHours() int {
 	}
 
 	return hours
+}
+
+// ScannerRobotPrefix returns the scanner of robot account prefix.
+func ScannerRobotPrefix(ctx context.Context) string {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(ctx, common.RobotScannerNamePrefix).GetString()
+	}
+	return os.Getenv("ROBOT_SCANNER_NAME_PREFIX")
 }
 
 // Database returns database settings

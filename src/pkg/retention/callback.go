@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	if err := task.RegisterCheckInProcessor(job.Retention, retentionTaskCheckInProcessor); err != nil {
+	if err := task.RegisterCheckInProcessor(job.RetentionVendorType, retentionTaskCheckInProcessor); err != nil {
 		log.Fatalf("failed to register the checkin processor for the retention job, error %v", err)
 	}
 }

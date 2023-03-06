@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -82,6 +82,9 @@ type Configuration struct {
 
 	// Metric configurations
 	Metric *MetricConfig `yaml:"metric,omitempty"`
+
+	// MaxLogSizeReturnedMB is the max size of log returned by job log API
+	MaxLogSizeReturnedMB int `yaml:"max_retrieve_size_mb,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol

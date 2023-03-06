@@ -84,10 +84,6 @@ export class NavigatorComponent implements OnInit {
             this.translateClarityComponents();
         }
         this.selectedDatetimeRendering = getDatetimeRendering();
-        if (this.appConfigService.isIntegrationMode()) {
-            this.appTitle = 'APP_TITLE.VIC';
-        }
-
         if (this.appConfigService.getConfig().read_only) {
             this.msgHandler.handleReadOnly();
         }
@@ -126,7 +122,10 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get currentLang(): string {
-        return LANGUAGES[this.selectedLang][0] as string;
+        if (this.selectedLang) {
+            return LANGUAGES[this.selectedLang][0] as string;
+        }
+        return null;
     }
 
     public get currentDatetimeRendering(): string {
@@ -136,11 +135,6 @@ export class NavigatorComponent implements OnInit {
     public get admiralLink(): string {
         return this.appConfigService.getAdmiralEndpoint(window.location.href);
     }
-
-    public get isIntegrationMode(): boolean {
-        return this.appConfigService.isIntegrationMode();
-    }
-
     public get canDownloadCert(): boolean {
         return (
             this.session.getCurrentUser() &&

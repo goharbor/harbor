@@ -187,11 +187,6 @@ services:
 {% if with_notary %}
       harbor-notary:
 {% endif %}
-{% if with_chartmuseum %}
-      harbor-chartmuseum:
-        aliases:
-          - harbor-core
-{% endif %}
     depends_on:
       - log
       - registry
@@ -253,7 +248,6 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/job_logs:/var/log/jobs:z
-      - {{data_volume}}/scandata_exports:/var/scandata_exports:z
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml
@@ -292,11 +286,6 @@ services:
       - {{data_volume}}/redis:/var/lib/redis
     networks:
       harbor:
-  {% if with_chartmuseum %}
-      harbor-chartmuseum:
-        aliases:
-          - redis
-  {% endif %}
     depends_on:
       - log
     logging:
@@ -478,49 +467,6 @@ services:
     env_file:
       ./common/config/trivy-adapter/env
 {% endif %}
-{% if with_chartmuseum %}
-  chartmuseum:
-    container_name: chartmuseum
-    image: goharbor/chartmuseum-photon:{{chartmuseum_version}}
-    restart: always
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
-    networks:
-      - harbor-chartmuseum
-    depends_on:
-      - log
-    volumes:
-      - {{data_volume}}/chart_storage:/chart_storage:z
-      - ./common/config/chartserver:/etc/chartserver:z
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.chartmuseum_crt_path}}
-        target: /etc/harbor/ssl/chartmuseum.crt
-      - type: bind
-        source: {{internal_tls.chartmuseum_key_path}}
-        target: /etc/harbor/ssl/chartmuseum.key
-{% endif %}
-{% if gcs_keyfile %}
-      - type: bind
-        source: {{gcs_keyfile}}
-        target: /etc/chartserver/gcs.key
-{% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://localhost:1514"
-        tag: "chartmuseum"
-    env_file:
-      ./common/config/chartserver/env
-{% endif %}
 {% if metric.enabled %}
   exporter:
     image: goharbor/harbor-exporter:{{version}}
@@ -554,7 +500,4 @@ networks:
   notary-sig:
     external: false
 {% endif %}
-{% if with_chartmuseum %}
-  harbor-chartmuseum:
-    external: false
-{% endif %}
+

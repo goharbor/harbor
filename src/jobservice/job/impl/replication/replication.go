@@ -20,10 +20,37 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	// import chart transfer
-	_ "github.com/goharbor/harbor/src/controller/replication/transfer/chart"
-	// import image transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/image"
 	"github.com/goharbor/harbor/src/jobservice/job"
+
+	// import aliacr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
+	// import awsecr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/awsecr"
+	// import azurecr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/azurecr"
+	// import dockerhub adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/dockerhub"
+	// import dtr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/dtr"
+	// import githubcr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/githubcr"
+	// import gitlab adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/gitlab"
+	// import googlegcr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
+	// import harbor adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
+	// import huawei adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
+	// import jfrog adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/jfrog"
+	// import native adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/native"
+	// import quay adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
+	// import tencentcr adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 

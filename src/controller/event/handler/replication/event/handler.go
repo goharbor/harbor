@@ -37,8 +37,7 @@ func Handle(ctx context.Context, event *Event) error {
 	var policies []*repctlmodel.Policy
 	var err error
 	switch event.Type {
-	case EventTypeArtifactPush, EventTypeChartUpload, EventTypeTagDelete,
-		EventTypeArtifactDelete, EventTypeChartDelete:
+	case EventTypeArtifactPush, EventTypeTagDelete, EventTypeArtifactDelete:
 		policies, err = getRelatedPolicies(ctx, event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)

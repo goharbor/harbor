@@ -65,7 +65,8 @@ var (
 
 		{Name: common.AdminInitialPassword, Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: true},
 		{Name: common.AUTHMode, Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false, Description: `The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"`},
-		{Name: common.ChartRepoURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", ItemType: &StringType{}, Editable: false},
+
+		{Name: common.PrimaryAuthMode, Scope: UserScope, Group: BasicGroup, EnvKey: "PRIMARY_AUTH_MODE", DefaultValue: "false", ItemType: &BoolType{}, Description: `Use current auth mode as a primary one`},
 
 		{Name: common.TrivyAdapterURL, Scope: SystemScope, Group: TrivyGroup, EnvKey: "TRIVY_ADAPTER_URL", DefaultValue: "http://trivy-adapter:8080", ItemType: &StringType{}, Editable: false},
 
@@ -143,12 +144,12 @@ var (
 		{Name: common.OIDCAutoOnboard, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}, Description: `Auto onboard the OIDC user`},
 		{Name: common.OIDCExtraRedirectParms, Scope: UserScope, Group: OIDCGroup, DefaultValue: "{}", ItemType: &StringToStringMapType{}, Description: `Extra parameters to add when redirect request to OIDC provider`},
 
-		{Name: common.WithChartMuseum, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithTrivy, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_TRIVY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithNotary, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "30", ItemType: &IntType{}, Editable: true, Description: `The robot account token duration in days`},
-		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The rebot account name prefix`},
+		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The robot account name prefix`},
+		{Name: common.RobotScannerNamePrefix, Scope: SystemScope, Group: BasicGroup, EnvKey: "ROBOT_SCANNER_NAME_PREFIX", DefaultValue: "scanner", ItemType: &StringType{}, Editable: true, Description: `The scanner robot account name prefix`},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable notification`},
 
 		{Name: common.MetricEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
@@ -185,6 +186,7 @@ var (
 
 		{Name: common.AuditLogForwardEndpoint, Scope: UserScope, Group: BasicGroup, EnvKey: "AUDIT_LOG_FORWARD_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint to forward the audit log.`},
 		{Name: common.SkipAuditLogDatabase, Scope: UserScope, Group: BasicGroup, EnvKey: "SKIP_LOG_AUDIT_DATABASE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip audit log in database`},
+		{Name: common.ScannerSkipUpdatePullTime, Scope: UserScope, Group: BasicGroup, EnvKey: "SCANNER_SKIP_UPDATE_PULL_TIME", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip update pull time for scanner`},
 
 		{Name: common.SessionTimeout, Scope: UserScope, Group: BasicGroup, EnvKey: "SESSION_TIMEOUT", DefaultValue: "60", ItemType: &Int64Type{}, Editable: true, Description: `The session timeout in minutes`},
 	}

@@ -50,10 +50,6 @@ export class AppComponent {
         this.initLanguage();
         // Override page title
         let key: string = 'APP_TITLE.HARBOR';
-        if (this.appConfigService.isIntegrationMode()) {
-            key = 'APP_TITLE.REG';
-        }
-
         translate.get(key).subscribe((res: string) => {
             const customSkinData: CustomStyle =
                 this.skinableConfig.getSkinConfig();

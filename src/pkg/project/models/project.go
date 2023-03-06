@@ -50,7 +50,6 @@ type Project struct {
 	Role         int                    `orm:"-" json:"current_user_role_id"`
 	RoleList     []int                  `orm:"-" json:"current_user_role_ids"`
 	RepoCount    int64                  `orm:"-" json:"repo_count"`
-	ChartCount   uint64                 `orm:"-" json:"chart_count"`
 	Metadata     map[string]string      `orm:"-" json:"metadata"`
 	CVEAllowlist allowlist.CVEAllowlist `orm:"-" json:"cve_allowlist"`
 	RegistryID   int64                  `orm:"column(registry_id)" json:"registry_id"`

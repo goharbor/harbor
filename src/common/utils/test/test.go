@@ -122,7 +122,6 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.LDAPGroupSearchScope:   2,
 		common.LDAPGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
 		common.WithNotary:             "false",
-		common.WithChartMuseum:        "false",
 		common.SelfRegistration:       "true",
 		common.WithTrivy:              "true",
 		common.TokenServiceURL:        "http://core:8080/service/token",

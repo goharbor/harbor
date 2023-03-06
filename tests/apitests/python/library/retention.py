@@ -63,7 +63,7 @@ class Retention(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return policy
 
-    def update_retention_policy(self, retention_id, selector_repository="**", selector_tag="**", expect_status_code = 200, **kwargs):
+    def update_retention_policy(self, retention_id, project_id, selector_repository="**", selector_tag="**", cron="", expect_status_code = 200, **kwargs):
         policy=v2_swagger_client.RetentionPolicy(
             id=retention_id,
             algorithm='or',
@@ -72,9 +72,7 @@ class Retention(base.Base):
                     disabled=False,
                     action="retain",
                     template="always",
-                    params= {
-
-                    },
+                    params= {},
                     scope_selectors={
                         "repository": [
                             {
@@ -96,7 +94,7 @@ class Retention(base.Base):
             trigger= {
                 "kind": "Schedule",
                 "settings": {
-                    "cron": ""
+                    "cron": cron
                 },
                 "references": {
                 }

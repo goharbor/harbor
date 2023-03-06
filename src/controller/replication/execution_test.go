@@ -105,6 +105,21 @@ func (r *replicationTestSuite) TestStart() {
 }
 
 func (r *replicationTestSuite) TestStop() {
+	r.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
+		{
+			ID:         1,
+			VendorType: job.ReplicationVendorType,
+			VendorID:   1,
+			Status:     job.RunningStatus.String(),
+			Metrics: &dao.Metrics{
+				TaskCount:        1,
+				RunningTaskCount: 1,
+			},
+			Trigger:   task.ExecutionTriggerManual,
+			StartTime: time.Time{},
+			EndTime:   time.Time{},
+		},
+	}, nil)
 	r.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	err := r.ctl.Stop(nil, 1)
 	r.Require().Nil(err)
@@ -123,7 +138,7 @@ func (r *replicationTestSuite) TestListExecutions() {
 	r.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
 		{
 			ID:         1,
-			VendorType: job.Replication,
+			VendorType: job.ReplicationVendorType,
 			VendorID:   1,
 			Status:     job.RunningStatus.String(),
 			Metrics: &dao.Metrics{
@@ -147,7 +162,7 @@ func (r *replicationTestSuite) TestGetExecution() {
 	r.execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{
 		{
 			ID:         1,
-			VendorType: job.Replication,
+			VendorType: job.ReplicationVendorType,
 			VendorID:   1,
 			Status:     job.RunningStatus.String(),
 			Metrics: &dao.Metrics{

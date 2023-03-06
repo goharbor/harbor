@@ -34,7 +34,7 @@ func FromJobservice(req *http.Request) bool {
 // FromJobRetention detects whether this request is from tag retention job.
 func FromJobRetention(req *http.Request) bool {
 	if req != nil && req.Header != nil {
-		return req.Header.Get("VendorType") == job.Retention
+		return req.Header.Get("VendorType") == job.RetentionVendorType
 	}
 
 	return false

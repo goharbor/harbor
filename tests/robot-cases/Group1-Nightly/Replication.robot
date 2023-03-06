@@ -90,30 +90,29 @@ Test Case - Replication Rule Edit
     ${endpoint2}=    Set Variable    e2${d}
     ${rule_name_old}=    Set Variable    rule_testabc${d}
     ${rule_name_new}=    Set Variable    rule_abctest${d}
-    ${resource_type}=    Set Variable    chart
+    ${resource_type}=    Set Variable    image
     ${dest_namespace}=    Set Variable    dest_namespace${d}
     ${mode}=    Set Variable    Scheduled
     ${cron_str}=    Set Variable    10 10 10 * * *
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    #Due to docker-hub access limitation, remove docker-hub endpoint
     Create A New Endpoint    harbor    ${endpoint1}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
     Create A New Endpoint    harbor    ${endpoint2}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    ${rule_name_old}    pull    nightly/a*    image    ${endpoint1}    project${d}
     Edit Replication Rule  ${rule_name_old}
-    #  Change rule-name, source-registry, filter, trigger-mode for edition verification
+    # Change rule-name, source-registry, filter, trigger-mode for edition verification
     Clear Field Of Characters    ${rule_name_input}    30
     Retry Text Input    ${rule_name_input}    ${rule_name_new}
     Select Source Registry  ${endpoint2}
-    #Source Resource Filter
+    # Source Resource Filter
     Retry Text Input  ${filter_name_id}  project${d}
     Select From List By Value  ${rule_resource_selector}  ${resource_type}
     Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace}
     Select Trigger  ${mode}
     Retry Text Input  ${targetCron_id}  ${cron_str}
     Retry Double Keywords When Error    Retry Element Click    ${rule_save_button}    Retry Wait Until Page Not Contains Element    ${rule_save_button}
-    #  verify all items were changed as expected
+    # verify all items were changed as expected
     Edit Replication Rule    ${rule_name_new}
     Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
     Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
@@ -127,6 +126,7 @@ Test Case - Replication Rule Edit
     Close Browser
 
 Test Case - Replication Rule Delete
+    [Tags]  test
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${endpoint1}=    Set Variable    e1${d}
@@ -228,37 +228,6 @@ Test Case - Replication Exclusion Mode And Set Bandwidth
     Image Should Be Replicated To Project  project${d}  hello-world  period=0
     # make sure the excluded image is not replication
     Retry Wait Until Page Contains  1 - 1 of 1 items
-    Close Browser
-
-Test Case - Replication Of Push Chart from Self To Harbor
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project    project${d}
-    Switch To Project Charts
-    Upload Chart files
-    Switch To Registries
-    Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    chart    e${d}    project_dest${d}
-    #logout and login target
-    Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project    project_dest${d}
-    #logout and login source
-    Logout Harbor
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Switch To Replication Manage
-    Select Rule And Replicate    rule${d}
-    Sleep    20
-    Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Go Into Project    project_dest${d}    has_image=${false}
-    Switch To Project Charts
-    Go Into Chart Version    ${harbor_chart_name}
-    Retry Wait Until Page Contains    ${harbor_chart_version}
-    Go Into Chart Detail    ${harbor_chart_version}
     Close Browser
 
 Test Case - Replication Of Push Images from Self To Harbor By Push Event
@@ -481,14 +450,14 @@ Test Case - Replication Triggered By Events
     Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_dest${d}  mode=Event Based  del_remote=${true}
     # push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}    
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
     Docker Push Index  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${ip}/project${d}/${index}:${index_tag}  ${ip}/project${d}/${image1}:${tag1}  ${ip}/project${d}/${image2}:${tag2}
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/${image1}
     Wait Until Page Contains  project${d}/${image2}
     Wait Until Page Contains  project${d}/${index}
     Logout Harbor
-    
+
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
     Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
@@ -544,7 +513,7 @@ Test Case - Replication Triggered By Events
     Should Not Be Signed By Cosign  ${index_tag}
     Click Index Achieve  ${index_tag}
     Retry Double Keywords When Error  Delete Accessory  ${image1_short_sha256}  Should be Accessory deleted  ${image1_short_sha256}
-    Should Not Be Signed By Cosign  ${image1_short_sha256}    
+    Should Not Be Signed By Cosign  ${image1_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -552,7 +521,7 @@ Test Case - Replication Triggered By Events
     Go Into Repo  project_dest${d}/${image2}
     Wait Until Page Contains  We couldn't find any artifacts!
     Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${image1}  Should be Accessory deleted  ${tag1}    
+    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${image1}  Should be Accessory deleted  ${tag1}
     Should Not Be Signed By Cosign  ${tag1}
     Back Project Home  project_dest${d}
     Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should be Accessory deleted  ${index_tag}
