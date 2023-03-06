@@ -70,6 +70,7 @@ type MonitorController interface {
 	PauseJobQueues(ctx context.Context, jobType string) error
 	// ResumeJobQueues resume the job queue by type
 	ResumeJobQueues(ctx context.Context, jobType string) error
+	GetJobLog(ctx context.Context, jobID string) ([]byte, error)
 }
 
 type monitorController struct {
@@ -365,4 +366,8 @@ func (w *monitorController) resumeQueue(ctx context.Context, jobType string) err
 		return fmt.Errorf("failed to resume queue %v, error: %v", jobType, err)
 	}
 	return nil
+}
+
+func (w *monitorController) GetJobLog(ctx context.Context, jobID string) ([]byte, error) {
+	return w.taskManager.GetLogByJobID(ctx, jobID)
 }
