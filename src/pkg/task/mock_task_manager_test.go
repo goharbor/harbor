@@ -132,6 +132,29 @@ func (_m *mockTaskManager) GetLog(ctx context.Context, id int64) ([]byte, error)
 	return r0, r1
 }
 
+// GetLogByJobID provides a mock function with given fields: ctx, jobID
+func (_m *mockTaskManager) GetLogByJobID(ctx context.Context, jobID string) ([]byte, error) {
+	ret := _m.Called(ctx, jobID)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(context.Context, string) []byte); ok {
+		r0 = rf(ctx, jobID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, jobID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *mockTaskManager) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	ret := _m.Called(ctx, query)

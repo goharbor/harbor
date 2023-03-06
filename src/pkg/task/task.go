@@ -53,6 +53,8 @@ type Manager interface {
 	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
 	// Get the log of the specified task
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
+	// GetLogByJobID get the log of specified job id
+	GetLogByJobID(ctx context.Context, jobID string) (log []byte, err error)
 	// Count counts total of tasks according to the query.
 	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	Count(ctx context.Context, query *q.Query) (int64, error)
@@ -258,4 +260,8 @@ func (m *manager) UpdateStatusInBatch(ctx context.Context, jobIDs []string, stat
 
 func (m *manager) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType, status string) ([]int64, error) {
 	return m.dao.ExecutionIDsByVendorAndStatus(ctx, vendorType, status)
+}
+
+func (m *manager) GetLogByJobID(ctx context.Context, jobID string) (log []byte, err error) {
+	return m.jsClient.GetJobLog(jobID)
 }

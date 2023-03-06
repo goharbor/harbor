@@ -44,3 +44,32 @@ func TestLogDataGetter(t *testing.T) {
 		t.Errorf("expect reading 5 bytes but got %d bytes", len(data))
 	}
 }
+
+func Test_tailLogFile(t *testing.T) {
+	type args struct {
+		filename string
+		mbs      int64
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"normal test", args{"testdata/normal.log", 1000}, len(`hello world`), false},
+		{"truncated test", args{"testdata/truncated.log", 1000}, 1000, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tailLogFile(tt.args.filename, tt.args.mbs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tailLogFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// result should always less than the size limit
+			if len(got) > tt.want {
+				t.Errorf("tailLogFile() got = %v, want %v", len(got), tt.want)
+			}
+		})
+	}
+}
