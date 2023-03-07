@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          ts.URL,
-		"auth_header":      "auth_test",
+		"header":           `{"Authorization": ["auth_test"]}`,
 	}
 	// test correct webhook response
 	assert.Nil(t, rep.Run(ctx, params))
@@ -77,7 +77,7 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          tsWrong.URL,
-		"auth_header":      "auth_test",
+		"header":           `{"Authorization": ["auth_test"]}`,
 	}
 	// test incorrect webhook response
 	assert.NotNil(t, rep.Run(ctx, paramsWrong))

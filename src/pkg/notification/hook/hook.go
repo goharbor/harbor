@@ -2,8 +2,6 @@ package hook
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -34,16 +32,6 @@ func NewHookManager() *DefaultManager {
 
 // StartHook create a webhook job record in database, and submit it to jobservice
 func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent, data *models.JobData) error {
-	payload, err := json.Marshal(event.Payload)
-	if err != nil {
-		return err
-	}
-
-	extraAttrs := make(map[string]interface{})
-	if err = json.Unmarshal(payload, &extraAttrs); err != nil {
-		return err
-	}
-
 	var vendorType string
 	switch event.Target.Type {
 	case model.NotifyTypeHTTP:
@@ -56,11 +44,14 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		return errors.Errorf("invalid event target type: %s", event.Target.Type)
 	}
 
+	extraAttrs := map[string]interface{}{
+		"event_type": event.EventType,
+		"payload":    data.Parameters["payload"],
+	}
 	// create execution firstly, then create task.
 	execID, err := hm.execMgr.Create(ctx, vendorType, event.PolicyID, task.ExecutionTriggerEvent, extraAttrs)
 	if err != nil {
-		log.Errorf("failed to create execution for webhook based on policy %d: %v", event.PolicyID, err)
-		return nil
+		return errors.Errorf("failed to create execution for webhook based on policy %d: %v", event.PolicyID, err)
 	}
 
 	taskID, err := hm.taskMgr.Create(ctx, execID, &task.Job{
@@ -69,12 +60,12 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 			JobKind: data.Metadata.JobKind,
 		},
 		Parameters: map[string]interface{}(data.Parameters),
-	}, extraAttrs)
+	})
 	if err != nil {
-		return fmt.Errorf("failed to create the task for webhook based on policy %d: %v", event.PolicyID, err)
+		return errors.Errorf("failed to create task for webhook based on policy %d: %v", event.PolicyID, err)
 	}
 
-	log.Debugf("created a webhook job %d for the policy %d", taskID, event.PolicyID)
+	log.Debugf("created webhook task %d for the policy %d", taskID, event.PolicyID)
 
 	return nil
 }

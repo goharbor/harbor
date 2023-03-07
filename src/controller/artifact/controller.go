@@ -567,8 +567,8 @@ func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int
 				LabelID:    labelID,
 				Ctx:        ctx,
 			}
-			if err := e.Build(metaData); err == nil {
-				if err := e.Publish(); err != nil {
+			if err := e.Build(ctx, metaData); err == nil {
+				if err := e.Publish(ctx); err != nil {
 					log.Error(errors.Wrap(err, "mark label to resource handler: event publish"))
 				}
 			} else {

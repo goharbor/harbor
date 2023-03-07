@@ -23,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -48,7 +47,7 @@ func (qp *Handler) Handle(ctx context.Context, value interface{}) error {
 		return fmt.Errorf("nil quota event")
 	}
 
-	prj, err := project.Ctl.GetByName(orm.Context(), quotaEvent.Project.Name, project.Metadata(true))
+	prj, err := project.Ctl.GetByName(ctx, quotaEvent.Project.Name, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project:%s, error: %v", quotaEvent.Project.Name, err)
 		return err
@@ -69,7 +68,7 @@ func (qp *Handler) Handle(ctx context.Context, value interface{}) error {
 		return err
 	}
 
-	err = util.SendHookWithPolicies(policies, payload, quotaEvent.EventType)
+	err = util.SendHookWithPolicies(ctx, policies, payload, quotaEvent.EventType)
 	if err != nil {
 		return err
 	}
