@@ -207,6 +207,7 @@ http {
   server {
       listen 8080;
       #server_name harbordomain.com;
+      server_tokens off;
       return 308 https://{{https_redirect}}$request_uri;
   }
   {% if metric.enabled %}
