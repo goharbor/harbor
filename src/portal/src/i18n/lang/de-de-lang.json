@@ -696,8 +696,7 @@
         "DELETED_FAILED": "Löschen des Endpunktes fehlgeschlagen.",
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
-        "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-        "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+        "PLACEHOLDER": "Wir konnten keine Endpunkt finden."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",

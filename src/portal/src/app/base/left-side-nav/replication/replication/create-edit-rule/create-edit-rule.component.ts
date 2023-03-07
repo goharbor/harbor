@@ -602,38 +602,31 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.onGoing = true;
             this.policyId = +rule.id;
             this.headerTitle = 'REPLICATION.EDIT_POLICY_TITLE';
-            this.repService.getReplicationRule(rule.id).subscribe(
-                ruleInfo => {
-                    let srcRegistryId = ruleInfo.src_registry.id;
-                    this.repService
-                        .getRegistryInfo(srcRegistryId)
-                        .pipe(finalize(() => (this.onGoing = false)))
-                        .subscribe(
-                            adapter => {
-                                this.setFilterAndTrigger(adapter);
-                                this.updateRuleFormAndCopyUpdateForm(ruleInfo);
-                            },
-                            (error: any) => {
-                                this.translateService
-                                    .get(
-                                        'REPLICATION.UNREACHABLE_SOURCE_REGISTRY',
-                                        {
-                                            error: errorHandlerFn(error),
-                                        }
-                                    )
-                                    .subscribe(translatedResponse => {
-                                        this.inlineAlert.showInlineError(
-                                            translatedResponse
-                                        );
-                                    });
-                            }
-                        );
-                },
-                (error: any) => {
-                    this.onGoing = false;
-                    this.inlineAlert.showInlineError(error);
-                }
-            );
+            this.repService
+                .getRegistryInfo(rule.src_registry.id)
+                .pipe(finalize(() => (this.onGoing = false)))
+                .subscribe({
+                    next: adapter => {
+                        this.setFilterAndTrigger(adapter);
+                        this.updateRuleFormAndCopyUpdateForm(rule);
+                    },
+                    error: (error: any) => {
+                        // if error, use default(set registry id to 0) filters and triggers
+                        this.repService.getRegistryInfo(0).subscribe(res => {
+                            this.setFilterAndTrigger(res);
+                            this.updateRuleFormAndCopyUpdateForm(rule);
+                        });
+                        this.translateService
+                            .get('REPLICATION.UNREACHABLE_SOURCE_REGISTRY', {
+                                error: errorHandlerFn(error),
+                            })
+                            .subscribe(translatedResponse => {
+                                this.inlineAlert.showInlineError(
+                                    translatedResponse
+                                );
+                            });
+                    },
+                });
         } else {
             this.onGoing = true;
             let registryObs = this.repService.getRegistryInfo(0);

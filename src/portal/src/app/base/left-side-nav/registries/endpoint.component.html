@@ -74,6 +74,9 @@
                 <clr-dg-column [clrDgSortBy]="'creation_time'">{{
                     'DESTINATION.CREATION_TIME' | translate
                 }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'description'">{{
+                    'REPLICATION.DESCRIPTION' | translate
+                }}</clr-dg-column>
                 <clr-dg-placeholder>{{
                     'DESTINATION.PLACEHOLDER' | translate
                 }}</clr-dg-placeholder>
@@ -100,22 +103,6 @@
                         <span class="margin-right-2px">{{
                             getAdapterText(t.type)
                         }}</span>
-                        <clr-signpost *ngIf="isHelmHub(t.type)">
-                            <clr-icon
-                                clrSignpostTrigger
-                                class="color-red"
-                                shape="error-standard"></clr-icon>
-                            <clr-signpost-content *clrIfOpen>
-                                <a
-                                    href="https://helm.sh/blog/helm-hub-moving-to-artifact-hub"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    >{{
-                                        'DESTINATION.DEPRECATED' | translate
-                                    }}</a
-                                >
-                            </clr-signpost-content>
-                        </clr-signpost>
                     </clr-dg-cell>
                     <clr-dg-cell>
                         {{ !t.insecure }}
@@ -124,6 +111,7 @@
                     <clr-dg-cell>{{
                         t.creation_time | harborDatetime: 'short'
                     }}</clr-dg-cell>
+                    <clr-dg-cell>{{ t.description }}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination

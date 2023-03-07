@@ -698,8 +698,7 @@
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
         "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
-        "PLACEHOLDER": "未发现任何复制目标!",
-        "DEPRECATED": "Helm Hub 正被移至 Artifact Hub"
+        "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",
