@@ -18,7 +18,7 @@ go get -u github.com/client9/misspell/cmd/misspell
 set -e
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go install/go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
