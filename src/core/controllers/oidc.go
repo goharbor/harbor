@@ -58,7 +58,7 @@ func (oc *OIDCController) Prepare() {
 // RedirectLogin redirect user's browser to OIDC provider's login page
 func (oc *OIDCController) RedirectLogin() {
 	state := utils.GenerateRandomString()
-	url, err := oidc.AuthCodeURL(state)
+	url, err := oidc.AuthCodeURL(oc.Context(), state)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return

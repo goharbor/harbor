@@ -55,20 +55,11 @@ func TestMain(m *testing.M) {
 		os.Exit(result)
 	}
 }
-func TestHelperLoadConf(t *testing.T) {
-	testP := &providerHelper{}
-	assert.Nil(t, testP.setting.Load())
-	err := testP.reloadSetting()
-	assert.Nil(t, err)
-	assert.Equal(t, "test", testP.setting.Load().(cfgModels.OIDCSetting).Name)
-}
 
 func TestHelperCreate(t *testing.T) {
 	testP := &providerHelper{}
-	err := testP.reloadSetting()
-	assert.Nil(t, err)
 	assert.Nil(t, testP.instance.Load())
-	err = testP.create()
+	err := testP.create(orm.Context())
 	assert.Nil(t, err)
 	assert.NotNil(t, testP.instance.Load())
 	assert.True(t, time.Now().Sub(testP.creationTime) < 2*time.Second)
@@ -76,7 +67,8 @@ func TestHelperCreate(t *testing.T) {
 
 func TestHelperGet(t *testing.T) {
 	testP := &providerHelper{}
-	p, err := testP.get()
+	ctx := orm.Context()
+	p, err := testP.get(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, "https://oauth2.googleapis.com/token", p.Endpoint().TokenURL)
 
@@ -89,12 +81,13 @@ func TestHelperGet(t *testing.T) {
 		common.OIDCClientSecret: "new-secret",
 		common.ExtEndpoint:      "https://harbor.test",
 	}
-	ctx := orm.Context()
 	config.GetCfgManager(ctx).UpdateConfig(ctx, update)
 
 	t.Log("Sleep for 5 seconds")
 	time.Sleep(5 * time.Second)
-	assert.Equal(t, "new-secret", testP.setting.Load().(cfgModels.OIDCSetting).ClientSecret)
+	oidcSetting, err := config.OIDCSetting(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, "new-secret", oidcSetting.ClientSecret)
 }
 
 func TestAuthCodeURL(t *testing.T) {
@@ -110,7 +103,7 @@ func TestAuthCodeURL(t *testing.T) {
 	}
 	ctx := orm.Context()
 	config.GetCfgManager(ctx).UpdateConfig(ctx, conf)
-	res, err := AuthCodeURL("random")
+	res, err := AuthCodeURL(ctx, "random")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
 	assert.Nil(t, err)
