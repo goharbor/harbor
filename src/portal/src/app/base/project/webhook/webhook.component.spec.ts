@@ -16,6 +16,8 @@ import { WebhookPolicy } from '../../../../../ng-swagger-gen/models/webhook-poli
 import { WebhookService } from '../../../../../ng-swagger-gen/services/webhook.service';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../ng-swagger-gen/models/registry';
+import { ExecutionsComponent } from './excutions/executions.component';
+import { Execution } from '../../../../../ng-swagger-gen/models/execution';
 
 describe('WebhookComponent', () => {
     let component: WebhookComponent;
@@ -48,6 +50,7 @@ describe('WebhookComponent', () => {
                 type: 'http',
                 auth_header: null,
                 skip_cert_verify: true,
+                payload_format: 'cloudevent',
             },
         ],
         event_types: ['projectQuota'],
@@ -65,9 +68,6 @@ describe('WebhookComponent', () => {
         GetSupportedEventTypes() {
             return of(mockedMetadata).pipe(delay(0));
         },
-        LastTrigger() {
-            return of([]).pipe(delay(0));
-        },
         ListWebhookPoliciesOfProjectResponse() {
             const response: HttpResponse<Array<Registry>> = new HttpResponse<
                 Array<Registry>
@@ -81,6 +81,16 @@ describe('WebhookComponent', () => {
         },
         UpdateWebhookPolicyOfProject() {
             return of(true);
+        },
+        ListExecutionsOfWebhookPolicyResponse() {
+            return of(
+                new HttpResponse<Array<Execution>>({
+                    headers: new HttpHeaders({
+                        'x-total-count': '2',
+                    }),
+                    body: [],
+                })
+            ).pipe(delay(0));
         },
     };
     const mockActivatedRoute = {
@@ -115,6 +125,7 @@ describe('WebhookComponent', () => {
                 AddWebhookFormComponent,
                 InlineAlertComponent,
                 ConfirmationDialogComponent,
+                ExecutionsComponent,
             ],
             providers: [
                 {
@@ -162,7 +173,7 @@ describe('WebhookComponent', () => {
     });
     it('should open edit modal', async () => {
         component.webhookList[0].name = 'test';
-        component.selectedRow[0] = component.webhookList[0];
+        component.selectedRow = component.webhookList[0];
         component.editWebhook();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -178,7 +189,7 @@ describe('WebhookComponent', () => {
     });
     it('should disable webhook', async () => {
         await fixture.whenStable();
-        component.selectedRow[0] = component.webhookList[0];
+        component.selectedRow = component.webhookList[0];
         component.webhookList[0].enabled = true;
         component.switchWebhookStatus();
         fixture.detectChanges();
@@ -195,7 +206,7 @@ describe('WebhookComponent', () => {
     it('should enable webhook', async () => {
         await fixture.whenStable();
         component.webhookList[0].enabled = false;
-        component.selectedRow[0] = component.webhookList[0];
+        component.selectedRow = component.webhookList[0];
         component.switchWebhookStatus();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -206,5 +217,14 @@ describe('WebhookComponent', () => {
         const bodyEnable: HTMLElement =
             fixture.nativeElement.querySelector('.modal-body');
         expect(bodyEnable).toBeFalsy();
+    });
+    it('should show executions', async () => {
+        await fixture.whenStable();
+        component.selectedRow = component.webhookList[0];
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const executions =
+            fixture.nativeElement.querySelector('app-executions');
+        expect(executions).toBeTruthy();
     });
 });

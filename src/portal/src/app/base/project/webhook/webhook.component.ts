@@ -13,10 +13,10 @@
 // limitations under the License.
 import { finalize } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AddWebhookComponent } from './add-webhook/add-webhook.component';
 import { AddWebhookFormComponent } from './add-webhook-form/add-webhook-form.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { Project } from '../project';
 import {
@@ -26,7 +26,7 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
 } from '../../../shared/units/utils';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import {
     UserPermissionService,
     USERSTATICPERMISSION,
@@ -40,30 +40,38 @@ import {
 } from '../../../shared/entities/shared.const';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
 import { WebhookService } from '../../../../../ng-swagger-gen/services/webhook.service';
-import { WebhookLastTrigger } from '../../../../../ng-swagger-gen/models/webhook-last-trigger';
 import { WebhookPolicy } from '../../../../../ng-swagger-gen/models/webhook-policy';
-import { ProjectWebhookService } from './webhook.service';
-
+import {
+    PAYLOAD_FORMATS,
+    PAYLOAD_FORMAT_I18N_MAP,
+    ProjectWebhookService,
+} from './webhook.service';
+import { ExecutionsComponent } from './excutions/executions.component';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../services/event-service/event.service';
+import { SupportedWebhookEventTypes } from '../../../../../ng-swagger-gen/models/supported-webhook-event-types';
+// The route path which will display this component
+const URL_TO_DISPLAY: RegExp = /^\/harbor\/projects\/(\d+)\/webhook$/;
 @Component({
     templateUrl: './webhook.component.html',
     styleUrls: ['./webhook.component.scss'],
 })
-export class WebhookComponent implements OnInit {
+export class WebhookComponent implements OnInit, OnDestroy {
     @ViewChild(AddWebhookComponent)
     addWebhookComponent: AddWebhookComponent;
     @ViewChild(AddWebhookFormComponent)
     addWebhookFormComponent: AddWebhookFormComponent;
     @ViewChild('confirmationDialogComponent')
     confirmationDialogComponent: ConfirmationDialogComponent;
-    lastTriggers: WebhookLastTrigger[] = [];
     projectId: number;
     projectName: string;
-    selectedRow: WebhookPolicy[] = [];
+    selectedRow: WebhookPolicy;
     webhookList: WebhookPolicy[] = [];
-    metadata: any;
+    metadata: SupportedWebhookEventTypes;
     loadingMetadata: boolean = true;
     loadingWebhookList: boolean = true;
-    loadingTriggers: boolean = false;
     hasCreatPermission: boolean = false;
     hasUpdatePermission: boolean = false;
     page: number = 1;
@@ -72,16 +80,45 @@ export class WebhookComponent implements OnInit {
     );
     total: number = 0;
     state: ClrDatagridStateInterface;
+    @ViewChild(ExecutionsComponent)
+    executionsComponent: ExecutionsComponent;
+    routerSub: Subscription;
+    scrollSub: Subscription;
+    scrollTop: number;
     constructor(
         private route: ActivatedRoute,
         private translate: TranslateService,
         private webhookService: WebhookService,
         private projectWebhookService: ProjectWebhookService,
         private messageHandlerService: MessageHandlerService,
-        private userPermissionService: UserPermissionService
+        private userPermissionService: UserPermissionService,
+        private router: Router,
+        private event: EventService
     ) {}
 
     ngOnInit() {
+        if (!this.scrollSub) {
+            this.scrollSub = this.event.subscribe(HarborEvent.SCROLL, v => {
+                if (v && URL_TO_DISPLAY.test(v.url)) {
+                    this.scrollTop = v.scrollTop;
+                }
+            });
+        }
+        if (!this.routerSub) {
+            this.routerSub = this.router.events.subscribe(e => {
+                if (e instanceof NavigationEnd) {
+                    if (e && URL_TO_DISPLAY.test(e.url)) {
+                        // Into view
+                        this.event.publish(
+                            HarborEvent.SCROLL_TO_POSITION,
+                            this.scrollTop
+                        );
+                    } else {
+                        this.event.publish(HarborEvent.SCROLL_TO_POSITION, 0);
+                    }
+                }
+            });
+        }
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
         let resolverData = this.route.snapshot.parent.parent.data;
         if (resolverData) {
@@ -91,6 +128,18 @@ export class WebhookComponent implements OnInit {
         this.getData();
         this.getPermissions();
     }
+
+    ngOnDestroy(): void {
+        if (this.routerSub) {
+            this.routerSub.unsubscribe();
+            this.routerSub = null;
+        }
+        if (this.scrollSub) {
+            this.scrollSub.unsubscribe();
+            this.scrollSub = null;
+        }
+    }
+
     getPermissions() {
         const permissionsList: Observable<boolean>[] = [];
         permissionsList.push(
@@ -119,14 +168,13 @@ export class WebhookComponent implements OnInit {
     refresh() {
         this.page = 1;
         this.total = 0;
-        this.selectedRow = [];
+        this.selectedRow = null;
         this.getWebhooks(this.state);
         this.getData();
     }
     getData() {
         this.getMetadata();
-        this.getLastTriggers();
-        this.selectedRow = [];
+        this.selectedRow = null;
     }
     getMetadata() {
         this.loadingMetadata = true;
@@ -155,23 +203,6 @@ export class WebhookComponent implements OnInit {
                             }
                         );
                     }
-                },
-                error => {
-                    this.messageHandlerService.handleError(error);
-                }
-            );
-    }
-
-    getLastTriggers() {
-        this.loadingTriggers = true;
-        this.webhookService
-            .LastTrigger({
-                projectNameOrId: this.projectId.toString(),
-            })
-            .pipe(finalize(() => (this.loadingTriggers = false)))
-            .subscribe(
-                response => {
-                    this.lastTriggers = response;
                 },
                 error => {
                     this.messageHandlerService.handleError(error);
@@ -235,22 +266,22 @@ export class WebhookComponent implements OnInit {
         let content = '';
         this.translate
             .get(
-                !this.selectedRow[0].enabled
+                !this.selectedRow.enabled
                     ? 'WEBHOOK.ENABLED_WEBHOOK_SUMMARY'
                     : 'WEBHOOK.DISABLED_WEBHOOK_SUMMARY',
-                { name: this.selectedRow[0].name }
+                { name: this.selectedRow.name }
             )
             .subscribe(res => {
                 content = res;
                 let message = new ConfirmationMessage(
-                    !this.selectedRow[0].enabled
+                    !this.selectedRow.enabled
                         ? 'WEBHOOK.ENABLED_WEBHOOK_TITLE'
                         : 'WEBHOOK.DISABLED_WEBHOOK_TITLE',
                     content,
                     '',
                     {},
                     ConfirmationTargets.WEBHOOK,
-                    !this.selectedRow[0].enabled
+                    !this.selectedRow.enabled
                         ? ConfirmationButtons.ENABLE_CANCEL
                         : ConfirmationButtons.DISABLE_CANCEL
                 );
@@ -268,9 +299,9 @@ export class WebhookComponent implements OnInit {
                 this.webhookService
                     .UpdateWebhookPolicyOfProject({
                         projectNameOrId: this.projectId.toString(),
-                        webhookPolicyId: this.selectedRow[0].id,
-                        policy: Object.assign({}, this.selectedRow[0], {
-                            enabled: !this.selectedRow[0].enabled,
+                        webhookPolicyId: this.selectedRow.id,
+                        policy: Object.assign({}, this.selectedRow, {
+                            enabled: !this.selectedRow.enabled,
                         }),
                     })
                     .subscribe(
@@ -282,23 +313,19 @@ export class WebhookComponent implements OnInit {
                         }
                     );
             } else {
-                const observableLists: Observable<any>[] = [];
-                message.data.forEach(item => {
-                    observableLists.push(
-                        this.webhookService.DeleteWebhookPolicyOfProject({
-                            projectNameOrId: this.projectId.toString(),
-                            webhookPolicyId: item.id,
-                        })
-                    );
-                });
-                forkJoin(...observableLists).subscribe(
-                    response => {
-                        this.refresh();
-                    },
-                    error => {
-                        this.messageHandlerService.handleError(error);
-                    }
-                );
+                this.webhookService
+                    .DeleteWebhookPolicyOfProject({
+                        projectNameOrId: this.projectId.toString(),
+                        webhookPolicyId: message.data.id,
+                    })
+                    .subscribe({
+                        next: res => {
+                            this.refresh();
+                        },
+                        error: err => {
+                            this.messageHandlerService.handleError(err);
+                        },
+                    });
             }
         }
     }
@@ -309,12 +336,12 @@ export class WebhookComponent implements OnInit {
             this.addWebhookComponent.isEdit = true;
             this.addWebhookComponent.addWebhookFormComponent.isModify = true;
             this.addWebhookComponent.addWebhookFormComponent.webhook = clone(
-                this.selectedRow[0]
+                this.selectedRow
             );
             this.addWebhookComponent.addWebhookFormComponent.originValue =
-                clone(this.selectedRow[0]);
+                clone(this.selectedRow);
             this.addWebhookComponent.addWebhookFormComponent.webhook.event_types =
-                clone(this.selectedRow[0].event_types);
+                clone(this.selectedRow.event_types);
         }
     }
 
@@ -328,6 +355,7 @@ export class WebhookComponent implements OnInit {
             this.addWebhookComponent.addWebhookFormComponent.isModify = false;
             this.addWebhookComponent.addWebhookFormComponent.currentForm.reset({
                 notifyType: this.metadata.notify_type[0],
+                payloadFormat: PAYLOAD_FORMATS[0],
             });
             this.addWebhookComponent.addWebhookFormComponent.webhook = {
                 enabled: true,
@@ -337,6 +365,7 @@ export class WebhookComponent implements OnInit {
                         type: 'http',
                         address: '',
                         skip_cert_verify: true,
+                        payload_format: PAYLOAD_FORMATS[0],
                     },
                 ],
             };
@@ -350,9 +379,7 @@ export class WebhookComponent implements OnInit {
 
     deleteWebhook() {
         const names: string[] = [];
-        this.selectedRow.forEach(item => {
-            names.push(item.name);
-        });
+        names.push(this.selectedRow.name);
         let content = '';
         this.translate
             .get('WEBHOOK.DELETE_WEBHOOK_SUMMARY', { names: names.join(',') })
@@ -369,5 +396,17 @@ export class WebhookComponent implements OnInit {
     }
     eventTypeToText(eventType: string): string {
         return this.projectWebhookService.eventTypeToText(eventType);
+    }
+    refreshExecutions(e: WebhookPolicy) {
+        if (e) {
+            this.executionsComponent?.refreshExecutions(true, e.id);
+        }
+    }
+
+    getI18nKey(v: string) {
+        if (v && PAYLOAD_FORMAT_I18N_MAP[v]) {
+            return PAYLOAD_FORMAT_I18N_MAP[v];
+        }
+        return v;
     }
 }

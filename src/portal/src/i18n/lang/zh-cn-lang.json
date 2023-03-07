@@ -427,7 +427,10 @@
         "NAME_REQUIRED": "名称为必填项",
         "NOTIFY_TYPE": "通知类型",
         "EVENT_TYPE": "事件类型",
-        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型"
+        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
+        "PAYLOAD_FORMAT": "载荷形式",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "载荷数据"
     },
     "GROUP": {
         "GROUP": "组",

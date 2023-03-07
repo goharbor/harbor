@@ -3,7 +3,8 @@
     <clr-datagrid
         (clrDgRefresh)="getWebhooks($event)"
         [clrDgLoading]="loadingWebhookList"
-        [(clrDgSelected)]="selectedRow">
+        [(clrDgSingleSelected)]="selectedRow"
+        (clrDgSingleSelectedChange)="refreshExecutions($event)">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
@@ -32,15 +33,12 @@
                                 clrDropdownItem
                                 (click)="switchWebhookStatus()"
                                 [disabled]="
-                                    !(
-                                        selectedRow && selectedRow.length === 1
-                                    ) || !hasUpdatePermission
+                                    !selectedRow || !hasUpdatePermission
                                 ">
                                 <span id="toggle-webhook">
                                     <span
                                         *ngIf="
-                                            selectedRow[0] &&
-                                            !selectedRow[0].enabled
+                                            selectedRow && !selectedRow.enabled
                                         ">
                                         <clr-icon
                                             class="margin-top-2"
@@ -53,8 +51,8 @@
                                     <span
                                         *ngIf="
                                             !(
-                                                selectedRow[0] &&
-                                                !selectedRow[0].enabled
+                                                selectedRow &&
+                                                !selectedRow.enabled
                                             )
                                         ">
                                         <clr-icon
@@ -73,9 +71,7 @@
                                 (click)="editWebhook()"
                                 class="btn btn-secondary"
                                 [disabled]="
-                                    !(
-                                        selectedRow && selectedRow.length === 1
-                                    ) || !hasUpdatePermission
+                                    !selectedRow || !hasUpdatePermission
                                 ">
                                 <clr-icon
                                     class="margin-top-0"
@@ -93,8 +89,7 @@
                                 (click)="deleteWebhook()"
                                 class="btn btn-secondary"
                                 [disabled]="
-                                    !(selectedRow && selectedRow.length >= 1) ||
-                                    !hasUpdatePermission
+                                    !selectedRow || !hasUpdatePermission
                                 ">
                                 <clr-icon
                                     class="margin-top-0"
@@ -130,6 +125,9 @@
             'WEBHOOK.ENABLED' | translate
         }}</clr-dg-column>
         <clr-dg-column>{{ 'WEBHOOK.NOTIFY_TYPE' | translate }}</clr-dg-column>
+        <clr-dg-column>{{
+            'WEBHOOK.PAYLOAD_FORMAT' | translate
+        }}</clr-dg-column>
         <clr-dg-column class="min-width-340">{{
             'WEBHOOK.TARGET' | translate
         }}</clr-dg-column>
@@ -160,6 +158,9 @@
                 </div>
             </clr-dg-cell>
             <clr-dg-cell>{{ w?.targets[0].type }}</clr-dg-cell>
+            <clr-dg-cell>{{
+                getI18nKey(w?.targets[0].payload_format) | translate
+            }}</clr-dg-cell>
             <clr-dg-cell>{{ w?.targets[0].address }}</clr-dg-cell>
             <clr-dg-cell class="event-types">
                 <div class="cell" *ngIf="w?.event_types?.length">
@@ -200,13 +201,6 @@
                 w.creation_time | harborDatetime: 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{ w.description }}</clr-dg-cell>
-            <clr-dg-row-detail *clrIfExpanded>
-                <last-trigger
-                    class="w-100"
-                    [webhookName]="w.name"
-                    *clrIfExpanded
-                    [inputLastTriggers]="lastTriggers"></last-trigger>
-            </clr-dg-row-detail>
         </clr-dg-row>
         <clr-dg-footer>
             <clr-dg-pagination
@@ -227,6 +221,11 @@
         </clr-dg-footer>
     </clr-datagrid>
 </div>
+
+<app-executions
+    [selectedWebhook]="selectedRow"
+    *ngIf="selectedRow"></app-executions>
+
 <add-webhook
     (notify)="success()"
     [metadata]="metadata"
