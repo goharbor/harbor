@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import {
@@ -22,7 +22,7 @@ import { Task } from 'ng-swagger-gen/models/task';
     templateUrl: './tasks.component.html',
     styleUrls: ['./tasks.component.scss'],
 })
-export class TasksComponent implements OnInit {
+export class TasksComponent implements OnInit, OnDestroy {
     projectId: number;
     policyId: number;
     tasks: Task[] = [];
