@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
@@ -57,6 +58,11 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	if !o.valid(req) {
 		return nil
 	}
+
+	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
+		return nil
+	}
+
 	info, err := oidc.VerifySecret(ctx, username, secret)
 	if err != nil {
 		logger.Errorf("failed to verify secret, username: %s, error: %v", username, err)
