@@ -460,7 +460,10 @@
         "NAME_REQUIRED": "Nome é obrigatório",
         "NOTIFY_TYPE": "Tipo de Notificação",
         "EVENT_TYPE": "Tipo de Evento",
-        "EVENT_TYPE_REQUIRED": "Pelo menos um tipo de evento é obrigatório"
+        "EVENT_TYPE_REQUIRED": "Pelo menos um tipo de evento é obrigatório",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nome do usuário",
