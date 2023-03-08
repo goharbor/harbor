@@ -111,13 +111,13 @@ func (_m *Controller) GetSummary(ctx context.Context, _a1 *artifact.Artifact, mi
 	return r0, r1
 }
 
-// GetVulnerable provides a mock function with given fields: ctx, _a1, allowlist
-func (_m *Controller) GetVulnerable(ctx context.Context, _a1 *artifact.Artifact, allowlist models.CVESet) (*scan.Vulnerable, error) {
-	ret := _m.Called(ctx, _a1, allowlist)
+// GetVulnerable provides a mock function with given fields: ctx, _a1, allowlist, allowlistIsExpired
+func (_m *Controller) GetVulnerable(ctx context.Context, _a1 *artifact.Artifact, allowlist models.CVESet, allowlistIsExpired bool) (*scan.Vulnerable, error) {
+	ret := _m.Called(ctx, _a1, allowlist, allowlistIsExpired)
 
 	var r0 *scan.Vulnerable
-	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, models.CVESet) *scan.Vulnerable); ok {
-		r0 = rf(ctx, _a1, allowlist)
+	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, models.CVESet, bool) *scan.Vulnerable); ok {
+		r0 = rf(ctx, _a1, allowlist, allowlistIsExpired)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*scan.Vulnerable)
@@ -125,8 +125,8 @@ func (_m *Controller) GetVulnerable(ctx context.Context, _a1 *artifact.Artifact,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, models.CVESet) error); ok {
-		r1 = rf(ctx, _a1, allowlist)
+	if rf, ok := ret.Get(1).(func(context.Context, *artifact.Artifact, models.CVESet, bool) error); ok {
+		r1 = rf(ctx, _a1, allowlist, allowlistIsExpired)
 	} else {
 		r1 = ret.Error(1)
 	}
