@@ -148,7 +148,7 @@
         "NEW_PWD": "New Password",
         "CONFIRM_PWD": "Confirm Password",
         "SAVE_SUCCESS": "User password changed successfully.",
-        "PASS_TIPS": "8-128 characters long with 1 uppercase, 1 lowercase and 1 number"
+        "PASS_TIPS": "8-128 characters long with at least 1 uppercase, 1 lowercase and 1 number"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
