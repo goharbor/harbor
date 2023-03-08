@@ -31,8 +31,6 @@ export const ADAPTERS_MAP = {
     'github-ghcr': 'Github GHCR',
 };
 
-export const HELM_HUB: string = 'helm-hub';
-
 /**
  * Define the service methods to handle the endpoint related things.
  *

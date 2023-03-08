@@ -29,6 +29,13 @@ const EVENT_TYPES_TEXT_MAP = {
     TAG_RETENTION: 'Tag retention finished',
 };
 
+export const PAYLOAD_FORMATS: string[] = ['Default', 'CloudEvents'];
+
+export const PAYLOAD_FORMAT_I18N_MAP = {
+    [PAYLOAD_FORMATS[0]]: 'SCANNER.DEFAULT',
+    [PAYLOAD_FORMATS[1]]: 'WEBHOOK.CLOUD_EVENT',
+};
+
 @Injectable()
 export class ProjectWebhookService {
     constructor() {}

@@ -965,6 +965,8 @@ export enum PageSizeMapKeys {
     TAG_RETENTION_COMPONENT = 'TagRetentionComponent',
     PROJECT_ROBOT_COMPONENT = 'ProjectRobotAccountComponent',
     WEBHOOK_COMPONENT = 'WebhookComponent',
+    WEBHOOK_EXECUTIONS_COMPONENT = 'Webhook_Execution_Component',
+    WEBHOOK_TASKS_COMPONENT = 'Webhook_Tasks_Component',
     PROJECT_AUDIT_LOG_COMPONENT = 'ProjectAuditLogComponent',
     SYSTEM_RECENT_LOG_COMPONENT = 'SystemRecentLogComponent',
     SYSTEM_USER_COMPONENT = 'SystemUserComponent',

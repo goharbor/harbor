@@ -17,6 +17,8 @@ export enum RouteConfigId {
     REPLICATION_TASKS_PAGE = 'ReplicationTasksComponent',
     P2P_POLICIES_PAGE = 'PolicyComponent',
     P2P_TASKS_PAGE = 'P2pTaskListComponent',
+    WEBHOOK_POLICIES_PAGE = 'WebhookComponent',
+    WEBHOOK_TASKS_PAGE = 'WebhookTasksComponent',
 }
 // should not reuse the routes that meet these RegExps
 const ShouldNotReuseRouteRegExps: RegExp[] = [
@@ -72,6 +74,15 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
                     RouteConfigId.P2P_TASKS_PAGE &&
                 future.routeConfig.data.routeConfigId ===
                     RouteConfigId.P2P_POLICIES_PAGE
+            ) {
+                this.shouldDeleteCache = false;
+            }
+            // action 3: from webhook tasks list page to WebhookComponent page
+            if (
+                curr.routeConfig.data.routeConfigId ===
+                    RouteConfigId.WEBHOOK_TASKS_PAGE &&
+                future.routeConfig.data.routeConfigId ===
+                    RouteConfigId.WEBHOOK_POLICIES_PAGE
             ) {
                 this.shouldDeleteCache = false;
             }

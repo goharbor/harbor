@@ -94,7 +94,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 		projectSeverity := vuln.ParseSeverityVersion3(proj.Severity())
 
-		vulnerable, err := scanController.GetVulnerable(ctx, art, allowlist)
+		vulnerable, err := scanController.GetVulnerable(ctx, art, allowlist, proj.CVEAllowlist.IsExpired())
 		if err != nil {
 			if errors.IsNotFoundErr(err) {
 				// No report yet?

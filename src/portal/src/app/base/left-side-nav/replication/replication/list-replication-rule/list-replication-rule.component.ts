@@ -47,12 +47,10 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { errorHandler } from '../../../../../shared/units/shared.utils';
 import { ConfirmationAcknowledgement } from '../../../../global-confirmation-dialog/confirmation-state-message';
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
-import { HELM_HUB } from '../../../../../shared/services/endpoint.service';
 import { BandwidthUnit, Flatten_I18n_MAP } from '../../replication';
 import { KB_TO_MB } from '../create-edit-rule/create-edit-rule.component';
 import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
-import { JobserviceService } from '../../../../../../../ng-swagger-gen/services/jobservice.service';
 import { ReplicationTrigger } from '../../../../../../../ng-swagger-gen/models/replication-trigger';
 import {
     TRIGGER,
@@ -367,10 +365,6 @@ export class ListReplicationRuleComponent implements OnInit {
         this.selectedRow = null;
         this.searchString = null;
         this.clrLoad();
-    }
-
-    isHelmHub(srcRegistry: any): boolean {
-        return srcRegistry && srcRegistry.type === HELM_HUB;
     }
 
     getFlattenLevelString(level: number) {

@@ -48,6 +48,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../services/event-service/event.service';
+import { RouteConfigId } from '../../../route-reuse-strategy/harbor-route-reuse-strategy';
 
 @Component({
     selector: 'project-detail',
@@ -471,5 +472,40 @@ export class ProjectDetailComponent
                     this.currentProject = (<any>res) as Project;
                 }
             });
+    }
+
+    backToWebhook() {
+        this.router.navigate([
+            'harbor',
+            'projects',
+            `${this.projectId}`,
+            'webhook',
+        ]);
+    }
+
+    isWebhookTaskListPage(): boolean {
+        return (
+            this.route?.firstChild?.firstChild?.snapshot.data[
+                'routeConfigId'
+            ] === RouteConfigId.WEBHOOK_TASKS_PAGE
+        );
+    }
+
+    backToP2pPreheat(): void {
+        this.router.navigate([
+            'harbor',
+            'projects',
+            `${this.projectId}`,
+            'p2p-provider',
+            'policies',
+        ]);
+    }
+
+    isP2pPreheatTaskListPage(): boolean {
+        return (
+            this.route?.firstChild?.firstChild?.snapshot.data[
+                'routeConfigId'
+            ] === RouteConfigId.P2P_TASKS_PAGE
+        );
     }
 }
