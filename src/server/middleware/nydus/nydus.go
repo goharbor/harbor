@@ -129,11 +129,11 @@ func AcceleratorMiddleware() func(http.Handler) http.Handler {
 
 			if err := orm.WithTransaction(func(ctx context.Context) error {
 				id, err := accessory.Mgr.Create(ctx, model.AccessoryData{
-					ArtifactID:    art.ID,
-					SubArtifactID: subjectArt.ID,
-					Size:          desc.Size,
-					Digest:        desc.Digest.String(),
-					Type:          model.TypeNydusAccelerator,
+					ArtifactID:        art.ID,
+					SubArtifactDigest: subjectArt.Digest,
+					Size:              desc.Size,
+					Digest:            desc.Digest.String(),
+					Type:              model.TypeNydusAccelerator,
 				})
 				log.Debug("accessory id:", id)
 				return err

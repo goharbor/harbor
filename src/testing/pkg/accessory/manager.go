@@ -86,13 +86,13 @@ func (_m *Manager) DeleteAccessories(ctx context.Context, _a1 *q.Query) error {
 	return r0
 }
 
-// Ensure provides a mock function with given fields: ctx, subArtID, artifactID, size, digest, accType
-func (_m *Manager) Ensure(ctx context.Context, subArtID int64, artifactID int64, size int64, digest string, accType string) error {
-	ret := _m.Called(ctx, subArtID, artifactID, size, digest, accType)
+// Ensure provides a mock function with given fields: ctx, subArtDigest, artifactID, size, digest, accType
+func (_m *Manager) Ensure(ctx context.Context, subArtDigest string, artifactID int64, size int64, digest string, accType string) error {
+	ret := _m.Called(ctx, subArtDigest, artifactID, size, digest, accType)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, int64, string, string) error); ok {
-		r0 = rf(ctx, subArtID, artifactID, size, digest, accType)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, int64, string, string) error); ok {
+		r0 = rf(ctx, subArtDigest, artifactID, size, digest, accType)
 	} else {
 		r0 = ret.Error(0)
 	}

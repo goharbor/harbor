@@ -21,10 +21,10 @@ func (suite *BaseTestSuite) SetupSuite() {
 	suite.subDigest = suite.DigestString()
 	suite.accessory, _ = model.New(model.TypeNone,
 		model.AccessoryData{
-			ArtifactID:    1,
-			SubArtifactID: 2,
-			Size:          1234,
-			Digest:        suite.digest,
+			ArtifactID:        1,
+			SubArtifactDigest: suite.subDigest,
+			Size:              1234,
+			Digest:            suite.digest,
 		})
 }
 
@@ -37,7 +37,7 @@ func (suite *BaseTestSuite) TestGetArtID() {
 }
 
 func (suite *BaseTestSuite) TestSubGetArtID() {
-	suite.Equal(int64(2), suite.accessory.GetData().SubArtifactID)
+	suite.Equal(suite.subDigest, suite.accessory.GetData().SubArtifactDigest)
 }
 
 func (suite *BaseTestSuite) TestSubGetSize() {
