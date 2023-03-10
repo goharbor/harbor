@@ -50,3 +50,33 @@ WHERE id IN (
     UNION
     SELECT id FROM replication_policy_ids
 );
+/* Update the role permission and permission policy associated with the chartmuseum */
+DELETE FROM role_permission
+WHERE permission_policy_id IN (
+    SELECT id FROM permission_policy WHERE resource IN ('helm-chart', 'helm-chart-version' ,'helm-chart-version-label')
+);
+
+DELETE FROM permission_policy
+WHERE resource IN ('helm-chart', 'helm-chart-version' ,'helm-chart-version-label');
+/* Update the notification policy associated with the chartmuseum */
+WITH event_type_objects AS (
+    SELECT id, jsonb_array_elements(event_types::jsonb) as event_type
+    FROM notification_policy
+    WHERE event_types IS NOT NULL AND event_types != ''
+    AND jsonb_typeof(CAST(event_types AS jsonb)) = 'array'
+)
+UPDATE notification_policy AS np
+SET event_types = (
+    SELECT COALESCE(jsonb_agg(eto.event_type), '[]')
+    FROM event_type_objects AS eto
+    WHERE eto.id = np.id
+    AND NOT(event_type @> '"UPLOAD_CHART"'::jsonb OR event_type @> '"DOWNLOAD_CHART"'::jsonb OR event_type @> '"DELETE_CHART"'::jsonb)
+)
+WHERE id IN (
+    SELECT id FROM event_type_objects WHERE (event_type @> '"UPLOAD_CHART"'::jsonb OR event_type @> '"DOWNLOAD_CHART"'::jsonb OR event_type @> '"DELETE_CHART"'::jsonb)
+);
+
+UPDATE notification_policy
+SET enabled = false,
+    description = 'Chartmuseum is deprecated in Harbor v2.8.0, because this notification policy only has event type about Chartmuseum, so please update or delete this notification policy.'
+WHERE event_types = '[]';
