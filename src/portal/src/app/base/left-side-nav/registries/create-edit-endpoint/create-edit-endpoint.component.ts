@@ -25,7 +25,7 @@ import { Subscription, throwError as observableThrowError } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
-import { Endpoint, PingEndpoint } from '../../../../shared/services/interface';
+import { Endpoint, PingEndpoint } from '../../../../shared/services';
 import {
     clone,
     compareValue,
@@ -35,10 +35,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { AppConfigService } from '../../../../services/app-config.service';
-import {
-    EndpointService,
-    HELM_HUB,
-} from '../../../../shared/services/endpoint.service';
+import { EndpointService } from '../../../../shared/services/endpoint.service';
 import { ClrLoadingState } from '@clr/angular';
 
 const FAKE_PASSWORD = 'rjGcfuRu';
@@ -56,7 +53,6 @@ export class CreateEditEndpointComponent
     modalTitle: string;
     urlDisabled: boolean = false;
     editDisabled: boolean = false;
-    controlEnabled: boolean = false;
     createEditDestinationOpened: boolean;
     staticBackdrop: boolean = true;
     closable: boolean = false;
@@ -64,11 +60,9 @@ export class CreateEditEndpointComponent
     adapterList: string[];
     endpointList: any[] = [];
     target: Endpoint = this.initEndpoint();
-    selectedType: string;
     initVal: Endpoint;
     targetForm: NgForm;
     @ViewChild('targetForm') currentForm: NgForm;
-    targetEndpoint;
     testOngoing: boolean;
     onGoing: boolean;
     endpointId: number | string;
@@ -101,12 +95,6 @@ export class CreateEditEndpointComponent
         this.endpointService.getAdapters().subscribe(
             adapters => {
                 this.adapterList = adapters || [];
-                // disable helm-hub
-                for (let i = 0; i < this.adapterList.length; i++) {
-                    if (this.adapterList[i] === HELM_HUB) {
-                        this.adapterList.splice(i, 1);
-                    }
-                }
             },
             error => {
                 this.errorHandler.error(error);
@@ -520,9 +508,5 @@ export class CreateEditEndpointComponent
 
     getAdapterText(adapter: string): string {
         return this.endpointService.getAdapterText(adapter);
-    }
-    // hide helm hub option when creating registry
-    shouldHide(adapter: string) {
-        return adapter === HELM_HUB && !this.endpointId;
     }
 }

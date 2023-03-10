@@ -242,3 +242,89 @@ func Test_filterRobotPolicies(t *testing.T) {
 		})
 	}
 }
+
+func Test_getPolicyResource(t *testing.T) {
+	type args struct {
+		perm *robot.Permission
+		poli *types.Policy
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"project resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: fmt.Sprintf("/project/%d", private.ProjectID),
+				},
+				&types.Policy{Resource: "project", Action: "pull", Effect: "allow"},
+			},
+			fmt.Sprintf("/project/%d", private.ProjectID),
+		},
+		{
+			"project resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: fmt.Sprintf("/project/%d", private.ProjectID),
+				},
+				&types.Policy{Resource: "repository", Action: "get", Effect: "allow"},
+			},
+			fmt.Sprintf("/project/%d/repository", private.ProjectID),
+		},
+		{
+			"system resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: "/system",
+				},
+				&types.Policy{Resource: "repository", Action: "get", Effect: "allow"},
+			},
+			"/system/repository",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getPolicyResource(tt.args.perm, tt.args.poli); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPolicyResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

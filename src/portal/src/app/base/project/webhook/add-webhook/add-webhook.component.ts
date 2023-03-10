@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { AddWebhookFormComponent } from '../add-webhook-form/add-webhook-form.component';
 import { WebhookPolicy } from '../../../../../../ng-swagger-gen/models/webhook-policy';
+import { SupportedWebhookEventTypes } from '../../../../../../ng-swagger-gen/models/supported-webhook-event-types';
 
 @Component({
     selector: 'add-webhook',
@@ -22,7 +23,7 @@ export class AddWebhookComponent {
     @Input() projectId: number;
     webhook: WebhookPolicy;
     @Input()
-    metadata: any;
+    metadata: SupportedWebhookEventTypes;
     @ViewChild(AddWebhookFormComponent)
     addWebhookFormComponent: AddWebhookFormComponent;
     @Output() notify = new EventEmitter<WebhookPolicy>();

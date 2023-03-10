@@ -1,16 +1,18 @@
-<div class="replication-tasks mt-2">
+<div class="replication-tasks mt-3">
     <section class="overview-section">
         <div class="title-wrapper">
             <div>
                 <div class="title-block">
-                    <div>
-                        <h2 class="custom-h2 h2-style">
+                    <div class="first-item">
+                        <h2 class="custom-h2 h2-style mt-0">
                             {{ 'P2P_PROVIDER.EXECUTIONS' | translate }}
                         </h2>
                         <span class="id-divider"></span>
-                        <h2 class="custom-h2 h2-style">{{ executionId }}</h2>
+                        <h2 class="custom-h2 h2-style mt-0">
+                            {{ executionId }}
+                        </h2>
                     </div>
-                    <div class="margin-top-16px">
+                    <div>
                         <div
                             class="status-progress"
                             *ngIf="execution && isInProgress()">
@@ -38,32 +40,11 @@
                             <span>{{ 'REPLICATION.FAILURE' | translate }}</span>
                         </div>
                     </div>
-                    <div class="button-stop">
-                        <button
-                            class="btn btn-primary"
-                            (click)="stopJob()"
-                            [disabled]="
-                                !hasUpdatePermission ||
-                                stopOnGoing ||
-                                !canStop()
-                            ">
-                            {{ 'REPLICATION.STOPJOB' | translate }}
-                        </button>
-                        <span
-                            class="spinner spinner-inline"
-                            [hidden]="inProgress === false"></span>
-                    </div>
                 </div>
             </div>
         </div>
         <div class="execution-block">
             <div class="executions-detail">
-                <div>
-                    <label
-                        >{{ 'REPLICATION.TRIGGER_MODE' | translate }} :</label
-                    >
-                    <span>{{ trigger() | translate }}</span>
-                </div>
                 <div>
                     <label
                         >{{ 'REPLICATION.CREATION_TIME' | translate }} :</label
@@ -107,44 +88,14 @@
     </section>
 
     <div class="tasks-detail">
-        <h3 class="modal-title">{{ 'P2P_PROVIDER.TASKS' | translate }}</h3>
         <clr-datagrid
-            (clrDgRefresh)="clrLoadTasks(true, $event)"
+            (clrDgRefresh)="clrLoadTasks($event, true)"
             [clrDgLoading]="loading">
             <clr-dg-action-bar>
-                <div class="row flex-end">
-                    <div
-                        class="select filter-tag clr-select-wrapper"
-                        [hidden]="!isOpenFilterTag">
-                        <select
-                            id="selectKey"
-                            (change)="selectFilterKey($event)">
-                            <option value="id">
-                                {{
-                                    'REPLICATION.TASK_ID'
-                                        | translate
-                                        | lowercase
-                                }}
-                            </option>
-                            <option value="execution_id">
-                                {{ 'P2P_PROVIDER.ID' | translate | lowercase }}
-                            </option>
-                            <option value="status">
-                                {{
-                                    'REPLICATION.STATUS' | translate | lowercase
-                                }}
-                            </option>
-                        </select>
-                    </div>
-                    <hbr-filter
-                        (filterEvt)="doFilter($event)"
-                        [currentValue]="searchString"
-                        id="filter-executions"
-                        [withDivider]="true"
-                        (openFlag)="openFilter($event)"
-                        filterPlaceholder="{{
-                            'REPLICATION.FILTER_PLACEHOLDER' | translate
-                        }}"></hbr-filter>
+                <div class="flex-end">
+                    <h3 class="modal-title mt-0">
+                        {{ 'P2P_PROVIDER.TASKS' | translate }}
+                    </h3>
                     <span class="refresh-btn">
                         <clr-icon
                             shape="refresh"
@@ -153,25 +104,15 @@
                     </span>
                 </div>
             </clr-dg-action-bar>
-            <clr-dg-column>{{
+            <clr-dg-column [clrDgField]="'id'">{{
                 'REPLICATION.TASK_ID' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{ 'P2P_PROVIDER.ID' | translate }}</clr-dg-column>
-            <clr-dg-column>{{
-                'REPLICATION.STATUS' | translate
+            <clr-dg-column [clrDgSortBy]="'status'">{{
+                'DESTINATION.STATUS' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{
-                'P2P_PROVIDER.ARTIFACT' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{
-                'P2P_PROVIDER.DIGEST' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{ 'P2P_PROVIDER.TYPE' | translate }}</clr-dg-column>
-            <clr-dg-column>{{
-                'REPLICATION.CREATION_TIME' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{
-                'REPLICATION.DURATION' | translate
+            <clr-dg-column [clrDgSortBy]="'creation_time'">{{
+                'DESTINATION.CREATION_TIME' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{ 'REPLICATION.LOGS' | translate }}</clr-dg-column>
             <clr-dg-placeholder>{{
@@ -181,8 +122,8 @@
                 <clr-dg-cell>{{ t.id }}</clr-dg-cell>
                 <clr-dg-cell>{{ t.execution_id }}</clr-dg-cell>
                 <clr-dg-cell
-                    >{{ t.status }}
-                    <clr-tooltip>
+                    >{{ t.status
+                    }}<clr-tooltip>
                         <clr-icon
                             *ngIf="t.status_message"
                             clrTooltipTrigger
@@ -194,22 +135,11 @@
                             *clrIfOpen>
                             <span>{{ t.status_message }}</span>
                         </clr-tooltip-content>
-                    </clr-tooltip>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <span>{{ t.extra_attrs?.artifact }}</span>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <span>{{ t.extra_attrs?.digest }}</span>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <span>{{ t.extra_attrs?.kind }}</span>
-                </clr-dg-cell>
-
+                    </clr-tooltip></clr-dg-cell
+                >
                 <clr-dg-cell>{{
-                    t.start_time | harborDatetime: 'short'
+                    t.creation_time | harborDatetime: 'short'
                 }}</clr-dg-cell>
-                <clr-dg-cell>{{ getDuration(t) }}</clr-dg-cell>
                 <clr-dg-cell>
                     <a
                         rel="noopener noreferrer"

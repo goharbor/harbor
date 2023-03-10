@@ -105,6 +105,7 @@
         <clr-dg-column [clrDgField]="'checkin_at'">{{
             'JOB_SERVICE_DASHBOARD.CHECK_IN_AT' | translate
         }}</clr-dg-column>
+        <clr-dg-column>{{ 'REPLICATION.LOGS' | translate }}</clr-dg-column>
         <clr-dg-placeholder>{{
             'JOB_SERVICE_DASHBOARD.NO_WORKER' | translate
         }}</clr-dg-placeholder>
@@ -114,6 +115,15 @@
             <clr-dg-cell>{{ w.job_id }}</clr-dg-cell>
             <clr-dg-cell>{{ w.start_at | harborDatetime }}</clr-dg-cell>
             <clr-dg-cell>{{ w.checkin_at | harborDatetime }}</clr-dg-cell>
+            <clr-dg-cell>
+                <a
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    [href]="viewLog(w.job_id)"
+                    *ngIf="w.job_id">
+                    <clr-icon shape="list"></clr-icon>
+                </a>
+            </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
             <clr-dg-pagination
