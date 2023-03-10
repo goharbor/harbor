@@ -2,6 +2,7 @@ import {
     DEFAULT_PAGE_SIZE,
     delUrlParam,
     durationStr,
+    getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getQueryString,
     getSizeNumber,
@@ -9,6 +10,7 @@ import {
     getSortingString,
     isSameArrayValue,
     isSameObject,
+    setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
 } from './utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
@@ -126,5 +128,32 @@ describe('functions in utils.ts should work', () => {
         expect(durationStr(1111)).toEqual('1sec');
         expect(durationStr(61111)).toEqual('1min 1sec');
         expect(durationStr(3661111)).toEqual('1hrs 1min 1sec');
+    });
+
+    it('functions getHiddenArrayFromLocalStorage() and setHiddenArrayToLocalStorage() should work', () => {
+        let store = {};
+        spyOn(localStorage, 'getItem').and.callFake(key => {
+            return store[key];
+        });
+        spyOn(localStorage, 'setItem').and.callFake((key, value) => {
+            return (store[key] = value + '');
+        });
+        spyOn(localStorage, 'clear').and.callFake(() => {
+            store = {};
+        });
+        expect(getHiddenArrayFromLocalStorage(null, [])).toEqual([]);
+        expect(getHiddenArrayFromLocalStorage('test', [true])).toEqual([true]);
+        expect(getHiddenArrayFromLocalStorage('test1', [])).toEqual([]);
+        setHiddenArrayToLocalStorage('test1', [false, false, false]);
+        expect(getHiddenArrayFromLocalStorage('test1', [false])).toEqual([
+            false,
+            false,
+            false,
+        ]);
+        setHiddenArrayToLocalStorage('test1', [true, true]);
+        expect(getHiddenArrayFromLocalStorage('test1', [false])).toEqual([
+            true,
+            true,
+        ]);
     });
 });
