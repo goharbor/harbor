@@ -16,6 +16,7 @@ package tag
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -35,7 +36,8 @@ import (
 
 var (
 	// Ctl is a global tag controller instance
-	Ctl = NewController()
+	Ctl            = NewController()
+	tagNamePattern = regexp.MustCompile(`^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$`)
 )
 
 // Controller manages the tags
@@ -160,7 +162,16 @@ func (c *controller) Get(ctx context.Context, id int64, option *Option) (tag *Ta
 
 // Create ...
 func (c *controller) Create(ctx context.Context, tag *Tag) (id int64, err error) {
+	if !isValidTag(tag.Name) {
+		return 0, errors.BadRequestError(errors.Errorf("invalid tag name: %s", tag.Name))
+	}
 	return c.tagMgr.Create(ctx, &(tag.Tag))
+}
+
+func isValidTag(name string) bool {
+	// tag name should follow OCI spec
+	// https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull
+	return tagNamePattern.MatchString(name)
 }
 
 // Update ...
