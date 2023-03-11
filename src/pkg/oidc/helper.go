@@ -17,7 +17,6 @@ package oidc
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -50,14 +49,13 @@ type claimsProvider interface {
 type providerHelper struct {
 	sync.Mutex
 	instance     atomic.Value
-	setting      atomic.Value
 	creationTime time.Time
 }
 
-func (p *providerHelper) get() (*gooidc.Provider, error) {
+func (p *providerHelper) get(ctx context.Context) (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
 		if time.Since(p.creationTime) > 3*time.Second {
-			if err := p.create(); err != nil {
+			if err := p.create(ctx); err != nil {
 				return nil, err
 			}
 		}
@@ -65,42 +63,23 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 		p.Lock()
 		defer p.Unlock()
 		if p.instance.Load() == nil {
-			if err := p.reloadSetting(); err != nil {
+			if err := p.create(ctx); err != nil {
 				return nil, err
 			}
-			if err := p.create(); err != nil {
-				return nil, err
-			}
-			go func() {
-				for {
-					if err := p.reloadSetting(); err != nil {
-						log.Warningf("Failed to refresh configuration, error: %v", err)
-					}
-					time.Sleep(3 * time.Second)
-				}
-			}()
 		}
 	}
 
 	return p.instance.Load().(*gooidc.Provider), nil
 }
 
-func (p *providerHelper) reloadSetting() error {
-	conf, err := config.OIDCSetting(orm.Context())
+func (p *providerHelper) create(ctx context.Context) error {
+	s, err := config.OIDCSetting(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to load OIDC setting: %v", err)
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return err
 	}
-	p.setting.Store(*conf)
-	return nil
-}
-
-func (p *providerHelper) create() error {
-	if p.setting.Load() == nil {
-		return errors.New("the configuration is not loaded")
-	}
-	s := p.setting.Load().(cfgModels.OIDCSetting)
-	ctx := clientCtx(context.Background(), s.VerifyCert)
-	provider, err := gooidc.NewProvider(ctx, s.Endpoint)
+	c := clientCtx(ctx, s.VerifyCert)
+	provider, err := gooidc.NewProvider(c, s.Endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
 	}
@@ -137,12 +116,16 @@ type UserInfo struct {
 	hasGroupClaim       bool
 }
 
-func getOauthConf() (*oauth2.Config, error) {
-	p, err := provider.get()
+func getOauthConf(ctx context.Context) (*oauth2.Config, error) {
+	p, err := provider.get(ctx)
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(cfgModels.OIDCSetting)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return nil, err
+	}
 	scopes := make([]string, 0)
 	for _, sc := range setting.Scope {
 		if strings.HasPrefix(p.Endpoint().AuthURL, googleEndpoint) && sc == gooidc.ScopeOfflineAccess {
@@ -162,14 +145,18 @@ func getOauthConf() (*oauth2.Config, error) {
 
 // AuthCodeURL returns the URL for OIDC provider's consent page.  The state should be verified when user is redirected
 // back to Harbor.
-func AuthCodeURL(state string) (string, error) {
-	conf, err := getOauthConf()
+func AuthCodeURL(ctx context.Context, state string) (string, error) {
+	conf, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return "", err
 	}
 	var options []oauth2.AuthCodeOption
-	setting := provider.setting.Load().(cfgModels.OIDCSetting)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return "", err
+	}
 	for k, v := range setting.ExtraRedirectParms {
 		options = append(options, oauth2.SetAuthURLParam(k, v))
 	}
@@ -182,12 +169,16 @@ func AuthCodeURL(state string) (string, error) {
 
 // ExchangeToken get the token from token provider via the code
 func ExchangeToken(ctx context.Context, code string) (*Token, error) {
-	oauth, err := getOauthConf()
+	oauth, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return nil, err
 	}
-	setting := provider.setting.Load().(cfgModels.OIDCSetting)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return nil, err
+	}
 	ctx = clientCtx(ctx, setting.VerifyCert)
 	oauthToken, err := oauth.Exchange(ctx, code)
 	if err != nil {
@@ -208,11 +199,15 @@ func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error
 
 func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.Config) (*gooidc.IDToken, error) {
 	log.Debugf("Raw ID token for verification: %s", rawIDToken)
-	p, err := provider.get()
+	p, err := provider.get(ctx)
 	if err != nil {
 		return nil, err
 	}
-	settings := provider.setting.Load().(cfgModels.OIDCSetting)
+	settings, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return nil, err
+	}
 	if conf == nil {
 		conf = &gooidc.Config{ClientID: settings.ClientID}
 	}
@@ -236,11 +231,15 @@ func clientCtx(ctx context.Context, verifyCert bool) context.Context {
 // refreshToken tries to refresh the token if it's expired, if it doesn't the
 // original one will be returned.
 func refreshToken(ctx context.Context, token *Token) (*Token, error) {
-	oauthCfg, err := getOauthConf()
+	oauthCfg, err := getOauthConf(ctx)
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(cfgModels.OIDCSetting)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return nil, err
+	}
 	cctx := clientCtx(ctx, setting.VerifyCert)
 	ts := oauthCfg.TokenSource(cctx, &token.Token)
 	nt, err := ts.Token()
@@ -258,16 +257,20 @@ func refreshToken(ctx context.Context, token *Token) (*Token, error) {
 // to generate a UserInfo object, if the ID token is not in the input token struct, some attributes will be empty
 func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	// #10913: preload the configuration, in case it was not previously loaded by the UI
-	_, err := provider.get()
+	_, err := provider.get(ctx)
 	if err != nil {
 		return nil, err
 	}
-	setting := provider.setting.Load().(cfgModels.OIDCSetting)
-	local, err := UserInfoFromIDToken(ctx, token, setting)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC configuration, error: %v", err)
+		return nil, err
+	}
+	local, err := UserInfoFromIDToken(ctx, token, *setting)
 	if err != nil {
 		return nil, err
 	}
-	remote, err := userInfoFromRemote(ctx, token, setting)
+	remote, err := userInfoFromRemote(ctx, token, *setting)
 	if err != nil {
 		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
 	}
@@ -319,7 +322,7 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 }
 
 func userInfoFromRemote(ctx context.Context, token *Token, setting cfgModels.OIDCSetting) (*UserInfo, error) {
-	p, err := provider.get()
+	p, err := provider.get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -409,6 +412,7 @@ func populateGroupsDB(groupNames []string) ([]int, error) {
 	ctx := orm.Context()
 	cfg, err := config.OIDCSetting(ctx)
 	if err != nil {
+		log.Errorf("failed to get OIDC config, error: %v", err)
 		return nil, err
 	}
 	log.Debugf("populateGroupsDB, group filter %v", cfg.GroupFilter)
