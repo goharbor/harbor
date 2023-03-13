@@ -16,6 +16,7 @@ package v2
 
 import (
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	ctltag "github.com/goharbor/harbor/src/controller/tag"
@@ -78,9 +79,7 @@ func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 			if err != nil {
 				return nil, err
 			}
-			for _, tag := range tags {
-				accArt.Tags = append(accArt.Tags, tag)
-			}
+			accArt.Tags = append(accArt.Tags, tags...)
 
 			accArts = append(accArts, accArt)
 		}

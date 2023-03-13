@@ -6,11 +6,13 @@
         border: labelColor?.color === '#FFFFFF' ? '1px solid #A1A1A1' : 'none'
     }"
     [style.max-width.px]="labelWidth">
-    <clr-icon
-        *ngIf="hasIcon && label.scope === 'p'"
-        shape="organization"></clr-icon>
-    <clr-icon
-        *ngIf="hasIcon && label.scope === 'g'"
-        shape="administrator"></clr-icon>
-    {{ label.name }}
+    <span>
+        <clr-icon
+            *ngIf="hasIcon && label.scope === 'p'"
+            shape="organization"></clr-icon>
+        <clr-icon
+            *ngIf="hasIcon && label.scope === 'g'"
+            shape="administrator"></clr-icon>
+    </span>
+    <span class="label-name">{{ label.name }}</span>
 </label>

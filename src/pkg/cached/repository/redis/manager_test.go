@@ -19,12 +19,13 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testRepo "github.com/goharbor/harbor/src/testing/pkg/repository"
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {
@@ -38,10 +39,8 @@ type managerTestSuite struct {
 func (m *managerTestSuite) SetupTest() {
 	m.repoMgr = &testRepo.Manager{}
 	m.cache = &testcache.Cache{}
-	m.cachedManager = NewManager(
-		m.repoMgr,
-	)
-	m.cachedManager.(*manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager = NewManager(m.repoMgr)
+	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
 }
 

@@ -1,28 +1,32 @@
 package notification
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/job"
-	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
+	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 )
 
 func TestSlackJobMaxFails(t *testing.T) {
 	rep := &SlackJob{}
-	// test default max fails
-	assert.Equal(t, uint(10), rep.MaxFails())
+	t.Run("default max fails", func(t *testing.T) {
+		assert.Equal(t, uint(10), rep.MaxFails())
+	})
 
-	// test user defined max fails
-	_ = os.Setenv(maxFails, "15")
-	assert.Equal(t, uint(15), rep.MaxFails())
+	t.Run("user defined max fails", func(t *testing.T) {
+		t.Setenv(maxFails, "15")
+		assert.Equal(t, uint(15), rep.MaxFails())
+	})
 
-	// test user defined wrong max fails
-	_ = os.Setenv(maxFails, "abc")
-	assert.Equal(t, uint(10), rep.MaxFails())
+	t.Run("user defined wrong max fails", func(t *testing.T) {
+		t.Setenv(maxFails, "abc")
+		assert.Equal(t, uint(10), rep.MaxFails())
+	})
 }
 
 func TestSlackJobShouldRetry(t *testing.T) {
@@ -52,7 +56,7 @@ func TestSlackJobRun(t *testing.T) {
 	// test slack request
 	ts := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 
 			// test request method
 			assert.Equal(t, http.MethodPost, r.Method)

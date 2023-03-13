@@ -9,8 +9,7 @@ set +o noglob
 
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
 Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.yml bacause notary must run under https. 
-Please set --with-trivy if needs enable Trivy in Harbor
-Please set --with-chartmuseum if needs enable Chartmuseum in Harbor'
+Please set --with-trivy if needs enable Trivy in Harbor'
 item=0
 
 # notary is not enabled by default
@@ -19,8 +18,9 @@ with_notary=$false
 with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
-# chartmuseum is not enabled by default
-with_chartmuseum=$false
+
+# flag to using docker compose v1 or v2, default would using v1 docker-compose
+DOCKER_COMPOSE=docker-compose
 
 while [ $# -gt 0 ]; do
         case $1 in
@@ -33,8 +33,6 @@ while [ $# -gt 0 ]; do
             with_clair=true;;
             --with-trivy)
             with_trivy=true;;
-            --with-chartmuseum)
-            with_chartmuseum=true;;
             *)
             note "$usage"
             exit 1;;
@@ -80,22 +78,26 @@ if [ $with_trivy ]
 then
     prepare_para="${prepare_para} --with-trivy"
 fi
-if [ $with_chartmuseum ]
-then
-    prepare_para="${prepare_para} --with-chartmuseum"
-fi
 
 ./prepare $prepare_para
 echo ""
 
-if [ -n "$(docker-compose ps -q)"  ]
-then
-    note "stopping existing Harbor instance ..." 
-    docker-compose down -v
+if [ -n "$DOCKER_COMPOSE ps -q"  ]
+    then
+        note "stopping existing Harbor instance ..." 
+        $DOCKER_COMPOSE down -v
 fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
-docker-compose up -d
+if [ $with_notary ]
+then
+    warn "
+    Notary will be deprecated as of Harbor v2.6.0 and start to be removed in v2.8.0 or later.
+    You can use cosign for signature instead since Harbor v2.5.0.
+    Please see discussion here for more details. https://github.com/goharbor/harbor/discussions/16612"
+fi
+
+$DOCKER_COMPOSE up -d
 
 success $"----Harbor has been installed and started successfully.----"

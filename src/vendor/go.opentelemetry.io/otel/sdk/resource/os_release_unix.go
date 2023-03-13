@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build aix || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos
 // +build aix dragonfly freebsd linux netbsd openbsd solaris zos
 
 package resource // import "go.opentelemetry.io/otel/sdk/resource"

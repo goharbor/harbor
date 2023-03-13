@@ -17,6 +17,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -34,7 +36,6 @@ import (
 	userDao "github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
-	"github.com/stretchr/testify/assert"
 )
 
 var ldapTestConfig = map[string]interface{}{

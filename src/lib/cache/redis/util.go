@@ -23,7 +23,13 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+
 	"github.com/goharbor/harbor/src/lib/errors"
+)
+
+var (
+	// defaultDBIndex defines the default redis db index
+	defaultDBIndex = 0
 )
 
 // ParseSentinelURL parses sentinel url to redis FailoverOptions.
@@ -44,13 +50,18 @@ func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 		return r == '/'
 	})
 	// expect path length is 2, example: [mymaster 1]
-	if len(f) != 2 {
+	// but if the db is default(0) which can be ignored, so when the path length is 1, then set db to 0
+	switch len(f) {
+	case 1:
+		o.MasterName = f[0]
+		o.DB = defaultDBIndex
+	case 2:
+		o.MasterName = f[0]
+		if o.DB, err = strconv.Atoi(f[1]); err != nil {
+			return nil, errors.Errorf("redis: invalid database number: %q", f[1])
+		}
+	default:
 		return nil, errors.Errorf("redis: invalid redis URL path: %s", u.Path)
-	}
-
-	o.MasterName = f[0]
-	if o.DB, err = strconv.Atoi(f[1]); err != nil {
-		return nil, errors.Errorf("redis: invalid database number: %q", f[1])
 	}
 
 	return setupConnParams(u, o)

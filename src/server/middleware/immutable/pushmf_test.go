@@ -10,21 +10,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/controller/immutable"
-	"github.com/goharbor/harbor/src/pkg"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/lib"
-	internal_orm "github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	immu_model "github.com/goharbor/harbor/src/pkg/immutable/model"
-	"github.com/goharbor/harbor/src/pkg/repository/model"
-	"github.com/goharbor/harbor/src/pkg/tag"
-	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/controller/immutable"
+	"github.com/goharbor/harbor/src/lib"
+	internal_orm "github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/artifact"
+	immu_model "github.com/goharbor/harbor/src/pkg/immutable/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/repository/model"
+	"github.com/goharbor/harbor/src/pkg/tag"
+	tag_model "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 type HandlerSuite struct {

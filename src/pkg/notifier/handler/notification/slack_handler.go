@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"text/template"
+
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"strings"
-	"text/template"
 )
 
 const (
@@ -95,7 +96,7 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 		},
 	}
 	// Create a slackJob to send message to slack
-	j.Name = job.SlackJob
+	j.Name = job.SlackJobVendorType
 
 	// Convert payload to slack format
 	payload, err := s.convert(event.Payload)

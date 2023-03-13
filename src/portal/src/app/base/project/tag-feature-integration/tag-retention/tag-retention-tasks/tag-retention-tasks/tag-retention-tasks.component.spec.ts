@@ -12,6 +12,7 @@ import { Registry } from '../../../../../../../../ng-swagger-gen/models/registry
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { TIMEOUT } from '../../retention';
+import { RetentionService } from '../../../../../../../../ng-swagger-gen/services/retention.service';
 
 describe('TagRetentionTasksComponent', () => {
     let component: TagRetentionTasksComponent;
@@ -44,10 +45,13 @@ describe('TagRetentionTasksComponent', () => {
             total: 1,
         },
     ];
+    const mockedTagRetentionService = {
+        seeLog() {},
+    };
 
-    const mockTagRetentionService = {
+    const mockRetentionService = {
         count: 0,
-        getExecutionHistory() {
+        listRetentionTasksResponse() {
             if (this.count === 0) {
                 this.count += 1;
                 const response: HttpResponse<Array<Registry>> =
@@ -80,7 +84,11 @@ describe('TagRetentionTasksComponent', () => {
             providers: [
                 {
                     provide: TagRetentionService,
-                    useValue: mockTagRetentionService,
+                    useValue: mockedTagRetentionService,
+                },
+                {
+                    provide: RetentionService,
+                    useValue: mockRetentionService,
                 },
             ],
         }).compileComponents();

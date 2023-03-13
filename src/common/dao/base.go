@@ -20,12 +20,12 @@ import (
 	"strconv"
 	"sync"
 
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	userModels "github.com/goharbor/harbor/src/pkg/user/models"
+	"github.com/beego/beego/v2/client/orm"
 
-	"github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/log"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	userModels "github.com/goharbor/harbor/src/pkg/user/models"
 )
 
 const (
@@ -74,7 +74,6 @@ func InitDatabase(database *models.Database) error {
 }
 
 func getDatabase(database *models.Database) (db Database, err error) {
-
 	switch database.Type {
 	case "", "postgresql":
 		db = NewPGSQL(
@@ -86,6 +85,8 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.SSLMode,
 			database.PostGreSQL.MaxIdleConns,
 			database.PostGreSQL.MaxOpenConns,
+			database.PostGreSQL.ConnMaxLifetime,
+			database.PostGreSQL.ConnMaxIdleTime,
 		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)

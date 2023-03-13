@@ -19,7 +19,6 @@ describe('ConfigurationComponent', () => {
             return false;
         },
         updateConfig() {},
-        initConfig() {},
     };
     let initSpy: jasmine.Spy;
     beforeEach(() => {
@@ -34,7 +33,7 @@ describe('ConfigurationComponent', () => {
     });
 
     beforeEach(() => {
-        initSpy = spyOn(fakeConfigService, 'initConfig').and.returnValue(
+        initSpy = spyOn(fakeConfigService, 'updateConfig').and.returnValue(
             undefined
         );
         fixture = TestBed.createComponent(ConfigurationComponent);

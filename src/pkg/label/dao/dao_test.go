@@ -18,15 +18,16 @@ import (
 	"context"
 	"testing"
 
-	beegoorm "github.com/beego/beego/orm"
+	beegoorm "github.com/beego/beego/v2/client/orm"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/label/model"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/suite"
 )
 
 type labelDaoTestSuite struct {

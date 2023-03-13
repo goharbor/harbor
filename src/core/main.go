@@ -18,6 +18,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -25,10 +26,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/controller/systemartifact"
-
-	"github.com/beego/beego"
-	"github.com/goharbor/harbor/src/core/session"
+	"github.com/beego/beego/v2/server/web"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -36,6 +34,7 @@ import (
 	_ "github.com/goharbor/harbor/src/controller/event/handler"
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
+	"github.com/goharbor/harbor/src/controller/systemartifact"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -44,6 +43,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/core/session"
 	"github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
@@ -51,8 +51,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/retry"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/migration"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -117,8 +120,10 @@ func main() {
 	runMode := flag.String("mode", "normal", "The harbor-core container run mode, it could be normal, migrate or skip-migrate, default is normal")
 	flag.Parse()
 
-	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+	web.BConfig.WebConfig.Session.SessionOn = true
+	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
+	web.BConfig.MaxMemory = 1 << 35     // (32GB)
+	web.BConfig.MaxUploadSize = 1 << 35 // (32GB)
 
 	redisURL := os.Getenv("_REDIS_URL_CORE")
 	if len(redisURL) > 0 {
@@ -127,8 +132,8 @@ func main() {
 			panic("bad _REDIS_URL")
 		}
 
-		beego.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
-		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
+		web.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
+		web.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 
 		log.Info("initializing cache ...")
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
@@ -138,7 +143,7 @@ func main() {
 		// enable config cache explicitly when the cache is ready
 		dbCfg.EnableConfigCache()
 	}
-	beego.AddTemplateExt("htm")
+	web.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
 	config.Init()
@@ -173,6 +178,8 @@ func main() {
 		if err = migration.Migrate(database); err != nil {
 			log.Fatalf("failed to migrate the database, error: %v", err)
 		}
+
+		log.Info("The database has been migrated successfully")
 	}
 
 	ctx = orm.Clone(ctx)
@@ -218,12 +225,12 @@ func main() {
 		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
 
 		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
-		beego.BConfig.Listen.EnableHTTP = false
-		beego.BConfig.Listen.EnableHTTPS = true
-		beego.BConfig.Listen.HTTPSPort = 8443
-		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
-		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
-		beego.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
+		web.BConfig.Listen.EnableHTTP = false
+		web.BConfig.Listen.EnableHTTPS = true
+		web.BConfig.Listen.HTTPSPort = 8443
+		web.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		web.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+		web.BeeApp.Server.TLSConfig = common_http.NewServerTLSConfig()
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
@@ -233,8 +240,26 @@ func main() {
 	if err != nil {
 		log.Warningf("oidc.FixEmptySubIss() errors out, error: %v", err)
 	}
-	systemartifact.ScheduleCleanupTask(ctx)
-	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+	// Scheduling of system artifact depends on the jobservice, where gorountine is used to avoid the circular
+	// dependencies between core and jobservice.
+	go func() {
+		url := config.InternalJobServiceURL() + "/api/v1/stats"
+		checker := health.HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, 60*time.Second, http.StatusOK)
+		options := []retry.Option{
+			retry.InitialInterval(time.Millisecond * 500),
+			retry.MaxInterval(time.Second * 10),
+			retry.Timeout(time.Minute * 5),
+			retry.Callback(func(err error, sleep time.Duration) {
+				log.Debugf("failed to ping %s, retry after %s : %v", url, sleep, err)
+			}),
+		}
+		if err := retry.Retry(checker.Check, options...); err != nil {
+			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
+			return
+		}
+		systemartifact.ScheduleCleanupTask(ctx)
+	}()
+	web.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
 const (

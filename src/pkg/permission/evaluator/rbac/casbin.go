@@ -17,6 +17,7 @@ package rbac
 import (
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
+
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )

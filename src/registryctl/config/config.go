@@ -16,14 +16,14 @@ package config
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/docker/distribution/configuration"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/factory"
-	"github.com/goharbor/harbor/src/lib/log"
-	"io/ioutil"
-	"os"
-
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // DefaultConfig ...
@@ -46,7 +46,7 @@ type Configuration struct {
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if len(yamlFilePath) != 0 {
 		// Try to load from file first
-		data, err := ioutil.ReadFile(yamlFilePath)
+		data, err := os.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
 		}
@@ -135,5 +135,4 @@ func (c *Configuration) loadEnvs() {
 	if len(registryConf) != 0 {
 		c.RegistryConfig = registryConf
 	}
-
 }

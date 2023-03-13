@@ -18,8 +18,9 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/health"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func fakeHealthChecker(healthy bool) health.Checker {

@@ -15,12 +15,12 @@
 package controllers
 
 import (
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2/server/web"
 )
 
 // ErrorController handles beego error pages
 type ErrorController struct {
-	beego.Controller
+	web.Controller
 }
 
 // Error404 renders the 404 page

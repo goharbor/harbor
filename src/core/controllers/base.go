@@ -20,8 +20,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/beego/beego"
+	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
@@ -109,7 +110,10 @@ func (cc *CommonController) Login() {
 
 // LogOut Habor UI
 func (cc *CommonController) LogOut() {
-	cc.DestroySession()
+	if err := cc.DestroySession(); err != nil {
+		log.Errorf("Error occurred in LogOut: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
 }
 
 // UserExists checks if user exists when user input value in sign in form.
@@ -142,7 +146,10 @@ func (cc *CommonController) UserExists() {
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
 	cc.Data["json"] = n > 0
-	cc.ServeJSON()
+	if err := cc.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
 }
 
 func init() {
@@ -150,9 +157,8 @@ func init() {
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)
-		if err := beego.LoadAppConfig("ini", configPath); err != nil {
+		if err := web.LoadAppConfig("ini", configPath); err != nil {
 			log.Errorf("failed to load app config: %v", err)
 		}
 	}
-
 }

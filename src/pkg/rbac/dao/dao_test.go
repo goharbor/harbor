@@ -2,13 +2,15 @@ package dao
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/rbac/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type DaoTestSuite struct {
@@ -101,14 +103,6 @@ func (suite *DaoTestSuite) preparePermissionPolicy() {
 	suite.rbacPolicyID3 = id3
 	suite.Nil(err)
 
-	rp4 := &model.PermissionPolicy{
-		Scope:    "/project/2",
-		Resource: "helm-chart",
-		Action:   "create",
-	}
-	id4, err := suite.dao.CreateRbacPolicy(orm.Context(), rp4)
-	suite.rbacPolicyID4 = id4
-	suite.Nil(err)
 }
 
 func (suite *DaoTestSuite) TestCreatePermission() {

@@ -15,24 +15,33 @@
 package jobservice
 
 import (
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/purge"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/mock"
+	queueStatusMock "github.com/goharbor/harbor/src/testing/pkg/queuestatus"
 	testingScheduler "github.com/goharbor/harbor/src/testing/pkg/scheduler"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ScheduleTestSuite struct {
 	suite.Suite
-	scheduler *testingScheduler.Scheduler
-	ctl       SchedulerController
+	scheduler      *testingScheduler.Scheduler
+	ctl            SchedulerController
+	queueStatusMgr queuestatus.Manager
 }
 
 func (s *ScheduleTestSuite) SetupSuite() {
 	s.scheduler = &testingScheduler.Scheduler{}
+	s.queueStatusMgr = &queueStatusMock.Manager{}
 	s.ctl = &schedulerController{
-		schedulerMgr: s.scheduler,
+		schedulerMgr:   s.scheduler,
+		queueStatusMgr: s.queueStatusMgr,
 	}
 }
 
@@ -42,27 +51,51 @@ func (s *ScheduleTestSuite) TestCreateSchedule() {
 
 	dataMap := make(map[string]interface{})
 	p := purge.JobPolicy{}
-	id, err := s.ctl.Create(nil, purge.VendorType, "Daily", "* * * * * *", purge.SchedulerCallback, p, dataMap)
+	id, err := s.ctl.Create(nil, job.PurgeAuditVendorType, "Daily", "* * * * * *", purge.SchedulerCallback, p, dataMap)
 	s.Nil(err)
 	s.Equal(int64(1), id)
 }
 
 func (s *ScheduleTestSuite) TestDeleteSchedule() {
 	s.scheduler.On("UnScheduleByVendor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	s.Nil(s.ctl.Delete(nil, purge.VendorType))
+	s.Nil(s.ctl.Delete(nil, job.PurgeAuditVendorType))
 }
 
 func (s *ScheduleTestSuite) TestGetSchedule() {
 	s.scheduler.On("ListSchedules", mock.Anything, mock.Anything).Return([]*scheduler.Schedule{
 		{
 			ID:         1,
-			VendorType: purge.VendorType,
+			VendorType: job.PurgeAuditVendorType,
 		},
-	}, nil)
+	}, nil).Once()
 
-	schedule, err := s.ctl.Get(nil, purge.VendorType)
+	schedule, err := s.ctl.Get(nil, job.PurgeAuditVendorType)
 	s.Nil(err)
-	s.Equal(purge.VendorType, schedule.VendorType)
+	s.Equal(job.PurgeAuditVendorType, schedule.VendorType)
+}
+
+func (s *ScheduleTestSuite) TestListSchedule() {
+	mock.OnAnything(s.scheduler, "ListSchedules").Return([]*scheduler.Schedule{
+		{ID: 1, VendorType: "GARBAGE_COLLECTION", CRON: "0 0 0 * * *", ExtraAttrs: map[string]interface{}{"args": "sample args"}}}, nil).Once()
+	schedules, err := s.scheduler.ListSchedules(nil, nil)
+	s.Assert().Nil(err)
+	s.Assert().Equal(1, len(schedules))
+	s.Assert().Equal(schedules[0].VendorType, "GARBAGE_COLLECTION")
+	s.Assert().Equal(schedules[0].ID, int64(1))
+}
+
+func (s *ScheduleTestSuite) TestSchedulerStatus() {
+	mock.OnAnything(s.queueStatusMgr, "AllJobTypeStatus").Return(map[string]bool{"SCHEDULER": true}, nil).Once()
+	result, err := s.ctl.Paused(context.Background())
+	s.Assert().Nil(err)
+	s.Assert().True(result)
+}
+
+func (s *ScheduleTestSuite) TestCountSchedule() {
+	mock.OnAnything(s.scheduler, "CountSchedules").Return(int64(1), nil).Once()
+	count, err := s.ctl.Count(context.Background(), nil)
+	s.Assert().Nil(err)
+	s.Assert().Equal(int64(1), count)
 }
 
 func TestScheduleTestSuite(t *testing.T) {

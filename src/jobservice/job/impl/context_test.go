@@ -16,24 +16,24 @@ package impl
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common"
-	common_dao "github.com/goharbor/harbor/src/common/dao"
-	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"os"
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/common/list"
-
-	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/tests"
-	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/jobservice/common/list"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/tests"
+	libCfg "github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	_ "github.com/goharbor/harbor/src/pkg/config/rest"
 )
 
 // ContextImplTestSuite tests functions of context impl

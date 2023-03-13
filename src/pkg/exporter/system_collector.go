@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // SystemInfoCollectorName ...

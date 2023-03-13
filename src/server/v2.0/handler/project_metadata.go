@@ -16,7 +16,11 @@ package handler
 
 import (
 	"context"
+	"strconv"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/project/metadata"
@@ -24,8 +28,6 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project_metadata"
-	"strconv"
-	"strings"
 )
 
 func newProjectMetadaAPI() *projectMetadataAPI {
@@ -141,7 +143,7 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 
 	switch key {
 	case proModels.ProMetaPublic, proModels.ProMetaEnableContentTrust, proModels.ProMetaEnableContentTrustCosign,
-		proModels.ProMetaPreventVul, proModels.ProMetaAutoScan:
+		proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)

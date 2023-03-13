@@ -55,7 +55,6 @@ func NewNativeToRelationalSchemaConverter() NativeScanReportConverter {
 
 // ToRelationalSchema converts the vulnerability report data present as JSON  to the new relational VulnerabilityRecord instance
 func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, reportData string) (string, string, error) {
-
 	if len(reportData) == 0 {
 		log.G(ctx).Infof("There is no vulnerability report to toSchema for report UUID : %s", reportUUID)
 		return reportUUID, "", nil
@@ -64,17 +63,17 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 	// parse the raw report with the V1 schema of the report to the normalized structures
 	rawReport := new(vuln.Report)
 	if err := json.Unmarshal([]byte(reportData), &rawReport); err != nil {
-		return "", "", errors.Wrap(err, fmt.Sprintf("Error when toSchema V1 report to V2"))
+		return "", "", errors.Wrap(err, "Error when toSchema V1 report to V2")
 	}
 
 	if err := c.toSchema(ctx, reportUUID, registrationUUID, digest, reportData); err != nil {
-		return "", "", errors.Wrap(err, fmt.Sprintf("Error when converting vulnerability report"))
+		return "", "", errors.Wrap(err, "Error when converting vulnerability report")
 	}
 
 	rawReport.Vulnerabilities = nil
 	data, err := json.Marshal(rawReport)
 	if err != nil {
-		return "", "", errors.Wrap(err, fmt.Sprintf("Error when persisting raw report summary"))
+		return "", "", errors.Wrap(err, "Error when persisting raw report summary")
 	}
 
 	return reportUUID, string(data), nil
@@ -95,7 +94,6 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 }
 
 func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, rawReportData string) error {
-
 	var vulnReport vuln.Report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
 	if err != nil {
@@ -211,9 +209,7 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, repo
 	}
 	if len(vulnerabilityItems) > 0 {
 		rp.Vulnerabilities = make([]*vuln.VulnerabilityItem, 0)
-		for _, v := range vulnerabilityItems {
-			rp.Vulnerabilities = append(rp.Vulnerabilities, v)
-		}
+		rp.Vulnerabilities = append(rp.Vulnerabilities, vulnerabilityItems...)
 	}
 
 	data, err := json.Marshal(rp)
@@ -280,17 +276,12 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 	item.CVSSDetails.VectorV2 = record.CVSS2Vector
 	item.CVSSDetails.VectorV3 = record.CVSS3Vector
 	cweIDs := strings.Split(record.CWEIDs, ",")
-	for _, cweID := range cweIDs {
-		item.CWEIds = append(item.CWEIds, cweID)
-	}
-	item.CWEIds = cweIDs
+	item.CWEIds = append(item.CWEIds, cweIDs...)
 	item.Description = record.Description
 	item.FixVersion = record.Fix
 	item.Version = record.PackageVersion
 	urls := strings.Split(record.URLs, "|")
-	for _, url := range urls {
-		item.Links = append(item.Links, url)
-	}
+	item.Links = append(item.Links, urls...)
 	item.Severity = vuln.ParseSeverityVersion3(record.Severity)
 	item.Package = record.Package
 	var vendorAttributes map[string]interface{}

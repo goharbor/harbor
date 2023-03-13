@@ -16,11 +16,12 @@ package audit
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/log"
 	"io"
 	"log/syslog"
 	"os"
+
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 // LogMgr manage the audit log forward operations
@@ -46,7 +47,6 @@ func (a *LoggerManager) Init(ctx context.Context, logEndpoint string) {
 	}
 	a.remoteLogger = log.New(w, log.NewTextFormatter(), log.InfoLevel, 3)
 	a.remoteLogger.SetFallback(log.DefaultLogger())
-
 }
 
 // DefaultLogger ...

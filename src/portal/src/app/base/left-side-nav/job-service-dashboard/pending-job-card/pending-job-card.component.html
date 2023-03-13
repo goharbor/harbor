@@ -1,0 +1,49 @@
+<div class="card">
+    <div class="card-header text-truncate">
+        {{ 'JOB_SERVICE_DASHBOARD.PENDING_JOBS' | translate }}
+    </div>
+    <div class="card-block">
+        <div class="duration text-truncate">
+            {{ 'REPLICATION.TOTAL' | translate }}: {{ total() }}
+        </div>
+        <ng-container *ngIf="!loading">
+            <div class="clr-row" *ngIf="jobQueue?.length">
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">
+                        {{ jobQueue[0]?.job_type }}
+                    </label>
+                </div>
+                <div class="clr-col">{{ jobQueue[0]?.count || 0 }}</div>
+            </div>
+            <div class="clr-row" *ngIf="jobQueue?.length > 1">
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">
+                        {{ jobQueue[1]?.job_type }}
+                    </label>
+                </div>
+                <div class="clr-col">{{ jobQueue[1]?.count || 0 }}</div>
+            </div>
+            <div class="clr-row" *ngIf="jobQueue?.length > 2">
+                <div class="clr-col center">
+                    <label class="clr-control-label text-truncate">{{
+                        'JOB_SERVICE_DASHBOARD.OTHERS' | translate
+                    }}</label>
+                </div>
+                <div class="clr-col">{{ otherCount() }}</div>
+            </div>
+        </ng-container>
+        <div *ngIf="loading" class="loading">
+            <span class="spinner spinner-inline"></span>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button
+            [disabled]="loadingStopAll || total() <= 0"
+            [clrLoading]="loadingStopAll"
+            (click)="stopAll()"
+            type="button"
+            class="btn btn-link">
+            {{ 'JOB_SERVICE_DASHBOARD.STOP_ALL' | translate }}
+        </button>
+    </div>
+</div>

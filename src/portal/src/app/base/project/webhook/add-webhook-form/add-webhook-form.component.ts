@@ -15,12 +15,18 @@ import {
     finalize,
     switchMap,
 } from 'rxjs/operators';
-import { ProjectWebhookService } from '../webhook.service';
+import {
+    PAYLOAD_FORMATS,
+    PAYLOAD_FORMAT_I18N_MAP,
+    ProjectWebhookService,
+} from '../webhook.service';
 import { compareValue } from '../../../../shared/units/utils';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { WebhookService } from '../../../../../../ng-swagger-gen/services/webhook.service';
 import { WebhookPolicy } from '../../../../../../ng-swagger-gen/models/webhook-policy';
 import { Subject, Subscription } from 'rxjs';
+import { SupportedWebhookEventTypes } from '../../../../../../ng-swagger-gen/models/supported-webhook-event-types';
+import { PayloadFormatType } from '../../../../../../ng-swagger-gen/models/payload-format-type';
 
 @Component({
     selector: 'add-webhook-form',
@@ -40,6 +46,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
                 type: 'http',
                 address: '',
                 skip_cert_verify: true,
+                payload_format: PAYLOAD_FORMATS[0],
             },
         ],
     };
@@ -51,7 +58,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
     @ViewChild('webhookForm', { static: true }) currentForm: NgForm;
     @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     @Input()
-    metadata: any;
+    metadata: SupportedWebhookEventTypes;
     @Output() notify = new EventEmitter<WebhookPolicy>();
     checkNameOnGoing: boolean = false;
     isNameExisting: boolean = false;
@@ -203,5 +210,29 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
     }
     eventTypeToText(eventType: string): string {
         return this.projectWebhookService.eventTypeToText(eventType);
+    }
+
+    getPayLoadFormats(): PayloadFormatType[] {
+        if (
+            this.metadata?.payload_formats?.length &&
+            this.webhook.targets[0].type
+        ) {
+            for (let i = 0; i < this.metadata.payload_formats.length; i++) {
+                if (
+                    this.metadata.payload_formats[i].notify_type ===
+                    this.webhook.targets[0].type
+                ) {
+                    return this.metadata.payload_formats[i].formats;
+                }
+            }
+        }
+        return [];
+    }
+
+    getI18nKey(v: string): string {
+        if (v && PAYLOAD_FORMAT_I18N_MAP[v]) {
+            return PAYLOAD_FORMAT_I18N_MAP[v];
+        }
+        return v;
     }
 }

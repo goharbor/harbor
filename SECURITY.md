@@ -2,7 +2,7 @@
 Harbor is a large growing community devoted in creating a private enterprise-grade registry for all your cloud native assets. The community has adopted this security disclosure and response policy to ensure we responsibly handle critical issues.
 
 ## Supported Versions
-The Harbor project maintains release branches for the three most recent minor releases. Applicable fixes, including security fixes, may be backported to those three release branches, depending on severity and feasibility. Please refer to [RELEASES.md](https://github.com/goharbor/harbor/blob/master/RELEASES.md) for details.
+The Harbor project maintains release branches for the three most recent minor releases. Applicable fixes, including security fixes, may be backported to those three release branches, depending on severity and feasibility. Please refer to [RELEASES.md](https://github.com/goharbor/harbor/blob/main/RELEASES.md) for details.
 
 ## Reporting a Vulnerability - Private Disclosure Process
 Security is of the highest importance and all security vulnerabilities or suspected security vulnerabilities should be reported to Harbor privately, to minimize attacks against current users of Harbor before they are fixed. Vulnerabilities will be investigated and patched on the next patch (or minor) release as soon as possible. This information could be kept entirely internal to the project.  
@@ -23,7 +23,7 @@ Provide a descriptive subject line and in the body of the email include the foll
  
 ## When to report a vulnerability
 * When you think Harbor has a potential security vulnerability.
-* When you suspect a potential vulnerability but you are unsure that it impacts Harbor.
+* When you suspect a potential vulnerability, but you are unsure that it impacts Harbor.
 * When you know of or suspect a potential vulnerability on another project that is used by Harbor. For example Harbor has a dependency on Docker, PGSql, Redis, Notary, Trivy, etc.
   
 ## Patch, Release, and Disclosure
@@ -59,7 +59,7 @@ To be eligible to join the cncf-harbor-distributors-announce@lists.cncf.io maili
 4. Not be a downstream or rebuild of another distributor.
 5. Be a participant and active contributor in the Harbor community.
 6. Accept the Embargo Policy that is outlined below. 
-7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
+7. Has someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
 
 **The terms and conditions of the Embargo Policy apply to all members of this mailing list. A request for membership represents your acceptance to the terms and conditions of the Embargo Policy**
 

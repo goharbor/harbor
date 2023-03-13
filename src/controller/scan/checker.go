@@ -16,6 +16,7 @@ package scan
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/scanner"

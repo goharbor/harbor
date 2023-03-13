@@ -19,11 +19,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 )
 
 type fakeDao struct {

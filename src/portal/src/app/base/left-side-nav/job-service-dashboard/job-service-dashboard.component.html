@@ -1,0 +1,49 @@
+<h2 class="title">
+    <clr-icon class="dashboard" size="24" shape="dashboard"></clr-icon>
+    <span>{{ 'JOB_SERVICE_DASHBOARD.JOB_SERVICE_DASHBOARD' | translate }}</span>
+</h2>
+
+<div class="clr-row pr-10 mb-2">
+    <div class="clr-col">
+        <app-pending-job-card></app-pending-job-card>
+    </div>
+    <div class="clr-col">
+        <app-schedule-card></app-schedule-card>
+    </div>
+    <div class="clr-col">
+        <app-worker-card></app-worker-card>
+    </div>
+</div>
+<ul class="nav" role="tablist">
+    <li role="presentation" class="nav-item">
+        <button
+            id="pending-jobs"
+            class="btn btn-link nav-link"
+            type="button"
+            routerLink="pending-jobs"
+            routerLinkActive="active">
+            {{ 'JOB_SERVICE_DASHBOARD.JOB_QUEUE' | translate }}
+        </button>
+    </li>
+    <li role="presentation" class="nav-item">
+        <button
+            id="schedules"
+            class="btn btn-link nav-link"
+            type="button"
+            routerLink="schedules"
+            routerLinkActive="active">
+            {{ 'JOB_SERVICE_DASHBOARD.SCHEDULES' | translate }}
+        </button>
+    </li>
+    <li role="presentation" class="nav-item">
+        <button
+            id="workers"
+            class="btn btn-link nav-link"
+            type="button"
+            routerLink="workers"
+            routerLinkActive="active">
+            {{ 'JOB_SERVICE_DASHBOARD.WORKERS' | translate }}
+        </button>
+    </li>
+</ul>
+<router-outlet></router-outlet>

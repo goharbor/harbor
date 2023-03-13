@@ -7,9 +7,9 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
@@ -19,7 +19,7 @@ jobs:
           echo "PRE_TAG=$(echo $release | jq -r '.body' | jq -r '.preTag')" >> $GITHUB_ENV
           echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
-      - uses: 'google-github-actions/auth@v0'
+      - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v0
@@ -50,15 +50,15 @@ jobs:
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
-          docker_version: 18.09
+          docker_version: 20.10
           docker_channel: stable
       - name: Publish Images
         run: |
           tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
           docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          source tools/release/release_utils.sh && publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_PUSH_USERNAME }} ${{ secrets.DOCKER_HUB_PUSH_PASSWORD }}
+          source tools/release/release_utils.sh && publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }} ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt

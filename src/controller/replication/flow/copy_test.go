@@ -14,14 +14,15 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type copyFlowTestSuite struct {
@@ -42,16 +43,6 @@ func (c *copyFlowTestSuite) TestRun() {
 	}, nil)
 	adp.On("FetchArtifacts", mock.Anything).Return([]*model.Resource{
 		{
-			Type: model.ResourceTypeChart,
-			Metadata: &model.ResourceMetadata{
-				Repository: &model.Repository{
-					Name: "library/hello-world",
-				},
-				Vtags: []string{"latest"},
-			},
-			Override: false,
-		},
-		{
 			Type: model.ResourceTypeArtifact,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
@@ -60,7 +51,6 @@ func (c *copyFlowTestSuite) TestRun() {
 				Vtags: []string{"latest"},
 			},
 			Override: false,
-			Skip:     true,
 		},
 	}, nil)
 	adp.On("PrepareForPush", mock.Anything).Return(nil)

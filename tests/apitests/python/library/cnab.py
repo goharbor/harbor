@@ -23,17 +23,12 @@ def cnab_fixup_bundle(bundle_file, target, auto_update_bundle = True):
     command = ["cnab-to-oci", "--log-level", "debug", "fixup", bundle_file, "--target", target, "--bundle", fixed_bundle_file]
     if auto_update_bundle == True:
          command.append("--auto-update-bundle")
-         #fixed_bundle_file = bundle_file
-    print("Command: ", command)
     ret = base.run_command(command)
-    print("Command return: ", ret)
     return fixed_bundle_file
 
 def cnab_push_bundle(bundle_file, target):
     command = ["cnab-to-oci", "push", bundle_file, "--target", target, "--auto-update-bundle"]
-    print("Command: ", command)
     ret = base.run_command(command)
-    print("Command return: ", ret)
     for line in ret.split("\n"):
         line = line.replace('\"', '')
         if line.find('sha256') >= 0:

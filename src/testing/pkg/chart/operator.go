@@ -1,9 +1,10 @@
 package chart
 
 import (
-	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/stretchr/testify/mock"
 	helm_chart "helm.sh/helm/v3/pkg/chart"
+
+	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 )
 
 // FakeOpertaor ...

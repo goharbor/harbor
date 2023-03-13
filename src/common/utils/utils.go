@@ -250,7 +250,7 @@ func IsIllegalLength(s string, min int, max int) bool {
 // IsContainIllegalChar ...
 func IsContainIllegalChar(s string, illegalChar []string) bool {
 	for _, c := range illegalChar {
-		if strings.Index(s, c) >= 0 {
+		if strings.Contains(s, c) {
 			return true
 		}
 	}
@@ -259,11 +259,11 @@ func IsContainIllegalChar(s string, illegalChar []string) bool {
 
 // ParseJSONInt ...
 func ParseJSONInt(value interface{}) (int, bool) {
-	switch value.(type) {
+	switch v := value.(type) {
 	case float64:
-		return int(value.(float64)), true
+		return int(v), true
 	case int:
-		return value.(int), true
+		return v, true
 	default:
 		return 0, false
 	}
@@ -284,10 +284,13 @@ func FindNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 // the cron string could contain 6 tokens
 // if the cron string is invalid, it returns a zero time
 func NextSchedule(cron string, curTime time.Time) time.Time {
+	if len(cron) == 0 {
+		return time.Time{}
+	}
 	cr := strings.TrimSpace(cron)
 	s, err := CronParser().Parse(cr)
 	if err != nil {
-		log.Errorf("the cron string %v is invalid, error: %v", cron, err)
+		log.Debugf("the cron string %v is invalid, error: %v", cron, err)
 		return time.Time{}
 	}
 	return s.Next(curTime)
@@ -296,4 +299,30 @@ func NextSchedule(cron string, curTime time.Time) time.Time {
 // CronParser returns the parser of cron string with format of "* * * * * *"
 func CronParser() cronlib.Parser {
 	return cronlib.NewParser(cronlib.Second | cronlib.Minute | cronlib.Hour | cronlib.Dom | cronlib.Month | cronlib.Dow)
+}
+
+// MostMatchSorter is a sorter for the most match, usually invoked in sort Less function
+// usage:
+//
+//	sort.Slice(input, func(i, j int) bool {
+//		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
+//	})
+// a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
+// the return value is true if a is less than b
+// for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
+// it returns with this order {"user", "users", "admin_user", "harbor_user"}
+
+func MostMatchSorter(a, b string, matchWord string) bool {
+	// exact match always first
+	if a == matchWord {
+		return true
+	}
+	if b == matchWord {
+		return false
+	}
+	// sort by length, then sort by alphabet
+	if len(a) == len(b) {
+		return a < b
+	}
+	return len(a) < len(b)
 }

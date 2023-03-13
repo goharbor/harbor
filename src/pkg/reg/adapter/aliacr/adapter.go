@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -19,8 +20,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
-
-	commonhttp "github.com/goharbor/harbor/src/common/http"
 )
 
 func init() {
@@ -34,7 +33,7 @@ func init() {
 // example:
 // https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-var regRegion = regexp.MustCompile("https://(registry|cr)\\.([\\w\\-]+)\\.aliyuncs\\.com")
+var regRegion = regexp.MustCompile(`https://(registry|cr)\.([\w\-]+)\.aliyuncs\.com`)
 
 func getRegion(url string) (region string, err error) {
 	if url == "" {
@@ -167,7 +166,7 @@ func getAdapterInfo() *model.AdapterPattern {
 func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) {
 	// list namespaces
 	var nsReq = cr.CreateGetNamespaceListRequest()
-	var nsResp = cr.CreateGetNamespaceListResponse()
+	var nsResp *cr.GetNamespaceListResponse
 	nsReq.SetDomain(a.domain)
 	nsResp, err = c.GetNamespaceList(nsReq)
 	if err != nil {

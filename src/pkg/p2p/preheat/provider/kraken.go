@@ -3,13 +3,14 @@ package provider
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
+
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"

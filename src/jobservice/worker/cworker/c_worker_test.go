@@ -21,6 +21,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -29,10 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/goharbor/harbor/src/jobservice/worker"
-	"github.com/gomodule/redigo/redis"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // CWorkerTestSuite tests functions of c worker

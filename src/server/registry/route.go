@@ -79,7 +79,7 @@ func RegisterRoutes() {
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
-		Middleware(cosign.CosignSignatureMiddleware()).
+		Middleware(cosign.SignatureMiddleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// blob head
@@ -119,6 +119,11 @@ func RegisterRoutes() {
 		Middleware(quota.PutBlobUploadMiddleware()).
 		Middleware(blob.PutBlobUploadMiddleware()).
 		Handler(proxy)
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/referrers/:reference").
+		Middleware(metric.InjectOpIDMiddleware(metric.ReferrersOperationID)).
+		Handler(newReferrersHandler())
 	// others
 	root.NewRoute().Path("/*").Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).Handler(proxy)
 }

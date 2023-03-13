@@ -1,0 +1,145 @@
+<h2>{{ 'JOB_SERVICE_DASHBOARD.WORKER_POOL' | translate }}</h2>
+<clr-datagrid
+    [clrDgLoading]="loadingPools"
+    (clrDgRefresh)="clrLoadPool($event)"
+    (clrDgSelectedChange)="refreshWorkers()"
+    [(clrDgSingleSelected)]="selectedPool">
+    <clr-dg-action-bar class="action-bar mt-0">
+        <span class="refresh-btn" (click)="getPools()">
+            <clr-icon shape="refresh"></clr-icon>
+        </span>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgField]="'worker_pool_id'">{{
+        'JOB_SERVICE_DASHBOARD.WORKER_POOL_ID' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'pid'">{{
+        'JOB_SERVICE_DASHBOARD.PID' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'start_at'">{{
+        'JOB_SERVICE_DASHBOARD.START_AT' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'heartbeat_at'">{{
+        'JOB_SERVICE_DASHBOARD.HEARTBEAT_AT' | translate
+    }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'concurrency'" [clrDgColType]="'number'">{{
+        'JOB_SERVICE_DASHBOARD.CONCURRENCY' | translate
+    }}</clr-dg-column>
+    <clr-dg-placeholder>{{
+        'JOB_SERVICE_DASHBOARD.NO_WORKER_POOL' | translate
+    }}</clr-dg-placeholder>
+    <clr-dg-row *clrDgItems="let p of pools" [clrDgItem]="p">
+        <clr-dg-cell>{{ p.worker_pool_id }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.pid }}</clr-dg-cell>
+
+        <clr-dg-cell>{{ p.start_at | harborDatetime }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.heartbeat_at | harborDatetime }}</clr-dg-cell>
+        <clr-dg-cell>{{ p.concurrency }}</clr-dg-cell>
+    </clr-dg-row>
+    <clr-dg-footer>
+        <clr-dg-pagination
+            #pagination
+            [clrDgPageSize]="5"
+            [clrDgTotalItems]="pools?.length">
+            <clr-dg-page-size [clrPageSizeOptions]="[5, 15, 30]">{{
+                'PAGINATION.PAGE_SIZE' | translate
+            }}</clr-dg-page-size>
+            <span *ngIf="pools?.length">
+                {{ pagination.firstItem + 1 }} -
+                {{ pagination.lastItem + 1 }}
+                {{ 'GROUP.OF' | translate }}
+            </span>
+            {{ pools?.length }} {{ 'GROUP.ITEMS' | translate }}
+        </clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+<ng-container *ngIf="selectedPool">
+    <h2>{{ 'JOB_SERVICE_DASHBOARD.WORKERS' | translate }}</h2>
+    <clr-datagrid
+        [clrDgLoading]="loadingWorkers"
+        (clrDgRefresh)="clrLoadWorker($event)"
+        [(clrDgSelected)]="selected">
+        <clr-dg-action-bar class="action-bar-worker">
+            <div>
+                <button
+                    [clrLoading]="loadingFree"
+                    [disabled]="loadingFree || !canFree()"
+                    type="button"
+                    class="btn btn-secondary"
+                    (click)="freeWorker()">
+                    {{ 'JOB_SERVICE_DASHBOARD.FREE' | translate }}
+                </button>
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>
+                            {{
+                                'JOB_SERVICE_DASHBOARD.WORKER_FREE_BTN_INFO'
+                                    | translate
+                            }}
+                        </span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </div>
+            <span class="refresh-btn" (click)="refreshWorkers()">
+                <clr-icon shape="refresh"></clr-icon>
+            </span>
+        </clr-dg-action-bar>
+        <clr-dg-column [clrDgField]="'id'">{{
+            'JOB_SERVICE_DASHBOARD.WORKER_ID' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'job_name'">{{
+            'CVE_EXPORT.JOB_NAME' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'job_id'">{{
+            'JOB_SERVICE_DASHBOARD.JOB_ID' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'start_at'">{{
+            'JOB_SERVICE_DASHBOARD.START_AT' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'checkin_at'">{{
+            'JOB_SERVICE_DASHBOARD.CHECK_IN_AT' | translate
+        }}</clr-dg-column>
+        <clr-dg-column>{{ 'REPLICATION.LOGS' | translate }}</clr-dg-column>
+        <clr-dg-placeholder>{{
+            'JOB_SERVICE_DASHBOARD.NO_WORKER' | translate
+        }}</clr-dg-placeholder>
+        <clr-dg-row *clrDgItems="let w of workers" [clrDgItem]="w">
+            <clr-dg-cell>{{ w.id }}</clr-dg-cell>
+            <clr-dg-cell>{{ w.job_name }}</clr-dg-cell>
+            <clr-dg-cell>{{ w.job_id }}</clr-dg-cell>
+            <clr-dg-cell>{{ w.start_at | harborDatetime }}</clr-dg-cell>
+            <clr-dg-cell>{{ w.checkin_at | harborDatetime }}</clr-dg-cell>
+            <clr-dg-cell>
+                <a
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    [href]="viewLog(w.job_id)"
+                    *ngIf="w.job_id">
+                    <clr-icon shape="list"></clr-icon>
+                </a>
+            </clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+            <clr-dg-pagination
+                #pagination
+                [clrDgPageSize]="workerPageSize"
+                [clrDgTotalItems]="workers?.length">
+                <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                    'PAGINATION.PAGE_SIZE' | translate
+                }}</clr-dg-page-size>
+                <span *ngIf="workers?.length">
+                    {{ pagination.firstItem + 1 }} -
+                    {{ pagination.lastItem + 1 }}
+                    {{ 'GROUP.OF' | translate }}
+                </span>
+                {{ workers?.length }} {{ 'GROUP.ITEMS' | translate }}
+            </clr-dg-pagination>
+        </clr-dg-footer>
+    </clr-datagrid>
+</ng-container>

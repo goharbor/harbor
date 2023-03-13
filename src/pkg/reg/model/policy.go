@@ -50,7 +50,7 @@ func (f *Filter) Validate() error {
 		}
 		if f.Type == FilterTypeResource {
 			rt := value
-			if !(rt == ResourceTypeArtifact || rt == ResourceTypeImage || rt == ResourceTypeChart) {
+			if !(rt == ResourceTypeArtifact || rt == ResourceTypeImage) {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("invalid resource filter: %s", value)
 			}

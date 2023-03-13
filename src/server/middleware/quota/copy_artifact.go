@@ -29,7 +29,6 @@
 package quota
 
 import (
-	"github.com/goharbor/harbor/src/lib/q"
 	"net/http"
 	"path"
 	"strconv"
@@ -40,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -83,7 +83,9 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 
 	ctx := r.Context()
 
-	art, err := artifactController.GetByReference(ctx, repository, reference, nil)
+	art, err := artifactController.GetByReference(ctx, repository, reference, &artifact.Option{
+		WithAccessory: true,
+	})
 	if errors.IsNotFoundErr(err) {
 		// artifact not found, discontinue the API request
 		return nil, errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
@@ -103,7 +105,9 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 	err = artifactController.Walk(ctx, art, func(a *artifact.Artifact) error {
 		artifactDigests = append(artifactDigests, a.Digest)
 		return nil
-	}, nil)
+	}, &artifact.Option{
+		WithAccessory: true,
+	})
 	if err != nil {
 		logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 		return nil, err

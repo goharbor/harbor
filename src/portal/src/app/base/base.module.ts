@@ -124,6 +124,14 @@ const routes: Routes = [
                     ).then(m => m.ClearingJobModule),
             },
             {
+                path: 'job-service-dashboard',
+                canActivate: [SystemAdminGuard],
+                loadChildren: () =>
+                    import(
+                        './left-side-nav/job-service-dashboard/job-service-dashboard.module'
+                    ).then(m => m.JobServiceDashboardModule),
+            },
+            {
                 path: 'configs',
                 canActivate: [SystemAdminGuard],
                 loadChildren: () =>
@@ -152,17 +160,6 @@ const routes: Routes = [
                 resolve: {
                     projectResolver: ProjectRoutingResolver,
                 },
-            },
-            {
-                path: 'projects/:id/helm-charts',
-                canActivate: [MemberGuard],
-                resolve: {
-                    projectResolver: ProjectRoutingResolver,
-                },
-                loadChildren: () =>
-                    import(
-                        './project/helm-chart/helm-chart-detail/helm-chart-detail.module'
-                    ).then(m => m.HelmChartListModule),
             },
         ],
     },

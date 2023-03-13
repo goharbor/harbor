@@ -1,6 +1,7 @@
 import {
     Component,
     ElementRef,
+    LOCALE_ID,
     OnDestroy,
     OnInit,
     ViewChild,
@@ -10,6 +11,7 @@ import { ErrorHandler } from '../../../../shared/units/error-handler';
 import {
     ConfirmationState,
     ConfirmationTargets,
+    DEFAULT_LANG_LOCALSTORAGE_KEY,
 } from '../../../../shared/entities/shared.const';
 import {
     SystemCVEAllowlist,
@@ -28,6 +30,12 @@ const TARGET_BLANK = '_blank';
     selector: 'app-security',
     templateUrl: './security.component.html',
     styleUrls: ['./security.component.scss'],
+    providers: [
+        {
+            provide: LOCALE_ID,
+            useValue: localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY),
+        },
+    ],
 })
 export class SecurityComponent implements OnInit, OnDestroy {
     onGoing = false;

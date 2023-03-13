@@ -17,14 +17,14 @@ package robot
 import (
 	"context"
 	"fmt"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/common/rbac/system"
-	"github.com/goharbor/harbor/src/controller/robot"
 	"strings"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -93,7 +93,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 				accesses = append(accesses, &types.Policy{
 					Action:   a.Action,
 					Effect:   a.Effect,
-					Resource: types.Resource(fmt.Sprintf("%s/%s", p.Scope, a.Resource)),
+					Resource: types.Resource(getPolicyResource(p, a)),
 				})
 			}
 		}
@@ -115,7 +115,6 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 				evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), proPolicies)))
 			}
 			s.evaluator = evaluators
-
 		} else {
 			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, filterRobotPolicies))
 		}
@@ -138,4 +137,12 @@ func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.P
 		}
 	}
 	return results
+}
+
+// getPolicyResource to determine permissions for the project resource, the path should be /project instead of /project/project.
+func getPolicyResource(perm *robot.Permission, pol *types.Policy) string {
+	if strings.HasPrefix(perm.Scope, robot.SCOPEPROJECT) && pol.Resource == rbac.ResourceProject {
+		return perm.Scope
+	}
+	return fmt.Sprintf("%s/%s", perm.Scope, pol.Resource)
 }

@@ -5,6 +5,12 @@ linters-settings:
     simplify: false
   misspell:
     locale: US,UK
+  goimports:
+    local-prefixes: github.com/goharbor/harbor
+  stylecheck:
+    checks: [
+      "ST1019",  # Importing the same package multiple times.
+    ]
 
 linters:
   disable-all: true
@@ -12,7 +18,7 @@ linters:
     - gofmt
     - goheader
     - misspell
-    # - typecheck
+    - typecheck
     # - dogsled
     # - dupl
     # - depguard
@@ -22,26 +28,24 @@ linters:
     # - gocyclo
     # - goimports
     # - goprintffuncname
-    # - ineffassign
+    - ineffassign
     # - nakedret
     # - nolintlint
-    # - revive
-    # - whitespace
+    - revive
+    - whitespace
     - bodyclose
-    - deadcode
     - errcheck
     # - gosec
-    # - gosimple
+    - gosimple
+    - goimports
     - govet
     # - noctx
     # - rowserrcheck
-    # - staticcheck
-    # - structcheck
-    # - stylecheck
+    - staticcheck
+    - stylecheck
     # - unconvert
     # - unparam
-    # - unused
-    # - varcheck
+    # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282
  
 run:
   skip-files:
@@ -49,8 +53,22 @@ run:
     - ".*test.go"
   skip-dirs:
     - "testing"
-  timeout: 5m
+  timeout: 20m
 
 issue:
   max-same-issues: 0
   max-per-linter: 0
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - goimports
+    - path: src/testing/*.go
+      linters:
+        - goimports
+    - path: src/jobservice/mgt/mock_manager.go
+      linters:
+        - goimports

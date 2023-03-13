@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -29,7 +31,6 @@ import (
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/suite"
 )
 
 type CallbackTestSuite struct {

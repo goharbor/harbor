@@ -1,0 +1,235 @@
+<clr-modal
+    clrModalSize="md"
+    [(clrModalOpen)]="opened"
+    [clrModalStaticBackdrop]="true"
+    [clrModalClosable]="true">
+    <h3 class="modal-title">{{ 'CVE_EXPORT.EXPORT_TITLE' | translate }}</h3>
+    <div class="modal-body">
+        <inline-alert class="modal-title"></inline-alert>
+        <p class="mt-0">{{ 'CVE_EXPORT.EXPORT_SUBTITLE' | translate }}</p>
+        <form #exportCVEForm="ngForm" class="clr-form clr-form-horizontal">
+            <section class="form-block">
+                <!-- projects -->
+                <div class="clr-form-control">
+                    <label class="clr-control-label required">{{
+                        'SIDE_NAV.PROJECTS' | translate
+                    }}</label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper flex">
+                            <span #names class="names"
+                                >{{ getProjectNames() | translate }}
+                            </span>
+                            <span
+                                *ngIf="
+                                    isOverflow() && !!selectedProjects?.length
+                                "
+                                >({{ selectedProjects?.length }})</span
+                            >
+                        </div>
+                    </div>
+                </div>
+                <!-- filters-repo -->
+                <div class="clr-form-control">
+                    <label for="repo" class="clr-control-label">{{
+                        'P2P_PROVIDER.FILTERS' | translate
+                    }}</label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper">
+                            <label class="sub-label">{{
+                                'P2P_PROVIDER.REPOS' | translate
+                            }}</label>
+                            <input
+                                placeholder="**"
+                                [disabled]="loading"
+                                autocomplete="off"
+                                class="clr-input width-220"
+                                type="text"
+                                id="repo"
+                                [(ngModel)]="repos"
+                                size="30"
+                                name="repo" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <clr-control-helper
+                            class="margin-left-90px opacity-08"
+                            >{{
+                                'TAG_RETENTION.REP_SEPARATOR' | translate
+                            }}</clr-control-helper
+                        >
+                    </div>
+                </div>
+                <!-- filters-tag -->
+                <div class="clr-form-control margin-top-06">
+                    <label for="repo" class="clr-control-label"></label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper">
+                            <label class="sub-label">{{
+                                'P2P_PROVIDER.TAGS' | translate
+                            }}</label>
+                            <input
+                                placeholder="**"
+                                [disabled]="loading"
+                                autocomplete="off"
+                                class="clr-input width-220"
+                                type="text"
+                                id="tag"
+                                [(ngModel)]="tags"
+                                size="30"
+                                name="tag" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <clr-control-helper
+                            class="margin-left-90px opacity-08"
+                            >{{
+                                'P2P_PROVIDER.TAG_SEPARATOR' | translate
+                            }}</clr-control-helper
+                        >
+                    </div>
+                </div>
+                <!-- filters-label -->
+                <div class="clr-form-control margin-top-06">
+                    <label for="repo" class="clr-control-label"></label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper">
+                            <label class="sub-label">{{
+                                'P2P_PROVIDER.LABELS' | translate
+                            }}</label>
+                            <div class="dropdown clr-select-wrapper absolute">
+                                <clr-dropdown class="width-tag-label">
+                                    <div class="label-text">
+                                        <div
+                                            class="dropdown-toggle labels"
+                                            clrDropdownTrigger>
+                                            <ng-container
+                                                *ngFor="
+                                                    let l of selectedLabels;
+                                                    let i = index
+                                                ">
+                                                <hbr-label-piece
+                                                    *ngIf="i <= 0"
+                                                    [hasIcon]="false"
+                                                    [label]="l"
+                                                    [labelWidth]="
+                                                        84
+                                                    "></hbr-label-piece>
+                                            </ng-container>
+                                            <span
+                                                class="ellipsis color-white-dark"
+                                                *ngIf="
+                                                    selectedLabels.length > 1
+                                                "
+                                                >···</span
+                                            >
+                                        </div>
+                                    </div>
+                                    <clr-dropdown-menu
+                                        [ngStyle]="{ 'max-height.px': 230 }"
+                                        class="right-align"
+                                        clrPosition="bottom-left"
+                                        *clrIfOpen>
+                                        <clr-spinner
+                                            class="spinner"
+                                            *ngIf="loadingAllLabels"
+                                            [clrMedium]="true"></clr-spinner>
+                                        <ng-container *ngIf="!loadingAllLabels">
+                                            <button
+                                                type="button"
+                                                class="dropdown-item flex"
+                                                *ngFor="let label of allLabels"
+                                                (click)="
+                                                    selectOrUnselect(label)
+                                                ">
+                                                <clr-icon
+                                                    shape="check"
+                                                    [style.visibility]="
+                                                        isSelected(label)
+                                                            ? 'visible'
+                                                            : 'hidden'
+                                                    "></clr-icon>
+                                                <hbr-label-piece
+                                                    [label]="label"
+                                                    [labelWidth]="
+                                                        130
+                                                    "></hbr-label-piece>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="dropdown-item space-between no-labels"
+                                                *ngIf="!allLabels?.length">
+                                                <span class="alert-label">{{
+                                                    'REPLICATION.NO_LABEL_INFO'
+                                                        | translate
+                                                }}</span>
+                                                <span
+                                                    class="alert-label go-link"
+                                                    routerLink="/harbor/labels"
+                                                    >{{
+                                                        'CONFIG.LABEL'
+                                                            | translate
+                                                    }}</span
+                                                >
+                                            </button>
+                                        </ng-container>
+                                    </clr-dropdown-menu>
+                                </clr-dropdown>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- filters-CVE-ids -->
+                <div class="clr-form-control margin-top-06">
+                    <label for="ids" class="clr-control-label"></label>
+                    <div class="clr-control-container">
+                        <div class="clr-input-wrapper">
+                            <label class="sub-label">{{
+                                'CVE_EXPORT.CVE_IDS' | translate
+                            }}</label>
+                            <input
+                                [disabled]="loading"
+                                autocomplete="off"
+                                class="clr-input width-220"
+                                type="text"
+                                id="ids"
+                                [(ngModel)]="CVEIds"
+                                size="30"
+                                name="tag" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                        </div>
+                        <clr-control-helper
+                            class="margin-left-90px opacity-08"
+                            >{{
+                                'CVE_EXPORT.EXPORT_CVE_FILTER_HELP_TEXT'
+                                    | translate
+                            }}</clr-control-helper
+                        >
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button
+            [disabled]="loading"
+            (click)="cancel()"
+            id="system-robot-cancel"
+            type="button"
+            class="btn btn-outline">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            [clrLoading]="saveBtnState"
+            [disabled]="loading || currentForm.invalid"
+            (click)="save()"
+            id="system-robot-save"
+            type="button"
+            class="btn btn-primary">
+            {{ 'CVE_EXPORT.EXPORT_BUTTON' | translate }}
+        </button>
+    </div>
+</clr-modal>

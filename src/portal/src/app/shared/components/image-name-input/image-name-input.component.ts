@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { debounceTime, switchMap } from 'rxjs/operators';
+import { debounceTime, finalize, switchMap } from 'rxjs/operators';
 import {
     AbstractControl,
-    FormBuilder,
-    FormGroup,
+    UntypedFormBuilder,
+    UntypedFormGroup,
     Validators,
 } from '@angular/forms';
 import { ErrorHandler } from '../../units/error-handler';
@@ -17,16 +17,17 @@ import { Project } from 'ng-swagger-gen/models/project';
     styleUrls: ['./image-name-input.component.scss'],
 })
 export class ImageNameInputComponent implements OnInit, OnDestroy {
-    noProjectInfo = '';
     selectedProjectList: Project[] = [];
     proNameChecker: Subject<string> = new Subject<string>();
-    imageNameForm: FormGroup;
+    imageNameForm: UntypedFormGroup;
+    notExist: boolean = false;
+    checkingName: boolean = false;
     public project: string;
     public repo: string;
     public tag: string;
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private errorHandler: ErrorHandler,
         private proService: ProjectService
     ) {
@@ -57,13 +58,16 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
             .pipe(debounceTime(200))
             .pipe(
                 switchMap(name => {
-                    this.noProjectInfo = '';
+                    this.notExist = false;
+                    this.checkingName = true;
                     this.selectedProjectList = [];
-                    return this.proService.listProjects({
-                        name: name,
-                        page: 1,
-                        pageSize: 10,
-                    });
+                    return this.proService
+                        .listProjects({
+                            name: name,
+                            page: 1,
+                            pageSize: 10,
+                        })
+                        .pipe(finalize(() => (this.checkingName = false)));
                 })
             )
             .subscribe(
@@ -76,18 +80,14 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                                 data.name ===
                                 this.imageNameForm.controls['projectName'].value
                         );
-                        if (!exist) {
-                            this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
-                        } else {
-                            this.noProjectInfo = '';
-                        }
+                        this.notExist = !exist;
                     } else {
-                        this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
+                        this.notExist = true;
                     }
                 },
                 (error: any) => {
                     this.errorHandler.error(error);
-                    this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
+                    this.notExist = true;
                 }
             );
     }
@@ -96,8 +96,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         let cont = this.imageNameForm.controls['projectName'];
         if (cont && cont.valid) {
             this.proNameChecker.next(cont.value);
-        } else {
-            this.noProjectInfo = 'PROJECT.NAME_TOOLTIP';
         }
     }
 
@@ -126,6 +124,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     selectedProjectName(projectName: string) {
         this.imageNameForm.controls['projectName'].setValue(projectName);
         this.selectedProjectList = [];
-        this.noProjectInfo = '';
+        this.notExist = false;
     }
 }

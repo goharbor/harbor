@@ -1,6 +1,9 @@
 package test
 
 import (
+	"io"
+	"testing"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/reference"
@@ -8,8 +11,6 @@ import (
 	"github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/libtrust"
 	"github.com/opencontainers/go-digest"
-	"io"
-	"testing"
 )
 
 // CreateRegistry ...

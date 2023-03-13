@@ -20,9 +20,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/blob"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
 )
 
 type PostInitiateBlobUploadMiddlewareTestSuite struct {

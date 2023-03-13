@@ -8,8 +8,11 @@ import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { throwError as observableThrowError } from 'rxjs/internal/observable/throwError';
 import { HttpErrorResponse } from '@angular/common/http';
-import { SharedTestingModule } from '../../shared/shared.module';
 import { UserPermissionService } from '../../shared/services';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ClarityModule } from '@clr/angular';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 describe('SignInComponent', () => {
     let component: SignInComponent;
@@ -27,9 +30,15 @@ describe('SignInComponent', () => {
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [SharedTestingModule],
+            imports: [
+                TranslateModule.forRoot(),
+                RouterTestingModule,
+                ClarityModule,
+                FormsModule,
+            ],
             declarations: [SignInComponent],
             providers: [
+                TranslateService,
                 {
                     provide: UserPermissionService,
                     useValue: mockedUserPermissionService,

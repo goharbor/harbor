@@ -18,12 +18,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/testing/mock"
 	mocks "github.com/goharbor/harbor/src/testing/pkg/scan/scanner"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestEnsureScanners(t *testing.T) {

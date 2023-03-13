@@ -1,0 +1,58 @@
+<div class="card">
+    <div class="card-header text-truncate">
+        {{ 'JOB_SERVICE_DASHBOARD.SCHEDULES' | translate }}
+    </div>
+    <div class="card-block">
+        <div class="duration text-truncate">
+            {{ 'REPLICATION.TOTAL' | translate }}: {{ scheduleCount }}
+        </div>
+        <div class="clr-row">
+            <div class="clr-col-5 center">
+                <label class="clr-control-label text-truncate">{{
+                    'WEBHOOK.STATUS' | translate
+                }}</label>
+            </div>
+            <div class="clr-col-7">
+                <span class="status" *ngIf="!loadingStatus">{{
+                    statusStr() | translate
+                }}</span>
+                <span
+                    *ngIf="loadingStatus"
+                    class="spinner spinner-inline"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button
+            [disabled]="loadingStatus || clickOnGoing"
+            [clrLoading]="clickOnGoing"
+            (click)="pauseOrResume()"
+            type="button"
+            class="btn btn-link">
+            {{ btnText() | translate }}
+        </button>
+        <clr-tooltip>
+            <clr-icon
+                clrTooltipTrigger
+                shape="info-circle"
+                size="24"></clr-icon>
+            <clr-tooltip-content
+                clrPosition="top-right"
+                clrSize="lg"
+                *clrIfOpen>
+                <div>
+                    {{
+                        'JOB_SERVICE_DASHBOARD.SCHEDULE_PAUSE_BTN_INFO'
+                            | translate
+                    }}
+                </div>
+                <div>
+                    {{
+                        'JOB_SERVICE_DASHBOARD.SCHEDULE_RESUME_BTN_INFO'
+                            | translate
+                    }}
+                </div>
+            </clr-tooltip-content>
+        </clr-tooltip>
+    </div>
+</div>

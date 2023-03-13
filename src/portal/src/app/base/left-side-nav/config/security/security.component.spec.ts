@@ -4,6 +4,9 @@ import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { of } from 'rxjs';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { SecurityComponent } from './security.component';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import locale_en from '@angular/common/locales/en';
 describe('SecurityComponent', () => {
     let component: SecurityComponent;
     let fixture: ComponentFixture<SecurityComponent>;
@@ -26,7 +29,18 @@ describe('SecurityComponent', () => {
             return null;
         },
     };
+    registerLocaleData(locale_en, 'en-us');
     beforeEach(() => {
+        TestBed.overrideComponent(SecurityComponent, {
+            set: {
+                providers: [
+                    {
+                        provide: LOCALE_ID,
+                        useValue: 'en-us',
+                    },
+                ],
+            },
+        });
         TestBed.configureTestingModule({
             imports: [SharedTestingModule],
             providers: [

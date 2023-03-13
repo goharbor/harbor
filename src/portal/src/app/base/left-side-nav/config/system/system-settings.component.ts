@@ -6,10 +6,10 @@ import {
     getChanges,
     isEmpty,
 } from '../../../../shared/units/utils';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { ConfigService } from '../config.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { finalize } from 'rxjs/operators';
+import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 
 @Component({
     selector: 'system-settings',
@@ -30,7 +30,7 @@ export class SystemSettingsComponent implements OnInit {
 
     constructor(
         private appConfigService: AppConfigService,
-        private errorHandler: ErrorHandler,
+        private errorHandler: MessageHandlerService,
         private conf: ConfigService
     ) {
         this.downloadLink = CURRENT_BASE_HREF + '/systeminfo/getcert';
@@ -54,24 +54,6 @@ export class SystemSettingsComponent implements OnInit {
             this.currentConfig.robot_token_duration &&
             this.currentConfig.robot_token_duration.editable
         );
-    }
-
-    get tokenExpirationValue() {
-        return this.currentConfig.token_expiration.value;
-    }
-
-    set tokenExpirationValue(v) {
-        // convert string to number
-        this.currentConfig.token_expiration.value = +v;
-    }
-
-    get robotTokenExpirationValue() {
-        return this.currentConfig.robot_token_duration.value;
-    }
-
-    set robotTokenExpirationValue(v) {
-        // convert string to number
-        this.currentConfig.robot_token_duration.value = +v;
     }
 
     robotNamePrefixEditable(): boolean {
@@ -112,7 +94,9 @@ export class SystemSettingsComponent implements OnInit {
                 prop === 'notification_enable' ||
                 prop === 'robot_name_prefix' ||
                 prop === 'audit_log_forward_endpoint' ||
-                prop === 'skip_audit_log_database'
+                prop === 'skip_audit_log_database' ||
+                prop === 'session_timeout' ||
+                prop === 'scanner_skip_update_pulltime'
             ) {
                 changes[prop] = allChanges[prop];
             }
@@ -151,23 +135,25 @@ export class SystemSettingsComponent implements OnInit {
                 .pipe(finalize(() => (this.onGoing = false)))
                 .subscribe({
                     next: result => {
-                        if (!isEmpty(changes)) {
-                            // API should return the updated configurations here
-                            // Unfortunately API does not do that
-                            // To refresh the view, we can clone the original data copy
-                            // or force refresh by calling service.
-                            // HERE we choose force way
-                            this.conf.updateConfig();
-                            // Reload bootstrap option
-                            this.appConfigService.load().subscribe(
-                                () => {},
-                                error =>
-                                    console.error(
-                                        'Failed to reload bootstrap option with error: ',
-                                        error
-                                    )
-                            );
+                        // API should return the updated configurations here
+                        // Unfortunately API does not do that
+                        // So we need to call update function again
+                        this.conf.updateConfig();
+                        // Handle read only
+                        if (changes['read_only']) {
+                            this.errorHandler.handleReadOnly();
+                        } else {
+                            this.errorHandler.clear();
                         }
+                        // Reload bootstrap option
+                        this.appConfigService.load().subscribe(
+                            () => {},
+                            error =>
+                                console.error(
+                                    'Failed to reload bootstrap option with error: ',
+                                    error
+                                )
+                        );
                         this.errorHandler.info('CONFIG.SAVE_SUCCESS');
                     },
                     error: error => {

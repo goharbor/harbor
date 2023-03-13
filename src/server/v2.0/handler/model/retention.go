@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/retention"

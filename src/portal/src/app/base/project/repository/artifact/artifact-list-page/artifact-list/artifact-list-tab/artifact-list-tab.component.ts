@@ -11,21 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {
-    Component,
-    ElementRef,
-    OnDestroy,
-    OnInit,
-    ViewChild,
-} from '@angular/core';
-import { forkJoin, Observable, of, Subject, Subscription } from 'rxjs';
-import {
-    catchError,
-    debounceTime,
-    distinctUntilChanged,
-    finalize,
-    map,
-} from 'rxjs/operators';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { forkJoin, Observable, of, Subscription } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import {
     ClrDatagridComparatorInterface,
@@ -48,7 +36,6 @@ import {
     setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
-import { ImageNameInputComponent } from '../../../../../../../shared/components/image-name-input/image-name-input.component';
 import { ErrorHandler } from '../../../../../../../shared/units/error-handler';
 import { ArtifactService } from '../../../artifact.service';
 import { OperationService } from '../../../../../../../shared/components/operation/operation.service';
@@ -65,12 +52,12 @@ import {
 import {
     AccessoryType,
     artifactDefault,
+    ArtifactFilterEvent,
     ArtifactFront as Artifact,
     ArtifactFront,
     ArtifactType,
     getPullCommandByDigest,
     getPullCommandByTag,
-    mutipleFilter,
 } from '../../../artifact';
 import { Project } from '../../../../../project';
 import { ArtifactService as NewArtifactService } from '../../../../../../../../../ng-swagger-gen/services/artifact.service';
@@ -95,12 +82,8 @@ import { ArtifactListPageService } from '../../artifact-list-page.service';
 import { ACCESSORY_PAGE_SIZE } from './sub-accessories/sub-accessories.component';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
-
-export interface LabelState {
-    iconsShow: boolean;
-    label: Label;
-    show: boolean;
-}
+import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
+import { CopyDigestComponent } from './copy-digest/copy-digest.component';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
@@ -120,19 +103,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
     availableTime = AVAILABLE_TIME;
-    showTagManifestOpened: boolean;
-    retagDialogOpened: boolean;
-    manifestInfoTitle: string;
-    digestId: string;
-    staticBackdrop = true;
-    closable = false;
-    lastFilteredTagName: string;
     inprogress: boolean;
-    openLabelFilterPanel: boolean;
-    openLabelFilterPiece: boolean;
-    retagSrcImage: string;
-    showlabel: boolean;
-
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
         'pull_time',
         'date'
@@ -143,31 +114,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     );
 
     loading = true;
-    copyFailed = false;
     selectedRow: Artifact[] = [];
-    labelListOpen = false;
-    selectedTag: Artifact[];
-    labelNameFilter: Subject<string> = new Subject<string>();
-    stickLabelNameFilter: Subject<string> = new Subject<string>();
-    filterOnGoing: boolean;
-    stickName = '';
-    filterName = '';
-    initFilter = {
-        name: '',
-        description: '',
-        color: '',
-        scope: '',
-        project_id: 0,
-    };
-    filterOneLabel: Label = this.initFilter;
 
     @ViewChild('confirmationDialog')
     confirmationDialog: ConfirmationDialogComponent;
 
-    @ViewChild('imageNameInput')
-    imageNameInput: ImageNameInputComponent;
-
-    @ViewChild('digestTarget') textInput: ElementRef;
+    @ViewChild(CopyArtifactComponent)
+    copyArtifactComponent: CopyArtifactComponent;
+    @ViewChild(CopyDigestComponent)
+    copyDigestComponent: CopyDigestComponent;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT
     );
@@ -197,19 +152,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onSendingStopScanCommand: boolean = false;
     onStopScanArtifactsLength: number = 0;
     scanStoppedArtifactLength: number = 0;
-
     artifactDigest: string;
     depth: string;
-    hasInit: boolean = false;
-    triggerSub: Subscription;
-    labelNameFilterSub: Subscription;
-    stickLabelNameFilterSub: Subscription;
-    mutipleFilter = clone(mutipleFilter);
-    filterByType: string = this.mutipleFilter[0].filterBy;
-    openSelectFilterPiece = false;
     // could Pagination filter
     filters: string[];
-
     scanFinishedArtifactLength: number = 0;
     onScanArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
@@ -224,40 +170,33 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private appConfigService: AppConfigService,
-        public artifactListPageService: ArtifactListPageService
+        private artifactListPageService: ArtifactListPageService
     ) {}
-
-    ngOnInit() {
-        this.artifactListPageService.resetClonedLabels();
+    initRouterData() {
         this.projectId =
             this.activatedRoute.snapshot?.parent?.parent?.params['id'];
-        let resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
+        if (!this.projectId) {
+            this.errorHandlerService.error('Project ID cannot be unset.');
+            return;
+        }
+        const resolverData = this.activatedRoute.snapshot?.parent?.parent?.data;
         if (resolverData) {
             this.projectName = (<Project>resolverData['projectResolver']).name;
         }
         this.repoName = this.activatedRoute.snapshot?.parent?.params['repo'];
+        if (!this.repoName) {
+            this.errorHandlerService.error('Repo name cannot be unset.');
+            return;
+        }
+        this.depth = this.activatedRoute.snapshot.params['depth'];
+        if (this.depth) {
+            const arr: string[] = this.depth.split('-');
+            this.artifactDigest = this.depth.split('-')[arr.length - 1];
+        }
+    }
+    ngOnInit() {
         this.registryUrl = this.appConfigService.getConfig().registry_url;
-        this.activatedRoute.params?.subscribe(params => {
-            this.depth =
-                this.activatedRoute.snapshot?.firstChild?.params['depth'];
-            if (this.depth) {
-                const arr: string[] = this.depth.split('-');
-                this.artifactDigest = this.depth.split('-')[arr.length - 1];
-            }
-            if (this.hasInit) {
-                this.currentPage = 1;
-                this.totalCount = 0;
-                const st: ClrDatagridStateInterface = {
-                    page: {
-                        from: 0,
-                        to: this.pageSize - 1,
-                        size: this.pageSize,
-                    },
-                };
-                this.clrLoad(st);
-            }
-            this.init();
-        });
+        this.initRouterData();
         if (!this.updateArtifactSub) {
             this.updateArtifactSub = this.eventService.subscribe(
                 HarborEvent.UPDATE_VULNERABILITY_INFO,
@@ -273,119 +212,21 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             );
         }
     }
-
     ngOnDestroy() {
-        if (this.triggerSub) {
-            this.triggerSub.unsubscribe();
-            this.triggerSub = null;
-        }
-        if (this.labelNameFilterSub) {
-            this.labelNameFilterSub.unsubscribe();
-            this.labelNameFilterSub = null;
-        }
-        if (this.stickLabelNameFilterSub) {
-            this.stickLabelNameFilterSub.unsubscribe();
-            this.stickLabelNameFilterSub = null;
-        }
         if (this.updateArtifactSub) {
             this.updateArtifactSub.unsubscribe();
             this.updateArtifactSub = null;
         }
     }
-
-    init() {
-        this.hasInit = true;
-        this.depth = this.activatedRoute.snapshot.params['depth'];
-        if (this.depth) {
-            const arr: string[] = this.depth.split('-');
-            this.artifactDigest = this.depth.split('-')[arr.length - 1];
-        }
-        if (!this.projectId) {
-            this.errorHandlerService.error('Project ID cannot be unset.');
-            return;
-        }
-        const resolverData = this.activatedRoute.snapshot.params.data;
-        if (resolverData) {
-            const pro: Project = <Project>resolverData['projectResolver'];
-            this.projectName = pro.name;
-        }
-        if (!this.repoName) {
-            this.errorHandlerService.error('Repo name cannot be unset.');
-            return;
-        }
-        this.lastFilteredTagName = '';
-        if (!this.labelNameFilterSub) {
-            this.labelNameFilterSub = this.labelNameFilter
-                .pipe(debounceTime(500))
-                .pipe(distinctUntilChanged())
-                .subscribe((name: string) => {
-                    if (this.filterName.length) {
-                        this.filterOnGoing = true;
-                        this.artifactListPageService.imageFilterLabels.forEach(
-                            data => {
-                                data.show =
-                                    data.label.name.indexOf(this.filterName) !==
-                                    -1;
-                            }
-                        );
-                    }
-                });
-        }
-        if (!this.stickLabelNameFilterSub) {
-            this.stickLabelNameFilterSub = this.stickLabelNameFilter
-                .pipe(debounceTime(500))
-                .pipe(distinctUntilChanged())
-                .subscribe((name: string) => {
-                    if (this.stickName.length) {
-                        this.filterOnGoing = true;
-                        this.artifactListPageService.imageStickLabels.forEach(
-                            data => {
-                                data.show =
-                                    data.label.name.indexOf(this.stickName) !==
-                                    -1;
-                            }
-                        );
-                    }
-                });
-        }
-    }
-
-    public get filterLabelPieceWidth() {
-        let len = this.lastFilteredTagName.length
-            ? this.lastFilteredTagName.length * 6 + 60
-            : 115;
-        return len > 210 ? 210 : len;
-    }
-
     get withNotary(): boolean {
         return this.appConfigService.getConfig()?.with_notary;
     }
 
-    doSearchArtifactByFilter(filterWords) {
-        this.lastFilteredTagName = filterWords;
-        this.currentPage = 1;
-
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        if (this.lastFilteredTagName) {
-            this.filters.push(
-                `${this.filterByType}=~${this.lastFilteredTagName}`
-            );
-        }
-        this.clrLoad(st);
-    }
-
-    // todo
     clrDgRefresh(state: ClrDatagridStateInterface) {
         setTimeout(() => {
+            //add setTimeout to avoid ng check error
             this.clrLoad(state);
-        });
+        }, 0);
     }
 
     clrLoad(state: ClrDatagridStateInterface): void {
@@ -582,39 +423,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         return pullCommand;
     }
-    labelSelectedChange(artifact?: Artifact[]): void {
-        this.artifactListPageService.imageStickLabels.forEach(data => {
-            data.iconsShow = false;
-            data.show = true;
-        });
-        if (artifact && artifact[0].labels && artifact[0].labels.length) {
-            artifact[0].labels.forEach((labelInfo: Label) => {
-                let findedLabel =
-                    this.artifactListPageService.imageStickLabels.find(
-                        data => labelInfo.id === data['label'].id
-                    );
-                if (findedLabel) {
-                    this.artifactListPageService.imageStickLabels.splice(
-                        this.artifactListPageService.imageStickLabels.indexOf(
-                            findedLabel
-                        ),
-                        1
-                    );
-                    this.artifactListPageService.imageStickLabels.unshift(
-                        findedLabel
-                    );
-                    findedLabel.iconsShow = true;
-                }
-            });
-        }
-    }
-
-    addLabels(): void {
-        this.labelListOpen = true;
-        this.selectedTag = this.selectedRow;
-        this.stickName = '';
-        this.labelSelectedChange(this.selectedRow);
-    }
 
     canAddLabel(): boolean {
         if (this.selectedRow && this.selectedRow.length === 1) {
@@ -634,248 +442,58 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    stickLabel(labelInfo: LabelState): void {
-        if (labelInfo && !labelInfo.iconsShow) {
-            this.selectLabel(labelInfo);
-        }
-        if (labelInfo && labelInfo.iconsShow) {
-            this.unSelectLabel(labelInfo);
+    stickLabel(labelEvent: { label: Label; isAdd: boolean }): void {
+        if (labelEvent.isAdd) {
+            this.addLabel(labelEvent?.label);
+        } else {
+            this.removeLabel(labelEvent?.label);
         }
     }
-
-    selectLabel(labelInfo: LabelState): void {
+    addLabel(label: Label) {
         if (!this.inprogress) {
-            // add label to multiple artifact
-            const ObservableArr: Array<Observable<null>> = [];
-            this.selectedRow.forEach(item => {
-                const params: NewArtifactService.AddLabelParams = {
-                    projectName: this.projectName,
-                    repositoryName: dbEncodeURIComponent(this.repoName),
-                    reference: item.digest,
-                    label: labelInfo.label,
-                };
-                ObservableArr.push(this.newArtifactService.addLabel(params));
-            });
+            const params: NewArtifactService.AddLabelParams = {
+                projectName: this.projectName,
+                repositoryName: dbEncodeURIComponent(this.repoName),
+                reference: this.selectedRow[0].digest,
+                label: label,
+            };
             this.inprogress = true;
-            forkJoin(ObservableArr)
+            this.newArtifactService
+                .addLabel(params)
                 .pipe(finalize(() => (this.inprogress = false)))
-                .subscribe(
-                    res => {
+                .subscribe({
+                    next: res => {
                         this.refresh();
-                        // set the selected label in front
-                        this.artifactListPageService.imageStickLabels.splice(
-                            this.artifactListPageService.imageStickLabels.indexOf(
-                                labelInfo
-                            ),
-                            1
-                        );
-                        this.artifactListPageService.imageStickLabels.some(
-                            (data, i) => {
-                                if (!data.iconsShow) {
-                                    this.artifactListPageService.imageStickLabels.splice(
-                                        i,
-                                        0,
-                                        labelInfo
-                                    );
-                                    return true;
-                                }
-                            }
-                        );
-                        // when is the last one
-                        if (
-                            this.artifactListPageService.imageStickLabels.every(
-                                data => data.iconsShow === true
-                            )
-                        ) {
-                            this.artifactListPageService.imageStickLabels.push(
-                                labelInfo
-                            );
-                        }
-                        labelInfo.iconsShow = true;
                     },
-                    err => {
+                    error: err => {
                         this.refresh();
                         this.errorHandlerService.error(err);
-                    }
-                );
+                    },
+                });
         }
     }
-
-    unSelectLabel(labelInfo: LabelState): void {
+    removeLabel(label: Label) {
         if (!this.inprogress) {
-            this.inprogress = true;
-            let labelId = labelInfo.label.id;
-            this.selectedRow = this.selectedTag;
             let params: NewArtifactService.RemoveLabelParams = {
                 projectName: this.projectName,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.selectedRow[0].digest,
-                labelId: labelId,
+                labelId: label.id,
             };
-            this.newArtifactService.removeLabel(params).subscribe(
-                res => {
-                    this.refresh();
-
-                    // insert the unselected label to groups with the same icons
-                    this.sortOperation(
-                        this.artifactListPageService.imageStickLabels,
-                        labelInfo
-                    );
-                    labelInfo.iconsShow = false;
-                    this.inprogress = false;
-                },
-                err => {
-                    this.inprogress = false;
-                    this.errorHandlerService.error(err);
-                }
-            );
+            this.inprogress = true;
+            this.newArtifactService
+                .removeLabel(params)
+                .pipe(finalize(() => (this.inprogress = false)))
+                .subscribe({
+                    next: res => {
+                        this.refresh();
+                    },
+                    error: err => {
+                        this.refresh();
+                        this.errorHandlerService.error(err);
+                    },
+                });
         }
-    }
-
-    rightFilterLabel(labelInfo: LabelState): void {
-        if (labelInfo) {
-            if (!labelInfo.iconsShow) {
-                this.filterLabel(labelInfo);
-                this.showlabel = true;
-            } else {
-                this.unFilterLabel(labelInfo);
-                this.showlabel = false;
-            }
-        }
-    }
-
-    filterLabel(labelInfo: LabelState): void {
-        let labelId = labelInfo.label.id;
-        this.artifactListPageService.imageFilterLabels.filter(data => {
-            data.iconsShow = data.label.id === labelId;
-        });
-        this.filterOneLabel = labelInfo.label;
-
-        // reload data
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-
-        this.filters = [`${this.filterByType}=(${labelId})`];
-
-        this.clrLoad(st);
-    }
-
-    unFilterLabel(labelInfo: LabelState): void {
-        this.filterOneLabel = this.initFilter;
-        labelInfo.iconsShow = false;
-        // reload data
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-
-        this.filters = [];
-        this.clrLoad(st);
-    }
-
-    closeFilter(): void {
-        this.openLabelFilterPanel = false;
-    }
-
-    reSortImageFilterLabels() {
-        if (
-            this.artifactListPageService.imageFilterLabels &&
-            this.artifactListPageService.imageFilterLabels.length
-        ) {
-            for (
-                let i = 0;
-                i < this.artifactListPageService.imageFilterLabels.length;
-                i++
-            ) {
-                if (
-                    this.artifactListPageService.imageFilterLabels[i].iconsShow
-                ) {
-                    const arr: LabelState[] =
-                        this.artifactListPageService.imageFilterLabels.splice(
-                            i,
-                            1
-                        );
-                    this.artifactListPageService.imageFilterLabels.unshift(
-                        ...arr
-                    );
-                    break;
-                }
-            }
-        }
-    }
-
-    getFilterPlaceholder(): string {
-        return this.showlabel ? '' : 'ARTIFACT.FILTER_FOR_ARTIFACTS';
-    }
-
-    openFlagEvent(isOpen: boolean): void {
-        if (isOpen) {
-            this.openLabelFilterPanel = true;
-            // every time  when filer panel opens, resort imageFilterLabels labels
-            this.reSortImageFilterLabels();
-            this.openLabelFilterPiece = true;
-            this.openSelectFilterPiece = true;
-            this.filterName = '';
-            // redisplay all labels
-            this.artifactListPageService.imageFilterLabels.forEach(data => {
-                data.show = data.label.name.indexOf(this.filterName) !== -1;
-            });
-        } else {
-            this.openLabelFilterPanel = false;
-            this.openLabelFilterPiece = false;
-            this.openSelectFilterPiece = false;
-        }
-    }
-
-    handleInputFilter() {
-        if (this.filterName.length) {
-            this.labelNameFilter.next(this.filterName);
-        } else {
-            this.artifactListPageService.imageFilterLabels.every(
-                data => (data.show = true)
-            );
-        }
-    }
-
-    handleStickInputFilter() {
-        if (this.stickName.length) {
-            this.stickLabelNameFilter.next(this.stickName);
-        } else {
-            this.artifactListPageService.imageStickLabels.every(
-                data => (data.show = true)
-            );
-        }
-    }
-
-    // insert the unselected label to groups with the same icons
-    sortOperation(labelList: LabelState[], labelInfo: LabelState): void {
-        labelList.some((data, i) => {
-            if (!data.iconsShow) {
-                if (data.label.scope === labelInfo.label.scope) {
-                    labelList.splice(i, 0, labelInfo);
-                    labelList.splice(labelList.indexOf(labelInfo, 0), 1);
-                    return true;
-                }
-                if (
-                    data.label.scope !== labelInfo.label.scope &&
-                    i === labelList.length - 1
-                ) {
-                    labelList.push(labelInfo);
-                    labelList.splice(labelList.indexOf(labelInfo), 1);
-                    return true;
-                }
-            }
-        });
     }
 
     sizeTransform(tagSize: string): string {
@@ -884,43 +502,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     retag() {
         if (this.selectedRow && this.selectedRow.length && !this.depth) {
-            this.retagDialogOpened = true;
-            this.imageNameInput.imageNameForm.reset({
-                repoName: this.repoName,
-            });
-            this.retagSrcImage =
-                this.repoName + ':' + this.selectedRow[0].digest;
+            this.copyArtifactComponent.retag(this.selectedRow[0].digest);
         }
-    }
-
-    onRetag() {
-        let params: NewArtifactService.CopyArtifactParams = {
-            projectName: this.imageNameInput.projectName.value,
-            repositoryName: dbEncodeURIComponent(
-                this.imageNameInput.repoName.value
-            ),
-            from: `${this.projectName}/${this.repoName}@${this.selectedRow[0].digest}`,
-        };
-        this.newArtifactService
-            .CopyArtifact(params)
-            .pipe(
-                finalize(() => {
-                    this.imageNameInput.form.reset();
-                    this.retagDialogOpened = false;
-                })
-            )
-            .subscribe(
-                response => {
-                    this.translateService
-                        .get('RETAG.MSG_SUCCESS')
-                        .subscribe((res: string) => {
-                            this.errorHandlerService.info(res);
-                        });
-                },
-                error => {
-                    this.errorHandlerService.error(error);
-                }
-            );
     }
 
     deleteArtifact() {
@@ -1090,15 +673,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 return of(error);
             })
         );
-        // }
     }
 
     showDigestId() {
         if (this.selectedRow && this.selectedRow.length === 1 && !this.depth) {
-            this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
-            this.digestId = this.selectedRow[0].digest;
-            this.showTagManifestOpened = true;
-            this.copyFailed = false;
+            this.copyDigestComponent.showDigestId(this.selectedRow[0].digest);
         }
     }
 
@@ -1113,21 +692,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
             });
-        }
-    }
-
-    onSuccess($event: any): void {
-        this.copyFailed = false;
-        // Directly close dialog
-        this.showTagManifestOpened = false;
-    }
-
-    onError($event: any): void {
-        // Show error
-        this.copyFailed = true;
-        // Select all text
-        if (this.textInput) {
-            this.textInput.nativeElement.select();
         }
     }
 
@@ -1244,56 +808,24 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
 
-    selectFilterType() {
-        this.lastFilteredTagName = '';
-        if (this.filterByType === 'labels') {
-            this.openLabelFilterPanel = true;
-            // every time  when filer panel opens, resort imageFilterLabels labels
-            this.reSortImageFilterLabels();
-            this.openLabelFilterPiece = true;
+    filterEvent(e: ArtifactFilterEvent) {
+        this.filters = [];
+        if (e?.isLabel) {
+            if (e?.label?.name) {
+                this.filters.push(`${e.type}=(${e?.label?.id})`);
+            }
         } else {
-            this.openLabelFilterPiece = false;
-            this.filterOneLabel = this.initFilter;
-            this.showlabel = false;
-            this.artifactListPageService.imageFilterLabels.forEach(data => {
-                data.iconsShow = false;
-            });
+            if (e?.stringValue) {
+                if (e?.isInputTag) {
+                    // for input tag, use fuzzy match
+                    this.filters.push(`${e.type}=~${e?.stringValue}`);
+                } else {
+                    this.filters.push(`${e.type}=${e?.stringValue}`);
+                }
+            }
         }
-        this.currentPage = 1;
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        this.clrLoad(st);
+        this.refresh();
     }
-
-    selectFilter(showItem: string, filterItem: string) {
-        this.lastFilteredTagName = filterItem;
-        this.currentPage = 1;
-
-        let st: ClrDatagridStateInterface = this.currentState;
-        if (!st) {
-            st = { page: {} };
-        }
-        st.page.size = this.pageSize;
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        this.filters = [];
-        if (filterItem) {
-            this.filters.push(`${this.filterByType}=${filterItem}`);
-        }
-
-        this.clrLoad(st);
-    }
-
-    get isFilterReadonly() {
-        return this.filterByType === 'labels' ? 'readonly' : null;
-    }
-
     // when finished, remove it from selectedRow
     scanFinished(artifact: Artifact) {
         if (this.selectedRow && this.selectedRow.length) {

@@ -92,7 +92,7 @@
                             {{ 'SYSTEM_ROBOT.ROBOT_ACCOUNT_NAV' | translate }}
                         </a>
                         <a
-                            *ngIf="isLdapMode || isHttpAuthMode || isOidcMode"
+                            *ngIf="!isDBAuth()"
                             clrVerticalNavLink
                             routerLink="/harbor/groups"
                             routerLinkActive="active">
@@ -129,7 +129,6 @@
                             {{ 'SIDE_NAV.DISTRIBUTIONS.NAME' | translate }}
                         </a>
                         <a
-                            *ngIf="!withAdmiral"
                             clrVerticalNavLink
                             routerLink="/harbor/labels"
                             routerLinkActive="active">
@@ -166,6 +165,19 @@
                                 shape="trash"
                                 clrVerticalNavIcon></clr-icon>
                             {{ 'CLEARANCES.CLEARANCES' | translate }}
+                        </a>
+                        <a
+                            clrVerticalNavLink
+                            *ngIf="hasAdminRole"
+                            routerLink="/harbor/job-service-dashboard"
+                            routerLinkActive="active">
+                            <clr-icon
+                                shape="dashboard"
+                                clrVerticalNavIcon></clr-icon>
+                            {{
+                                'JOB_SERVICE_DASHBOARD.JOB_SERVICE_DASHBOARD'
+                                    | translate
+                            }}
                         </a>
                         <a
                             clrVerticalNavLink

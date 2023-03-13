@@ -16,21 +16,21 @@ package test
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
 	. "github.com/goharbor/harbor/src/controller/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 var TestDBConfig = map[string]interface{}{
 	common.LDAPBaseDN: "dc=example,dc=com",
 	common.LDAPURL:    "ldap.example.com",
-	common.EmailHost:  "127.0.0.1",
 }
 
 var TestConfigWithScanAll = map[string]interface{}{
@@ -41,7 +41,6 @@ var TestConfigWithScanAll = map[string]interface{}{
 	"postgresql_sslmode":  "disable",
 	"ldap_base_dn":        "dc=example,dc=com",
 	"ldap_url":            "ldap.example.com",
-	"email_host":          "127.0.0.1",
 	"scan_all_policy":     `{"parameter":{"daily_time":0},"type":"daily"}`,
 }
 
@@ -64,7 +63,6 @@ func (c *controllerTestSuite) TestGetUserCfg() {
 		c.Error(err, "failed to get user config")
 	}
 	c.Equal("dc=example,dc=com", resp["ldap_base_dn"].Val)
-	c.Equal("127.0.0.1", resp["email_host"].Val)
 	c.Equal("ldap.example.com", resp["ldap_url"].Val)
 }
 
@@ -106,7 +104,6 @@ func (c *controllerTestSuite) TestGetAll() {
 		c.Error(err, "failed to get user config")
 	}
 	c.Equal("dc=example,dc=com", resp["ldap_base_dn"])
-	c.Equal("127.0.0.1", resp["email_host"])
 	c.Equal("ldap.example.com", resp["ldap_url"])
 }
 

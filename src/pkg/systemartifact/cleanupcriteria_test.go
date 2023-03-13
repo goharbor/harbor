@@ -2,15 +2,17 @@ package systemartifact
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/suite"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/dao"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type defaultCleanupCriteriaTestSuite struct {

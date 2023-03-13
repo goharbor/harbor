@@ -15,20 +15,8 @@
 package models
 
 import (
-	"github.com/beego/beego/orm"
+	"github.com/beego/beego/v2/client/orm"
 )
-
-// Email ...
-type Email struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	SSL      bool   `json:"ssl"`
-	Identity string `json:"identity"`
-	From     string `json:"from"`
-	Insecure bool   `json:"insecure"`
-}
 
 // HTTPAuthProxy wraps the settings for HTTP auth proxy
 type HTTPAuthProxy struct {
@@ -51,6 +39,7 @@ type OIDCSetting struct {
 	ClientSecret       string            `json:"client_secret"`
 	GroupsClaim        string            `json:"groups_claim"`
 	AdminGroup         string            `json:"admin_group"`
+	GroupFilter        string            `json:"group_filter"`
 	RedirectURL        string            `json:"redirect_url"`
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
@@ -105,4 +94,8 @@ type GroupConf struct {
 	SearchScope         int    `json:"ldap_group_search_scope"`
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
+}
+
+type GDPRSetting struct {
+	DeleteUser bool `json:"user_delete,omitempty"`
 }

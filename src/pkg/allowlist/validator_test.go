@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"testing"
 
-	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/stretchr/testify/assert"
+
+	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
 
 func TestIsInvalidErr(t *testing.T) {

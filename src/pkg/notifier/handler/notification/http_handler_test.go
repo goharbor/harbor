@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
-	"github.com/stretchr/testify/require"
 )
 
 type fakedHookManager struct {

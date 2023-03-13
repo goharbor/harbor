@@ -1,7 +1,7 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { OidcOnboardService } from './oidc-onboard.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { CommonRoutes } from '../shared/entities/shared.const';
 import { errorHandler } from '../shared/units/shared.utils';
 
@@ -12,8 +12,9 @@ import { errorHandler } from '../shared/units/shared.utils';
 })
 export class OidcOnboardComponent implements OnInit {
     url: string;
+    redirectUrl: string;
     errorMessage: string = '';
-    oidcUsername = new FormControl('');
+    oidcUsername = new UntypedFormControl('');
     errorOpen: boolean = false;
     constructor(
         private oidcOnboardService: OidcOnboardService,
@@ -23,6 +24,7 @@ export class OidcOnboardComponent implements OnInit {
 
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
+            this.redirectUrl = params['redirect_url'] || '';
             this.oidcUsername.setValue(params['username'] || '');
         });
     }
@@ -31,7 +33,12 @@ export class OidcOnboardComponent implements OnInit {
             .oidcSave({ username: this.oidcUsername.value })
             .subscribe(
                 res => {
-                    this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                    if (this.redirectUrl === '') {
+                        // Routing to the default location
+                        this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
+                    } else {
+                        this.router.navigateByUrl(this.redirectUrl);
+                    }
                 },
                 error => {
                     this.errorMessage = errorHandler(error);

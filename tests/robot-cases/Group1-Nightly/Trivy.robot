@@ -45,6 +45,9 @@ Test Case - Disable Scan Schedule
     Retry Wait Until Page Contains  None
     Close Browser
 
+Test Case - Manual Scan All
+    Body Of Manual Scan All  Critical  High
+
 Test Case - Scan A Tag In The Repo
     Body Of Scan A Tag In The Repo  vmware/photon  1.0
 
@@ -63,22 +66,6 @@ Test Case - Scan As An Unprivileged User
 Test Case - Scan Image With Empty Vul
     Body Of Scan Image With Empty Vul  photon  4.0_scan
 
-Test Case - Manual Scan All
-    Body Of Manual Scan All  Critical  High
-
-#Test Case - View Scan Error
-#    Init Chrome Driver
-#    ${d}=  get current date  result_format=%m%s
-
-#    Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-#    Create An New Project And Go Into Project  project${d}
-#    Push Image  ${ip}  user026  Test1@34  project${d}  busybox:latest
-#    Go Into Project  project${d}
-#    Go Into Repo  project${d}/busybox
-#    Scan Repo  latest  Fail
-#    View Scan Error Log
-#    Close Browser
-
 Test Case - Scan Image On Push
     [Tags]  run-once
     Body Of Scan Image On Push  Critical  High
@@ -92,9 +79,6 @@ Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=  get current date  result_format=%m%s
-    #For docker-hub registry
-    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
-    #For internal CPE harbor registry
     ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
     ${image}=  Set Variable  redis
     Create An New Project And Go Into Project  project${d}

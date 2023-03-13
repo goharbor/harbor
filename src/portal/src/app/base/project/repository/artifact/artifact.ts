@@ -1,6 +1,7 @@
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
 import { Platform } from '../../../../../../ng-swagger-gen/models/platform';
+import { Label } from '../../../../../../ng-swagger-gen/models/label';
 
 export interface ArtifactFront extends Artifact {
     platform?: Platform;
@@ -18,7 +19,11 @@ export interface AccessoryFront extends Accessory {
     scan_overview?: any;
 }
 
-export const mutipleFilter = [
+export const multipleFilter: Array<{
+    filterBy: string;
+    filterByShowText: string;
+    listItem: any[];
+}> = [
     {
         filterBy: 'type',
         filterByShowText: 'Type',
@@ -34,6 +39,10 @@ export const mutipleFilter = [
             {
                 filterText: 'CNAB',
                 showItem: 'ARTIFACT.CNAB',
+            },
+            {
+                filterText: 'WASM',
+                showItem: 'ARTIFACT.WASM',
             },
         ],
     },
@@ -64,6 +73,7 @@ export const mutipleFilter = [
 
 export enum AccessoryType {
     COSIGN = 'signature.cosign',
+    NYDUS = 'accelerator.nydus',
 }
 
 export enum ArtifactType {
@@ -114,4 +124,12 @@ export function getPullCommandByTag(
         }
     }
     return pullCommand;
+}
+
+export interface ArtifactFilterEvent {
+    type?: string;
+    stringValue?: string;
+    isLabel?: boolean;
+    isInputTag?: boolean;
+    label?: Label;
 }

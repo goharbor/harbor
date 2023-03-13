@@ -17,9 +17,11 @@ package project
 import (
 	"context"
 	"fmt"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -31,7 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/testing/pkg/user"
-	"github.com/stretchr/testify/suite"
 )
 
 type ControllerTestSuite struct {

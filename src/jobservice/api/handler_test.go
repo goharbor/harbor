@@ -18,21 +18,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/common/query"
-	"github.com/goharbor/harbor/src/jobservice/errs"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/worker"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/worker"
 )
 
 const (
@@ -53,7 +55,7 @@ type APIHandlerTestSuite struct {
 
 // SetupSuite prepares test suite
 func (suite *APIHandlerTestSuite) SetupSuite() {
-	_ = os.Setenv(secretKey, fakeSecret)
+	suite.T().Setenv(secretKey, fakeSecret)
 
 	suite.client = &http.Client{
 		Timeout: 10 * time.Second,
@@ -74,7 +76,6 @@ func (suite *APIHandlerTestSuite) SetupSuite() {
 
 // TearDownSuite clears test suite
 func (suite *APIHandlerTestSuite) TearDownSuite() {
-	_ = os.Unsetenv(secretKey)
 	_ = suite.server.Stop()
 	suite.cancel()
 }
@@ -343,7 +344,7 @@ func (suite *APIHandlerTestSuite) postReq(url string, data []byte) ([]byte, int)
 		_ = res.Body.Close()
 	}()
 	if res.ContentLength > 0 {
-		resData, err = ioutil.ReadAll(res.Body)
+		resData, err = io.ReadAll(res.Body)
 		if err != nil {
 			return nil, 0
 		}
@@ -370,7 +371,7 @@ func (suite *APIHandlerTestSuite) getReq(url string) ([]byte, int) {
 		_ = res.Body.Close()
 	}()
 
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, 0
 	}

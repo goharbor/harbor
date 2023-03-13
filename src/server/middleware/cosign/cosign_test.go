@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -15,10 +17,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
-	"github.com/stretchr/testify/suite"
 )
 
 type MiddlewareTestSuite struct {
@@ -95,7 +98,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 		PushTime:       time.Now(),
 		PullTime:       time.Now(),
 	}
-	subafid, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
+	_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	af := &artifact.Artifact{
@@ -112,11 +115,11 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	accid, err := accessory.Mgr.Create(suite.Context(), accessorymodel.AccessoryData{
-		ID:            1,
-		ArtifactID:    afid,
-		SubArtifactID: subafid,
-		Digest:        accdgt,
-		Type:          accessorymodel.TypeCosignSignature,
+		ID:                1,
+		ArtifactID:        afid,
+		SubArtifactDigest: subaf.Digest,
+		Digest:            accdgt,
+		Type:              accessorymodel.TypeCosignSignature,
 	})
 	suite.Nil(err, fmt.Sprintf("Add artifact accesspry failed for %d", repositoryID))
 	return accid
@@ -131,22 +134,22 @@ func (suite *MiddlewareTestSuite) TestCosignSignature() {
 
 		_, repoId, err := repository.Ctl.Ensure(suite.Context(), name)
 		suite.Nil(err)
-		subjectArtID := suite.addArt(projectID, repoId, name, subArtDigest)
+		suite.addArt(projectID, repoId, name, subArtDigest)
 		artID := suite.addArt(projectID, repoId, name, descriptor.Digest.String())
 		suite.Nil(err)
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		SignatureMiddleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
 			Keywords: map[string]interface{}{
-				"SubjectArtifactID": subjectArtID,
+				"SubjectArtifactDigest": subArtDigest,
 			},
 		})
 		suite.Equal(1, len(accs))
-		suite.Equal(subjectArtID, accs[0].GetData().SubArtifactID)
+		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
 		suite.Equal(artID, accs[0].GetData().ArtifactID)
 		suite.True(accs[0].IsHard())
 		suite.Equal(model.TypeCosignSignature, accs[0].GetData().Type)
@@ -166,7 +169,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignatureDup() {
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
-		CosignSignatureMiddleware()(next).ServeHTTP(res, req)
+		SignatureMiddleware()(next).ServeHTTP(res, req)
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{

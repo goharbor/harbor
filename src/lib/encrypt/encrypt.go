@@ -59,7 +59,6 @@ func Instance() Encryptor {
 		}
 		log.Infof("the path of key used by key provider: %s", kp)
 		encryptInstance = NewAESEncryptor(NewFileKeyProvider(kp))
-
 	})
 	return encryptInstance
 }

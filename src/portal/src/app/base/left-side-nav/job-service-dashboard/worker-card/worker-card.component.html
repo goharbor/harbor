@@ -1,0 +1,20 @@
+<div class="card">
+    <div class="card-header text-truncate">
+        {{ 'JOB_SERVICE_DASHBOARD.WORKERS' | translate }}
+    </div>
+    <div class="card-block donut-chart">
+        <app-donut-chart
+            [denominator]="denominator"
+            [numerator]="busyWorkers?.length"></app-donut-chart>
+    </div>
+    <div class="card-footer">
+        <button
+            [disabled]="loadingFreeAll || busyWorkers?.length === 0"
+            [clrLoading]="loadingFreeAll"
+            (click)="freeAll()"
+            type="button"
+            class="btn btn-link">
+            {{ 'JOB_SERVICE_DASHBOARD.FREE_ALL' | translate }}
+        </button>
+    </div>
+</div>

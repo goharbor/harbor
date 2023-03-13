@@ -11,9 +11,9 @@ Switch To Project Webhooks
     Sleep  1
 
 Create A New Webhook
-    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  @{event_type}
-    Retry Element Click   ${new_webhook_button_xpath}
-    Retry Text Input  ${webhook_name_xpath}   ${webhook_name}
+    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}=@{EMPTY}
+    Retry Element Click  ${new_webhook_button_xpath}
+    Retry Text Input  ${webhook_name_xpath}  ${webhook_name}
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${webhook_endpoint_url}
     ${len}=  Get Length  ${event_type}
     Run Keyword If  ${len} > 0  Select Event Type  @{event_type}
@@ -22,7 +22,7 @@ Create A New Webhook
 
 Select Event Type
     [Arguments]  @{event_type}
-    @{elements}=  Get WebElements  //form//div[contains(@class,'clr-control-inline')]//label
+    ${elements}=  Get WebElements  //form//div[contains(@class,'clr-control-inline')]//label
     FOR  ${element}  IN  @{elements}
         Retry Element Click  ${element}
     END

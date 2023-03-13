@@ -17,14 +17,15 @@ package daysps
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
 type EvaluatorTestSuite struct {

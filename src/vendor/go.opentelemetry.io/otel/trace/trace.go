@@ -63,7 +63,7 @@ func (t TraceID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.String())
 }
 
-// String returns the hex string representation form of a TraceID
+// String returns the hex string representation form of a TraceID.
 func (t TraceID) String() string {
 	return hex.EncodeToString(t[:])
 }
@@ -86,7 +86,7 @@ func (s SpanID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.String())
 }
 
-// String returns the hex string representation form of a SpanID
+// String returns the hex string representation form of a SpanID.
 func (s SpanID) String() string {
 	return hex.EncodeToString(s[:])
 }
@@ -151,7 +151,7 @@ func decodeHex(h string, b []byte) error {
 	return nil
 }
 
-// TraceFlags contains flags that can be set on a SpanContext
+// TraceFlags contains flags that can be set on a SpanContext.
 type TraceFlags byte //nolint:revive // revive complains about stutter of `trace.TraceFlags`.
 
 // IsSampled returns if the sampling bit is set in the TraceFlags.
@@ -160,7 +160,7 @@ func (tf TraceFlags) IsSampled() bool {
 }
 
 // WithSampled sets the sampling bit in a new copy of the TraceFlags.
-func (tf TraceFlags) WithSampled(sampled bool) TraceFlags {
+func (tf TraceFlags) WithSampled(sampled bool) TraceFlags { // nolint:revive  // sampled is not a control flag.
 	if sampled {
 		return tf | FlagsSampled
 	}
@@ -174,7 +174,7 @@ func (tf TraceFlags) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tf.String())
 }
 
-// String returns the hex string representation form of TraceFlags
+// String returns the hex string representation form of TraceFlags.
 func (tf TraceFlags) String() string {
 	return hex.EncodeToString([]byte{byte(tf)}[:])
 }

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/allowlist/dao"
-	"github.com/stretchr/testify/suite"
 )
 
 type mgrTestSuite struct {

@@ -16,8 +16,9 @@ package lib
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSetAPIVersion(t *testing.T) {

@@ -19,13 +19,13 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testProjectMeta "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
-
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {
@@ -39,14 +39,13 @@ type managerTestSuite struct {
 func (m *managerTestSuite) SetupTest() {
 	m.projectMetaMgr = &testProjectMeta.Manager{}
 	m.cache = &testcache.Cache{}
-	m.cachedManager = NewManager(
-		m.projectMetaMgr,
-	)
-	m.cachedManager.(*manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager = NewManager(m.projectMetaMgr)
+	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
 }
 
 func (m *managerTestSuite) TestAdd() {
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	m.projectMetaMgr.On("Add", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	err := m.cachedManager.Add(m.ctx, 1, map[string]string{})
 	m.NoError(err)

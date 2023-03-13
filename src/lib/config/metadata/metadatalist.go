@@ -20,7 +20,7 @@ import "github.com/goharbor/harbor/src/common"
 type Item struct {
 	// The Scope of this configuration item: eg: SystemScope, UserScope
 	Scope string `json:"scope,omitempty"`
-	// email, ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group
+	// ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group
 	Group string `json:"group,omitempty"`
 	// environment key to retrieves this value when initialize, for example: POSTGRESQL_HOST, only used for system settings, for user settings no EnvKey
 	EnvKey string `json:"environment_key,omitempty"`
@@ -44,7 +44,6 @@ const (
 	// Group
 	LdapBasicGroup = "ldapbasic"
 	LdapGroupGroup = "ldapgroup"
-	EmailGroup     = "email"
 	UAAGroup       = "uaa"
 	HTTPAuthGroup  = "http_auth"
 	OIDCGroup      = "oidc"
@@ -53,6 +52,7 @@ const (
 	// Put all config items do not belong a existing group into basic
 	BasicGroup = "basic"
 	TrivyGroup = "trivy"
+	GDPRGroup  = "gdpr"
 )
 
 var (
@@ -65,22 +65,14 @@ var (
 
 		{Name: common.AdminInitialPassword, Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: true},
 		{Name: common.AUTHMode, Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false, Description: `The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"`},
-		{Name: common.ChartRepoURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", ItemType: &StringType{}, Editable: false},
+
+		{Name: common.PrimaryAuthMode, Scope: UserScope, Group: BasicGroup, EnvKey: "PRIMARY_AUTH_MODE", DefaultValue: "false", ItemType: &BoolType{}, Description: `Use current auth mode as a primary one`},
 
 		{Name: common.TrivyAdapterURL, Scope: SystemScope, Group: TrivyGroup, EnvKey: "TRIVY_ADAPTER_URL", DefaultValue: "http://trivy-adapter:8080", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.DatabaseType, Scope: SystemScope, Group: BasicGroup, EnvKey: "DATABASE_TYPE", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
-
-		{Name: common.EmailFrom, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_FROM", DefaultValue: "admin <sample_admin@mydomain.com>", ItemType: &StringType{}, Editable: false, Description: `The sender name for Email notification.`},
-		{Name: common.EmailHost, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_HOST", DefaultValue: "smtp.mydomain.com", ItemType: &StringType{}, Editable: false, Description: `The hostname of SMTP server that sends Email notification.`},
-		{Name: common.EmailIdentity, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_IDENTITY", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `By default it's empty so the email_username is picked`},
-		{Name: common.EmailInsecure, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_INSECURE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Whether or not the certificate will be verified when Harbor tries to access the email server.`},
-		{Name: common.EmailPassword, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_PWD", DefaultValue: "", ItemType: &PasswordType{}, Editable: false, Description: `Email password`},
-		{Name: common.EmailPort, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_PORT", DefaultValue: "25", ItemType: &PortType{}, Editable: false, Description: `The port of SMTP server`},
-		{Name: common.EmailSSL, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_SSL", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `When it''s set to true the system will access Email server via TLS by default.  If it''s set to false, it still will handle "STARTTLS" from server side.`},
-		{Name: common.EmailUsername, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_USR", DefaultValue: "sample_admin@mydomain.com", ItemType: &StringType{}, Editable: false, Description: `The username for authenticate against SMTP server`},
 
 		{Name: common.ExtEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "EXT_ENDPOINT", DefaultValue: "https://host01.com", ItemType: &StringType{}, Editable: false},
 		{Name: common.JobServiceURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "JOBSERVICE_URL", DefaultValue: "http://jobservice:8080", ItemType: &StringType{}, Editable: false},
@@ -113,6 +105,8 @@ var (
 		{Name: common.PostGreSQLUsername, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
 		{Name: common.PostGreSQLMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
 		{Name: common.PostGreSQLMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
+		{Name: common.PostGreSQLConnMaxLifetime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_CONN_MAX_LIFETIME", DefaultValue: "5m", ItemType: &DurationType{}, Editable: false},
+		{Name: common.PostGreSQLConnMaxIdleTime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_CONN_MAX_IDLE_TIME", DefaultValue: "0", ItemType: &DurationType{}, Editable: false},
 
 		{Name: common.ProjectCreationRestriction, Scope: UserScope, Group: BasicGroup, EnvKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, ItemType: &ProjectCreationRestrictionType{}, Editable: false, Description: `Indicate who can create projects, it could be ''adminonly'' or ''everyone''.`},
 		{Name: common.ReadOnly, Scope: UserScope, Group: BasicGroup, EnvKey: "READ_ONLY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate whether Harbor is in readonly mode.`},
@@ -143,18 +137,19 @@ var (
 		{Name: common.OIDCClientSecret, Scope: UserScope, Group: OIDCGroup, ItemType: &PasswordType{}, Description: `The OIDC provider secret`},
 		{Name: common.OIDCGroupsClaim, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The attribute claims the group name`},
 		{Name: common.OIDCAdminGroup, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The OIDC group which has the harbor admin privileges`},
+		{Name: common.OIDCGroupFilter, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The OIDC group filter to filter which groups could be onboarded to Harbor`},
 		{Name: common.OIDCScope, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The scope of the OIDC provider`},
 		{Name: common.OIDCUserClaim, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}, Description: `The attribute claims the username`},
 		{Name: common.OIDCVerifyCert, Scope: UserScope, Group: OIDCGroup, DefaultValue: "true", ItemType: &BoolType{}, Description: `Verify the OIDC provider's certificate'`},
 		{Name: common.OIDCAutoOnboard, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}, Description: `Auto onboard the OIDC user`},
 		{Name: common.OIDCExtraRedirectParms, Scope: UserScope, Group: OIDCGroup, DefaultValue: "{}", ItemType: &StringToStringMapType{}, Description: `Extra parameters to add when redirect request to OIDC provider`},
 
-		{Name: common.WithChartMuseum, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithTrivy, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_TRIVY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithNotary, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "30", ItemType: &IntType{}, Editable: true, Description: `The robot account token duration in days`},
-		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The rebot account name prefix`},
+		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The robot account name prefix`},
+		{Name: common.RobotScannerNamePrefix, Scope: SystemScope, Group: BasicGroup, EnvKey: "ROBOT_SCANNER_NAME_PREFIX", DefaultValue: "scanner", ItemType: &StringType{}, Editable: true, Description: `The scanner robot account name prefix`},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable notification`},
 
 		{Name: common.MetricEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
@@ -187,7 +182,12 @@ var (
 		{Name: common.CacheEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_ENABLED", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Enable cache`},
 		{Name: common.CacheExpireHours, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_EXPIRE_HOURS", DefaultValue: "24", ItemType: &IntType{}, Editable: false, Description: `The expire hours for cache`},
 
+		{Name: common.GDPRDeleteUser, Scope: SystemScope, Group: GDPRGroup, EnvKey: "GDPR_DELETE_USER", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag indicates if a user should be deleted compliant with GDPR.`},
+
 		{Name: common.AuditLogForwardEndpoint, Scope: UserScope, Group: BasicGroup, EnvKey: "AUDIT_LOG_FORWARD_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint to forward the audit log.`},
 		{Name: common.SkipAuditLogDatabase, Scope: UserScope, Group: BasicGroup, EnvKey: "SKIP_LOG_AUDIT_DATABASE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip audit log in database`},
+		{Name: common.ScannerSkipUpdatePullTime, Scope: UserScope, Group: BasicGroup, EnvKey: "SCANNER_SKIP_UPDATE_PULL_TIME", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip update pull time for scanner`},
+
+		{Name: common.SessionTimeout, Scope: UserScope, Group: BasicGroup, EnvKey: "SESSION_TIMEOUT", DefaultValue: "60", ItemType: &Int64Type{}, Editable: true, Description: `The session timeout in minutes`},
 	}
 )

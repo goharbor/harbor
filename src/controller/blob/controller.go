@@ -19,14 +19,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/q"
-	libredis "github.com/goharbor/harbor/src/lib/redis"
-
 	"github.com/docker/distribution"
 	"github.com/go-redis/redis/v8"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	libredis "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	blob_models "github.com/goharbor/harbor/src/pkg/blob/models"
 )

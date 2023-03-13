@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/goharbor/harbor/src/lib/orm"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 func init() {

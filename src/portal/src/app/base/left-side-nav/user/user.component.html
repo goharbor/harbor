@@ -59,8 +59,10 @@
                                     type="button"
                                     class="btn btn-secondary"
                                     id="changePwd"
-                                    [hidden]="!canCreateUser"
-                                    [disabled]="!(selectedRow.length === 1)"
+                                    [disabled]="
+                                        !(selectedRow.length === 1) ||
+                                        !canCreateUser
+                                    "
                                     (click)="openChangePwdModal()">
                                     <clr-icon shape="edit" size="16"></clr-icon
                                     >&nbsp;{{ 'RESET_PWD.TITLE' | translate }}

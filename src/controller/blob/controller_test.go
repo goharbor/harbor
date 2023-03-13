@@ -20,19 +20,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/blob/models"
-
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/blob"
+	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
 	blobtesting "github.com/goharbor/harbor/src/testing/pkg/blob"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/suite"
-
-	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 )
 
 type ControllerTestSuite struct {

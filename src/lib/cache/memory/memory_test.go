@@ -19,8 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/cache"
 )
 
 type CacheTestSuite struct {

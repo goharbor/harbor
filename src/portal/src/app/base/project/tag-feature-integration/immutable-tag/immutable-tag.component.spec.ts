@@ -8,6 +8,7 @@ import { clone } from '../../../../shared/units/utils';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { AddImmutableRuleComponent } from './add-rule/add-immutable-rule.component';
+import { ImmutableService } from '../../../../../../ng-swagger-gen/services/immutable.service';
 
 describe('ImmutableTagComponent', () => {
     let component: ImmutableTagComponent;
@@ -110,16 +111,13 @@ describe('ImmutableTagComponent', () => {
             },
         },
     ];
-    const fakedImmutableTagService = {
-        getI18nKey() {
-            return 'test';
-        },
-        getRetentionMetadata() {
+    const mockedImmutableService = {
+        getRentenitionMetadata() {
             return throwError(() => {
                 return { error: { message: 'error' } };
             });
         },
-        getRules(projectId) {
+        ListImmuRules(projectId) {
             if (projectId) {
                 return of(mockRules);
             }
@@ -127,13 +125,13 @@ describe('ImmutableTagComponent', () => {
                 return 'error';
             });
         },
-        updateRule() {
+        UpdateImmuRule() {
             return of(null);
         },
-        deleteRule() {
+        DeleteImmuRule() {
             return of(null);
         },
-        createRule(projectId, cloneRuleNoId) {
+        CreateImmuRule(projectId, cloneRuleNoId) {
             if (projectId) {
                 return of(mockRules);
             }
@@ -143,6 +141,11 @@ describe('ImmutableTagComponent', () => {
         },
         getProjectInfo() {
             return of(null);
+        },
+    };
+    const fakedImmutableTagService = {
+        getI18nKey() {
+            return 'test';
         },
     };
     beforeEach(async () => {
@@ -158,6 +161,10 @@ describe('ImmutableTagComponent', () => {
                 {
                     provide: ImmutableTagService,
                     useValue: fakedImmutableTagService,
+                },
+                {
+                    provide: ImmutableService,
+                    useValue: mockedImmutableService,
                 },
                 {
                     provide: ActivatedRoute,

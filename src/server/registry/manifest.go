@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/opencontainers/go-digest"
+
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -32,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
-	"github.com/opencontainers/go-digest"
 )
 
 // https://github.com/distribution/distribution/blob/c202b9b0d7b79a67337dec8e1f1bafb1c7095315/registry/handlers/manifests.go#L280

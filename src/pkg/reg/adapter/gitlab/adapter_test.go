@@ -1,10 +1,6 @@
 package gitlab
 
 import (
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +8,12 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 func mustWriteHTTPResponse(t *testing.T, w io.Writer, fixturePath string) {

@@ -928,14 +928,35 @@ export function setPageSizeToLocalStorage(key: string, pageSize: number) {
     }
 }
 
+/**
+ * Convert seconds to xx hrs xx min xx sec
+ * @param distance in milliseconds
+ */
+export function durationStr(distance: number): string {
+    const hours = Math.floor(distance / 3600000);
+    distance -= hours * 3600000;
+    const minutes = Math.floor(distance / 60000);
+    distance -= minutes * 60000;
+    const seconds = Math.floor(distance / 1000);
+    let result: string = '';
+    if (seconds) {
+        result = `${seconds}sec`;
+    }
+    if (minutes) {
+        result = `${minutes}min ${seconds}sec`;
+    }
+    if (hours) {
+        result = `${hours}hrs ${minutes}min ${seconds}sec`;
+    }
+    return result ? result : '0';
+}
+
 export enum PageSizeMapKeys {
     LIST_PROJECT_COMPONENT = 'ListProjectComponent',
     REPOSITORY_GRIDVIEW_COMPONENT = 'RepositoryGridviewComponent',
     ARTIFACT_LIST_TAB_COMPONENT = 'ArtifactListTabComponent',
     ARTIFACT_TAGS_COMPONENT = 'ArtifactTagComponent',
     ARTIFACT_VUL_COMPONENT = 'ArtifactVulnerabilitiesComponent',
-    HELM_CHART_COMPONENT = 'HelmChartComponent',
-    CHART_VERSION_COMPONENT = 'ChartVersionComponent',
     MEMBER_COMPONENT = 'MemberComponent',
     LABEL_COMPONENT = 'LabelComponent',
     P2P_POLICY_COMPONENT = 'P2pPolicyComponent',
@@ -944,6 +965,8 @@ export enum PageSizeMapKeys {
     TAG_RETENTION_COMPONENT = 'TagRetentionComponent',
     PROJECT_ROBOT_COMPONENT = 'ProjectRobotAccountComponent',
     WEBHOOK_COMPONENT = 'WebhookComponent',
+    WEBHOOK_EXECUTIONS_COMPONENT = 'Webhook_Execution_Component',
+    WEBHOOK_TASKS_COMPONENT = 'Webhook_Tasks_Component',
     PROJECT_AUDIT_LOG_COMPONENT = 'ProjectAuditLogComponent',
     SYSTEM_RECENT_LOG_COMPONENT = 'SystemRecentLogComponent',
     SYSTEM_USER_COMPONENT = 'SystemUserComponent',
@@ -957,4 +980,8 @@ export enum PageSizeMapKeys {
     SYSTEM_SCANNER_COMPONENT = 'ConfigurationScannerComponent',
     GC_HISTORY_COMPONENT = 'GcHistoryComponent',
     SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent',
+    WORKER_LIST_COMPONENT_POOL = 'WorkerListComponentPool',
+    WORKER_LIST_COMPONENT_WORKER = 'WorkerListComponentWorker',
+    SCHEDULE_LIST_COMPONENT = 'ScheduleListComponent',
+    PENDING_LIST_COMPONENT = 'PendingListComponent',
 }

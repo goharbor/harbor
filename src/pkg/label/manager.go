@@ -16,11 +16,12 @@ package label
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/label/dao"
 	"github.com/goharbor/harbor/src/pkg/label/model"
-	"time"
 )
 
 // Mgr is a global instance of label manager

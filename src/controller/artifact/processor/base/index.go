@@ -16,6 +16,7 @@ package base
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"

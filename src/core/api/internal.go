@@ -17,14 +17,14 @@ package api
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/lib/config"
+	o "github.com/beego/beego/v2/client/orm"
 
-	o "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -66,7 +66,10 @@ func (ia *InternalAPI) RenameAdmin() {
 		return
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
-	ia.DestroySession()
+	if err := ia.DestroySession(); err != nil {
+		log.Errorf("failed to destroy session for admin user, error: %v", err)
+		return
+	}
 }
 
 // SyncQuota ...
@@ -104,5 +107,4 @@ func (ia *InternalAPI) SyncQuota() {
 		}
 		log.Info("success to sync quota(API).")
 	}()
-	return
 }

@@ -18,8 +18,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 type mockEvaluator struct {

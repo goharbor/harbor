@@ -57,13 +57,46 @@
             <input
                 clrInput
                 name="tokenExpiration"
-                type="text"
+                type="number"
                 #tokenExpirationInput="ngModel"
-                [(ngModel)]="tokenExpirationValue"
+                [(ngModel)]="currentConfig.token_expiration.value"
                 required
                 pattern="^[1-9]{1}[0-9]*$"
                 id="tokenExpiration"
-                size="20"
+                max="9999999999"
+                [disabled]="!editable" />
+            <clr-control-error>{{
+                'TOOLTIP.NUMBER_REQUIRED' | translate
+            }}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+            <label for="sessionTimeout" class="required"
+                >{{ 'CONFIG.SESSION_TIMEOUT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.SESSION_TIMEOUT_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input
+                clrInput
+                name="sessionTimeout"
+                type="number"
+                #ngSessionTimeout="ngModel"
+                [(ngModel)]="currentConfig.session_timeout.value"
+                required
+                pattern="^[1-9]{1}[0-9]*$"
+                id="sessionTimeout"
+                max="9999999999"
                 [disabled]="!editable" />
             <clr-control-error>{{
                 'TOOLTIP.NUMBER_REQUIRED' | translate
@@ -122,46 +155,46 @@
             <input
                 clrInput
                 name="robotTokenExpiration"
-                type="text"
+                type="number"
                 #robotTokenExpirationInput="ngModel"
-                [(ngModel)]="robotTokenExpirationValue"
+                [(ngModel)]="currentConfig.robot_token_duration.value"
                 required
                 pattern="^[1-9]{1}[0-9]*$"
                 id="robotTokenExpiration"
-                size="20"
+                max="9999999999"
                 [disabled]="!robotExpirationEditable" />
             <clr-control-error>{{
                 'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate
             }}</clr-control-error>
         </clr-input-container>
-        <label
-            *ngIf="canDownloadCert"
-            class="clr-control-label cert-down-label mt-1"
-            >{{ 'CONFIG.ROOT_CERT' | translate }}
-            <clr-tooltip>
-                <clr-icon
-                    clrTooltipTrigger
-                    shape="info-circle"
-                    size="24"></clr-icon>
-                <clr-tooltip-content
-                    clrPosition="top-right"
-                    clrSize="lg"
-                    *clrIfOpen>
-                    <span>{{
-                        'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate
-                    }}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
-            <a
-                rel="noopener noreferrer"
-                #certDownloadLink
-                class="cert-down"
-                [href]="downloadLink"
-                target="_blank"
-                >{{ 'CONFIG.ROOT_CERT_LINK' | translate }}</a
-            >
-        </label>
-        <clr-checkbox-container>
+        <div *ngIf="canDownloadCert" class="clr-form-control">
+            <label class="clr-control-label"
+                >{{ 'CONFIG.ROOT_CERT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <div class="clr-control-container cert-down">
+                <a
+                    rel="noopener noreferrer"
+                    [href]="downloadLink"
+                    target="_blank"
+                    >{{ 'CONFIG.ROOT_CERT_LINK' | translate }}</a
+                >
+            </div>
+        </div>
+        <clr-checkbox-container class="center">
             <label id="repo_read_only_lbl" for="repoReadOnly"
                 >{{ 'CONFIG.REPO_READ_ONLY' | translate }}
                 <clr-tooltip>
@@ -217,6 +250,39 @@
                     [ngModel]="currentConfig.notification_enable.value"
                     (ngModelChange)="setWebhookNotificationEnabledValue($event)"
                     [disabled]="!currentConfig.notification_enable.editable" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container class="center">
+            <label for="scannerSkipUpdatePullTime"
+                >{{ 'CONFIG.SKIP_SCANNER_PULL_TIME' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.TOOLTIP.SKIP_SCANNER_PULL_TIME_TOOLTIP'
+                                | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="scannerSkipUpdatePullTime"
+                    id="scannerSkipUpdatePullTime"
+                    [(ngModel)]="
+                        currentConfig.scanner_skip_update_pulltime.value
+                    "
+                    [disabled]="
+                        !currentConfig.scanner_skip_update_pulltime.editable
+                    " />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
         <clr-input-container>

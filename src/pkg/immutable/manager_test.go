@@ -2,17 +2,17 @@ package immutable
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/q"
-	dao_model "github.com/goharbor/harbor/src/pkg/immutable/dao/model"
-	"github.com/goharbor/harbor/src/pkg/immutable/model"
-	"github.com/goharbor/harbor/src/testing/pkg/immutable/dao"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"os"
-	"testing"
+	"github.com/goharbor/harbor/src/lib/q"
+	dao_model "github.com/goharbor/harbor/src/pkg/immutable/dao/model"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/testing/pkg/immutable/dao"
 )
 
 type managerTestingSuite struct {
@@ -28,13 +28,7 @@ func (m *managerTestingSuite) SetupSuite() {
 	m.assert = assert.New(m.t)
 	m.require = require.New(m.t)
 
-	err := os.Setenv("RUN_MODE", "TEST")
-	m.require.Nil(err)
-}
-
-func (m *managerTestingSuite) TearDownSuite() {
-	err := os.Unsetenv("RUN_MODE")
-	m.require.Nil(err)
+	m.T().Setenv("RUN_MODE", "TEST")
 }
 
 func (m *managerTestingSuite) SetupTest() {

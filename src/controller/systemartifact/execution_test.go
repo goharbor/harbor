@@ -2,6 +2,13 @@ package systemartifact
 
 import (
 	"context"
+	"testing"
+
+	"github.com/pkg/errors"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	scheduler2 "github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -10,10 +17,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/goharbor/harbor/src/testing/pkg/systemartifact"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/pkg/errors"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type SystemArtifactCleanupTestSuite struct {
@@ -136,7 +139,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobNoPreviousSch
 
 	var extraAttrs map[string]interface{}
 	suite.sched.On("Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
 	suite.sched.On("ListSchedules", mock.Anything, mock.Anything).Return(make([]*scheduler2.Schedule, 0), nil)
 	sched = suite.sched
 	ctx := context.TODO()
@@ -144,7 +147,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobNoPreviousSch
 	ScheduleCleanupTask(ctx)
 
 	suite.sched.AssertCalled(suite.T(), "Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs)
 }
 
 func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSchedule() {
@@ -162,7 +165,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 
 	var extraAttrs map[string]interface{}
 	suite.sched.On("Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
 
 	existingSchedule := scheduler2.Schedule{ID: int64(10)}
 	suite.sched.On("ListSchedules", mock.Anything, mock.Anything).Return([]*scheduler2.Schedule{&existingSchedule}, nil)
@@ -172,7 +175,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 	ScheduleCleanupTask(ctx)
 
 	suite.sched.AssertNotCalled(suite.T(), "Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs)
 }
 
 func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousScheduleError() {
@@ -189,7 +192,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 	}
 
 	suite.sched.On("Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, mock.Anything).Return(int64(1), nil)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, mock.Anything).Return(int64(1), nil)
 
 	suite.sched.On("ListSchedules", mock.Anything, mock.Anything).Return(nil, errors.New("test error"))
 	sched = suite.sched
@@ -201,7 +204,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 		return len(attrs) == 0
 	})
 	suite.sched.AssertNotCalled(suite.T(), "Schedule", mock.Anything,
-		VendorTypeSystemArtifactCleanup, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttributesMatcher)
+		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttributesMatcher)
 }
 
 func (suite *SystemArtifactCleanupTestSuite) TearDownSuite() {

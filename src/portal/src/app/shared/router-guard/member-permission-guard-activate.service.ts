@@ -27,27 +27,7 @@ export class MemberPermissionGuard implements CanActivate, CanActivateChild {
     ): Observable<boolean> | boolean {
         const projectId = route.parent.params['id'];
         const permission = route.data.permissionParam as UserPrivilegeServeItem;
-        return new Observable(observer => {
-            this.userPermission
-                .getPermission(
-                    projectId,
-                    permission.resource,
-                    permission.action
-                )
-                .subscribe(
-                    permissionRouter => {
-                        if (!permissionRouter) {
-                            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                        }
-                        observer.next(permissionRouter);
-                    },
-                    error => {
-                        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                        observer.next(false);
-                        this.errorHandler.error(error);
-                    }
-                );
-        });
+        return this.checkPermission(projectId, permission);
     }
 
     canActivateChild(
@@ -55,5 +35,31 @@ export class MemberPermissionGuard implements CanActivate, CanActivateChild {
         state: RouterStateSnapshot
     ): Observable<boolean> | boolean {
         return this.canActivate(route, state);
+    }
+    checkPermission(
+        projectId: number,
+        permission: UserPrivilegeServeItem
+    ): Observable<boolean> {
+        return new Observable(observer => {
+            this.userPermission
+                .getPermission(
+                    projectId,
+                    permission.resource,
+                    permission.action
+                )
+                .subscribe({
+                    next: permissionRouter => {
+                        if (!permissionRouter) {
+                            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                        }
+                        observer.next(permissionRouter);
+                    },
+                    error: error => {
+                        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                        observer.next(false);
+                        this.errorHandler.error(error);
+                    },
+                });
+        });
     }
 }

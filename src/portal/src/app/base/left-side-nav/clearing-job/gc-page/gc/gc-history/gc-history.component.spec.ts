@@ -14,6 +14,7 @@ import { Registry } from '../../../../../../../../ng-swagger-gen/models/registry
 import { GcService } from '../../../../../../../../ng-swagger-gen/services/gc.service';
 import { CURRENT_BASE_HREF } from '../../../../../../shared/units/utils';
 import { delay } from 'rxjs/operators';
+import { ConfirmationDialogService } from '../../../../../global-confirmation-dialog/confirmation-dialog.service';
 
 describe('GcHistoryComponent', () => {
     let component: GcHistoryComponent;
@@ -65,12 +66,22 @@ describe('GcHistoryComponent', () => {
                 return of(response).pipe(delay(0));
             }
         },
+        stopGC() {
+            return of(null);
+        },
+    };
+    const fakedConfirmationDialogService = {
+        openComfirmDialog() {},
     };
     beforeEach(() => {
         TestBed.configureTestingModule({
             declarations: [GcHistoryComponent],
             imports: [SharedTestingModule],
             providers: [
+                {
+                    provide: ConfirmationDialogService,
+                    useValue: fakedConfirmationDialogService,
+                },
                 { provide: GcService, useValue: fakedGcService },
                 // open auto detect
                 { provide: ComponentFixtureAutoDetect, useValue: true },
@@ -103,5 +114,15 @@ describe('GcHistoryComponent', () => {
         expect(component.getLogLink('1')).toEqual(
             `${CURRENT_BASE_HREF}/system/gc/1/log`
         );
+    });
+    it('stopping GC should work', () => {
+        const sy: jasmine.Spy = spyOn(
+            fakedConfirmationDialogService,
+            'openComfirmDialog'
+        ).and.returnValue(undefined);
+        const stopBtn: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#stop-gc');
+        stopBtn.dispatchEvent(new Event('click'));
+        expect(sy.calls.count()).toEqual(1);
     });
 });

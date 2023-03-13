@@ -19,6 +19,10 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -45,9 +49,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 // TODO find another way to test artifact controller, it's hard to maintain currently
@@ -72,7 +73,7 @@ type controllerTestSuite struct {
 	labelMgr     *label.Manager
 	abstractor   *fakeAbstractor
 	immutableMtr *immutable.FakeMatcher
-	regCli       *registry.FakeClient
+	regCli       *registry.Client
 	accMgr       *accessory.Manager
 }
 
@@ -86,7 +87,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.abstractor = &fakeAbstractor{}
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.accMgr = &accessorytesting.Manager{}
-	c.regCli = &registry.FakeClient{}
+	c.regCli = &registry.Client{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
@@ -136,10 +137,10 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	}, nil)
 	acc := &basemodel.Default{
 		Data: accessorymodel.AccessoryData{
-			ID:            1,
-			ArtifactID:    2,
-			SubArtifactID: 1,
-			Type:          accessorymodel.TypeCosignSignature,
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: "sha256:123",
+			Type:              accessorymodel.TypeCosignSignature,
 		},
 	}
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
@@ -263,26 +264,10 @@ func (c *controllerTestSuite) TestEnsure() {
 }
 
 func (c *controllerTestSuite) TestCount() {
-	c.artMgr.On("List", mock.Anything, mock.Anything).Return([]*artifact.Artifact{
-		{
-			ID:           1,
-			RepositoryID: 1,
-		},
-	}, nil)
-	acc := &basemodel.Default{
-		Data: accessorymodel.AccessoryData{
-			ID:            1,
-			ArtifactID:    2,
-			SubArtifactID: 1,
-			Type:          accessorymodel.TypeCosignSignature,
-		},
-	}
-	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
-		acc,
-	}, nil)
+	c.artMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil)
 	total, err := c.ctl.Count(nil, nil)
 	c.Require().Nil(err)
-	c.Equal(int64(0), total)
+	c.Equal(int64(1), total)
 }
 
 func (c *controllerTestSuite) TestList() {
@@ -561,10 +546,10 @@ func (c *controllerTestSuite) TestCopy() {
 	}, nil)
 	acc := &basemodel.Default{
 		Data: accessorymodel.AccessoryData{
-			ID:            1,
-			ArtifactID:    2,
-			SubArtifactID: 1,
-			Type:          accessorymodel.TypeCosignSignature,
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+			Type:              accessorymodel.TypeCosignSignature,
 		},
 	}
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{
@@ -577,7 +562,7 @@ func (c *controllerTestSuite) TestCopy() {
 	}, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	c.regCli.On("Copy").Return(nil)
+	c.regCli.On("Copy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
 	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")

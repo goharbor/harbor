@@ -1,0 +1,52 @@
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
+
+
+const outputPath = path.resolve(__dirname, 'dist');
+
+module.exports = {
+    devServer: {
+        proxy: {
+            '/swagger.json': {
+                target: 'https://example.com',
+                "secure": false,
+            },
+            '/swagger2.json': {
+                target: 'https://example.com',
+                "secure": false,
+            }
+        }
+    },
+    mode: 'development',
+    entry: {
+        app: require.resolve('./src/index'),
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    { loader: 'style-loader' },
+                    { loader: 'css-loader' },
+                ]
+            }
+        ]
+    },
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                `favicon.ico`
+            ]
+        }),
+        new CleanWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            template: 'index.html'
+        })
+    ],
+    output: {
+        filename: 'swagger-ui.bundle.js',
+        path: outputPath,
+    }
+};

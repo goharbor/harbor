@@ -18,10 +18,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/config/store"
-
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/config/store"
 )
 
 const cacheKey = "cfgs"

@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -28,8 +29,6 @@ import (
 const (
 	// SchedulerCallback ...
 	SchedulerCallback = "PURGE_AUDIT_LOG_CALLBACK"
-	// VendorType ...
-	VendorType = "PURGE_AUDIT_LOG"
 )
 
 // Ctrl a global purge controller instance
@@ -55,11 +54,17 @@ func purgeCallback(ctx context.Context, p string) error {
 type Controller interface {
 	// Start kick off a purge schedule
 	Start(ctx context.Context, policy JobPolicy, trigger string) (int64, error)
+	// Stop a purge job
+	Stop(ctx context.Context, id int64) error
 }
 
 type controller struct {
 	taskMgr task.Manager
 	exeMgr  task.ExecutionManager
+}
+
+func (c *controller) Stop(ctx context.Context, id int64) error {
+	return c.exeMgr.Stop(ctx, id)
 }
 
 func (c *controller) Start(ctx context.Context, policy JobPolicy, trigger string) (int64, error) {
@@ -69,12 +74,12 @@ func (c *controller) Start(ctx context.Context, policy JobPolicy, trigger string
 	para[common.PurgeAuditRetentionHour] = policy.RetentionHour
 	para[common.PurgeAuditIncludeOperations] = policy.IncludeOperations
 
-	execID, err := c.exeMgr.Create(ctx, VendorType, -1, trigger, para)
+	execID, err := c.exeMgr.Create(ctx, job.PurgeAuditVendorType, -1, trigger, para)
 	if err != nil {
 		return -1, err
 	}
 	_, err = c.taskMgr.Create(ctx, execID, &task.Job{
-		Name: job.PurgeAudit,
+		Name: job.PurgeAuditVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},

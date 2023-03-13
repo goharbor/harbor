@@ -15,12 +15,12 @@
 package purge
 
 import (
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/audit"
 	"os"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/audit"
 )
 
 // Job defines the purge job
@@ -52,7 +52,7 @@ func (j *Job) Validate(params job.Parameters) error {
 }
 
 func (j *Job) parseParams(params job.Parameters) {
-	if params == nil || len(params) == 0 {
+	if len(params) == 0 {
 		return
 	}
 	retHr, exist := params[common.PurgeAuditRetentionHour]
@@ -92,19 +92,26 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 	logger.Info("Purge audit job start")
 	logger.Infof("job parameters %+v", params)
-
+	if j.shouldStop(ctx) {
+		logger.Info("received the stop signal, stop the purge job")
+		return nil
+	}
 	j.parseParams(params)
 	ormCtx := ctx.SystemContext()
 	if j.retentionHour == -1 || j.retentionHour == 0 {
-		log.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
+		logger.Infof("quit purge job, retentionHour:%v ", j.retentionHour)
 		return nil
+	}
+	// cap the retentionHour
+	if j.retentionHour > common.MaxAuditRetentionHour {
+		j.retentionHour = common.MaxAuditRetentionHour
 	}
 	n, err := j.auditMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
 	if err != nil {
 		logger.Errorf("failed to purge audit log, error: %v", err)
 		return err
 	}
-	logger.Infof("Purge operation parameter, renention_hour=%v, include_operations:%v, dry_run:%v",
+	logger.Infof("Purge operation parameter, retention_hour=%v, include_operations:%v, dry_run:%v",
 		j.retentionHour, j.includeOperations, j.dryRun)
 	if j.dryRun {
 		logger.Infof("[DRYRUN]Purged %d rows of audit logs", n)
@@ -114,4 +121,12 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Successfully exit
 	return nil
+}
+
+func (j *Job) shouldStop(ctx job.Context) bool {
+	opCmd, exit := ctx.OPCommand()
+	if exit && opCmd.IsStop() {
+		return true
+	}
+	return false
 }

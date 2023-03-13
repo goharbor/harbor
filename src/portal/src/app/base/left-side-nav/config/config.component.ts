@@ -27,7 +27,7 @@ export class ConfigurationComponent implements OnInit {
     constructor(private conf: ConfigService) {}
 
     ngOnInit(): void {
-        // First load
-        this.conf.initConfig();
+        // Refresh config every time when entering the configuration page
+        this.conf.updateConfig();
     }
 }

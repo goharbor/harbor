@@ -18,14 +18,15 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -81,6 +82,9 @@ type Configuration struct {
 
 	// Metric configurations
 	Metric *MetricConfig `yaml:"metric,omitempty"`
+
+	// MaxLogSizeReturnedMB is the max size of log returned by job log API
+	MaxLogSizeReturnedMB int `yaml:"max_retrieve_size_mb,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -141,7 +145,7 @@ type LoggerConfig struct {
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if !utils.IsEmptyStr(yamlFilePath) {
 		// Try to load from file first
-		data, err := ioutil.ReadFile(yamlFilePath)
+		data, err := os.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
 		}
@@ -274,7 +278,6 @@ func (c *Configuration) loadEnvs() {
 			}
 		}
 	}
-
 }
 
 // Check if the configurations are valid settings.

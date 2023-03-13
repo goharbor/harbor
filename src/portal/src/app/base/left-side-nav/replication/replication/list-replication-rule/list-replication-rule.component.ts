@@ -15,6 +15,7 @@ import {
     Component,
     EventEmitter,
     Input,
+    OnInit,
     Output,
     ViewChild,
 } from '@angular/core';
@@ -46,18 +47,24 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { errorHandler } from '../../../../../shared/units/shared.utils';
 import { ConfirmationAcknowledgement } from '../../../../global-confirmation-dialog/confirmation-state-message';
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
-import { HELM_HUB } from '../../../../../shared/services/endpoint.service';
 import { BandwidthUnit, Flatten_I18n_MAP } from '../../replication';
 import { KB_TO_MB } from '../create-edit-rule/create-edit-rule.component';
 import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
+import { ReplicationTrigger } from '../../../../../../../ng-swagger-gen/models/replication-trigger';
+import {
+    TRIGGER,
+    TRIGGER_I18N_MAP,
+} from '../../../../project/p2p-provider/p2p-provider.service';
+import { ScheduleService } from '../../../../../../../ng-swagger-gen/services/schedule.service';
+import { JobType } from '../../../job-service-dashboard/job-service-dashboard.interface';
 
 @Component({
     selector: 'hbr-list-replication-rule',
     templateUrl: './list-replication-rule.component.html',
     styleUrls: ['./list-replication-rule.component.scss'],
 })
-export class ListReplicationRuleComponent {
+export class ListReplicationRuleComponent implements OnInit {
     @Input() selectedId: number | string;
     @Input() withReplicationJob: boolean;
     @Input() hasCreateReplicationPermission: boolean;
@@ -86,12 +93,33 @@ export class ListReplicationRuleComponent {
     totalCount: number = 0;
     loading: boolean = true;
 
+    paused: boolean = false;
+
     constructor(
         private replicationService: ReplicationService,
         private translateService: TranslateService,
         private errorHandlerEntity: ErrorHandler,
-        private operationService: OperationService
+        private operationService: OperationService,
+        private scheduleService: ScheduleService
     ) {}
+
+    ngOnInit() {
+        this.scheduleService
+            .getSchedulePaused({ jobType: JobType.ALL })
+            .subscribe(res => {
+                this.paused = res?.paused;
+            });
+    }
+
+    getTriggerTypeI18n(t: ReplicationTrigger) {
+        if (t) {
+            if (this.paused && t?.type === TRIGGER.SCHEDULED) {
+                return TRIGGER_I18N_MAP[TRIGGER.SCHEDULED_PAUSED];
+            }
+            return TRIGGER_I18N_MAP[t?.type];
+        }
+        return null;
+    }
 
     trancatedDescription(desc: string): string {
         if (desc.length > 35) {
@@ -337,10 +365,6 @@ export class ListReplicationRuleComponent {
         this.selectedRow = null;
         this.searchString = null;
         this.clrLoad();
-    }
-
-    isHelmHub(srcRegistry: any): boolean {
-        return srcRegistry && srcRegistry.type === HELM_HUB;
     }
 
     getFlattenLevelString(level: number) {

@@ -17,6 +17,8 @@ package config
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/store"
 	"github.com/goharbor/harbor/src/pkg/config/validate"
-	"os"
 )
 
 // CfgManager ... Configure Manager
@@ -158,14 +159,16 @@ func (c *CfgManager) GetDatabaseCfg() *models.Database {
 	return &models.Database{
 		Type: c.Get(ctx, common.DatabaseType).GetString(),
 		PostGreSQL: &models.PostGreSQL{
-			Host:         c.Get(ctx, common.PostGreSQLHOST).GetString(),
-			Port:         c.Get(ctx, common.PostGreSQLPort).GetInt(),
-			Username:     c.Get(ctx, common.PostGreSQLUsername).GetString(),
-			Password:     c.Get(ctx, common.PostGreSQLPassword).GetString(),
-			Database:     c.Get(ctx, common.PostGreSQLDatabase).GetString(),
-			SSLMode:      c.Get(ctx, common.PostGreSQLSSLMode).GetString(),
-			MaxIdleConns: c.Get(ctx, common.PostGreSQLMaxIdleConns).GetInt(),
-			MaxOpenConns: c.Get(ctx, common.PostGreSQLMaxOpenConns).GetInt(),
+			Host:            c.Get(ctx, common.PostGreSQLHOST).GetString(),
+			Port:            c.Get(ctx, common.PostGreSQLPort).GetInt(),
+			Username:        c.Get(ctx, common.PostGreSQLUsername).GetString(),
+			Password:        c.Get(ctx, common.PostGreSQLPassword).GetString(),
+			Database:        c.Get(ctx, common.PostGreSQLDatabase).GetString(),
+			SSLMode:         c.Get(ctx, common.PostGreSQLSSLMode).GetString(),
+			MaxIdleConns:    c.Get(ctx, common.PostGreSQLMaxIdleConns).GetInt(),
+			MaxOpenConns:    c.Get(ctx, common.PostGreSQLMaxOpenConns).GetInt(),
+			ConnMaxLifetime: c.Get(ctx, common.PostGreSQLConnMaxLifetime).GetDuration(),
+			ConnMaxIdleTime: c.Get(ctx, common.PostGreSQLConnMaxIdleTime).GetDuration(),
 		},
 	}
 }
@@ -180,10 +183,10 @@ func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{
 	for key, value := range cfgs {
 		item, exist := metadata.Instance().GetByName(key)
 		if !exist {
-			return errors.New(fmt.Sprintf("invalid config, item not defined in metadatalist, %v", key))
+			return fmt.Errorf("invalid config, item not defined in metadatalist, %v", key)
 		}
 		if item.Scope == metadata.SystemScope {
-			return errors.New(fmt.Sprintf("system config items cannot be updated, item: %v", key))
+			return fmt.Errorf("system config items cannot be updated, item: %v", key)
 		}
 		strVal := utils.GetStrValueOfAnyType(value)
 		_, err := metadata.NewCfgValue(key, strVal)

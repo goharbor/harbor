@@ -1,6 +1,7 @@
 import {
     DEFAULT_PAGE_SIZE,
     delUrlParam,
+    durationStr,
     getPageSizeFromLocalStorage,
     getQueryString,
     getSizeNumber,
@@ -118,5 +119,12 @@ describe('functions in utils.ts should work', () => {
         expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
         setPageSizeToLocalStorage('test1', 10);
         expect(getPageSizeFromLocalStorage('test1')).toEqual(10);
+    });
+
+    it('functions durationStr(distance: number) should work', () => {
+        expect(durationStr(11)).toEqual('0');
+        expect(durationStr(1111)).toEqual('1sec');
+        expect(durationStr(61111)).toEqual('1min 1sec');
+        expect(durationStr(3661111)).toEqual('1hrs 1min 1sec');
     });
 });

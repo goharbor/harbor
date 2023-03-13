@@ -21,9 +21,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/controller/blob"
 )
 
 type PatchBlobUploadMiddlewareTestSuite struct {

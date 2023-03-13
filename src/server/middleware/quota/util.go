@@ -16,7 +16,7 @@ package quota
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -49,7 +49,7 @@ var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
 		lib.NopCloseRequest(r)
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, distribution.Descriptor{}, err
 		}

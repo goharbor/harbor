@@ -170,61 +170,6 @@
                 </button>
             </div>
         </div>
-        <div
-            class="card clickable"
-            *ngIf="hasReadChartPermission && withHelmChart">
-            <div class="card-header">
-                <div>{{ 'PROJECT_DETAIL.HELMCHART' | translate }}</div>
-                <div class="clr-row number">
-                    {{
-                        summaryInformation?.chart_count
-                            ? summaryInformation?.chart_count
-                            : 0
-                    }}
-                </div>
-                <div class="clr-row">
-                    <div class="clr-col-4 column">
-                        {{ 'HELM_CHART.NAME' | translate }}
-                    </div>
-                    <div class="clr-col-2 column">
-                        {{ 'HELM_CHART.STATUS' | translate }}
-                    </div>
-                    <div class="clr-col-2 column">
-                        {{ 'HELM_CHART.CHARTVERSIONS' | translate }}
-                    </div>
-                    <div class="clr-col-4 column">
-                        {{ 'HELM_CHART.CREATED' | translate }}
-                    </div>
-                </div>
-            </div>
-            <div class="card-block">
-                <div class="clr-row" *ngFor="let chart of charts">
-                    <div class="clr-col-4 ellipsis chart-name">
-                        <img
-                            class="size-24 mr-5px"
-                            [src]="chart.icon ? chart.icon : chartDefaultIcon"
-                            (error)="getDefaultIcon(chart)" />
-                        <a
-                            href="javascript:void(0)"
-                            (click)="onChartClick(chart.name)"
-                            >{{ chart.name }}</a
-                        >
-                    </div>
-                    <div class="clr-col-2">
-                        {{ getStatusString(chart) | translate }}
-                    </div>
-                    <div class="clr-col-2">{{ chart.total_versions }}</div>
-                    <div class="clr-col-4 ellipsis">
-                        {{ chart.created | harborDatetime: 'short' }}
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer">
-                <button class="btn btn-link" (click)="goToCharts()">
-                    {{ 'SUMMARY.SEE_ALL' | translate }}
-                </button>
-            </div>
-        </div>
         <div class="card clickable" *ngIf="showProjectMemberInfo">
             <div class="card-header no-underline">
                 <div>{{ 'PROJECT_DETAIL.USERS' | translate }}</div>

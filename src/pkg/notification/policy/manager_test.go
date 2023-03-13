@@ -2,12 +2,13 @@ package policy
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/errors"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/notification/policy/dao"
-	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type managerTestSuite struct {
@@ -66,28 +67,6 @@ func (m *managerTestSuite) TestList() {
 	m.Equal(1, len(rpers))
 	m.dao.AssertExpectations(m.T())
 }
-
-func (m *managerTestSuite) TestGetByNameAndProjectID404() {
-	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.Policy{}, nil)
-	_, err := m.mgr.GetByNameAndProjectID(context.Background(), "test_policy", 1)
-	m.NotNil(err)
-	m.True(errors.IsNotFoundErr(err))
-}
-
-func (m *managerTestSuite) TestGetByNameAndProjectID() {
-	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.Policy{
-		{
-			ID:        1,
-			Name:      "test_policy",
-			ProjectID: 1,
-		},
-	}, nil)
-	policy, err := m.mgr.GetByNameAndProjectID(context.Background(), "test_policy", 1)
-	m.Nil(err)
-	m.Equal("test_policy", policy.Name)
-	m.dao.AssertExpectations(m.T())
-}
-
 func (m *managerTestSuite) TestGetRelatedPolices() {
 	m.dao.On("List", mock.Anything, mock.Anything).Return([]*model.Policy{
 		{
@@ -95,14 +74,14 @@ func (m *managerTestSuite) TestGetRelatedPolices() {
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 		{
 			ID:           2,
 			Name:         "policy",
 			ProjectID:    1,
 			Enabled:      true,
-			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_CHART\"]",
+			EventTypesDB: "[\"PULL_IMAGE\",\"PUSH_IMAGE\"]",
 		},
 	}, nil)
 	rpers, err := m.mgr.GetRelatedPolices(context.Background(), 1, "PULL_IMAGE")

@@ -27,12 +27,20 @@
                     (change)="adapterChange($event)"
                     [(ngModel)]="target.type"
                     [disabled]="testOngoing || editDisabled">
-                    <option
-                        [ngClass]="{ hidden: shouldHide(adapter) }"
-                        *ngFor="let adapter of adapterList"
-                        value="{{ adapter }}">
-                        {{ getAdapterText(adapter) }}
-                    </option>
+                    <ng-container *ngIf="!editDisabled">
+                        <option
+                            *ngFor="let adapter of adapterList"
+                            value="{{ adapter }}">
+                            {{ getAdapterText(adapter) }}
+                        </option>
+                    </ng-container>
+                    <ng-container *ngIf="editDisabled">
+                        <option
+                            *ngFor="let adapter of [target.type]"
+                            value="{{ adapter }}">
+                            {{ getAdapterText(adapter) }}
+                        </option>
+                    </ng-container>
                 </select>
             </clr-select-container>
             <!-- Endpoint name -->

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PGBINOLD="/usr/local/pg96/bin/"
+PGBINOLD=""
 PGBINNEW="/usr/bin"
 PGDATAOLD=""
 PGDATANEW=""

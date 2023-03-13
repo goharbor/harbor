@@ -18,10 +18,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 func TestIDToken(t *testing.T) {
@@ -33,15 +34,15 @@ func TestIDToken(t *testing.T) {
 	ctx := idToken.Generate(req)
 	assert.Nil(t, ctx)
 
-	// not the candidate request
-	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/chartrepo/", nil)
+	// contains no authorization header
+	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
 	require.Nil(t, err)
-	req = req.WithContext(lib.WithAuthMode(req.Context(), common.DBAuth))
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	ctx = idToken.Generate(req)
 	assert.Nil(t, ctx)
 
 	// contains no authorization header
-	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token?service=harbor-registry&scope=repository:foo/bar:pull", nil)
 	require.Nil(t, err)
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	ctx = idToken.Generate(req)

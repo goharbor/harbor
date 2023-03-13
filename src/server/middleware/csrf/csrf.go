@@ -1,19 +1,20 @@
 package csrf
 
 import (
-	"github.com/goharbor/harbor/src/lib/config"
-	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
 
+	"github.com/gorilla/csrf"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/gorilla/csrf"
 )
 
 const (
@@ -39,7 +40,6 @@ func attachToken(w http.ResponseWriter, r *http.Request) {
 func handleError(w http.ResponseWriter, r *http.Request) {
 	attachToken(w, r)
 	lib_http.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
-	return
 }
 
 func attach(handler http.Handler) http.Handler {
@@ -74,7 +74,6 @@ func csrfSkipper(req *http.Request) bool {
 	path := req.URL.Path
 	if (strings.HasPrefix(path, "/v2/") ||
 		strings.HasPrefix(path, "/api/") ||
-		strings.HasPrefix(path, "/chartrepo/") ||
 		strings.HasPrefix(path, "/service/")) && !lib.GetCarrySession(req.Context()) {
 		return true
 	}

@@ -16,6 +16,12 @@ package registry
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
@@ -23,10 +29,6 @@ import (
 	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type tagTestSuite struct {

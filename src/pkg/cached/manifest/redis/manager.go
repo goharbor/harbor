@@ -18,16 +18,14 @@ import (
 	"context"
 	"time"
 
-	libcache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
 )
 
-var _ CachedManager = &manager{}
+var _ CachedManager = &Manager{}
 
-// ManifestManager is the manager for manifest.
+// ManifestManager is the Manager for manifest.
 type ManifestManager interface {
 	// Save manifest to cache.
 	Save(ctx context.Context, digest string, manifest []byte) error
@@ -37,18 +35,17 @@ type ManifestManager interface {
 	Delete(ctx context.Context, digest string) error
 }
 
-// CachedManager is the interface combines raw resource manager and cached manager for better extension.
+// CachedManager is the interface combines raw resource Manager and cached Manager for better extension.
 type CachedManager interface {
-	// ManifestManager is the manager for manifest.
+	// ManifestManager is the Manager for manifest.
 	ManifestManager
 	// Manager is the common interface for resource cache.
 	cached.Manager
 }
 
-// manager is the cached manager implemented by redis.
-type manager struct {
-	// client returns the redis cache client.
-	client func() libcache.Cache
+// Manager is the cached manager implemented by redis.
+type Manager struct {
+	*cached.BaseManager
 	// keyBuilder builds cache object key.
 	keyBuilder *cached.ObjectKey
 	// lifetime is the cache life time.
@@ -56,81 +53,42 @@ type manager struct {
 }
 
 // NewManager returns the redis cache manager.
-func NewManager() *manager {
-	return &manager{
-		client:     func() libcache.Cache { return libcache.Default() },
-		keyBuilder: cached.NewObjectKey(cached.ResourceTypeManifest),
-		lifetime:   time.Duration(config.CacheExpireHours()) * time.Hour,
+func NewManager() *Manager {
+	return &Manager{
+		BaseManager: cached.NewBaseManager(cached.ResourceTypeManifest),
+		keyBuilder:  cached.NewObjectKey(cached.ResourceTypeManifest),
+		lifetime:    time.Duration(config.CacheExpireHours()) * time.Hour,
 	}
 }
 
-func (m *manager) Save(ctx context.Context, digest string, manifest []byte) error {
+func (m *Manager) Save(ctx context.Context, digest string, manifest []byte) error {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return err
 	}
 
-	return m.client().Save(ctx, key, manifest, m.lifetime)
+	return m.CacheClient(ctx).Save(ctx, key, manifest, m.lifetime)
 }
 
-func (m *manager) Get(ctx context.Context, digest string) ([]byte, error) {
+func (m *Manager) Get(ctx context.Context, digest string) ([]byte, error) {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return nil, err
 	}
 
 	var manifest []byte
-	if err = m.client().Fetch(ctx, key, &manifest); err == nil {
+	if err = m.CacheClient(ctx).Fetch(ctx, key, &manifest); err == nil {
 		return manifest, nil
 	}
 
 	return nil, err
 }
 
-func (m *manager) Delete(ctx context.Context, digest string) error {
+func (m *Manager) Delete(ctx context.Context, digest string) error {
 	key, err := m.keyBuilder.Format("digest", digest)
 	if err != nil {
 		return err
 	}
 
-	return retry.Retry(func() error { return m.client().Delete(ctx, key) })
-}
-
-func (m *manager) ResourceType(ctx context.Context) string {
-	return cached.ResourceTypeManifest
-}
-
-func (m *manager) CountCache(ctx context.Context) (int64, error) {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return 0, err
-	}
-
-	return int64(len(keys)), nil
-}
-
-func (m *manager) DeleteCache(ctx context.Context, key string) error {
-	return m.client().Delete(ctx, key)
-}
-
-func (m *manager) FlushAll(ctx context.Context) error {
-	// prefix is resource type
-	keys, err := m.client().Keys(ctx, m.ResourceType(ctx))
-	if err != nil {
-		return err
-	}
-
-	var errs errors.Errors
-	for _, key := range keys {
-		if err = m.client().Delete(ctx, key); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if errs.Len() > 0 {
-		return errs
-	}
-
-	return nil
+	return retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) })
 }

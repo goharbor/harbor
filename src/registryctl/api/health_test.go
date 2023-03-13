@@ -15,7 +15,7 @@
 package api
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,6 +28,6 @@ func TestHealth(t *testing.T) {
 	req, _ := http.NewRequest("GET", "", nil)
 	Health(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	result, _ := ioutil.ReadAll(w.Body)
+	result, _ := io.ReadAll(w.Body)
 	assert.Equal(t, "\"healthy\"", string(result))
 }

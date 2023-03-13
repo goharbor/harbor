@@ -1,10 +1,13 @@
-import { Scanner } from '../../src/app/base/left-side-nav/interrogation-services/scanner/scanner';
-import { Request, Response } from "express";
-
+import { Request, Response } from 'express';
+import { Scanner } from '../../ng-swagger-gen/models/scanner';
 
 export function getScanner(req: Request, res: Response) {
-  const scanners: Scanner[] =  [new Scanner(), new Scanner()];
-  res.json(scanners);
+    const scanners: Scanner[] = [
+        {
+            name: 'demo',
+            vendor: 'test',
+            version: '1.0',
+        },
+    ];
+    res.json(scanners);
 }
-
-

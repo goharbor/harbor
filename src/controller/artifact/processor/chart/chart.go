@@ -17,7 +17,9 @@ package chart
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
+
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/chart"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 // const definitions
@@ -84,7 +85,7 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 			if err != nil {
 				return nil, err
 			}
-			content, err := ioutil.ReadAll(blob)
+			content, err := io.ReadAll(blob)
 			if err != nil {
 				return nil, err
 			}

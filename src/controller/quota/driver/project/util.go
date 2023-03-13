@@ -18,14 +18,14 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/pkg"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/graph-gophers/dataloader"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/user"
-	"github.com/graph-gophers/dataloader"
 )
 
 func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {

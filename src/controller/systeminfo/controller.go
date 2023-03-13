@@ -44,6 +44,7 @@ var Ctl = NewController()
 // Data wraps common systeminfo data
 type Data struct {
 	AuthMode          string
+	PrimaryAuthMode   bool
 	SelfRegistration  bool
 	HarborVersion     string
 	AuthProxySettings *models.HTTPAuthProxy
@@ -59,7 +60,6 @@ type protectedData struct {
 	HasCARoot                   bool
 	RegistryStorageProviderName string
 	ReadOnly                    bool
-	WithChartMuseum             bool
 	NotificationEnable          bool
 }
 
@@ -93,6 +93,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	}
 	res := &Data{
 		AuthMode:         utils.SafeCastString(cfg[common.AUTHMode]),
+		PrimaryAuthMode:  utils.SafeCastBool(cfg[common.PrimaryAuthMode]),
 		SelfRegistration: utils.SafeCastBool(cfg[common.SelfRegistration]),
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 	}
@@ -119,7 +120,6 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	res.Protected = &protectedData{
 		CurrentTime:                 time.Now(),
 		WithNotary:                  config.WithNotary(),
-		WithChartMuseum:             config.WithChartMuseum(),
 		ReadOnly:                    config.ReadOnly(ctx),
 		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,

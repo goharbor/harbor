@@ -20,19 +20,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	beegocontext "github.com/beego/beego/context"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/pkg"
-	"github.com/goharbor/harbor/src/server/router"
+	beegocontext "github.com/beego/beego/v2/server/web/context"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/server/router"
 	arttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testmanifest "github.com/goharbor/harbor/src/testing/pkg/cached/manifest/redis"
-	"github.com/stretchr/testify/suite"
 )
 
 type manifestTestSuite struct {

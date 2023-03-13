@@ -16,14 +16,15 @@ package index
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/lib/selector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 )
 
 // IndexTestSuite tests the rule index

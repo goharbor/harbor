@@ -22,23 +22,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg"
-	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
-	"github.com/goharbor/harbor/src/lib/icon"
-
-	"github.com/goharbor/harbor/src/controller/artifact/processor"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -52,7 +53,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"github.com/opencontainers/go-digest"
 )
 
 var (
@@ -72,6 +72,7 @@ var (
 		image.ArtifactTypeImage: icon.DigestOfIconImage,
 		chart.ArtifactTypeChart: icon.DigestOfIconChart,
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
+		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
 	}
 )
 
@@ -145,7 +146,7 @@ type controller struct {
 
 type ArtOption struct {
 	Tags []string
-	Accs []accessorymodel.AccessoryData
+	Accs []*accessorymodel.AccessoryData
 }
 
 func (c *controller) Ensure(ctx context.Context, repository, digest string, option *ArtOption) (bool, int64, error) {
@@ -160,7 +161,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 		for _, acc := range option.Accs {
-			if err = c.accessoryMgr.Ensure(ctx, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
 				return false, 0, err
 			}
 		}
@@ -239,17 +240,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
-	if query != nil {
-		// ignore the page number and size
-		query = &q.Query{
-			Keywords: query.Keywords,
-		}
-	}
-	arts, err := c.List(ctx, query, nil)
-	if err != nil {
-		return int64(0), err
-	}
-	return int64(len(arts)), nil
+	return c.artMgr.Count(ctx, query)
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {
@@ -259,15 +250,8 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 	}
 
 	var res []*Artifact
-	// Only the displayed accessory will in the artifact list
 	for _, art := range arts {
-		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "digest": art.Digest}))
-		if err != nil {
-			return nil, err
-		}
-		if len(accs) == 0 || (len(accs) > 0 && accs[0].Display()) {
-			res = append(res, c.assembleArtifact(ctx, art, option))
-		}
+		res = append(res, c.assembleArtifact(ctx, art, option))
 	}
 	return res, nil
 }
@@ -457,7 +441,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 }
 
 func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo string) (int64, error) {
-	dstAccs := make([]accessorymodel.AccessoryData, 0)
+	dstAccs := make([]*accessorymodel.AccessoryData, 0)
 	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true, false, &dstAccs)
 }
 
@@ -465,7 +449,7 @@ func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo strin
 // this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
 // these logic must be covered explicitly here.
 // "copyDeeply" iterates the child artifacts and copy them first
-func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]accessorymodel.AccessoryData) (int64, error) {
+func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot, isAcc bool, dstAccs *[]*accessorymodel.AccessoryData) (int64, error) {
 	var option *Option
 	option = &Option{WithTag: true, WithAccessory: true}
 	if isAcc {
@@ -503,17 +487,17 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 
 	// copy accessory if contains any
 	for _, acc := range srcArt.Accessories {
+		dstAcc := &accessorymodel.AccessoryData{
+			Digest: acc.GetData().Digest,
+			Type:   acc.GetData().Type,
+			Size:   acc.GetData().Size,
+		}
+		*dstAccs = append(*dstAccs, dstAcc)
 		id, err := c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, false, true, dstAccs)
 		if err != nil {
 			return 0, err
 		}
-		dstAcc := accessorymodel.AccessoryData{
-			ArtifactID: id,
-			Digest:     acc.GetData().Digest,
-			Type:       acc.GetData().Type,
-			Size:       acc.GetData().Size,
-		}
-		*dstAccs = append(*dstAccs, dstAcc)
+		dstAcc.ArtifactID = id
 	}
 
 	// copy the parent artifact into the backend docker registry
@@ -530,7 +514,9 @@ ensureArt:
 	// ensure the parent artifact exist in the database
 	artopt := &ArtOption{
 		Tags: tags,
-		Accs: *dstAccs,
+	}
+	if !isAcc {
+		artopt.Accs = *dstAccs
 	}
 	_, id, err := c.Ensure(ctx, dstRepo, digest, artopt)
 	if err != nil {
@@ -637,23 +623,28 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 				if !walked[child.Digest] {
 					queue.PushBack(child)
 				}
+				if len(child.Accessories) != 0 {
+					for _, acc := range child.Accessories {
+						accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
+						if err != nil {
+							return err
+						}
+						if !walked[accArt.Digest] {
+							queue.PushBack(accArt)
+						}
+					}
+				}
 			}
 		}
 
 		if len(artifact.Accessories) > 0 {
-			var ids []int64
 			for _, acc := range artifact.Accessories {
-				ids = append(ids, acc.GetData().ArtifactID)
-			}
-
-			children, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids, "base": "*"}), option)
-			if err != nil {
-				return err
-			}
-
-			for _, child := range children {
-				if !walked[child.Digest] {
-					queue.PushBack(child)
+				accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
+				if err != nil {
+					return err
+				}
+				if !walked[accArt.Digest] {
+					queue.PushBack(accArt)
 				}
 			}
 		}
@@ -731,7 +722,7 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 }
 
 func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
-	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest}))
 	if err != nil {
 		log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
 		return

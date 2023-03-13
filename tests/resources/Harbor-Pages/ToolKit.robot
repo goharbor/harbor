@@ -44,9 +44,8 @@ Filter Object
     Sleep  3
 
 Filter Project
-#Filter project repo user tag.
     [Arguments]    ${kw}
-    Retry Element Click  ${log_xpath}
+    Retry Element Click  ${logs_xpath}
     Retry Element Click  ${projects_xpath}
     Filter Object  ${kw}
 

@@ -1,7 +1,7 @@
 export class OperateInfo {
     name: string;
     state: string;
-    data: { [key: string]: string | number };
+    data: { [key: string]: string | number | boolean };
     timeStamp: number;
     timeDiff: string;
     constructor() {

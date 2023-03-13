@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
@@ -14,14 +15,14 @@ type Accessory struct {
 // ToSwagger converts the label to the swagger model
 func (a *Accessory) ToSwagger() *models.Accessory {
 	return &models.Accessory{
-		ID:                a.ID,
-		ArtifactID:        a.ArtifactID,
-		SubjectArtifactID: a.SubArtifactID,
-		Size:              a.Size,
-		Digest:            a.Digest,
-		Type:              a.Type,
-		Icon:              a.Icon,
-		CreationTime:      strfmt.DateTime(a.CreatTime),
+		ID:                    a.ID,
+		ArtifactID:            a.ArtifactID,
+		SubjectArtifactDigest: a.SubArtifactDigest,
+		Size:                  a.Size,
+		Digest:                a.Digest,
+		Type:                  a.Type,
+		Icon:                  a.Icon,
+		CreationTime:          strfmt.DateTime(a.CreatTime),
 	}
 }
 

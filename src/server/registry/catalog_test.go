@@ -20,12 +20,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
-	"github.com/stretchr/testify/suite"
 )
 
 type catalogTestSuite struct {

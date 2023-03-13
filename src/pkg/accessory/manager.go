@@ -16,14 +16,12 @@ package accessory
 
 import (
 	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory/dao"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
-
-	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
-	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 )
 
 var (
@@ -32,14 +30,15 @@ var (
 
 	// icon digests for each known type
 	defaultIcons = map[string]string{
-		model.TypeCosignSignature: icon.DigestOfIconAccCosign,
+		model.TypeCosignSignature:  icon.DigestOfIconAccCosign,
+		model.TypeNydusAccelerator: icon.DigestOfIconAccNydus,
 	}
 )
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
 	// Ensure ...
-	Ensure(ctx context.Context, subArtID, artifactID, size int64, digest, accType string) error
+	Ensure(ctx context.Context, subArtDigest string, artifactID, size int64, digest, accType string) error
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (accessory model.Accessory, err error)
 	// Count returns the total count of accessory according to the query.
@@ -67,7 +66,7 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) Ensure(ctx context.Context, subArtID, artifactID, size int64, digest, accType string) error {
+func (m *manager) Ensure(ctx context.Context, subArtDigest string, artifactID, size int64, digest, accType string) error {
 	accs, err := m.dao.List(ctx, q.New(q.KeyWords{"ArtifactID": artifactID, "Digest": digest}))
 	if err != nil {
 		return err
@@ -77,11 +76,11 @@ func (m *manager) Ensure(ctx context.Context, subArtID, artifactID, size int64, 
 	}
 
 	acc := model.AccessoryData{
-		ArtifactID:    artifactID,
-		SubArtifactID: subArtID,
-		Digest:        digest,
-		Size:          size,
-		Type:          accType,
+		ArtifactID:        artifactID,
+		SubArtifactDigest: subArtDigest,
+		Digest:            digest,
+		Size:              size,
+		Type:              accType,
 	}
 	_, err = m.Create(ctx, acc)
 	return err
@@ -93,13 +92,13 @@ func (m *manager) Get(ctx context.Context, id int64) (model.Accessory, error) {
 		return nil, err
 	}
 	return model.New(acc.Type, model.AccessoryData{
-		ID:            acc.ID,
-		ArtifactID:    acc.ArtifactID,
-		SubArtifactID: acc.SubjectArtifactID,
-		Size:          acc.Size,
-		Digest:        acc.Digest,
-		CreatTime:     acc.CreationTime,
-		Icon:          m.GetIcon(acc.Type),
+		ID:                acc.ID,
+		ArtifactID:        acc.ArtifactID,
+		SubArtifactDigest: acc.SubjectArtifactDigest,
+		Size:              acc.Size,
+		Digest:            acc.Digest,
+		CreatTime:         acc.CreationTime,
+		Icon:              m.GetIcon(acc.Type),
 	})
 }
 
@@ -115,13 +114,13 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 	var accs []model.Accessory
 	for _, accD := range accsDao {
 		acc, err := model.New(accD.Type, model.AccessoryData{
-			ID:            accD.ID,
-			ArtifactID:    accD.ArtifactID,
-			SubArtifactID: accD.SubjectArtifactID,
-			Size:          accD.Size,
-			Digest:        accD.Digest,
-			CreatTime:     accD.CreationTime,
-			Icon:          m.GetIcon(accD.Type),
+			ID:                accD.ID,
+			ArtifactID:        accD.ArtifactID,
+			SubArtifactDigest: accD.SubjectArtifactDigest,
+			Size:              accD.Size,
+			Digest:            accD.Digest,
+			CreatTime:         accD.CreationTime,
+			Icon:              m.GetIcon(accD.Type),
 		})
 		if err != nil {
 			return nil, errors.New(err).WithCode(errors.BadRequestCode)
@@ -133,11 +132,11 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 
 func (m *manager) Create(ctx context.Context, accessory model.AccessoryData) (int64, error) {
 	acc := &dao.Accessory{
-		ArtifactID:        accessory.ArtifactID,
-		SubjectArtifactID: accessory.SubArtifactID,
-		Size:              accessory.Size,
-		Digest:            accessory.Digest,
-		Type:              accessory.Type,
+		ArtifactID:            accessory.ArtifactID,
+		SubjectArtifactDigest: accessory.SubArtifactDigest,
+		Size:                  accessory.Size,
+		Digest:                accessory.Digest,
+		Type:                  accessory.Type,
 	}
 	return m.dao.Create(ctx, acc)
 }

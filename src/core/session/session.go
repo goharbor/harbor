@@ -21,10 +21,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/beego/beego/session"
+	"github.com/beego/beego/v2/server/web/session"
 	goredis "github.com/go-redis/redis/v8"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/redis"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -35,8 +37,8 @@ const (
 
 var harborpder = &Provider{}
 
-// SessionStore redis session store
-type SessionStore struct {
+// Store redis session store
+type Store struct {
 	c           cache.Cache
 	sid         string
 	lock        sync.RWMutex
@@ -45,7 +47,7 @@ type SessionStore struct {
 }
 
 // Set value in redis session
-func (rs *SessionStore) Set(key, value interface{}) error {
+func (rs *Store) Set(ctx context.Context, key, value interface{}) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	rs.values[key] = value
@@ -53,7 +55,7 @@ func (rs *SessionStore) Set(key, value interface{}) error {
 }
 
 // Get value in redis session
-func (rs *SessionStore) Get(key interface{}) interface{} {
+func (rs *Store) Get(ctx context.Context, key interface{}) interface{} {
 	rs.lock.RLock()
 	defer rs.lock.RUnlock()
 	if v, ok := rs.values[key]; ok {
@@ -63,7 +65,7 @@ func (rs *SessionStore) Get(key interface{}) interface{} {
 }
 
 // Delete value in redis session
-func (rs *SessionStore) Delete(key interface{}) error {
+func (rs *Store) Delete(ctx context.Context, key interface{}) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	delete(rs.values, key)
@@ -71,7 +73,7 @@ func (rs *SessionStore) Delete(key interface{}) error {
 }
 
 // Flush clear all values in redis session
-func (rs *SessionStore) Flush() error {
+func (rs *Store) Flush(ctx context.Context) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	rs.values = make(map[interface{}]interface{})
@@ -79,19 +81,23 @@ func (rs *SessionStore) Flush() error {
 }
 
 // SessionID get redis session id
-func (rs *SessionStore) SessionID() string {
+func (rs *Store) SessionID(ctx context.Context) string {
 	return rs.sid
 }
 
 // SessionRelease save session values to redis
-func (rs *SessionStore) SessionRelease(w http.ResponseWriter) {
+func (rs *Store) SessionRelease(ctx context.Context, w http.ResponseWriter) {
 	b, err := session.EncodeGob(rs.values)
 	if err != nil {
 		return
 	}
 
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
 	if rdb, ok := rs.c.(*redis.Cache); ok {
-		cmd := rdb.Client.Set(context.TODO(), rs.sid, string(b), time.Duration(rs.maxlifetime))
+		cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
 		if cmd.Err() != nil {
 			log.Debugf("release session error: %v", err)
 		}
@@ -105,46 +111,58 @@ type Provider struct {
 }
 
 // SessionInit init redis session
-func (rp *Provider) SessionInit(maxlifetime int64, url string) (err error) {
+func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url string) (err error) {
 	rp.maxlifetime = maxlifetime * int64(time.Second)
 	rp.c, err = redis.New(cache.Options{Address: url, Codec: codec})
 	if err != nil {
 		return err
 	}
 
-	return rp.c.Ping(context.TODO())
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	return rp.c.Ping(ctx)
 }
 
 // SessionRead read redis session by sid
-func (rp *Provider) SessionRead(sid string) (session.Store, error) {
+func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store, error) {
 	kv := make(map[interface{}]interface{})
-	err := rp.c.Fetch(context.TODO(), sid, &kv)
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	err := rp.c.Fetch(ctx, sid, &kv)
 	if err != nil && !strings.Contains(err.Error(), goredis.Nil.Error()) {
 		return nil, err
 	}
 
-	rs := &SessionStore{c: rp.c, sid: sid, values: kv, maxlifetime: rp.maxlifetime}
+	rs := &Store{c: rp.c, sid: sid, values: kv, maxlifetime: rp.maxlifetime}
 	return rs, nil
 }
 
 // SessionExist check redis session exist by sid
-func (rp *Provider) SessionExist(sid string) bool {
-	return rp.c.Contains(context.TODO(), sid)
+func (rp *Provider) SessionExist(ctx context.Context, sid string) (bool, error) {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	return rp.c.Contains(ctx, sid), nil
 }
 
 // SessionRegenerate generate new sid for redis session
-func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error) {
-	ctx := context.TODO()
-	if !rp.SessionExist(oldsid) {
+func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (session.Store, error) {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
+	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
 		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
 		if err != nil {
-			log.Warningf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
+			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
 		}
 	} else {
 		if rdb, ok := rp.c.(*redis.Cache); ok {
 			// redis has rename command
 			rdb.Rename(ctx, oldsid, sid)
-			rdb.Expire(ctx, sid, time.Duration(rp.maxlifetime))
+			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
 			kv := make(map[interface{}]interface{})
 			err := rp.c.Fetch(ctx, sid, &kv)
@@ -154,30 +172,45 @@ func (rp *Provider) SessionRegenerate(oldsid, sid string) (session.Store, error)
 
 			err = rp.c.Delete(ctx, oldsid)
 			if err != nil {
-				log.Warningf("failed to delete oldsid=%s, error: %s", oldsid, err)
+				log.Debugf("failed to delete oldsid=%s, error: %s", oldsid, err)
 			}
-			err = rp.c.Save(ctx, sid, kv)
+			err = rp.c.Save(ctx, sid, kv, maxlifetime)
 			if err != nil {
-				log.Warningf("failed to save sid=%s, error: %s", sid, err)
+				log.Debugf("failed to save sid=%s, error: %s", sid, err)
 			}
 		}
 	}
 
-	return rp.SessionRead(sid)
+	return rp.SessionRead(ctx, sid)
 }
 
 // SessionDestroy delete redis session by id
-func (rp *Provider) SessionDestroy(sid string) error {
-	return rp.c.Delete(context.TODO(), sid)
+func (rp *Provider) SessionDestroy(ctx context.Context, sid string) error {
+	if ctx == nil {
+		ctx = context.TODO()
+	}
+	return rp.c.Delete(ctx, sid)
 }
 
 // SessionGC Implement method, no used.
-func (rp *Provider) SessionGC() {
+func (rp *Provider) SessionGC(ctx context.Context) {
 }
 
 // SessionAll return all activeSession
-func (rp *Provider) SessionAll() int {
+func (rp *Provider) SessionAll(ctx context.Context) int {
 	return 0
+}
+
+// systemSessionTimeout return the system session timeout set by user.
+func systemSessionTimeout(ctx context.Context, beegoTimeout int64) int64 {
+	// read from system config if it is meaningful to support change session timeout in runtime for user.
+	// otherwise, use parameters beegoTimeout which set from beego.
+	timeout := beegoTimeout
+	if sysTimeout := config.SessionTimeout(ctx); sysTimeout > 0 {
+		timeout = sysTimeout * int64(time.Minute)
+	}
+
+	return timeout
 }
 
 func init() {

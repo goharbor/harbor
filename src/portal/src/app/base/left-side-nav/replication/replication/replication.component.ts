@@ -111,7 +111,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     @Input() projectId: number | string;
     @Input() projectName: string;
     @Input() isSystemAdmin: boolean;
-    @Input() withAdmiral: boolean;
     @Input() withReplicationJob: boolean;
     @Input() hasCreateReplicationPermission: boolean;
     @Input() hasUpdateReplicationPermission: boolean;
@@ -515,12 +514,16 @@ export class ReplicationComponent implements OnInit, OnDestroy {
                         this.isStopOnGoing = false;
                     })
                 )
-                .subscribe(
-                    () => {},
-                    error => {
-                        this.errorHandlerEntity.error(error);
-                    }
-                );
+                .subscribe({
+                    next: res => {
+                        this.errorHandlerEntity.info(
+                            'REPLICATION.TRIGGER_STOP_SUCCESS'
+                        );
+                    },
+                    error: err => {
+                        this.errorHandlerEntity.error(err);
+                    },
+                });
         }
     }
 
@@ -538,11 +541,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             })
             .pipe(
                 map(response => {
-                    this.translateService
-                        .get('BATCH.STOP_SUCCESS')
-                        .subscribe(res =>
-                            operateChanges(operMessage, OperationState.success)
-                        );
+                    operateChanges(operMessage, OperationState.success);
                 }),
                 catchError(error => {
                     const message = errorHandler(error);

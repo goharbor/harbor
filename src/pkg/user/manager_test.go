@@ -2,7 +2,12 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	testifymock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -10,9 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/user/dao"
-	"github.com/stretchr/testify/assert"
-	testifymock "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type mgrTestSuite struct {
@@ -45,6 +47,37 @@ func (m *mgrTestSuite) TestSetAdminFlag() {
 	err := m.mgr.SetSysAdminFlag(context.Background(), id, true)
 	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestUserDeleteGDPR() {
+	existingUser := &models.User{
+		UserID:   123,
+		Username: "existing",
+		Email:    "existing@mytest.com",
+		Realname: "RealName",
+	}
+	m.dao.On("List", mock.Anything, testifymock.MatchedBy(
+		func(query *q.Query) bool {
+			return query.Keywords["user_id"] == 123
+		})).Return(
+		[]*models.User{existingUser}, nil)
+
+	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
+		func(u *models.User) bool {
+			return u.UserID == 123 &&
+				u.Email == fmt.Sprintf("%s#%d", checkSum("existing@mytest.com"), existingUser.UserID) &&
+				u.Username == fmt.Sprintf("%s#%d", checkSum("existing"), existingUser.UserID) &&
+				u.Realname == fmt.Sprintf("%s#%d", checkSum("RealName"), existingUser.UserID) &&
+				u.Deleted == true
+		}),
+		"username",
+		"email",
+		"realname",
+		"deleted",
+	).Return(nil)
+
+	err := m.mgr.DeleteGDPR(context.Background(), 123)
+	m.Nil(err)
 }
 
 func (m *mgrTestSuite) TestOnboard() {

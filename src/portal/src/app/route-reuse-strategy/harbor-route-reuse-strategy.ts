@@ -17,6 +17,23 @@ export enum RouteConfigId {
     REPLICATION_TASKS_PAGE = 'ReplicationTasksComponent',
     P2P_POLICIES_PAGE = 'PolicyComponent',
     P2P_TASKS_PAGE = 'P2pTaskListComponent',
+    WEBHOOK_POLICIES_PAGE = 'WebhookComponent',
+    WEBHOOK_TASKS_PAGE = 'WebhookTasksComponent',
+}
+// should not reuse the routes that meet these RegExps
+const ShouldNotReuseRouteRegExps: RegExp[] = [
+    /\/harbor\/projects\/(\d+)\/repositories$/,
+    /\/harbor\/projects\/(\d+)\/repositories\/(\S+)\/artifacts-tab$/,
+];
+
+function testRoute(url: string) {
+    let flag: boolean = false;
+    ShouldNotReuseRouteRegExps.forEach(item => {
+        if (item.test(url)) {
+            flag = true;
+        }
+    });
+    return flag;
 }
 
 export class HarborRouteReuseStrategy implements RouteReuseStrategy {
@@ -60,6 +77,15 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
             ) {
                 this.shouldDeleteCache = false;
             }
+            // action 3: from webhook tasks list page to WebhookComponent page
+            if (
+                curr.routeConfig.data.routeConfigId ===
+                    RouteConfigId.WEBHOOK_TASKS_PAGE &&
+                future.routeConfig.data.routeConfigId ===
+                    RouteConfigId.WEBHOOK_POLICIES_PAGE
+            ) {
+                this.shouldDeleteCache = false;
+            }
         }
     }
 
@@ -73,6 +99,12 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
         curr: ActivatedRouteSnapshot
     ): boolean {
         this.shouldKeepCache(future, curr);
+        if (
+            testRoute(curr['_routerState']?.url) &&
+            testRoute(future['_routerState']?.url)
+        ) {
+            return false;
+        }
         return future.routeConfig === curr.routeConfig;
     }
 

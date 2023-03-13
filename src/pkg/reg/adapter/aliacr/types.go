@@ -3,9 +3,8 @@ package aliacr
 import "time"
 
 const (
-	defaultTemporaryTokenExpiredTime = time.Hour * 1 // nolint:deadcode
-	registryEndpointTpl              = "https://registry.%s.aliyuncs.com"
-	endpointTpl                      = "cr.%s.aliyuncs.com"
+	registryEndpointTpl = "https://registry.%s.aliyuncs.com"
+	endpointTpl         = "cr.%s.aliyuncs.com"
 )
 
 type authorizationToken struct {

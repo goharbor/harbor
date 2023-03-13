@@ -15,9 +15,10 @@
 package filter
 
 import (
+	"strings"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
-	"strings"
 )
 
 // DoFilterArtifacts filter the artifacts according to the filters
@@ -44,13 +45,6 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 			f = &artifactTagFilter{
 				pattern:    filter.Value.(string),
 				decoration: filter.Decoration,
-			}
-		case model.FilterTypeResource:
-			v := filter.Value.(string)
-			if v != model.ResourceTypeArtifact && v != model.ResourceTypeChart {
-				f = &artifactTypeFilter{
-					types: []string{v},
-				}
 			}
 		}
 		if f != nil {

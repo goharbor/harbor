@@ -28,8 +28,6 @@ $filter-divider-bg-color: #495865;
 /* stylelint-disable */
 $selectBox-option-hover-bg-color-start: #4aaed9;
 $selectBox-option-hover-bg-color-end: #0077b8;
-$btn-tag-integration-active-bg-color: #4aaed9;
-$btn-tag-integration-active-color: #000;
 $hbr-result-tip-histogram-inner-bg-color: #21333b;
 $harbor-icon-translate-x: 0;
 $harbor-icon-drop-shadow-x: 58px;
@@ -46,4 +44,7 @@ $input-autofill-color: #eaedf0;
 $pull-command-icon-color: #4aaed9;
 $pull-command-icon-hover-color: #007CBB;
 $select-all-for-dropdown-color: #4aaed9;
+$normal-border-color: #acbac3;
+$text-color-job-service-dashboard: #49aeda;
+$datagrid-numeric-filter-input-bg-color: #21333b;
 @import "./common.scss";

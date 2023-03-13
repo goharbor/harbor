@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/ldap"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
@@ -106,7 +108,6 @@ func (l *ldapAPI) SearchLdapGroup(ctx context.Context, params operation.SearchLd
 	var groupName, groupDN string
 	if params.Groupname != nil && len(*params.Groupname) > 0 {
 		groupName = *params.Groupname
-
 	}
 	if params.Groupdn != nil {
 		groupDN = *params.Groupdn

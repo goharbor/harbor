@@ -19,8 +19,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/jpillora/backoff"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func init() {

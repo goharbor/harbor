@@ -283,6 +283,7 @@ func process(info *model.RegistryInfo) *model.RegistryInfo {
 		Values: values,
 	})
 	in.SupportedResourceFilters = filters
+	in.SupportedCopyByChunk = info.SupportedCopyByChunk
 
 	return in
 }

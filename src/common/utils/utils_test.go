@@ -18,6 +18,7 @@ import (
 	"encoding/base64"
 	"net/http/httptest"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -391,6 +392,47 @@ func TestNextSchedule(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, NextSchedule(tt.args.cron, tt.args.curTime), "NextSchedule(%v, %v)", tt.args.cron, tt.args.curTime)
+		})
+	}
+}
+
+type UserGroupSearchItem struct {
+	GroupName string
+}
+
+func Test_sortMostMatch(t *testing.T) {
+	type args struct {
+		input     []*UserGroupSearchItem
+		matchWord string
+		expected  []*UserGroupSearchItem
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"normal", args{[]*UserGroupSearchItem{
+			{GroupName: "user"}, {GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
+		}, "user", []*UserGroupSearchItem{
+			{GroupName: "user"}, {GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
+		}}},
+		{"duplicate_item", args{[]*UserGroupSearchItem{
+			{GroupName: "user"}, {GroupName: "user"}, {GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
+		}, "user", []*UserGroupSearchItem{
+			{GroupName: "user"}, {GroupName: "user"}, {GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
+		}}},
+		{"miss_exact_match", args{[]*UserGroupSearchItem{
+			{GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
+		}, "user", []*UserGroupSearchItem{
+			{GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
+		}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			sort.Slice(tt.args.input, func(i, j int) bool {
+				return MostMatchSorter(tt.args.input[i].GroupName, tt.args.input[j].GroupName, tt.args.matchWord)
+			})
+			assert.True(t, reflect.DeepEqual(tt.args.input, tt.args.expected))
 		})
 	}
 }

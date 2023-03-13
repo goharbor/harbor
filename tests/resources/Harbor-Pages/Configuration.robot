@@ -43,7 +43,6 @@ Init LDAP
 
 Switch To Configure
     Retry Element Click  xpath=${configuration_xpath}
-    Sleep  2
 
 Test Ldap Connection
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
@@ -137,12 +136,9 @@ Project Creation Should Display
 Project Creation Should Not Display
     Retry Wait Until Page Not Contains Element  xpath=${project_create_xpath}
 
-## System settings
 Switch To System Settings
-    Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
     Retry Element Click  xpath=${configuration_system_tabsheet_id}
-    Sleep  1
 
 Switch To Project Quotas
     Sleep  1
@@ -152,9 +148,7 @@ Switch To Project Quotas
     Sleep  1
 
 Switch To Distribution
-    Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav-group//span[contains(.,'Distributions')]
-    Sleep  1
 
 Switch To Robot Account
     Sleep  1
@@ -190,34 +184,6 @@ Switch To System Replication
 
 Should Verify Remote Cert Be Enabled
     Checkbox Should Not Be Selected  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
-
-## Email
-Switch To Email
-    Switch To Configure
-    Retry Element Click  xpath=//*[@id='config-email']
-    Sleep  1
-
-Config Email
-    Input Text  xpath=//*[@id='mailServer']  smtp.harbortest.com
-    Input Text  xpath=//*[@id='emailPort']  25
-    Input Text  xpath=//*[@id='emailUsername']  example@harbortest.com
-    Input Text  xpath=//*[@id='emailPassword']  example
-    Input Text  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
-    Sleep  1
-    Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
-    Sleep  1
-    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
-    Sleep  1
-    Retry Element Click  xpath=${config_email_save_button_xpath}
-    Sleep  6
-
-Verify Email
-    Textfield Value Should Be  xpath=//*[@id='mailServer']  smtp.harbortest.com
-    Textfield Value Should Be  xpath=//*[@id='emailPort']  25
-    Textfield Value Should Be  xpath=//*[@id='emailUsername']  example@harbortest.com
-    Textfield Value Should Be  xpath=//*[@id='emailFrom']  example<example@harbortest.com>
-    Checkbox Should Be Selected  xpath=//*[@id='emailSSL']
-    Checkbox Should Not Be Selected  xpath=//*[@id='emailInsecure']
 
 Set Scan All To None
     Retry Element Click  //vulnerability-config//select
@@ -380,7 +346,6 @@ Delete A Distribution
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Sleep  10
     Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
 
 Edit A Distribution
@@ -394,3 +359,15 @@ Edit A Distribution
     Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
     Filter Distribution List  ${name}  ${new_endpoint}
     Distribution Exist  ${name}  ${new_endpoint}
+
+Set Audit Log Forward
+    [Arguments]  ${syslog_endpoint}  ${expected_msg}
+    Switch To System Settings
+    Run Keyword If  '${syslog_endpoint}' == '${null}'  Press Keys  ${audit_log_forward_syslog_endpoint_input_id}  CTRL+a  BACKSPACE
+    ...  ELSE  Retry Text Input  ${audit_log_forward_syslog_endpoint_input_id}  ${syslog_endpoint}
+    Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  ${expected_msg}
+
+Enable Skip Audit Log Database
+    Switch To System Settings
+    Retry Double Keywords When Error  Click Element  ${skip_audit_log_database_label}  Checkbox Should Be Selected  ${skip_audit_log_database_checkbox}
+    Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.

@@ -18,7 +18,8 @@ import (
 	"context"
 	"time"
 
-	o "github.com/beego/beego/orm"
+	o "github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -147,7 +148,6 @@ func (d *dao) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	}
 	if num == 0 {
 		return errors.New(nil).WithMessage("failed to increase repository pull count: %d", id)
-
 	}
 	return nil
 }

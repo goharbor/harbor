@@ -15,12 +15,10 @@
 package config
 
 import (
-	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConfigDoesNotExists(t *testing.T) {
@@ -30,9 +28,9 @@ func TestConfigDoesNotExists(t *testing.T) {
 }
 
 func TestConfigLoadingWithEnv(t *testing.T) {
-	os.Setenv("REGISTRYCTL_PROTOCOL", "https")
-	os.Setenv("PORT", "1000")
-	os.Setenv("LOG_LEVEL", "DEBUG")
+	t.Setenv("REGISTRYCTL_PROTOCOL", "https")
+	t.Setenv("PORT", "1000")
+	t.Setenv("LOG_LEVEL", "DEBUG")
 
 	cfg := &Configuration{}
 	err := cfg.Load("../config_test.yml", true)
@@ -61,11 +59,11 @@ func TestGetLogLevel(t *testing.T) {
 }
 
 func TestGetJobAuthSecret(t *testing.T) {
-	os.Setenv("JOBSERVICE_SECRET", "test_job_secret")
+	t.Setenv("JOBSERVICE_SECRET", "test_job_secret")
 	assert.Equal(t, "test_job_secret", GetJobAuthSecret())
 }
 
 func TestGetUIAuthSecret(t *testing.T) {
-	os.Setenv("CORE_SECRET", "test_core_secret")
+	t.Setenv("CORE_SECRET", "test_core_secret")
 	assert.Equal(t, "test_core_secret", GetUIAuthSecret())
 }

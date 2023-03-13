@@ -18,16 +18,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/security"
 	lib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
-	"github.com/stretchr/testify/suite"
 )
 
 // Suite ...
@@ -101,7 +101,7 @@ func (suite *Suite) GetJSON(url string, js interface{}, headers ...map[string]st
 	}
 
 	if res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusBadRequest {
-		data, err := ioutil.ReadAll(res.Body)
+		data, err := io.ReadAll(res.Body)
 		if err != nil {
 			return res, err
 		}
@@ -111,7 +111,7 @@ func (suite *Suite) GetJSON(url string, js interface{}, headers ...map[string]st
 			return res, err
 		}
 
-		res.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		res.Body = io.NopCloser(bytes.NewBuffer(data))
 	}
 
 	return res, nil

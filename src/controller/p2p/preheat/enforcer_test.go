@@ -22,6 +22,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	car "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -43,8 +46,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/instance"
 	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/policy"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // EnforcerTestSuite is a test suite of testing preheat enforcer
@@ -110,6 +111,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		context.TODO(),
 		mock.AnythingOfType("*artifact.Artifact"),
 		mock.AnythingOfType("models.CVESet"),
+		mock.AnythingOfType("bool"),
 	).Return(&scan.Vulnerable{Severity: &low, ScanStatus: "Success"}, nil)
 
 	fakeProCtl := &project.Controller{}

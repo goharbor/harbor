@@ -12,25 +12,13 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-              "swagger-ui",
-              "buffer",
-              "js-yaml",
-              "hoist-non-react-statics",
-              "lodash",
-              "core-js-pure",
-              "prop-types",
-              "randexp",
-              "react-copy-to-clipboard",
-              "react-debounce-input",
-              "react-immutable-proptypes",
-              "redux-immutable",
-              "url-parse",
-              "xml-but-prettier"
+              "cron-validator",
+              "js-yaml"
             ],
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": "zone.js",
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/images",
@@ -41,7 +29,6 @@
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
               "node_modules/@clr/ui/clr-ui.min.css",
-              "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
               "src/global.scss",
               {
@@ -96,7 +83,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "harbor-portal:build"
+            "browserTarget": "harbor-portal:build",
+            "proxyConfig": "proxy.config.mjs"
           },
           "configurations": {
             "production": {
@@ -114,8 +102,10 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
             "karmaConfig": "karma.conf.js",
             "scripts": [
               "node_modules/@clr/icons/clr-icons.min.js"
@@ -137,6 +127,7 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
+              "server/**/*.ts",
               "src/**/*.ts",
               "src/**/*.html"
             ]
@@ -168,7 +159,6 @@
       }
     }
   },
-  "defaultProject": "harbor-portal",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app"

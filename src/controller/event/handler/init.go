@@ -9,7 +9,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/handler/p2p"
 	"github.com/goharbor/harbor/src/controller/event/handler/replication"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/artifact"
-	"github.com/goharbor/harbor/src/controller/event/handler/webhook/chart"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/quota"
 	"github.com/goharbor/harbor/src/controller/event/handler/webhook/scan"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -24,9 +23,6 @@ func init() {
 	_ = notifier.Subscribe(event.TopicPushArtifact, &artifact.Handler{})
 	_ = notifier.Subscribe(event.TopicPullArtifact, &artifact.Handler{})
 	_ = notifier.Subscribe(event.TopicDeleteArtifact, &artifact.Handler{})
-	_ = notifier.Subscribe(event.TopicUploadChart, &chart.Handler{})
-	_ = notifier.Subscribe(event.TopicDeleteChart, &chart.Handler{})
-	_ = notifier.Subscribe(event.TopicDownloadChart, &chart.Handler{})
 	_ = notifier.Subscribe(event.TopicQuotaExceed, &quota.Handler{})
 	_ = notifier.Subscribe(event.TopicQuotaWarning, &quota.Handler{})
 	_ = notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
@@ -61,7 +57,7 @@ func init() {
 	_ = notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
 	_ = notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{})
 
-	_ = task.RegisterTaskStatusChangePostFunc(job.Replication, func(ctx context.Context, taskID int64, status string) error {
+	_ = task.RegisterTaskStatusChangePostFunc(job.ReplicationVendorType, func(ctx context.Context, taskID int64, status string) error {
 		notification.AddEvent(ctx, &metadata.ReplicationMetaData{
 			ReplicationTaskID: taskID,
 			Status:            status,

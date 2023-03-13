@@ -31,3 +31,7 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/purge --name Controller --output ./purge --outpkg purge
 //go:generate mockery --case snake --dir ../../controller/jobservice --name SchedulerController --output ./jobservice --outpkg jobservice
 //go:generate mockery --case snake --dir ../../controller/systemartifact --name Controller --output ./systemartifact --outpkg systemartifact
+//go:generate mockery --case snake --dir ../../controller/scandataexport --name Controller --output ./scandataexport --outpkg scandataexport
+//go:generate mockery --case snake --dir ../../controller/task --name Controller --output ./task --outpkg task
+//go:generate mockery --case snake --dir ../../controller/task --name ExecutionController --output ./task --outpkg task
+//go:generate mockery --case snake --dir ../../controller/webhook --name Controller --output ./webhook --outpkg webhook

@@ -3,13 +3,14 @@ package handler
 import (
 	"context"
 	"fmt"
-	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"regexp"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"

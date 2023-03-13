@@ -1,9 +1,10 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { TagRetentionComponent } from '../../tag-retention.component';
-import { TagRetentionService } from '../../tag-retention.service';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { PENDING, RUNNING, TIMEOUT } from '../../retention';
+import { RetentionService } from '../../../../../../../../ng-swagger-gen/services/retention.service';
+import { TagRetentionService } from '../../tag-retention.service';
 
 @Component({
     selector: 'app-tag-retention-tasks',
@@ -23,6 +24,7 @@ export class TagRetentionTasksComponent implements OnDestroy {
     tasksTimeout;
     constructor(
         private tagRetentionService: TagRetentionService,
+        private retentionService: RetentionService,
         private errorHandler: ErrorHandler
     ) {}
     ngOnDestroy() {
@@ -33,32 +35,22 @@ export class TagRetentionTasksComponent implements OnDestroy {
     }
     loadLog() {
         this.loading = true;
-        this.tagRetentionService
-            .getExecutionHistory(
-                this.retentionId,
-                this.executionId,
-                this.page,
-                this.pageSize
-            )
+        this.retentionService
+            .listRetentionTasksResponse({
+                id: this.retentionId,
+                eid: this.executionId,
+                page: this.page,
+                pageSize: this.pageSize,
+            })
             .pipe(finalize(() => (this.loading = false)))
-            .subscribe(
-                (response: any) => {
-                    // Get total count
-                    if (response.headers) {
-                        let xHeader: string =
-                            response.headers.get('x-total-count');
-                        if (xHeader) {
-                            this.total = parseInt(xHeader, 0);
-                        }
-                    }
-                    this.tasks = response.body as Array<any>;
-                    TagRetentionComponent.calculateDuration(this.tasks);
-                    this.loopGettingTasks();
+            .subscribe({
+                next: res => {
+                    this.handleResponse(res);
                 },
-                error => {
-                    this.errorHandler.error(error);
-                }
-            );
+                error: err => {
+                    this.errorHandler.error(err);
+                },
+            });
     }
     seeLog(executionId, taskId) {
         this.tagRetentionService.seeLog(this.retentionId, executionId, taskId);
@@ -72,28 +64,31 @@ export class TagRetentionTasksComponent implements OnDestroy {
             })
         ) {
             this.tasksTimeout = setTimeout(() => {
-                this.tagRetentionService
-                    .getExecutionHistory(
-                        this.retentionId,
-                        this.executionId,
-                        this.page,
-                        this.pageSize
-                    )
+                this.retentionService
+                    .listRetentionTasksResponse({
+                        id: this.retentionId,
+                        eid: this.executionId,
+                        page: this.page,
+                        pageSize: this.pageSize,
+                    })
                     .pipe(finalize(() => (this.loading = false)))
                     .subscribe(res => {
-                        // Get total count
-                        if (res.headers) {
-                            let xHeader: string =
-                                res.headers.get('x-total-count');
-                            if (xHeader) {
-                                this.total = parseInt(xHeader, 0);
-                            }
-                        }
-                        this.tasks = res.body as Array<any>;
-                        TagRetentionComponent.calculateDuration(this.tasks);
-                        this.loopGettingTasks();
+                        this.handleResponse(res);
                     });
             }, TIMEOUT);
         }
+    }
+
+    handleResponse(res: any) {
+        // Get total count
+        if (res.headers) {
+            let xHeader: string = res.headers.get('x-total-count');
+            if (xHeader) {
+                this.total = parseInt(xHeader, 0);
+            }
+        }
+        this.tasks = res.body as Array<any>;
+        TagRetentionComponent.calculateDuration(this.tasks);
+        this.loopGettingTasks();
     }
 }

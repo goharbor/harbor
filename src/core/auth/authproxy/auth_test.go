@@ -19,6 +19,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -32,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
-	"github.com/stretchr/testify/assert"
 )
 
 var mockSvr *httptest.Server

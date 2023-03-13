@@ -347,7 +347,7 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 			args = append(args, item)
 		}
 		args = append(args, value)
-		inClause, err := orm.CreateInClause(ctx, buildInClauseSqlForExtraAttrs(keys), args...)
+		inClause, err := orm.CreateInClause(ctx, buildInClauseSQLForExtraAttrs(keys), args...)
 		if err != nil {
 			return nil, err
 		}
@@ -358,14 +358,14 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 }
 
 // Param keys is strings.Split() after trim "extra_attrs."/"ExtraAttrs." prefix
-func buildInClauseSqlForExtraAttrs(keys []string) string {
+func buildInClauseSQLForExtraAttrs(keys []string) string {
 	switch len(keys) {
 	case 0:
 		// won't fall into this case, as the if condition on "keyPrefix == key"
 		// act as a place holder to ensure "default" is equivalent to "len(keys) >= 2"
 		return ""
 	case 1:
-		return fmt.Sprintf("select id from execution where extra_attrs->>?=?")
+		return "select id from execution where extra_attrs->>?=?"
 	default:
 		// len(keys) >= 2
 		elements := make([]string, len(keys)-1)

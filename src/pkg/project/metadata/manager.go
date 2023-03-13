@@ -113,9 +113,7 @@ func makeQuery(projectID int64, meta ...string) *q.Query {
 	}
 	if len(meta) > 0 {
 		var names []string
-		for _, name := range meta {
-			names = append(names, name)
-		}
+		names = append(names, meta...)
 		kw["name__in"] = names
 	}
 

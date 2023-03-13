@@ -9,7 +9,6 @@ import {
 } from '../../../shared/services';
 import { ErrorHandler } from '../../../shared/units/error-handler';
 import {
-    DefaultHelmIcon,
     FALSE_STR,
     PROJECT_SUMMARY_CARD_VIEW_LOCALSTORAGE_KEY,
     TRUE_STR,
@@ -17,8 +16,6 @@ import {
 import { RepositoryService } from '../../../../../ng-swagger-gen/services/repository.service';
 import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
-import { HelmChartItem } from '../helm-chart/helm-chart-detail/helm-chart.interface.service';
-import { HelmChartService } from '../helm-chart/helm-chart-detail/helm-chart.service';
 
 @Component({
     selector: 'summary',
@@ -28,7 +25,6 @@ import { HelmChartService } from '../helm-chart/helm-chart-detail/helm-chart.ser
 export class SummaryComponent implements OnInit {
     showProjectMemberInfo: boolean = false;
     hasReadRepoPermission: boolean = false;
-    hasReadChartPermission: boolean = false;
     projectId: number;
     projectName: string;
     summaryInformation: any;
@@ -37,8 +33,6 @@ export class SummaryComponent implements OnInit {
     cardHover: boolean = false;
     listHover: boolean = false;
     repos: Repository[] = [];
-    charts: HelmChartItem[] = [];
-    chartDefaultIcon: string = DefaultHelmIcon;
     constructor(
         private projectService: ProjectService,
         private userPermissionService: UserPermissionService,
@@ -46,8 +40,7 @@ export class SummaryComponent implements OnInit {
         private appConfigService: AppConfigService,
         private route: ActivatedRoute,
         private repoService: RepositoryService,
-        private router: Router,
-        private helmChartService: HelmChartService
+        private router: Router
     ) {
         if (localStorage) {
             if (
@@ -83,17 +76,12 @@ export class SummaryComponent implements OnInit {
                 resource: USERSTATICPERMISSION.REPOSITORY.KEY,
                 action: USERSTATICPERMISSION.REPOSITORY.VALUE.LIST,
             },
-            {
-                resource: USERSTATICPERMISSION.HELM_CHART.KEY,
-                action: USERSTATICPERMISSION.HELM_CHART.VALUE.LIST,
-            },
         ];
         this.userPermissionService
             .hasProjectPermissions(this.projectId, permissions)
             .subscribe((results: Array<boolean>) => {
                 this.showProjectMemberInfo = results[0];
                 this.hasReadRepoPermission = results[1];
-                this.hasReadChartPermission = results[2];
             });
         this.projectService.getProjectSummary(this.projectId).subscribe(
             res => {
@@ -107,10 +95,6 @@ export class SummaryComponent implements OnInit {
             this.getDataForCardView();
         }
     }
-    public get withHelmChart(): boolean {
-        return this.appConfigService.getConfig().with_chartmuseum;
-    }
-
     showCard(cardView: boolean) {
         if (this.isCardView === cardView) {
             return;
@@ -159,7 +143,6 @@ export class SummaryComponent implements OnInit {
     }
     getDataForCardView() {
         this.getTop4Repos();
-        this.getTop4Charts();
     }
     getTop4Repos() {
         if (this.hasReadRepoPermission) {
@@ -171,17 +154,6 @@ export class SummaryComponent implements OnInit {
                 })
                 .subscribe(res => {
                     this.repos = res;
-                });
-        }
-    }
-    getTop4Charts() {
-        if (this.hasReadChartPermission) {
-            this.helmChartService
-                .getHelmCharts(this.projectName)
-                .subscribe(res => {
-                    if (res && res.length) {
-                        this.charts = res.slice(0, 4);
-                    }
                 });
         }
     }
@@ -197,31 +169,6 @@ export class SummaryComponent implements OnInit {
     }
     goToRepos() {
         const linkUrl = ['harbor', 'projects', this.projectId, 'repositories'];
-        this.router.navigate(linkUrl);
-    }
-    getDefaultIcon(chart: HelmChartItem) {
-        chart.icon = this.chartDefaultIcon;
-    }
-    getStatusString(chart: HelmChartItem) {
-        if (chart.deprecated) {
-            return 'HELM_CHART.DEPRECATED';
-        } else {
-            return 'HELM_CHART.ACTIVE';
-        }
-    }
-    onChartClick(chartName: string) {
-        const linkUrl = [
-            'harbor',
-            'projects',
-            this.projectId,
-            'helm-charts',
-            chartName,
-            'versions',
-        ];
-        this.router.navigate(linkUrl);
-    }
-    goToCharts() {
-        const linkUrl = ['harbor', 'projects', this.projectId, 'helm-charts'];
         this.router.navigate(linkUrl);
     }
     goToMembers() {

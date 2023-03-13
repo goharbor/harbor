@@ -19,10 +19,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 func TestMain(m *testing.M) {

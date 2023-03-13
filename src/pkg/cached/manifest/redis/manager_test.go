@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/stretchr/testify/suite"
+
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type managerTestSuite struct {
@@ -38,7 +38,7 @@ type managerTestSuite struct {
 func (m *managerTestSuite) SetupTest() {
 	m.cache = &testcache.Cache{}
 	m.cachedManager = NewManager()
-	m.cachedManager.(*manager).client = func() cache.Cache { return m.cache }
+	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
 
 	m.digest = "sha256:52f431d980baa76878329b68ddb69cb124c25efa6e206d8b0bd797a828f0528e"

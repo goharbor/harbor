@@ -20,8 +20,9 @@ import (
 	"strconv"
 	"time"
 
-	beego_orm "github.com/beego/beego/orm"
-	"github.com/beego/beego/validation"
+	beego_orm "github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/validation"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -153,7 +154,6 @@ func (s *Schema) Valid(v *validation.Validation) {
 			}
 		default:
 			_ = v.SetError("filters", "invalid filter type")
-			break
 		}
 	}
 

@@ -2,15 +2,17 @@ package manifest
 
 import (
 	"fmt"
-	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
-	"github.com/docker/distribution/testutil"
-	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/docker/distribution/context"
+	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/docker/distribution/testutil"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
 )
 
 func TestDeleteManifest(t *testing.T) {

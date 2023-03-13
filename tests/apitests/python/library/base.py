@@ -3,8 +3,6 @@ import os
 import subprocess
 import time
 
-import client
-import swagger_client
 import v2_swagger_client
 
 try:
@@ -27,15 +25,8 @@ def get_endpoint():
     harbor_server = os.environ.get("HARBOR_HOST", "localhost:8080")
     return os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0"
 
-def _create_client(server, credential, debug, api_type="products"):
-    cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
-                    'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
-                    'configure', 'user', 'member', 'health', 'label', 'webhook'):
-        cfg = v2_swagger_client.Configuration()
-    else:
-        cfg = swagger_client.Configuration()
-
+def _create_client(server, credential, debug, api_type):
+    cfg = v2_swagger_client.Configuration()
     cfg.host = server.endpoint
     cfg.verify_ssl = server.verify_ssl
     # support basic auth only for now
@@ -54,8 +45,6 @@ def _create_client(server, credential, debug, api_type="products"):
         cfg.auth_settings = types.MethodType(lambda self: {}, cfg)
 
     return {
-        "chart": client.ChartRepositoryApi(client.ApiClient(cfg)),
-        "products": swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
         "projectv2":v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
         "artifact": v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
         "preheat": v2_swagger_client.PreheatApi(v2_swagger_client.ApiClient(cfg)),
@@ -76,7 +65,14 @@ def _create_client(server, credential, debug, api_type="products"):
         "user": v2_swagger_client.UserApi(v2_swagger_client.ApiClient(cfg)),
         "member": v2_swagger_client.MemberApi(v2_swagger_client.ApiClient(cfg)),
         "health": v2_swagger_client.HealthApi(v2_swagger_client.ApiClient(cfg)),
-        "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg))
+        "webhook": v2_swagger_client.WebhookApi(v2_swagger_client.ApiClient(cfg)),
+        "purge": v2_swagger_client.PurgeApi(v2_swagger_client.ApiClient(cfg)),
+        "audit_log": v2_swagger_client.AuditlogApi(v2_swagger_client.ApiClient(cfg)),
+        "scan_data_export": v2_swagger_client.ScanDataExportApi(v2_swagger_client.ApiClient(cfg)),
+        "statistic": v2_swagger_client.StatisticApi(v2_swagger_client.ApiClient(cfg)),
+        "system_info": v2_swagger_client.SysteminfoApi(v2_swagger_client.ApiClient(cfg)),
+        "jobservice": v2_swagger_client.JobserviceApi(v2_swagger_client.ApiClient(cfg)),
+        "schedule": v2_swagger_client.ScheduleApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
@@ -129,42 +125,32 @@ def restart_process(process):
     run_command_with_popen("ps aux |grep " + full_process_name)
 
 def run_command_with_popen(command):
-    print("Command: ", command)
-
     try:
         proc = subprocess.Popen(command, universal_newlines=True, shell=True,
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         output, errors = proc.communicate()
     except Exception as e:
-        print("Run command caught exception:", e)
         output = None
-    else:
-        print(proc.returncode, errors, output)
     finally:
         proc.stdout.close()
-        print("output: ", output)
         return output
 
 def run_command(command, expected_error_message = None):
-    print("Command: ", subprocess.list2cmdline(command))
     try:
         output = subprocess.check_output(command,
                                          stderr=subprocess.STDOUT,
                                          universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        print("Run command error:", str(e))
-        print("expected_error_message:", expected_error_message)
         if expected_error_message is not None:
             if str(e.output).lower().find(expected_error_message.lower()) < 0:
-                raise Exception(r"Error message {} is not as expected {}".format(str(e.output), expected_error_message))
+                raise Exception(r"Error message is not as expected {}".format(expected_error_message))
         else:
-            raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
+            raise Exception('Error: Exited with error code: %s.'% (e.returncode))
     else:
-        print("output:", output)
         return output
 
 class Base(object):
-    def __init__(self, server=None, credential=None, debug=True, api_type="products"):
+    def __init__(self, server=None, credential=None, debug=True, api_type=""):
         if server is None:
             server = Server(endpoint=get_endpoint(), verify_ssl=False)
         if not isinstance(server.verify_ssl, bool):

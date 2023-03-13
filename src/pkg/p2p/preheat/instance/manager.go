@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/lib/q"
-
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 )

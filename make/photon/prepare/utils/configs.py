@@ -97,7 +97,7 @@ def parse_versions():
     return versions
 
 
-def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseum):
+def parse_yaml_config(config_file_path, with_notary, with_trivy):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -116,7 +116,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         'jobservice_url': 'http://jobservice:8080',
         'trivy_adapter_url': 'http://trivy-adapter:8080',
         'notary_url': 'http://notary-server:4443',
-        'chart_repository_url': 'http://chartmuseum:9999'
     }
 
     config_dict['hostname'] = configs["hostname"]
@@ -158,6 +157,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = 'disable'
         config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = db_configs.get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = db_configs.get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
@@ -229,16 +230,10 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
+    config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
     config_dict['trivy_insecure'] = trivy_configs.get("insecure") or False
     config_dict['trivy_timeout'] = trivy_configs.get("timeout") or '5m0s'
-
-    # Chart configs
-    chart_configs = configs.get("chart") or {}
-    if chart_configs.get('absolute_url') == 'enabled':
-        config_dict['chart_absolute_url'] = True
-    else:
-        config_dict['chart_absolute_url'] = False
 
     # jobservice config
     js_config = configs.get('jobservice') or {}
@@ -287,6 +282,8 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_conn_max_lifetime'] = external_db_configs['harbor'].get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_conn_max_idle_time'] = external_db_configs['harbor'].get("conn_max_idle_time") or '0'
 
         if with_notary:
             # notary signer
@@ -328,7 +325,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
             configs['data_volume'],
             with_notary=with_notary,
             with_trivy=with_trivy,
-            with_chartmuseum=with_chartmuseum,
             external_database=config_dict['external_database'])
     else:
         config_dict['internal_tls'] = InternalTLS()
@@ -354,7 +350,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy, with_chartmuseu
         config_dict['jobservice_url'] = 'https://jobservice:8443'
         config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
         # config_dict['notary_url'] = 'http://notary-server:4443'
-        config_dict['chart_repository_url'] = 'https://chartmuseum:9443'
 
     # purge upload configs
     purge_upload_config = configs.get('upload_purging')
@@ -445,7 +440,6 @@ def get_redis_configs(external_redis=None, with_trivy=True):
         'password': '',
         'registry_db_index': 1,
         'jobservice_db_index': 2,
-        'chartmuseum_db_index': 3,
         'trivy_db_index': 5,
         'idle_timeout_seconds': 30,
     }
@@ -454,7 +448,6 @@ def get_redis_configs(external_redis=None, with_trivy=True):
     redis.update({key: value for (key, value) in external_redis.items() if value})
 
     configs['redis_url_core'] = get_redis_url(0, redis)
-    configs['redis_url_chart'] = get_redis_url(redis['chartmuseum_db_index'], redis)
     configs['redis_url_js'] = get_redis_url(redis['jobservice_db_index'], redis)
     configs['redis_url_reg'] = get_redis_url(redis['registry_db_index'], redis)
 

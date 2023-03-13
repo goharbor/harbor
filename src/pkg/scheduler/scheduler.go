@@ -68,6 +68,8 @@ type Scheduler interface {
 	GetSchedule(ctx context.Context, id int64) (*Schedule, error)
 	// ListSchedules according to the query
 	ListSchedules(ctx context.Context, query *q.Query) ([]*Schedule, error)
+	// CountSchedules counts the schedules according to the query
+	CountSchedules(ctx context.Context, query *q.Query) (int64, error)
 }
 
 // New returns an instance of the default scheduler
@@ -83,6 +85,10 @@ type scheduler struct {
 	dao     DAO
 	execMgr task.ExecutionManager
 	taskMgr task.Manager
+}
+
+func (s *scheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, error) {
+	return s.dao.Count(ctx, query)
 }
 
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
@@ -190,7 +196,13 @@ func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 		executionID := executions[0].ID
 		// stop the execution
 		if err = s.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
-			return err
+			if err == task.ErrTimeOut {
+				// Avoid return this error to the UI, log time out error and continue
+				// the execution will be finally stopped by jobservice
+				log.Debugf("time out when stopping the execution %d, but the execution will be stopped eventually", executionID)
+			} else {
+				return err
+			}
 		}
 		// delete execution
 		if err = s.execMgr.Delete(ctx, executionID); err != nil {

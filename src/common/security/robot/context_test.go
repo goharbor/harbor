@@ -17,18 +17,19 @@ package robot
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/rbac/project"
-	"github.com/goharbor/harbor/src/controller/robot"
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -237,6 +238,92 @@ func Test_filterRobotPolicies(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := filterRobotPolicies(tt.args.p, tt.args.policies); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("filterRobotPolicies() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getPolicyResource(t *testing.T) {
+	type args struct {
+		perm *robot.Permission
+		poli *types.Policy
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"project resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: fmt.Sprintf("/project/%d", private.ProjectID),
+				},
+				&types.Policy{Resource: "project", Action: "pull", Effect: "allow"},
+			},
+			fmt.Sprintf("/project/%d", private.ProjectID),
+		},
+		{
+			"project resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: fmt.Sprintf("/project/%d", private.ProjectID),
+				},
+				&types.Policy{Resource: "repository", Action: "get", Effect: "allow"},
+			},
+			fmt.Sprintf("/project/%d/repository", private.ProjectID),
+		},
+		{
+			"system resource",
+			args{
+				&robot.Permission{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPush,
+						},
+						{
+							Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+							Action:   rbac.ActionPull,
+						},
+					},
+					Scope: "/system",
+				},
+				&types.Policy{Resource: "repository", Action: "get", Effect: "allow"},
+			},
+			"/system/repository",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getPolicyResource(tt.args.perm, tt.args.poli); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getPolicyResource() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -17,9 +17,14 @@ package handler
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
 	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -27,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/usergroup"
-	"strings"
 )
 
 type userGroupAPI struct {
@@ -204,7 +208,11 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
+	result := getUserGroupSearchItem(ug)
+	sort.Slice(result, func(i, j int) bool {
+		return utils.MostMatchSorter(result[i].GroupName, result[j].GroupName, params.Groupname)
+	})
 	return operation.NewSearchUserGroupsOK().WithXTotalCount(total).
-		WithPayload(getUserGroupSearchItem(ug)).
+		WithPayload(result).
 		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }

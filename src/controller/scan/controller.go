@@ -93,7 +93,7 @@ type Controller interface {
 	//   Returns:
 	//     []byte : the log text stream
 	//     error  : non nil error if any errors occurred
-	GetScanLog(ctx context.Context, uuid string) ([]byte, error)
+	GetScanLog(ctx context.Context, art *artifact.Artifact, uuid string) ([]byte, error)
 
 	// Delete the reports related with the specified digests
 	//
@@ -120,9 +120,11 @@ type Controller interface {
 	//   Arguments:
 	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact : artifact to be scanned
+	//     allowlist map[string]struct{} : the set of CVE id of the items in the allowlist
+	//     allowlistIsExpired bool : whether the allowlist is expired
 	//
 	//   Returns
 	//      *Vulnerable : the vulnerable
 	//     error        : non nil error if any errors occurred
-	GetVulnerable(ctx context.Context, artifact *artifact.Artifact, allowlist allowlist.CVESet) (*Vulnerable, error)
+	GetVulnerable(ctx context.Context, artifact *artifact.Artifact, allowlist allowlist.CVESet, allowlistIsExpired bool) (*Vulnerable, error)
 }

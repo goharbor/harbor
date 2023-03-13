@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	beego_orm "github.com/beego/beego/orm"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -39,8 +38,7 @@ var _ DAO = (*dao)(nil)
 
 // Create adds a new distribution instance.
 func (d *dao) Create(ctx context.Context, instance *provider.Instance) (id int64, err error) {
-	var o beego_orm.Ormer
-	o, err = orm.FromContext(ctx)
+	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return
 	}
@@ -63,10 +61,13 @@ func (d *dao) Get(ctx context.Context, id int64) (*provider.Instance, error) {
 	}
 
 	di := provider.Instance{ID: id}
-	err = o.Read(&di, "ID")
-	if err == beego_orm.ErrNoRows {
-		return nil, nil
+	if err = o.Read(&di, "ID"); err != nil {
+		if e := orm.AsNotFoundError(err, "instance %d not found", id); e != nil {
+			err = e
+		}
+		return nil, err
 	}
+
 	return &di, err
 }
 
@@ -107,7 +108,6 @@ func (d *dao) Update(ctx context.Context, instance *provider.Instance, props ...
 		return
 	}
 	return orm.WithTransaction(trans)(orm.SetTransactionOpNameToContext(ctx, "tx-prehead-update"))
-
 }
 
 // Delete deletes one distribution instance by id.

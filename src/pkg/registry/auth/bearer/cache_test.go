@@ -15,9 +15,10 @@
 package bearer
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type cacheTestSuite struct {

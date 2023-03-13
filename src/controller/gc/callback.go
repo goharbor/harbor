@@ -29,12 +29,12 @@ import (
 )
 
 func init() {
-	err := scheduler.RegisterCallbackFunc(SchedulerCallback, gcCallback)
+	err := scheduler.RegisterCallbackFunc(job.GarbageCollectionVendorType, gcCallback)
 	if err != nil {
 		log.Fatalf("failed to registry GC call back, %v", err)
 	}
 
-	if err := task.RegisterTaskStatusChangePostFunc(GCVendorType, gcTaskStatusChange); err != nil {
+	if err := task.RegisterTaskStatusChangePostFunc(job.GarbageCollectionVendorType, gcTaskStatusChange); err != nil {
 		log.Fatalf("failed to register the task status change post for the gc job, error %v", err)
 	}
 }

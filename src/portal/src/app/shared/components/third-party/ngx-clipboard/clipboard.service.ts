@@ -11,6 +11,7 @@ import { WINDOW } from '../ngx-window-token/window-token';
 @Injectable()
 export class ClipboardService {
     private tempTextArea: HTMLTextAreaElement;
+    private _currentCopiedText: string;
     constructor(
         @Inject(DOCUMENT) private document: any,
         @Inject(WINDOW) private window: any
@@ -20,6 +21,10 @@ export class ClipboardService {
             !!this.document.queryCommandSupported &&
             !!this.document.queryCommandSupported('copy')
         );
+    }
+
+    getCurrentCopiedText(): string {
+        return this._currentCopiedText;
     }
 
     public isTargetValid(
@@ -50,6 +55,7 @@ export class ClipboardService {
             this.selectTarget(targetElm, renderer);
             const re = this.copyText();
             this.clearSelection(targetElm, this.window);
+            this._currentCopiedText = targetElm?.value;
             return re;
         } catch (error) {
             return false;
@@ -69,6 +75,7 @@ export class ClipboardService {
             this.document.body.appendChild(this.tempTextArea);
         }
         this.tempTextArea.value = content;
+        this._currentCopiedText = content;
         return this.copyFromInputElement(this.tempTextArea, renderer);
     }
 

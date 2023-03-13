@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${artifact_action_xpath}  //clr-dg-action-bar/clr-dropdown/span[contains(@class,'dropdown-toggle')]
+${artifact_action_xpath}  //*[@id='artifact-list-action']
 ${artifact_action_delete_xpath}  //clr-dropdown-menu//div[contains(.,'Delete')]
 ${artifact_action_copy_xpath}  //clr-dropdown-menu//div[contains(.,'Copy') and @aria-label='retag']
 ${artifact_achieve_icon}  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256')]//clr-dg-cell[1]//clr-tooltip//a
@@ -31,3 +31,8 @@ ${tag_name_xpath}          xpath=//*[@id='name']
 ${add_ok_button}           xpath=//*[@id='add-ok']
 ${delete_tag_button}       xpath=//*[@id='delete-tag']
 ${dialog_delete_button}    xpath=//clr-modal//button[contains(.,'DELETE')]
+
+${harbor_helm_name}  harbor-helm-1.7.3
+${harbor_helm_filename}  harbor-helm-1.7.3.tar.gz
+${harbor_helm_version}  1.7.3
+${harbor_helm_package}  harbor-1.7.3.tgz

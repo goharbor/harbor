@@ -18,9 +18,11 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -105,7 +107,9 @@ func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) 
 			return nil, err
 		}
 
-		keys = append(keys, cmd.Val()...)
+		for _, k := range cmd.Val() {
+			keys = append(keys, strings.TrimPrefix(k, c.opts.Prefix))
+		}
 	}
 
 	return keys, nil

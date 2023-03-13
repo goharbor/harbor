@@ -17,14 +17,15 @@ package proxycachesecret
 import (
 	"context"
 	"errors"
-	"github.com/goharbor/harbor/src/common/rbac/project"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type proxyCacheSecretTestSuite struct {

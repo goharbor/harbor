@@ -13,6 +13,7 @@ import { delay } from 'rxjs/operators';
 import { PurgeHistoryComponent } from './purge-history.component';
 import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-history';
 import { PurgeService } from 'ng-swagger-gen/services/purge.service';
+import { ConfirmationDialogService } from '../../../../global-confirmation-dialog/confirmation-dialog.service';
 
 describe('GcHistoryComponent', () => {
     let component: PurgeHistoryComponent;
@@ -65,11 +66,18 @@ describe('GcHistoryComponent', () => {
             }
         },
     };
+    const fakedConfirmationDialogService = {
+        openComfirmDialog() {},
+    };
     beforeEach(() => {
         TestBed.configureTestingModule({
             declarations: [PurgeHistoryComponent],
             imports: [SharedTestingModule],
             providers: [
+                {
+                    provide: ConfirmationDialogService,
+                    useValue: fakedConfirmationDialogService,
+                },
                 { provide: PurgeService, useValue: fakedPurgeService },
                 // open auto detect
                 { provide: ComponentFixtureAutoDetect, useValue: true },
@@ -102,5 +110,15 @@ describe('GcHistoryComponent', () => {
         expect(component.getLogLink('1')).toEqual(
             `${CURRENT_BASE_HREF}/system/purgeaudit/1/log`
         );
+    });
+    it('stopping purging should work', () => {
+        const sy: jasmine.Spy = spyOn(
+            fakedConfirmationDialogService,
+            'openComfirmDialog'
+        ).and.returnValue(undefined);
+        const stopBtn: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#stop-purge');
+        stopBtn.dispatchEvent(new Event('click'));
+        expect(sy.calls.count()).toEqual(1);
     });
 });

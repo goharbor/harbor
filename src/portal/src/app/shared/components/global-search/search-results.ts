@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Project } from '../../../base/project/project';
-import { HelmChartSearchResultItem } from '../../../base/project/helm-chart/helm-chart-detail/helm-chart.interface.service';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
 
 export class SearchResults {
     constructor() {
         this.project = [];
         this.repository = [];
-        this.chart = [];
     }
 
     project: Project[];
     repository: Repository[];
-    chart: HelmChartSearchResultItem[];
 }

@@ -44,23 +44,16 @@ type Converter struct {
 	generatedConversionFuncs ConversionFuncs
 
 	// Set of conversions that should be treated as a no-op
-	ignoredConversions        map[typePair]struct{}
 	ignoredUntypedConversions map[typePair]struct{}
-
-	// nameFunc is called to retrieve the name of a type; this name is used for the
-	// purpose of deciding whether two types match or not (i.e., will we attempt to
-	// do a conversion). The default returns the go type name.
-	nameFunc func(t reflect.Type) string
 }
 
 // NewConverter creates a new Converter object.
-func NewConverter(nameFn NameFunc) *Converter {
+// Arg NameFunc is just for backward compatibility.
+func NewConverter(NameFunc) *Converter {
 	c := &Converter{
 		conversionFuncs:           NewConversionFuncs(),
 		generatedConversionFuncs:  NewConversionFuncs(),
-		ignoredConversions:        make(map[typePair]struct{}),
 		ignoredUntypedConversions: make(map[typePair]struct{}),
-		nameFunc:                  nameFn,
 	}
 	c.RegisterUntypedConversionFunc(
 		(*[]byte)(nil), (*[]byte)(nil),
@@ -122,10 +115,10 @@ type ConversionFuncs struct {
 // previously defined functions.
 func (c ConversionFuncs) AddUntyped(a, b interface{}, fn ConversionFunc) error {
 	tA, tB := reflect.TypeOf(a), reflect.TypeOf(b)
-	if tA.Kind() != reflect.Ptr {
+	if tA.Kind() != reflect.Pointer {
 		return fmt.Errorf("the type %T must be a pointer to register as an untyped conversion", a)
 	}
-	if tB.Kind() != reflect.Ptr {
+	if tB.Kind() != reflect.Pointer {
 		return fmt.Errorf("the type %T must be a pointer to register as an untyped conversion", b)
 	}
 	c.untyped[typePair{tA, tB}] = fn
@@ -186,13 +179,12 @@ func (c *Converter) RegisterGeneratedUntypedConversionFunc(a, b interface{}, fn 
 func (c *Converter) RegisterIgnoredConversion(from, to interface{}) error {
 	typeFrom := reflect.TypeOf(from)
 	typeTo := reflect.TypeOf(to)
-	if reflect.TypeOf(from).Kind() != reflect.Ptr {
+	if typeFrom.Kind() != reflect.Pointer {
 		return fmt.Errorf("expected pointer arg for 'from' param 0, got: %v", typeFrom)
 	}
-	if typeTo.Kind() != reflect.Ptr {
+	if typeTo.Kind() != reflect.Pointer {
 		return fmt.Errorf("expected pointer arg for 'to' param 1, got: %v", typeTo)
 	}
-	c.ignoredConversions[typePair{typeFrom.Elem(), typeTo.Elem()}] = struct{}{}
 	c.ignoredUntypedConversions[typePair{typeFrom, typeTo}] = struct{}{}
 	return nil
 }

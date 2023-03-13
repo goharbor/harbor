@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // ProjectCollectorName ...

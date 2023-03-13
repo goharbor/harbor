@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
@@ -27,8 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	quotatesting "github.com/goharbor/harbor/src/testing/pkg/quota"
 	drivertesting "github.com/goharbor/harbor/src/testing/pkg/quota/driver"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/suite"
 )
 
 type ControllerTestSuite struct {

@@ -37,9 +37,8 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/robot/dao --name DAO --output ./robot/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/repository --name Manager --output ./repository --outpkg repository
 //go:generate mockery --case snake --dir ../../pkg/repository/dao --name DAO --output ./repository/dao --outpkg dao
-//go:generate mockery --case snake --dir ../../pkg/notification/job/dao --name DAO --output ./notification/job/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/notification/policy/dao --name DAO --output ./notification/policy/dao --outpkg dao
-//go:generate mockery --case snake --dir ../../pkg/notification/policy --name Manager --output ./notification/policy --outpkg notification
+//go:generate mockery --case snake --dir ../../pkg/notification/policy --name Manager --output ./notification/policy --outpkg policy
 //go:generate mockery --case snake --dir ../../pkg/immutable/dao --name DAO --output ./immutable/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/ldap --name Manager --output ./ldap --outpkg ldap
 //go:generate mockery --case snake --dir ../../pkg/allowlist --name Manager --output ./allowlist --outpkg robot
@@ -62,3 +61,15 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/ --name Selector --output ./systemartifact/cleanup --outpkg cleanup
 //go:generate mockery --case snake --dir ../../pkg/systemartifact/dao --name DAO --output ./systemartifact/dao --outpkg dao
 //go:generate mockery --case snake --dir ../../pkg/cached/manifest/redis --name CachedManager --output ./cached/manifest/redis --outpkg redis
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name FilterProcessor --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name Manager --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/scan/export --name ArtifactDigestCalculator --output ./scan/export --outpkg export
+//go:generate mockery --case snake --dir ../../pkg/registry --name Client --output ./registry --outpkg registry --filename fake_registry_client.go
+//go:generate mockery --case snake --dir ../../pkg/member --name Manager --output ./member --outpkg member --filename fake_member_manager.go
+//go:generate mockery --case snake --dir ../../pkg/usergroup --name Manager --output ./usergroup --outpkg usergroup --filename fake_usergroup_manager.go
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name PoolManager --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name JobServiceMonitorClient --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name WorkerManager --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name QueueManager --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/jobmonitor --name RedisClient --output ./jobmonitor --outpkg jobmonitor
+//go:generate mockery --case snake --dir ../../pkg/queuestatus --name Manager --output ./queuestatus --outpkg queuestatus

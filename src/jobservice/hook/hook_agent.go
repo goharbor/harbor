@@ -17,24 +17,23 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/lib/log"
 	"net/url"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/gomodule/redigo/redis"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/gomodule/redigo/redis"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
 	// Backoff duration of direct retrying.
 	errRetryBackoff = 5 * time.Minute
-	// Max concurrency of retrying goroutines.
-	maxConcurrency = 512
 )
 
 // Agent is designed to handle the hook events with reasonable numbers of concurrent threads.
@@ -75,13 +74,13 @@ type basicAgent struct {
 }
 
 // NewAgent is constructor of basic agent
-func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool) Agent {
+func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool, retryConcurrency uint) Agent {
 	return &basicAgent{
 		context:   ctx.SystemContext,
 		namespace: ns,
 		client:    NewClient(ctx.SystemContext),
 		redisPool: redisPool,
-		tokens:    make(chan struct{}, maxConcurrency),
+		tokens:    make(chan struct{}, retryConcurrency),
 	}
 }
 

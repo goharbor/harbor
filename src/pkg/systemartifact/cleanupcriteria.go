@@ -2,11 +2,12 @@ package systemartifact
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/dao"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
-	"time"
 )
 
 var (
@@ -45,7 +46,6 @@ func (cleanupCriteria *defaultSelector) ListWithFilters(ctx context.Context, que
 }
 
 func (cleanupCriteria *defaultSelector) List(ctx context.Context) ([]*model.SystemArtifact, error) {
-
 	currentTime := time.Now()
 	duration := time.Duration(DefaultCleanupWindowSeconds) * time.Second
 	timeRange := q.Range{Max: currentTime.Add(-duration).Format(time.RFC3339)}

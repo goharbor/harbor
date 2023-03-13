@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -60,7 +61,6 @@ func (p *Project) ToSwagger() *models.Project {
 	}
 
 	return &models.Project{
-		ChartCount:         int64(p.ChartCount),
 		CreationTime:       strfmt.DateTime(p.CreationTime),
 		CurrentUserRoleID:  int64(p.Role),
 		CurrentUserRoleIds: currentUserRoleIds,

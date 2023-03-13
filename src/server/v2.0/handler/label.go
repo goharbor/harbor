@@ -3,7 +3,10 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -18,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/label"
-	"strings"
 )
 
 func newLabelAPI() *labelAPI {

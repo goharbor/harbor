@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/systemartifact/model"
@@ -12,17 +19,11 @@ import (
 	registrytesting "github.com/goharbor/harbor/src/testing/pkg/registry"
 	"github.com/goharbor/harbor/src/testing/pkg/systemartifact/cleanup"
 	sysartifactdaotesting "github.com/goharbor/harbor/src/testing/pkg/systemartifact/dao"
-	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"os"
-	"strings"
-	"testing"
-	"time"
 )
 
 type ManagerTestSuite struct {
 	suite.Suite
-	regCli          *registrytesting.FakeClient
+	regCli          *registrytesting.Client
 	dao             *sysartifactdaotesting.DAO
 	mgr             *systemArtifactManager
 	cleanupCriteria *cleanup.Selector
@@ -33,7 +34,7 @@ func (suite *ManagerTestSuite) SetupSuite() {
 }
 
 func (suite *ManagerTestSuite) SetupTest() {
-	suite.regCli = &registrytesting.FakeClient{}
+	suite.regCli = &registrytesting.Client{}
 	suite.dao = &sysartifactdaotesting.DAO{}
 	suite.cleanupCriteria = &cleanup.Selector{}
 	suite.mgr = &systemArtifactManager{
@@ -60,7 +61,25 @@ func (suite *ManagerTestSuite) TestCreate() {
 	id, err := suite.mgr.Create(orm.NewContext(nil, &ormtesting.FakeOrmer{}), &sa, reader)
 	suite.Equalf(int64(1), id, "Expected row to correctly inserted")
 	suite.NoErrorf(err, "Unexpected error when creating artifact: %v", err)
-	suite.regCli.AssertCalled(suite.T(), "PushBlob")
+	suite.regCli.AssertCalled(suite.T(), "PushBlob", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *ManagerTestSuite) TestCreateTimeNotSet() {
+	sa := model.SystemArtifact{
+		Repository: "test_repo",
+		Digest:     "test_digest",
+		Size:       int64(100),
+		Vendor:     "test_vendor",
+		Type:       "test_type",
+	}
+	suite.dao.On("Create", mock.Anything, &sa, mock.Anything).Return(int64(1), nil).Once()
+	suite.regCli.On("PushBlob", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	reader := strings.NewReader("test data string")
+	id, err := suite.mgr.Create(orm.NewContext(nil, &ormtesting.FakeOrmer{}), &sa, reader)
+	suite.Equalf(int64(1), id, "Expected row to correctly inserted")
+	suite.NoErrorf(err, "Unexpected error when creating artifact: %v", err)
+	suite.regCli.AssertCalled(suite.T(), "PushBlob", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	suite.False(sa.CreateTime.IsZero(), "Create time expected to be set")
 }
 
 func (suite *ManagerTestSuite) TestCreatePushBlobFails() {
@@ -81,7 +100,7 @@ func (suite *ManagerTestSuite) TestCreatePushBlobFails() {
 	suite.Equalf(int64(0), id, "Expected no row to be inserted")
 	suite.Errorf(err, "Expected error when creating artifact: %v", err)
 	suite.dao.AssertCalled(suite.T(), "Create", mock.Anything, &sa, mock.Anything)
-	suite.regCli.AssertCalled(suite.T(), "PushBlob")
+	suite.regCli.AssertCalled(suite.T(), "PushBlob", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
 func (suite *ManagerTestSuite) TestCreateArtifactRecordFailure() {
@@ -120,7 +139,7 @@ func (suite *ManagerTestSuite) TestRead() {
 
 	dummyRepoFilepath := fmt.Sprintf("/tmp/sys_art_test.dmp_%v", time.Now())
 	data := []byte("test data")
-	err := ioutil.WriteFile(dummyRepoFilepath, data, os.ModePerm)
+	err := os.WriteFile(dummyRepoFilepath, data, os.ModePerm)
 	suite.NoErrorf(err, "Unexpected error when creating test repo file: %v", dummyRepoFilepath)
 
 	repoHandle, err := os.Open(dummyRepoFilepath)
@@ -128,13 +147,13 @@ func (suite *ManagerTestSuite) TestRead() {
 	defer repoHandle.Close()
 
 	suite.dao.On("Get", mock.Anything, "test_vendor", "test_repo", "test_digest").Return(&sa, nil).Once()
-	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(len(data), repoHandle, nil).Once()
+	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(len(data)), repoHandle, nil).Once()
 
 	readCloser, err := suite.mgr.Read(context.TODO(), "test_vendor", "test_repo", "test_digest")
 
 	suite.NoErrorf(err, "Unexpected error when reading artifact: %v", err)
 	suite.dao.AssertCalled(suite.T(), "Get", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "PullBlob")
+	suite.regCli.AssertCalled(suite.T(), "PullBlob", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	suite.NotNilf(readCloser, "Expected valid read closer instance but was nil")
 }
 
@@ -142,7 +161,7 @@ func (suite *ManagerTestSuite) TestReadSystemArtifactRecordNotFound() {
 
 	dummyRepoFilepath := fmt.Sprintf("/tmp/sys_art_test.dmp_%v", time.Now())
 	data := []byte("test data")
-	err := ioutil.WriteFile(dummyRepoFilepath, data, os.ModePerm)
+	err := os.WriteFile(dummyRepoFilepath, data, os.ModePerm)
 	suite.NoErrorf(err, "Unexpected error when creating test repo file: %v", dummyRepoFilepath)
 
 	repoHandle, err := os.Open(dummyRepoFilepath)
@@ -152,7 +171,7 @@ func (suite *ManagerTestSuite) TestReadSystemArtifactRecordNotFound() {
 	errToRet := orm.ErrNoRows
 
 	suite.dao.On("Get", mock.Anything, "test_vendor", "test_repo", "test_digest").Return(nil, errToRet).Once()
-	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(len(data), repoHandle, nil).Once()
+	suite.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(len(data)), repoHandle, nil).Once()
 
 	readCloser, err := suite.mgr.Read(context.TODO(), "test_vendor", "test_repo", "test_digest")
 
@@ -171,7 +190,7 @@ func (suite *ManagerTestSuite) TestDelete() {
 
 	suite.NoErrorf(err, "Unexpected error when deleting artifact: %v", err)
 	suite.dao.AssertCalled(suite.T(), "Delete", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "DeleteBlob")
+	suite.regCli.AssertCalled(suite.T(), "DeleteBlob", "sys_harb0r/test_vendor/test_repo", "test_digest")
 }
 
 func (suite *ManagerTestSuite) TestDeleteSystemArtifactDeleteError() {
@@ -184,7 +203,7 @@ func (suite *ManagerTestSuite) TestDeleteSystemArtifactDeleteError() {
 
 	suite.Errorf(err, "Expected error when deleting artifact: %v", err)
 	suite.dao.AssertCalled(suite.T(), "Delete", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "DeleteBlob")
+	suite.regCli.AssertCalled(suite.T(), "DeleteBlob", "sys_harb0r/test_vendor/test_repo", "test_digest")
 }
 
 func (suite *ManagerTestSuite) TestDeleteSystemArtifactBlobDeleteError() {
@@ -197,7 +216,7 @@ func (suite *ManagerTestSuite) TestDeleteSystemArtifactBlobDeleteError() {
 
 	suite.Errorf(err, "Expected error when deleting artifact: %v", err)
 	suite.dao.AssertNotCalled(suite.T(), "Delete", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "DeleteBlob")
+	suite.regCli.AssertCalled(suite.T(), "DeleteBlob", "sys_harb0r/test_vendor/test_repo", "test_digest")
 }
 
 func (suite *ManagerTestSuite) TestExist() {
@@ -218,7 +237,7 @@ func (suite *ManagerTestSuite) TestExist() {
 
 	suite.NoErrorf(err, "Unexpected error when checking if artifact exists: %v", err)
 	suite.dao.AssertCalled(suite.T(), "Get", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "BlobExist")
+	suite.regCli.AssertCalled(suite.T(), "BlobExist", mock.Anything, mock.Anything)
 	suite.True(exists, "Expected exists to be true but was false")
 }
 
@@ -256,7 +275,7 @@ func (suite *ManagerTestSuite) TestExistSystemArtifactBlobReadError() {
 
 	suite.Error(err, "Expected error when checking if artifact exists")
 	suite.dao.AssertCalled(suite.T(), "Get", mock.Anything, "test_vendor", "test_repo", "test_digest")
-	suite.regCli.AssertCalled(suite.T(), "BlobExist")
+	suite.regCli.AssertCalled(suite.T(), "BlobExist", mock.Anything, mock.Anything)
 	suite.False(exists, "Expected exists to be false but was true")
 }
 
@@ -476,6 +495,12 @@ func (suite *ManagerTestSuite) TestCleanupErrorForVendor() {
 	suite.Equalf(int64(2), totalDeleted, "System artifacts delete; Expected:%d, Actual:%d", int64(2), totalDeleted)
 	suite.Equalf(int64(400), totalSizeReclaimed, "System artifacts delete; Expected:%d, Actual:%d", int64(400), totalDeleted)
 	suite.NoErrorf(err, "Expected no error, but was %v", err)
+}
+
+func (suite *ManagerTestSuite) TestGetSystemArtifactProjectNames() {
+	reservedProjectNames := suite.mgr.GetSystemArtifactProjectNames()
+	suite.Equalf(1, len(reservedProjectNames), "Expected: %d, Actual: %d", 1, len(reservedProjectNames))
+	suite.Equalf(systemArtifactProjectName, reservedProjectNames[0], "Expected: %s, Actual: %s", systemArtifactProjectName, reservedProjectNames[0])
 }
 
 func (suite *ManagerTestSuite) List(ctx context.Context) ([]*model.SystemArtifact, error) {

@@ -16,7 +16,6 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
 *** Test Cases ***
-
 Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
@@ -48,10 +47,6 @@ Test Case - Manage Project Member
 Test Case - User View Logs
     [Tags]  view_logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
-
-Test Case - List Helm Charts
-    [Tags]  list_helm_charts
-    Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 
 Test Case - Assign Sys Admin
     [Tags]  assign_adin
@@ -92,10 +87,6 @@ Test Case - Health Check
 Test Case - Push Index By Docker Manifest
     [Tags]  push_index
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
-
-Test Case - Push Chart By Helm3 Chart CLI
-    [Tags]  push_chart
-    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 
 Test Case - Push Chart By Helm3.7 Chart CLI
     [Tags]  push_chart_by_Helm3.7
@@ -141,14 +132,6 @@ Test Case - Push Artifact With ORAS CLI
     [Tags]  oras
     Harbor API Test  ./tests/apitests/python/test_push_files_by_oras.py
 
-Test Case - Push Singularity file With Singularity CLI
-    [Tags]  singularity
-    Harbor API Test  ./tests/apitests/python/test_push_sif_by_singularity.py
-
-Test Case - Push Chart File To Chart Repository By Helm V2 With Robot Account
-    [Tags]  helm2
-    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm2_helm3_with_robot_Account.py
-
 Test Case - Replication From Dockerhub
     [Tags]  replic_dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
@@ -180,3 +163,22 @@ Test Case - Webhook CRUD
 Test Case - Cosign Sign Artifact
     [Tags]  cosign
     Harbor API Test  ./tests/apitests/python/test_cosign_sign_artifact.py
+
+Test Case - Log Rotation
+    [Tags]  log_rotation
+    Harbor API Test  ./tests/apitests/python/test_log_rotation.py
+
+Test Case - Log Forward
+    [Tags]  log_forward
+    ${SYSLOG_ENDPOINT_VALUE}=  Get Variable Value  ${SYSLOG_ENDPOINT}  ${EMPTY}
+    ${ES_ENDPOINT_VALUE}=  Get Variable Value  ${ES_ENDPOINT}  ${EMPTY}
+    Skip If  '${SYSLOG_ENDPOINT_VALUE}' == '${EMPTY}' or '${ES_ENDPOINT_VALUE}' == '${EMPTY}'
+    Harbor API Test  ./tests/apitests/python/test_audit_log_forward.py  SYSLOG_ENDPOINT=${SYSLOG_ENDPOINT_VALUE} ES_ENDPOINT=${ES_ENDPOINT_VALUE}
+
+Test Case - Scan Data Export
+    [Tags]  scan_data_export
+    Harbor API Test  ./tests/apitests/python/test_scan_data_export.py
+
+Test Case - Job Service Dashboard
+    [Tags]  job_service_dashboard
+    Harbor API Test  ./tests/apitests/python/test_job_service_dashboard.py

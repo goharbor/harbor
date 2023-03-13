@@ -8,6 +8,7 @@
 ![Code scanning - action](https://github.com/goharbor/harbor/workflows/Code%20scanning%20-%20action/badge.svg)
 [![Nightly Status](https://us-central1-eminent-nation-87317.cloudfunctions.net/harbor-nightly-result)](https://www.googleapis.com/storage/v1/b/harbor-nightly/o)
 ![CONFORMANCE_TEST](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
 </br>
 
 |![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
@@ -23,7 +24,7 @@ Please use [releases](https://github.com/vmware/harbor/releases) instead of the 
 
 Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
 
-Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about who's involved and how Harbor plays a role, read the CNCF
+Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about whose involved and how Harbor plays a role, read the CNCF
 [announcement](https://www.cncf.io/blog/2018/07/31/cncf-to-host-harbor-in-the-sandbox/).
 
 ## Features
@@ -49,7 +50,6 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 * Harbor RESTful API: The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
   * Part 1: [New or changed APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml)
-  * Part 2: [Legacy APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/legacy_swagger.yaml)
 
 ## Install & Run
 
@@ -95,7 +95,7 @@ For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
 
 ### Security Audit
 
-A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](https://goharbor.io/docs/2.0.0/security/Harbor_Security_Audit_Oct2019.pdf).
+A third party security audit was performed by Cure53 in October 2019. You can see the full report [here](https://goharbor.io/docs/2.0.0/security/Harbor_Security_Audit_Oct2019.pdf).
 
 ### Reporting security vulnerabilities
 
@@ -112,3 +112,8 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
+
+
+## Fossa Status
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_large)

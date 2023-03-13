@@ -3,17 +3,17 @@ package immutable
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/lib/orm"
-	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/pkg/immutable/model"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 type ControllerTestSuite struct {

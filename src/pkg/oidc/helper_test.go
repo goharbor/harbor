@@ -16,6 +16,16 @@ package oidc
 
 import (
 	"encoding/json"
+	"net/url"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
@@ -23,15 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	"net/url"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -54,20 +55,11 @@ func TestMain(m *testing.M) {
 		os.Exit(result)
 	}
 }
-func TestHelperLoadConf(t *testing.T) {
-	testP := &providerHelper{}
-	assert.Nil(t, testP.setting.Load())
-	err := testP.reloadSetting()
-	assert.Nil(t, err)
-	assert.Equal(t, "test", testP.setting.Load().(cfgModels.OIDCSetting).Name)
-}
 
 func TestHelperCreate(t *testing.T) {
 	testP := &providerHelper{}
-	err := testP.reloadSetting()
-	assert.Nil(t, err)
 	assert.Nil(t, testP.instance.Load())
-	err = testP.create()
+	err := testP.create(orm.Context())
 	assert.Nil(t, err)
 	assert.NotNil(t, testP.instance.Load())
 	assert.True(t, time.Now().Sub(testP.creationTime) < 2*time.Second)
@@ -75,7 +67,8 @@ func TestHelperCreate(t *testing.T) {
 
 func TestHelperGet(t *testing.T) {
 	testP := &providerHelper{}
-	p, err := testP.get()
+	ctx := orm.Context()
+	p, err := testP.get(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, "https://oauth2.googleapis.com/token", p.Endpoint().TokenURL)
 
@@ -88,12 +81,13 @@ func TestHelperGet(t *testing.T) {
 		common.OIDCClientSecret: "new-secret",
 		common.ExtEndpoint:      "https://harbor.test",
 	}
-	ctx := orm.Context()
 	config.GetCfgManager(ctx).UpdateConfig(ctx, update)
 
 	t.Log("Sleep for 5 seconds")
 	time.Sleep(5 * time.Second)
-	assert.Equal(t, "new-secret", testP.setting.Load().(cfgModels.OIDCSetting).ClientSecret)
+	oidcSetting, err := config.OIDCSetting(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, "new-secret", oidcSetting.ClientSecret)
 }
 
 func TestAuthCodeURL(t *testing.T) {
@@ -109,7 +103,7 @@ func TestAuthCodeURL(t *testing.T) {
 	}
 	ctx := orm.Context()
 	config.GetCfgManager(ctx).UpdateConfig(ctx, conf)
-	res, err := AuthCodeURL("random")
+	res, err := AuthCodeURL(ctx, "random")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
 	assert.Nil(t, err)
@@ -534,5 +528,27 @@ func TestInjectGroupsToUser(t *testing.T) {
 		u := c.old
 		InjectGroupsToUser(c.userInfo, u, mockPopulateGroups)
 		assert.Equal(t, *c.new, *u)
+	}
+}
+
+func Test_filterGroup(t *testing.T) {
+	type args struct {
+		groupNames []string
+		filter     string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{"normal", args{[]string{"admin_user"}, "^admin.*"}, []string{"admin_user"}},
+		{"multiple ", args{[]string{"admin_user", "harbor_admin"}, "^admin.*"}, []string{"admin_user"}},
+		{"no match", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, "^admin.*"}, []string{}},
+		{"empty filter", args{[]string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}, ""}, []string{"harbor_admin", "harbor_user", "sample_admin", "myadmin"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, filterGroup(tt.args.groupNames, tt.args.filter), "filterGroup(%v, %v)", tt.args.groupNames, tt.args.filter)
+		})
 	}
 }

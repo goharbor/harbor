@@ -3,7 +3,7 @@
         <div id="info-edit-button">
             <button
                 class="btn"
-                [disabled]="editing || !hasProjectAdminRole || onSaving"
+                [disabled]="editing || !hasEditPermission || onSaving"
                 (click)="editInfo()">
                 <clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{
                     'BUTTON.EDIT' | translate

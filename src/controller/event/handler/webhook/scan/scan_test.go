@@ -16,19 +16,22 @@ package scan
 
 import (
 	"context"
-	common_dao "github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/controller/event"
-	"github.com/goharbor/harbor/src/lib/config"
-	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/common"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/event"
 	sc "github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
+	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -38,8 +41,6 @@ import (
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
 	notificationtesting "github.com/goharbor/harbor/src/testing/pkg/notification/policy"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 // ScanImagePreprocessHandlerSuite is a test suite to test scan image preprocess handler.

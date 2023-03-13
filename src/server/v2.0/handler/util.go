@@ -17,12 +17,12 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/project"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
