@@ -142,20 +142,6 @@
                 <span class="margin-right-2px">{{
                     p.src_registry ? p.src_registry.name : ''
                 }}</span>
-                <clr-signpost *ngIf="isHelmHub(p.src_registry)">
-                    <clr-icon
-                        clrSignpostTrigger
-                        class="color-red"
-                        shape="error-standard"></clr-icon>
-                    <clr-signpost-content *clrIfOpen>
-                        <a
-                            rel="noopener noreferrer"
-                            href="https://helm.sh/blog/helm-hub-moving-to-artifact-hub"
-                            target="_blank"
-                            >{{ 'DESTINATION.DEPRECATED' | translate }}</a
-                        >
-                    </clr-signpost-content>
-                </clr-signpost>
             </clr-dg-cell>
             <clr-dg-cell class="col-width">
                 {{

@@ -428,7 +428,10 @@
         "NAME_REQUIRED": "Name ist erforderlich",
         "NOTIFY_TYPE": "Benachrichtigungstyp",
         "EVENT_TYPE": "Event Typ",
-        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich"
+        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "GROUP": {
         "GROUP": "Gruppe",
@@ -693,8 +696,7 @@
         "DELETED_FAILED": "Löschen des Endpunktes fehlgeschlagen.",
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
-        "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-        "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+        "PLACEHOLDER": "Wir konnten keine Endpunkt finden."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",

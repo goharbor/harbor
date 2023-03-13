@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
@@ -20,6 +21,12 @@ type FileGetter struct {
 // NewFileGetter is constructor of FileGetter
 func NewFileGetter(baseDir string) *FileGetter {
 	return &FileGetter{baseDir}
+}
+func logSizeLimit() int64 {
+	if config.DefaultConfig == nil {
+		return int64(0)
+	}
+	return int64(config.DefaultConfig.MaxLogSizeReturnedMB * 1024 * 1024)
 }
 
 // Retrieve implements @Interface.Retrieve
@@ -34,7 +41,7 @@ func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
 		return nil, errs.NoObjectFoundError(logID)
 	}
 
-	return os.ReadFile(fPath)
+	return tailLogFile(fPath, logSizeLimit())
 }
 
 func isValidLogID(id string) error {
@@ -53,4 +60,43 @@ func isValidLogID(id string) error {
 	}
 
 	return nil
+}
+
+func tailLogFile(filename string, limit int64) ([]byte, error) {
+	fInfo, err := os.Stat(filename)
+	if err != nil {
+		return nil, err
+	}
+	size := fInfo.Size()
+
+	var sizeToRead int64
+	if limit <= 0 {
+		sizeToRead = size
+	} else {
+		sizeToRead = limit
+	}
+	if sizeToRead > size {
+		sizeToRead = size
+	}
+
+	fi, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer fi.Close()
+
+	pos := size - sizeToRead
+	if pos < 0 {
+		pos = 0
+	}
+	if pos != 0 {
+		_, err = fi.Seek(pos, 0)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	buf := make([]byte, sizeToRead)
+	_, err = fi.Read(buf)
+	return buf, err
 }

@@ -39,3 +39,5 @@ job_loggers:
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
+
+max_retrieve_size_mb: 10

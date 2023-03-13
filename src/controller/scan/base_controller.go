@@ -755,7 +755,7 @@ func (bc *basicController) DeleteReports(ctx context.Context, digests ...string)
 	return nil
 }
 
-func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artifact, allowlist allowlist.CVESet) (*Vulnerable, error) {
+func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artifact, allowlist allowlist.CVESet, allowlistIsExpired bool) (*Vulnerable, error) {
 	if artifact == nil {
 		return nil, errors.New("no way to get vulnerable for nil artifact")
 	}
@@ -816,7 +816,7 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 		var severity vuln.Severity
 
 		for _, v := range vuls {
-			if allowlist.Contains(v.ID) {
+			if !allowlistIsExpired && allowlist.Contains(v.ID) {
 				// Append the by passed CVEs specified in the allowlist
 				vulnerable.CVEBypassed = append(vulnerable.CVEBypassed, v.ID)
 

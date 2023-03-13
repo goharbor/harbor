@@ -111,6 +111,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		context.TODO(),
 		mock.AnythingOfType("*artifact.Artifact"),
 		mock.AnythingOfType("models.CVESet"),
+		mock.AnythingOfType("bool"),
 	).Return(&scan.Vulnerable{Severity: &low, ScanStatus: "Success"}, nil)
 
 	fakeProCtl := &project.Controller{}
