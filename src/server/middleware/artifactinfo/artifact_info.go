@@ -44,6 +44,7 @@ var (
 		"tag_list":    lib.V2TagListURLRe,
 		"blob_upload": lib.V2BlobUploadURLRe,
 		"blob":        lib.V2BlobURLRe,
+		"referrers":   lib.V2ReferrersURLRe,
 	}
 )
 
