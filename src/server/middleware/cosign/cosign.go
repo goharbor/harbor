@@ -110,11 +110,11 @@ func SignatureMiddleware() func(http.Handler) http.Handler {
 
 			if err := orm.WithTransaction(func(ctx context.Context) error {
 				_, err := accessory.Mgr.Create(ctx, model.AccessoryData{
-					ArtifactID:    art.ID,
-					SubArtifactID: subjectArt.ID,
-					Size:          desc.Size,
-					Digest:        desc.Digest.String(),
-					Type:          model.TypeCosignSignature,
+					ArtifactID:        art.ID,
+					SubArtifactDigest: subjectArt.Digest,
+					Size:              desc.Size,
+					Digest:            desc.Digest.String(),
+					Type:              model.TypeCosignSignature,
 				})
 				return err
 			})(orm.SetTransactionOpNameToContext(ctx, "tx-create-cosign-accessory")); err != nil {
