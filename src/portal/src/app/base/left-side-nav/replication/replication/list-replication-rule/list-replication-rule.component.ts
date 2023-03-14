@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
+    AfterViewInit,
     Component,
     EventEmitter,
     Input,
@@ -31,10 +32,12 @@ import {
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import {
     clone,
+    getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getQueryString,
     getSortingString,
     PageSizeMapKeys,
+    setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
 } from '../../../../../shared/units/utils';
 import {
@@ -64,7 +67,7 @@ import { JobType } from '../../../job-service-dashboard/job-service-dashboard.in
     templateUrl: './list-replication-rule.component.html',
     styleUrls: ['./list-replication-rule.component.scss'],
 })
-export class ListReplicationRuleComponent implements OnInit {
+export class ListReplicationRuleComponent implements OnInit, AfterViewInit {
     @Input() selectedId: number | string;
     @Input() withReplicationJob: boolean;
     @Input() hasCreateReplicationPermission: boolean;
@@ -94,14 +97,21 @@ export class ListReplicationRuleComponent implements OnInit {
     loading: boolean = true;
 
     paused: boolean = false;
-
+    hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
+        PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
+        [false, false, false, false, false, false, false, true, true]
+    );
+    copiedHiddenArray: boolean[] = [];
+    private _hasViewInit: boolean = false;
     constructor(
         private replicationService: ReplicationService,
         private translateService: TranslateService,
         private errorHandlerEntity: ErrorHandler,
         private operationService: OperationService,
         private scheduleService: ScheduleService
-    ) {}
+    ) {
+        this.copiedHiddenArray = clone(this.hiddenArray);
+    }
 
     ngOnInit() {
         this.scheduleService
@@ -109,6 +119,10 @@ export class ListReplicationRuleComponent implements OnInit {
             .subscribe(res => {
                 this.paused = res?.paused;
             });
+    }
+
+    ngAfterViewInit() {
+        this._hasViewInit = true;
     }
 
     getTriggerTypeI18n(t: ReplicationTrigger) {
@@ -382,5 +396,15 @@ export class ListReplicationRuleComponent implements OnInit {
             return '' + speed + BandwidthUnit.KB;
         }
         return 'REPLICATION.UNLIMITED';
+    }
+
+    columnHiddenChange(index: number) {
+        if (this._hasViewInit) {
+            this.copiedHiddenArray[index] = !this.copiedHiddenArray[index];
+            setHiddenArrayToLocalStorage(
+                PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
+                this.copiedHiddenArray
+            );
+        }
     }
 }

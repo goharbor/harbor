@@ -90,31 +90,69 @@
                 </clr-dropdown-menu>
             </clr-dropdown>
         </clr-dg-action-bar>
-        <clr-dg-column>{{ 'REPLICATION.NAME' | translate }}</clr-dg-column>
-        <clr-dg-column class="status-width">{{
-            'REPLICATION.STATUS' | translate
-        }}</clr-dg-column>
-        <clr-dg-column class="col-width">{{
-            'REPLICATION.SRC_REGISTRY' | translate
-        }}</clr-dg-column>
-        <clr-dg-column class="col-width">{{
-            'REPLICATION.REPLICATION_MODE' | translate
-        }}</clr-dg-column>
-        <clr-dg-column class="min-width">{{
-            'REPLICATION.DESTINATION_NAMESPACE' | translate
-        }}</clr-dg-column>
-        <clr-dg-column>{{
-            'REPLICATION.DES_REPO_FLATTENING' | translate
-        }}</clr-dg-column>
-        <clr-dg-column>{{
-            'REPLICATION.REPLICATION_TRIGGER' | translate
-        }}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="'speed'">{{
-            'REPLICATION.BANDWIDTH' | translate
-        }}</clr-dg-column>
-        <clr-dg-column [clrDgField]="'description'">{{
-            'REPLICATION.DESCRIPTION' | translate
-        }}</clr-dg-column>
+        <clr-dg-column>
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[0] }"
+                (clrDgHiddenChange)="columnHiddenChange(0)">
+                {{ 'REPLICATION.NAME' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column class="status-width">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[1] }"
+                (clrDgHiddenChange)="columnHiddenChange(1)">
+                {{ 'REPLICATION.STATUS' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column class="col-width">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[2] }"
+                (clrDgHiddenChange)="columnHiddenChange(2)">
+                {{ 'REPLICATION.SRC_REGISTRY' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column class="col-width">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[3] }"
+                (clrDgHiddenChange)="columnHiddenChange(3)">
+                {{ 'REPLICATION.REPLICATION_MODE' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column class="min-width">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[4] }"
+                (clrDgHiddenChange)="columnHiddenChange(4)">
+                {{ 'REPLICATION.DESTINATION_NAMESPACE' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column>
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[5] }"
+                (clrDgHiddenChange)="columnHiddenChange(5)">
+                {{ 'REPLICATION.DES_REPO_FLATTENING' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column>
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[6] }"
+                (clrDgHiddenChange)="columnHiddenChange(6)">
+                {{ 'REPLICATION.REPLICATION_TRIGGER' | translate }}
+            </ng-template></clr-dg-column
+        >
+        <clr-dg-column [clrDgSortBy]="'speed'">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[7] }"
+                (clrDgHiddenChange)="columnHiddenChange(7)">
+                {{ 'REPLICATION.BANDWIDTH' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column [clrDgField]="'description'">
+            <ng-template
+                [clrDgHideableColumn]="{ hidden: hiddenArray[8] }"
+                (clrDgHiddenChange)="columnHiddenChange(8)">
+                {{ 'REPLICATION.DESCRIPTION' | translate }}
+            </ng-template>
+        </clr-dg-column>
         <clr-dg-placeholder>{{
             'REPLICATION.PLACEHOLDER' | translate
         }}</clr-dg-placeholder>
