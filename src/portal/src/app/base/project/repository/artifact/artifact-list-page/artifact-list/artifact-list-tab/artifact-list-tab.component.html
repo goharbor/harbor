@@ -136,34 +136,82 @@
             </clr-dg-action-bar>
 
             <clr-dg-column class="flex-max-width" [clrDgSortBy]="'digest'"
-                >{{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
+                ><ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[0] }"
+                    (clrDgHiddenChange)="columnHiddenChange(0)">
+                    {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
+                </ng-template>
             </clr-dg-column>
-            <clr-dg-column class="pull-command-column">{{
-                'REPOSITORY.PULL_COMMAND' | translate
-            }}</clr-dg-column>
-            <clr-dg-column *ngIf="depth">{{
-                'REPOSITORY.PLATFORM' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{ 'REPOSITORY.TAGS' | translate }}</clr-dg-column>
-            <clr-dg-column class="co-signed-column">{{
-                'ACCESSORY.CO_SIGNED' | translate
-            }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="'size'">{{
-                'REPOSITORY.SIZE' | translate
-            }}</clr-dg-column>
-            <clr-dg-column class="vul-column">{{
-                'REPOSITORY.VULNERABILITY' | translate
-            }}</clr-dg-column>
-            <clr-dg-column class="annotations-column">{{
-                'ARTIFACT.ANNOTATION' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{ 'REPOSITORY.LABELS' | translate }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="pushComparator">{{
-                'REPOSITORY.PUSH_TIME' | translate
-            }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="pullComparator">{{
-                'REPOSITORY.PULL_TIME' | translate
-            }}</clr-dg-column>
+            <clr-dg-column class="pull-command-column">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[1] }"
+                    (clrDgHiddenChange)="columnHiddenChange(1)">
+                    {{ 'REPOSITORY.PULL_COMMAND' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column *ngIf="depth">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[2] }"
+                    (clrDgHiddenChange)="columnHiddenChange(2)">
+                    {{ 'REPOSITORY.PLATFORM' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column>
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[3] }"
+                    (clrDgHiddenChange)="columnHiddenChange(3)">
+                    {{ 'REPOSITORY.TAGS' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="co-signed-column">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[4] }"
+                    (clrDgHiddenChange)="columnHiddenChange(4)">
+                    {{ 'ACCESSORY.CO_SIGNED' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'size'">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[5] }"
+                    (clrDgHiddenChange)="columnHiddenChange(5)">
+                    {{ 'REPOSITORY.SIZE' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="vul-column">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[6] }"
+                    (clrDgHiddenChange)="columnHiddenChange(6)">
+                    {{ 'REPOSITORY.VULNERABILITY' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="annotations-column">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[7] }"
+                    (clrDgHiddenChange)="columnHiddenChange(7)">
+                    {{ 'ARTIFACT.ANNOTATION' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column>
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[8] }"
+                    (clrDgHiddenChange)="columnHiddenChange(8)">
+                    {{ 'REPOSITORY.LABELS' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pushComparator">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[9] }"
+                    (clrDgHiddenChange)="columnHiddenChange(9)">
+                    {{ 'REPOSITORY.PUSH_TIME' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pullComparator">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }"
+                    (clrDgHiddenChange)="columnHiddenChange(10)">
+                    {{ 'REPOSITORY.PULL_TIME' | translate }}
+                </ng-template>
+            </clr-dg-column>
             <clr-dg-placeholder>{{
                 'ARTIFACT.PLACEHOLDER' | translate
             }}</clr-dg-placeholder>

@@ -8522,7 +8522,7 @@ definitions:
   PayloadFormatType:
     type: string
     description: The type of webhook paylod format.
-    example: 'cloudevent'
+    example: 'CloudEvents'
   PayloadFormat:
     type: object
     description: Webhook supported payload format type collections.

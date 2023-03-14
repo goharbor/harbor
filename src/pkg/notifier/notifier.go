@@ -1,6 +1,7 @@
 package notifier
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -160,7 +161,7 @@ func (nw *NotificationWatcher) UnHandle(topic string, handler string) error {
 }
 
 // Notify that notification is coming.
-func (nw *NotificationWatcher) Notify(notification Notification) error {
+func (nw *NotificationWatcher) Notify(ctx context.Context, notification Notification) error {
 	if strings.TrimSpace(notification.Topic) == "" {
 		return errors.New("empty topic can not be notified")
 	}
@@ -198,7 +199,7 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 						<-ch
 					}
 				}()
-				if err := hd.Handle(orm.Context(), notification.Value); err != nil {
+				if err := hd.Handle(orm.Copy(ctx), notification.Value); err != nil {
 					// Currently, we just log the error
 					log.Errorf("Error occurred when triggering handler %s of topic %s: %s\n", reflect.TypeOf(hd).String(), notification.Topic, err.Error())
 				} else {
@@ -222,8 +223,8 @@ func UnSubscribe(topic string, handler string) error {
 }
 
 // Publish is a wrapper utility method for NotificationWatcher.notify()
-func Publish(topic string, value interface{}) error {
-	return notificationWatcher.Notify(Notification{
+func Publish(ctx context.Context, topic string, value interface{}) error {
+	return notificationWatcher.Notify(ctx, Notification{
 		Topic: topic,
 		Value: value,
 	})

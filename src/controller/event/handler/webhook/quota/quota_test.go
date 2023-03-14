@@ -26,6 +26,7 @@ import (
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
@@ -96,7 +97,7 @@ func (suite *QuotaPreprocessHandlerSuite) TearDownSuite() {
 // TestHandle ...
 func (suite *QuotaPreprocessHandlerSuite) TestHandle() {
 	handler := &Handler{}
-	err := handler.Handle(context.TODO(), suite.evt)
+	err := handler.Handle(orm.Context(), suite.evt)
 	suite.NoError(err)
 }
 

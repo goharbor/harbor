@@ -888,6 +888,11 @@ export function delUrlParam(url: string, key: string): string {
 
 const PAGE_SIZE_MAP_KEY: string = 'pageSizeMap';
 
+interface DataGridMetadata {
+    pageSize?: number;
+    columnHiddenArray?: boolean[];
+}
+
 /**
  * Get the page size from the browser's localStorage
  * @param key
@@ -901,10 +906,12 @@ export function getPageSizeFromLocalStorage(
         initialSize = DEFAULT_PAGE_SIZE;
     }
     if (localStorage && key && localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
-        const pageSizeMap: {
-            [k: string]: number;
+        const metadataMap: {
+            [k: string]: DataGridMetadata;
         } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
-        return pageSizeMap[key] ? pageSizeMap[key] : initialSize;
+        return metadataMap[key]?.pageSize
+            ? metadataMap[key]?.pageSize
+            : initialSize;
     }
     return initialSize;
 }
@@ -920,11 +927,62 @@ export function setPageSizeToLocalStorage(key: string, pageSize: number) {
             // if first set
             localStorage.setItem(PAGE_SIZE_MAP_KEY, '{}');
         }
-        const pageSizeMap: {
-            [k: string]: number;
+        const metadataMap: {
+            [k: string]: DataGridMetadata;
         } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
-        pageSizeMap[key] = pageSize;
-        localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(pageSizeMap));
+        if (!isObject(metadataMap[key])) {
+            metadataMap[key] = {};
+        }
+        metadataMap[key].pageSize = pageSize;
+        localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(metadataMap));
+    }
+}
+
+/**
+ * Get the hidden array from the browser's localStorage
+ * @param key
+ * @param initialArray
+ */
+export function getHiddenArrayFromLocalStorage(
+    key: string,
+    initialArray: boolean[]
+) {
+    if (!initialArray?.length) {
+        initialArray = [];
+    }
+    if (localStorage && key && localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
+        const metadataMap: {
+            [k: string]: DataGridMetadata;
+        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
+        return metadataMap[key]?.columnHiddenArray
+            ? metadataMap[key]?.columnHiddenArray
+            : initialArray;
+    }
+    return initialArray;
+}
+
+/**
+ * Set the hidden array to the browser's localStorage
+ * @param key
+ * @param hiddenArray
+ */
+export function setHiddenArrayToLocalStorage(
+    key: string,
+    hiddenArray: boolean[]
+) {
+    if (localStorage && key && hiddenArray?.length) {
+        if (!localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
+            // if first set
+            localStorage.setItem(PAGE_SIZE_MAP_KEY, '{}');
+        }
+        const metadataMap: {
+            [k: string]: DataGridMetadata;
+        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
+        if (!isObject(metadataMap[key])) {
+            metadataMap[key] = {};
+        }
+        metadataMap[key].columnHiddenArray = hiddenArray;
+        localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(metadataMap));
     }
 }
 
