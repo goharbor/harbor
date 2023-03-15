@@ -8,9 +8,9 @@ Requires=docker.service
 Type=simple
 Restart=on-failure
 RestartSec=5
-ExecStart=docker compose -f /etc/goharbor/harbor/docker-compose.yml up
-ExecStop=docker compose -f /etc/goharbor/harbor/docker-compose.yml down -v
-ExecStopPost=docker compose -f /etc/goharbor/harbor/docker-compose.yml rm -f
+ExecStart=/usr/bin/docker compose -f /etc/goharbor/harbor/docker-compose.yml up
+ExecStop=/usr/bin/docker compose -f /etc/goharbor/harbor/docker-compose.yml down -v
+ExecStopPost=/usr/bin/docker compose -f /etc/goharbor/harbor/docker-compose.yml rm -f
 
 [Install]
 WantedBy=multi-user.target
