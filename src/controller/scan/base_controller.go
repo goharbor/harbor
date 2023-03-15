@@ -387,7 +387,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		UnknowCount       int `json:"unknow_count"`
 	}{}
 
-	for artifact := range ar.Iterator(ctx, batchSize, nil, nil) {
+	for artifact := range ar.Iterator(ctx, batchSize, nil, nil, bc.execMgr, executionID) {
 		summary.TotalCount++
 
 		scan := func(ctx context.Context) error {

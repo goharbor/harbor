@@ -528,6 +528,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
+		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{}, nil)
+
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()

@@ -24,9 +24,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 type IteratorTestSuite struct {
@@ -34,6 +36,7 @@ type IteratorTestSuite struct {
 
 	artMgr *artifacttesting.Manager
 	accMgr *accessory.Manager
+	execMgr *tasktesting.ExecutionManager
 
 	ctl         *controller
 	originalCtl Controller
@@ -42,6 +45,7 @@ type IteratorTestSuite struct {
 func (suite *IteratorTestSuite) SetupSuite() {
 	suite.artMgr = &artifacttesting.Manager{}
 	suite.accMgr = &accessorytesting.Manager{}
+	suite.execMgr = &tasktesting.ExecutionManager{}
 
 	suite.originalCtl = Ctl
 	suite.ctl = &controller{
@@ -57,6 +61,7 @@ func (suite *IteratorTestSuite) TeardownSuite() {
 
 func (suite *IteratorTestSuite) TestIterator() {
 	suite.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	suite.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	q1 := &q.Query{PageNumber: 1, PageSize: 5, Keywords: map[string]interface{}{}}
 	suite.artMgr.On("List", mock.Anything, q1).Return([]*artifact.Artifact{
 		{ID: 1},
@@ -74,7 +79,7 @@ func (suite *IteratorTestSuite) TestIterator() {
 	}, nil)
 
 	var artifacts []*Artifact
-	for art := range Iterator(context.TODO(), 5, nil, nil) {
+	for art := range Iterator(context.TODO(), 5, nil, nil, suite.execMgr, 0) {
 		artifacts = append(artifacts, art)
 	}
 
