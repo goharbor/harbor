@@ -112,6 +112,8 @@ trivy:
 jobservice:
   # Maximum number of job workers in job service
   max_job_workers: 10
+  # The jobLogger sweeper duration (ignored if `jobLogger` is `stdout`)
+  logger_sweeper_duration: 1 #days
 
 notification:
   # Maximum retry count for webhook job
@@ -142,7 +144,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.7.0
+_version: 2.8.0
 
 # Uncomment external_database if using external database.
 # external_database:
