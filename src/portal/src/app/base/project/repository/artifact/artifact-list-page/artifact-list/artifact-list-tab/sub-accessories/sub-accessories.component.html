@@ -16,10 +16,14 @@
             </button>
         </clr-dg-action-overflow>
         <clr-dg-cell class="relative">
+            <!--it will cause a ExpressionChangedAfterItHasBeenCheckedError when read datagrid['el']?.nativeElement?.offsetHeight so
+             use OnPush Strategy to avoid ExpressionChangedAfterItHasBeenCheckedError-->
             <hr
                 class="y-dash-line"
-                *ngIf="i === displayedAccessories?.length - 1 && viewInit"
-                [style.height.px]="dashLineHeight" />
+                [hidden]="i !== displayedAccessories?.length - 1"
+                [style.height.px]="
+                    datagrid['el']?.nativeElement?.offsetHeight || 0
+                " />
             <hr class="x-dash-line" />
             <div class="cell">
                 <div
@@ -55,6 +59,17 @@
                 {{ a.creation_time | harborDatetime : 'short' }}
             </div>
         </clr-dg-cell>
+        <ng-container
+            ngProjectAs="clr-dg-row-detail"
+            *ngIf="a?.accessories?.length">
+            <sub-accessories
+                [projectName]="projectName"
+                [repositoryName]="repositoryName"
+                [artifactDigest]="a?.digest"
+                [total]="a?.accessoryNumber"
+                [accessories]="a?.accessories"
+                *clrIfExpanded></sub-accessories>
+        </ng-container>
     </clr-dg-row>
     <clr-dg-footer *ngIf="total > pageSize">
         <clr-dg-pagination

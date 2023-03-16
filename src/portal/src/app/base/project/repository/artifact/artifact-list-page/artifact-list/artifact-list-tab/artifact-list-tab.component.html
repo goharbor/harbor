@@ -546,7 +546,6 @@
                     ngProjectAs="clr-dg-row-detail"
                     *ngIf="artifact?.accessories?.length">
                     <sub-accessories
-                        (deleteAccessory)="deleteAccessory($event)"
                         [projectName]="projectName"
                         [repositoryName]="repoName"
                         [artifactDigest]="artifact?.digest"
