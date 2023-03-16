@@ -80,3 +80,58 @@ UPDATE notification_policy
 SET enabled = false,
     description = 'Chartmuseum is deprecated in Harbor v2.8.0, because this notification policy only has event type about Chartmuseum, so please update or delete this notification policy.'
 WHERE event_types = '[]';
+
+/* migrate the webhook job to execution and task as the webhook refactor since v2.8 */
+DO $$
+DECLARE
+    job_group RECORD;
+    job RECORD;
+    vendor_type varchar;
+    new_status varchar;
+    status_code integer;
+    exec_id integer;
+    extra_attrs varchar;
+BEGIN
+    FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
+    LOOP
+        SELECT * INTO job FROM notification_job WHERE
+        policy_id=job_group.policy_id
+        AND event_type=job_group.event_type
+        AND status IN ('stopped', 'finished', 'error')
+        ORDER BY creation_time DESC LIMIT 1;
+        /* convert vendor type */
+        IF job.notify_type = 'http' THEN
+            vendor_type = 'WEBHOOK';
+        ELSIF job.notify_type = 'slack' THEN
+            vendor_type = 'SLACK';
+        ELSE
+            vendor_type = 'WEBHOOK';
+        END IF;
+        /* convert status */
+        IF job.status = 'stopped' THEN
+            new_status = 'Stopped';
+            status_code = 3;
+        ELSIF job.status = 'error' THEN
+            new_status = 'Error';
+            status_code = 3;
+        ELSIF job.status = 'finished' THEN
+            new_status = 'Success';
+            status_code = 3;
+        ELSE
+            new_status = '';
+            status_code = 0;
+        END IF;
+
+        SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT) INTO extra_attrs;
+        INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',to_json(extra_attrs),job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
+        INSERT INTO task (execution_id,job_id,status,status_code,run_count,creation_time,start_time,update_time,end_time,vendor_type) VALUES (exec_id,job.job_uuid,new_status,status_code,1,job.creation_time,job.update_time,job.update_time,job.update_time,vendor_type);
+    END LOOP;
+END $$;
+/* drop the old notification_job table */
+DROP TABLE IF EXISTS notification_job;
+
+
+
+
+
+
