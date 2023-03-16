@@ -88,7 +88,7 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Size:         accArt.Size,
 			Digest:       digest.Digest(accArt.Digest),
 			Annotations:  accArt.Annotations,
-			ArtifactType: acc.GetData().Type,
+			ArtifactType: accArt.MediaType,
 		}
 		mfs = append(mfs, mf)
 	}
