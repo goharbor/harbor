@@ -65,15 +65,26 @@
                 </clr-tooltip></clr-dg-cell
             >
             <clr-dg-cell>
-                <span class="label-flex">
+                <span
+                    class="label-flex"
+                    *ngIf="execution?.extra_attrs?.event_type">
                     {{ eventTypeToText(execution?.extra_attrs?.event_type) }}
                 </span>
             </clr-dg-cell>
             <clr-dg-cell class="flex">
                 <clr-signpost>
-                    <a class="btn btn-link link-normal" clrSignpostTrigger>{{
-                        toString(toJson(execution?.extra_attrs?.payload))
-                    }}</a>
+                    <a class="btn btn-link link-normal" clrSignpostTrigger>
+                        <span *ngIf="useJsonFormat(execution?.vendor_type)">
+                            {{
+                                toString(
+                                    toJson(execution?.extra_attrs?.payload)
+                                )
+                            }}
+                        </span>
+                        <span *ngIf="!useJsonFormat(execution?.vendor_type)">
+                            {{ execution?.extra_attrs?.payload }}
+                        </span>
+                    </a>
                     <clr-signpost-content
                         class="pre"
                         [clrPosition]="'top-middle'"
@@ -83,12 +94,17 @@
                             [defaultValue]="
                                 toString(execution?.extra_attrs?.payload)
                             "></hbr-copy-input>
+                        <pre *ngIf="!useJsonFormat(execution?.vendor_type)">{{
+                            execution?.extra_attrs?.payload
+                        }}</pre>
                         <pre
                             [innerHTML]="
                                 toJson(execution?.extra_attrs?.payload)
                                     | json
                                     | markdown
-                            "></pre>
+                            "
+                            class="abc"
+                            *ngIf="useJsonFormat(execution?.vendor_type)"></pre>
                     </clr-signpost-content>
                 </clr-signpost>
             </clr-dg-cell>

@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Aktivierungszustand",
         "NUMBER_REQUIRED": "Feld ist erforderlich und sollte ein Integer größer 0 sein.",
         "DESCRIPTION": "Beschreibung",
-        "CREATETION": "Erstellt am",
+        "CREATION": "Erstellt am",
         "EXPIRATION": "Ablaufdatum",
         "TOKEN_EXPIRATION": "Robot Token Ablauf (Tage)",
         "ACTION": "Aktion",

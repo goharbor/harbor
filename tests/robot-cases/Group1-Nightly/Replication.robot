@@ -126,7 +126,6 @@ Test Case - Replication Rule Edit
     Close Browser
 
 Test Case - Replication Rule Delete
-    [Tags]  test
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${endpoint1}=    Set Variable    e1${d}

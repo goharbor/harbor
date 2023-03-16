@@ -177,9 +177,9 @@ func buildTaskQuery(execID int64, query *q.Query) *q.Query {
 
 func (c *controller) GetLastTriggerTime(ctx context.Context, eventType string, policyID int64) (time.Time, error) {
 	query := q.New(q.KeyWords{
-		"vendor_type":     webhookJobVendors,
-		"vendor_id":       policyID,
-		"ExtraAttrs.type": eventType,
+		"vendor_type":           webhookJobVendors,
+		"vendor_id":             policyID,
+		"ExtraAttrs.event_type": eventType,
 	})
 	// fetch the latest execution sort by start_time
 	execs, err := c.execMgr.List(ctx, query.First(q.NewSort("start_time", true)))
