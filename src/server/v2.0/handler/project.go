@@ -332,7 +332,13 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 
 func (a *projectAPI) GetProject(ctx context.Context, params operation.GetProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
-	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
+
+	secCtx, _ := security.FromContext(ctx)
+	if r, ok := secCtx.(*robotSec.SecurityContext); ok && r.User().IsSysLevel() {
+		if err := a.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceProject); err != nil {
+    		return a.SendError(ctx, err)
+		}
+	} else if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
