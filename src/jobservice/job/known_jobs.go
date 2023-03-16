@@ -20,6 +20,8 @@ const (
 	// SampleJob is name of demo job
 	SampleJob = "DEMO"
 
+	// ScanAllJobVendorType is name of scan all job it will be used as the key to register to job service.
+	ScanAllJobVendorType = "SCAN_ALL"
 	// ImageScanJobVendorType is name of scan job it will be used as key to register to job service.
 	ImageScanJobVendorType = "IMAGE_SCAN"
 	// GarbageCollectionVendorType job name

@@ -40,7 +40,7 @@ func Iterator(ctx context.Context, chunkSize int, query *q.Query, option *Option
 				log.G(ctx).Errorf("failed to get execution by id: %d", executionID)
 				return
 			}
-			if execution.VendorType == "SCAN_ALL" && job.Status(execution.Status) == job.StoppedStatus {
+			if execution.VendorType == job.ScanAllJobVendorType && job.Status(execution.Status) == job.StoppedStatus {
 				log.G(ctx).Infof("the scan all execution has been stopped, executionID: %d", executionID)
 				return
 			}
