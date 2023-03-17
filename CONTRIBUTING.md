@@ -192,7 +192,7 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 |   2.3    |      10.1.2        |       4.0.2        |
 |   2.4    |      12.0.3        |       5.3.0        |
 
-To run the Web UI code, please refer to the UI [start](https://github.com/goharbor/harbor/blob/master/src/portal/README.md) guideline.
+To run the Web UI code, please refer to the UI [start](https://github.com/goharbor/harbor/tree/main/src/portal) guideline.
 
 To run the code, please refer to the [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
