@@ -189,6 +189,7 @@ export class ArtifactListTabComponent
     );
     copiedHiddenArray: boolean[] = [];
     private _hasViewInit: boolean = false;
+    deleteAccessorySub: Subscription;
     constructor(
         private errorHandlerService: ErrorHandler,
         private artifactService: ArtifactService,
@@ -242,6 +243,14 @@ export class ArtifactListTabComponent
                 }
             );
         }
+        if (!this.deleteAccessorySub) {
+            this.deleteAccessorySub = this.eventService.subscribe(
+                HarborEvent.DELETE_ACCESSORY,
+                (a: Accessory) => {
+                    this.deleteAccessory(a);
+                }
+            );
+        }
     }
 
     ngAfterViewInit() {
@@ -252,6 +261,10 @@ export class ArtifactListTabComponent
         if (this.updateArtifactSub) {
             this.updateArtifactSub.unsubscribe();
             this.updateArtifactSub = null;
+        }
+        if (this.deleteAccessorySub) {
+            this.deleteAccessorySub.unsubscribe();
+            this.deleteAccessorySub = null;
         }
     }
     get withNotary(): boolean {

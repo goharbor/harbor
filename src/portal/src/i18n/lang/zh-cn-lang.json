@@ -1823,7 +1823,6 @@
         "SIGNPOST_CLOSE": "指示牌关闭",
         "LOADING": "加载中",
         "DATE_PICKER_DIALOG_LABEL": "选择日期",
-        "DATE_PICKER_TOGGLE": "切换日期选择器",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "选择日期",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "选择日期, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "前一月",
