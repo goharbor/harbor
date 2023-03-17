@@ -285,7 +285,7 @@
                 </clr-signpost>
             </clr-dg-cell>
             <clr-dg-cell>{{
-                p.creation_time | harborDatetime: 'short'
+                p.creation_time | harborDatetime : 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{ p.description }}</clr-dg-cell>
         </clr-dg-row>
@@ -411,7 +411,7 @@
                 getTriggerTypeI18nForExecution(execution.trigger) | translate
             }}</clr-dg-cell>
             <clr-dg-cell>{{
-                execution.start_time | harborDatetime: 'short'
+                execution.start_time | harborDatetime : 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{ getDuration(execution) }}</clr-dg-cell>
             <clr-dg-cell>{{

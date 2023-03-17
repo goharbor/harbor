@@ -272,7 +272,7 @@ clr-modal {
 .right-align {
     min-width: 204px;
     overflow-y: auto;
-    transform: translateX(-4.3rem) translateY(1.25rem)!important;
+    transform: translateX(-9rem) translateY(1.25rem)!important;
 }
 
 .dropdown-item {
@@ -326,4 +326,20 @@ clr-modal {
 
 .bandwidth {
     margin-top: 0.25rem;
+}
+
+.down {
+    height: 25px;
+    width: 25px;
+    right: 0.2rem;
+    color: rgb(164 164 164) !important;
+    cursor: pointer;
+}
+.dropdown {
+    left: -1.2rem;
+    position: relative !important;
+}
+
+.label-input {
+    padding-right: 1.2rem;
 }

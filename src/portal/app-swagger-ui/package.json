@@ -9,7 +9,7 @@
   "dependencies": {
     "css-loader": "^6.7.1",
     "style-loader": "^3.3.1",
-    "swagger-ui": "4.13.2"
+    "swagger-ui": "4.17.1"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",

@@ -47,24 +47,24 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "^15.0.4",
-    "@angular/common": "^15.0.4",
-    "@angular/compiler": "^15.0.4,
-    "@angular/core": "^15.0.4",
-    "@angular/forms": "^15.0.4",
-    "@angular/localize": "^15.0.4",
-    "@angular/platform-browser": "^15.0.4",
-    "@angular/platform-browser-dynamic": "^15.0.4",
-    "@angular/router": "^15.0.4",
+    "@angular/animations": "^15.2.1",
+    "@angular/common": "^15.2.1",
+    "@angular/compiler": "^15.2.1,
+    "@angular/core": "^15.2.1",
+    "@angular/forms": "^15.2.1",
+    "@angular/localize": "^15.2.1",
+    "@angular/platform-browser": "^15.2.1",
+    "@angular/platform-browser-dynamic": "^15.2.1",
+    "@angular/router": "^15.2.1",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4",
 
     // Clarity UI. Required
-    "@clr/angular": "15.0.0-beta.3",
+    "@clr/angular": "15.0.1",
     "@cds/core": "6.2.3",
     "@clr/icons": "13.0.2",
-    "@clr/ui": "15.0.0-beta.3",
+    "@clr/ui": "15.0.1",
 
     // For Harbor i18n functionality. Required
     "@ngx-translate/core": "^14.0.0",
@@ -80,16 +80,16 @@
     "ngx-cookie": "^5.0.2",
 
     // To render markdown data. Required
-    "ngx-markdown": "~13.0.0",
+    "ngx-markdown": "~15.1.1",
 
     // To convert yaml to json. Required
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "^15.0.4",
-    "@angular/cli": "^15.0.4",
-    "@angular/compiler-cli": "^15.0.4",
+    "@angular-devkit/build-angular": "^15.2.1",
+    "@angular/cli": "^15.2.1",
+    "@angular/compiler-cli": "^15.2.1",
     "@types/jasmine": "~4.3.0",
     "@types/node": "^16.11.6",
     "typescript": "~4.8.2",

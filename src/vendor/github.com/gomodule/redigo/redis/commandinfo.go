@@ -12,32 +12,33 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package internal // import "github.com/gomodule/redigo/internal"
+package redis
 
 import (
 	"strings"
 )
 
 const (
-	WatchState = 1 << iota
-	MultiState
-	SubscribeState
-	MonitorState
+	connectionWatchState = 1 << iota
+	connectionMultiState
+	connectionSubscribeState
+	connectionMonitorState
 )
 
-type CommandInfo struct {
+type commandInfo struct {
+	// Set or Clear these states on connection.
 	Set, Clear int
 }
 
-var commandInfos = map[string]CommandInfo{
-	"WATCH":      {Set: WatchState},
-	"UNWATCH":    {Clear: WatchState},
-	"MULTI":      {Set: MultiState},
-	"EXEC":       {Clear: WatchState | MultiState},
-	"DISCARD":    {Clear: WatchState | MultiState},
-	"PSUBSCRIBE": {Set: SubscribeState},
-	"SUBSCRIBE":  {Set: SubscribeState},
-	"MONITOR":    {Set: MonitorState},
+var commandInfos = map[string]commandInfo{
+	"WATCH":      {Set: connectionWatchState},
+	"UNWATCH":    {Clear: connectionWatchState},
+	"MULTI":      {Set: connectionMultiState},
+	"EXEC":       {Clear: connectionWatchState | connectionMultiState},
+	"DISCARD":    {Clear: connectionWatchState | connectionMultiState},
+	"PSUBSCRIBE": {Set: connectionSubscribeState},
+	"SUBSCRIBE":  {Set: connectionSubscribeState},
+	"MONITOR":    {Set: connectionMonitorState},
 }
 
 func init() {
@@ -46,7 +47,7 @@ func init() {
 	}
 }
 
-func LookupCommandInfo(commandName string) CommandInfo {
+func lookupCommandInfo(commandName string) commandInfo {
 	if ci, ok := commandInfos[commandName]; ok {
 		return ci
 	}
