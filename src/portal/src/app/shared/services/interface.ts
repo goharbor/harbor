@@ -75,36 +75,6 @@ export class Trigger {
 }
 
 /**
- * Interface for replication job.
- *
- **
- * interface ReplicationJob
- */
-export interface ReplicationJob {
-    metadata?: Metadata;
-    data: ReplicationJobItem[];
-}
-
-/**
- * Interface for replication job item.
- *
- **
- * interface ReplicationJob
- */
-export interface ReplicationJobItem extends Base {
-    [key: string]: any | any[];
-    id: number;
-    status: string;
-    policy_id: number;
-    trigger: string;
-    total: number;
-    failed: number;
-    succeed: number;
-    in_progress: number;
-    stopped: number;
-}
-
-/**
  * Interface for replication tasks item.
  *
  **
