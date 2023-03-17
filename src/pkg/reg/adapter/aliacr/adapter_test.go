@@ -89,6 +89,8 @@ func Test_getRegion(t *testing.T) {
 		{"registry shanghai", "https://registry.cn-shanghai.aliyuncs.com", "cn-shanghai", false},
 		{"invalid registry shanghai", "http://registry.cn-shanghai.aliyuncs.com", "", true},
 		{"registry hangzhou", "https://registry.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
+		{"registry hangzhou vpc", "https://registry-vpc.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
+		{"registry hangzhou internal", "https://registry-internal.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
 		{"cr shanghai", "https://cr.cn-shanghai.aliyuncs.com", "cn-shanghai", false},
 		{"cr hangzhou", "https://cr.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
 		{"invalid cr url", "https://acr.cn-hangzhou.aliyuncs.com", "", true},
@@ -108,6 +110,8 @@ func Test_getRegion(t *testing.T) {
 var urlForBenchmark = []string{
 	"https://cr.cn-hangzhou.aliyuncs.com",
 	"https://registry.cn-shanghai.aliyuncs.com",
+	"https://registry-vpc.cn-shanghai.aliyuncs.com",
+	"https://registry-internal.cn-shanghai.aliyuncs.com",
 }
 
 func BenchmarkGetRegion(b *testing.B) {

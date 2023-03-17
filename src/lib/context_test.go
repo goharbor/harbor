@@ -18,6 +18,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,4 +40,25 @@ func TestGetAPIVersion(t *testing.T) {
 	ctx := WithAPIVersion(context.Background(), "1.0")
 	version = GetAPIVersion(ctx)
 	assert.Equal(t, "1.0", version)
+}
+
+func TestSetXRequestID(t *testing.T) {
+	ctx := WithXRequestID(context.Background(), uuid.NewString())
+	assert.NotNil(t, ctx)
+}
+
+func TestGetXRequestID(t *testing.T) {
+	// nil context
+	id := GetXRequestID(nil)
+	assert.Empty(t, id)
+
+	// no request id set in context
+	id = GetXRequestID(context.Background())
+	assert.Empty(t, id)
+
+	// request id set in context
+	mockID := uuid.NewString()
+	ctx := WithXRequestID(context.Background(), mockID)
+	id = GetXRequestID(ctx)
+	assert.Equal(t, mockID, id)
 }

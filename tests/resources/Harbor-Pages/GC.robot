@@ -23,10 +23,13 @@ Switch To Garbage Collection
     Retry Double Keywords When Error  Retry Element Click  xpath=${gc_page_xpath}  Retry Wait Until Page Contains Element  ${gc_now_button}
 
 GC Now
-    [Arguments]  ${untag}=${false}
+    [Arguments]  ${untag}=${false}  ${dry_run}=${false}
     Switch To Garbage Collection
     Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
-    Retry Double Keywords When Error  Retry Element Click  ${gc_now_button}  Retry Wait Until Page Contains  Running
+    ${button}=  Run Keyword If  ${dry_run}==${false}  Set Variable  ${gc_now_button}  ELSE  Set Variable  ${dry_run_button}
+    Retry Double Keywords When Error  Retry Element Click  ${button}  Retry Wait Until Page Contains  Running
+    ${execution_id}=  Get Text  ${gc_latest_execution_id}
+    [Return]  ${execution_id}
 
 Retry GC Should Be Successful
     [Arguments]  ${history_id}  ${expected_msg}
@@ -55,4 +58,3 @@ Set GC Schedule
     Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
     ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
     Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${gc_schedule_save_btn}
-    Capture Page Screenshot

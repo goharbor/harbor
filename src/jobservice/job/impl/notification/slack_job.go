@@ -2,7 +2,7 @@ package notification
 
 import (
 	"bytes"
-	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -79,11 +79,14 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
+	sj.logger.Info("start to run slack job")
+
 	err := sj.execute(params)
 	if err != nil {
-		sj.logger.Error(err)
+		sj.logger.Errorf("exit slack job, error: %s", err)
+	} else {
+		sj.logger.Info("success to run slack job")
 	}
-
 	// Wait a second for slack rate limit, refer to https://api.slack.com/docs/rate-limits
 	time.Sleep(time.Second)
 	return err
@@ -111,17 +114,25 @@ func (sj *SlackJob) execute(params map[string]interface{}) error {
 
 	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to generate request")
 	}
 	req.Header.Set("Content-Type", "application/json")
 
+	sj.logger.Infof("send request to remote endpoint, body: %s", payload)
+
 	resp, err := sj.client.Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to send request")
 	}
+
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("slack job(target: %s) response code is %d", address, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			sj.logger.Errorf("error to read response body, error: %s", err)
+		}
+
+		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	return nil
 }

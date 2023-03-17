@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/notifier/formats"
 	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
@@ -17,6 +18,8 @@ type (
 	EventType string
 	// NotifyType is the type of notify
 	NotifyType string
+	// PayloadFormatType is the type of payload format
+	PayloadFormatType string
 )
 
 func (e EventType) String() string {
@@ -25,6 +28,10 @@ func (e EventType) String() string {
 
 func (n NotifyType) String() string {
 	return string(n)
+}
+
+func (p PayloadFormatType) String() string {
+	return string(p)
 }
 
 var (
@@ -39,6 +46,9 @@ var (
 
 	// supportedNotifyTypes is a slice to store notification type, eg. HTTP, Email etc
 	supportedNotifyTypes []NotifyType
+
+	// supportedPayloadFormatTypes is a slice to store the supported payload formats. eg. Default, CloudEvents etc
+	supportedPayloadFormatTypes []PayloadFormatType
 )
 
 // Init ...
@@ -76,6 +86,11 @@ func initSupportedNotifyType() {
 	notifyTypes := []string{notifier_model.NotifyTypeHTTP, notifier_model.NotifyTypeSlack}
 	for _, notifyType := range notifyTypes {
 		supportedNotifyTypes = append(supportedNotifyTypes, NotifyType(notifyType))
+	}
+
+	payloadFormats := []string{formats.DefaultFormat, formats.CloudEventsFormat}
+	for _, payloadFormat := range payloadFormats {
+		supportedPayloadFormatTypes = append(supportedPayloadFormatTypes, PayloadFormatType(payloadFormat))
 	}
 }
 
@@ -126,4 +141,8 @@ func GetSupportedEventTypes() []EventType {
 
 func GetSupportedNotifyTypes() []NotifyType {
 	return supportedNotifyTypes
+}
+
+func GetSupportedPayloadFormats() []PayloadFormatType {
+	return supportedPayloadFormatTypes
 }

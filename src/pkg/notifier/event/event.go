@@ -1,6 +1,8 @@
 package event
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
@@ -38,6 +40,7 @@ type Metadata interface {
 
 // HookMetaData defines hook notification related event data
 type HookMetaData struct {
+	ProjectID int64
 	PolicyID  int64
 	EventType string
 	Target    *policy_model.EventTarget
@@ -47,6 +50,7 @@ type HookMetaData struct {
 // Resolve hook metadata into hook event
 func (h *HookMetaData) Resolve(evt *Event) error {
 	data := &model.HookEvent{
+		ProjectID: h.ProjectID,
 		PolicyID:  h.PolicyID,
 		EventType: h.EventType,
 		Target:    h.Target,
@@ -59,7 +63,7 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 }
 
 // Build an event by metadata
-func (e *Event) Build(metadata ...Metadata) error {
+func (e *Event) Build(ctx context.Context, metadata ...Metadata) error {
 	for _, md := range metadata {
 		if err := md.Resolve(e); err != nil {
 			log.Debugf("failed to resolve event metadata: %v", md)
@@ -70,8 +74,8 @@ func (e *Event) Build(metadata ...Metadata) error {
 }
 
 // Publish an event
-func (e *Event) Publish() error {
-	if err := notifier.Publish(e.Topic, e.Data); err != nil {
+func (e *Event) Publish(ctx context.Context) error {
+	if err := notifier.Publish(ctx, e.Topic, e.Data); err != nil {
 		log.Debugf("failed to publish topic %s with event: %v", e.Topic, e.Data)
 		return errors.Wrap(err, "failed to publish event")
 	}
@@ -80,14 +84,14 @@ func (e *Event) Publish() error {
 
 // BuildAndPublish builds the event according to the metadata and publish the event
 // The process is done in a separated goroutine
-func BuildAndPublish(metadata ...Metadata) {
+func BuildAndPublish(ctx context.Context, metadata ...Metadata) {
 	go func() {
 		event := &Event{}
-		if err := event.Build(metadata...); err != nil {
+		if err := event.Build(ctx, metadata...); err != nil {
 			log.Errorf("failed to build the event from metadata: %v", err)
 			return
 		}
-		if err := event.Publish(); err != nil {
+		if err := event.Publish(ctx); err != nil {
 			log.Errorf("failed to publish the event %s: %v", event.Topic, err)
 			return
 		}
