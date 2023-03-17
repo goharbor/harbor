@@ -7,7 +7,7 @@
         *clrDgItems="let h of historyList"
         [clrDgItem]="h"
         class="history-item">
-        <clr-dg-cell>{{ h.created | harborDatetime: 'short' }}</clr-dg-cell>
+        <clr-dg-cell>{{ h.created | harborDatetime : 'short' }}</clr-dg-cell>
         <clr-dg-cell>{{ h.created_by }}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>{{ historyList.length }} commands</clr-dg-footer>

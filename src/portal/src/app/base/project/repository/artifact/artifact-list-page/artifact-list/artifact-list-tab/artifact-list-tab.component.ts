@@ -11,7 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
 import { forkJoin, Observable, of, Subscription } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -30,9 +36,11 @@ import {
     DEFAULT_SUPPORTED_MIME_TYPES,
     doSorting,
     formatSize,
+    getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
+    setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
@@ -96,7 +104,9 @@ const FALSE: string = 'false';
     templateUrl: './artifact-list-tab.component.html',
     styleUrls: ['./artifact-list-tab.component.scss'],
 })
-export class ArtifactListTabComponent implements OnInit, OnDestroy {
+export class ArtifactListTabComponent
+    implements OnInit, OnDestroy, AfterViewInit
+{
     projectId: number;
     projectName: string;
     repoName: string;
@@ -160,6 +170,26 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onScanArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     updateArtifactSub: Subscription;
+
+    hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
+        PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
+        [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+        ]
+    );
+    copiedHiddenArray: boolean[] = [];
+    private _hasViewInit: boolean = false;
+    deleteAccessorySub: Subscription;
     constructor(
         private errorHandlerService: ErrorHandler,
         private artifactService: ArtifactService,
@@ -171,7 +201,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         private router: Router,
         private appConfigService: AppConfigService,
         private artifactListPageService: ArtifactListPageService
-    ) {}
+    ) {
+        this.copiedHiddenArray = clone(this.hiddenArray);
+    }
     initRouterData() {
         this.projectId =
             this.activatedRoute.snapshot?.parent?.parent?.params['id'];
@@ -211,11 +243,28 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             );
         }
+        if (!this.deleteAccessorySub) {
+            this.deleteAccessorySub = this.eventService.subscribe(
+                HarborEvent.DELETE_ACCESSORY,
+                (a: Accessory) => {
+                    this.deleteAccessory(a);
+                }
+            );
+        }
     }
+
+    ngAfterViewInit() {
+        this._hasViewInit = true;
+    }
+
     ngOnDestroy() {
         if (this.updateArtifactSub) {
             this.updateArtifactSub.unsubscribe();
             this.updateArtifactSub = null;
+        }
+        if (this.deleteAccessorySub) {
+            this.deleteAccessorySub.unsubscribe();
+            this.deleteAccessorySub = null;
         }
     }
     get withNotary(): boolean {
@@ -1013,5 +1062,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     isEllipsisActive(ele: HTMLSpanElement): boolean {
         return ele?.offsetWidth < ele?.scrollWidth;
+    }
+
+    columnHiddenChange(index: number) {
+        if (this._hasViewInit) {
+            this.copiedHiddenArray[index] = !this.copiedHiddenArray[index];
+            setHiddenArrayToLocalStorage(
+                PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
+                this.copiedHiddenArray
+            );
+        }
     }
 }

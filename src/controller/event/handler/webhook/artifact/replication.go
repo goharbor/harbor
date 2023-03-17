@@ -14,7 +14,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -46,12 +45,12 @@ func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) erro
 		return fmt.Errorf("nil replication event")
 	}
 
-	payload, project, err := constructReplicationPayload(rpEvent)
+	payload, project, err := constructReplicationPayload(ctx, rpEvent)
 	if err != nil {
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(orm.Context(), project.ProjectID, rpEvent.EventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, project.ProjectID, rpEvent.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", rpEvent.EventType, err)
 		return err
@@ -60,7 +59,7 @@ func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) erro
 		log.Debugf("cannot find policy for %s event: %v", rpEvent.EventType, rpEvent)
 		return nil
 	}
-	err = util.SendHookWithPolicies(policies, payload, rpEvent.EventType)
+	err = util.SendHookWithPolicies(ctx, policies, payload, rpEvent.EventType)
 	if err != nil {
 		return err
 	}
@@ -72,8 +71,7 @@ func (r *ReplicationHandler) IsStateful() bool {
 	return false
 }
 
-func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload, *proModels.Project, error) {
-	ctx := orm.Context()
+func constructReplicationPayload(ctx context.Context, event *event.ReplicationEvent) (*model.Payload, *proModels.Project, error) {
 	task, err := replication.Ctl.GetTask(ctx, event.ReplicationTaskID)
 	if err != nil {
 		log.Errorf("failed to get replication task %d: error: %v", event.ReplicationTaskID, err)
@@ -191,7 +189,7 @@ func constructReplicationPayload(event *event.ReplicationEvent) (*model.Payload,
 		payload.EventData.Replication.FailedArtifact = []*ctlModel.ArtifactInfo{failedArtifact}
 	}
 
-	prj, err := project.Ctl.GetByName(orm.Context(), prjName, project.Metadata(true))
+	prj, err := project.Ctl.GetByName(ctx, prjName, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project %s, error: %v", prjName, err)
 		return nil, nil, err

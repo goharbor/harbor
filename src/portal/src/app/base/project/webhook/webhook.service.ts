@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
+import { MarkdownPipe } from 'ngx-markdown/src/markdown.pipe';
 
 const EVENT_TYPES_TEXT_MAP = {
     REPLICATION: 'Replication finished',
@@ -35,6 +36,16 @@ export const PAYLOAD_FORMAT_I18N_MAP = {
     [PAYLOAD_FORMATS[0]]: 'SCANNER.DEFAULT',
     [PAYLOAD_FORMATS[1]]: 'WEBHOOK.CLOUD_EVENT',
 };
+
+export enum WebhookType {
+    HTTP = 'http',
+    SLACK = 'slack',
+}
+
+export enum VendorType {
+    WEBHOOK = 'WEBHOOK',
+    SLACK = 'SLACK',
+}
 
 @Injectable()
 export class ProjectWebhookService {

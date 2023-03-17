@@ -2,13 +2,15 @@ package notification
 
 import (
 	"bytes"
-	"fmt"
+	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // Max retry has the same meaning as max fails.
@@ -58,11 +60,14 @@ func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
+	wj.logger.Info("start to run webhook job")
+
 	if err := wj.execute(ctx, params); err != nil {
-		wj.logger.Error(err)
+		wj.logger.Errorf("exit webhook job, error: %s", err)
 		return err
 	}
 
+	wj.logger.Info("success to run webhook job")
 	return nil
 }
 
@@ -89,20 +94,32 @@ func (wj *WebhookJob) execute(ctx job.Context, params map[string]interface{}) er
 
 	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to generate request")
 	}
-	if v, ok := params["auth_header"]; ok && len(v.(string)) > 0 {
-		req.Header.Set("Authorization", v.(string))
+
+	if h, ok := params["header"].(string); ok {
+		header := make(http.Header)
+		if err = json.Unmarshal([]byte(h), &header); err != nil {
+			return errors.Wrap(err, "error to unmarshal header")
+		}
+		req.Header = header
 	}
-	req.Header.Set("Content-Type", "application/json")
+
+	wj.logger.Infof("send request to remote endpoint, body: %s", payload)
 
 	resp, err := wj.client.Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to send request")
 	}
+
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("webhook job(target: %s) response code is %d", address, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			wj.logger.Errorf("error to read response body, error: %s", err)
+		}
+
+		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	return nil

@@ -239,7 +239,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 			}
 		}
 		if a != nil {
-			SendPullEvent(a, art.Tag, operator)
+			SendPullEvent(bCtx, a, art.Tag, operator)
 		}
 	}(operator.FromContext(ctx))
 

@@ -1,13 +1,13 @@
 package util
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
@@ -15,9 +15,9 @@ import (
 )
 
 // SendHookWithPolicies send hook by publishing topic of specified target type(notify type)
-func SendHookWithPolicies(policies []*policy_model.Policy, payload *notifyModel.Payload, eventType string) error {
+func SendHookWithPolicies(ctx context.Context, policies []*policy_model.Policy, payload *notifyModel.Payload, eventType string) error {
 	// if global notification configured disabled, return directly
-	if !config.NotificationEnable(orm.Context()) {
+	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
 	}
@@ -28,14 +28,15 @@ func SendHookWithPolicies(policies []*policy_model.Policy, payload *notifyModel.
 		for _, target := range targets {
 			evt := &event.Event{}
 			hookMetadata := &event.HookMetaData{
+				ProjectID: ply.ProjectID,
 				EventType: eventType,
 				PolicyID:  ply.ID,
 				Payload:   payload,
 				Target:    &target,
 			}
 			// It should never affect evaluating other policies when one is failed, but error should return
-			if err := evt.Build(hookMetadata); err == nil {
-				if err := evt.Publish(); err != nil {
+			if err := evt.Build(ctx, hookMetadata); err == nil {
+				if err := evt.Publish(ctx); err != nil {
 					errRet = true
 					log.Errorf("failed to publish hook notify event: %v", err)
 				}
