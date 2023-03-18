@@ -238,6 +238,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
+    config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
 
     # notification config
