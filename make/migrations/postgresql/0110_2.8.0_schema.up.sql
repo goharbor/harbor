@@ -90,7 +90,7 @@ DECLARE
     new_status varchar;
     status_code integer;
     exec_id integer;
-    extra_attrs varchar;
+    extra_attrs json;
 BEGIN
     FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
     LOOP
@@ -122,8 +122,8 @@ BEGIN
             status_code = 0;
         END IF;
 
-        SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT) INTO extra_attrs;
-        INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',to_json(extra_attrs),job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
+        SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT)::JSON INTO extra_attrs;
+        INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',extra_attrs,job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
         INSERT INTO task (execution_id,job_id,status,status_code,run_count,creation_time,start_time,update_time,end_time,vendor_type) VALUES (exec_id,job.job_uuid,new_status,status_code,1,job.creation_time,job.update_time,job.update_time,job.update_time,vendor_type);
     END LOOP;
 END $$;
