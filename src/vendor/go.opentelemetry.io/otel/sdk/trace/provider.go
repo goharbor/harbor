@@ -90,10 +90,10 @@ var _ trace.TracerProvider = &TracerProvider{}
 // NewTracerProvider returns a new and configured TracerProvider.
 //
 // By default the returned TracerProvider is configured with:
-//  - a ParentBased(AlwaysSample) Sampler
-//  - a random number IDGenerator
-//  - the resource.Default() Resource
-//  - the default SpanLimits.
+//   - a ParentBased(AlwaysSample) Sampler
+//   - a random number IDGenerator
+//   - the resource.Default() Resource
+//   - the default SpanLimits.
 //
 // The passed opts are used to override these default values and configure the
 // returned TracerProvider appropriately.
@@ -162,16 +162,16 @@ func (p *TracerProvider) Tracer(name string, opts ...trace.TracerOption) trace.T
 func (p *TracerProvider) RegisterSpanProcessor(s SpanProcessor) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	new := spanProcessorStates{}
+	newSPS := spanProcessorStates{}
 	if old, ok := p.spanProcessors.Load().(spanProcessorStates); ok {
-		new = append(new, old...)
+		newSPS = append(newSPS, old...)
 	}
 	newSpanSync := &spanProcessorState{
 		sp:    s,
 		state: &sync.Once{},
 	}
-	new = append(new, newSpanSync)
-	p.spanProcessors.Store(new)
+	newSPS = append(newSPS, newSpanSync)
+	p.spanProcessors.Store(newSPS)
 }
 
 // UnregisterSpanProcessor removes the given SpanProcessor from the list of SpanProcessors.
@@ -241,10 +241,7 @@ func (p *TracerProvider) Shutdown(ctx context.Context) error {
 	if !ok {
 		return fmt.Errorf("failed to load span processors")
 	}
-	if len(spss) == 0 {
-		return nil
-	}
-
+	var retErr error
 	for _, sps := range spss {
 		select {
 		case <-ctx.Done():
@@ -257,10 +254,15 @@ func (p *TracerProvider) Shutdown(ctx context.Context) error {
 			err = sps.sp.Shutdown(ctx)
 		})
 		if err != nil {
-			return err
+			if retErr == nil {
+				retErr = err
+			} else {
+				// Poor man's list of errors
+				retErr = fmt.Errorf("%v; %v", retErr, err)
+			}
 		}
 	}
-	return nil
+	return retErr
 }
 
 // TracerProviderOption configures a TracerProvider.

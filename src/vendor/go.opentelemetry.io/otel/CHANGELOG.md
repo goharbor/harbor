@@ -8,6 +8,37 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.10.0] - 2022-09-09
+
+### Added
+
+- Support Go 1.19. (#3077)
+  Include compatibility testing and document support. (#3077)
+- Support the OTLP ExportTracePartialSuccess response; these are passed to the registered error handler. (#3106)
+- Upgrade go.opentelemetry.io/proto/otlp from v0.18.0 to v0.19.0 (#3107)
+
+### Changed
+
+- Fix misidentification of OpenTelemetry `SpanKind` in OpenTracing bridge (`go.opentelemetry.io/otel/bridge/opentracing`).  (#3096)
+- Attempting to start a span with a nil `context` will no longer cause a panic. (#3110)
+- All exporters will be shutdown even if one reports an error (#3091)
+- Ensure valid UTF-8 when truncating over-length attribute values. (#3156)
+
+## [1.9.0/0.0.3] - 2022-08-01
+
+### Added
+
+- Add support for Schema Files format 1.1.x (metric "split" transform) with the new `go.opentelemetry.io/otel/schema/v1.1` package. (#2999)
+- Add the `go.opentelemetry.io/otel/semconv/v1.11.0` package.
+  The package contains semantic conventions from the `v1.11.0` version of the OpenTelemetry specification. (#3009)
+- Add the `go.opentelemetry.io/otel/semconv/v1.12.0` package.
+  The package contains semantic conventions from the `v1.12.0` version of the OpenTelemetry specification. (#3010)
+- Add the `http.method` attribute to HTTP server metric from all `go.opentelemetry.io/otel/semconv/*` packages. (#3018)
+
+### Fixed
+
+- Invalid warning for context setup being deferred in `go.opentelemetry.io/otel/bridge/opentracing` package. (#3029)
+
 ## [1.8.0/0.31.0] - 2022-07-08
 
 ### Added
@@ -1876,7 +1907,9 @@ It contains api and sdk for trace and meter.
 - CircleCI build CI manifest files.
 - CODEOWNERS file to track owners of this project.
 
-[Unreleased]: https://github.com/open-telemetry/opentelemetry-go/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/open-telemetry/opentelemetry-go/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.10.0
+[1.9.0/0.0.3]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.9.0
 [1.8.0/0.31.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.8.0
 [1.7.0/0.30.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.7.0
 [0.29.0]: https://github.com/open-telemetry/opentelemetry-go/releases/tag/metric/v0.29.0

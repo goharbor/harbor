@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package otelhttp
+package otelhttp // import "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 import (
+	"context"
 	"net/http"
+	"net/http/httptrace"
 
-	"go.opentelemetry.io/contrib"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/global"
@@ -36,10 +37,13 @@ type config struct {
 	Meter             metric.Meter
 	Propagators       propagation.TextMapPropagator
 	SpanStartOptions  []trace.SpanStartOption
+	PublicEndpoint    bool
+	PublicEndpointFn  func(*http.Request) bool
 	ReadEvent         bool
 	WriteEvent        bool
 	Filters           []Filter
 	SpanNameFormatter func(string, *http.Request) string
+	ClientTrace       func(context.Context) *httptrace.ClientTrace
 
 	TracerProvider trace.TracerProvider
 	MeterProvider  metric.MeterProvider
@@ -59,21 +63,21 @@ func (o optionFunc) apply(c *config) {
 // newConfig creates a new config struct and applies opts to it.
 func newConfig(opts ...Option) *config {
 	c := &config{
-		Propagators:    otel.GetTextMapPropagator(),
-		TracerProvider: otel.GetTracerProvider(),
-		MeterProvider:  global.GetMeterProvider(),
+		Propagators:   otel.GetTextMapPropagator(),
+		MeterProvider: global.MeterProvider(),
 	}
 	for _, opt := range opts {
 		opt.apply(c)
 	}
 
-	c.Tracer = c.TracerProvider.Tracer(
-		instrumentationName,
-		trace.WithInstrumentationVersion(contrib.SemVersion()),
-	)
+	// Tracer is only initialized if manually specified. Otherwise, can be passed with the tracing context.
+	if c.TracerProvider != nil {
+		c.Tracer = newTracer(c.TracerProvider)
+	}
+
 	c.Meter = c.MeterProvider.Meter(
 		instrumentationName,
-		metric.WithInstrumentationVersion(contrib.SemVersion()),
+		metric.WithInstrumentationVersion(SemVersion()),
 	)
 
 	return c
@@ -83,7 +87,9 @@ func newConfig(opts ...Option) *config {
 // If none is specified, the global provider is used.
 func WithTracerProvider(provider trace.TracerProvider) Option {
 	return optionFunc(func(cfg *config) {
-		cfg.TracerProvider = provider
+		if provider != nil {
+			cfg.TracerProvider = provider
+		}
 	})
 }
 
@@ -91,7 +97,9 @@ func WithTracerProvider(provider trace.TracerProvider) Option {
 // If none is specified, the global provider is used.
 func WithMeterProvider(provider metric.MeterProvider) Option {
 	return optionFunc(func(cfg *config) {
-		cfg.MeterProvider = provider
+		if provider != nil {
+			cfg.MeterProvider = provider
+		}
 	})
 }
 
@@ -100,15 +108,28 @@ func WithMeterProvider(provider metric.MeterProvider) Option {
 // association instead of a link.
 func WithPublicEndpoint() Option {
 	return optionFunc(func(c *config) {
-		c.SpanStartOptions = append(c.SpanStartOptions, trace.WithNewRoot())
+		c.PublicEndpoint = true
+	})
+}
+
+// WithPublicEndpointFn runs with every request, and allows conditionnally
+// configuring the Handler to link the span with an incoming span context. If
+// this option is not provided or returns false, then the association is a
+// child association instead of a link.
+// Note: WithPublicEndpoint takes precedence over WithPublicEndpointFn.
+func WithPublicEndpointFn(fn func(*http.Request) bool) Option {
+	return optionFunc(func(c *config) {
+		c.PublicEndpointFn = fn
 	})
 }
 
 // WithPropagators configures specific propagators. If this
-// option isn't specified then
+// option isn't specified, then the global TextMapPropagator is used.
 func WithPropagators(ps propagation.TextMapPropagator) Option {
 	return optionFunc(func(c *config) {
-		c.Propagators = ps
+		if ps != nil {
+			c.Propagators = ps
+		}
 	})
 }
 
@@ -134,7 +155,7 @@ func WithFilter(f Filter) Option {
 
 type event int
 
-// Different types of events that can be recorded, see WithMessageEvents
+// Different types of events that can be recorded, see WithMessageEvents.
 const (
 	ReadEvents event = iota
 	WriteEvents
@@ -145,10 +166,10 @@ const (
 // end of the request.
 //
 // Valid events are:
-//     * ReadEvents: Record the number of bytes read after every http.Request.Body.Read
-//       using the ReadBytesKey
-//     * WriteEvents: Record the number of bytes written after every http.ResponeWriter.Write
-//       using the WriteBytesKey
+//   - ReadEvents: Record the number of bytes read after every http.Request.Body.Read
+//     using the ReadBytesKey
+//   - WriteEvents: Record the number of bytes written after every http.ResponeWriter.Write
+//     using the WriteBytesKey
 func WithMessageEvents(events ...event) Option {
 	return optionFunc(func(c *config) {
 		for _, e := range events {
@@ -163,9 +184,17 @@ func WithMessageEvents(events ...event) Option {
 }
 
 // WithSpanNameFormatter takes a function that will be called on every
-// request and the returned string will become the Span Name
+// request and the returned string will become the Span Name.
 func WithSpanNameFormatter(f func(operation string, r *http.Request) string) Option {
 	return optionFunc(func(c *config) {
 		c.SpanNameFormatter = f
+	})
+}
+
+// WithClientTrace takes a function that returns client trace instance that will be
+// applied to the requests sent through the otelhttp Transport.
+func WithClientTrace(f func(context.Context) *httptrace.ClientTrace) Option {
+	return optionFunc(func(c *config) {
+		c.ClientTrace = f
 	})
 }

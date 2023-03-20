@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*
-Package instrumentation provides an instrumentation scope structure to be
-passed to both the OpenTelemetry Tracer and Meter components.
-
-For more information see
-[this](https://github.com/open-telemetry/oteps/blob/main/text/0083-component.md).
-*/
 package instrumentation // import "go.opentelemetry.io/otel/sdk/instrumentation"
 
 // Scope represents the instrumentation scope.

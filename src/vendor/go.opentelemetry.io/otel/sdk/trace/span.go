@@ -20,15 +20,17 @@ import (
 	"reflect"
 	"runtime"
 	rt "runtime/trace"
+	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/internal"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -294,7 +296,7 @@ func (s *recordingSpan) addOverCapAttrs(limit int, attrs []attribute.KeyValue) {
 
 // truncateAttr returns a truncated version of attr. Only string and string
 // slice attribute values are truncated. String values are truncated to at
-// most a length of limit. Each string slice value is truncated in this fasion
+// most a length of limit. Each string slice value is truncated in this fashion
 // (the slice length itself is unaffected).
 //
 // No truncation is perfromed for a negative limit.
@@ -305,7 +307,7 @@ func truncateAttr(limit int, attr attribute.KeyValue) attribute.KeyValue {
 	switch attr.Value.Type() {
 	case attribute.STRING:
 		if v := attr.Value.AsString(); len(v) > limit {
-			return attr.Key.String(v[:limit])
+			return attr.Key.String(safeTruncate(v, limit))
 		}
 	case attribute.STRINGSLICE:
 		// Do no mutate the original, make a copy.
@@ -324,12 +326,40 @@ func truncateAttr(limit int, attr attribute.KeyValue) attribute.KeyValue {
 		v := trucated.Value.AsStringSlice()
 		for i := range v {
 			if len(v[i]) > limit {
-				v[i] = v[i][:limit]
+				v[i] = safeTruncate(v[i], limit)
 			}
 		}
 		return trucated
 	}
 	return attr
+}
+
+// safeTruncate truncates the string and guarantees valid UTF-8 is returned.
+func safeTruncate(input string, limit int) string {
+	if trunc, ok := safeTruncateValidUTF8(input, limit); ok {
+		return trunc
+	}
+	trunc, _ := safeTruncateValidUTF8(strings.ToValidUTF8(input, ""), limit)
+	return trunc
+}
+
+// safeTruncateValidUTF8 returns a copy of the input string safely truncated to
+// limit. The truncation is ensured to occur at the bounds of complete UTF-8
+// characters. If invalid encoding of UTF-8 is encountered, input is returned
+// with false, otherwise, the truncated input will be returned with true.
+func safeTruncateValidUTF8(input string, limit int) (string, bool) {
+	for cnt := 0; cnt <= limit; {
+		r, size := utf8.DecodeRuneInString(input[cnt:])
+		if r == utf8.RuneError {
+			return input, false
+		}
+
+		if cnt+size > limit {
+			return input[:cnt], true
+		}
+		cnt += size
+	}
+	return input, true
 }
 
 // End ends the span. This method does nothing if the span is already ended or

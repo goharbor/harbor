@@ -14,7 +14,7 @@
 
 module-sets:
   stable-v1:
-    version: v1.8.0
+    version: v1.10.0
     modules:
       - go.opentelemetry.io/otel
       - go.opentelemetry.io/otel/bridge/opentracing
@@ -45,7 +45,7 @@ module-sets:
       - go.opentelemetry.io/otel/metric
       - go.opentelemetry.io/otel/sdk/metric
   experimental-schema:
-    version: v0.0.2
+    version: v0.0.3
     modules:
       - go.opentelemetry.io/otel/schema
   bridge:
