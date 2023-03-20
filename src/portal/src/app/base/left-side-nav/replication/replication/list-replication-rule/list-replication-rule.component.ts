@@ -13,8 +13,10 @@
 // limitations under the License.
 import {
     Component,
+    ElementRef,
     EventEmitter,
     Input,
+    OnDestroy,
     OnInit,
     Output,
     ViewChild,
@@ -31,10 +33,12 @@ import {
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import {
     clone,
+    getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getQueryString,
     getSortingString,
     PageSizeMapKeys,
+    setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
 } from '../../../../../shared/units/utils';
 import {
@@ -43,7 +47,7 @@ import {
     OperationState,
 } from '../../../../../shared/components/operation/operate';
 import { OperationService } from '../../../../../shared/components/operation/operation.service';
-import { ClrDatagridStateInterface } from '@clr/angular';
+import { ClrDatagrid, ClrDatagridStateInterface } from '@clr/angular';
 import { errorHandler } from '../../../../../shared/units/shared.utils';
 import { ConfirmationAcknowledgement } from '../../../../global-confirmation-dialog/confirmation-state-message';
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
@@ -64,7 +68,7 @@ import { JobType } from '../../../job-service-dashboard/job-service-dashboard.in
     templateUrl: './list-replication-rule.component.html',
     styleUrls: ['./list-replication-rule.component.scss'],
 })
-export class ListReplicationRuleComponent implements OnInit {
+export class ListReplicationRuleComponent implements OnInit, OnDestroy {
     @Input() selectedId: number | string;
     @Input() withReplicationJob: boolean;
     @Input() hasCreateReplicationPermission: boolean;
@@ -94,7 +98,12 @@ export class ListReplicationRuleComponent implements OnInit {
     loading: boolean = true;
 
     paused: boolean = false;
-
+    hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
+        PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
+        [false, false, false, false, false, false, false, true, true]
+    );
+    @ViewChild('datagrid')
+    datagrid: ClrDatagrid;
     constructor(
         private replicationService: ReplicationService,
         private translateService: TranslateService,
@@ -109,6 +118,16 @@ export class ListReplicationRuleComponent implements OnInit {
             .subscribe(res => {
                 this.paused = res?.paused;
             });
+    }
+
+    ngOnDestroy(): void {
+        this.datagrid['columnsService']?.columns?.forEach((item, index) => {
+            this.hiddenArray[index] = !!item?._value?.hidden;
+        });
+        setHiddenArrayToLocalStorage(
+            PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
+            this.hiddenArray
+        );
     }
 
     getTriggerTypeI18n(t: ReplicationTrigger) {

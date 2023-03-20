@@ -367,7 +367,6 @@ export const stringsForClarity: Partial<ClrCommonStrings> = {
     loading: 'CLARITY.LOADING',
     // Date Picker
     datepickerDialogLabel: 'CLARITY.DATE_PICKER_DIALOG_LABEL',
-    datepickerToggle: 'CLARITY.DATE_PICKER_TOGGLE',
     datepickerToggleChooseDateLabel:
         'CLARITY.DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL',
     datepickerToggleChangeDateLabel:

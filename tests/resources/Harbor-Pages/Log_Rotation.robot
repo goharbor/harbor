@@ -26,8 +26,8 @@ Purge Now
     Retry Double Keywords When Error  Retry Element Click  ${keep_records_unit_select}  Retry Element Click  ${keep_records_unit_select}//option[contains(.,'${keep_records_unit}')]
     ${len}=  Get Length  ${exclude_operations}
     Run Keyword If  ${len} > 0  Click Exclude Operation  @{exclude_operations}
-    Retry Double Keywords When Error  Retry Button Click  ${purge_now_btn}  Retry Wait Until Page Contains Element  ${latest_purge_job_status_xpath}\[contains(.,'SUCCESS')]
-    Retry Action Keyword  Verify Last completed Time
+    Retry Double Keywords When Error  Retry Button Click  ${purge_now_btn}  Retry Wait Until Page Contains Element  ${latest_purge_job_status_xpath}\[contains(.,'${expected_status}')]
+    Run Keyword If  '${expected_status}' == 'SUCCESS'  Retry Action Keyword  Verify Last completed Time
 
 Click Exclude Operation
     [Arguments]  @{exclude_operations}
@@ -44,7 +44,7 @@ Set Log Rotation Schedule
     [Arguments]  ${keep_records}  ${keep_records_unit}  ${type}  ${cron}=${null}  ${exclude_operations}=@{EMPTY}
     Retry Text Input  ${keep_records_input}  ${keep_records}
     Retry Double Keywords When Error  Retry Element Click  ${keep_records_unit_select}  Retry Element Click  ${keep_records_unit_select}//option[contains(.,'${keep_records_unit}')]
-    Retry Button Click  ${log_rotation_schedule_edit_btn} 
+    Retry Button Click  ${log_rotation_schedule_edit_btn}
     Retry Double Keywords When Error  Retry Element Click  ${log_rotation_schedule_select}  Retry Element Click  ${log_rotation_schedule_select}//option[contains(.,'${type}')]
     Run Keyword If  '${type}' == 'Custom'  Retry Text Input  ${log_rotation_schedule_cron_input}  ${cron}
     ${len}=  Get Length  ${exclude_operations}

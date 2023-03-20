@@ -36,7 +36,7 @@ job_loggers:
     settings: # Customized settings of logger
       base_dir: "/var/log/jobs"
     sweeper:
-      duration: 1 #days
+      duration: {{logger_sweeper_duration}} #days
       settings: # Customized settings of sweeper
         work_dir: "/var/log/jobs"
 

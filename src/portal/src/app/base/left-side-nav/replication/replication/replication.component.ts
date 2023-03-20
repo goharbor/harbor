@@ -39,11 +39,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ListReplicationRuleComponent } from './list-replication-rule/list-replication-rule.component';
 import { CreateEditRuleComponent } from './create-edit-rule/create-edit-rule.component';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
-import {
-    Comparator,
-    ReplicationJob,
-    ReplicationJobItem,
-} from '../../../../shared/services';
+import { Comparator } from '../../../../shared/services';
 
 import {
     calculatePage,
@@ -78,6 +74,7 @@ import { ConfirmationAcknowledgement } from '../../../global-confirmation-dialog
 import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
 import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationExecutionFilter } from '../replication';
+import { ReplicationExecution } from '../../../../../../ng-swagger-gen/models/replication-execution';
 
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
@@ -126,11 +123,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     currentRuleStatus: { key: string; description: string };
     currentTerm: string;
     defaultFilter = 'trigger';
-    selectedRow: ReplicationJobItem[] = [];
+    selectedRow: ReplicationExecution[] = [];
     isStopOnGoing: boolean;
     hiddenJobList = true;
 
-    jobs: ReplicationJobItem[];
+    jobs: ReplicationExecution[];
 
     @ViewChild(ListReplicationRuleComponent)
     listReplicationRule: ListReplicationRuleComponent;
@@ -144,10 +141,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     @ViewChild('StopConfirmDialog')
     StopConfirmDialog: ConfirmationDialogComponent;
 
-    creationTimeComparator: Comparator<ReplicationJob> =
-        new CustomComparator<ReplicationJob>('start_time', 'date');
-    updateTimeComparator: Comparator<ReplicationJob> =
-        new CustomComparator<ReplicationJob>('end_time', 'date');
+    creationTimeComparator: Comparator<ReplicationExecution> =
+        new CustomComparator<ReplicationExecution>('start_time', 'date');
+    updateTimeComparator: Comparator<ReplicationExecution> =
+        new CustomComparator<ReplicationExecution>('end_time', 'date');
 
     // Server driven pagination
     currentPage: number = 1;
@@ -290,7 +287,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         if (withLoading) {
             this.jobsLoading = true;
         }
-        this.selectedRow = [];
         this.replicationService
             .listReplicationExecutionsResponse(params)
             .subscribe(
@@ -299,7 +295,26 @@ export class ReplicationComponent implements OnInit, OnDestroy {
                         response.headers.get('x-total-count'),
                         10
                     );
-                    this.jobs = response.body as ReplicationJobItem[];
+                    if (withLoading) {
+                        this.jobs = response.body;
+                    } else {
+                        // Do not update reference of this.jobs on refresh, otherwise datagrid will refresh
+                        this.jobs?.forEach(item1 => {
+                            response.body?.forEach(item2 => {
+                                if (item1.id === item2.id) {
+                                    item1.status = item2.status;
+                                    item1.status_text = item2.status_text;
+                                    item1.failed = item2.failed;
+                                    item1.in_progress = item2.in_progress;
+                                    item1.stopped = item2.stopped;
+                                    item1.succeed = item2.succeed;
+                                    item1.total = item2.total;
+                                    item1.start_time = item2.start_time;
+                                    item1.end_time = item2.end_time;
+                                }
+                            });
+                        });
+                    }
                     if (!this.timerDelay) {
                         this.timerDelay = timer(
                             REFRESH_TIME_DIFFERENCE,
@@ -320,11 +335,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
                         });
                     }
                     // Do filtering and sorting
-                    this.jobs = doFiltering<ReplicationJobItem>(
+                    this.jobs = doFiltering<ReplicationExecution>(
                         this.jobs,
                         state
                     );
-                    this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
+                    this.jobs = doSorting<ReplicationExecution>(
+                        this.jobs,
+                        state
+                    );
 
                     this.jobsLoading = false;
                 },
@@ -461,7 +479,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.hiddenJobList = true;
     }
 
-    openStopExecutionsDialog(targets: ReplicationJobItem[]) {
+    openStopExecutionsDialog(targets: ReplicationExecution[]) {
         let ExecutionId = targets.map(robot => robot.id).join(',');
         let StopExecutionsMessage = new ConfirmationMessage(
             'REPLICATION.STOP_TITLE',
@@ -497,7 +515,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
     }
 
-    StopExecutions(targets: ReplicationJobItem[]): void {
+    StopExecutions(targets: ReplicationExecution[]): void {
         if (targets && targets.length < 1) {
             return;
         }
@@ -527,7 +545,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
     }
 
-    StopOperate(targets: ReplicationJobItem): any {
+    StopOperate(targets: ReplicationExecution): any {
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.STOP_EXECUTIONS';
         operMessage.data.id = targets.id;
@@ -578,6 +596,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     refreshJobs() {
+        this.selectedRow = [];
         this.currentTerm = '';
         this.currentPage = 1;
         let st: ClrDatagridStateInterface = {
@@ -594,7 +613,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.isOpenFilterTag = isOpen;
     }
 
-    getDuration(j: ReplicationJobItem) {
+    getDuration(j: ReplicationExecution) {
         if (!j) {
             return;
         }

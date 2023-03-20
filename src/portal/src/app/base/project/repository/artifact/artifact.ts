@@ -14,9 +14,9 @@ export interface ArtifactFront extends Artifact {
 }
 
 export interface AccessoryFront extends Accessory {
-    pullCommand?: string;
-    tagNumber?: number;
-    scan_overview?: any;
+    coSigned?: string;
+    accessoryNumber?: number;
+    accessories?: any;
 }
 
 export const multipleFilter: Array<{
