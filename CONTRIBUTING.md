@@ -364,11 +364,22 @@ The main location for the documentation is the [website repository](https://gith
 
 Documents are written with Markdown. See [Writing on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
 
-## Design new features
+## Propose and design new features
 
-You can propose new designs for existing Harbor features. You can also design entirely new features, Please submit a proposal in GitHub.(https://github.com/goharbor/community/tree/master/proposals). Harbor maintainers will review this proposal as soon as possible. This is necessary to ensure the overall architecture is consistent and to avoid duplicated work in the roadmap.
+You can propose new designs for existing Harbor features or you can also design entirely new features by following few simple step process:
+- Check the current proposals if your feature is not requested or worked on already. Check both [Issues](https://github.com/goharbor/harbor/issues) and [PRs](https://github.com/goharbor/harbor/pulls) in the main Harbor repository also in the [Community repository](https://github.com/goharbor/community).
+- Submit(open PR) the new proposal at [community/proposals/new](https://github.com/goharbor/community/tree/main/proposals/new) using the already existing [template](https://github.com/goharbor/community/blob/main/proposals/TEMPLATE.md)
+- Once submitted it must be labeled as "kind/proposal" - check examples [here](https://github.com/goharbor/community/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc+label%3Akind%2Fproposal)
+- Will be automatically added to the [Community Proposals Board](https://github.com/orgs/goharbor/projects/4?query=is%3Aopen+sort%3Aupdated-desc)
+- Once in on the board it must be added to a [Community Meeting agenda](https://github.com/goharbor/community/wiki/Harbor-Community-Meetings) to be presented to maintainers and contributors.(also moved to the next phase on the board "Community Meeting Discussion")
+- Next is to be reviewed and modified by maintainers and other contributors maintainers in a timely manner. This is necessary to ensure the overall architecture is consistent and to avoid duplicated work in the [RoadMap]().
+- When reviewed and approved it can be implemented either by the original submitter which we highly encourage, as the project is community driven. That can happen via opening PRs in the respective repositories with all the necessary code and test changes!
+- Once implemented the PRs must be reviewed by maintainers and contributors prior merging following the currently enabled practices and methods.
+- After merging the new PRs the proposal must be moved to [community/proposals](https://github.com/goharbor/community/tree/main/proposals) and marked as Done!
+- Congratulations you have made Harbor even better! Thank you!
 
-[community-meetings]: https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md
+
+[community-meetings]: https://github.com/goharbor/community/blob/main/MEETING_SCHEDULE.md
 [past-meetings]: https://www.youtube.com/playlist?list=PLgInP-D86bCwTC0DYAa1pgupsQIAWPomv
 [users-slack]: https://cloud-native.slack.com/archives/CC1E09J6S
 [dev-slack]: https://cloud-native.slack.com/archives/CC1E0J0MC
