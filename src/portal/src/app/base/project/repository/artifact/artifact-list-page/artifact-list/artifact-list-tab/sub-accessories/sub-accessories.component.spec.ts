@@ -64,6 +64,9 @@ describe('SubAccessoriesComponent', () => {
         listAccessories() {
             return of(page2).pipe(delay(0));
         },
+        listAccessoriesResponse() {
+            return of({}).pipe(delay(0));
+        },
     };
 
     let component: SubAccessoriesComponent;

@@ -28,6 +28,8 @@ var (
 	V2BlobUploadURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/blobs/uploads[/a-zA-Z0-9\-_\.=]*$`, RepositorySubexp, reference.NameRegexp.String()))
 	// V2CatalogURLRe is the regular expression for matching the request to v2 handler to list catalog
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog(/.*)?$`)
+	// V2ReferrersURLRe is the regular expression for matching request to v2 handler to list referrers
+	V2ReferrersURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/referrers/(?P<%s>.*)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
 	// RepositoryNameRe is the regular expression for  matching repository name
 	RepositoryNameRe = regexp.MustCompile(fmt.Sprintf("^%s$", reference.NameRegexp))
 )

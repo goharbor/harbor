@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Aktivierungszustand",
         "NUMBER_REQUIRED": "Feld ist erforderlich und sollte ein Integer größer 0 sein.",
         "DESCRIPTION": "Beschreibung",
-        "CREATETION": "Erstellt am",
+        "CREATION": "Erstellt am",
         "EXPIRATION": "Ablaufdatum",
         "TOKEN_EXPIRATION": "Robot Token Ablauf (Tage)",
         "ACTION": "Aktion",
@@ -696,8 +696,7 @@
         "DELETED_FAILED": "Löschen des Endpunktes fehlgeschlagen.",
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
-        "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-        "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+        "PLACEHOLDER": "Wir konnten keine Endpunkt finden."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -1827,7 +1826,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

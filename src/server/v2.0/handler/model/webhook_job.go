@@ -1,12 +1,9 @@
 package model
 
 import (
-	"encoding/json"
-
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
@@ -36,14 +33,12 @@ func (n *WebhookJob) ToSwagger() *models.WebhookJob {
 	webhookJob.NotifyType = notifyType
 
 	if n.ExtraAttrs != nil {
-		if eventType, ok := n.ExtraAttrs["type"].(string); ok {
+		if eventType, ok := n.ExtraAttrs["event_type"].(string); ok {
 			webhookJob.EventType = eventType
 		}
-		detail, err := json.Marshal(n.ExtraAttrs)
-		if err == nil {
-			webhookJob.JobDetail = string(detail)
-		} else {
-			log.Errorf("failed to marshal exec.ExtraAttrs, error: %v", err)
+
+		if payload, ok := n.ExtraAttrs["payload"].(string); ok {
+			webhookJob.JobDetail = payload
 		}
 	}
 

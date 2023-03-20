@@ -10,27 +10,9 @@ Start
 ============
 1. npm install (should trigger 'npm postinstall')
 2. npm run postinstall  (if not triggered, manually run this step)
-3. create "proxy.config.json" file with below content under "portal" directory, and replace "hostname" with an available Harbor hostname
-4. npm run start
-5. open your browser on https://localhost:4200
-```json
-[
-  {
-    "context": [
-      "/api",
-      "/c",
-      "/i18n",
-      "/chartrepo",
-      "/LICENSE",
-      "/swagger.json",
-      "/swagger2.json",
-      "/devcenter-api-2.0",
-      "/swagger-ui.bundle.js"
-    ],
-    "target": "https://hostname",
-    "secure": false,
-    "changeOrigin": true,
-    "logLevel": "debug"
-  }
-]
-```
+3. copy "proxy.config.mjs.temp" file to "proxy.config.mjs"                 
+   `cp proxy.config.mjs.temp proxy.config.mjs`
+4. Modify "proxy.config.mjs" to specify a Harbor server. And you can specify the agent if you work behind a corporate proxy
+5. npm run start
+6. open your browser on https://localhost:4200
+

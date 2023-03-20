@@ -16,7 +16,7 @@ import {
     EXECUTION_STATUS,
     TIME_OUT,
 } from '../../p2p-provider/p2p-provider.service';
-import { ProjectWebhookService } from '../webhook.service';
+import { ProjectWebhookService, VendorType } from '../webhook.service';
 
 @Component({
     selector: 'app-executions',
@@ -171,5 +171,9 @@ export class ExecutionsComponent implements OnDestroy {
 
     eventTypeToText(eventType: any): string {
         return this.projectWebhookService.eventTypeToText(eventType);
+    }
+
+    useJsonFormat(vendorType: string): boolean {
+        return vendorType === VendorType.WEBHOOK;
     }
 }

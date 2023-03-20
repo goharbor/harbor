@@ -83,7 +83,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "harbor-portal:build"
+            "browserTarget": "harbor-portal:build",
+            "proxyConfig": "proxy.config.mjs"
           },
           "configurations": {
             "production": {

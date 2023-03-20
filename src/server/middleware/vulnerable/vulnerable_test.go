@@ -383,10 +383,10 @@ func (suite *MiddlewareTestSuite) TestSignaturePulling() {
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	acc := &basemodel.Default{
 		Data: accessorymodel.AccessoryData{
-			ID:            1,
-			ArtifactID:    2,
-			SubArtifactID: 1,
-			Type:          accessorymodel.TypeCosignSignature,
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: suite.artifact.Digest,
+			Type:              accessorymodel.TypeCosignSignature,
 		},
 	}
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{

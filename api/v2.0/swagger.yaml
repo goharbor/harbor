@@ -8522,7 +8522,7 @@ definitions:
   PayloadFormatType:
     type: string
     description: The type of webhook paylod format.
-    example: 'cloudevent'
+    example: 'CloudEvents'
   PayloadFormat:
     type: object
     description: Webhook supported payload format type collections.
@@ -9382,10 +9382,9 @@ definitions:
         format: int64
         description: The artifact id of the accessory
         x-omitempty: false
-      subject_artifact_id:
-        type: integer
-        format: int64
-        description: The subject artifact id of the accessory
+      subject_artifact_digest:
+        type: string
+        description: The subject artifact digest of the accessory
         x-omitempty: false
       size:
         type: integer

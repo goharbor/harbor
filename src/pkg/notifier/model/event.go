@@ -7,6 +7,7 @@ import (
 
 // HookEvent is hook related event data to publish
 type HookEvent struct {
+	ProjectID int64
 	PolicyID  int64
 	EventType string
 	Target    *policy_model.EventTarget

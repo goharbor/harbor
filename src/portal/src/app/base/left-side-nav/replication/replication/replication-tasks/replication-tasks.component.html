@@ -67,7 +67,7 @@
                     <label
                         >{{ 'REPLICATION.CREATION_TIME' | translate }} :</label
                     >
-                    <span>{{ startTime | harborDatetime: 'short' }}</span>
+                    <span>{{ startTime | harborDatetime : 'short' }}</span>
                 </div>
             </div>
             <div class="flex-block">
@@ -177,10 +177,10 @@
                 <clr-dg-cell>{{ t.operation }}</clr-dg-cell>
                 <clr-dg-cell>{{ getStatusStr(t.status) }}</clr-dg-cell>
                 <clr-dg-cell>{{
-                    t.start_time | harborDatetime: 'short'
+                    t.start_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
                 <clr-dg-cell>{{
-                    t.end_time | harborDatetime: 'short'
+                    t.end_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
                 <clr-dg-cell>
                     <a

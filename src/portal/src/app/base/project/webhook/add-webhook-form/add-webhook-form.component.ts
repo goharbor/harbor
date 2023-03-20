@@ -19,6 +19,7 @@ import {
     PAYLOAD_FORMATS,
     PAYLOAD_FORMAT_I18N_MAP,
     ProjectWebhookService,
+    WebhookType,
 } from '../webhook.service';
 import { compareValue } from '../../../../shared/units/utils';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
@@ -78,6 +79,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
             this._nameSubscription = null;
         }
     }
+
     reset() {
         this.isNameExisting = false;
         this._nameSubject.next('');
@@ -96,7 +98,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
                         ) {
                             return false;
                         }
-                        return name.length > 0;
+                        return name?.length > 0;
                     }),
                     switchMap(name => {
                         this.isNameExisting = false;
@@ -130,6 +132,9 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
 
     add() {
         this.submitting = true;
+        if (this.webhook?.targets[0]?.type === WebhookType.SLACK) {
+            delete this.webhook?.targets[0]?.payload_format;
+        }
         this.webhookService
             .CreateWebhookPolicyOfProject({
                 projectNameOrId: this.projectId.toString(),
@@ -150,6 +155,9 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
 
     save() {
         this.submitting = true;
+        if (this.webhook?.targets[0]?.type === WebhookType.SLACK) {
+            delete this.webhook?.targets[0]?.payload_format;
+        }
         this.webhookService
             .UpdateWebhookPolicyOfProject({
                 projectNameOrId: this.projectId.toString(),

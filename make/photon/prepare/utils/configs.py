@@ -238,6 +238,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
+    config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
 
     # notification config
@@ -384,8 +385,9 @@ def get_redis_url(db, redis=None):
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
     kwargs['password_part'] = kwargs.get('password', None) and (':%s@' % kwargs['password']) or ''
+    kwargs['username_part'] = kwargs.get('username', None) or ''
 
-    return "{scheme}://{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
+    return "{scheme}://{username_part}{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
 
 
 def get_redis_url_param(redis=None):
