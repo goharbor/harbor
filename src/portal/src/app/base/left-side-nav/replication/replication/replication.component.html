@@ -194,7 +194,6 @@
     </div>
     <hbr-create-edit-rule
         *ngIf="isSystemAdmin"
-        [withAdmiral]="withAdmiral"
         (goToRegistry)="goRegistry()"
         (reload)="reloadRules($event)"></hbr-create-edit-rule>
     <confirmation-dialog

@@ -8,6 +8,7 @@
 <div class="row tag-row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-datagrid
+            #datagrid
             [clrDgLoading]="loading"
             (clrDgRefresh)="clrDgRefresh($event)"
             [(clrDgSelected)]="selectedRow">
@@ -137,78 +138,58 @@
 
             <clr-dg-column class="flex-max-width" [clrDgSortBy]="'digest'"
                 ><ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[0] }"
-                    (clrDgHiddenChange)="columnHiddenChange(0)">
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[0] }">
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="pull-command-column">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[1] }"
-                    (clrDgHiddenChange)="columnHiddenChange(1)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
                     {{ 'REPOSITORY.PULL_COMMAND' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column *ngIf="depth">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[2] }"
-                    (clrDgHiddenChange)="columnHiddenChange(2)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
                     {{ 'REPOSITORY.PLATFORM' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[3] }"
-                    (clrDgHiddenChange)="columnHiddenChange(3)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[3] }">
                     {{ 'REPOSITORY.TAGS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="co-signed-column">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[4] }"
-                    (clrDgHiddenChange)="columnHiddenChange(4)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
                     {{ 'ACCESSORY.CO_SIGNED' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="'size'">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[5] }"
-                    (clrDgHiddenChange)="columnHiddenChange(5)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[5] }">
                     {{ 'REPOSITORY.SIZE' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="vul-column">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[6] }"
-                    (clrDgHiddenChange)="columnHiddenChange(6)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
                     {{ 'REPOSITORY.VULNERABILITY' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="annotations-column">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[7] }"
-                    (clrDgHiddenChange)="columnHiddenChange(7)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
                     {{ 'ARTIFACT.ANNOTATION' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[8] }"
-                    (clrDgHiddenChange)="columnHiddenChange(8)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
                     {{ 'REPOSITORY.LABELS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[9] }"
-                    (clrDgHiddenChange)="columnHiddenChange(9)">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
                     {{ 'REPOSITORY.PUSH_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">
                 <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }"
-                    (clrDgHiddenChange)="columnHiddenChange(10)">
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }">
                     {{ 'REPOSITORY.PULL_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
