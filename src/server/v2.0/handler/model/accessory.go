@@ -17,6 +17,7 @@ func (a *Accessory) ToSwagger() *models.Accessory {
 	return &models.Accessory{
 		ID:                    a.ID,
 		ArtifactID:            a.ArtifactID,
+		SubjectArtifactID:     a.SubArtifactID,
 		SubjectArtifactDigest: a.SubArtifactDigest,
 		Size:                  a.Size,
 		Digest:                a.Digest,

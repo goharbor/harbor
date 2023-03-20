@@ -161,7 +161,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 		for _, acc := range option.Accs {
-			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
 				return false, 0, err
 			}
 		}
@@ -722,7 +722,7 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 }
 
 func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
-	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest}))
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
 	if err != nil {
 		log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
 		return

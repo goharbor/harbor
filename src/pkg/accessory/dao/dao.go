@@ -98,9 +98,6 @@ func (d *dao) Create(ctx context.Context, acc *Accessory) (int64, error) {
 		if e := orm.AsConflictError(err, "accessory %s already exists under the artifact %s",
 			acc.Digest, acc.SubjectArtifactDigest); e != nil {
 			err = e
-		} else if e := orm.AsForeignKeyError(err, "the accessory %s tries to attach to a non existing artifact %s",
-			acc.Digest, acc.SubjectArtifactDigest); e != nil {
-			err = e
 		}
 	}
 	return id, err
