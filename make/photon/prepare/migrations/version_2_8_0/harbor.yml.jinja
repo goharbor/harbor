@@ -252,8 +252,16 @@ notification:
   # Maximum retry count for webhook job
 {% if notification is defined %}
   webhook_job_max_retry: {{ notification.webhook_job_max_retry}}
+  # HTTP client timeout for webhook job
+  {% if notification.webhook_job_http_client_timeout is defined %}
+  webhook_job_http_client_timeout: {{ notification.webhook_job_http_client_timeout }}
+  {% else %}
+  webhook_job_http_client_timeout: 3 #seconds
+  {% endif %}
 {% else %}
   webhook_job_max_retry: 10
+  # HTTP client timeout for webhook job
+  webhook_job_http_client_timeout: 3 #seconds
 {% endif %}
 
 # Log configurations
