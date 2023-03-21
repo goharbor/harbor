@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -40,6 +41,8 @@ type SweepManager interface {
 	ListCandidates(ctx context.Context, vendorType string, retainCnt int64) (execIDs []int64, err error)
 	// Clean deletes the tasks belonging to the execution which in final status and deletes executions.
 	Clean(ctx context.Context, execID []int64) (err error)
+	// FixDanglingStateExecution fixes the dangling state execution.
+	FixDanglingStateExecution(ctx context.Context) error
 }
 
 // sweepManager implements the interface SweepManager.
@@ -179,6 +182,32 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 		return errors.Wrap(err, "failed to delete executions")
 	}
 
+	return nil
+}
+
+// FixDanglingStateExecution update executions always running
+func (sm *sweepManager) FixDanglingStateExecution(ctx context.Context) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	sql := `UPDATE execution
+		SET status =
+        CASE
+            WHEN EXISTS (SELECT 1 FROM task WHERE execution_id = execution.id AND status = 'Error') THEN 'Error'
+            WHEN EXISTS (SELECT 1 FROM task WHERE execution_id = execution.id AND status = 'Stopped') THEN 'Stopped'
+            ELSE 'Success'
+            END
+WHERE status = 'Running'
+  AND start_time < now() - INTERVAL ?
+  AND NOT EXISTS (SELECT 1 FROM task WHERE execution_id = execution.id AND status = 'Running')`
+
+	intervalStr := fmt.Sprintf("%d hour", config.MaxDanglingHour())
+	_, err = ormer.Raw(sql, intervalStr).Exec()
+	if err != nil {
+		return errors.Wrap(err, "failed to fix dangling state execution")
+	}
 	return nil
 }
 

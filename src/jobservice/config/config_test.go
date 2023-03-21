@@ -15,6 +15,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -85,6 +86,12 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
 func (suite *ConfigurationTestSuite) TestDefaultConfig() {
 	err := DefaultConfig.Load("../config_test.yml", true)
 	require.Nil(suite.T(), err, "load config from yaml file, expect nil error but got error '%s'", err)
+
+	maxUpdateHour := MaxUpdateDuration()
+	require.Equal(suite.T(), 24*time.Hour, maxUpdateHour, "expect max update hour to be 24 but got %d", maxUpdateHour)
+
+	maxDangling := MaxDanglingHour()
+	require.Equal(suite.T(), 168, maxDangling, "expect max dangling time to be 24 but got %d", maxDangling)
 
 	assert.Equal(suite.T(), 10, DefaultConfig.MaxLogSizeReturnedMB, "expect max log size returned 10MB but got %d", DefaultConfig.MaxLogSizeReturnedMB)
 	redisURL := DefaultConfig.PoolConfig.RedisPoolCfg.RedisURL
