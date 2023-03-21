@@ -40,4 +40,29 @@ const (
 	SystemArtifactCleanupVendorType = "SYSTEM_ARTIFACT_CLEANUP"
 	// ScanDataExportVendorType : the name of the scan data export job
 	ScanDataExportVendorType = "SCAN_DATA_EXPORT"
+	// ExecSweepVendorType: the name of the execution sweep job
+	ExecSweepVendorType = "EXECUTION_SWEEP"
+	// ScanAllVendorType: the name of the scan all job
+	ScanAllVendorType = "SCAN_ALL"
 )
+
+var (
+	// executionSweeperCount stores the count for execution retained
+	executionSweeperCount = map[string]int64{
+		ScanAllVendorType:               5,
+		ExecSweepVendorType:             10,
+		GarbageCollectionVendorType:     50,
+		SlackJobVendorType:              50,
+		WebhookJobVendorType:            50,
+		ReplicationVendorType:           50,
+		ScanDataExportVendorType:        50,
+		SystemArtifactCleanupVendorType: 50,
+		P2PPreheatVendorType:            50,
+		RetentionVendorType:             50,
+	}
+)
+
+// GetExecutionSweeperCount gets the count of execution records retained by the sweeper
+func GetExecutionSweeperCount() map[string]int64 {
+	return executionSweeperCount
+}
