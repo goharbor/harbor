@@ -10,11 +10,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	// keep only the latest created 50 gc execution records
-	task.SetExecutionSweeperCount(job.GarbageCollectionVendorType, 50)
-}
-
 var (
 	// Ctl is a global garbage collection controller instance
 	Ctl = NewController()

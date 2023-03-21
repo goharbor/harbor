@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/systemartifact"
+	"github.com/goharbor/harbor/src/controller/task"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -258,7 +259,13 @@ func main() {
 			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
 			return
 		}
+
+		// schedule system artifact cleanup job
 		systemartifact.ScheduleCleanupTask(ctx)
+		// schedule system execution sweep job
+		if err := task.ScheduleSweepJob(ctx); err != nil {
+			log.Errorf("failed to schedule system execution sweep job, error: %v", err)
+		}
 	}()
 	web.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
