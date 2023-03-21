@@ -18,9 +18,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
-	"github.com/stretchr/testify/suite"
 )
 
 type sweepJobTestSuite struct {
@@ -46,8 +47,9 @@ func (suite *sweepJobTestSuite) TestRun() {
 		},
 	}
 	// test stop case
-	j := &SweepJob{}
+	j := &SweepJob{mgr: suite.sweepMgr}
 	suite.jobCtx.On("OPCommand").Return(job.StopCommand, true).Once()
+	suite.sweepMgr.On("FixDanglingStateExecution", context.TODO()).Return(nil)
 	err := j.Run(suite.jobCtx, params)
 	suite.NoError(err, "stop job should not return error")
 
@@ -66,6 +68,7 @@ func (suite *sweepJobTestSuite) TestRun() {
 	suite.sweepMgr.On("ListCandidates", ctx, "REPLICATION", int64(20)).Return([]int64{2}, nil)
 	suite.sweepMgr.On("Clean", ctx, []int64{1}).Return(nil)
 	suite.sweepMgr.On("Clean", ctx, []int64{2}).Return(nil)
+	suite.sweepMgr.On("FixDanglingStateExecution", ctx).Return(nil)
 	err = j.Run(suite.jobCtx, params)
 	suite.NoError(err)
 }
