@@ -18,3 +18,4 @@ package task
 //go:generate mockery --dir ./dao --name ExecutionDAO --output . --outpkg task --filename mock_execution_dao_test.go --structname mockExecutionDAO
 //go:generate mockery --name Manager --output . --outpkg task --filename mock_task_manager_test.go --structname mockTaskManager --inpackage
 //go:generate mockery --dir ../../common/job --name Client --output . --outpkg task --filename mock_jobservice_client_test.go --structname mockJobserviceClient
+//go:generate mockery --name SweepManager --output . --outpkg task --filename mock_sweep_manager_test.go --structname mockSweepManager --inpackage

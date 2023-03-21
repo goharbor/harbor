@@ -16,10 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	task.SetExecutionSweeperCount(job.ScanDataExportVendorType, 50)
-}
-
 var Ctl = NewController()
 
 type Controller interface {
