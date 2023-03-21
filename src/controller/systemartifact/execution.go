@@ -24,10 +24,6 @@ var (
 	sched = scheduler.Sched
 )
 
-func init() {
-	task.SetExecutionSweeperCount(job.SystemArtifactCleanupVendorType, 50)
-}
-
 var Ctl = NewController()
 
 type Controller interface {

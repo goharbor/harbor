@@ -13,9 +13,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-// Max retry has the same meaning as max fails.
-const maxFails = "JOBSERVICE_WEBHOOK_JOB_MAX_RETRY"
-
 // WebhookJob implements the job interface, which send notification by http or https.
 type WebhookJob struct {
 	client *http.Client

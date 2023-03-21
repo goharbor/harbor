@@ -35,11 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	// keep only the latest created 50 replication execution records
-	task.SetExecutionSweeperCount(job.ReplicationVendorType, 50)
-}
-
 // Ctl is a global replication controller instance
 var Ctl = NewController()
 
