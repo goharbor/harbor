@@ -161,7 +161,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Log the stack
-			buf := make([]byte, 1<<10)
+			buf := make([]byte, 1<<20)
 			size := runtime.Stack(buf, false)
 			err = errors.Errorf("runtime error: %s; stack: %s", r, buf[0:size])
 			logger.Errorf("Run job %s:%s error: %s", j.Name, j.ID, err)

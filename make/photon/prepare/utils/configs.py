@@ -244,6 +244,7 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
     # notification config
     notification_config = configs.get('notification') or {}
     config_dict['notification_webhook_job_max_retry'] = notification_config["webhook_job_max_retry"]
+    config_dict['notification_webhook_job_http_client_timeout'] = notification_config["webhook_job_http_client_timeout"]
 
     # Log configs
     allowed_levels = ['debug', 'info', 'warning', 'error', 'fatal']
