@@ -105,11 +105,7 @@ storage_service:
     {% elif key == 'redirect' %}
 #   # set disable to true when you want to disable registry redirect
   redirect:
-      {% if value.disabled is not none %}
-    disable: {{ value.disabled }}
-      {% else %}
-    disable: {{ value.disable }}
-      {% endif %}
+    disabled: {{ value.disabled }}
     {% else %}
 #   # storage backend, default is filesystem, options include filesystem, azure, gcs, s3, swift and oss
 #   # for more info about this configuration please refer https://docs.docker.com/registry/configuration/
@@ -133,7 +129,7 @@ storage_service:
 #     maxthreads: 100
 #   # set disable to true when you want to disable registry redirect
 #   redirect:
-#     disable: false
+#     disabled: false
 {% endif %}
 
 # Trivy configuration
