@@ -80,6 +80,7 @@ type AccessoryData struct {
 	ID                int64     `json:"id"`
 	ArtifactID        int64     `json:"artifact_id"`
 	SubArtifactID     int64     `json:"subject_artifact_id"`
+	SubArtifactRepo   string    `json:"subject_artifact_repo"`
 	SubArtifactDigest string    `json:"subject_artifact_digest"`
 	Type              string    `json:"type"`
 	Size              int64     `json:"size"`

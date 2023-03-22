@@ -1,8 +1,9 @@
 /* remove the redundant data from table artifact_blob */
 delete from artifact_blob afb where not exists (select digest from blob b where b.digest = afb.digest_af);
 
-/* add subject_artifact_digest*/
+/* add subject_artifact_digest and subject_artifact_repo */
 alter table artifact_accessory add column IF NOT EXISTS subject_artifact_digest varchar(1024);
+alter table artifact_accessory add column IF NOT EXISTS subject_artifact_repo varchar(1024);
 
 DO $$
 DECLARE
@@ -12,7 +13,7 @@ BEGIN
     FOR acc IN SELECT * FROM artifact_accessory
     LOOP
         SELECT * INTO art from artifact where id = acc.subject_artifact_id;
-        UPDATE artifact_accessory SET subject_artifact_digest=art.digest WHERE subject_artifact_id = art.id;
+        UPDATE artifact_accessory SET subject_artifact_digest=art.digest, subject_artifact_repo=art.repository_name WHERE subject_artifact_id = art.id;
     END LOOP;
 END $$;
 

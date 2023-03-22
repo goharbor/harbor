@@ -161,7 +161,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 		for _, acc := range option.Accs {
-			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, artifact.RepositoryName, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
 				return false, 0, err
 			}
 		}

@@ -97,6 +97,7 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 			accData := model.AccessoryData{
 				ArtifactID:        art.ID,
+				SubArtifactRepo:   info.Repository,
 				SubArtifactDigest: mf.Subject.Digest.String(),
 				Size:              art.Size,
 				Digest:            art.Digest,
