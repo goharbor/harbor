@@ -112,6 +112,7 @@ func SignatureMiddleware() func(http.Handler) http.Handler {
 			}
 			accData := model.AccessoryData{
 				ArtifactID:        art.ID,
+				SubArtifactRepo:   info.Repository,
 				SubArtifactDigest: fmt.Sprintf("%s:%s", digest.SHA256, subjectArtDigest),
 				Size:              art.Size,
 				Digest:            art.Digest,

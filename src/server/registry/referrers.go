@@ -60,9 +60,9 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Query accessories with matching subject artifact digest and artifactType
-	query := q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest})
+	query := q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName})
 	if at != "" {
-		query = q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "Type": at})
+		query = q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName, "Type": at})
 	}
 	total, err := r.accessoryManager.Count(ctx, query)
 	if err != nil {

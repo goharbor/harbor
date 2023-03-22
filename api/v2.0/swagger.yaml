@@ -9385,10 +9385,14 @@ definitions:
       subject_artifact_id:
         type: integer
         format: int64
-        description: The subject artifact id of the accessory
+        description: Going to be deprecated, use repo and digest for insteand. The subject artifact id of the accessory.
       subject_artifact_digest:
         type: string
         description: The subject artifact digest of the accessory
+        x-omitempty: false
+      subject_artifact_repo:
+        type: string
+        description: The subject artifact repository name of the accessory
         x-omitempty: false
       size:
         type: integer
