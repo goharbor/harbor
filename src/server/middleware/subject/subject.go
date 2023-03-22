@@ -84,23 +84,29 @@ func Middleware() func(http.Handler) http.Handler {
 		if mf.Subject != nil {
 			subjectArt, err := artifact.Ctl.GetByReference(ctx, info.Repository, mf.Subject.Digest.String(), nil)
 			if err != nil {
-				logger.Errorf("failed to get subject artifact: %s, error: %v", mf.Subject.Digest, err)
-				return err
+				if !errors.IsNotFoundErr(err) {
+					logger.Errorf("failed to get subject artifact: %s, error: %v", mf.Subject.Digest, err)
+					return err
+				}
+				log.Debug("the subject of the signature doesn't exist.")
 			}
 			art, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Reference, nil)
 			if err != nil {
 				logger.Errorf("failed to get artifact with subject field: %s, error: %v", info.Reference, err)
 				return err
 			}
-
+			accData := model.AccessoryData{
+				ArtifactID:        art.ID,
+				SubArtifactDigest: mf.Subject.Digest.String(),
+				Size:              art.Size,
+				Digest:            art.Digest,
+				Type:              model.TypeSubject,
+			}
+			if subjectArt != nil {
+				accData.SubArtifactID = subjectArt.ID
+			}
 			if err := orm.WithTransaction(func(ctx context.Context) error {
-				_, err := accessory.Mgr.Create(ctx, model.AccessoryData{
-					ArtifactID:        art.ID,
-					SubArtifactDigest: subjectArt.Digest,
-					Size:              art.Size,
-					Digest:            art.Digest,
-					Type:              model.TypeSubject,
-				})
+				_, err := accessory.Mgr.Create(ctx, accData)
 				return err
 			})(orm.SetTransactionOpNameToContext(ctx, "tx-create-subject-accessory")); err != nil {
 				if !errors.IsConflictErr(err) {

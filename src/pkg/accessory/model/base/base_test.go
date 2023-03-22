@@ -22,6 +22,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 	suite.accessory, _ = model.New(model.TypeNone,
 		model.AccessoryData{
 			ArtifactID:        1,
+			SubArtifactID:     2,
 			SubArtifactDigest: suite.subDigest,
 			Size:              1234,
 			Digest:            suite.digest,
@@ -36,7 +37,8 @@ func (suite *BaseTestSuite) TestGetArtID() {
 	suite.Equal(int64(1), suite.accessory.GetData().ArtifactID)
 }
 
-func (suite *BaseTestSuite) TestSubGetArtID() {
+func (suite *BaseTestSuite) TestSubGetArt() {
+	suite.Equal(int64(2), suite.accessory.GetData().SubArtifactID)
 	suite.Equal(suite.subDigest, suite.accessory.GetData().SubArtifactDigest)
 }
 

@@ -1,7 +1,7 @@
 /* remove the redundant data from table artifact_blob */
 delete from artifact_blob afb where not exists (select digest from blob b where b.digest = afb.digest_af);
 
-/* replace subject_artifact_id with subject_artifact_digest*/
+/* add subject_artifact_digest*/
 alter table artifact_accessory add column subject_artifact_digest varchar(1024);
 
 DO $$
@@ -19,7 +19,6 @@ END $$;
 alter table artifact_accessory drop CONSTRAINT artifact_accessory_subject_artifact_id_fkey;
 alter table artifact_accessory drop CONSTRAINT unique_artifact_accessory;
 alter table artifact_accessory add CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_digest);
-alter table artifact_accessory drop column subject_artifact_id;
 
 /* Update the registry and replication policy associated with the chartmuseum */
 UPDATE registry
