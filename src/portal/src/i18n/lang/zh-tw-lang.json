@@ -343,7 +343,7 @@
     "TOKEN": "令牌",
     "NEW_ROBOT_ACCOUNT": "添加機器人帳戶",
     "ENABLED_STATE": "啟用狀態",
-    "CREATETION": "創建時間",
+    "CREATION": "創建時間",
     "EXPIRATION": "過期時間",
     "NUMBER_REQUIRED": "此項為必填項且為不為0的整數。",
     "TOKEN_EXPIRATION": "機器人帳戶令牌過期時間(天)",
@@ -425,7 +425,10 @@
     "NAME_REQUIRED": "名稱為必填項",
     "NOTIFY_TYPE": "通知類型",
     "EVENT_TYPE": "事件類型",
-    "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型"
+    "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型",
+    "PAYLOAD_FORMAT": "Payload Format",
+    "CLOUD_EVENT": "CloudEvents",
+    "PAYLOAD_DATA": "Payload Data"
   },
   "GROUP":{
     "GROUP":"組",
@@ -503,7 +506,6 @@
     "FILTER_PLACEHOLDER": "過濾任務",
     "STOP_TITLE": "確認停止任務",
     "BOTH":"全部",
-    "PLEASE_SELECT": "請選擇",
     "STOP_SUCCESS": "停止任務{{param}} 成功",
     "STOP_SUMMARY": "確認停止任務{{param}}?",
     "TASK_ID":"任務ID",
@@ -690,8 +692,7 @@
     "DELETED_FAILED": "刪除目標失敗。",
     "CANNOT_EDIT": "當複制規則啟用時目標無法修改。",
     "FAILED_TO_DELETE_TARGET_IN_USED": "無法刪除正在使用的目標。",
-    "PLACEHOLDER": "未發現任何復制目標!",
-    "DEPRECATED": "Helm Hub is moving to Artifact Hub"
+    "PLACEHOLDER": "未發現任何復制目標!"
   },
   "REPOSITORY":{
     "COPY_DIGEST_ID": "複製摘要",
@@ -827,6 +828,7 @@
     "ROOT_CERT_LINK": "下載",
     "REGISTRY_CERTIFICATE": "註冊證書",
     "NO_CHANGE":"保存中止,因為沒有改變",
+    "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
     "TOOLTIP":{
       "SELF_REGISTRATION_ENABLE": "激活註冊功能。",
       "SELF_REGISTRATION_DISABLE": "禁用註冊功能。",
@@ -848,7 +850,8 @@
       "WEBHOOK_TOOLTIP": "當執行推送,拉動,刪除,掃描鏡像或chart 等特定操作時,啟用webhooks 以在指定端點接收回調",
       "HOURLY_CRON": "每小時運行一次。相當於 0 0 * * * *",
       "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於 0 0 0 * * 0",
-      "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *"
+      "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *",
+      "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
     },
     "LDAP":{
       "URL":"LDAP URL",
@@ -1813,7 +1816,6 @@
     "SIGNPOST_CLOSE": "Signpost Close",
     "LOADING": "LOADING",
     "DATE_PICKER_DIALOG_LABEL": "Choose date",
-    "DATE_PICKER_TOGGLE": "Toggle datepicker",
     "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
     "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
     "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

@@ -152,11 +152,11 @@ func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man di
 }
 
 // SendPullEvent send a pull image event
-func SendPullEvent(a *artifact.Artifact, tag, operator string) {
+func SendPullEvent(ctx context.Context, a *artifact.Artifact, tag, operator string) {
 	e := &metadata.PullArtifactEventMetadata{
 		Artifact: &a.Artifact,
 		Tag:      tag,
 		Operator: operator,
 	}
-	event.BuildAndPublish(e)
+	event.BuildAndPublish(ctx, e)
 }

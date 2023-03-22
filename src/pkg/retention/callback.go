@@ -58,8 +58,8 @@ func retentionTaskCheckInProcessor(ctx context.Context, t *task.Task, sc *job.St
 			TaskID:   taskID,
 		}
 
-		if err := e.Build(metaData); err == nil {
-			if err := e.Publish(); err != nil {
+		if err := e.Build(ctx, metaData); err == nil {
+			if err := e.Publish(ctx); err != nil {
 				log.G(ctx).WithField("error", err).Errorf("tag retention job hook handler: event publish")
 			}
 		} else {

@@ -196,3 +196,14 @@ func (j *jobServiceAPI) ActionPendingJobs(ctx context.Context, params jobservice
 	}
 	return jobservice.NewActionPendingJobsOK()
 }
+
+func (j *jobServiceAPI) ActionGetJobLog(ctx context.Context, params jobservice.ActionGetJobLogParams) middleware.Responder {
+	if err := j.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceJobServiceMonitor); err != nil {
+		return j.SendError(ctx, err)
+	}
+	log, err := j.jobCtr.GetJobLog(ctx, params.JobID)
+	if err != nil {
+		return j.SendError(ctx, err)
+	}
+	return jobservice.NewActionGetJobLogOK().WithContentType("text/plain").WithPayload(string(log))
+}

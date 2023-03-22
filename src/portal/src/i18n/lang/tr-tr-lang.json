@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Etkin durum",
         "NUMBER_REQUIRED": "Alan zorunludur ve 0 dışında bir tam sayı olmalıdır.",
         "DESCRIPTION": "Açıklama",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Süre Sonu",
         "TOKEN_EXPIRATION": "Robot Token Sona Ermesi (Günler)",
         "ACTION": "Eylem",
@@ -428,7 +428,10 @@
         "NAME_REQUIRED": "Name is required",
         "NOTIFY_TYPE": "Notify Type",
         "EVENT_TYPE": "Event Type",
-        "EVENT_TYPE_REQUIRED": "Require at least one event type"
+        "EVENT_TYPE_REQUIRED": "Require at least one event type",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "GROUP": {
         "GROUP": "Grup",
@@ -693,8 +696,7 @@
         "DELETED_FAILED": "Silinen uç noktalar başarısız oldu.",
         "CANNOT_EDIT": "Çoğaltma kuralı etkinken uç noktası değiştirilemez.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Kullanılan uç nokta silinemedi.",
-        "PLACEHOLDER": "Uç noktaları bulamadık!",
-        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
+        "PLACEHOLDER": "Uç noktaları bulamadık!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Özet Kopyala",
@@ -830,6 +832,7 @@
         "ROOT_CERT_LINK": "Yükle",
         "REGISTRY_CERTIFICATE": "Kayıt defteri sertifikası",
         "NO_CHANGE": "İptal et, çünkü hiçbir şey değişmedi",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Kaydolmayı etkinleştir.",
             "SELF_REGISTRATION_DISABLE": "Kaydolmayı devre dışı bırak.",
@@ -851,7 +854,8 @@
             "WEBHOOK_TOOLTIP": "Görüntü veya grafik olarak basılan, çekilmiş, silinen, taranan gibi bazı eylemler gerçekleştirildiğinde ağ kancalarının belirtilen bitiş noktalarınızdan geri aramalar almasını sağlayın",
             "HOURLY_CRON": "Saat başı bir saat, saat başı çalıştırın. Eşittir 0 0 * * * *.",
             "WEEKLY_CRON": "Haftada bir kez, gece yarısı Cmt / Paz arasında koşun. Eşittir 0 0 0 * * 0.",
-            "DAILY_CRON": "Günde bir kez, gece yarısı çalıştırın. Eşittir0 0 0 * * *."
+            "DAILY_CRON": "Günde bir kez, gece yarısı çalıştırın. Eşittir0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1822,7 +1826,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

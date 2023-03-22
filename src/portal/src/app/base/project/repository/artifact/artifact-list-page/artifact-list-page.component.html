@@ -10,7 +10,7 @@
         <span *ngIf="referArtifactNameArray?.length >= 1">
             <span *ngFor="let digest of referArtifactNameArray; let i = index">
                 &lt;<a (click)="jumpDigest(i)">{{
-                    digest | slice: 0:15
+                    digest | slice : 0 : 15
                 }}</a></span
             >
         </span>
@@ -22,7 +22,7 @@
                     {{ repoName }}
                 </h2>
                 <h2 sub-header-title class="custom-h2" *ngIf="artifactDigest">
-                    {{ artifactDigest | slice: 0:15 }}
+                    {{ artifactDigest | slice : 0 : 15 }}
                 </h2>
             </div>
         </div>

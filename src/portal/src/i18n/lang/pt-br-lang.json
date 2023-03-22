@@ -344,7 +344,7 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "Nova conta de automação",
         "ENABLED_STATE": "Habilitado",
-        "CREATETION": "Criação",
+        "CREATION": "Criação",
         "EXPIRATION": "Expiração",
         "NUMBER_REQUIRED": "Campo obrigatório. Não pode ser 0 (zero).",
         "TOKEN_EXPIRATION": "Expiração do token de automação (em dias)",
@@ -460,7 +460,10 @@
         "NAME_REQUIRED": "Nome é obrigatório",
         "NOTIFY_TYPE": "Tipo de Notificação",
         "EVENT_TYPE": "Tipo de Evento",
-        "EVENT_TYPE_REQUIRED": "Pelo menos um tipo de evento é obrigatório"
+        "EVENT_TYPE_REQUIRED": "Pelo menos um tipo de evento é obrigatório",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nome do usuário",
@@ -506,7 +509,6 @@
         "FILTER_PLACEHOLDER": "Filtro de Tarefas",
         "STOP_TITLE": "Confirme as execuções de parada",
         "BOTH": "ambos",
-        "PLEASE_SELECT": "seleciona uma opção",
         "STOP_SUCCESS": "Execução {{param}} parada com sucesso",
         "STOP_SUMMARY": "Você quer parar as execuções? {{param}}?",
         "TASK_ID": "ID de Tarefa",
@@ -693,8 +695,7 @@
         "DELETED_FAILED": "Falha ao remover endereço.",
         "CANNOT_EDIT": "Endereço não pode ser alterado enquando a regra de replicação estiver ativa.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Falha ao remover endereço em uso.",
-        "PLACEHOLDER": "Não há endereços cadastrados",
-        "DEPRECATED": "Helm Hub está sendo movido para Artifact Hub"
+        "PLACEHOLDER": "Não há endereços cadastrados"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",
@@ -828,6 +829,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Certificado do Repositório",
         "NO_CHANGE": "Sem alterações para salvar.",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",
@@ -849,7 +851,8 @@
             "WEBHOOK_TOOLTIP": "Habilite webhooks para enviar notificações a pontos de serviços remotos quando determinados eventos ocorrerem, como pull, push, análise de imagens, etc.",
             "HOURLY_CRON": "Excutar toda hora, no início de cada hora. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Executar uma vez por semana, à meia noite de sábado para domingo. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *."
+            "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -1820,7 +1823,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

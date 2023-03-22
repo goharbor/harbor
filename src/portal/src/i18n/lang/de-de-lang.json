@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Aktivierungszustand",
         "NUMBER_REQUIRED": "Feld ist erforderlich und sollte ein Integer größer 0 sein.",
         "DESCRIPTION": "Beschreibung",
-        "CREATETION": "Erstellt am",
+        "CREATION": "Erstellt am",
         "EXPIRATION": "Ablaufdatum",
         "TOKEN_EXPIRATION": "Robot Token Ablauf (Tage)",
         "ACTION": "Aktion",
@@ -428,7 +428,10 @@
         "NAME_REQUIRED": "Name ist erforderlich",
         "NOTIFY_TYPE": "Benachrichtigungstyp",
         "EVENT_TYPE": "Event Typ",
-        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich"
+        "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "GROUP": {
         "GROUP": "Gruppe",
@@ -693,8 +696,7 @@
         "DELETED_FAILED": "Löschen des Endpunktes fehlgeschlagen.",
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Genutzter Endpunkt konnte nicht gelöscht werden.",
-        "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
-        "DEPRECATED": "Helm Hub wird nach Artifact Hub migriert"
+        "PLACEHOLDER": "Wir konnten keine Endpunkt finden."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -830,6 +832,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry Zertifikat",
         "NO_CHANGE": "Speichern abgebrochen, da nichts verändert wurde",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
@@ -851,7 +854,8 @@
             "WEBHOOK_TOOLTIP": "Webhooks aktivieren, um Callbacks zu erhalten, wenn bestimmte Aktionen wie Image push, pull, delete, scan o.Ä. durchgeführt werden.",
             "HOURLY_CRON": "Läuft einmal am Anfang jeder Stunde. Identisch zu 0 0 * * * *.",
             "WEEKLY_CRON": "Läuft wöchentlich um Mitternacht zwischen Sa/So. Identisch zu 0 0 0 * * 0.",
-            "DAILY_CRON": "Läuft täglich um Mitternacht. Identisch zu 0 0 0 * * *."
+            "DAILY_CRON": "Läuft täglich um Mitternacht. Identisch zu 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1822,7 +1826,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

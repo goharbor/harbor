@@ -36,7 +36,7 @@ job_loggers:
     settings: # Customized settings of logger
       base_dir: "/var/log/jobs"
     sweeper:
-      duration: 1 #days
+      duration: {{logger_sweeper_duration}} #days
       settings: # Customized settings of sweeper
         work_dir: "/var/log/jobs"
 
@@ -51,3 +51,12 @@ metric:
   path: {{ metric.path }}
   port: {{ metric.port }}
 {% endif %}
+
+reaper:
+  # the max time to wait for a task to finish, if unfinished after max_update_hours, the task will be mark as error, but the task will continue to run, default value is 24,
+  max_update_hours: 24
+  # the max time for execution in running state without new task created
+  max_dangling_hours: 168
+
+# the max size of job log returned by API, default is 10M
+max_retrieve_size_mb: 10

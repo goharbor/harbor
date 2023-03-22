@@ -345,7 +345,7 @@
         "TOKEN": "令牌",
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
         "ENABLED_STATE": "启用状态",
-        "CREATETION": "创建时间",
+        "CREATION": "创建时间",
         "EXPIRATION": "过期时间",
         "NUMBER_REQUIRED": "此项为必填项且为不为0的整数。",
         "TOKEN_EXPIRATION": "机器人账户令牌过期时间(天)",
@@ -427,7 +427,10 @@
         "NAME_REQUIRED": "名称为必填项",
         "NOTIFY_TYPE": "通知类型",
         "EVENT_TYPE": "事件类型",
-        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型"
+        "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
+        "PAYLOAD_FORMAT": "载荷形式",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "载荷数据"
     },
     "GROUP": {
         "GROUP": "组",
@@ -507,7 +510,6 @@
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
         "BOTH": "全部",
-        "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
         "TASK_ID": "任务ID",
@@ -533,7 +535,6 @@
         "REPLICATION_TITLE": "复制规则确认",
         "REPLICATION_SUMMARY": "确认复制规则 {{param}}?",
         "DELETION_SUMMARY_FAILURE": "有 pending/running/retrying 状态，不能删除",
-        "REPLICATE_SUMMARY_FAILURE": "有 pending/running 状态，不能删除",
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
@@ -695,8 +696,7 @@
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
         "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
-        "PLACEHOLDER": "未发现任何复制目标!",
-        "DEPRECATED": "Helm Hub 正被移至 Artifact Hub"
+        "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",
@@ -831,7 +831,8 @@
         "ROOT_CERT": "镜像库根证书",
         "ROOT_CERT_LINK": "下载",
         "REGISTRY_CERTIFICATE": "注册证书",
-        "NO_CHANGE": "Save abort because nothing changed",
+        "NO_CHANGE": "保存中止，因为没有变化",
+        "SKIP_SCANNER_PULL_TIME": "跳过扫描器对于拉取时间的更新",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "激活注册功能。",
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
@@ -853,7 +854,8 @@
             "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描镜像或 chart 等特定操作时，启用 webhooks 以在指定端点接收回调",
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
-            "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *"
+            "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "当镜像是由扫描器拉取时，不更新该镜像的拉取时间属性。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1821,7 +1823,6 @@
         "SIGNPOST_CLOSE": "指示牌关闭",
         "LOADING": "加载中",
         "DATE_PICKER_DIALOG_LABEL": "选择日期",
-        "DATE_PICKER_TOGGLE": "切换日期选择器",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "选择日期",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "选择日期, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "前一月",

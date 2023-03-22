@@ -31,7 +31,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		next.ServeHTTP(res, r.WithContext(notification.NewContext(r.Context(), evc)))
 		if res.Success() || evc.MustNotify {
 			for e := evc.Events.Front(); e != nil; e = e.Next() {
-				event.BuildAndPublish(e.Value.(event.Metadata))
+				event.BuildAndPublish(r.Context(), e.Value.(event.Metadata))
 			}
 		}
 	}, skippers...)

@@ -347,7 +347,7 @@
         "TOKEN": "Secret",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -429,7 +429,10 @@
         "NAME_REQUIRED": "Name is required",
         "NOTIFY_TYPE": "Notify Type",
         "EVENT_TYPE": "Event Type",
-        "EVENT_TYPE_REQUIRED": "Require at least one event type"
+        "EVENT_TYPE_REQUIRED": "Require at least one event type",
+        "PAYLOAD_FORMAT": "Payload Format",
+        "CLOUD_EVENT": "CloudEvents",
+        "PAYLOAD_DATA": "Payload Data"
     },
     "GROUP": {
         "GROUP": "Group",
@@ -508,7 +511,6 @@
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirme Stop Executions",
         "BOTH": "both",
-        "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "De que desea detener las ejecuciones {{param}}?",
         "TASK_ID": "Task ID",
@@ -695,8 +697,7 @@
         "DELETED_FAILED": "Ha fallado la eliminación del endpoint.",
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Fallo al eliminar el endpoint en uso.",
-        "PLACEHOLDER": "We couldn't find any endpoints!",
-        "DEPRECATED": "Helm Hub is moving to Artifact Hub"
+        "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",
@@ -831,6 +832,7 @@
         "ROOT_CERT_LINK": "Descargar",
         "REGISTRY_CERTIFICATE": "Certificado de registro",
         "NO_CHANGE": "Save abort because nothing changed",
+        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",
@@ -848,11 +850,11 @@
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
-            "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *."
+            "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *.",
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
 
         },
         "LDAP": {
@@ -1821,7 +1823,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

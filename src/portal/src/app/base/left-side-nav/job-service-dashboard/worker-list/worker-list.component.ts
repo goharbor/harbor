@@ -6,6 +6,7 @@ import { JobserviceService } from 'ng-swagger-gen/services';
 import { finalize, forkJoin, Subscription } from 'rxjs';
 import { MessageHandlerService } from 'src/app/shared/services/message-handler.service';
 import {
+    CURRENT_BASE_HREF,
     getPageSizeFromLocalStorage,
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
@@ -208,5 +209,9 @@ export class WorkerListComponent implements OnInit, OnDestroy {
                     );
                 },
             });
+    }
+
+    viewLog(jobId: number | string): string {
+        return `${CURRENT_BASE_HREF}/jobservice/jobs/${jobId}/log`;
     }
 }

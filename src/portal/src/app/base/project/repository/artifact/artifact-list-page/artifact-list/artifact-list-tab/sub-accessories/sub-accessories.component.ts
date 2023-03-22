@@ -1,10 +1,10 @@
 import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
-    EventEmitter,
     Input,
     OnInit,
-    Output,
-    ViewChild,
 } from '@angular/core';
 import {
     clone,
@@ -22,8 +22,15 @@ import { ErrorHandler } from '../../../../../../../../shared/units/error-handler
 import { finalize } from 'rxjs/operators';
 import { SafeUrl } from '@angular/platform-browser';
 import { ArtifactService } from '../../../../artifact.service';
-import { AccessoryQueryParams, artifactDefault } from '../../../../artifact';
-import { ClrDatagrid } from '@clr/angular';
+import {
+    AccessoryFront,
+    AccessoryQueryParams,
+    artifactDefault,
+} from '../../../../artifact';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../../../../../../services/event-service/event.service';
 
 export const ACCESSORY_PAGE_SIZE: number = 5;
 
@@ -31,8 +38,9 @@ export const ACCESSORY_PAGE_SIZE: number = 5;
     selector: 'sub-accessories',
     templateUrl: 'sub-accessories.component.html',
     styleUrls: ['./sub-accessories.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush, // use OnPush Strategy to avoid ExpressionChangedAfterItHasBeenCheckedError
 })
-export class SubAccessoriesComponent implements OnInit {
+export class SubAccessoriesComponent implements OnInit, AfterViewInit {
     @Input()
     projectName: string;
     @Input()
@@ -41,32 +49,29 @@ export class SubAccessoriesComponent implements OnInit {
     artifactDigest: string;
     @Input()
     accessories: Accessory[] = [];
-    @Output()
-    deleteAccessory: EventEmitter<Accessory> = new EventEmitter<Accessory>();
     currentPage: number = 1;
     @Input()
     total: number = 0;
     pageSize: number = ACCESSORY_PAGE_SIZE;
     page: number = 1;
-    displayedAccessories: Accessory[] = [];
+    displayedAccessories: AccessoryFront[] = [];
     loading: boolean = false;
-    @ViewChild('datagrid')
-    datagrid: ClrDatagrid;
-    viewInit: boolean = false;
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private newArtifactService: NewArtifactService,
         private artifactService: ArtifactService,
-        private errorHandlerService: ErrorHandler
+        private errorHandlerService: ErrorHandler,
+        private cdf: ChangeDetectorRef,
+        private event: EventService
     ) {}
+
+    ngAfterViewInit(): void {
+        this.cdf.detectChanges();
+    }
 
     ngOnInit(): void {
         this.displayedAccessories = clone(this.accessories);
-        // avoid ng checking error
-        setTimeout(() => {
-            this.viewInit = true;
-        });
     }
     size(size: number) {
         return formatSize(size.toString());
@@ -103,13 +108,14 @@ export class SubAccessoriesComponent implements OnInit {
     }
 
     delete(a: Accessory) {
-        this.deleteAccessory.emit(a);
+        this.event.publish(HarborEvent.DELETE_ACCESSORY, a);
     }
 
     clrLoad() {
         if (this.currentPage === 1) {
             this.displayedAccessories = clone(this.accessories);
             this.getIconFromBackend();
+            this.getAccessoriesAsync(this.displayedAccessories);
             return;
         }
         this.loading = true;
@@ -126,7 +132,9 @@ export class SubAccessoriesComponent implements OnInit {
             .subscribe(
                 res => {
                     this.displayedAccessories = res;
+                    this.cdf.detectChanges();
                     this.getIconFromBackend();
+                    this.getAccessoriesAsync(this.displayedAccessories);
                 },
                 error => {
                     this.errorHandlerService.error(error);
@@ -139,14 +147,37 @@ export class SubAccessoriesComponent implements OnInit {
         }
     }
 
-    get dashLineHeight() {
-        if (
-            this.datagrid &&
-            this.datagrid['el'] &&
-            this.datagrid['el']?.nativeElement?.offsetHeight
-        ) {
-            return this.datagrid['el'].nativeElement?.offsetHeight;
+    // get accessories
+    getAccessoriesAsync(artifacts: AccessoryFront[]) {
+        if (artifacts && artifacts.length) {
+            artifacts.forEach(item => {
+                const listTagParams: NewArtifactService.ListAccessoriesParams =
+                    {
+                        projectName: this.projectName,
+                        repositoryName: dbEncodeURIComponent(
+                            this.repositoryName
+                        ),
+                        reference: item.digest,
+                        page: 1,
+                        pageSize: ACCESSORY_PAGE_SIZE,
+                    };
+                this.newArtifactService
+                    .listAccessoriesResponse(listTagParams)
+                    .subscribe(res => {
+                        if (res.headers) {
+                            let xHeader: string =
+                                res.headers.get('x-total-count');
+                            if (xHeader) {
+                                item.accessoryNumber = Number.parseInt(
+                                    xHeader,
+                                    10
+                                );
+                            }
+                        }
+                        item.accessories = res.body;
+                        this.cdf.detectChanges();
+                    });
+            });
         }
-        return 0;
     }
 }

@@ -120,9 +120,11 @@ type Controller interface {
 	//   Arguments:
 	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact : artifact to be scanned
+	//     allowlist map[string]struct{} : the set of CVE id of the items in the allowlist
+	//     allowlistIsExpired bool : whether the allowlist is expired
 	//
 	//   Returns
 	//      *Vulnerable : the vulnerable
 	//     error        : non nil error if any errors occurred
-	GetVulnerable(ctx context.Context, artifact *artifact.Artifact, allowlist allowlist.CVESet) (*Vulnerable, error)
+	GetVulnerable(ctx context.Context, artifact *artifact.Artifact, allowlist allowlist.CVESet, allowlistIsExpired bool) (*Vulnerable, error)
 }

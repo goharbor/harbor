@@ -1,0 +1,172 @@
+<div class="replication-tasks mt-3">
+    <section class="overview-section">
+        <div class="title-wrapper">
+            <div>
+                <div class="title-block">
+                    <div class="first-item">
+                        <h2 class="custom-h2 h2-style mt-0">
+                            {{ 'P2P_PROVIDER.EXECUTIONS' | translate }}
+                        </h2>
+                        <span class="id-divider"></span>
+                        <h2 class="custom-h2 h2-style mt-0">
+                            {{ executionId }}
+                        </h2>
+                    </div>
+                    <div>
+                        <div
+                            class="status-progress"
+                            *ngIf="execution && isInProgress()">
+                            <span class="spinner spinner-inline"></span>
+                            <span>{{
+                                'REPLICATION.IN_PROGRESS' | translate
+                            }}</span>
+                        </div>
+                        <div
+                            class="status-success"
+                            *ngIf="execution && isSuccess()">
+                            <clr-icon
+                                size="18"
+                                shape="success-standard"
+                                class="color-green"></clr-icon>
+                            <span>{{ 'REPLICATION.SUCCESS' | translate }}</span>
+                        </div>
+                        <div
+                            class="status-failed"
+                            *ngIf="execution && isFailed()">
+                            <clr-icon
+                                size="18"
+                                shape="error-standard"
+                                class="color-red"></clr-icon>
+                            <span>{{ 'REPLICATION.FAILURE' | translate }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="execution-block">
+            <div class="executions-detail">
+                <div>
+                    <label
+                        >{{ 'REPLICATION.CREATION_TIME' | translate }} :</label
+                    >
+                    <span>{{ startTime() | harborDatetime : 'short' }}</span>
+                </div>
+            </div>
+            <div class="flex-block">
+                <section class="execution-detail-label">
+                    <section class="detail-row">
+                        <div class="num-success common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.SUCCESS' | translate
+                        }}</label>
+                        <div class="execution-details">{{ successNum() }}</div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-failed common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.FAILURE' | translate
+                        }}</label>
+                        <div class="execution-details">{{ failedNum() }}</div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-progress common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.IN_PROGRESS' | translate
+                        }}</label>
+                        <div class="execution-details">{{ progressNum() }}</div>
+                    </section>
+                    <section class="detail-row">
+                        <div class="num-stopped common-style"></div>
+                        <label class="detail-span">{{
+                            'REPLICATION.STOPPED' | translate
+                        }}</label>
+                        <div class="execution-details">{{ stoppedNum() }}</div>
+                    </section>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <div class="tasks-detail">
+        <clr-datagrid
+            (clrDgRefresh)="clrLoadTasks($event, true)"
+            [clrDgLoading]="loading">
+            <clr-dg-action-bar>
+                <div class="flex-end">
+                    <h3 class="modal-title mt-0">
+                        {{ 'P2P_PROVIDER.TASKS' | translate }}
+                    </h3>
+                    <span class="refresh-btn">
+                        <clr-icon
+                            shape="refresh"
+                            (click)="refreshTasks()"
+                            [hidden]="loading"></clr-icon>
+                    </span>
+                </div>
+            </clr-dg-action-bar>
+            <clr-dg-column [clrDgField]="'id'">{{
+                'REPLICATION.TASK_ID' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{ 'P2P_PROVIDER.ID' | translate }}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'status'">{{
+                'DESTINATION.STATUS' | translate
+            }}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'creation_time'">{{
+                'DESTINATION.CREATION_TIME' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{ 'REPLICATION.LOGS' | translate }}</clr-dg-column>
+            <clr-dg-placeholder>{{
+                'P2P_PROVIDER.TASKS_PLACEHOLDER' | translate
+            }}</clr-dg-placeholder>
+            <clr-dg-row *ngFor="let t of tasks" [clrDgItem]="t">
+                <clr-dg-cell>{{ t.id }}</clr-dg-cell>
+                <clr-dg-cell>{{ t.execution_id }}</clr-dg-cell>
+                <clr-dg-cell
+                    >{{ t.status
+                    }}<clr-tooltip>
+                        <clr-icon
+                            *ngIf="t.status_message"
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="20"></clr-icon>
+                        <clr-tooltip-content
+                            [clrPosition]="'left'"
+                            clrSize="md"
+                            *clrIfOpen>
+                            <span>{{ t.status_message }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip></clr-dg-cell
+                >
+                <clr-dg-cell>{{
+                    t.creation_time | harborDatetime : 'short'
+                }}</clr-dg-cell>
+                <clr-dg-cell>
+                    <a
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        [href]="viewLog(t.id)"
+                        *ngIf="t.status !== 'Initialized'">
+                        <clr-icon shape="list"></clr-icon>
+                    </a>
+                </clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+                <clr-dg-pagination
+                    #pagination
+                    [(clrDgPage)]="currentPage"
+                    [clrDgPageSize]="pageSize"
+                    [clrDgTotalItems]="totalCount">
+                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                        'PAGINATION.PAGE_SIZE' | translate
+                    }}</clr-dg-page-size>
+                    <span *ngIf="totalCount"
+                        >{{ pagination.firstItem + 1 }} -
+                        {{ pagination.lastItem + 1 }}
+                        {{ 'REPLICATION.OF' | translate }}</span
+                    >
+                    {{ totalCount }} {{ 'REPLICATION.ITEMS' | translate }}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>

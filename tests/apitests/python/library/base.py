@@ -3,8 +3,6 @@ import os
 import subprocess
 import time
 
-import client
-import swagger_client
 import v2_swagger_client
 
 try:
@@ -27,16 +25,8 @@ def get_endpoint():
     harbor_server = os.environ.get("HARBOR_HOST", "localhost:8080")
     return os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0"
 
-def _create_client(server, credential, debug, api_type="products"):
-    cfg = None
-    if api_type in ('projectv2', 'artifact', 'repository', 'scanner', 'scan', 'scanall', 'preheat', 'quota',
-                    'replication', 'registry', 'robot', 'gc', 'retention', 'immutable', 'system_cve_allowlist',
-                    'configure', 'user', 'member', 'health', 'label', 'webhook', 'purge', 'audit_log', 'scan_data_export',
-                    'statistic', "system_info", "jobservice", "schedule"):
-        cfg = v2_swagger_client.Configuration()
-    else:
-        cfg = swagger_client.Configuration()
-
+def _create_client(server, credential, debug, api_type):
+    cfg = v2_swagger_client.Configuration()
     cfg.host = server.endpoint
     cfg.verify_ssl = server.verify_ssl
     # support basic auth only for now
@@ -55,7 +45,6 @@ def _create_client(server, credential, debug, api_type="products"):
         cfg.auth_settings = types.MethodType(lambda self: {}, cfg)
 
     return {
-        "products": swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
         "projectv2":v2_swagger_client.ProjectApi(v2_swagger_client.ApiClient(cfg)),
         "artifact": v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
         "preheat": v2_swagger_client.PreheatApi(v2_swagger_client.ApiClient(cfg)),
@@ -161,7 +150,7 @@ def run_command(command, expected_error_message = None):
         return output
 
 class Base(object):
-    def __init__(self, server=None, credential=None, debug=True, api_type="products"):
+    def __init__(self, server=None, credential=None, debug=True, api_type=""):
         if server is None:
             server = Server(endpoint=get_endpoint(), verify_ssl=False)
         if not isinstance(server.verify_ssl, bool):

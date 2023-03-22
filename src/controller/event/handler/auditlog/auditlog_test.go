@@ -81,7 +81,7 @@ func (suite *AuditLogHandlerTestSuite) TestSubscribeTagEvent() {
 
 	notifier.Subscribe(event.TopicCreateProject, suite.auditLogHandler)
 	// event data should implement the interface TopicEvent
-	ne.BuildAndPublish(&metadata.CreateProjectEventMetadata{
+	ne.BuildAndPublish(context.TODO(), &metadata.CreateProjectEventMetadata{
 		ProjectID: 1,
 		Project:   "test",
 		Operator:  "admin",
