@@ -2,7 +2,7 @@
 delete from artifact_blob afb where not exists (select digest from blob b where b.digest = afb.digest_af);
 
 /* add subject_artifact_digest*/
-alter table artifact_accessory add column subject_artifact_digest varchar(1024);
+alter table artifact_accessory add column IF NOT EXISTS subject_artifact_digest varchar(1024);
 
 DO $$
 DECLARE
@@ -16,9 +16,19 @@ BEGIN
     END LOOP;
 END $$;
 
-alter table artifact_accessory drop CONSTRAINT artifact_accessory_subject_artifact_id_fkey;
-alter table artifact_accessory drop CONSTRAINT unique_artifact_accessory;
-alter table artifact_accessory add CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_digest);
+alter table artifact_accessory drop CONSTRAINT IF EXISTS artifact_accessory_subject_artifact_id_fkey;
+alter table artifact_accessory drop CONSTRAINT IF EXISTS unique_artifact_accessory;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1
+                   FROM   pg_constraint
+                   WHERE  conname = 'unique_artifact_accessory')
+    THEN
+        ALTER TABLE artifact_accessory
+        ADD CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_digest);
+    END IF;
+END $$;
 
 /* Update the registry and replication policy associated with the chartmuseum */
 UPDATE registry
@@ -90,42 +100,45 @@ DECLARE
     status_code integer;
     exec_id integer;
     extra_attrs json;
-BEGIN
-    FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
-    LOOP
-        SELECT * INTO job FROM notification_job WHERE
-        policy_id=job_group.policy_id
-        AND event_type=job_group.event_type
-        AND status IN ('stopped', 'finished', 'error')
-        ORDER BY creation_time DESC LIMIT 1;
-        /* convert vendor type */
-        IF job.notify_type = 'http' THEN
-            vendor_type = 'WEBHOOK';
-        ELSIF job.notify_type = 'slack' THEN
-            vendor_type = 'SLACK';
-        ELSE
-            vendor_type = 'WEBHOOK';
-        END IF;
-        /* convert status */
-        IF job.status = 'stopped' THEN
-            new_status = 'Stopped';
-            status_code = 3;
-        ELSIF job.status = 'error' THEN
-            new_status = 'Error';
-            status_code = 3;
-        ELSIF job.status = 'finished' THEN
-            new_status = 'Success';
-            status_code = 3;
-        ELSE
-            new_status = '';
-            status_code = 0;
-        END IF;
+ BEGIN
+    if exists (select 1 from information_schema.tables where table_name = 'notification_job') then
+        FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
+        LOOP
+            SELECT * INTO job FROM notification_job WHERE
+                policy_id=job_group.policy_id
+                                  AND event_type=job_group.event_type
+                                  AND status IN ('stopped', 'finished', 'error')
+            ORDER BY creation_time DESC LIMIT 1;
+            /* convert vendor type */
+            IF job.notify_type = 'http' THEN
+                vendor_type = 'WEBHOOK';
+            ELSIF job.notify_type = 'slack' THEN
+                vendor_type = 'SLACK';
+            ELSE
+                vendor_type = 'WEBHOOK';
+            END IF;
+            /* convert status */
+            IF job.status = 'stopped' THEN
+                new_status = 'Stopped';
+                status_code = 3;
+            ELSIF job.status = 'error' THEN
+                new_status = 'Error';
+                status_code = 3;
+            ELSIF job.status = 'finished' THEN
+                new_status = 'Success';
+                status_code = 3;
+            ELSE
+                new_status = '';
+                status_code = 0;
+            END IF;
 
-        SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT)::JSON INTO extra_attrs;
-        INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',extra_attrs,job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
-        INSERT INTO task (execution_id,job_id,status,status_code,run_count,creation_time,start_time,update_time,end_time,vendor_type) VALUES (exec_id,job.job_uuid,new_status,status_code,1,job.creation_time,job.update_time,job.update_time,job.update_time,vendor_type);
-    END LOOP;
+            SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT)::JSON INTO extra_attrs;
+            INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',extra_attrs,job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
+            INSERT INTO task (execution_id,job_id,status,status_code,run_count,creation_time,start_time,update_time,end_time,vendor_type) VALUES (exec_id,job.job_uuid,new_status,status_code,1,job.creation_time,job.update_time,job.update_time,job.update_time,vendor_type);
+        END LOOP;
+     END IF;
 END $$;
+
 /* drop the old notification_job table */
 DROP TABLE IF EXISTS notification_job;
 
