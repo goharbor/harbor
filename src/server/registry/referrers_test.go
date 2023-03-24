@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	beegocontext "github.com/beego/beego/v2/server/web/context"
-	"github.com/goharbor/harbor/src/lib/q"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -43,15 +42,16 @@ func TestReferrersHandlerOK(t *testing.T) {
 			},
 		}, nil)
 
-	accessoryMock.On("Count", mock.Anything, q.New(q.KeyWords{"SubjectArtifactDigest": digestVal})).
+	accessoryMock.On("Count", mock.Anything, mock.Anything).
 		Return(int64(1), nil)
-	accessoryMock.On("List", mock.Anything, q.New(q.KeyWords{"SubjectArtifactDigest": digestVal})).
+	accessoryMock.On("List", mock.Anything, mock.Anything).
 		Return([]accessorymodel.Accessory{
 			&basemodel.Default{
 				Data: accessorymodel.AccessoryData{
 					ID:                1,
 					ArtifactID:        2,
 					SubArtifactDigest: digestVal,
+					SubArtifactRepo:   "goharbor",
 					Type:              accessorymodel.TypeCosignSignature,
 				},
 			},

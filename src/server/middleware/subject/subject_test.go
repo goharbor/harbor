@@ -157,6 +157,7 @@ func (suite *MiddlewareTestSuite) TestSubject() {
 		suite.Equal(1, len(accs))
 		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
 		suite.Equal(artID, accs[0].GetData().ArtifactID)
+		suite.Equal(name, accs[0].GetData().SubArtifactRepo)
 		suite.True(accs[0].IsHard())
 		suite.Equal(model.TypeSubject, accs[0].GetData().Type)
 	})

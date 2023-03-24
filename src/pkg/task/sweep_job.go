@@ -90,6 +90,10 @@ func (sj *SweepJob) Run(ctx job.Context, params job.Parameters) error {
 
 	sj.logger.Info("start to run sweep job")
 
+	if err := sj.mgr.FixDanglingStateExecution(ctx.SystemContext()); err != nil {
+		sj.logger.Errorf("failed to fix dangling state executions, error: %v", err)
+	}
+
 	var errs errors.Errors
 	for vendor, cnt := range sj.execRetainCountsMap {
 		if sj.shouldStop(ctx) {

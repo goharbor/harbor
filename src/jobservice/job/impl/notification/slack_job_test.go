@@ -15,7 +15,7 @@ import (
 func TestSlackJobMaxFails(t *testing.T) {
 	rep := &SlackJob{}
 	t.Run("default max fails", func(t *testing.T) {
-		assert.Equal(t, uint(10), rep.MaxFails())
+		assert.Equal(t, uint(3), rep.MaxFails())
 	})
 
 	t.Run("user defined max fails", func(t *testing.T) {
@@ -25,7 +25,7 @@ func TestSlackJobMaxFails(t *testing.T) {
 
 	t.Run("user defined wrong max fails", func(t *testing.T) {
 		t.Setenv(maxFails, "abc")
-		assert.Equal(t, uint(10), rep.MaxFails())
+		assert.Equal(t, uint(3), rep.MaxFails())
 	})
 }
 

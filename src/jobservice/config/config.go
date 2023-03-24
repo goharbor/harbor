@@ -22,6 +22,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 
@@ -83,6 +84,9 @@ type Configuration struct {
 	// Metric configurations
 	Metric *MetricConfig `yaml:"metric,omitempty"`
 
+	// Reaper configurations
+	ReaperConfig *ReaperConfig `yaml:"reaper,omitempty"`
+
 	// MaxLogSizeReturnedMB is the max size of log returned by job log API
 	MaxLogSizeReturnedMB int `yaml:"max_retrieve_size_mb,omitempty"`
 }
@@ -133,6 +137,11 @@ type LoggerConfig struct {
 	Level    string             `yaml:"level"`
 	Settings CustomizedSettings `yaml:"settings"`
 	Sweeper  *LogSweeperConfig  `yaml:"sweeper"`
+}
+
+type ReaperConfig struct {
+	MaxUpdateHour   int `yaml:"max_update_hours"`
+	MaxDanglingHour int `yaml:"max_dangling_hours"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -347,4 +356,20 @@ func (c *Configuration) validate() error {
 	}
 
 	return nil // valid
+}
+
+// MaxUpdateDuration the max time for an execution can be updated by task
+func MaxUpdateDuration() time.Duration {
+	if DefaultConfig != nil && DefaultConfig.ReaperConfig != nil && DefaultConfig.ReaperConfig.MaxUpdateHour > 24 {
+		return time.Duration(DefaultConfig.ReaperConfig.MaxUpdateHour) * time.Hour
+	}
+	return 24 * time.Hour
+}
+
+// MaxDanglingHour the max time for an execution can be dangling state
+func MaxDanglingHour() int {
+	if DefaultConfig != nil && DefaultConfig.ReaperConfig != nil && DefaultConfig.ReaperConfig.MaxDanglingHour > 24*7 {
+		return DefaultConfig.ReaperConfig.MaxDanglingHour
+	}
+	return 24 * 7
 }
