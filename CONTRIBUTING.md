@@ -373,7 +373,7 @@ Documents are written with Markdown. See [Writing on GitHub](https://help.github
 - The proposal can be modified and adapted to meet the requirements from the community, other maintainers and contributors. The overall architecture needs to be consistent to avoid duplicate work in the [Roadmap](https://github.com/goharbor/harbor/wiki#roadmap).
 - Proposal should be discussed at Community meeting [Community Meeting agenda](https://github.com/goharbor/community/wiki/Harbor-Community-Meetings) to be presented to maintainers and contributors.
 - When reviewed and approved it can be implemented either by the original submitter or anyone else from the community which we highly encourage, as the project is community driven. Open PRs in the respective repositories with all the necessary code and test changes as described in the current document.
-- Once implemented or during the implementation, the PRs are reviewed by maintainers and contributors, following the currently enabled practices and methods.
+- Once implemented or during the implementation, the PRs are reviewed by maintainers and contributors, following the best practices and methods.
 - After merging the new PRs, the proposal must be moved to [community/proposals](https://github.com/goharbor/community/tree/main/proposals) and marked as done!
 - You have made Harbor even better, congratulations. Thank you!
 
