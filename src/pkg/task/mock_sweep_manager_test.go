@@ -27,6 +27,20 @@ func (_m *mockSweepManager) Clean(ctx context.Context, execID []int64) error {
 	return r0
 }
 
+// FixDanglingStateExecution provides a mock function with given fields: ctx
+func (_m *mockSweepManager) FixDanglingStateExecution(ctx context.Context) error {
+	ret := _m.Called(ctx)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ListCandidates provides a mock function with given fields: ctx, vendorType, retainCnt
 func (_m *mockSweepManager) ListCandidates(ctx context.Context, vendorType string, retainCnt int64) ([]int64, error) {
 	ret := _m.Called(ctx, vendorType, retainCnt)

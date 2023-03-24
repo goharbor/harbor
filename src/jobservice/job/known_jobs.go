@@ -50,6 +50,7 @@ var (
 	// executionSweeperCount stores the count for execution retained
 	executionSweeperCount = map[string]int64{
 		ScanAllVendorType:               5,
+		PurgeAuditVendorType:            10,
 		ExecSweepVendorType:             10,
 		GarbageCollectionVendorType:     50,
 		SlackJobVendorType:              50,

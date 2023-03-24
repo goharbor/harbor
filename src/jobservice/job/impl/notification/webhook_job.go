@@ -22,9 +22,8 @@ type WebhookJob struct {
 
 // MaxFails returns that how many times this job can fail, get this value from ctx.
 func (wj *WebhookJob) MaxFails() (result uint) {
-	// Default max fails count is 10, and its max retry interval is around 3h
-	// Large enough to ensure most situations can notify successfully
-	result = 10
+	// Default max fails count is 3
+	result = 3
 	if maxFails, exist := os.LookupEnv(maxFails); exist {
 		mf, err := strconv.ParseUint(maxFails, 10, 32)
 		if err != nil {
