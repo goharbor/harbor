@@ -121,7 +121,7 @@ func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("marshal from eventData %v failed: %v", payLoad.EventData, err)
 	}
-	data["EventData"] = "```" + strings.Replace(string(eventData), `"`, `\"`, -1) + "```"
+	data["EventData"] = "```" + escapeEventData(string(eventData)) + "```"
 
 	st, _ := template.New("slack").Parse(SlackBodyTemplate)
 	var slackBuf bytes.Buffer
@@ -129,4 +129,12 @@ func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {
 		return "", fmt.Errorf("%v", err)
 	}
 	return slackBuf.String(), nil
+}
+
+func escapeEventData(str string) string {
+	// escape " to \"
+	str = strings.Replace(str, `"`, `\"`, -1)
+	// escape \\" to \\\"
+	str = strings.Replace(str, `\\"`, `\\\"`, -1)
+	return str
 }
