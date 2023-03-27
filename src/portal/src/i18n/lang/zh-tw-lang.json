@@ -828,7 +828,7 @@
     "ROOT_CERT_LINK": "下載",
     "REGISTRY_CERTIFICATE": "註冊證書",
     "NO_CHANGE":"保存中止,因為沒有改變",
-    "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+    "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
     "TOOLTIP":{
       "SELF_REGISTRATION_ENABLE": "激活註冊功能。",
       "SELF_REGISTRATION_DISABLE": "禁用註冊功能。",
@@ -851,7 +851,7 @@
       "HOURLY_CRON": "每小時運行一次。相當於 0 0 * * * *",
       "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於 0 0 0 * * 0",
       "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *",
-      "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+      "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
     },
     "LDAP":{
       "URL":"LDAP URL",

@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Yükle",
         "REGISTRY_CERTIFICATE": "Kayıt defteri sertifikası",
         "NO_CHANGE": "İptal et, çünkü hiçbir şey değişmedi",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Kaydolmayı etkinleştir.",
             "SELF_REGISTRATION_DISABLE": "Kaydolmayı devre dışı bırak.",
@@ -855,7 +855,7 @@
             "HOURLY_CRON": "Saat başı bir saat, saat başı çalıştırın. Eşittir 0 0 * * * *.",
             "WEEKLY_CRON": "Haftada bir kez, gece yarısı Cmt / Paz arasında koşun. Eşittir 0 0 0 * * 0.",
             "DAILY_CRON": "Günde bir kez, gece yarısı çalıştırın. Eşittir0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "LDAP URL",
