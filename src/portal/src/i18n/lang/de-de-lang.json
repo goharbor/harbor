@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry Zertifikat",
         "NO_CHANGE": "Speichern abgebrochen, da nichts verändert wurde",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
@@ -855,7 +855,7 @@
             "HOURLY_CRON": "Läuft einmal am Anfang jeder Stunde. Identisch zu 0 0 * * * *.",
             "WEEKLY_CRON": "Läuft wöchentlich um Mitternacht zwischen Sa/So. Identisch zu 0 0 0 * * 0.",
             "DAILY_CRON": "Läuft täglich um Mitternacht. Identisch zu 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "LDAP URL",
