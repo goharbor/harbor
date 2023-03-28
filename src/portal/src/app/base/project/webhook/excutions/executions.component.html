@@ -99,9 +99,7 @@
                         }}</pre>
                         <pre
                             [innerHTML]="
-                                toJson(execution?.extra_attrs?.payload)
-                                    | json
-                                    | markdown
+                                toJson(execution?.extra_attrs?.payload) | json
                             "
                             class="abc"
                             *ngIf="useJsonFormat(execution?.vendor_type)"></pre>
