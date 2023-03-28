@@ -80,4 +80,5 @@ export enum HarborEvent {
     UPDATE_VULNERABILITY_INFO = 'UpdateVulnerabilityInfo',
     REFRESH_EXPORT_JOBS = 'refreshExportJobs',
     DELETE_ACCESSORY = 'deleteAccessory',
+    COPY_DIGEST = 'copyDigest',
 }
