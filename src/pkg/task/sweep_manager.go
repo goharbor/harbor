@@ -200,11 +200,10 @@ func (sm *sweepManager) FixDanglingStateExecution(ctx context.Context) error {
             ELSE 'Success'
             END
 WHERE status = 'Running'
-  AND start_time < now() - INTERVAL ?
+  AND EXTRACT(epoch FROM NOW() - start_time)/3600 >  ?
   AND NOT EXISTS (SELECT 1 FROM task WHERE execution_id = execution.id AND status = 'Running')`
 
-	intervalStr := fmt.Sprintf("%d hour", config.MaxDanglingHour())
-	_, err = ormer.Raw(sql, intervalStr).Exec()
+	_, err = ormer.Raw(sql, config.MaxDanglingHour()).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to fix dangling state execution")
 	}
