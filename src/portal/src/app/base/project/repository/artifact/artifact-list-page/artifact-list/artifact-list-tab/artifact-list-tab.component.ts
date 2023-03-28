@@ -180,6 +180,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         ]
     );
     deleteAccessorySub: Subscription;
+    copyDigestSub: Subscription;
     @ViewChild('datagrid')
     datagrid;
     constructor(
@@ -241,6 +242,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             );
         }
+        if (!this.copyDigestSub) {
+            this.copyDigestSub = this.eventService.subscribe(
+                HarborEvent.COPY_DIGEST,
+                (a: Accessory) => {
+                    this.copyDigestComponent.showDigestId(a.digest);
+                }
+            );
+        }
     }
 
     ngOnDestroy() {
@@ -251,6 +260,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.deleteAccessorySub) {
             this.deleteAccessorySub.unsubscribe();
             this.deleteAccessorySub = null;
+        }
+        if (this.copyDigestSub) {
+            this.copyDigestSub.unsubscribe();
+            this.copyDigestSub = null;
         }
         this.datagrid['columnsService']?.columns?.forEach((item, index) => {
             if (this.depth) {

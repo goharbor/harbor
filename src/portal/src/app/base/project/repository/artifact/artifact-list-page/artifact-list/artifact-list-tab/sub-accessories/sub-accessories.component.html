@@ -11,8 +11,11 @@
         *ngFor="let a of displayedAccessories; let i = index"
         [clrDgItem]="a">
         <clr-dg-action-overflow>
-            <button class="action-item" (click)="delete(a)">
+            <button class="my-action-item" (click)="delete(a)">
                 {{ 'REPOSITORY.DELETE' | translate }}
+            </button>
+            <button class="my-action-item" (click)="copyDigest(a)">
+                {{ 'REPOSITORY.COPY_DIGEST_ID' | translate }}
             </button>
         </clr-dg-action-overflow>
         <clr-dg-cell class="relative">
