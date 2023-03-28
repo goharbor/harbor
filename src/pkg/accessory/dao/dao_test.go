@@ -32,12 +32,14 @@ import (
 
 type daoTestSuite struct {
 	htesting.Suite
-	dao           DAO
-	artDAO        artdao.DAO
-	artifactID    int64
-	subArtifactID int64
-	accID         int64
-	ctx           context.Context
+	dao               DAO
+	artDAO            artdao.DAO
+	artifactID        int64
+	subArtifactID     int64
+	subArtifactRepo   string
+	subArtifactDigest string
+	accID             int64
+	ctx               context.Context
 }
 
 func (d *daoTestSuite) SetupSuite() {
@@ -47,16 +49,20 @@ func (d *daoTestSuite) SetupSuite() {
 	d.ClearTables = []string{"artifact", "artifact_accessory"}
 
 	d.artDAO = artdao.New()
-	artifactID, err := d.artDAO.Create(d.ctx, &artdao.Artifact{
+	art := &artdao.Artifact{
 		Type:              "IMAGE",
 		MediaType:         "application/vnd.oci.image.config.v1+json",
 		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 		ProjectID:         1,
+		RepositoryName:    "goharbor",
 		RepositoryID:      1000,
 		Digest:            d.DigestString(),
-	})
-	d.Require().Nil(err)
+	}
+	artifactID, err := d.artDAO.Create(d.ctx, art)
 	d.subArtifactID = artifactID
+	d.Require().Nil(err)
+	d.subArtifactDigest = art.Digest
+	d.subArtifactRepo = art.RepositoryName
 
 	d.artDAO = artdao.New()
 	artifactID, err = d.artDAO.Create(d.ctx, &artdao.Artifact{
@@ -65,17 +71,19 @@ func (d *daoTestSuite) SetupSuite() {
 		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 		ProjectID:         1,
 		RepositoryID:      1000,
+		RepositoryName:    "goharbor",
 		Digest:            d.DigestString(),
 	})
 	d.Require().Nil(err)
 	d.artifactID = artifactID
 
 	accID, err := d.dao.Create(d.ctx, &Accessory{
-		ArtifactID:        d.artifactID,
-		SubjectArtifactID: d.subArtifactID,
-		Digest:            d.DigestString(),
-		Size:              1234,
-		Type:              "cosign.signature",
+		ArtifactID:            d.artifactID,
+		SubjectArtifactDigest: d.subArtifactDigest,
+		SubjectArtifactRepo:   d.subArtifactRepo,
+		Digest:                d.DigestString(),
+		Size:                  1234,
+		Type:                  "cosign.signature",
 	})
 	d.Require().Nil(err)
 	d.accID = accID
@@ -103,7 +111,7 @@ func (d *daoTestSuite) TestCount() {
 	d.True(total > 0)
 	total, err = d.dao.Count(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"SubjectArtifactID": d.subArtifactID,
+			"SubjectArtifactDigest": d.subArtifactDigest,
 		},
 	})
 	d.Require().Nil(err)
@@ -125,7 +133,7 @@ func (d *daoTestSuite) TestList() {
 
 	accs, err = d.dao.List(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"SubjectArtifactID": d.subArtifactID,
+			"SubjectArtifactDigest": d.subArtifactDigest,
 		},
 	})
 	d.Require().Nil(err)
@@ -149,27 +157,16 @@ func (d *daoTestSuite) TestCreate() {
 
 	// conflict
 	acc := &Accessory{
-		ArtifactID:        d.artifactID,
-		SubjectArtifactID: d.subArtifactID,
-		Digest:            d.DigestString(),
-		Size:              1234,
-		Type:              "cosign.signature",
+		ArtifactID:            d.artifactID,
+		SubjectArtifactRepo:   d.subArtifactRepo,
+		SubjectArtifactDigest: d.subArtifactDigest,
+		Digest:                d.DigestString(),
+		Size:                  1234,
+		Type:                  "cosign.signature",
 	}
 	_, err := d.dao.Create(d.ctx, acc)
 	d.Require().NotNil(err)
 	d.True(errors.IsErr(err, errors.ConflictCode))
-
-	// violating foreign key constraint: the artifact that the tag tries to attach doesn't exist
-	acc = &Accessory{
-		ArtifactID:        999,
-		SubjectArtifactID: 998,
-		Digest:            d.DigestString(),
-		Size:              1234,
-		Type:              "cosign.signature",
-	}
-	_, err = d.dao.Create(d.ctx, acc)
-	d.Require().NotNil(err)
-	d.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestDelete() {
@@ -184,14 +181,16 @@ func (d *daoTestSuite) TestDelete() {
 }
 
 func (d *daoTestSuite) TestDeleteOfArtifact() {
-	subArtID, err := d.artDAO.Create(d.ctx, &artdao.Artifact{
+	art := &artdao.Artifact{
 		Type:              "IMAGE",
 		MediaType:         "application/vnd.oci.image.config.v1+json",
 		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 		ProjectID:         1,
 		RepositoryID:      1000,
+		RepositoryName:    "goharbor",
 		Digest:            d.DigestString(),
-	})
+	}
+	subArtID, err := d.artDAO.Create(d.ctx, art)
 	d.Require().Nil(err)
 	defer d.artDAO.Delete(d.ctx, subArtID)
 
@@ -201,6 +200,7 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 		ProjectID:         1,
 		RepositoryID:      1000,
+		RepositoryName:    "goharbor",
 		Digest:            d.DigestString(),
 	})
 	d.Require().Nil(err)
@@ -212,34 +212,37 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 		ProjectID:         1,
 		RepositoryID:      1000,
+		RepositoryName:    "goharbor",
 		Digest:            d.DigestString(),
 	})
 	d.Require().Nil(err)
 	defer d.artDAO.Delete(d.ctx, artID2)
 
 	acc1 := &Accessory{
-		ArtifactID:        artID1,
-		SubjectArtifactID: subArtID,
-		Digest:            d.DigestString(),
-		Size:              1234,
-		Type:              "cosign.signature",
+		ArtifactID:            artID1,
+		SubjectArtifactDigest: art.Digest,
+		SubjectArtifactRepo:   art.RepositoryName,
+		Digest:                d.DigestString(),
+		Size:                  1234,
+		Type:                  "cosign.signature",
 	}
 	_, err = d.dao.Create(d.ctx, acc1)
 	d.Require().Nil(err)
 
 	acc2 := &Accessory{
-		ArtifactID:        artID2,
-		SubjectArtifactID: subArtID,
-		Digest:            d.DigestString(),
-		Size:              1234,
-		Type:              "cosign.signature",
+		ArtifactID:            artID2,
+		SubjectArtifactDigest: art.Digest,
+		SubjectArtifactRepo:   art.RepositoryName,
+		Digest:                d.DigestString(),
+		Size:                  1234,
+		Type:                  "cosign.signature",
 	}
 	_, err = d.dao.Create(d.ctx, acc2)
 	d.Require().Nil(err)
 
 	accs, err := d.dao.List(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"SubjectArtifactID": subArtID,
+			"SubjectArtifactDigest": art.Digest,
 		},
 	})
 	for _, acc := range accs {
@@ -250,14 +253,14 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 
 	_, err = d.dao.DeleteAccessories(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"SubjectArtifactID": subArtID,
+			"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName,
 		},
 	})
 	d.Require().Nil(err)
 
 	accs, err = d.dao.List(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"SubjectArtifactID": subArtID,
+			"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName,
 		},
 	})
 	d.Require().Nil(err)

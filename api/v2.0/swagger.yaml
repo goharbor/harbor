@@ -22,7 +22,7 @@ paths:
   /health:
     get:
       summary: Check the status of Harbor components
-      description: Check the status of Harbor components
+      description: Check the status of Harbor components. This path does not require authentication.
       tags:
         - health
       operationId: getHealth
@@ -37,9 +37,9 @@ paths:
           $ref: '#/responses/500'
   /search:
     get:
-      summary: 'Search for projects, repositories and helm charts'
+      summary: 'Search for projects and repositories'
       description: |-
-        The Search endpoint returns information about the projects, repositories and helm charts offered at public status or related to the current logged in user. The response includes the project, repository list and charts in a proper display order.
+        The Search endpoint returns information about the projects and repositories offered at public status or related to the current logged in user. The response includes the project and repository list in a proper display order.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: q
@@ -2665,8 +2665,128 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions':
+    get:
+      summary: List executions for a specific webhook policy
+      description: |
+        This endpoint returns the executions of a specific webhook policy.
+      tags:
+        - webhook
+      operationId: ListExecutionsOfWebhookPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+      responses:
+        '200':
+          description: List webhook executions success
+          headers:
+            X-Total-Count:
+              description: The total count of executions
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Execution'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions/{execution_id}/tasks':
+    get:
+      summary: List tasks for a specific webhook execution
+      description: |
+        This endpoint returns the tasks of a specific webhook execution.
+      tags:
+        - webhook
+      operationId: ListTasksOfWebhookExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+      responses:
+        '200':
+          description: List tasks of webhook executions success
+          headers:
+            X-Total-Count:
+              description: The total count of tasks
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Task'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/webhook/policies/{webhook_policy_id}/executions/{execution_id}/tasks/{task_id}/log':
+    get:
+      summary: Get logs for a specific webhook task
+      description: |
+        This endpoint returns the logs of a specific webhook task.
+      tags:
+        - webhook
+      operationId: GetLogsOfWebhookTask
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/webhookPolicyId'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Get log success
+          headers:
+            Content-Type:
+              description: Content type of response
+              type: string
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '404':
+          $ref: '#/responses/404'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/lasttrigger':
     get:
+      deprecated: true
       summary: Get project webhook policy last trigger info
       description: |
         This endpoint returns last trigger information of project webhook policy.
@@ -2694,6 +2814,7 @@ paths:
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/jobs':
     get:
+      deprecated: true
       summary: List project webhook jobs
       description: |
         This endpoint returns webhook jobs of a project.
@@ -2746,7 +2867,7 @@ paths:
   '/projects/{project_name_or_id}/webhook/events':
     get:
       summary: Get supported event types and notify types.
-      description: Get supportted event types and notify types.
+      description: Get supported event types and notify types.
       tags:
         - webhook
       operationId: GetSupportedEventTypes
@@ -4269,7 +4390,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '500':
-          $ref: '#/responses/500'        
+          $ref: '#/responses/500'
   /system/purgeaudit/{purge_id}/log:
     get:
       summary: Get purge job log.
@@ -4593,6 +4714,39 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /jobservice/jobs/{job_id}/log:
+    get:
+      operationId: actionGetJobLog
+      summary: Get job log by job id
+      description: Get job log by job id, it is only used by administrator
+      produces:
+        - text/plain  
+      tags:
+        - jobservice
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: job_id
+          in: path
+          required: true
+          type: string
+          description: The id of the job.
+      responses:
+        '200':
+          description: Get job log successfully.
+          headers:
+            Content-Type:
+              description: The content type of response body
+              type: string
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /jobservice/queues:
     get:
       operationId: listJobQueues
@@ -4710,8 +4864,8 @@ paths:
   /ping:
     get:
       operationId: getPing
-      summary: Ping Harbor to check if it's alive.
-      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components.
+      summary: Ping Harbor to check if the API server is alive.
+      description: This API simply replies a pong to indicate the process to handle API is up, disregarding the health status of dependent components. This path does not require any authentication.
       tags:
         - ping
       produces:
@@ -6206,13 +6360,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/SearchRepository'
-      chart:
-        description: Search results of the charts that macthed the filter keywords.
-        type: array
-        items:
-          $ref: '#/definitions/SearchResult'
-        x-omitempty: true
-        x-isnullable: true
   SearchRepository:
     type: object
     properties:
@@ -6234,93 +6381,6 @@ definitions:
       artifact_count:
         type: integer
         description: The count of artifacts in the repository
-  SearchResult:
-    type: object
-    description: The chart search result item
-    properties:
-      Name:
-        type: string
-        description: The chart name with repo name
-      Score:
-        type: integer
-        description: The matched level
-      Chart:
-        $ref: '#/definitions/ChartVersion'
-  ChartVersion:
-    type: object
-    description: A specified chart entry
-    allOf:
-      - $ref: '#/definitions/ChartMetadata'
-      - type: object
-        properties:
-          created:
-            type: string
-            description: The created time of the chart entry
-          removed:
-            type: boolean
-            description: A flag to indicate if the chart entry is removed
-          digest:
-            type: string
-            description: The digest value of the chart entry
-          urls:
-            type: array
-            description: The urls of the chart entry
-            items:
-              type: string
-    properties:
-      labels:
-        type: array
-        description: A list of label
-        items:
-          $ref: '#/definitions/Label'
-  ChartMetadata:
-    type: object
-    description: The metadata of chart version
-    required:
-      - name
-      - version
-      - engine
-      - icon
-      - apiVersion
-      - appVersion
-    properties:
-      name:
-        type: string
-        description: The name of the chart
-      home:
-        type: string
-        description: The URL to the relevant project page
-      sources:
-        type: array
-        description: The URL to the source code of chart
-        items:
-          type: string
-      version:
-        type: string
-        description: A SemVer 2 version of chart
-      description:
-        type: string
-        description: A one-sentence description of chart
-      keywords:
-        type: array
-        description: A list of string keywords
-        items:
-          type: string
-      engine:
-        type: string
-        description: The name of template engine
-      icon:
-        type: string
-        description: The URL to an icon file
-      apiVersion:
-        type: string
-        description: The API version of this chart
-      appVersion:
-        type: string
-        description: The version of the application enclosed in the chart
-      deprecated:
-        type: boolean
-        description: Whether or not this chart is deprecated
   Repository:
     type: object
     properties:
@@ -6956,10 +7016,6 @@ definitions:
         type: integer
         description: The number of the repositories under this project.
         x-omitempty: false
-      chart_count:
-        type: integer
-        description: The total number of charts under this project.
-        x-omitempty: false
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
@@ -7016,10 +7072,6 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
-        x-omitempty: false
-      chart_count:
-        type: integer
-        description: The total number of charts under this project.
         x-omitempty: false
       project_admin_count:
         type: integer
@@ -7485,7 +7537,7 @@ definitions:
         description: The ID of the robot
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       description:
         type: string
         description: The description of the robot
@@ -7510,7 +7562,7 @@ definitions:
       expires_at:
         type: integer
         format: int64
-        description: The expiration data of the robot
+        description: The expiration date of the robot
       permissions:
         type: array
         items:
@@ -7529,7 +7581,7 @@ definitions:
     properties:
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       description:
         type: string
         description: The description of the robot
@@ -7560,7 +7612,7 @@ definitions:
         description: The ID of the robot
       name:
         type: string
-        description: The name of the tag
+        description: The name of the robot
       secret:
         type: string
         description: The secret of the robot
@@ -7571,7 +7623,7 @@ definitions:
       expires_at:
         type: integer
         format: int64
-        description: The expiration data of the robot
+        description: The expiration date of the robot
   RobotSec:
     type: object
     description: The response for refresh/update robot account secret.
@@ -7597,10 +7649,10 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access
+        description: The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference).
       action:
         type: string
-        description: The action of the access
+        description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
       effect:
         type: string
         description: The effect of the access
@@ -7646,11 +7698,6 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: If the Harbor instance is deployed with nested notary.
-      with_chartmuseum:
-        type: boolean
-        x-nullable: true
-        x-omitempty: true
-        description: If the Harbor instance is deployed with nested chartmuseum.
       registry_url:
         type: string
         x-nullable: true
@@ -7666,6 +7713,11 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: The auth mode of current Harbor instance.
+      primary_auth_mode:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       project_creation_restriction:
         type: string
         x-nullable: true
@@ -7793,7 +7845,7 @@ definitions:
       update_time:
         type: string
         format: date-time
-        description: the update time of purge job.        
+        description: the update time of purge job.
   Schedule:
     type: object
     properties:
@@ -8445,7 +8497,7 @@ definitions:
         description: 'The group type, 1 for LDAP group, 2 for HTTP group, 3 for OIDC group.'
   SupportedWebhookEventTypes:
     type: object
-    description: Supportted webhook event types and notify types.
+    description: Supported webhook event types and notify types.
     properties:
       event_type:
         type: array
@@ -8455,14 +8507,33 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/NotifyType'
+      payload_formats:
+        type: array
+        items:
+          $ref: '#/definitions/PayloadFormat'
   EventType:
     type: string
-    description: Webhook supportted event type.
-    example: 'pullImage'
+    description: Webhook supported event type.
+    example: 'PULL_ARTIFACT'
   NotifyType:
     type: string
-    description: Webhook supportted notify type.
+    description: Webhook supported notify type.
     example: 'http'
+  PayloadFormatType:
+    type: string
+    description: The type of webhook paylod format.
+    example: 'CloudEvents'
+  PayloadFormat:
+    type: object
+    description: Webhook supported payload format type collections.
+    properties:
+      notify_type:
+        $ref: '#/definitions/NotifyType'
+      formats:
+        type: array
+        description: The supported payload formats for this notify type.
+        items:
+          $ref: '#/definitions/PayloadFormatType'
 
   WebhookTargetObject:
     type: object
@@ -8480,6 +8551,8 @@ definitions:
       skip_cert_verify:
         type: boolean
         description: Whether or not to skip cert verify.
+      payload_format:
+        $ref: '#/definitions/PayloadFormatType'
   WebhookPolicy:
     type: object
     description: The webhook policy object
@@ -8593,6 +8666,9 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
+      primary_auth_mode:
+        $ref: '#/definitions/BoolConfigItem'
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       ldap_base_dn:
         $ref: '#/definitions/StringConfigItem'
         description: The Base DN for LDAP binding.
@@ -8697,7 +8773,7 @@ definitions:
         description: The OIDC group which has the harbor admin privileges
       oidc_group_filter:
         $ref: '#/definitions/StringConfigItem'
-        description: The OIDC group filter which filters out the group doesn't match the regular expression   
+        description: The OIDC group filter which filters out the group doesn't match the regular expression
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
         description: The scope of the OIDC provider
@@ -8734,6 +8810,9 @@ definitions:
       skip_audit_log_database:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether skip the audit log in database
+      scanner_skip_update_pulltime:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether or not to skip update the pull time for scanner
       scan_all_policy:
         type: object
         properties:
@@ -8758,6 +8837,11 @@ definitions:
         description: The auth mode of current system, such as "db_auth", "ldap_auth", "oidc_auth"
         x-omitempty: true
         x-isnullable: true
+      primary_auth_mode:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether the current auth mode should consider as a primary one.
       ldap_base_dn:
         type: string
         description: The Base DN for LDAP binding.
@@ -8942,7 +9026,7 @@ definitions:
         type: string
         description: The OIDC group filter which filters out the group name doesn't match the regular expression
         x-omitempty: true
-        x-isnullable: true        
+        x-isnullable: true
       oidc_scope:
         type: string
         description: The scope of the OIDC provider
@@ -8997,7 +9081,7 @@ definitions:
         type: string
         description: The audit log forward endpoint
         x-omitempty: true
-        x-isnullable: true  
+        x-isnullable: true
       skip_audit_log_database:
         type: boolean
         description: Skip audit log database
@@ -9006,6 +9090,11 @@ definitions:
       session_timeout:
         type: integer
         description: The session timeout for harbor, in minutes.
+        x-omitempty: true
+        x-isnullable: true
+      scanner_skip_update_pulltime:
+        type: boolean
+        description: Whether or not to skip update pull time for scanner
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:
@@ -9238,7 +9327,7 @@ definitions:
         description: The component name
       status:
         type: string
-        description: The health status of component
+        description: The health status of component. Is either "healthy" or "unhealthy".
       error:
         type: string
         description: (optional) The error message when the status is "unhealthy"
@@ -9296,7 +9385,14 @@ definitions:
       subject_artifact_id:
         type: integer
         format: int64
-        description: The subject artifact id of the accessory
+        description: Going to be deprecated, use repo and digest for insteand. The subject artifact id of the accessory.
+      subject_artifact_digest:
+        type: string
+        description: The subject artifact digest of the accessory
+        x-omitempty: false
+      subject_artifact_repo:
+        type: string
+        description: The subject artifact repository name of the accessory
         x-omitempty: false
       size:
         type: integer
@@ -9401,10 +9497,11 @@ definitions:
         items:
           $ref: '#/definitions/ScanDataExportExecution'
         description: The list of scan data export executions
+
   WorkerPool:
     type: object
     description: the worker pool of job service
-    properties: 
+    properties:
       pid:
         type: integer
         description: the process id of jobservice
@@ -9422,13 +9519,13 @@ definitions:
       concurrency:
         type: integer
         description: The concurrency of the work pool
-      host: 
+      host:
         type: string
-        description: The host of the work pool 
+        description: The host of the work pool
   Worker:
     type: object
     description: worker in the pool
-    properties: 
+    properties:
       id:
         type: string
         description: the id of the worker
@@ -9463,7 +9560,7 @@ definitions:
       action:
         type: string
         description: The action of the request, should be stop, pause or resume
-        enum: 
+        enum:
           - stop
           - pause
           - resume

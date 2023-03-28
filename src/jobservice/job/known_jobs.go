@@ -20,24 +20,50 @@ const (
 	// SampleJob is name of demo job
 	SampleJob = "DEMO"
 
-	// ImageScanJob is name of scan job it will be used as key to register to job service.
-	ImageScanJob = "IMAGE_SCAN"
-	// GarbageCollection job name
-	GarbageCollection = "GARBAGE_COLLECTION"
-	// Replication : the name of the replication job in job service
-	Replication = "REPLICATION"
-	// WebhookJob : the name of the webhook job in job service
-	WebhookJob = "WEBHOOK"
-	// SlackJob : the name of the slack job in job service
-	SlackJob = "SLACK"
-	// Retention : the name of the retention job
-	Retention = "RETENTION"
-	// P2PPreheat : the name of the P2P preheat job
-	P2PPreheat = "P2P_PREHEAT"
-	// PurgeAudit : the name of purge audit job
-	PurgeAudit = "PURGE_AUDIT"
-	// SystemArtifactCleanup : the name of the SystemArtifact cleanup job
-	SystemArtifactCleanup = "SYSTEM_ARTIFACT_CLEANUP"
-	// ScanDataExport : the name of the scan data export job
-	ScanDataExport = "SCAN_DATA_EXPORT"
+	// ImageScanJobVendorType is name of scan job it will be used as key to register to job service.
+	ImageScanJobVendorType = "IMAGE_SCAN"
+	// GarbageCollectionVendorType job name
+	GarbageCollectionVendorType = "GARBAGE_COLLECTION"
+	// ReplicationVendorType : the name of the replication job in job service
+	ReplicationVendorType = "REPLICATION"
+	// WebhookJobVendorType : the name of the webhook job in job service
+	WebhookJobVendorType = "WEBHOOK"
+	// SlackJobVendorType : the name of the slack job in job service
+	SlackJobVendorType = "SLACK"
+	// RetentionVendorType : the name of the retention job
+	RetentionVendorType = "RETENTION"
+	// P2PPreheatVendorType : the name of the P2P preheat job
+	P2PPreheatVendorType = "P2P_PREHEAT"
+	// PurgeAuditVendorType : the name of purge audit job
+	PurgeAuditVendorType = "PURGE_AUDIT_LOG"
+	// SystemArtifactCleanupVendorType : the name of the SystemArtifact cleanup job
+	SystemArtifactCleanupVendorType = "SYSTEM_ARTIFACT_CLEANUP"
+	// ScanDataExportVendorType : the name of the scan data export job
+	ScanDataExportVendorType = "SCAN_DATA_EXPORT"
+	// ExecSweepVendorType: the name of the execution sweep job
+	ExecSweepVendorType = "EXECUTION_SWEEP"
+	// ScanAllVendorType: the name of the scan all job
+	ScanAllVendorType = "SCAN_ALL"
 )
+
+var (
+	// executionSweeperCount stores the count for execution retained
+	executionSweeperCount = map[string]int64{
+		ScanAllVendorType:               5,
+		PurgeAuditVendorType:            10,
+		ExecSweepVendorType:             10,
+		GarbageCollectionVendorType:     50,
+		SlackJobVendorType:              50,
+		WebhookJobVendorType:            50,
+		ReplicationVendorType:           50,
+		ScanDataExportVendorType:        50,
+		SystemArtifactCleanupVendorType: 50,
+		P2PPreheatVendorType:            50,
+		RetentionVendorType:             50,
+	}
+)
+
+// GetExecutionSweeperCount gets the count of execution records retained by the sweeper
+func GetExecutionSweeperCount() map[string]int64 {
+	return executionSweeperCount
+}

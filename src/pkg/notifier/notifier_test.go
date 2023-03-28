@@ -135,8 +135,8 @@ func TestPublish(t *testing.T) {
 		t.Fail()
 	}
 
-	Publish("topic1", 100)
-	Publish("topic2", 50)
+	Publish(context.TODO(), "topic1", 100)
+	Publish(context.TODO(), "topic2", 50)
 
 	// Waiting for async is done
 	<-time.After(1 * time.Second)
@@ -174,7 +174,7 @@ func TestConcurrentPublish(t *testing.T) {
 
 	// Publish in a short interval.
 	for i := 0; i < 10; i++ {
-		Publish("topic1", 100)
+		Publish(context.TODO(), "topic1", 100)
 	}
 
 	// Waiting for async is done

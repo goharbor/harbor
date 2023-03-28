@@ -18,8 +18,6 @@ def prepare_job_service(config_dict):
     # Job log and exported reports are stored in data dir
     job_log_dir = os.path.join('/data', "job_logs")
     prepare_dir(job_log_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
-    job_log_dir = os.path.join('/data', "scandata_exports")
-    prepare_dir(job_log_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
 
     # Render Jobservice env
     render_jinja(
@@ -35,6 +33,7 @@ def prepare_job_service(config_dict):
         gid=DEFAULT_GID,
         internal_tls=config_dict['internal_tls'],
         max_job_workers=config_dict['max_job_workers'],
+        logger_sweeper_duration=config_dict['logger_sweeper_duration'],
         redis_url=config_dict['redis_url_js'],
         level=log_level,
         metric=config_dict['metric'])

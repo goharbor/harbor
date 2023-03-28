@@ -15,14 +15,16 @@ type Accessory struct {
 // ToSwagger converts the label to the swagger model
 func (a *Accessory) ToSwagger() *models.Accessory {
 	return &models.Accessory{
-		ID:                a.ID,
-		ArtifactID:        a.ArtifactID,
-		SubjectArtifactID: a.SubArtifactID,
-		Size:              a.Size,
-		Digest:            a.Digest,
-		Type:              a.Type,
-		Icon:              a.Icon,
-		CreationTime:      strfmt.DateTime(a.CreatTime),
+		ID:                    a.ID,
+		ArtifactID:            a.ArtifactID,
+		SubjectArtifactID:     a.SubArtifactID,
+		SubjectArtifactRepo:   a.SubArtifactRepo,
+		SubjectArtifactDigest: a.SubArtifactDigest,
+		Size:                  a.Size,
+		Digest:                a.Digest,
+		Type:                  a.Type,
+		Icon:                  a.Icon,
+		CreationTime:          strfmt.DateTime(a.CreatTime),
 	}
 }
 

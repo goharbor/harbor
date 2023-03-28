@@ -68,20 +68,6 @@ var (
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate}, // upload helm chart
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},   // download helm chart
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate}, // upload helm chart version
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},   // read and download helm chart version
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
 
@@ -173,20 +159,6 @@ var (
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
@@ -245,18 +217,6 @@ var (
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
@@ -301,12 +261,6 @@ var (
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
@@ -331,12 +285,6 @@ var (
 
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 

@@ -62,49 +62,19 @@ import { LabelComponent } from './components/label/label.component';
 import { LabelSignPostComponent } from './components/label/label-signpost/label-signpost.component';
 import { LabelPieceComponent } from './components/label/label-piece/label-piece.component';
 import { CreateEditLabelComponent } from './components/label/create-edit-label/create-edit-label.component';
-import { ListChartVersionRoComponent } from './components/list-chart-version-ro/list-chart-version-ro.component';
 import { DatePickerComponent } from './components/datetime-picker/datetime-picker.component';
 import {
     EndpointDefaultService,
     EndpointService,
 } from './services/endpoint.service';
 import { ImageNameInputComponent } from './components/image-name-input/image-name-input.component';
-import {
-    HelmChartDefaultService,
-    HelmChartService,
-} from '../base/project/helm-chart/helm-chart-detail/helm-chart.service';
 import { MessageHandlerService } from './services/message-handler.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
 import { RemainingTimeComponent } from './components/remaining-time/remaining-time.component';
-
-import { registerLocaleData } from '@angular/common';
-import locale_en from '@angular/common/locales/en';
-import locale_zh_CN from '@angular/common/locales/zh-Hans';
-import locale_zh_TW from '@angular/common/locales/zh-Hans-HK';
-import locale_es from '@angular/common/locales/es';
-import locale_fr from '@angular/common/locales/fr';
-import locale_pt from '@angular/common/locales/pt-PT';
-import locale_tr from '@angular/common/locales/tr';
-import locale_de from '@angular/common/locales/de';
-import { SupportedLanguage } from './entities/shared.const';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
-
-const localesForSupportedLangs: Record<SupportedLanguage, unknown[]> = {
-    'en-us': locale_en,
-    'zh-cn': locale_zh_CN,
-    'zh-tw': locale_zh_TW,
-    'es-es': locale_es,
-    'fr-fr': locale_fr,
-    'pt-br': locale_pt,
-    'tr-tr': locale_tr,
-    'de-de': locale_de,
-};
-for (const [lang, locale] of Object.entries(localesForSupportedLangs)) {
-    registerLocaleData(locale, lang);
-}
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;
@@ -167,7 +137,6 @@ ClarityIcons.add({
         LabelPieceComponent,
         CreateEditLabelComponent,
         CronScheduleComponent,
-        ListChartVersionRoComponent,
         DatePickerComponent,
         ImageNameInputComponent,
         HarborDatetimePipe,
@@ -207,7 +176,6 @@ ClarityIcons.add({
         LabelPieceComponent,
         CreateEditLabelComponent,
         CronScheduleComponent,
-        ListChartVersionRoComponent,
         DatePickerComponent,
         ImageNameInputComponent,
         HarborDatetimePipe,
@@ -223,7 +191,6 @@ ClarityIcons.add({
             provide: ScanningResultService,
             useClass: ScanningResultDefaultService,
         },
-        { provide: HelmChartService, useClass: HelmChartDefaultService },
     ],
 })
 export class SharedModule {}

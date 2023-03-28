@@ -529,7 +529,7 @@ Test Case - Copy A Image And Accessory
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
     Docker Logout  ${ip}
     Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
-    
+
     Copy Image  ${tag}  ${target_project}  ${image}
     Retry Wait Until Page Contains  Copy artifact successfully
 
@@ -710,29 +710,6 @@ Test Case - Push Docker Manifest Index and Display
     Wait Until Page Contains  test${d}/index${d}
     Go Into Repo  test${d}/index${d}
     Go Into Index And Contain Artifacts  index_tag${d}  total_artifact_count=2
-    Close Browser
-
-Test Case - Push Helm Chart and Display
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${chart_file}=  Set Variable  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
-    ${archive}=  Set Variable  harbor/
-    ${verion}=  Set Variable  0.2.0
-    ${repo_name}=  Set Variable  harbor_chart_test
-
-    Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
-    Create An New Project And Go Into Project  test${d}
-
-    Retry Action Keyword  Helm Chart Push  ${ip}  user010  Test1@34  ${chart_file}  ${archive}  test${d}  ${repo_name}  ${verion}
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/${repo_name}
-
-    Go Into Repo  test${d}/${repo_name}
-    Wait Until Page Contains  ${repo_name}
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/${repo_name}
-    Retry Double Keywords When Error  Go Into Repo  test${d}/${repo_name}  Page Should Contain Element  ${tag_table_column_vulnerabilities}
     Close Browser
 
 Test Case - Can Not Copy Image In ReadOnly Mode
@@ -1029,4 +1006,87 @@ Test Case - Export CVE
     ${csv_file_content}=  Create List  ${csv_file}
     ${actual_cve_data}=  Split To Lines  @{csv_file_content}  1
     Lists Should Be Equal  ${expected_cve_data}  ${actual_cve_data}  ignore_order=True
+    Close Browser
+
+Test Case - Helm3.7 CLI Push And Pull In Harbor
+    [Tags]  helm_push_and_push
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}
+    Close Browser
+
+Test Case - Job Service Dashboard Job Queues
+    [Tags]  job_service_job_queues
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # Pause GARBAGE_COLLECTION  PURGE_AUDIT_LOG  IMAGE_SCAN  RETENTION jobs
+    Switch To Job Queues
+    Pause Jobs  GARBAGE_COLLECTION  PURGE_AUDIT_LOG  IMAGE_SCAN  RETENTION
+    Check Button Status
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  2.0_scan  2.0_scan
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  3.0_scan  3.0_scan
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  4.0_scan  4.0_scan
+    Switch To Tag Retention
+    Add A Tag Retention Rule
+    # Triggers two RETENTION jobs
+    ${retention_execution1}=  Execute Dry Run  photon  0/0
+    ${retention_execution2}=  Execute Run  photon  0/0
+    # Triggers three IMAGE_SCAN jobs
+    Switch To Project Repo
+    Go Into Repo  photon
+    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Button Click  ${scan_artifact_btn}
+    # Triggers a GARBAGE_COLLECTION job
+    ${gc_execution1}=  GC Now  dry_run=${true}
+    # Triggers a PURGE_AUDIT_LOG job
+    Switch to Log Rotation
+    Purge Now  2  Days  Running
+    # Check job queues
+    Switch To Job Queues
+    Check Pending Job Card  IMAGE_SCAN=3  RETENTION=2  Others=2  Total=7
+    Check Jobs Pending Count  IMAGE_SCAN=3  RETENTION=2  GARBAGE_COLLECTION=1  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  GARBAGE_COLLECTION=${false}  PURGE_AUDIT_LOG=${false}  IMAGE_SCAN=${false}  RETENTION=${false}
+    # Resume GARBAGE_COLLECTION  RETENTION jobs
+    Resume Jobs  GARBAGE_COLLECTION  RETENTION
+    # Check job queues
+    Check Pending Job Card  IMAGE_SCAN=3  PURGE_AUDIT_LOG=1  Others=0  Total=4
+    Check Jobs Pending Count  IMAGE_SCAN=3  RETENTION=0  GARBAGE_COLLECTION=0  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  GARBAGE_COLLECTION=${true}  PURGE_AUDIT_LOG=${false}  IMAGE_SCAN=${false}  RETENTION=${true}
+    # Check retention and GC status
+    Go Into Project  project${d}
+    Switch To Tag Retention
+    Check Retention Execution  ${retention_execution1}  Success  Yes
+    Check Retention Execution  ${retention_execution2}  Success  No
+    Retry GC Should Be Successful  ${gc_execution1}  success to run gc in job
+    # Stop PURGE_AUDIT_LOG  IMAGE_SCAN jobs
+    Switch To Job Queues
+    Stop Pending Jobs  PURGE_AUDIT_LOG  IMAGE_SCAN
+    # Check job queues
+    Check Pending Job Card  first_job=0  second_job=0  the_third_job=0  Total=0
+    Check Jobs Pending Count  IMAGE_SCAN=0  PURGE_AUDIT_LOG=0
+    Check Jobs Latency  GARBAGE_COLLECTION=${true}  PURGE_AUDIT_LOG=${true}  IMAGE_SCAN=${true}  RETENTION=${true}
+    # Triggers a PURGE_AUDIT_LOG job
+    Switch to Log Rotation
+    Purge Now  1  Days  Running
+    # Triggers three IMAGE_SCAN jobs
+    Go Into Project  project${d}
+    Go Into Repo  photon
+    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Button Click  ${scan_artifact_btn}
+    # Check job queues
+    Switch To Job Queues
+    Check Pending Job Card  IMAGE_SCAN=3  PURGE_AUDIT_LOG=1  Others=0  Total=4
+    Check Jobs Pending Count   IMAGE_SCAN=3  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  IMAGE_SCAN=${false}  PURGE_AUDIT_LOG=${false}
+    # Stop all job
+    Stop All Pending Jobs
+    # Check job queues
+    Check Pending Job Card  first_job=0  second_job=0  the_third_job=0  Total=0
+    Check Jobs Pending Count   IMAGE_SCAN=0  PURGE_AUDIT_LOG=0
+    Check Jobs Latency  IMAGE_SCAN=${true}  PURGE_AUDIT_LOG=${true}
+    Resume Jobs  IMAGE_SCAN  PURGE_AUDIT_LOG
     Close Browser

@@ -40,9 +40,6 @@ Nightly Test Setup In Photon
     Start Docker Daemon Locally
     Log To Console  Start Containerd Daemon Locally ...
     Start Containerd Daemon Locally
-    Log To Console  wget mariadb ...
-    Run  wget ${prometheus_chart_file_url}
-    Prepare Helm Plugin
 
 Nightly Test Setup In Ubuntu
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
@@ -50,7 +47,6 @@ Nightly Test Setup In Ubuntu
     Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
-    Prepare Helm Plugin
 
 Nightly Test Setup In Ubuntu For Upgrade
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${ip1}==${EMPTY}
@@ -58,7 +54,6 @@ Nightly Test Setup In Ubuntu For Upgrade
     Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
-    Prepare Helm Plugin
     #For upgrade pipeline: get notary targets key from last execution.
     ${rc}  ${output}=  Run And Return Rc And Output  [ -f "/key_store/private_keys_backup.tar.gz" ] && tar -zxvf /key_store/private_keys_backup.tar.gz -C /
 
@@ -88,7 +83,6 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
     SSHLibrary.Get File  /var/log/harbor/notary-server.log
     SSHLibrary.Get File  /var/log/harbor/notary-signer.log
-    SSHLibrary.Get File  /var/log/harbor/chartmuseum.log
     SSHLibrary.Get File  /var/log/harbor/registryctl.log
     Run  rename 's/^/${ip}/' *.log
     Close All Connections

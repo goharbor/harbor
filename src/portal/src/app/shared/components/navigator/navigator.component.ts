@@ -14,7 +14,7 @@
 import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { PlatformLocation } from '@angular/common';
+import { PlatformLocation, registerLocaleData } from '@angular/common';
 import { ModalEvent } from '../../../base/modal-event';
 import { modalEvents } from '../../../base/modal-events.const';
 import { SessionService } from '../../services/session.service';
@@ -31,6 +31,7 @@ import {
     DefaultDatetimeRendering,
     DeFaultLang,
     LANGUAGES,
+    stringsForClarity,
     SupportedLanguage,
 } from '../../entities/shared.const';
 import {
@@ -39,6 +40,10 @@ import {
     StyleMode,
 } from '../../../services/theme';
 import { getDatetimeRendering } from '../../units/shared.utils';
+import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
+import { map } from 'rxjs/operators';
+import { forkJoin, Observable } from 'rxjs';
+import { ClrCommonStringsService } from '@clr/angular';
 
 @Component({
     selector: 'navigator',
@@ -63,21 +68,47 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
-        private skinableConfig: SkinableConfig
+        private skinableConfig: SkinableConfig,
+        private commonStrings: ClrCommonStringsService
     ) {}
 
     ngOnInit(): void {
         // custom skin
         this.customStyle = this.skinableConfig.getSkinConfig();
         this.selectedLang = this.translate.currentLang as SupportedLanguage;
-        this.selectedDatetimeRendering = getDatetimeRendering();
-        if (this.appConfigService.isIntegrationMode()) {
-            this.appTitle = 'APP_TITLE.VIC';
+        if (this.selectedLang) {
+            registerLocaleData(
+                LANGUAGES[this.selectedLang][1],
+                this.selectedLang
+            );
+            this.translateClarityComponents();
         }
-
+        this.selectedDatetimeRendering = getDatetimeRendering();
         if (this.appConfigService.getConfig().read_only) {
             this.msgHandler.handleReadOnly();
         }
+    }
+    //Internationalization for Clarity components, refer to https://clarity.design/documentation/internationalization
+    translateClarityComponents() {
+        const translatedObservables: Observable<string | any>[] = [];
+        const translatedStringsForClarity: Partial<ClrCommonStrings> = {};
+        for (let key in stringsForClarity) {
+            translatedObservables.push(
+                this.translate.get(stringsForClarity[key]).pipe(
+                    map(res => {
+                        return [key, res];
+                    })
+                )
+            );
+        }
+        forkJoin(translatedObservables).subscribe(res => {
+            if (res?.length) {
+                res.forEach(item => {
+                    translatedStringsForClarity[item[0]] = item[1];
+                });
+                this.commonStrings.localize(translatedStringsForClarity);
+            }
+        });
     }
 
     public get isSessionValid(): boolean {
@@ -91,7 +122,10 @@ export class NavigatorComponent implements OnInit {
     }
 
     public get currentLang(): string {
-        return LANGUAGES[this.selectedLang];
+        if (this.selectedLang) {
+            return LANGUAGES[this.selectedLang][0] as string;
+        }
+        return null;
     }
 
     public get currentDatetimeRendering(): string {
@@ -101,11 +135,6 @@ export class NavigatorComponent implements OnInit {
     public get admiralLink(): string {
         return this.appConfigService.getAdmiralEndpoint(window.location.href);
     }
-
-    public get isIntegrationMode(): boolean {
-        return this.appConfigService.isIntegrationMode();
-    }
-
     public get canDownloadCert(): boolean {
         return (
             this.session.getCurrentUser() &&

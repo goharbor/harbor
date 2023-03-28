@@ -1,12 +1,7 @@
-<div class="replication-tasks mt-1">
+<div class="replication-tasks mt-2">
     <section class="overview-section">
         <div class="title-wrapper">
             <div>
-                <div>
-                    <a (click)="onBack()" class="onBack"
-                        ><{{ 'P2P_PROVIDER.P2P_PROVIDER' | translate }}</a
-                    >
-                </div>
                 <div class="title-block">
                     <div>
                         <h2 class="custom-h2 h2-style">
@@ -73,7 +68,7 @@
                     <label
                         >{{ 'REPLICATION.CREATION_TIME' | translate }} :</label
                     >
-                    <span>{{ startTime() | harborDatetime: 'short' }}</span>
+                    <span>{{ startTime() | harborDatetime : 'short' }}</span>
                 </div>
             </div>
             <div class="flex-block">
@@ -212,7 +207,7 @@
                 </clr-dg-cell>
 
                 <clr-dg-cell>{{
-                    t.start_time | harborDatetime: 'short'
+                    t.start_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
                 <clr-dg-cell>{{ getDuration(t) }}</clr-dg-cell>
                 <clr-dg-cell>

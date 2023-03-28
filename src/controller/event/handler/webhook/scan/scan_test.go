@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	sc "github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
@@ -137,7 +138,7 @@ func (suite *ScanImagePreprocessHandlerSuite) TearDownSuite() {
 func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
 	handler := &Handler{}
 
-	err := handler.Handle(context.TODO(), suite.evt)
+	err := handler.Handle(orm.Context(), suite.evt)
 	suite.NoError(err)
 }
 

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -16,10 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/systemartifact"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
-
-func init() {
-	task.SetExecutionSweeperCount(job.ScanDataExport, 50)
-}
 
 var Ctl = NewController()
 
@@ -49,7 +44,7 @@ type controller struct {
 
 func (c *controller) ListExecutions(ctx context.Context, userName string) ([]*export.Execution, error) {
 	keywords := make(map[string]interface{})
-	keywords["VendorType"] = job.ScanDataExport
+	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords[fmt.Sprintf("ExtraAttrs.%s", export.UserNameAttribute)] = userName
 
 	q := q2.New(q2.KeyWords{})
@@ -66,10 +61,11 @@ func (c *controller) ListExecutions(ctx context.Context, userName string) ([]*ex
 }
 
 func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task, error) {
+	logger := log.GetLogger(ctx)
 	query := q2.New(q2.KeyWords{})
 
 	keywords := make(map[string]interface{})
-	keywords["VendorType"] = job.ScanDataExport
+	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords["ExecutionID"] = executionID
 	query.Keywords = keywords
 	query.Sorts = append(query.Sorts, &q2.Sort{
@@ -90,6 +86,7 @@ func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task
 }
 
 func (c *controller) GetExecution(ctx context.Context, executionID int64) (*export.Execution, error) {
+	logger := log.GetLogger(ctx)
 	exec, err := c.execMgr.Get(ctx, executionID)
 	if err != nil {
 		logger.Errorf("Error when fetching execution status for ExecutionId: %d error : %v", executionID, err)
@@ -103,6 +100,7 @@ func (c *controller) GetExecution(ctx context.Context, executionID int64) (*expo
 }
 
 func (c *controller) DeleteExecution(ctx context.Context, executionID int64) error {
+	logger := log.GetLogger(ctx)
 	err := c.execMgr.Delete(ctx, executionID)
 	if err != nil {
 		logger.Errorf("Error when deleting execution  for ExecutionId: %d, error : %v", executionID, err)
@@ -117,7 +115,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
 	extraAttrs[export.UserNameAttribute] = request.UserName
-	id, err := c.execMgr.Create(ctx, job.ScanDataExport, vendorID, task.ExecutionTriggerManual, extraAttrs)
+	id, err := c.execMgr.Create(ctx, job.ScanDataExportVendorType, vendorID, task.ExecutionTriggerManual, extraAttrs)
 	logger.Infof("Created an execution record with id : %d for vendorID: %d", id, vendorID)
 	if err != nil {
 		logger.Errorf("Encountered error when creating job : %v", err)
@@ -131,7 +129,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	params[export.JobModeKey] = export.JobModeExport
 
 	j := &task.Job{
-		Name: job.ScanDataExport,
+		Name: job.ScanDataExportVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},
@@ -188,12 +186,17 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 	if statusMessage, ok := exec.ExtraAttrs[export.StatusMessageAttribute]; ok {
 		execStatus.StatusMessage = statusMessage.(string)
 	}
-	artifactExists := c.isCsvArtifactPresent(ctx, exec.ID, execStatus.ExportDataDigest)
-	execStatus.FilePresent = artifactExists
+
+	if len(execStatus.ExportDataDigest) > 0 {
+		artifactExists := c.isCsvArtifactPresent(ctx, exec.ID, execStatus.ExportDataDigest)
+		execStatus.FilePresent = artifactExists
+	}
+
 	return execStatus
 }
 
 func (c *controller) isCsvArtifactPresent(ctx context.Context, execID int64, digest string) bool {
+	logger := log.GetLogger(ctx)
 	repositoryName := fmt.Sprintf("scandata_export_%v", execID)
 	exists, err := c.sysArtifactMgr.Exists(ctx, strings.ToLower(export.Vendor), repositoryName, digest)
 	if err != nil {

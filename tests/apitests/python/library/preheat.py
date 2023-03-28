@@ -16,7 +16,6 @@ class Preheat(base.Base, object):
             name = base._random_name("instance")
         instance = v2_swagger_client.Instance(name=name, description=description,vendor=vendor,
             endpoint=endpoint_url, auth_mode=auth_mode, enabled=enabled)
-        print("instance:",instance)
         try:
             _, status_code, header = self._get_client(**kwargs).create_instance_with_http_info(instance)
         except ApiException as e:
@@ -36,7 +35,6 @@ class Preheat(base.Base, object):
         policy = v2_swagger_client.PreheatPolicy(name=name, project_id=project_id, provider_id=provider_id,
                                                    description=description,filters=filters,
                                                    trigger=trigger, enabled=enabled)
-        print("policy:",policy)
         try:
             data, status_code, header = self._get_client(**kwargs).create_policy_with_http_info(project_name, policy)
         except ApiException as e:

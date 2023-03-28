@@ -31,7 +31,6 @@ func (s *sysInfoCtlTestSuite) SetupTest() {
 		common.RegistryStorageProviderName: "filesystem",
 		common.ReadOnly:                    false,
 		common.NotificationEnable:          false,
-		common.WithChartMuseum:             false,
 		common.WithNotary:                  true,
 	}
 
@@ -77,7 +76,6 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 					HasCARoot:                   true,
 					RegistryStorageProviderName: "filesystem",
 					ReadOnly:                    false,
-					WithChartMuseum:             false,
 					NotificationEnable:          false,
 				},
 			},

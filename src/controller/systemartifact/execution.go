@@ -16,18 +16,13 @@ import (
 )
 
 const (
-	VendorTypeSystemArtifactCleanup = "SYSTEM_ARTIFACT_CLEANUP"
-	cronTypeDaily                   = "Daily"
-	cronSpec                        = "0 0 0 * * *"
+	cronTypeDaily = "Daily"
+	cronSpec      = "0 0 0 * * *"
 )
 
 var (
 	sched = scheduler.Sched
 )
-
-func init() {
-	task.SetExecutionSweeperCount(VendorTypeSystemArtifactCleanup, 50)
-}
 
 var Ctl = NewController()
 
@@ -52,7 +47,7 @@ type controller struct {
 }
 
 func (c *controller) Start(ctx context.Context, async bool, trigger string) error {
-	execID, err := c.execMgr.Create(ctx, VendorTypeSystemArtifactCleanup, 0, trigger)
+	execID, err := c.execMgr.Create(ctx, job.SystemArtifactCleanupVendorType, 0, trigger)
 	if err != nil {
 		return err
 	}
@@ -92,7 +87,7 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 
 func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parameters, execID int64) error {
 	j := &task.Job{
-		Name: job.SystemArtifactCleanup,
+		Name: job.SystemArtifactCleanupVendorType,
 		Metadata: &job.Metadata{
 			JobKind: job.KindGeneric,
 		},
@@ -133,7 +128,7 @@ func scheduleSystemArtifactCleanJob(ctx context.Context) {
 		logger.Debugf(" Export data cleanup job already scheduled with ID : %v.", schedule.ID)
 		return
 	}
-	scheduleID, err := sched.Schedule(ctx, VendorTypeSystemArtifactCleanup, 0, cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, nil)
+	scheduleID, err := sched.Schedule(ctx, job.SystemArtifactCleanupVendorType, 0, cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, nil)
 	if err != nil {
 		log.Errorf("Encountered error when scheduling scan data export cleanup job : %v", err)
 		return
@@ -142,7 +137,7 @@ func scheduleSystemArtifactCleanJob(ctx context.Context) {
 }
 
 func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule, error) {
-	query := q.New(map[string]interface{}{"vendor_type": VendorTypeSystemArtifactCleanup})
+	query := q.New(map[string]interface{}{"vendor_type": job.SystemArtifactCleanupVendorType})
 	schedules, err := sched.ListSchedules(ctx, query)
 	if err != nil {
 		logger.Errorf("Unable to check if export data cleanup job is already scheduled : %v", err)

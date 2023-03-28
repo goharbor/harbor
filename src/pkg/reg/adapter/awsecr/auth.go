@@ -26,7 +26,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
 
@@ -102,8 +101,6 @@ func getAwsSvc(region, accessKey, accessSecret string, insecure bool, forceEndpo
 			accessKey,
 			accessSecret,
 			"")
-	} else {
-		cred = ec2rolecreds.NewCredentials(sess)
 	}
 
 	config := &aws.Config{

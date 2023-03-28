@@ -3,15 +3,16 @@
  1.npm install js-yaml --save-dev
  2.npm install ng-swagger-gen --save-dev
  */
-//configuration
+//configuration. For dev build, the input path is '../../api/v2.0/swagger.yaml'
 let inputFile = '../../api/v2.0/swagger.yaml';
 const outputDir = 'ng-swagger-gen';
 
 //convert swagger.yaml to swagger.json
 const yaml = require('js-yaml');
 const fs = require('fs');
-if (fs.existsSync('swagger2.yaml')) {
-   inputFile = 'swagger2.yaml';
+//when building portal container(production build), the input path is './swagger.yaml'. Refer to portal Dockerfile
+if (fs.existsSync('swagger.yaml')) {
+   inputFile = 'swagger.yaml';
 }
 if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);

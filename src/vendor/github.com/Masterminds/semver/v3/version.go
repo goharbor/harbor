@@ -55,14 +55,16 @@ func init() {
 	versionRegex = regexp.MustCompile("^" + semVerRegex + "$")
 }
 
-const num string = "0123456789"
-const allowed string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-" + num
+const (
+	num     string = "0123456789"
+	allowed string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-" + num
+)
 
 // StrictNewVersion parses a given version and returns an instance of Version or
 // an error if unable to parse the version. Only parses valid semantic versions.
 // Performs checking that can find errors within the version.
-// If you want to coerce a version, such as 1 or 1.2, and perse that as the 1.x
-// releases of semver provided use the NewSemver() function.
+// If you want to coerce a version such as 1 or 1.2 and parse it as the 1.x
+// releases of semver did, use the NewVersion() function.
 func StrictNewVersion(v string) (*Version, error) {
 	// Parsing here does not use RegEx in order to increase performance and reduce
 	// allocations.
@@ -207,6 +209,23 @@ func NewVersion(v string) (*Version, error) {
 	return sv, nil
 }
 
+// New creates a new instance of Version with each of the parts passed in as
+// arguments instead of parsing a version string.
+func New(major, minor, patch uint64, pre, metadata string) *Version {
+	v := Version{
+		major:    major,
+		minor:    minor,
+		patch:    patch,
+		pre:      pre,
+		metadata: metadata,
+		original: "",
+	}
+
+	v.original = v.String()
+
+	return &v
+}
+
 // MustParse parses a given version and panics on error.
 func MustParse(v string) *Version {
 	sv, err := NewVersion(v)
@@ -267,7 +286,6 @@ func (v Version) Metadata() string {
 
 // originalVPrefix returns the original 'v' prefix if any.
 func (v Version) originalVPrefix() string {
-
 	// Note, only lowercase v is supported as a prefix by the parser.
 	if v.original != "" && v.original[:1] == "v" {
 		return v.original[:1]
@@ -436,6 +454,23 @@ func (v Version) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.String())
 }
 
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (v *Version) UnmarshalText(text []byte) error {
+	temp, err := NewVersion(string(text))
+	if err != nil {
+		return err
+	}
+
+	*v = *temp
+
+	return nil
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (v Version) MarshalText() ([]byte, error) {
+	return []byte(v.String()), nil
+}
+
 // Scan implements the SQL.Scanner interface.
 func (v *Version) Scan(value interface{}) error {
 	var s string
@@ -470,7 +505,6 @@ func compareSegment(v, o uint64) int {
 }
 
 func comparePrerelease(v, o string) int {
-
 	// split the prelease versions by their part. The separator, per the spec,
 	// is a .
 	sparts := strings.Split(v, ".")
@@ -562,7 +596,6 @@ func comparePrePart(s, o string) int {
 		return 1
 	}
 	return -1
-
 }
 
 // Like strings.ContainsAny but does an only instead of any.

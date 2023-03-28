@@ -30,9 +30,11 @@ import {
     DEFAULT_SUPPORTED_MIME_TYPES,
     doSorting,
     formatSize,
+    getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
+    setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
@@ -160,6 +162,26 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onScanArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     updateArtifactSub: Subscription;
+
+    hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
+        PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
+        [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+        ]
+    );
+    deleteAccessorySub: Subscription;
+    @ViewChild('datagrid')
+    datagrid;
     constructor(
         private errorHandlerService: ErrorHandler,
         private artifactService: ArtifactService,
@@ -211,12 +233,40 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             );
         }
+        if (!this.deleteAccessorySub) {
+            this.deleteAccessorySub = this.eventService.subscribe(
+                HarborEvent.DELETE_ACCESSORY,
+                (a: Accessory) => {
+                    this.deleteAccessory(a);
+                }
+            );
+        }
     }
+
     ngOnDestroy() {
         if (this.updateArtifactSub) {
             this.updateArtifactSub.unsubscribe();
             this.updateArtifactSub = null;
         }
+        if (this.deleteAccessorySub) {
+            this.deleteAccessorySub.unsubscribe();
+            this.deleteAccessorySub = null;
+        }
+        this.datagrid['columnsService']?.columns?.forEach((item, index) => {
+            if (this.depth) {
+                this.hiddenArray[index] = !!item?._value?.hidden;
+            } else {
+                if (index < 2) {
+                    this.hiddenArray[index] = !!item?._value?.hidden;
+                } else {
+                    this.hiddenArray[index + 1] = !!item?._value?.hidden;
+                }
+            }
+        });
+        setHiddenArrayToLocalStorage(
+            PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
+            this.hiddenArray
+        );
     }
     get withNotary(): boolean {
         return this.appConfigService.getConfig()?.with_notary;
@@ -816,7 +866,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         } else {
             if (e?.stringValue) {
-                this.filters.push(`${e.type}=${e?.stringValue}`);
+                if (e?.isInputTag) {
+                    // for input tag, use fuzzy match
+                    this.filters.push(`${e.type}=~${e?.stringValue}`);
+                } else {
+                    this.filters.push(`${e.type}=${e?.stringValue}`);
+                }
             }
         }
         this.refresh();

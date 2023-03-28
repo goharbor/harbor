@@ -46,13 +46,6 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 				pattern:    filter.Value.(string),
 				decoration: filter.Decoration,
 			}
-		case model.FilterTypeResource:
-			v := filter.Value.(string)
-			if v != model.ResourceTypeArtifact && v != model.ResourceTypeChart {
-				f = &artifactTypeFilter{
-					types: []string{v},
-				}
-			}
 		}
 		if f != nil {
 			fs = append(fs, f)

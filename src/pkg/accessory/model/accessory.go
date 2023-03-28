@@ -64,23 +64,29 @@ type RefIdentifier interface {
 const (
 	// TypeNone ...
 	TypeNone = "base"
+
 	// TypeCosignSignature ...
 	TypeCosignSignature = "signature.cosign"
 
 	// TypeNydusAccelerator ...
 	TypeNydusAccelerator = "accelerator.nydus"
+
+	// TypeSubject ...
+	TypeSubject = "subject.accessory"
 )
 
 // AccessoryData ...
 type AccessoryData struct {
-	ID            int64     `json:"id"`
-	ArtifactID    int64     `json:"artifact_id"`
-	SubArtifactID int64     `json:"subject_artifact_id"`
-	Type          string    `json:"type"`
-	Size          int64     `json:"size"`
-	Digest        string    `json:"digest"`
-	CreatTime     time.Time `json:"creation_time"`
-	Icon          string    `json:"icon"`
+	ID                int64     `json:"id"`
+	ArtifactID        int64     `json:"artifact_id"`
+	SubArtifactID     int64     `json:"subject_artifact_id"`
+	SubArtifactRepo   string    `json:"subject_artifact_repo"`
+	SubArtifactDigest string    `json:"subject_artifact_digest"`
+	Type              string    `json:"type"`
+	Size              int64     `json:"size"`
+	Digest            string    `json:"digest"`
+	CreatTime         time.Time `json:"creation_time"`
+	Icon              string    `json:"icon"`
 }
 
 // Accessory Independent, but linked to an existing subject artifact, which enabling the extensibility of an OCI artifact

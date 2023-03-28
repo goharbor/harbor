@@ -161,7 +161,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 		for _, acc := range option.Accs {
-			if err = c.accessoryMgr.Ensure(ctx, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, artifact.RepositoryName, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
 				return false, 0, err
 			}
 		}
@@ -567,8 +567,8 @@ func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int
 				LabelID:    labelID,
 				Ctx:        ctx,
 			}
-			if err := e.Build(metaData); err == nil {
-				if err := e.Publish(); err != nil {
+			if err := e.Build(ctx, metaData); err == nil {
+				if err := e.Publish(ctx); err != nil {
 					log.Error(errors.Wrap(err, "mark label to resource handler: event publish"))
 				}
 			} else {

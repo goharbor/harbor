@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/jobservice"
 	pg "github.com/goharbor/harbor/src/controller/purge"
 	"github.com/goharbor/harbor/src/controller/task"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	taskPkg "github.com/goharbor/harbor/src/pkg/task"
@@ -62,7 +63,7 @@ func (p *purgeAPI) CreatePurgeSchedule(ctx context.Context, params purge.CreateP
 	if err := verifyCreateRequest(params); err != nil {
 		return p.SendError(ctx, err)
 	}
-	id, err := p.kick(ctx, pg.VendorType, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
+	id, err := p.kick(ctx, job.PurgeAuditVendorType, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -151,7 +152,7 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 		return p.SendError(ctx, err)
 	}
 	query, err := p.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
-	query.Keywords["VendorType"] = pg.VendorType
+	query.Keywords["VendorType"] = job.PurgeAuditVendorType
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -172,7 +173,7 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 		}
 		hs = append(hs, &model.ExecHistory{
 			ID:         exec.ID,
-			Name:       pg.VendorType,
+			Name:       job.PurgeAuditVendorType,
 			Kind:       exec.Trigger,
 			Parameters: string(extraAttrsString),
 			Schedule: &model.ScheduleParam{
@@ -200,7 +201,7 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 	}
 
 	exec, err := p.executionCtl.Get(ctx, params.PurgeID)
-	if exec.VendorType != pg.VendorType {
+	if exec.VendorType != job.PurgeAuditVendorType {
 		return p.SendError(ctx, fmt.Errorf("purge job with id %d not found", params.PurgeID))
 	}
 	if err != nil {
@@ -214,7 +215,7 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 
 	res := &model.ExecHistory{
 		ID:         exec.ID,
-		Name:       pg.VendorType,
+		Name:       job.PurgeAuditVendorType,
 		Kind:       exec.Trigger,
 		Parameters: string(extraAttrsString),
 		Status:     exec.Status,
@@ -234,7 +235,7 @@ func (p *purgeAPI) GetPurgeJobLog(ctx context.Context, params purge.GetPurgeJobL
 	}
 	tasks, err := p.taskCtl.List(ctx, q.New(q.KeyWords{
 		"ExecutionID": params.PurgeID,
-		"VendorType":  pg.VendorType,
+		"VendorType":  job.PurgeAuditVendorType,
 	}))
 	if err != nil {
 		return p.SendError(ctx, err)
@@ -255,7 +256,7 @@ func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, params purge.GetPurgeSc
 	if err := p.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePurgeAuditLog); err != nil {
 		return p.SendError(ctx, err)
 	}
-	sch, err := p.schedulerCtl.Get(ctx, pg.VendorType)
+	sch, err := p.schedulerCtl.Get(ctx, job.PurgeAuditVendorType)
 	if errors.IsNotFoundErr(err) {
 		return purge.NewGetPurgeScheduleOK()
 	}
@@ -287,7 +288,7 @@ func (p *purgeAPI) UpdatePurgeSchedule(ctx context.Context, params purge.UpdateP
 	if err := verifyUpdateRequest(params); err != nil {
 		return p.SendError(ctx, err)
 	}
-	_, err := p.kick(ctx, pg.VendorType, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
+	_, err := p.kick(ctx, job.PurgeAuditVendorType, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
 		return p.SendError(ctx, err)
 	}

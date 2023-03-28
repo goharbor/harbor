@@ -82,8 +82,6 @@ TRIVYFLAG=false
 HTTPPROXY=
 BUILDBIN=true
 NPM_REGISTRY=https://registry.npmjs.org
-# enable/disable chart repo supporting
-CHARTFLAG=false
 BUILDTARGET=build
 GEN_TLS=
 
@@ -94,7 +92,7 @@ VERSIONTAG=dev
 BUILD_BASE=true
 PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BUILDBASETARGET=chartserver trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
+BUILDBASETARGET=trivy-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl exporter
 IMAGENAMESPACE=goharbor
 BASEIMAGENAMESPACE=goharbor
 # #input true/false only
@@ -109,20 +107,13 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.0-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
-TRIVYVERSION=v0.35.0
-TRIVYADAPTERVERSION=v0.30.5
-
-# version of chartmuseum for pulling the source code
-CHARTMUSEUM_SRC_TAG=v0.14.0
-
-# version of chartmuseum
-CHARTMUSEUMVERSION=$(CHARTMUSEUM_SRC_TAG)-redis
+TRIVYVERSION=v0.37.2
+TRIVYADAPTERVERSION=v0.30.7
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.0
 
 # dependency binaries
-CHARTURL=https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-${CHARTMUSEUMVERSION}/chartm
 NOTARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
@@ -134,7 +125,6 @@ REGISTRY_VERSION: $(REGISTRYVERSION)
 NOTARY_VERSION: $(NOTARYVERSION)
 TRIVY_VERSION: $(TRIVYVERSION)
 TRIVY_ADAPTER_VERSION: $(TRIVYADAPTERVERSION)
-CHARTMUSEUM_VERSION: $(CHARTMUSEUMVERSION)
 endef
 
 # docker parameters
@@ -155,14 +145,14 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.19.4
+GOBUILDIMAGE=golang:1.20.1
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
 PKG_PATH=github.com/goharbor/harbor/src/pkg
 GITCOMMIT := $(shell git rev-parse --short=8 HEAD)
 RELEASEVERSION := $(shell cat VERSION)
-GOFLAGS=
+GOFLAGS="-buildvcs=false"
 GOTAGS=$(if $(GOBUILDTAGS),-tags "$(GOBUILDTAGS)",)
 GOLDFLAGS=$(if $(GOBUILDLDFLAGS),--ldflags "-w -s $(GOBUILDLDFLAGS)",)
 CORE_LDFLAGS=-X $(PKG_PATH)/version.GitCommit=$(GITCOMMIT) -X $(PKG_PATH)/version.ReleaseVersion=$(RELEASEVERSION)
@@ -216,10 +206,6 @@ endif
 ifeq ($(TRIVYFLAG), true)
 	PREPARECMD_PARA+= --with-trivy
 endif
-# append chartmuseum parameters if set
-ifeq ($(CHARTFLAG), true)
-    PREPARECMD_PARA+= --with-chartmuseum
-endif
 
 # makefile
 MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
@@ -234,7 +220,6 @@ DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/harbor-jobservice
 DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/harbor-log
 DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/harbor-db
-DOCKERIMAGENAME_CHART_SERVER=$(IMAGENAMESPACE)/chartmuseum-photon
 DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/harbor-registryctl
 DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-exporter
 
@@ -295,10 +280,6 @@ endif
 ifeq ($(TRIVYFLAG), true)
 	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
 endif
-# append chartmuseum parameters if set
-ifeq ($(CHARTFLAG), true)
-	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(VERSIONTAG)
-endif
 
 
 RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
@@ -344,7 +325,7 @@ gen_apis: lint_apis
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.14.0
+MOCKERY_VERSION=v2.22.1
 MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
@@ -430,9 +411,8 @@ build:
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) \
-	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e CHARTMUSEUM_SRC_TAG=$(CHARTMUSEUM_SRC_TAG) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
-	 -e CHARTURL=$(CHARTURL) -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
+	 -e NOTARYURL=$(NOTARYURL) -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
@@ -518,7 +498,7 @@ misspell:
 	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
@@ -584,14 +564,8 @@ swagger_client:
 	@echo "Generate swagger client"
 	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
 	rm -rf harborclient
-	mkdir  -p harborclient/harbor_client
-	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
-	java -jar openapi-generator-cli.jar generate -i api/swagger.yaml -g python -o harborclient/harbor_client --package-name client
-	java -jar openapi-generator-cli.jar generate -i api/v2.0/legacy_swagger.yaml -g python -o harborclient/harbor_swagger_client --package-name swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
-	cd harborclient/harbor_client; python ./setup.py install
-	cd harborclient/harbor_swagger_client; python ./setup.py install
 	cd harborclient/harbor_v2_swagger_client; python ./setup.py install
 	pip install docker -q
 	pip freeze

@@ -32,6 +32,9 @@ const (
 	// TriggerSettingsCron cron
 	TriggerSettingsCron = "cron"
 
+	// TriggerSettingNextScheduledTime next_scheduled_time
+	TriggerSettingNextScheduledTime = "next_scheduled_time"
+
 	// ScopeLevelProject project
 	ScopeLevelProject = "project"
 )

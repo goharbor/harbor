@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from swagger_client.rest import ApiException
 from v2_swagger_client.rest import ApiException
 
 import base

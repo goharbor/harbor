@@ -37,7 +37,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/user"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -162,7 +161,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.EnableContentTrust = nil
 	}
 
-	// validate the RegistryID and StorageLimit in the body of the request
+	// validate the RetentionID, RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -208,6 +207,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	if err := lib.JSONCopy(&p.Metadata, req.Metadata); err != nil {
 		log.Warningf("failed to call JSONCopy on project metadata when CreateProject, error: %v", err)
 	}
+	delete(p.Metadata, "retention_id")
 
 	projectID, err := a.projectCtl.Create(ctx, p)
 	if err != nil {
@@ -370,8 +370,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	summary := &models.ProjectSummary{
-		ChartCount: int64(p.ChartCount),
-		RepoCount:  p.RepoCount,
+		RepoCount: p.RepoCount,
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
@@ -557,6 +556,18 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
 	}
 
+	// validate retention_id
+	if ridParam, ok := p.Metadata["retention_id"]; ok {
+		md, err := a.metadataMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
+			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
+			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf(errMsg)))
+		}
+	}
+
 	if err := a.projectCtl.Update(ctx, p); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -655,9 +666,6 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	if p.RepoCount > 0 {
 		result.Deletable = false
 		result.Message = "the project contains repositories, can not be deleted"
-	} else if p.ChartCount > 0 {
-		result.Deletable = false
-		result.Message = "the project contains helm charts, can not be deleted"
 	}
 
 	return p, result, nil
@@ -677,6 +685,10 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}
 }
 
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
+	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
+		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
+	}
+
 	if req.RegistryID != nil {
 		if *req.RegistryID <= 0 {
 			return errors.BadRequestError(fmt.Errorf("%d is invalid value of registry_id, it should be geater than 0", *req.RegistryID))
@@ -726,16 +738,6 @@ func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project)
 	}
 	p.RepoCount = total
 
-	// Populate chart count property
-	if config.WithChartMuseum() {
-		count, err := api.GetChartController().GetCountOfCharts([]string{p.Name})
-		if err != nil {
-			err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", p.ProjectID))
-			return err
-		}
-
-		p.ChartCount = count
-	}
 	return nil
 }
 

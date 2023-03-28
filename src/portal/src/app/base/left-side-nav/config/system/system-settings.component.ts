@@ -95,7 +95,8 @@ export class SystemSettingsComponent implements OnInit {
                 prop === 'robot_name_prefix' ||
                 prop === 'audit_log_forward_endpoint' ||
                 prop === 'skip_audit_log_database' ||
-                prop === 'session_timeout'
+                prop === 'session_timeout' ||
+                prop === 'scanner_skip_update_pulltime'
             ) {
                 changes[prop] = allChanges[prop];
             }

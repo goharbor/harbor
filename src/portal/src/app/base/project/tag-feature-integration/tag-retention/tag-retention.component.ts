@@ -143,6 +143,10 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
     updateCron(cron: string) {
         let retention: RetentionPolicy = clone(this.retention);
         retention.trigger.settings['cron'] = cron;
+        if (retention?.trigger?.settings['next_scheduled_time']) {
+            // should not have next_scheduled_time for updating
+            delete retention?.trigger?.settings['next_scheduled_time'];
+        }
         if (!this.retentionId) {
             this.retentionService
                 .createRetention({

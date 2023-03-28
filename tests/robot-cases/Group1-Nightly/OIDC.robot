@@ -81,13 +81,6 @@ Test Case - Generate User CLI Secret
     Push image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
     Close Browser
 
-Test Case - Helm CLI Push
-    Init Chrome Driver
-    Sign In Harbor With OIDC User  ${HARBOR_URL}
-    ${secret}=  Get Secrete By API  ${HARBOR_URL}
-    Helm CLI Push Without Sign In Harbor  ${OIDC_USERNAME}  ${secret}
-    Close Browser
-
 Test Case - Onboard OIDC User Sign In
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}

@@ -131,7 +131,6 @@ class Project(base.Base):
         return self._get_client(**kwargs).list_project_members(project_id)
 
     def get_project_member(self, project_id, member_id, expect_status_code = 200, expect_response_body = None, **kwargs):
-        from swagger_client.rest import ApiException
         kwargs['api_type'] = 'member'
         data = []
         try:

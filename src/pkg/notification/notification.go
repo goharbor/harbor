@@ -7,27 +7,48 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
-	"github.com/goharbor/harbor/src/pkg/notification/job"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/notifier/formats"
 	notifier_model "github.com/goharbor/harbor/src/pkg/notifier/model"
 )
+
+type (
+	// EventType is the type of event
+	EventType string
+	// NotifyType is the type of notify
+	NotifyType string
+	// PayloadFormatType is the type of payload format
+	PayloadFormatType string
+)
+
+func (e EventType) String() string {
+	return string(e)
+}
+
+func (n NotifyType) String() string {
+	return string(n)
+}
+
+func (p PayloadFormatType) String() string {
+	return string(p)
+}
 
 var (
 	// PolicyMgr is a global notification policy manager
 	PolicyMgr policy.Manager
 
-	// JobMgr is a notification job controller
-	JobMgr job.Manager
-
 	// HookManager is a hook manager
 	HookManager hook.Manager
 
-	// SupportedEventTypes is a map to store supported event type, eg. pushImage, pullImage etc
-	SupportedEventTypes map[string]struct{}
+	// supportedEventTypes is a slice to store supported event type, eg. pushImage, pullImage etc
+	supportedEventTypes []EventType
 
-	// SupportedNotifyTypes is a map to store notification type, eg. HTTP, Email etc
-	SupportedNotifyTypes map[string]struct{}
+	// supportedNotifyTypes is a slice to store notification type, eg. HTTP, Email etc
+	supportedNotifyTypes []NotifyType
+
+	// supportedPayloadFormatTypes is a slice to store the supported payload formats. eg. Default, CloudEvents etc
+	supportedPayloadFormatTypes []PayloadFormatType
 )
 
 // Init ...
@@ -36,8 +57,6 @@ func Init() {
 	PolicyMgr = policy.Mgr
 	// init hook manager
 	HookManager = hook.NewHookManager()
-	// init notification job manager
-	JobMgr = job.Mgr
 
 	initSupportedNotifyType()
 
@@ -45,16 +64,13 @@ func Init() {
 }
 
 func initSupportedNotifyType() {
-	SupportedEventTypes = make(map[string]struct{}, 0)
-	SupportedNotifyTypes = make(map[string]struct{}, 0)
+	supportedEventTypes = make([]EventType, 0)
+	supportedNotifyTypes = make([]NotifyType, 0)
 
 	eventTypes := []string{
 		event.TopicPushArtifact,
 		event.TopicPullArtifact,
 		event.TopicDeleteArtifact,
-		event.TopicUploadChart,
-		event.TopicDeleteChart,
-		event.TopicDownloadChart,
 		event.TopicQuotaExceed,
 		event.TopicQuotaWarning,
 		event.TopicScanningFailed,
@@ -64,12 +80,17 @@ func initSupportedNotifyType() {
 		event.TopicTagRetention,
 	}
 	for _, eventType := range eventTypes {
-		SupportedEventTypes[eventType] = struct{}{}
+		supportedEventTypes = append(supportedEventTypes, EventType(eventType))
 	}
 
 	notifyTypes := []string{notifier_model.NotifyTypeHTTP, notifier_model.NotifyTypeSlack}
 	for _, notifyType := range notifyTypes {
-		SupportedNotifyTypes[notifyType] = struct{}{}
+		supportedNotifyTypes = append(supportedNotifyTypes, NotifyType(notifyType))
+	}
+
+	payloadFormats := []string{formats.DefaultFormat, formats.CloudEventsFormat}
+	for _, payloadFormat := range payloadFormats {
+		supportedPayloadFormatTypes = append(supportedPayloadFormatTypes, PayloadFormatType(payloadFormat))
 	}
 }
 
@@ -112,4 +133,16 @@ func AddEvent(ctx context.Context, m n_event.Metadata, notify ...bool) {
 		e.MustNotify = notify[0]
 	}
 	e.Events.PushBack(m)
+}
+
+func GetSupportedEventTypes() []EventType {
+	return supportedEventTypes
+}
+
+func GetSupportedNotifyTypes() []NotifyType {
+	return supportedNotifyTypes
+}
+
+func GetSupportedPayloadFormats() []PayloadFormatType {
+	return supportedPayloadFormatTypes
 }

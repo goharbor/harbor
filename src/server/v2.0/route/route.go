@@ -27,7 +27,6 @@ const (
 
 // RegisterRoutes for Harbor v2.0 APIs
 func RegisterRoutes() {
-	registerLegacyRoutes()
 	router.NewRoute().Path("/api/" + APIVersion + "/*").
 		Middleware(apiversion.Middleware(APIVersion)).
 		Handler(handler.New())

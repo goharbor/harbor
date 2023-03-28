@@ -45,10 +45,7 @@ import { OperationService } from '../../../shared/components/operation/operation
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../../global-confirmation-dialog/confirmation-state-message';
-import {
-    EndpointService,
-    HELM_HUB,
-} from '../../../shared/services/endpoint.service';
+import { EndpointService } from '../../../shared/services/endpoint.service';
 import { RegistryService } from '../../../../../ng-swagger-gen/services/registry.service';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { Registry } from '../../../../../ng-swagger-gen/models/registry';
@@ -286,8 +283,5 @@ export class EndpointComponent implements OnInit, OnDestroy {
     }
     getAdapterText(adapter: string): string {
         return this.oldEndpointService.getAdapterText(adapter);
-    }
-    isHelmHub(str: string): boolean {
-        return str === HELM_HUB;
     }
 }

@@ -40,8 +40,6 @@ Resource  Harbor-Pages/Project-Artifact.robot
 Resource  Harbor-Pages/Project-Artifact-Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
 Resource  Harbor-Pages/Project-Config-Elements.robot
-Resource  Harbor-Pages/Project-Helmcharts.robot
-Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
 Resource  Harbor-Pages/Project-Copy.robot
 Resource  Harbor-Pages/Project-Copy-Elements.robot
 Resource  Harbor-Pages/Project-Tag-Retention.robot
@@ -71,6 +69,8 @@ Resource  Harbor-Pages/Logs.robot
 Resource  Harbor-Pages/Logs_Elements.robot
 Resource  Harbor-Pages/Log_Rotation.robot
 Resource  Harbor-Pages/Log_Rotation_Elements.robot
+Resource  Harbor-Pages/Job_Service_Dashboard.robot
+Resource  Harbor-Pages/Job_Service_Dashboard_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot

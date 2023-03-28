@@ -18,7 +18,7 @@
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": "zone.js",
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/images",
@@ -83,7 +83,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "harbor-portal:build"
+            "browserTarget": "harbor-portal:build",
+            "proxyConfig": "proxy.config.mjs"
           },
           "configurations": {
             "production": {
@@ -101,8 +102,10 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
             "karmaConfig": "karma.conf.js",
             "scripts": [
               "node_modules/@clr/icons/clr-icons.min.js"

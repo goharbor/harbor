@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib"
@@ -26,6 +25,8 @@ const (
 	BlobsOperationID = "v2_blob"
 	// BlobsUploadOperationID ...
 	BlobsUploadOperationID = "v2_blob_upload"
+	// ReferrersOperationID ...
+	ReferrersOperationID = "v2_referrers"
 	// OthersOperationID ...
 	OthersOperationID = "v2_others"
 )
@@ -38,10 +39,6 @@ func SetMetricOpID(ctx context.Context, value string) {
 	}
 }
 
-func isChartMuseumURL(url string) bool {
-	return strings.HasPrefix(url, "/chartrepo/") || strings.HasPrefix(url, "/api/chartrepo/")
-}
-
 func instrumentHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		metric.TotalInFlightGauge.Inc()
@@ -50,12 +47,8 @@ func instrumentHandler(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), contextOpIDKey{}, &op)
 		next.ServeHTTP(rc, r.WithContext(ctx))
 		if len(op) == 0 {
-			if isChartMuseumURL(r.URL.Path) {
-				op = "chartmuseum"
-			} else {
-				// From swagger's perspective the operation of this legacy URL is unknown
-				op = "unknown"
-			}
+			// From swagger's perspective the operation of this legacy URL is unknown
+			op = "unknown"
 		}
 		metric.TotalReqDurSummary.WithLabelValues(r.Method, op).Observe(time.Since(now).Seconds())
 		metric.TotalReqCnt.WithLabelValues(r.Method, strconv.Itoa(rc.StatusCode), op).Inc()

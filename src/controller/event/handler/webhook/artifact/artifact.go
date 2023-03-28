@@ -88,7 +88,7 @@ func (a *Handler) handle(ctx context.Context, event *event.ArtifactEvent) error 
 		return err
 	}
 
-	err = util.SendHookWithPolicies(policies, payload, event.EventType)
+	err = util.SendHookWithPolicies(ctx, policies, payload, event.EventType)
 	if err != nil {
 		return err
 	}

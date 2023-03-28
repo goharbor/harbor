@@ -26,8 +26,6 @@ import (
 const (
 	// Image kind
 	Image = "image"
-	// Chart kind
-	Chart = "chart"
 )
 
 // Repository of candidate
@@ -71,7 +69,7 @@ type Candidate struct {
 	// Repository name
 	Repository string `json:"repository"`
 	// Kind of the candidate
-	// "image" or "chart"
+	// "image"
 	Kind string `json:"kind"`
 	// Tags attached with the candidate
 	Tags []string `json:"tags"`

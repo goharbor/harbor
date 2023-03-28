@@ -48,6 +48,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../services/event-service/event.service';
+import { RouteConfigId } from '../../../route-reuse-strategy/harbor-route-reuse-strategy';
 
 @Component({
     selector: 'project-detail',
@@ -64,7 +65,6 @@ export class ProjectDetailComponent
     roleName: string;
     projectId: number;
     hasProjectReadPermission: boolean;
-    hasHelmChartsListPermission: boolean;
     hasRepositoryListPermission: boolean;
     hasMemberListPermission: boolean;
     hasLabelListPermission: boolean;
@@ -92,13 +92,6 @@ export class ProjectDetailComponent
             permissions: () => this.hasRepositoryListPermission,
         },
         {
-            linkName: 'helm-charts',
-            tabLinkInOverflow: false,
-            showTabName: 'PROJECT_DETAIL.HELMCHART',
-            permissions: () =>
-                this.withHelmChart && this.hasHelmChartsListPermission,
-        },
-        {
             linkName: 'members',
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.USERS',
@@ -109,9 +102,7 @@ export class ProjectDetailComponent
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.LABELS',
             permissions: () =>
-                this.hasLabelListPermission &&
-                this.hasLabelCreatePermission &&
-                !this.withAdmiral,
+                this.hasLabelListPermission && this.hasLabelCreatePermission,
         },
         {
             linkName: 'scanner',
@@ -275,13 +266,6 @@ export class ProjectDetailComponent
         permissionsList.push(
             this.userPermissionService.getPermission(
                 projectId,
-                USERSTATICPERMISSION.HELM_CHART.KEY,
-                USERSTATICPERMISSION.HELM_CHART.VALUE.LIST
-            )
-        );
-        permissionsList.push(
-            this.userPermissionService.getPermission(
-                projectId,
                 USERSTATICPERMISSION.ROBOT.KEY,
                 USERSTATICPERMISSION.ROBOT.VALUE.LIST
             )
@@ -345,7 +329,6 @@ export class ProjectDetailComponent
                     this.hasMemberListPermission,
                     this.hasLabelListPermission,
                     this.hasRepositoryListPermission,
-                    this.hasHelmChartsListPermission,
                     this.hasRobotListPermission,
                     this.hasLabelCreatePermission,
                     this.hasTagRetentionPermission,
@@ -381,14 +364,6 @@ export class ProjectDetailComponent
 
     public get isSessionValid(): boolean {
         return this.sessionService.getCurrentUser() != null;
-    }
-
-    public get withAdmiral(): boolean {
-        return this.appConfigService.getConfig().with_admiral;
-    }
-
-    public get withHelmChart(): boolean {
-        return this.appConfigService.getConfig().with_chartmuseum;
     }
 
     backToProject(): void {
@@ -497,5 +472,40 @@ export class ProjectDetailComponent
                     this.currentProject = (<any>res) as Project;
                 }
             });
+    }
+
+    backToWebhook() {
+        this.router.navigate([
+            'harbor',
+            'projects',
+            `${this.projectId}`,
+            'webhook',
+        ]);
+    }
+
+    isWebhookTaskListPage(): boolean {
+        return (
+            this.route?.firstChild?.firstChild?.snapshot.data[
+                'routeConfigId'
+            ] === RouteConfigId.WEBHOOK_TASKS_PAGE
+        );
+    }
+
+    backToP2pPreheat(): void {
+        this.router.navigate([
+            'harbor',
+            'projects',
+            `${this.projectId}`,
+            'p2p-provider',
+            'policies',
+        ]);
+    }
+
+    isP2pPreheatTaskListPage(): boolean {
+        return (
+            this.route?.firstChild?.firstChild?.snapshot.data[
+                'routeConfigId'
+            ] === RouteConfigId.P2P_TASKS_PAGE
+        );
     }
 }

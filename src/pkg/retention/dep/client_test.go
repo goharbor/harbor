@@ -18,13 +18,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/repo"
-
-	"github.com/goharbor/harbor/src/chartserver"
 	jmodels "github.com/goharbor/harbor/src/common/job/models"
 	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -32,6 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/goharbor/harbor/src/testing/clients"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type fakeCoreClient struct {
@@ -49,17 +45,6 @@ func (f *fakeCoreClient) ListAllArtifacts(project, repository string) ([]*models
 		},
 	}
 	return []*modelsv2.Artifact{image}, nil
-}
-
-func (f *fakeCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
-	metadata := &chart.Metadata{
-		Name: "1.0",
-	}
-	chart := &chartserver.ChartVersion{}
-	chart.ChartVersion = repo.ChartVersion{
-		Metadata: metadata,
-	}
-	return []*chartserver.ChartVersion{chart}, nil
 }
 
 type fakeJobserviceClient struct{}

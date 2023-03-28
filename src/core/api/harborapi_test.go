@@ -25,7 +25,6 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"github.com/dghubble/sling"
 
-	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
@@ -86,27 +85,6 @@ func init() {
 	apppath, _ := filepath.Abs(dir)
 	web.BConfig.WebConfig.Session.SessionOn = true
 	web.TestBeegoInit(apppath)
-
-	// Charts are controlled under projects
-	chartRepositoryAPIType := &ChartRepositoryAPI{}
-	web.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-	web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-	web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-	web.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-	web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-	web.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-	web.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-	web.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-	web.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-
-	// Repository services
-	web.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
-	web.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
-	web.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
-	// Labels for chart
-	chartLabelAPIType := &ChartLabelAPI{}
-	web.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
-	web.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
 	web.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
 

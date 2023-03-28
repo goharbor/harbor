@@ -61,7 +61,6 @@ func (p *Project) ToSwagger() *models.Project {
 	}
 
 	return &models.Project{
-		ChartCount:         int64(p.ChartCount),
 		CreationTime:       strfmt.DateTime(p.CreationTime),
 		CurrentUserRoleID:  int64(p.Role),
 		CurrentUserRoleIds: currentUserRoleIds,

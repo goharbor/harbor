@@ -30,12 +30,6 @@ var (
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
 		{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 

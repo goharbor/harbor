@@ -95,7 +95,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     supportedFilterLabels: {
         name: string;
         color: string;
-        select: boolean;
         scope: string;
     }[] = [];
 
@@ -118,6 +117,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     selectedUnit: string = BandwidthUnit.KB;
     copySpeedUnit: string = BandwidthUnit.KB;
     showChunkOption: boolean = false;
+    stringForLabelFilter: string = '';
+    copyStringForLabelFilter: string = '';
     constructor(
         private fb: UntypedFormBuilder,
         private repService: ReplicationService,
@@ -365,9 +366,23 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         });
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
+        this.stringForLabelFilter = '';
     }
 
     updateRuleFormAndCopyUpdateForm(rule: ReplicationPolicy): void {
+        if (rule?.filters?.length) {
+            // set stringForLabelFilter
+            this.stringForLabelFilter = '';
+            this.copyStringForLabelFilter = '';
+            rule.filters.forEach(item => {
+                if (item.type === FilterType.LABEL) {
+                    this.stringForLabelFilter = (item.value as string[]).join(
+                        ','
+                    );
+                    this.copyStringForLabelFilter = this.stringForLabelFilter;
+                }
+            });
+        }
         this.isPushMode = rule.dest_registry.id !== 0;
         this.checkChunkOption(rule.dest_registry.id || rule.src_registry.id);
         setTimeout(() => {
@@ -482,6 +497,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             // speed unit has been changed
             return true;
         }
+        if (this.copyStringForLabelFilter !== this.stringForLabelFilter) {
+            // label filter has been changed
+            return true;
+        }
         return !isEmptyObject(this.hasChanges());
     }
 
@@ -511,6 +530,18 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             copyRuleForm.dest_registry = null;
         }
         let filters: any = copyRuleForm.filters;
+
+        // set label filter
+        if (this.stringForLabelFilter) {
+            // set stringForLabelFilter
+            copyRuleForm.filters.forEach(item => {
+                if (item.type === FilterType.LABEL) {
+                    item.value = this.stringForLabelFilter
+                        .split(',')
+                        .filter(item => item);
+                }
+            });
+        }
         // remove the filters which user not set.
         for (let i = filters.length - 1; i >= 0; i--) {
             if (
@@ -575,65 +606,34 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.noEndpointInfo = 'REPLICATION.NO_ENDPOINT_INFO';
         }
         if (rule) {
-            if (
-                this.supportedFilterLabels &&
-                this.supportedFilterLabels.length
-            ) {
-                this.supportedFilterLabels.forEach((label, index) => {
-                    if (rule.filters && rule.filters.length) {
-                        rule.filters.forEach(f => {
-                            if (
-                                f.type === FilterType.LABEL &&
-                                f.value &&
-                                (f.value as any).length
-                            ) {
-                                (f.value as any).forEach(name => {
-                                    if (label.name === name) {
-                                        this.supportedFilterLabels[
-                                            index
-                                        ].select = true;
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
             this.onGoing = true;
             this.policyId = +rule.id;
             this.headerTitle = 'REPLICATION.EDIT_POLICY_TITLE';
-            this.repService.getReplicationRule(rule.id).subscribe(
-                ruleInfo => {
-                    let srcRegistryId = ruleInfo.src_registry.id;
-                    this.repService
-                        .getRegistryInfo(srcRegistryId)
-                        .pipe(finalize(() => (this.onGoing = false)))
-                        .subscribe(
-                            adapter => {
-                                this.setFilterAndTrigger(adapter);
-                                this.updateRuleFormAndCopyUpdateForm(ruleInfo);
-                            },
-                            (error: any) => {
-                                this.translateService
-                                    .get(
-                                        'REPLICATION.UNREACHABLE_SOURCE_REGISTRY',
-                                        {
-                                            error: errorHandlerFn(error),
-                                        }
-                                    )
-                                    .subscribe(translatedResponse => {
-                                        this.inlineAlert.showInlineError(
-                                            translatedResponse
-                                        );
-                                    });
-                            }
-                        );
-                },
-                (error: any) => {
-                    this.onGoing = false;
-                    this.inlineAlert.showInlineError(error);
-                }
-            );
+            this.repService
+                .getRegistryInfo(rule.src_registry.id)
+                .pipe(finalize(() => (this.onGoing = false)))
+                .subscribe({
+                    next: adapter => {
+                        this.setFilterAndTrigger(adapter);
+                        this.updateRuleFormAndCopyUpdateForm(rule);
+                    },
+                    error: (error: any) => {
+                        // if error, use default(set registry id to 0) filters and triggers
+                        this.repService.getRegistryInfo(0).subscribe(res => {
+                            this.setFilterAndTrigger(res);
+                            this.updateRuleFormAndCopyUpdateForm(rule);
+                        });
+                        this.translateService
+                            .get('REPLICATION.UNREACHABLE_SOURCE_REGISTRY', {
+                                error: errorHandlerFn(error),
+                            })
+                            .subscribe(translatedResponse => {
+                                this.inlineAlert.showInlineError(
+                                    translatedResponse
+                                );
+                            });
+                    },
+                });
         } else {
             this.onGoing = true;
             let registryObs = this.repService.getRegistryInfo(0);
@@ -641,14 +641,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 adapter => {
                     this.setFilterAndTrigger(adapter);
                     this.copyUpdateForm = clone(this.ruleForm.value);
-                    if (
-                        this.supportedFilterLabels &&
-                        this.supportedFilterLabels.length
-                    ) {
-                        this.supportedFilterLabels.forEach((label, index) => {
-                            label.select = false;
-                        });
-                    }
                 },
                 (error: any) => {
                     this.inlineAlert.showInlineError(error);
@@ -753,24 +745,20 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
         return false;
     }
-    stickLabel(value, index) {
-        value.select = !value.select;
-        let filters = this.ruleForm.get('filters') as UntypedFormArray;
-        let fromIndex = filters.controls[index] as UntypedFormGroup;
-        let labelValue = this.supportedFilterLabels.reduce(
-            (cumulatedSelectedArrs, currentValue) => {
-                if (currentValue.select) {
-                    if (!cumulatedSelectedArrs.length) {
-                        return [currentValue.name];
-                    }
-                    return [...cumulatedSelectedArrs, currentValue.name];
-                }
-                return cumulatedSelectedArrs;
-            },
-            []
-        );
-
-        fromIndex.setControl('value', this.fb.array(labelValue));
+    stickLabel(name: string) {
+        if (this.isSelect(name)) {
+            let arr: string[] = this.stringForLabelFilter.split(',');
+            arr = arr.filter(item => {
+                return item !== name;
+            });
+            this.stringForLabelFilter = arr.join(',');
+        } else {
+            if (this.stringForLabelFilter) {
+                this.stringForLabelFilter += `,${name}`;
+            } else {
+                this.stringForLabelFilter += `${name}`;
+            }
+        }
     }
     // set prefix '0 ', so user can not set item of 'seconds'
     inputInvalid(e: any) {
@@ -827,7 +815,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                                 this.supportedFilterLabels.push({
                                     name: data.name,
                                     color: data.color ? data.color : '#FFFFFF',
-                                    select: false,
                                     scope: 'g',
                                 });
                             });
@@ -856,7 +843,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                                         color: data.color
                                             ? data.color
                                             : '#FFFFFF',
-                                        select: false,
                                         scope: 'g',
                                     });
                                 });
@@ -887,17 +873,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             return realSpeed ? realSpeed : -1;
         }
     }
-    getLabel(labelName: string): Label {
-        if (this.supportedFilterLabels?.length) {
-            let label: Label;
-            this.supportedFilterLabels.forEach(item => {
-                if (item.name === labelName) {
-                    label = item;
-                }
-            });
-            return label;
-        }
-    }
     checkChunkOption(id: number, info?: RegistryInfo) {
         this.showChunkOption = false;
         this.ruleForm.get('copy_by_chunk').reset(false);
@@ -912,5 +887,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 });
             }
         }
+    }
+
+    isSelect(v: string) {
+        if (v && this.stringForLabelFilter) {
+            return this.stringForLabelFilter.indexOf(v) !== -1;
+        }
+        return false;
     }
 }
