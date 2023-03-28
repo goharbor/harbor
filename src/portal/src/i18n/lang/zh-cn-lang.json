@@ -855,7 +855,7 @@
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
             "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "当镜像是由扫描器拉取时，不更新该镜像的拉取时间属性。"
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "镜像被扫描后，不更新该镜像的拉取时间属性。"
         },
         "LDAP": {
             "URL": "LDAP URL",
