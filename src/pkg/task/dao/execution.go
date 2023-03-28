@@ -17,15 +17,49 @@ package dao
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/gtask"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+
+	// init the db config
+	_ "github.com/goharbor/harbor/src/pkg/config/db"
 )
+
+func init() {
+	// register the execution status refresh task if enable the async update
+	if interval := config.GetExecutionStatusRefreshIntervalSeconds(); interval > 0 {
+		gtask.DefaultPool().AddTask(scanAndRefreshOutdateStatus, time.Duration(interval)*time.Second)
+	}
+}
+
+func RegisterExecutionStatusChangePostFunc(vendor string, fc ExecutionStatusChangePostFunc) {
+	executionStatusChangePostFuncRegistry[vendor] = fc
+}
+
+var (
+	// ExecDAO is the global execution dao
+	ExecDAO                               = NewExecutionDAO()
+	executionStatusChangePostFuncRegistry = map[string]ExecutionStatusChangePostFunc{}
+	// execStatusOutdateKeyRegex is the regex for the execution status outdate key,
+	// the regex used to parse exec id and vendor type from the key.
+	// e.g. execution:id:100:vendor:REPLICATION:status_outdate
+	execStatusOutdateKeyRegex = regexp.MustCompile(`execution:id:(\d+):vendor:([A-Z_]+):status_outdate`)
+)
+
+// ExecutionStatusChangePostFunc is the function called after the execution status changed
+type ExecutionStatusChangePostFunc func(ctx context.Context, executionID int64, status string) (err error)
 
 // ExecutionDAO is the data access object interface for execution
 type ExecutionDAO interface {
@@ -50,6 +84,9 @@ type ExecutionDAO interface {
 	// If the status is changed, the returning "statusChanged" is set as "true" and the current status indicates
 	// the changed status
 	RefreshStatus(ctx context.Context, id int64) (statusChanged bool, currentStatus string, err error)
+	// AsyncRefreshStatus refreshes the status of the specified execution in the async mode, which will register
+	// a update flag in the redis and then wait for global periodic job to scan and update the status to db finally.
+	AsyncRefreshStatus(ctx context.Context, id int64, vendor string) (err error)
 }
 
 // NewExecutionDAO returns an instance of ExecutionDAO
@@ -375,4 +412,89 @@ func buildInClauseSQLForExtraAttrs(keys []string) string {
 		s := strings.Join(elements, "->")
 		return fmt.Sprintf("select id from execution where extra_attrs->%s->>?=?", s)
 	}
+}
+
+func buildExecStatusOutdateKey(id int64, vendor string) string {
+	return fmt.Sprintf("execution:id:%d:vendor:%s:status_outdate", id, vendor)
+}
+
+func extractExecIDVendorFromKey(key string) (int64, string, error) {
+	// input: execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate
+	// output: [execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate 100 GARBAGE_COLLECTION]
+	matches := execStatusOutdateKeyRegex.FindStringSubmatch(key)
+	if len(matches) < 3 {
+		return 0, "", errors.Errorf("invalid format: %s", key)
+	}
+
+	id, err := strconv.ParseInt(matches[1], 10, 64)
+	if err != nil {
+		return 0, matches[2], err
+	}
+
+	return id, matches[2], nil
+}
+
+func (e *executionDAO) AsyncRefreshStatus(ctx context.Context, id int64, vendor string) (err error) {
+	key := buildExecStatusOutdateKey(id, vendor)
+	if cache.Default().Contains(ctx, key) {
+		// return earlier if already have the key
+		return nil
+	}
+	// save the key to redis, the value is useless so set it to empty
+	return cache.Default().Save(ctx, key, "")
+}
+
+// scanAndRefreshOutdateStatus scans the outdate execution status from redis and then refresh the status to db,
+// do not want to expose to external use so keep it as private.
+func scanAndRefreshOutdateStatus(ctx context.Context) {
+	keys, err := cache.Default().Keys(ctx, "execution:id:")
+	if err != nil {
+		log.Errorf("failed to scan the outdate executions, error: %v", err)
+		return
+	}
+	// return earlier if no keys found which represents no outdate execution
+	if len(keys) == 0 {
+		log.Debug("skip to refresh, no outdate execution status found")
+		return
+	}
+	// TODO: refactor
+	// shuffle the keys to avoid the conflict and improve efficiency when multiple core instance existed,
+	// but currently if multiple instances get the same set of keys at the same time, then eventually everyone
+	// will still need to repeat the same work(refresh same execution), which needs to be optimized later.
+	lib.ShuffleStringSlice(keys)
+
+	log.Infof("scanned out %d executions with outdate status, refresh status to db", len(keys))
+	var succeed, failed int64
+	// update the execution status execution to db
+	for _, key := range keys {
+		execID, vendor, err := extractExecIDVendorFromKey(key)
+		if err != nil {
+			log.Errorf("failed to extract execution id from key %s, error: %v", key, err)
+			failed++
+			continue
+		}
+
+		statusChanged, currentStatus, err := ExecDAO.RefreshStatus(ctx, execID)
+		if err != nil {
+			log.Errorf("failed to refresh the status of execution %d, error: %v", execID, err)
+			failed++
+			continue
+		}
+
+		succeed++
+		log.Debugf("refresh the status of execution %d successfully, new status: %s", execID, currentStatus)
+		// run the status change post function
+		// just print error log, not return error for post action
+		if fc, exist := executionStatusChangePostFuncRegistry[vendor]; exist && statusChanged {
+			if err = fc(ctx, execID, currentStatus); err != nil {
+				logger.Errorf("failed to run the execution status change post function for execution %d, error: %v", execID, err)
+			}
+		}
+		// delete the key from redis, it does not matter if the deletion fails, wait for the next round.
+		if err = cache.Default().Delete(ctx, key); err != nil {
+			log.Errorf("failed to delete the key %s in cache, error: %v", key, err)
+		}
+	}
+
+	log.Infof("refresh outdate execution status done, %d succeed, %d failed", succeed, failed)
 }

@@ -49,6 +49,7 @@ import (
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/gtask"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -206,6 +207,9 @@ func main() {
 
 	health.RegisterHealthCheckers()
 	registerScanners(orm.Context())
+
+	// start global task pool, do not stop in the gracefulShutdown because it may take long time to finish.
+	gtask.DefaultPool().Start(ctx)
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
