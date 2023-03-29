@@ -20,7 +20,7 @@ import {
     ChangeDetectorRef,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
@@ -34,19 +34,14 @@ import {
     CONFIG_AUTH_MODE,
 } from '../../shared/entities/shared.const';
 import { THEME_ARRAY, ThemeInterface } from '../../services/theme';
-import { clone, DEFAULT_PAGE_SIZE } from '../../shared/units/utils';
+import { clone } from '../../shared/units/utils';
 import { ThemeService } from '../../services/theme.service';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
 import {
     EventService,
     HarborEvent,
 } from '../../services/event-service/event.service';
-import { SCANNERS_DOC } from '../left-side-nav/interrogation-services/scanner/scanner';
-import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
-import { Project } from '../../../../ng-swagger-gen/models/project';
 
-const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
-const YES: string = 'yes';
 const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({
@@ -73,10 +68,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     searchSub: Subscription;
     searchCloseSub: Subscription;
-    showScannerInfo: boolean = false;
-    scannerDocUrl: string = SCANNERS_DOC;
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
-
     styleMode = this.themeArray[0].showStyle;
     @ViewChild('scrollDiv') scrollDiv: ElementRef;
     scrollToPositionSub: Subscription;
@@ -86,7 +78,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private session: SessionService,
         private searchTrigger: SearchTriggerService,
         private appConfigService: AppConfigService,
-        private scannerService: ScannerService,
         public theme: ThemeService,
         private event: EventService,
         private cd: ChangeDetectorRef
@@ -117,16 +108,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
                 this.isSearchResultsOpened = false;
             }
         );
-        if (
-            !(
-                localStorage &&
-                localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES
-            )
-        ) {
-            if (this.isSystemAdmin) {
-                this.getDefaultScanner();
-            }
-        }
         // set local in app
         if (localStorage) {
             this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
@@ -149,59 +130,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
                 scrollTop: this.scrollDiv.nativeElement.scrollTop,
             });
         }
-    }
-    closeInfo() {
-        if (localStorage) {
-            localStorage.setItem(HAS_SHOWED_SCANNER_INFO, YES);
-        }
-        this.showScannerInfo = false;
-    }
-
-    getDefaultScanner() {
-        this.scannerService
-            .listScannersResponse({
-                pageSize: DEFAULT_PAGE_SIZE,
-                page: 1,
-            })
-            .subscribe(res => {
-                if (res.headers) {
-                    const xHeader: string = res.headers.get('X-Total-Count');
-                    const totalCount = parseInt(xHeader, 0);
-                    let arr = res.body || [];
-                    if (totalCount <= DEFAULT_PAGE_SIZE) {
-                        // already gotten all scanners
-                        if (arr && arr.length) {
-                            this.showScannerInfo = arr.some(
-                                scanner => scanner.is_default
-                            );
-                        }
-                    } else {
-                        // get all the scanners in specified times
-                        const times: number = Math.ceil(
-                            totalCount / DEFAULT_PAGE_SIZE
-                        );
-                        const observableList: Observable<Project[]>[] = [];
-                        for (let i = 2; i <= times; i++) {
-                            observableList.push(
-                                this.scannerService.listScanners({
-                                    page: i,
-                                    pageSize: DEFAULT_PAGE_SIZE,
-                                })
-                            );
-                        }
-                        forkJoin(observableList).subscribe(response => {
-                            if (response && response.length) {
-                                response.forEach(item => {
-                                    arr = arr.concat(item);
-                                });
-                                this.showScannerInfo = arr.some(
-                                    scanner => scanner.is_default
-                                );
-                            }
-                        });
-                    }
-                }
-            });
     }
     ngOnDestroy(): void {
         if (this.searchSub) {

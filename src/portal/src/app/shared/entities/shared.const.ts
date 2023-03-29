@@ -33,6 +33,7 @@ export const dismissInterval = 10 * 1000;
 export const httpStatusCode = {
     Unauthorized: 401,
     Forbidden: 403,
+    AppLevelWarning: 503,
 };
 export const enum ConfirmationTargets {
     EMPTY,

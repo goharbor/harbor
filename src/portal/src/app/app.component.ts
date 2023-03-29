@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { AppConfigService } from './services/app-config.service';
@@ -31,20 +31,28 @@ import {
 } from './shared/entities/shared.const';
 import { SkinableConfig } from './services/skinable-config.service';
 import { isSupportedLanguage } from './shared/units/shared.utils';
+import {
+    CHECK_HEALTH_INTERVAL,
+    JobServiceDashboardHealthCheckService,
+} from './base/left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
+import { SessionService } from './shared/services/session.service';
 
 @Component({
     selector: 'harbor-app',
     templateUrl: 'app.component.html',
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
     styleMode: string = this.themeArray[0].showStyle;
+    interval: any;
     constructor(
         private translate: TranslateService,
         private appConfigService: AppConfigService,
         private titleService: Title,
         public theme: ThemeService,
-        private skinableConfig: SkinableConfig
+        private skinableConfig: SkinableConfig,
+        private jobServiceDashboardHealthCheckService: JobServiceDashboardHealthCheckService,
+        private sessionService: SessionService
     ) {
         // init language
         this.initLanguage();
@@ -66,6 +74,26 @@ export class AppComponent {
         });
         this.setTheme();
     }
+
+    ngOnDestroy(): void {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
+    ngOnInit(): void {
+        if (!this.interval) {
+            this.interval = setInterval(() => {
+                if (this.sessionService.getCurrentUser()?.has_admin_role) {
+                    this.jobServiceDashboardHealthCheckService.checkHealth();
+                } else {
+                    this.jobServiceDashboardHealthCheckService.setHealthy(true);
+                }
+            }, CHECK_HEALTH_INTERVAL);
+        }
+    }
+
     setTheme() {
         let styleMode = this.themeArray[0].showStyle;
         const localHasStyle =

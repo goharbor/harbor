@@ -20,9 +20,6 @@ import { ErrorHandler } from '../../shared/units/error-handler';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Registry } from '../../../../ng-swagger-gen/models/registry';
-import { delay } from 'rxjs/operators';
 import { UserService } from '../../../../ng-swagger-gen/services/user.service';
 
 describe('HarborShellComponent', () => {
@@ -72,22 +69,6 @@ describe('HarborShellComponent', () => {
             };
         },
     };
-    let fakeScannerService = {
-        listScannersResponse() {
-            const response: HttpResponse<Array<Registry>> = new HttpResponse<
-                Array<Registry>
-            >({
-                headers: new HttpHeaders({
-                    'x-total-count': [].length.toString(),
-                }),
-                body: [],
-            });
-            return of(response).pipe(delay(0));
-        },
-        listScanners() {
-            return of([]).pipe(delay(0));
-        },
-    };
     const fakedUserService = {
         getCurrentUserInfo() {
             return of({});
@@ -120,7 +101,6 @@ describe('HarborShellComponent', () => {
                     useValue: fakeSearchTriggerService,
                 },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
-                { provide: ScannerService, useValue: fakeScannerService },
                 {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
@@ -143,7 +123,6 @@ describe('HarborShellComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(HarborShellComponent);
         component = fixture.componentInstance;
-        component.showScannerInfo = true;
         component.accountSettingsModal = TestBed.createComponent(
             AccountSettingsModalComponent
         ).componentInstance;
