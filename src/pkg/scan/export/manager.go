@@ -56,6 +56,8 @@ group by
 	`
 	JobModeExport = "export"
 	JobModeKey    = "mode"
+	JobID         = "JobId"
+	JobRequest    = "Request"
 )
 
 var (
