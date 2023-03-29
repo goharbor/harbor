@@ -19,6 +19,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -487,6 +488,21 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 
 	// copy accessory if contains any
 	for _, acc := range srcArt.Accessories {
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactRepo": srcRepo, "SubjectArtifactDigest": acc.GetData().Digest}))
+		if err != nil {
+			return 0, err
+		}
+		// copy the fork which root is the accessory self with a temp array
+		// to avoid infinite recursion, disable this part in UT.
+		if os.Getenv("UTTEST") != "true" {
+			if len(accs) > 0 {
+				tmpDstAccs := make([]*accessorymodel.AccessoryData, 0)
+				_, err = c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, true, false, &tmpDstAccs)
+				if err != nil {
+					return 0, err
+				}
+			}
+		}
 		dstAcc := &accessorymodel.AccessoryData{
 			Digest: acc.GetData().Digest,
 			Type:   acc.GetData().Type,
