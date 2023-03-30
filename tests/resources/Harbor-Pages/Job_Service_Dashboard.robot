@@ -17,13 +17,12 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Keywords ***
 Switch To Job Queues
-    Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
-    Retry Wait Until Page Contains Element  //h2//span[contains(.,'Job Service Dashboard')]
+    Retry Double Keywords When Error  Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]  Retry Wait Until Page Contains Element  ${job_service_stop_btn}
 
 Select Jobs
     [Arguments]  @{job_types}
     FOR  ${job_type}  IN  @{job_types}
-        Retry Element Click  //clr-datagrid//clr-dg-row[contains(.,'${job_type}')]//label
+        Retry Double Keywords When Error  Retry Element Click  //clr-datagrid//clr-dg-row[contains(.,'${job_type}')]//div[contains(@class,'clr-checkbox-wrapper')]  Retry Checkbox Should Be Selected  //clr-datagrid//clr-dg-row[contains(.,'${job_type}')]//input
     END
 
 Stop Pending Jobs
