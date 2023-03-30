@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
@@ -43,7 +42,8 @@ func init() {
 const (
 	// CloudEventsFormat is the type for CloudEvents format.
 	CloudEventsFormat = "CloudEvents"
-
+	// extRequestID is the key for the request id in the CloudEvents.
+	extRequestID = "requestid"
 	// extOperator is the key for the operator in the CloudEvents.
 	extOperator = "operator"
 )
@@ -79,6 +79,7 @@ type CloudEvents struct{}
 /*
 {
    "specversion":"1.0",
+   "requestid": "2eedfab8-61d3-4f3c-8ec3-8f82d1ec4c84",
    "id":"4b2f89a6-548d-4c12-9993-a1f5790b97d2",
    "source":"/projects/1/webhook/policies/3",
    "type":"harbor.artifact.pulled",
@@ -114,13 +115,9 @@ func (ce *CloudEvents) Format(ctx context.Context, he *model.HookEvent) (http.He
 	}
 
 	event := cloudevents.NewEvent()
-	// retrieve request id from context as id, set to uuid if not found
-	id := lib.GetXRequestID(ctx)
-	if len(id) == 0 {
-		id = uuid.NewString()
-		log.Warningf("cannot extract request id from context, use UUID %s instead", id)
-	}
-	event.SetID(id)
+	// the cloudEvents id is uuid, but we insert the request id as extension which can be used to trace the event.
+	event.SetID(uuid.NewString())
+	event.SetExtension(extRequestID, lib.GetXRequestID(ctx))
 	event.SetSource(source(he.ProjectID, he.PolicyID))
 	event.SetType(eventType)
 	event.SetTime(time.Unix(he.Payload.OccurAt, 0))
