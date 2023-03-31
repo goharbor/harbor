@@ -1783,7 +1783,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "暂停 — 暂停所有定时任务，暂停中的定时任务将不会被执行。",
         "SCHEDULE_RESUME_BTN_INFO": "重启 — 重启所有定时任务，定时任务在触发时会正常执行。",
         "WORKER_FREE_BTN_INFO": "停下选中的工作者当前正在执行的任务以便释放该工作者，被释放的工作者会继续执行其他任务。",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "检测到有任务已等待执行超过 24 小时。 请检查任务中心的",
+        "WAITING_TOO_LONG_2": "仪表盘。",
+        "WAITING_TOO_LONG_3": "更多详情，请参考 ",
+        "WAITING_TOO_LONG_4": "Wiki。"
     },
     "CLARITY": {
         "OPEN": "打开",
