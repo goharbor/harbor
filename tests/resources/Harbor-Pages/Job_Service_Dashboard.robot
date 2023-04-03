@@ -85,7 +85,7 @@ Check Pending Job Card
 Check Jobs Latency
     [Arguments]  &{jobs_type_is_zore}
     FOR  ${job_type}  IN  @{jobs_type_is_zore.keys()}
-        ${latency_xpath}=  Set Variable  //clr-datagrid//clr-dg-row[contains(.,'${job_type}')]//clr-dg-cell[3][text()='0']
+        ${latency_xpath}=  Set Variable  //clr-datagrid//clr-dg-row[contains(.,'${job_type}')]//clr-dg-cell[3]//span[text()='0']
         Run Keyword If  ${jobs_type_is_zore['${job_type}']}==${true}  Retry Wait Until Page Contains Element  ${latency_xpath}
         ...  ELSE  Retry Wait Until Page Not Contains Element  ${latency_xpath}
     END
