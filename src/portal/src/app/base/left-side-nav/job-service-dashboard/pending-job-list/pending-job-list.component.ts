@@ -27,6 +27,7 @@ import {
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import { HEALTHY_TIME } from '../job-service-dashboard-health-check.service';
 
 @Component({
     selector: 'app-pending-job-list',
@@ -309,5 +310,8 @@ export class PendingListComponent implements OnInit, OnDestroy {
                     );
                 },
             });
+    }
+    showWarning(latency: number): boolean {
+        return latency && latency >= HEALTHY_TIME * 60 * 60;
     }
 }

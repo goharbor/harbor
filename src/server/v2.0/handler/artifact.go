@@ -372,7 +372,7 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	query.Keywords["SubjectArtifactDigest"] = artifact.Digest
+	query.Keywords["SubjectArtifactID"] = artifact.ID
 
 	// list accessories according to the query
 	total, err := a.accMgr.Count(ctx, query)

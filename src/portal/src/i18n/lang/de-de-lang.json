@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Aktivierungszustand",
         "NUMBER_REQUIRED": "Feld ist erforderlich und sollte ein Integer größer 0 sein.",
         "DESCRIPTION": "Beschreibung",
-        "CREATETION": "Erstellt am",
+        "CREATION": "Erstellt am",
         "EXPIRATION": "Ablaufdatum",
         "TOKEN_EXPIRATION": "Robot Token Ablauf (Tage)",
         "ACTION": "Aktion",
@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry Zertifikat",
         "NO_CHANGE": "Speichern abgebrochen, da nichts verändert wurde",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
@@ -855,7 +855,7 @@
             "HOURLY_CRON": "Läuft einmal am Anfang jeder Stunde. Identisch zu 0 0 * * * *.",
             "WEEKLY_CRON": "Läuft wöchentlich um Mitternacht zwischen Sa/So. Identisch zu 0 0 0 * * 0.",
             "DAILY_CRON": "Läuft täglich um Mitternacht. Identisch zu 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1786,7 +1786,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSIEREN — Pausiert die Ausführung aller Pläne.",
         "SCHEDULE_RESUME_BTN_INFO": "FORTSETZEN — Setzt die Ausführung aller Pläne fort.",
         "WORKER_FREE_BTN_INFO": "Halte den aktuell laufenden Job an um den Arbeiter zu befreien.",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",
@@ -1826,7 +1830,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

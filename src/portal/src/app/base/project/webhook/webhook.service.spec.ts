@@ -20,7 +20,7 @@ describe('WebhookService', () => {
             expect(service).toBeTruthy();
             const eventType: string = 'REPLICATION';
             expect(service.eventTypeToText(eventType)).toEqual(
-                'Replication finished'
+                'Replication status changed'
             );
             const mockedEventType: string = 'TEST';
             expect(service.eventTypeToText(mockedEventType)).toEqual('TEST');

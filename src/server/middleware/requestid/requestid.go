@@ -21,6 +21,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
 
+	"github.com/goharbor/harbor/src/lib"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -40,6 +41,8 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		if tracelib.Enabled() {
 			oteltrace.SpanFromContext(r.Context()).SetAttributes(attribute.Key(HeaderXRequestID).String(rid))
 		}
-		next.ServeHTTP(w, r)
+		// also set the request id to context
+		ctx := lib.WithXRequestID(r.Context(), rid)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}, skippers...)
 }

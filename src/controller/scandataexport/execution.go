@@ -16,10 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	task.SetExecutionSweeperCount(job.ScanDataExportVendorType, 50)
-}
-
 var Ctl = NewController()
 
 type Controller interface {
@@ -128,8 +124,8 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 
 	// create a job object and fill with metadata and parameters
 	params := make(map[string]interface{})
-	params["JobId"] = id
-	params["Request"] = request
+	params[export.JobID] = fmt.Sprintf("%d", id)
+	params[export.JobRequest] = request
 	params[export.JobModeKey] = export.JobModeExport
 
 	j := &task.Job{

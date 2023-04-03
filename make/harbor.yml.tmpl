@@ -67,7 +67,7 @@ data_volume: /data
 #     maxthreads: 100
 #   # set disable to true when you want to disable registry redirect
 #   redirect:
-#     disabled: false
+#     disable: false
 
 # Trivy configuration
 #
@@ -114,10 +114,14 @@ trivy:
 jobservice:
   # Maximum number of job workers in job service
   max_job_workers: 10
+  # The jobLogger sweeper duration (ignored if `jobLogger` is `stdout`)
+  logger_sweeper_duration: 1 #days
 
 notification:
   # Maximum retry count for webhook job
-  webhook_job_max_retry: 10
+  webhook_job_max_retry: 3
+  # HTTP client timeout for webhook job
+  webhook_job_http_client_timeout: 3 #seconds
 
 # Log configurations
 log:
@@ -144,7 +148,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.7.0
+_version: 2.8.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -180,6 +184,8 @@ _version: 2.7.0
 #   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
 #   host: redis:6379
 #   password: 
+#   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
+#   # username:
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:
 #   # db_index 0 is for core, it's unchangeable

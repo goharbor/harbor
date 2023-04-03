@@ -60,7 +60,7 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 		from := query.Get("from")
 		repository, reference, _ := distribution.ParseRef(from)
 
-		art, err := artifactController.GetByReference(ctx, repository, reference, nil)
+		art, err := artifactController.GetByReference(ctx, repository, reference, &artifact.Option{WithAccessory: true})
 		if errors.IsNotFoundErr(err) {
 			// artifact not found, discontinue the API request
 			return errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
@@ -85,7 +85,7 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 		err = artifactController.Walk(ctx, art, func(a *artifact.Artifact) error {
 			artifactDigests = append(artifactDigests, a.Digest)
 			return nil
-		}, nil)
+		}, &artifact.Option{WithAccessory: true})
 		if err != nil {
 			logger.Errorf("walk the artifact %s failed, error: %v", art.Digest, err)
 			return err

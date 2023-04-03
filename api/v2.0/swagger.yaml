@@ -8522,7 +8522,7 @@ definitions:
   PayloadFormatType:
     type: string
     description: The type of webhook paylod format.
-    example: 'cloudevent'
+    example: 'CloudEvents'
   PayloadFormat:
     type: object
     description: Webhook supported payload format type collections.
@@ -8553,6 +8553,7 @@ definitions:
         description: Whether or not to skip cert verify.
       payload_format:
         $ref: '#/definitions/PayloadFormatType'
+        description: The payload format of webhook, by default is Default for http type.
   WebhookPolicy:
     type: object
     description: The webhook policy object
@@ -9382,9 +9383,17 @@ definitions:
         format: int64
         description: The artifact id of the accessory
         x-omitempty: false
+      subject_artifact_id:
+        type: integer
+        format: int64
+        description: Going to be deprecated, use repo and digest for insteand. The subject artifact id of the accessory.
       subject_artifact_digest:
         type: string
         description: The subject artifact digest of the accessory
+        x-omitempty: false
+      subject_artifact_repo:
+        type: string
+        description: The subject artifact repository name of the accessory
         x-omitempty: false
       size:
         type: integer
