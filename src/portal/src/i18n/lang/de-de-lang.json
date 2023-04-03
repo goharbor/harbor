@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry Zertifikat",
         "NO_CHANGE": "Speichern abgebrochen, da nichts verändert wurde",
-        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
