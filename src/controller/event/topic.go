@@ -371,6 +371,8 @@ type RetentionEvent struct {
 	OccurAt   time.Time
 	Status    string
 	Deleted   []*selector.Result
+	Total     int
+	Retained  int
 }
 
 func (r *RetentionEvent) String() string {
