@@ -91,6 +91,42 @@ SET enabled = false,
     description = 'Chartmuseum is deprecated in Harbor v2.8.0, because this notification policy only has event type about Chartmuseum, so please update or delete this notification policy.'
 WHERE event_types = '[]';
 
+/* insert the default payload_format for http type webhook target */
+WITH targets_expanded AS (
+    -- Expand the JSON array of targets into separate rows
+    SELECT
+        id,
+        jsonb_array_elements(targets::jsonb) AS target
+    FROM
+        notification_policy
+),
+targets_updated AS (
+    -- Update targets based on the specified conditions
+    SELECT
+        id,
+        jsonb_agg(
+            CASE
+                -- If target is HTTP and has no payload format, add "Default"
+                WHEN target->>'type' = 'http' AND NOT target ? 'payload_format'
+                THEN target || '{"payload_format":"Default"}'::jsonb
+                ELSE target
+            END
+        ) AS targets
+    FROM
+        targets_expanded
+    GROUP BY
+        id
+)
+-- Update the original table with the updated targets
+UPDATE
+    notification_policy
+SET
+    targets = targets_updated.targets
+FROM
+    targets_updated
+WHERE
+    notification_policy.id = targets_updated.id;
+
 /* migrate the webhook job to execution and task as the webhook refactor since v2.8 */
 DO $$
 DECLARE
@@ -102,14 +138,18 @@ DECLARE
     exec_id integer;
     extra_attrs json;
  BEGIN
-    if exists (select 1 from information_schema.tables where table_name = 'notification_job') then
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notification_job') THEN
         FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
         LOOP
-            SELECT * INTO job FROM notification_job WHERE
-                policy_id=job_group.policy_id
-                                  AND event_type=job_group.event_type
-                                  AND status IN ('stopped', 'finished', 'error')
+            SELECT * INTO job FROM notification_job
+            WHERE policy_id=job_group.policy_id
+            AND event_type=job_group.event_type
+            AND status IN ('stopped', 'finished', 'error')
             ORDER BY creation_time DESC LIMIT 1;
+            /* continue if no final status job found for this policy */
+            IF job IS NULL THEN
+                CONTINUE;
+            END IF;
             /* convert vendor type */
             IF job.notify_type = 'http' THEN
                 vendor_type = 'WEBHOOK';

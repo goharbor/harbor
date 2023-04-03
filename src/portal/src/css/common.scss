@@ -366,3 +366,11 @@ job-service-dashboard {
 .my-action-item:hover {
   background-color: $label-hover-bg-color !important;
 }
+
+.alert.alert-warning {
+  padding: 0 !important;
+}
+
+.alerts.alert-info {
+  background-color: $alert-info-bg-color;
+}

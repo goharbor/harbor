@@ -1786,7 +1786,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSIEREN — Pausiert die Ausführung aller Pläne.",
         "SCHEDULE_RESUME_BTN_INFO": "FORTSETZEN — Setzt die Ausführung aller Pläne fort.",
         "WORKER_FREE_BTN_INFO": "Halte den aktuell laufenden Job an um den Arbeiter zu befreien.",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",

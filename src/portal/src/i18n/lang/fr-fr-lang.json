@@ -1753,7 +1753,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Met en pause toutes les programmations de tâches.",
         "SCHEDULE_RESUME_BTN_INFO": "REPRENDRE — Reprend les files d'attente de tâches à exécuter.",
         "WORKER_FREE_BTN_INFO": "Arrête les tâches en cours pour libérer le worker",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Ouvrir",
