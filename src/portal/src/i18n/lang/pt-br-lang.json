@@ -829,7 +829,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Certificado do Repositório",
         "NO_CHANGE": "Sem alterações para salvar.",
-        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",

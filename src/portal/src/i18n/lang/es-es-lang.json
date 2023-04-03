@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Descargar",
         "REGISTRY_CERTIFICATE": "Certificado de registro",
         "NO_CHANGE": "Save abort because nothing changed",
-        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",

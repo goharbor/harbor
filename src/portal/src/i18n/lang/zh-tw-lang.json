@@ -828,7 +828,7 @@
     "ROOT_CERT_LINK": "下載",
     "REGISTRY_CERTIFICATE": "註冊證書",
     "NO_CHANGE":"保存中止,因為沒有改變",
-    "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
+    "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
     "TOOLTIP":{
       "SELF_REGISTRATION_ENABLE": "激活註冊功能。",
       "SELF_REGISTRATION_DISABLE": "禁用註冊功能。",

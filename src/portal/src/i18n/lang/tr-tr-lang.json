@@ -832,7 +832,7 @@
         "ROOT_CERT_LINK": "Yükle",
         "REGISTRY_CERTIFICATE": "Kayıt defteri sertifikası",
         "NO_CHANGE": "İptal et, çünkü hiçbir şey değişmedi",
-        "SKIP_SCANNER_PULL_TIME": "Retain image last pull time on scanning",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Kaydolmayı etkinleştir.",
             "SELF_REGISTRATION_DISABLE": "Kaydolmayı devre dışı bırak.",
