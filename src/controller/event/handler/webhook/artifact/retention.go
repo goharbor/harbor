@@ -119,8 +119,8 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 		Operator: execution.Trigger,
 		EventData: &model.EventData{
 			Retention: &evtModel.Retention{
-				Total:             task.Total,
-				Retained:          task.Retained,
+				Total:             event.Total,
+				Retained:          event.Retained,
 				HarborHostname:    hostname,
 				ProjectName:       event.Deleted[0].Target.Namespace,
 				RetentionPolicyID: execution.PolicyID,
@@ -138,8 +138,11 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 		}
 		if len(target.Tags) != 0 {
 			deletedArtifact.NameAndTag = target.Repository + ":" + target.Tags[0]
+		} else {
+			// use digest if no tag
+			deletedArtifact.NameAndTag = target.Repository + "@" + target.Digest
 		}
-		payload.EventData.Retention.DeletedArtifact = []*evtModel.ArtifactInfo{deletedArtifact}
+		payload.EventData.Retention.DeletedArtifact = append(payload.EventData.Retention.DeletedArtifact, deletedArtifact)
 	}
 
 	for _, v := range md.Rules {
