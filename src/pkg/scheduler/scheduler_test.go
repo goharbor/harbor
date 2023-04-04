@@ -22,13 +22,16 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/task"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 type schedulerTestSuite struct {
 	suite.Suite
+	ctx       context.Context
 	scheduler *scheduler
 	dao       *mockDAO
 	execMgr   *tasktesting.ExecutionManager
@@ -40,6 +43,7 @@ func (s *schedulerTestSuite) SetupTest() {
 	err := RegisterCallbackFunc("callback", func(context.Context, string) error { return nil })
 	s.Require().Nil(err)
 
+	s.ctx = orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	s.dao = &mockDAO{}
 	s.execMgr = &tasktesting.ExecutionManager{}
 	s.taskMgr = &tasktesting.Manager{}
@@ -54,15 +58,15 @@ func (s *schedulerTestSuite) SetupTest() {
 func (s *schedulerTestSuite) TestSchedule() {
 	// empty vendor type
 	extras := make(map[string]interface{})
-	id, err := s.scheduler.Schedule(nil, "", 0, "", "0 * * * * *", "callback", nil, extras)
+	id, err := s.scheduler.Schedule(s.ctx, "", 0, "", "0 * * * * *", "callback", nil, extras)
 	s.NotNil(err)
 
 	// invalid cron
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "", "callback", nil, extras)
+	id, err = s.scheduler.Schedule(s.ctx, "vendor", 1, "", "", "callback", nil, extras)
 	s.NotNil(err)
 
 	// callback function not exist
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "not-exist", nil, extras)
+	id, err = s.scheduler.Schedule(s.ctx, "vendor", 1, "", "0 * * * * *", "not-exist", nil, extras)
 	s.NotNil(err)
 
 	// failed to submit to jobservice
@@ -75,7 +79,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 		Status:      job.ErrorStatus.String(),
 	}, nil)
 	s.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
-	_, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
+	_, err = s.scheduler.Schedule(s.ctx, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
 	s.Require().NotNil(err)
 	s.dao.AssertExpectations(s.T())
 	s.execMgr.AssertExpectations(s.T())
@@ -93,7 +97,7 @@ func (s *schedulerTestSuite) TestSchedule() {
 		ExecutionID: 1,
 		Status:      job.SuccessStatus.String(),
 	}, nil)
-	id, err = s.scheduler.Schedule(nil, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
+	id, err = s.scheduler.Schedule(s.ctx, "vendor", 1, "", "0 * * * * *", "callback", "param", extras)
 	s.Require().Nil(err)
 	s.Equal(int64(1), id)
 	s.dao.AssertExpectations(s.T())
@@ -161,7 +165,7 @@ func (s *schedulerTestSuite) TestGetSchedule() {
 		CRON:       "0 * * * * *",
 	}, nil)
 	s.execMgr.On("List", mock.Anything, mock.Anything).Return(nil, nil)
-	schd, err := s.scheduler.GetSchedule(nil, 1)
+	schd, err := s.scheduler.GetSchedule(s.ctx, 1)
 	s.Require().Nil(err)
 	s.Equal("0 * * * * *", schd.CRON)
 	s.Equal(job.ErrorStatus.String(), schd.Status)
@@ -184,7 +188,7 @@ func (s *schedulerTestSuite) TestGetSchedule() {
 			Status: job.SuccessStatus.String(),
 		},
 	}, nil)
-	schd, err = s.scheduler.GetSchedule(nil, 1)
+	schd, err = s.scheduler.GetSchedule(s.ctx, 1)
 	s.Require().Nil(err)
 	s.Equal("0 * * * * *", schd.CRON)
 	s.Equal(job.SuccessStatus.String(), schd.Status)

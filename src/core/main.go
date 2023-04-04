@@ -259,11 +259,27 @@ func main() {
 			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
 			return
 		}
-
+		// schedule the system jobs with retry as the operation depends on the jobservice,
+		// retry to handle the failure case caused by jobservice.
+		ctx := orm.Context()
+		options = []retry.Option{
+			retry.InitialInterval(time.Millisecond * 500),
+			retry.MaxInterval(time.Second * 10),
+			retry.Timeout(time.Minute * 5),
+			retry.Callback(func(err error, sleep time.Duration) {
+				log.Debugf("failed to schedule system job, retry after %s : %v", sleep, err)
+			}),
+		}
 		// schedule system artifact cleanup job
-		systemartifact.ScheduleCleanupTask(ctx)
+		if err := retry.Retry(func() error {
+			return systemartifact.ScheduleCleanupTask(ctx)
+		}, options...); err != nil {
+			log.Errorf("failed to schedule system artifact cleanup job, error: %v", err)
+		}
 		// schedule system execution sweep job
-		if err := task.ScheduleSweepJob(ctx); err != nil {
+		if err := retry.Retry(func() error {
+			return task.ScheduleSweepJob(ctx)
+		}, options...); err != nil {
 			log.Errorf("failed to schedule system execution sweep job, error: %v", err)
 		}
 	}()
