@@ -19,13 +19,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/stretchr/testify/suite"
 )
 
 type executionDAOTestSuite struct {
@@ -43,6 +44,9 @@ func (e *executionDAOTestSuite) SetupSuite() {
 	e.executionDAO = &executionDAO{
 		taskDAO: e.taskDao,
 	}
+	// initializes cache for testing
+	err := cache.Initialize(cache.Memory, "")
+	e.NoError(err)
 }
 
 func (e *executionDAOTestSuite) SetupTest() {
@@ -327,6 +331,65 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 	e.Empty(execution.EndTime)
 }
 
+func (e *executionDAOTestSuite) TestAsyncRefreshStatus() {
+	err := e.executionDAO.AsyncRefreshStatus(e.ctx, e.executionID, "GC")
+	e.NoError(err)
+	defer cache.Default().Delete(e.ctx, buildExecStatusOutdateKey(e.executionID, "GC"))
+	e.True(cache.Default().Contains(e.ctx, buildExecStatusOutdateKey(e.executionID, "GC")))
+}
+
+func (e *executionDAOTestSuite) TestScanAndRefreshOutdateStatus() {
+	// create execution1 with 1 running task
+	id1, err := e.executionDAO.Create(e.ctx, &Execution{
+		VendorType: "test1",
+		Trigger:    "test",
+		ExtraAttrs: `{"key":"value"}`,
+	})
+	e.NoError(err)
+	defer e.executionDAO.Delete(e.ctx, id1)
+
+	tid1, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: id1,
+		Status:      job.RunningStatus.String(),
+		StatusCode:  job.RunningStatus.Code(),
+		ExtraAttrs:  `{}`,
+	})
+	e.NoError(err)
+	defer e.taskDao.Delete(e.ctx, tid1)
+
+	// create execution1 with 1 error task
+	id2, err := e.executionDAO.Create(e.ctx, &Execution{
+		VendorType: "test2",
+		Trigger:    "test",
+		ExtraAttrs: `{"key":"value"}`,
+	})
+	e.NoError(err)
+	defer e.executionDAO.Delete(e.ctx, id2)
+
+	tid2, err := e.taskDao.Create(e.ctx, &Task{
+		ExecutionID: id2,
+		Status:      job.ErrorStatus.String(),
+		StatusCode:  job.ErrorStatus.Code(),
+		ExtraAttrs:  `{}`,
+	})
+	e.NoError(err)
+	defer e.taskDao.Delete(e.ctx, tid2)
+
+	// async refresh the status
+	err = e.executionDAO.AsyncRefreshStatus(e.ctx, id1, "GC")
+	e.NoError(err)
+	err = e.executionDAO.AsyncRefreshStatus(e.ctx, id2, "GC")
+	e.NoError(err)
+	// test scan out and refresh
+	scanAndRefreshOutdateStatus(e.ctx)
+	exec1, err := e.executionDAO.Get(e.ctx, id1)
+	e.NoError(err)
+	e.Equal(job.RunningStatus.String(), exec1.Status)
+	exec2, err := e.executionDAO.Get(e.ctx, id2)
+	e.NoError(err)
+	e.Equal(job.ErrorStatus.String(), exec2.Status)
+}
+
 func TestExecutionDAOSuite(t *testing.T) {
 	suite.Run(t, &executionDAOTestSuite{})
 }
@@ -349,6 +412,39 @@ func Test_buildInClauseSQLForExtraAttrs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := buildInClauseSQLForExtraAttrs(tt.args.keys); got != tt.want {
 				t.Errorf("buildInClauseSQLForExtraAttrs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_extractExecIDVendorFromKey(t *testing.T) {
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantID     int64
+		wantVendor string
+		wantErr    bool
+	}{
+		{"invalid format", args{"invalid:foo:bar"}, 0, "", true},
+		{"invalid execution id", args{"execution:id:12abc:vendor:GC:status_outdate"}, 0, "", true},
+		{"invalid vendor type", args{"execution:id:100:vendor:foo:status_outdate"}, 0, "", true},
+		{"valid", args{"execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate"}, 100, "GARBAGE_COLLECTION", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := extractExecIDVendorFromKey(tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("extractExecIDVendorFromKey() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.wantID {
+				t.Errorf("extractExecIDVendorFromKey() got = %v, want %v", got, tt.wantID)
+			}
+			if got1 != tt.wantVendor {
+				t.Errorf("extractExecIDVendorFromKey() got1 = %v, want %v", got1, tt.wantVendor)
 			}
 		})
 	}
