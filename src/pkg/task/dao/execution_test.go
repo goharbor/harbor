@@ -431,7 +431,8 @@ func Test_extractExecIDVendorFromKey(t *testing.T) {
 		{"invalid format", args{"invalid:foo:bar"}, 0, "", true},
 		{"invalid execution id", args{"execution:id:12abc:vendor:GC:status_outdate"}, 0, "", true},
 		{"invalid vendor type", args{"execution:id:100:vendor:foo:status_outdate"}, 0, "", true},
-		{"valid", args{"execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate"}, 100, "GARBAGE_COLLECTION", false},
+		{"valid 1", args{"execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate"}, 100, "GARBAGE_COLLECTION", false},
+		{"valid 2", args{"execution:id:100:vendor:P2P_PREHEAT:status_outdate"}, 100, "P2P_PREHEAT", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
