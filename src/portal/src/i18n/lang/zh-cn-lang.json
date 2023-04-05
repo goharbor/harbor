@@ -345,7 +345,7 @@
         "TOKEN": "令牌",
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
         "ENABLED_STATE": "启用状态",
-        "CREATETION": "创建时间",
+        "CREATION": "创建时间",
         "EXPIRATION": "过期时间",
         "NUMBER_REQUIRED": "此项为必填项且为不为0的整数。",
         "TOKEN_EXPIRATION": "机器人账户令牌过期时间(天)",
@@ -510,7 +510,6 @@
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
         "BOTH": "全部",
-        "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
         "TASK_ID": "任务ID",
@@ -536,7 +535,6 @@
         "REPLICATION_TITLE": "复制规则确认",
         "REPLICATION_SUMMARY": "确认复制规则 {{param}}?",
         "DELETION_SUMMARY_FAILURE": "有 pending/running/retrying 状态，不能删除",
-        "REPLICATE_SUMMARY_FAILURE": "有 pending/running 状态，不能删除",
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
@@ -857,7 +855,7 @@
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
             "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "当镜像是由扫描器拉取时，不更新该镜像的拉取时间属性。"
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "镜像被扫描后，不更新该镜像的拉取时间属性。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1785,7 +1783,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "暂停 — 暂停所有定时任务，暂停中的定时任务将不会被执行。",
         "SCHEDULE_RESUME_BTN_INFO": "重启 — 重启所有定时任务，定时任务在触发时会正常执行。",
         "WORKER_FREE_BTN_INFO": "停下选中的工作者当前正在执行的任务以便释放该工作者，被释放的工作者会继续执行其他任务。",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "检测到有任务已等待执行超过 24 小时。 请检查任务中心的",
+        "WAITING_TOO_LONG_2": "仪表盘。",
+        "WAITING_TOO_LONG_3": "更多详情，请参考 ",
+        "WAITING_TOO_LONG_4": "Wiki。"
     },
     "CLARITY": {
         "OPEN": "打开",
@@ -1825,7 +1827,6 @@
         "SIGNPOST_CLOSE": "指示牌关闭",
         "LOADING": "加载中",
         "DATE_PICKER_DIALOG_LABEL": "选择日期",
-        "DATE_PICKER_TOGGLE": "切换日期选择器",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "选择日期",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "选择日期, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "前一月",

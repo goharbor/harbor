@@ -259,7 +259,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 this.remeberMe();
 
                 // Redirect to the right router-guard
-                if (this.redirectUrl === '') {
+                if (
+                    !this.redirectUrl ||
+                    this.redirectUrl.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)
+                ) {
                     // Routing to the default location
                     this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
                 } else {

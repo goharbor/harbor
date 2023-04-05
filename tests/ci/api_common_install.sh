@@ -59,6 +59,7 @@ sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="incl
 
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env
+echo "EXECUTION_STATUS_REFRESH_INTERVAL_SECONDS=5" | sudo tee -a ./make/common/config/core/env
 sudo make start
 
 # waiting 5 minutes to start

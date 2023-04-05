@@ -347,7 +347,7 @@
         "TOKEN": "Secret",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -511,7 +511,6 @@
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirme Stop Executions",
         "BOTH": "both",
-        "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "De que desea detener las ejecuciones {{param}}?",
         "TASK_ID": "Task ID",
@@ -833,7 +832,7 @@
         "ROOT_CERT_LINK": "Descargar",
         "REGISTRY_CERTIFICATE": "Certificado de registro",
         "NO_CHANGE": "Save abort because nothing changed",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",
@@ -851,12 +850,11 @@
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
-            "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
 
         },
         "LDAP": {
@@ -1785,7 +1783,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
         "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedules to execute.",
         "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",
@@ -1825,7 +1827,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",

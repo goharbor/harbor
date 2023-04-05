@@ -38,7 +38,7 @@ var (
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
 	// Ensure ...
-	Ensure(ctx context.Context, subArtDigest string, artifactID, size int64, digest, accType string) error
+	Ensure(ctx context.Context, subArtDigest, subArtRepo string, subArtID, artifactID, size int64, digest, accType string) error
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (accessory model.Accessory, err error)
 	// Count returns the total count of accessory according to the query.
@@ -66,7 +66,7 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) Ensure(ctx context.Context, subArtDigest string, artifactID, size int64, digest, accType string) error {
+func (m *manager) Ensure(ctx context.Context, subArtDigest, subArtRepo string, subArtID, artifactID, size int64, digest, accType string) error {
 	accs, err := m.dao.List(ctx, q.New(q.KeyWords{"ArtifactID": artifactID, "Digest": digest}))
 	if err != nil {
 		return err
@@ -77,6 +77,8 @@ func (m *manager) Ensure(ctx context.Context, subArtDigest string, artifactID, s
 
 	acc := model.AccessoryData{
 		ArtifactID:        artifactID,
+		SubArtifactID:     subArtID,
+		SubArtifactRepo:   subArtRepo,
 		SubArtifactDigest: subArtDigest,
 		Digest:            digest,
 		Size:              size,
@@ -94,6 +96,8 @@ func (m *manager) Get(ctx context.Context, id int64) (model.Accessory, error) {
 	return model.New(acc.Type, model.AccessoryData{
 		ID:                acc.ID,
 		ArtifactID:        acc.ArtifactID,
+		SubArtifactID:     acc.SubjectArtifactID,
+		SubArtifactRepo:   acc.SubjectArtifactRepo,
 		SubArtifactDigest: acc.SubjectArtifactDigest,
 		Size:              acc.Size,
 		Digest:            acc.Digest,
@@ -116,6 +120,8 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 		acc, err := model.New(accD.Type, model.AccessoryData{
 			ID:                accD.ID,
 			ArtifactID:        accD.ArtifactID,
+			SubArtifactID:     accD.SubjectArtifactID,
+			SubArtifactRepo:   accD.SubjectArtifactRepo,
 			SubArtifactDigest: accD.SubjectArtifactDigest,
 			Size:              accD.Size,
 			Digest:            accD.Digest,
@@ -133,6 +139,8 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 func (m *manager) Create(ctx context.Context, accessory model.AccessoryData) (int64, error) {
 	acc := &dao.Accessory{
 		ArtifactID:            accessory.ArtifactID,
+		SubjectArtifactID:     accessory.SubArtifactID,
+		SubjectArtifactRepo:   accessory.SubArtifactRepo,
 		SubjectArtifactDigest: accessory.SubArtifactDigest,
 		Size:                  accessory.Size,
 		Digest:                accessory.Digest,

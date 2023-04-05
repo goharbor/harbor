@@ -25,6 +25,8 @@ func (r *RetentionMetaData) Resolve(evt *event.Event) error {
 		Status:    r.Status,
 		Deleted:   r.Deleted,
 		TaskID:    r.TaskID,
+		Total:     r.Total,
+		Retained:  r.Retained,
 	}
 
 	evt.Topic = event2.TopicTagRetention

@@ -28,8 +28,6 @@ Filter Replication Rule
     Run Keyword If  ${exist}==${true}  Retry Wait Until Page Contains Element   ${rule_name_element}
     ...  ELSE  Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
 
-
-
 Filter Registry
     [Arguments]  ${registry_name}
     ${registry_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${registry_name}')]
@@ -77,7 +75,6 @@ Select flattening
     [Arguments]    ${type}
     Retry Element Click    ${flattening_select}
     Retry Element Click    ${flattening_select}//option[contains(.,'${type}')]
-
 
 Select Trigger
     [Arguments]    ${mode}

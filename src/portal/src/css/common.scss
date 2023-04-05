@@ -357,3 +357,20 @@ job-service-dashboard {
 .datagrid-numeric-filter-input {
   background-color: $datagrid-numeric-filter-input-bg-color;
 }
+
+
+.my-action-item {
+  color: $normal-border-color
+}
+
+.my-action-item:hover {
+  background-color: $label-hover-bg-color !important;
+}
+
+.alert.alert-warning {
+  padding: 0 !important;
+}
+
+.alerts.alert-info {
+  background-color: $alert-info-bg-color;
+}

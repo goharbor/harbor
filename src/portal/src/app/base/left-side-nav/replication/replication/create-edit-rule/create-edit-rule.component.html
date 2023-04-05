@@ -272,69 +272,25 @@
                                         </option>
                                     </select>
                                 </div>
+
                                 <div
-                                    class="dropdown clr-select-wrapper"
-                                    formArrayName="value">
-                                    <clr-dropdown class="width-tag-label">
-                                        <div
-                                            class="width-100 label-text"
-                                            clrDropdownTrigger>
-                                            <div class="label-container">
-                                                <ng-template
-                                                    ngFor
-                                                    let-label
-                                                    [ngForOf]="
-                                                        filter.value.value
-                                                    "
-                                                    let-m="index">
-                                                    <hbr-label-piece
-                                                        class="label-piece"
-                                                        *ngIf="m < 1 && label"
-                                                        [hasIcon]="false"
-                                                        [label]="
-                                                            getLabel(label)
-                                                        "
-                                                        [labelWidth]="
-                                                            84
-                                                        "></hbr-label-piece>
-                                                </ng-template>
-                                                <span
-                                                    class="ellipsis color-white-dark"
-                                                    *ngIf="
-                                                        filter.value.value
-                                                            .length > 1
-                                                    "
-                                                    >···</span
-                                                >
-                                            </div>
-                                            <div
-                                                *ngFor="
-                                                    let label1 of filter.value
-                                                        .value;
-                                                    let k = index
-                                                "
-                                                hidden="true">
-                                                <input
-                                                    type="text"
-                                                    [formControlName]="k"
-                                                    #labelValue
-                                                    id="{{
-                                                        'label_' +
-                                                            supportedFilters[i]
-                                                                ?.type +
-                                                            '_' +
-                                                            label1
-                                                    }}"
-                                                    name="{{
-                                                        'label_' +
-                                                            supportedFilters[i]
-                                                                ?.type +
-                                                            '_' +
-                                                            label1
-                                                    }}"
-                                                    placeholder="select labels" />
-                                            </div>
-                                        </div>
+                                    class="clr-input-wrapper position-relative width-tag-label">
+                                    <input
+                                        class="clr-input width-tag-label label-input"
+                                        autocomplete="off"
+                                        type="text"
+                                        id="labelFilter"
+                                        [(ngModel)]="stringForLabelFilter"
+                                        [ngModelOptions]="{
+                                            standalone: true
+                                        }" />
+                                    <clr-dropdown>
+                                        <clr-icon
+                                            class="down"
+                                            clrDropdownTrigger
+                                            shape="caret"
+                                            dir="down">
+                                        </clr-icon>
                                         <clr-dropdown-menu
                                             [ngStyle]="{ 'max-height.px': 230 }"
                                             class="right-align"
@@ -346,11 +302,13 @@
                                                 *ngFor="
                                                     let value of supportedFilterLabels
                                                 "
-                                                (click)="stickLabel(value, i)">
+                                                (click)="
+                                                    stickLabel(value.name)
+                                                ">
                                                 <clr-icon
                                                     shape="check"
                                                     [style.visibility]="
-                                                        value.select
+                                                        isSelect(value.name)
                                                             ? 'visible'
                                                             : 'hidden'
                                                     "></clr-icon>

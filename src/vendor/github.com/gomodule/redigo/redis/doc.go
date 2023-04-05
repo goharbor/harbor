@@ -101,7 +101,7 @@
 //
 // Connections support one concurrent caller to the Receive method and one
 // concurrent caller to the Send and Flush methods. No other concurrency is
-// supported including concurrent calls to the Do method.
+// supported including concurrent calls to the Do and Close methods.
 //
 // For full concurrent access to Redis, use the thread-safe Pool to get, use
 // and release a connection from within a goroutine. Connections returned from
@@ -174,4 +174,4 @@
 // non-recoverable error such as a network error or protocol parsing error. If
 // Err() returns a non-nil value, then the connection is not usable and should
 // be closed.
-package redis // import "github.com/gomodule/redigo/redis"
+package redis

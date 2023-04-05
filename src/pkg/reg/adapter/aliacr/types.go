@@ -3,8 +3,10 @@ package aliacr
 import "time"
 
 const (
-	registryEndpointTpl = "https://registry.%s.aliyuncs.com"
-	endpointTpl         = "cr.%s.aliyuncs.com"
+	registryEndpointTpl         = "https://registry.%s.aliyuncs.com"
+	registryVPCEndpointTpl      = "https://registry-vpc.%s.aliyuncs.com"
+	registryInternalEndpointTpl = "https://registry-internal.%s.aliyuncs.com"
+	endpointTpl                 = "cr.%s.aliyuncs.com"
 )
 
 type authorizationToken struct {

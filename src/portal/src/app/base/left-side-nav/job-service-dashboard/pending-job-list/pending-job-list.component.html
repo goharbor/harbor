@@ -80,7 +80,16 @@
     <clr-dg-row *clrDgItems="let j of jobQueue" [clrDgItem]="j">
         <clr-dg-cell>{{ j.job_type }}</clr-dg-cell>
         <clr-dg-cell>{{ j.count || 0 }}</clr-dg-cell>
-        <clr-dg-cell>{{ getDuration(j?.latency) || 0 }}</clr-dg-cell>
+        <clr-dg-cell>
+            <span class="container">
+                <cds-icon
+                    *ngIf="showWarning(j?.latency)"
+                    size="20"
+                    class="warning"
+                    shape="exclamation-triangle"></cds-icon>
+                <span class="ml-5px">{{ getDuration(j?.latency) || 0 }}</span>
+            </span>
+        </clr-dg-cell>
         <clr-dg-cell>{{ isPaused(j?.paused) | translate }}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>

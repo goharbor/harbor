@@ -1,8 +1,9 @@
 /* remove the redundant data from table artifact_blob */
 delete from artifact_blob afb where not exists (select digest from blob b where b.digest = afb.digest_af);
 
-/* replace subject_artifact_id with subject_artifact_digest*/
-alter table artifact_accessory add column subject_artifact_digest varchar(1024);
+/* add subject_artifact_digest and subject_artifact_repo */
+alter table artifact_accessory add column IF NOT EXISTS subject_artifact_digest varchar(1024);
+alter table artifact_accessory add column IF NOT EXISTS subject_artifact_repo varchar(1024);
 
 DO $$
 DECLARE
@@ -12,14 +13,23 @@ BEGIN
     FOR acc IN SELECT * FROM artifact_accessory
     LOOP
         SELECT * INTO art from artifact where id = acc.subject_artifact_id;
-        UPDATE artifact_accessory SET subject_artifact_digest=art.digest WHERE subject_artifact_id = art.id;
+        UPDATE artifact_accessory SET subject_artifact_digest=art.digest, subject_artifact_repo=art.repository_name WHERE subject_artifact_id = art.id;
     END LOOP;
 END $$;
 
-alter table artifact_accessory drop CONSTRAINT artifact_accessory_subject_artifact_id_fkey;
-alter table artifact_accessory drop CONSTRAINT unique_artifact_accessory;
-alter table artifact_accessory add CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_digest);
-alter table artifact_accessory drop column subject_artifact_id;
+alter table artifact_accessory drop CONSTRAINT IF EXISTS artifact_accessory_subject_artifact_id_fkey;
+alter table artifact_accessory drop CONSTRAINT IF EXISTS unique_artifact_accessory;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1
+                   FROM   pg_constraint
+                   WHERE  conname = 'unique_artifact_accessory')
+    THEN
+        ALTER TABLE artifact_accessory
+        ADD CONSTRAINT unique_artifact_accessory UNIQUE (artifact_id, subject_artifact_digest);
+    END IF;
+END $$;
 
 /* Update the registry and replication policy associated with the chartmuseum */
 UPDATE registry
@@ -80,3 +90,89 @@ UPDATE notification_policy
 SET enabled = false,
     description = 'Chartmuseum is deprecated in Harbor v2.8.0, because this notification policy only has event type about Chartmuseum, so please update or delete this notification policy.'
 WHERE event_types = '[]';
+
+/* insert the default payload_format for http type webhook target
+1. separate the original targets(text) to json array elements(targets_expanded)
+2. update the old target to set the payload format if type is 'http' into the targets_updated
+3. finally update back to the original table notification_policy
+*/
+WITH targets_expanded AS (
+    SELECT id, jsonb_array_elements(targets::jsonb) AS target
+    FROM notification_policy
+),
+targets_updated AS (
+    SELECT id,
+        jsonb_agg(
+            CASE
+                WHEN target->>'type' = 'http' AND NOT target ? 'payload_format'
+                THEN target || '{"payload_format":"Default"}'::jsonb
+                ELSE target
+            END
+        ) AS targets
+    FROM targets_expanded GROUP BY id
+)
+UPDATE notification_policy
+SET targets = targets_updated.targets
+FROM targets_updated WHERE notification_policy.id = targets_updated.id;
+
+/* migrate the webhook job to execution and task as the webhook refactor since v2.8 */
+DO $$
+DECLARE
+    job_group RECORD;
+    job RECORD;
+    vendor_type varchar;
+    new_status varchar;
+    status_code integer;
+    exec_id integer;
+    extra_attrs json;
+ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'notification_job') THEN
+        FOR job_group IN SELECT DISTINCT policy_id,event_type FROM notification_job WHERE event_type NOT IN ('UPLOAD_CHART', 'DOWNLOAD_CHART', 'DELETE_CHART')
+        LOOP
+            SELECT * INTO job FROM notification_job
+            WHERE policy_id=job_group.policy_id
+            AND event_type=job_group.event_type
+            AND status IN ('stopped', 'finished', 'error')
+            ORDER BY creation_time DESC LIMIT 1;
+            /* continue if no final status job found for this policy */
+            IF job IS NULL THEN
+                CONTINUE;
+            END IF;
+            /* convert vendor type */
+            IF job.notify_type = 'http' THEN
+                vendor_type = 'WEBHOOK';
+            ELSIF job.notify_type = 'slack' THEN
+                vendor_type = 'SLACK';
+            ELSE
+                vendor_type = 'WEBHOOK';
+            END IF;
+            /* convert status */
+            IF job.status = 'stopped' THEN
+                new_status = 'Stopped';
+                status_code = 3;
+            ELSIF job.status = 'error' THEN
+                new_status = 'Error';
+                status_code = 3;
+            ELSIF job.status = 'finished' THEN
+                new_status = 'Success';
+                status_code = 3;
+            ELSE
+                new_status = '';
+                status_code = 0;
+            END IF;
+
+            SELECT format('{"event_type": "%s", "payload": %s}', job.event_type, to_json(job.job_detail)::TEXT)::JSON INTO extra_attrs;
+            INSERT INTO execution (vendor_type,vendor_id,status,trigger,extra_attrs,start_time,end_time,update_time) VALUES (vendor_type,job.policy_id,new_status,'EVENT',extra_attrs,job.creation_time,job.update_time,job.update_time) RETURNING id INTO exec_id;
+            INSERT INTO task (execution_id,job_id,status,status_code,run_count,creation_time,start_time,update_time,end_time,vendor_type) VALUES (exec_id,job.job_uuid,new_status,status_code,1,job.creation_time,job.update_time,job.update_time,job.update_time,vendor_type);
+        END LOOP;
+     END IF;
+END $$;
+
+/* drop the old notification_job table */
+DROP TABLE IF EXISTS notification_job;
+
+
+
+
+
+

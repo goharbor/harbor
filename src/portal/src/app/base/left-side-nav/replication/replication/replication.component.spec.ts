@@ -8,10 +8,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
 import { ReplicationComponent } from './replication.component';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
-import { ReplicationJob, Endpoint } from '../../../../shared/services';
+import { Endpoint } from '../../../../shared/services';
 import { CronTooltipComponent } from '../../../../shared/components/cron-schedule';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { ReplicationJobItem } from '../../../../shared/services';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of, Subscription } from 'rxjs';
@@ -20,6 +19,7 @@ import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationService } from 'ng-swagger-gen/services/replication.service';
+import { ReplicationExecution } from '../../../../../../ng-swagger-gen/models/replication-execution';
 
 describe('Replication Component (inline template)', () => {
     let mockRules: ReplicationPolicy[] = [
@@ -51,7 +51,7 @@ describe('Replication Component (inline template)', () => {
         },
     ];
 
-    let mockJobs: ReplicationJobItem[] = [
+    let mockJobs: ReplicationExecution[] = [
         {
             id: 1,
             status: 'stopped',
@@ -116,7 +116,7 @@ describe('Replication Component (inline template)', () => {
         },
     ];
 
-    let mockJob: ReplicationJob = {
+    let mockJob: any = {
         metadata: { xTotalCount: 3 },
         data: mockJobs,
     };
@@ -190,7 +190,7 @@ describe('Replication Component (inline template)', () => {
     });
     it('function "getDuration" should work', () => {
         // ms level
-        const item: ReplicationJobItem = {
+        const item: any = {
             start_time: 1589340503637,
             end_time: 1589340503638,
             id: 3,

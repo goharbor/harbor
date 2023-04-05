@@ -31,11 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	// keep only the latest created 50 retention execution records
-	task.SetExecutionSweeperCount(job.RetentionVendorType, 50)
-}
-
 // go:generate mockery -name Controller -case snake
 
 // Controller to handle the requests related with retention
