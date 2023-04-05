@@ -55,7 +55,7 @@ var (
 	// execStatusOutdateKeyRegex is the regex for the execution status outdate key,
 	// the regex used to parse exec id and vendor type from the key.
 	// e.g. execution:id:100:vendor:REPLICATION:status_outdate
-	execStatusOutdateKeyRegex = regexp.MustCompile(`execution:id:(\d+):vendor:([A-Z_]+):status_outdate`)
+	execStatusOutdateKeyRegex = regexp.MustCompile(`execution:id:(\d+):vendor:([A-Z0-9_]+):status_outdate`)
 )
 
 // ExecutionStatusChangePostFunc is the function called after the execution status changed
