@@ -141,6 +141,11 @@ func GetGCTimeWindow() int64 {
 	return common.DefaultGCTimeWindowHours
 }
 
+// GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
+func GetExecutionStatusRefreshIntervalSeconds() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()
+}
+
 // WithNotary returns a bool value to indicate if Harbor's deployed with Notary
 func WithNotary() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithNotary).GetBool()
