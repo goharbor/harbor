@@ -60,7 +60,7 @@ func init() {
 
 func startRegexpStorePurging(s *regexpStore, intervalDuration time.Duration) {
 	go func() {
-		rand.Seed(time.Now().Unix())
+		rand.NewSource(time.Now().UnixNano())
 		jitter := time.Duration(rand.Int()%60) * time.Minute
 		log.Debugf("Starting regexp store purge in %s", jitter)
 		time.Sleep(jitter)

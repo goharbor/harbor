@@ -111,7 +111,7 @@
                     <clr-dg-cell>{{ r.artifact_count }}</clr-dg-cell>
                     <clr-dg-cell>{{ r.pull_count }}</clr-dg-cell>
                     <clr-dg-cell>{{
-                        r.update_time | harborDatetime: 'short'
+                        r.update_time | harborDatetime : 'short'
                     }}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
@@ -188,7 +188,7 @@
                             'REPOSITORY.LAST_MODIFIED' | translate
                         }}</label>
                         <div>
-                            {{ item.update_time | harborDatetime: 'short' }}
+                            {{ item.update_time | harborDatetime : 'short' }}
                         </div>
                     </div>
                 </div>

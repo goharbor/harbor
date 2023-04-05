@@ -75,7 +75,7 @@ func TestCloudEvents_Format(t *testing.T) {
 		err = json.Unmarshal(data, &event)
 		assert.NoError(t, err)
 		assert.Equal(t, "1.0", event.SpecVersion())
-		assert.Equal(t, requestID, event.ID())
+		assert.Equal(t, requestID, event.Extensions()["requestid"])
 		assert.Equal(t, "/projects/1/webhook/policies/3", event.Source())
 		assert.Equal(t, "harbor.artifact.pulled", event.Type())
 		assert.Equal(t, "application/json", event.DataContentType())

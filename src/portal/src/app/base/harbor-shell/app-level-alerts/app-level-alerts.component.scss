@@ -1,0 +1,16 @@
+.alert-text {
+  flex: 0 0 auto !important;
+}
+
+.alert-action {
+  text-decoration: underline
+}
+
+.last {
+  position: absolute;
+  right: 3rem;
+}
+
+.no-underline {
+  text-decoration: none;
+}

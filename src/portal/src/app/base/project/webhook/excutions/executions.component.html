@@ -99,9 +99,7 @@
                         }}</pre>
                         <pre
                             [innerHTML]="
-                                toJson(execution?.extra_attrs?.payload)
-                                    | json
-                                    | markdown
+                                toJson(execution?.extra_attrs?.payload) | json
                             "
                             class="abc"
                             *ngIf="useJsonFormat(execution?.vendor_type)"></pre>
@@ -109,10 +107,10 @@
                 </clr-signpost>
             </clr-dg-cell>
             <clr-dg-cell>{{
-                execution.start_time | harborDatetime: 'short'
+                execution.start_time | harborDatetime : 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{
-                execution.end_time | harborDatetime: 'short'
+                execution.end_time | harborDatetime : 'short'
             }}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
