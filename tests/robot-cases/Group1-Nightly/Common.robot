@@ -498,7 +498,6 @@ Test Case - Copy A Image
     Sleep  1
     Go Into Repo  project${random_num1}/redis
     Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}
     Sleep  1
@@ -531,7 +530,6 @@ Test Case - Copy A Image And Accessory
     Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
-    Retry Wait Until Page Contains  Copy artifact successfully
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
     Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
@@ -595,11 +593,9 @@ Test Case - Project Quotas Control Under Copy
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_a}
     Copy Image  ${image_a_ver}  project_b_${d}  ${image_a}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_b}
-    Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}  is_success=${false}
     Sleep  2
     Go Into Project  project_b_${d}
     Sleep  2
@@ -726,7 +722,7 @@ Test Case - Can Not Copy Image In ReadOnly Mode
     Sleep  1
     Enable Read Only
     Go Into Repo  project${random_num1}/redis
-    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
+    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  is_success=${false}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}  has_image=${false}
