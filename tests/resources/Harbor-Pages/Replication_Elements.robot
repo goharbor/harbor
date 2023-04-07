@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${new_name_xpath}  	//hbr-list-replication-rule//button[contains(.,'New')]
+${new_name_xpath}  	//*[@id='new_replication_rule_id']
 ${policy_name_xpath}  //*[@id='policy_name']
 ${policy_description_xpath}  //*[@id='policy_description']
 ${policy_enable_checkbox}  //input[@id='policy_enable']/../label
