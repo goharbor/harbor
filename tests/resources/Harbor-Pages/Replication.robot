@@ -115,12 +115,11 @@ Create A Rule With Existing Endpoint
     ...    ${mode}=Manual  ${cron}="* */59 * * * *"  ${del_remote}=${false}  ${filter_tag}=${false}  ${filter_tag_model}=matching  ${filter_label}=${false}  ${filter_label_model}=matching
     ...    ${flattening}=Flatten 1 Level  ${bandwidth}=-1  ${bandwidth_unit}=Kbps
     #click new
-    Retry Element Click    ${new_name_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${new_name_xpath}  Wait Until Element Is Enabled  ${rule_name}
     #input name
-    Retry Text Input    ${rule_name}    ${name}
-    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}  AND  Select Dest Registry  ${endpoint}
+    Retry Text Input  ${rule_name}  ${name}
+    Run Keyword If  '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}  AND  Select Dest Registry  ${endpoint}
     ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}  AND  Select Source Registry  ${endpoint}
-
     #set filter
     Retry Password Input  ${filter_name_id}  ${filter_project_name}
     Run Keyword If  '${filter_tag_model}' != 'matching'  Select Filter Tag Model  ${filter_tag_model}
@@ -137,7 +136,6 @@ Create A Rule With Existing Endpoint
     #set bandwidth
     Run Keyword If  '${bandwidth}' != '-1'  Retry Text Input  ${bandwidth_input}  ${bandwidth}
     Run Keyword If  '${bandwidth_unit}' != 'Kbps'  Select Bandwidth Unit  ${bandwidth_unit}
-
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
     Sleep  2
