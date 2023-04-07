@@ -180,4 +180,8 @@ export class SubAccessoriesComponent implements OnInit, AfterViewInit {
             });
         }
     }
+
+    copyDigest(a: Accessory) {
+        this.event.publish(HarborEvent.COPY_DIGEST, a);
+    }
 }

@@ -406,7 +406,7 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessage("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
-	for _, target := range policy.Targets {
+	for i, target := range policy.Targets {
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
@@ -425,6 +425,10 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 
 		if len(target.PayloadFormat) > 0 && !isPayloadFormatSupported(target.PayloadFormat) {
 			return false, errors.New(nil).WithMessage("unsupported payload format type: %s", target.PayloadFormat).WithCode(errors.BadRequestCode)
+		}
+		// set payload format to Default is not specified when the type is http
+		if len(target.PayloadFormat) == 0 && target.Type == "http" {
+			policy.Targets[i].PayloadFormat = "Default"
 		}
 	}
 	return true, nil

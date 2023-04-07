@@ -8553,6 +8553,7 @@ definitions:
         description: Whether or not to skip cert verify.
       payload_format:
         $ref: '#/definitions/PayloadFormatType'
+        description: The payload format of webhook, by default is Default for http type.
   WebhookPolicy:
     type: object
     description: The webhook policy object

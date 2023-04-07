@@ -829,7 +829,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Certificado do Repositório",
         "NO_CHANGE": "Sem alterações para salvar.",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",
@@ -852,7 +852,7 @@
             "HOURLY_CRON": "Excutar toda hora, no início de cada hora. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Executar uma vez por semana, à meia noite de sábado para domingo. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -1783,7 +1783,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
         "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedule to execute.",
         "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",

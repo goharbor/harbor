@@ -38,6 +38,10 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(ctx, ":splat")
 	reference := router.Param(ctx, ":reference")
 	at := req.URL.Query().Get("artifactType")
+	var filter string
+	if at != "" {
+		filter = "artifactType"
+	}
 
 	// Check if the reference is a valid digest
 	if _, err := digest.Parse(reference); err != nil {
@@ -45,25 +49,20 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	result := &ocispec.Index{}
-
 	// Get the artifact by reference
 	art, err := r.artifactManager.GetByDigest(ctx, repository, reference)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
-			// If artifact not found, return empty index
-			newListReferrersOK().WithPayload(result).WriteResponse(w)
+			// If artifact not found, return empty json
+			newListReferrersOK().WithPayload(nil).WriteResponse(w)
 			return
 		}
 		lib_http.SendError(w, err)
 		return
 	}
 
-	// Query accessories with matching subject artifact digest and artifactType
+	// Query accessories with matching subject artifact digest
 	query := q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName})
-	if at != "" {
-		query = q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName, "Type": at})
-	}
 	total, err := r.accessoryManager.Count(ctx, query)
 	if err != nil {
 		lib_http.SendError(w, err)
@@ -76,7 +75,7 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Build index manifest from accessories
-	var mfs []ocispec.Descriptor
+	mfs := make([]ocispec.Descriptor, 0)
 	for _, acc := range accs {
 		accArt, err := r.artifactManager.GetByDigest(ctx, repository, acc.GetData().Digest)
 		if err != nil {
@@ -90,10 +89,18 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Annotations:  accArt.Annotations,
 			ArtifactType: accArt.MediaType,
 		}
-		mfs = append(mfs, mf)
+		// filter by the artifactType since the artifactType is actually the config media type of the artifact.
+		if at != "" {
+			if accArt.MediaType == at {
+				mfs = append(mfs, mf)
+			}
+		} else {
+			mfs = append(mfs, mf)
+		}
 	}
 
 	// Populate index manifest
+	result := &ocispec.Index{}
 	result.SchemaVersion = ReferrersSchemaVersion
 	result.MediaType = ReferrersMediaType
 	result.Manifests = mfs
@@ -102,6 +109,7 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	baseAPI := &handler.BaseAPI{}
 	newListReferrersOK().
 		WithXTotalCount(total).
+		WithFilter(filter).
 		WithLink(baseAPI.Links(ctx, req.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(result).WriteResponse(w)
 }
@@ -111,6 +119,10 @@ type listReferrersOK struct {
 
 	 */
 	Link string `json:"Link"`
+	/*Filter refers to the filter used to fetch the referrers
+
+	 */
+	Filter string `json:"Filter"`
 	/*The total count of accessories
 
 	 */
@@ -119,7 +131,7 @@ type listReferrersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *ocispec.Index `json:"body,omitempty"`
+	Payload interface{} `json:"body,omitempty"`
 }
 
 // newListReferrersOK creates newlistReferrersOK with default headers values
@@ -133,6 +145,12 @@ func (o *listReferrersOK) WithLink(link string) *listReferrersOK {
 	return o
 }
 
+// WithFilter adds the filter to the get referrers
+func (o *listReferrersOK) WithFilter(filter string) *listReferrersOK {
+	o.Filter = filter
+	return o
+}
+
 // WithXTotalCount adds the xTotalCount to the list accessories o k response
 func (o *listReferrersOK) WithXTotalCount(xTotalCount int64) *listReferrersOK {
 	o.XTotalCount = xTotalCount
@@ -140,7 +158,7 @@ func (o *listReferrersOK) WithXTotalCount(xTotalCount int64) *listReferrersOK {
 }
 
 // WithPayload adds the payload to the list accessories o k response
-func (o *listReferrersOK) WithPayload(payload *ocispec.Index) *listReferrersOK {
+func (o *listReferrersOK) WithPayload(payload interface{}) *listReferrersOK {
 	o.Payload = payload
 	return o
 }
@@ -153,6 +171,10 @@ func (o *listReferrersOK) WriteResponse(rw http.ResponseWriter) {
 	if link != "" {
 		rw.Header().Set("Link", link)
 	}
+	filter := o.Filter
+	if filter != "" {
+		rw.Header().Set("OCI-Filters-Applied", filter)
+	}
 	xTotalCount := swag.FormatInt64(o.XTotalCount)
 	if xTotalCount != "" {
 		rw.Header().Set("X-Total-Count", xTotalCount)
@@ -162,7 +184,7 @@ func (o *listReferrersOK) WriteResponse(rw http.ResponseWriter) {
 	payload := o.Payload
 	if payload == nil {
 		// return empty index
-		payload = &ocispec.Index{}
+		payload = struct{}{}
 	}
 
 	enc := json.NewEncoder(rw)

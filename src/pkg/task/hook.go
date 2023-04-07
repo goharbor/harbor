@@ -17,8 +17,10 @@ package task
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -28,6 +30,8 @@ import (
 var (
 	// HkHandler is a global instance of the HookHandler
 	HkHandler = NewHookHandler()
+	// once do the one time work
+	once sync.Once
 )
 
 // NewHookHandler creates a hook handler instance
@@ -44,10 +48,20 @@ type HookHandler struct {
 	executionDAO dao.ExecutionDAO
 }
 
+func (h *HookHandler) init() {
+	// register the post actions to execution dao
+	once.Do(func() {
+		for vendor, fc := range executionStatusChangePostFuncRegistry {
+			dao.RegisterExecutionStatusChangePostFunc(vendor, dao.ExecutionStatusChangePostFunc(fc))
+		}
+	})
+}
+
 // Handle the job status changing webhook
 func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 	logger := log.GetLogger(ctx)
 
+	h.init()
 	jobID := sc.JobID
 	// the "JobID" field of some kinds of jobs are set as "87bbdee19bed5ce09c48a149@1605104520" which contains "@".
 	// In this case, read the parent periodical job ID from "sc.Metadata.UpstreamJobID"
@@ -93,17 +107,22 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 			logger.Errorf("failed to run the task status change post function for task %d: %v", task.ID, err)
 		}
 	}
-
-	// update execution status
-	statusChanged, currentStatus, err := h.executionDAO.RefreshStatus(ctx, task.ExecutionID)
-	if err != nil {
-		return err
-	}
-	// run the status change post function
-	if fc, exist := executionStatusChangePostFuncRegistry[execution.VendorType]; exist && statusChanged {
-		if err = fc(ctx, task.ExecutionID, currentStatus); err != nil {
-			logger.Errorf("failed to run the execution status change post function for execution %d: %v", task.ExecutionID, err)
+	// execution status refresh interval <= 0 means update the status immediately
+	if config.GetExecutionStatusRefreshIntervalSeconds() <= 0 {
+		// update execution status immediately which may have optimistic lock
+		statusChanged, currentStatus, err := h.executionDAO.RefreshStatus(ctx, task.ExecutionID)
+		if err != nil {
+			return err
 		}
+		// run the status change post function
+		if fc, exist := executionStatusChangePostFuncRegistry[execution.VendorType]; exist && statusChanged {
+			if err = fc(ctx, task.ExecutionID, currentStatus); err != nil {
+				logger.Errorf("failed to run the execution status change post function for execution %d: %v", task.ExecutionID, err)
+			}
+		}
+
+		return nil
 	}
-	return nil
+	// by default, the execution status is updated in asynchronous mode
+	return h.executionDAO.AsyncRefreshStatus(ctx, task.ExecutionID, task.VendorType)
 }

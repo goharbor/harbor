@@ -224,4 +224,6 @@ const (
 
 	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
 	UIMaxLengthLimitedOfNumber = 10
+	// ExecutionStatusRefreshIntervalSeconds is the interval seconds for refreshing execution status
+	ExecutionStatusRefreshIntervalSeconds = "execution_status_refresh_interval_seconds"
 )

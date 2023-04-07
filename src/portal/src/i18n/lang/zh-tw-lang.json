@@ -828,7 +828,7 @@
     "ROOT_CERT_LINK": "下載",
     "REGISTRY_CERTIFICATE": "註冊證書",
     "NO_CHANGE":"保存中止,因為沒有改變",
-    "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+    "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
     "TOOLTIP":{
       "SELF_REGISTRATION_ENABLE": "激活註冊功能。",
       "SELF_REGISTRATION_DISABLE": "禁用註冊功能。",
@@ -851,7 +851,7 @@
       "HOURLY_CRON": "每小時運行一次。相當於 0 0 * * * *",
       "WEEKLY_CRON": "每週一次,週六/週日午夜之間開始。相當於 0 0 0 * * 0",
       "DAILY_CRON": "每天午夜運行一次。相當於 0 0 0 * * *",
-      "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+      "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
     },
     "LDAP":{
       "URL":"LDAP URL",
@@ -1776,7 +1776,11 @@
     "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
     "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedule to execute.",
     "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
-    "CRON": "Cron"
+    "CRON": "Cron",
+    "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+    "WAITING_TOO_LONG_2": "dashboard.",
+    "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+    "WAITING_TOO_LONG_4": "Wiki."
   },
   "CLARITY": {
     "OPEN": "Open",

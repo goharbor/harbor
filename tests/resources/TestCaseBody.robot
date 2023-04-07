@@ -507,7 +507,7 @@ Verify Webhook By Tag Retention Finished Event
     &{tag_retention_finished_property}=  Create Dictionary  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Verify Request  &{tag_retention_finished_property}
 
-Verify Webhook By Replication Finished Event
+Verify Webhook By Replication Status Changed Event
     [Arguments]  ${project_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}
     Switch Window  ${webhook_handle}
     Delete All Requests
