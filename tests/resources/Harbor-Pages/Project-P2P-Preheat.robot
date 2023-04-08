@@ -106,19 +106,21 @@ Execute P2P Preheat
 Verify Latest Execution Result
     [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
     Retry Double Keywords When Error  Select P2P Preheat Policy  ${policy_name}  Wait Until Element Is Visible  ${p2p_preheat_executions_refresh_xpath}
-    ${latest_execution_id}=  Get Text  ${p2p_preheat_latest_execute_id_xpath}
-    Retry P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${latest_execution_id}  ${contain}  ${not_contain}
+    Retry Keyword N Times When Error  5  Retry P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${contain}  ${not_contain}
 
 Retry P2P Preheat Be Successful
-    [Arguments]  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
-    Retry Keyword N Times When Error  15  P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}  ${expected_status}
+    [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
+    Retry Element Click  ${p2p_preheat_executions_refresh_xpath}
+    ${latest_execution_id}=  Get Text  ${p2p_preheat_latest_execute_id_xpath}
+    P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${latest_execution_id}  ${contain}  ${not_contain}  ${expected_status}
 
 P2P Preheat Be Successful
     [Arguments]  ${project_name}  ${policy_name}  ${execution_id}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project_name}/preheat/policies/${policy_name}/executions/${execution_id}/tasks"
     Log All  ${output}
     Should Be Equal As Integers  ${rc}  0
-    Should Contain Any  ${output}  ${expected_status}  @{contain}
+    Should Contain  ${output}  ${expected_status}
+    Should Contain  ${output}  @{contain}
     ${out}  Run Keyword And Ignore Error  Get Length  ${not_contain}
     Run Keyword If  '${out[0]}'=='PASS'  Should Not Contain Any  ${output}  @{not_contain}
 
