@@ -301,77 +301,67 @@ func (bt *basicTracker) Save() (err error) {
 	// Alliance
 	stats := bt.jobStats
 
-	key := rds.KeyJobStats(bt.namespace, stats.Info.JobID)
-	args := make([]interface{}, 0)
-	args = append(args, key)
-	args = append(args,
-		"id", stats.Info.JobID,
-		"name", stats.Info.JobName,
-		"kind", stats.Info.JobKind,
-		"unique", stats.Info.IsUnique,
-		"status", stats.Info.Status,
-		"ref_link", stats.Info.RefLink,
-		"enqueue_time", stats.Info.EnqueueTime,
-		"run_at", stats.Info.RunAt,
-		"cron_spec", stats.Info.CronSpec,
-		"web_hook_url", stats.Info.WebHookURL,
-		"numeric_policy_id", stats.Info.NumericPID,
-	)
-	if stats.Info.CheckInAt > 0 && !utils.IsEmptyStr(stats.Info.CheckIn) {
-		args = append(args,
-			"check_in", redundantCheckInData, // use data placeholder for saving space
-			"check_in_at", stats.Info.CheckInAt,
-		)
-	}
-	if stats.Info.DieAt > 0 {
-		args = append(args, "die_at", stats.Info.DieAt)
-	}
+	key1 := rds.KeyJobStats(bt.namespace, stats.Info.JobID)
+	key2 := rds.KeyJobTrackInProgress(bt.namespace)
+	key3 := rds.KeyUpstreamJobAndExecutions(bt.namespace, stats.Info.UpstreamJobID)
 
-	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
-		args = append(args, "upstream_job_id", stats.Info.UpstreamJobID)
-	}
+	var scriptArgs = make([]interface{}, 0)
+	// KEYS[1-3]
+	scriptArgs = append(scriptArgs, key1)
+	scriptArgs = append(scriptArgs, key2)
+	scriptArgs = append(scriptArgs, key3)
+	// ARGV[1-14]
+	scriptArgs = append(scriptArgs,
+		stats.Info.JobID,
+		stats.Info.JobName,
+		stats.Info.JobKind,
+		stats.Info.IsUnique,
+		stats.Info.Status,
+		stats.Info.RefLink,
+		stats.Info.EnqueueTime,
+		stats.Info.RunAt,
+		stats.Info.CronSpec,
+		stats.Info.WebHookURL,
+		stats.Info.NumericPID,
+		stats.Info.CheckInAt,
+		stats.Info.DieAt,
+		stats.Info.UpstreamJobID)
 
+	// ARGV[15]
 	if len(stats.Info.Parameters) > 0 {
 		if bytes, err := json.Marshal(&stats.Info.Parameters); err == nil {
-			args = append(args, "parameters", string(bytes))
+			scriptArgs = append(scriptArgs, string(bytes))
+		} else {
+			scriptArgs = append(scriptArgs, "")
 		}
+	} else {
+		scriptArgs = append(scriptArgs, "")
 	}
-	// Set update timestamp
-	args = append(args, "update_time", time.Now().Unix())
+
+	// ARGV[16]
+	scriptArgs = append(scriptArgs, time.Now().Unix())
 	// Set the first revision if it is not set.
 	rev := time.Now().Unix()
 	if stats.Info.Revision > 0 {
 		rev = stats.Info.Revision
 	}
-	args = append(args, "revision", rev)
+	// ARGV[17]
+	scriptArgs = append(scriptArgs, "revision", rev)
 
 	// For restoring if ACK is not nil.
 	if stats.Info.HookAck != nil {
 		ack := stats.Info.HookAck.JSON()
 		if len(ack) > 0 {
-			args = append(args, "ack")
+			scriptArgs = append(scriptArgs, "ack")
 		}
 	}
 
-	// Do it in a transaction
-	err = conn.Send("MULTI")
-	err = conn.Send("HMSET", args...)
-	// Set inprogress track lock
-	err = conn.Send("HSET", rds.KeyJobTrackInProgress(bt.namespace), stats.Info.JobID, 2)
-
-	// Link with its upstream job if upstream job ID exists for future querying
-	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
-		k := rds.KeyUpstreamJobAndExecutions(bt.namespace, stats.Info.UpstreamJobID)
-		zargs := []interface{}{k, "NX", stats.Info.RunAt, stats.Info.JobID}
-		err = conn.Send("ZADD", zargs...)
+	_, err = redis.Values(rds.SaveScript().Do(conn, scriptArgs...))
+	if err == redis.ErrNil {
+		return nil
+	} else if err != nil {
+		return err
 	}
-
-	// Check command send error only once here before executing
-	if err != nil {
-		return
-	}
-
-	_, err = conn.Do("EXEC")
 
 	return
 }

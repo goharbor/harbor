@@ -42,7 +42,7 @@ local function compare(status, revision)
   local aCode = stCode(ARGV[1])
   local aRev = tonumber(ARGV[2]) or 0
   local aCheckInT = tonumber(ARGV[3]) or 0
-  if revision < aRev or 
+  if revision < aRev or
     ( revision == aRev and sCode <= aCode ) or
     ( revision == aRev and aCheckInT ~= 0 )
   then
@@ -96,7 +96,7 @@ if res then
         redis.call('persist', KEYS[1])
       end
     end
-    
+
     return 'ok'
   end
 end
@@ -229,4 +229,109 @@ return nil`, requeueKeysPerJob)
 // RedisLuaReenqueueScript returns redis script of redisLuaReenqueueJob
 func RedisLuaReenqueueScript(jobTypesCount int) *redis.Script {
 	return redis.NewScript(jobTypesCount*requeueKeysPerJob, redisLuaReenqueueJob)
+}
+
+var saveJobScript = `
+local function is_blank(str)
+  return str == nil or str == '' or string.match(str, "^%s*$") ~= nil
+end
+
+local key1 = KEYS[1] -- rds.KeyJobStats(bt.namespace, stats.Info.JobID)
+local key2 = KEYS[2] -- rds.KeyJobTrackInProgress(bt.namespace)
+local key3 = KEYS[3] -- rds.KeyUpstreamJobAndExecutions(bt.namespace, stats.Info.UpstreamJobID)
+
+local jobID = ARGV[1]
+local jobName = ARGV[2]
+local jobKind = ARGV[3]
+local isUnique = tostring(ARGV[4])
+local status = ARGV[5]
+local refLink = ARGV[6]
+local enqueueTime = tonumber(ARGV[7])
+local runAt = tonumber(ARGV[8])
+local cronSpec = ARGV[9]
+local webHookURL = ARGV[10]
+local numericPID = tonumber(ARGV[11])
+local checkInAt = tonumber(ARGV[12])
+local dieAt = tonumber(ARGV[13])
+local upstreamJobID = ARGV[14]
+local parameters = ARGV[15]
+local currentTime = ARGV[16]
+local revision = ARGV[17]
+
+local args = {}
+table.insert(args, "id")
+table.insert(args, jobID)
+table.insert(args, "name")
+table.insert(args, jobName)
+table.insert(args, "kind")
+table.insert(args, jobKind)
+table.insert(args, "unique")
+table.insert(args, isUnique)
+table.insert(args, "status")
+table.insert(args, status)
+table.insert(args, "ref_link")
+table.insert(args, refLink)
+table.insert(args, "enqueue_time")
+table.insert(args, enqueueTime)
+table.insert(args, "run_at")
+table.insert(args, runAt)
+table.insert(args, "cron_spec")
+table.insert(args, cronSpec)
+table.insert(args, "web_hook_url")
+table.insert(args, webHookURL)
+table.insert(args, "numeric_policy_id")
+table.insert(args, numericPID)
+
+if checkInAt > 0 then
+  table.insert(args, "check_in")
+  table.insert(args, "[REDUNDANT]")
+  table.insert(args, "check_in_at")
+  table.insert(args, checkInAt)
+end
+
+if dieAt > 0 then
+  table.insert(args, "die_at")
+  table.insert(args, dieAt)
+end
+
+if not is_blank(upstreamJobID) then
+  table.insert(args, "upstream_job_id")
+  table.insert(args, upstreamJobID)
+end
+
+if not is_blank(parameters) then
+  table.insert(args, "parameters")
+  table.insert(args, parameters)
+end
+
+table.insert(args, "update_time")
+table.insert(args, currentTime)
+
+table.insert(args, "revision")
+table.insert(args, revision)
+
+-- add other argv
+for i = 18, #ARGV, 1 do
+  table.insert(args, ARGV[i])
+end
+
+local result1 = redis.call("HMSET", key1, unpack(args))
+if not result1 then
+  error("HMSET error")
+end
+
+local result2 = redis.call("HSET", key2, jobID, 2)
+if not result2 then
+  error("HSET error")
+end
+if not is_blank(upstreamJobID) then
+  local result3 = redis.call("ZADD", key3, "NX", runAt, jobID)
+  if not result3 then
+    error("ZADD error")
+  end
+end
+`
+
+func SaveScript() *redis.Script {
+	return redis.NewScript(3, saveJobScript)
 }
