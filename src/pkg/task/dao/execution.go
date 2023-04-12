@@ -476,6 +476,14 @@ func scanAndRefreshOutdateStatus(ctx context.Context) {
 
 		statusChanged, currentStatus, err := ExecDAO.RefreshStatus(ctx, execID)
 		if err != nil {
+			// no need to refresh and should clean cache if the execution is not found
+			if errors.IsNotFoundErr(err) {
+				if err = cache.Default().Delete(ctx, key); err != nil {
+					log.Errorf("failed to delete the key %s in cache, error: %v", key, err)
+				}
+				succeed++
+				continue
+			}
 			log.Errorf("failed to refresh the status of execution %d, error: %v", execID, err)
 			failed++
 			continue
