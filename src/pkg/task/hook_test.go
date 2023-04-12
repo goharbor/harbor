@@ -80,17 +80,21 @@ func (h *hookHandlerTestSuite) TestHandle() {
 		ID:         1,
 		VendorType: "test",
 	}, nil)
-	h.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, job.RunningStatus.String(), nil)
-	sc = &job.StatusChange{
-		Status: job.SuccessStatus.String(),
-		Metadata: &job.StatsInfo{
-			Revision: time.Now().Unix(),
-		},
+
+	// test update status non-immediately when receive the hook
+	{
+		h.execDAO.On("AsyncRefreshStatus", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		sc = &job.StatusChange{
+			Status: job.SuccessStatus.String(),
+			Metadata: &job.StatsInfo{
+				Revision: time.Now().Unix(),
+			},
+		}
+		err = h.handler.Handle(nil, sc)
+		h.Require().Nil(err)
+		h.taskDAO.AssertExpectations(h.T())
+		h.execDAO.AssertExpectations(h.T())
 	}
-	err = h.handler.Handle(nil, sc)
-	h.Require().Nil(err)
-	h.taskDAO.AssertExpectations(h.T())
-	h.execDAO.AssertExpectations(h.T())
 }
 
 func TestHookHandlerTestSuite(t *testing.T) {

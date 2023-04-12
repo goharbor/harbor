@@ -246,10 +246,10 @@
         "INLINE_HELP_PUBLIC": "Quando o projeto é público, o acesso de leitura aos repositórios é liberado, incluindo usuários anônimos não autenticados. O usuário não precisa executar \"docker login\" para baixar imagens desse projeto.",
         "OF": "de",
         "COUNT_QUOTA": "Limite de quantidade",
-        "STORAGE_QUOTA": "Limite de armazenamento",
+        "STORAGE_QUOTA": "Project quota limits",
         "COUNT_QUOTA_TIP": "Informe um número inteiro entre 1 e 100.000.000. Use -1 para ilimitado.",
         "STORAGE_QUOTA_TIP": "Limite de armazenamento. Apenas números inteiros. Valor máximo de 1024TB. Use -1 para ilimitado.",
-        "QUOTA_UNLIMIT_TIP": "Para  não ter limite, utilize -1.",
+        "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Para  não ter limite, utilize -1.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
@@ -829,7 +829,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Certificado do Repositório",
         "NO_CHANGE": "Sem alterações para salvar.",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",
@@ -852,7 +852,7 @@
             "HOURLY_CRON": "Excutar toda hora, no início de cada hora. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Executar uma vez por semana, à meia noite de sábado para domingo. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Executar todos os dias à meia-noite. Equivalente a 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -1109,14 +1109,14 @@
         "DELETE": "Remover",
         "OF": "de",
         "PROJECT_QUOTA_DEFAULT_ARTIFACT": "Limite de artefatos por projeto",
-        "PROJECT_QUOTA_DEFAULT_DISK": "Limite de armazenamento por projeto",
+        "PROJECT_QUOTA_DEFAULT_DISK": "Default quota space per project",
         "EDIT_PROJECT_QUOTAS": "Editar limites do projeto",
         "EDIT_DEFAULT_PROJECT_QUOTAS": "Editar limites gerais para todos os projetos",
         "SET_QUOTAS": "Definir limites para o projeto '{{params}}'",
         "SET_DEFAULT_QUOTAS": "Definir os limites padronizados para novos projetos",
         "COUNT_QUOTA": "Limite de itens",
         "COUNT_DEFAULT_QUOTA": "Limite padrão de itens",
-        "STORAGE_QUOTA": "Limite de armazenamento",
+        "STORAGE_QUOTA": "Project quota limits",
         "STORAGE_DEFAULT_QUOTA": "Limite padrão de armazenamento",
         "SAVE_SUCCESS": "Limites definidos com sucesso",
         "UNLIMITED": "∞",
@@ -1783,7 +1783,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
         "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedule to execute.",
         "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",

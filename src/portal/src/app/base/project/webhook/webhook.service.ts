@@ -15,7 +15,7 @@ import { Injectable } from '@angular/core';
 import { MarkdownPipe } from 'ngx-markdown/src/markdown.pipe';
 
 const EVENT_TYPES_TEXT_MAP = {
-    REPLICATION: 'Replication finished',
+    REPLICATION: 'Replication status changed',
     PUSH_ARTIFACT: 'Artifact pushed',
     PULL_ARTIFACT: 'Artifact pulled',
     DELETE_ARTIFACT: 'Artifact deleted',

@@ -27,6 +27,7 @@ import { FlushAll } from '../units/cache-util';
 import { SignInCredential } from '../../account/sign-in/sign-in-credential';
 import { ProjectMemberEntity } from '../../../../ng-swagger-gen/models/project-member-entity';
 import { DeFaultLang } from '../entities/shared.const';
+import { JobServiceDashboardHealthCheckService } from '../../base/left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
 
 const signInUrl = '/c/login';
 const currentUserEndpoint = CURRENT_BASE_HREF + '/users/current';
@@ -54,7 +55,8 @@ export class SessionService {
     projectMembers: ProjectMemberEntity[];
     constructor(
         private http: HttpClient,
-        public sessionViewmodel: SessionViewmodelFactory
+        public sessionViewmodel: SessionViewmodelFactory,
+        private jobServiceDashboardHealthCheckService: JobServiceDashboardHealthCheckService
     ) {}
 
     // Handle the related exceptions
@@ -94,12 +96,12 @@ export class SessionService {
      */
     retrieveUser(): Observable<SessionUserBackend> {
         return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS).pipe(
-            map(
-                (response: SessionUserBackend) =>
-                    (this.currentUser = this.sessionViewmodel.getCurrentUser(
-                        response
-                    ) as SessionUser)
-            ),
+            map((response: SessionUserBackend) => {
+                this.currentUser = this.sessionViewmodel.getCurrentUser(
+                    response
+                ) as SessionUser;
+                this.jobServiceDashboardHealthCheckService.checkHealth();
+            }),
             catchError(error => this.handleError(error))
         );
     }

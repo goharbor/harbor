@@ -44,6 +44,8 @@ class TestLogRotation(unittest.TestCase, object):
         latest_job = self.purge.get_latest_purge_job()
         self.purge.stop_purge_execution(latest_job.id)
         # 3. Verify purge audit log job status is Stopped
+        # wait more 5s for status update after stop
+        time.sleep(5)
         job_status = self.purge.get_purge_job(latest_job.id).job_status
         self.assertEqual(self.purge.get_purge_job(latest_job.id).job_status, "Stopped")
         # 4. Create a purge audit log job

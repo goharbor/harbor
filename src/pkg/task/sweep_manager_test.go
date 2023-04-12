@@ -19,14 +19,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
-	"github.com/stretchr/testify/suite"
 )
 
 type sweepManagerTestSuite struct {
-	suite.Suite
+	htesting.Suite
 	execDao *mockExecutionDAO
 	mgr     *sweepManager
 }
@@ -36,6 +38,7 @@ func TestSweepManager(t *testing.T) {
 }
 
 func (suite *sweepManagerTestSuite) SetupSuite() {
+	suite.Suite.SetupSuite()
 	suite.execDao = &mockExecutionDAO{}
 	suite.mgr = &sweepManager{execDAO: suite.execDao}
 }
@@ -53,4 +56,9 @@ func (suite *sweepManagerTestSuite) TestGetCandidateMaxStartTime() {
 	startTime, err = suite.mgr.getCandidateMaxStartTime(context.TODO(), "WEBHOOK", 1, 10)
 	suite.NoError(err, "should not got error")
 	suite.Equal(now.String(), startTime.String())
+}
+
+func (suite *sweepManagerTestSuite) Test_sweepManager_FixDanglingStateExecution() {
+	err := suite.mgr.FixDanglingStateExecution(suite.Context())
+	suite.NoError(err, "should not got error")
 }

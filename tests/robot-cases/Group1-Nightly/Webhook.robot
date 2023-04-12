@@ -106,7 +106,7 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality
     Add A Tag Retention Rule
     Edit A Tag Retention Rule  **  ${tag1}
     Switch To Project Webhooks
-    ${event_type}  Create List  Tag retention finished  Replication finished
+    ${event_type}  Create List  Tag retention finished  Replication status changed
     Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${event_type}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -117,8 +117,8 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality
     ${harbor_handle}=  Set Variable  ${handles}[1]
     # Tag retention finished
     Retry Action Keyword  Verify Webhook By Tag Retention Finished Event  project${d}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}
-    # Replication finished
-    Retry Action Keyword  Verify Webhook By Replication Finished Event  project${d}  project_push_dest${d}  rule_push_${d}  ${harbor_handle}  ${webhook_handle}
+    # Replication status changed
+    Retry Action Keyword  Verify Webhook By Replication Status Changed Event  project${d}  project_push_dest${d}  rule_push_${d}  ${harbor_handle}  ${webhook_handle}
     Close Browser
 
 Test Case - Tag Quota Event Type Webhook Functionality
