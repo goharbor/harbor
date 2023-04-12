@@ -62,6 +62,10 @@ func v2DeleteManifest(logger logger.Interface, repository, digest string) error 
 		if err == readonly.Err {
 			return retry.Abort(err)
 		}
+		// If delete returned an err because the manifest is unknown, consider success
+		if errors.IsNotFoundErr(err) {
+			return nil
+		}
 		return err
 	}, retry.Callback(func(err error, sleep time.Duration) {
 		logger.Infof("failed to exec v2DeleteManifest, error: %v, will retry again after: %s", err, sleep)
