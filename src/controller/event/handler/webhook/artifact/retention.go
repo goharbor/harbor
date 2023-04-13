@@ -12,7 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
@@ -45,7 +44,7 @@ func (r *RetentionHandler) Handle(ctx context.Context, value interface{}) error 
 		return nil
 	}
 
-	payload, dryRun, project, err := r.constructRetentionPayload(trEvent)
+	payload, dryRun, project, err := r.constructRetentionPayload(ctx, trEvent)
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func (r *RetentionHandler) Handle(ctx context.Context, value interface{}) error 
 		log.Debugf("cannot find policy for %s event: %v", trEvent.EventType, trEvent)
 		return nil
 	}
-	err = util.SendHookWithPolicies(policies, payload, trEvent.EventType)
+	err = util.SendHookWithPolicies(ctx, policies, payload, trEvent.EventType)
 	if err != nil {
 		return err
 	}
@@ -76,8 +75,7 @@ func (r *RetentionHandler) IsStateful() bool {
 	return false
 }
 
-func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent) (*model.Payload, bool, int64, error) {
-	ctx := orm.Context()
+func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event *event.RetentionEvent) (*model.Payload, bool, int64, error) {
 	task, err := retention.Ctl.GetRetentionExecTask(ctx, event.TaskID)
 	if err != nil {
 		log.Errorf("failed to get retention task %d: error: %v", event.TaskID, err)
@@ -121,8 +119,8 @@ func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent
 		Operator: execution.Trigger,
 		EventData: &model.EventData{
 			Retention: &evtModel.Retention{
-				Total:             task.Total,
-				Retained:          task.Retained,
+				Total:             event.Total,
+				Retained:          event.Retained,
 				HarborHostname:    hostname,
 				ProjectName:       event.Deleted[0].Target.Namespace,
 				RetentionPolicyID: execution.PolicyID,
@@ -140,8 +138,11 @@ func (r *RetentionHandler) constructRetentionPayload(event *event.RetentionEvent
 		}
 		if len(target.Tags) != 0 {
 			deletedArtifact.NameAndTag = target.Repository + ":" + target.Tags[0]
+		} else {
+			// use digest if no tag
+			deletedArtifact.NameAndTag = target.Repository + "@" + target.Digest
 		}
-		payload.EventData.Retention.DeletedArtifact = []*evtModel.ArtifactInfo{deletedArtifact}
+		payload.EventData.Retention.DeletedArtifact = append(payload.EventData.Retention.DeletedArtifact, deletedArtifact)
 	}
 
 	for _, v := range md.Rules {

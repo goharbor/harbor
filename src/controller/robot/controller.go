@@ -152,7 +152,7 @@ func (d *controller) Update(ctx context.Context, r *Robot, option *Option) error
 	}
 	// update the permission
 	if option != nil && option.WithPermission {
-		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, r.ID); err != nil {
+		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, r.ID); err != nil && !errors.IsNotFoundErr(err) {
 			return err
 		}
 		if err := d.createPermission(ctx, r); err != nil {

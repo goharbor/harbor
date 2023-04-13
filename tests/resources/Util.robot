@@ -69,6 +69,8 @@ Resource  Harbor-Pages/Logs.robot
 Resource  Harbor-Pages/Logs_Elements.robot
 Resource  Harbor-Pages/Log_Rotation.robot
 Resource  Harbor-Pages/Log_Rotation_Elements.robot
+Resource  Harbor-Pages/Job_Service_Dashboard.robot
+Resource  Harbor-Pages/Job_Service_Dashboard_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot

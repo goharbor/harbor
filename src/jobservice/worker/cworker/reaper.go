@@ -23,6 +23,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
@@ -31,7 +32,6 @@ import (
 )
 
 const (
-	maxUpdateDuration       = 24 * time.Hour
 	reapLoopInterval        = 1 * time.Hour
 	initialReapLoopInterval = 5 * time.Minute
 )
@@ -171,7 +171,7 @@ func (r *reaper) syncOutdatedStats() error {
 				}
 			} else {
 				// Ongoing, check the update timestamp to make sure it is not hung
-				if time.Unix(t.Job().Info.UpdateTime, 0).Add(maxUpdateDuration).Before(time.Now()) {
+				if time.Unix(t.Job().Info.UpdateTime, 0).Add(config.MaxUpdateDuration()).Before(time.Now()) {
 					// Status hung
 					// Mark job status to error state
 					if err = t.Fail(); err != nil {
@@ -245,7 +245,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 		}
 
 		// Get next cursor
-		cursor, err = strconv.ParseInt(string(reply[0].([]uint8)), 10, 16)
+		cursor, err = strconv.ParseInt(string(reply[0].([]uint8)), 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "scan locks")
 		}
@@ -253,7 +253,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 		if values, ok := reply[1].([]interface{}); ok {
 			for i := 0; i < len(values); i += 2 {
 				k := string(values[i].([]uint8))
-				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 16)
+				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 64)
 				if err != nil {
 					// Ignore and continue
 					logger.Errorf("Malformed lock object for %s: %v", k, err)

@@ -10,10 +10,6 @@ import { CreateEditRuleComponent } from './create-edit-rule.component';
 import { DatePickerComponent } from '../../../../../shared/components/datetime-picker/datetime-picker.component';
 import { FilterComponent } from '../../../../../shared/components/filter/filter.component';
 import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
-import {
-    ReplicationJob,
-    ReplicationJobItem,
-} from '../../../../../shared/services';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { ReplicationService } from '../../../../../shared/services';
 import { LabelPieceComponent } from '../../../../../shared/components/label/label-piece/label-piece.component';
@@ -24,6 +20,7 @@ import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { RegistryService } from '../../../../../../../ng-swagger-gen/services/registry.service';
 import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
 import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
+import { ReplicationExecution } from '../../../../../../../ng-swagger-gen/models/replication-execution';
 
 describe('CreateEditRuleComponent (inline template)', () => {
     let mockRules: ReplicationPolicy[] = [
@@ -44,7 +41,7 @@ describe('CreateEditRuleComponent (inline template)', () => {
             speed: -1,
         },
     ];
-    let mockJobs: ReplicationJobItem[] = [
+    let mockJobs: ReplicationExecution[] = [
         {
             id: 1,
             status: 'stopped',
@@ -80,7 +77,7 @@ describe('CreateEditRuleComponent (inline template)', () => {
         },
     ];
 
-    let mockJob: ReplicationJob = {
+    let mockJob: any = {
         metadata: { xTotalCount: 3 },
         data: mockJobs,
     };

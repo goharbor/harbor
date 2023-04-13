@@ -74,8 +74,8 @@ export class MessageHandlerService implements ErrorHandler {
 
     public handleReadOnly(): void {
         this.msgService.announceAppLevelMessage(
-            503,
-            'REPO_READ_ONLY',
+            httpStatusCode.AppLevelWarning,
+            AppLevelMessage.REPO_READ_ONLY,
             AlertType.WARNING
         );
     }
@@ -130,4 +130,8 @@ export class MessageHandlerService implements ErrorHandler {
     public log(log: any): void {
         this.showInfo(log);
     }
+}
+
+export enum AppLevelMessage {
+    REPO_READ_ONLY = 'REPO_READ_ONLY',
 }

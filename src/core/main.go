@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/health"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/systemartifact"
+	"github.com/goharbor/harbor/src/controller/task"
 	"github.com/goharbor/harbor/src/core/api"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
@@ -48,6 +49,7 @@ import (
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/gtask"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -56,6 +58,7 @@ import (
 	"github.com/goharbor/harbor/src/migration"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -205,6 +208,9 @@ func main() {
 	health.RegisterHealthCheckers()
 	registerScanners(orm.Context())
 
+	// start global task pool, do not stop in the gracefulShutdown because it may take long time to finish.
+	gtask.DefaultPool().Start(ctx)
+
 	closing := make(chan struct{})
 	done := make(chan struct{})
 	go gracefulShutdown(closing, done, shutdownTracerProvider)
@@ -257,7 +263,29 @@ func main() {
 			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
 			return
 		}
-		systemartifact.ScheduleCleanupTask(ctx)
+		// schedule the system jobs with retry as the operation depends on the jobservice,
+		// retry to handle the failure case caused by jobservice.
+		ctx := orm.Context()
+		options = []retry.Option{
+			retry.InitialInterval(time.Millisecond * 500),
+			retry.MaxInterval(time.Second * 10),
+			retry.Timeout(time.Minute * 5),
+			retry.Callback(func(err error, sleep time.Duration) {
+				log.Debugf("failed to schedule system job, retry after %s : %v", sleep, err)
+			}),
+		}
+		// schedule system artifact cleanup job
+		if err := retry.Retry(func() error {
+			return systemartifact.ScheduleCleanupTask(ctx)
+		}, options...); err != nil {
+			log.Errorf("failed to schedule system artifact cleanup job, error: %v", err)
+		}
+		// schedule system execution sweep job
+		if err := retry.Retry(func() error {
+			return task.ScheduleSweepJob(ctx)
+		}, options...); err != nil {
+			log.Errorf("failed to schedule system execution sweep job, error: %v", err)
+		}
 	}()
 	web.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }

@@ -392,6 +392,12 @@ func (n *webhookAPI) GetSupportedEventTypes(ctx context.Context, params webhook.
 	for _, eventType := range notification.GetSupportedEventTypes() {
 		notificationTypes.EventType = append(notificationTypes.EventType, models.EventType(eventType))
 	}
+	// currently only http type support payload format
+	httpPayloadFormats := &models.PayloadFormat{NotifyType: models.NotifyType("http")}
+	for _, formatType := range notification.GetSupportedPayloadFormats() {
+		httpPayloadFormats.Formats = append(httpPayloadFormats.Formats, models.PayloadFormatType(formatType))
+	}
+	notificationTypes.PayloadFormats = []*models.PayloadFormat{httpPayloadFormats}
 
 	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
@@ -400,7 +406,7 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessage("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
-	for _, target := range policy.Targets {
+	for i, target := range policy.Targets {
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
@@ -410,6 +416,19 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessage("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
+		}
+		// don't allow set the payload format for slack type
+		// slack should be migrated as a kind of payload in the future
+		if len(target.PayloadFormat) > 0 && target.Type == "slack" {
+			return false, errors.New(nil).WithMessage("set payload format is not allowed for slack").WithCode(errors.BadRequestCode)
+		}
+
+		if len(target.PayloadFormat) > 0 && !isPayloadFormatSupported(target.PayloadFormat) {
+			return false, errors.New(nil).WithMessage("unsupported payload format type: %s", target.PayloadFormat).WithCode(errors.BadRequestCode)
+		}
+		// set payload format to Default is not specified when the type is http
+		if len(target.PayloadFormat) == 0 && target.Type == "http" {
+			policy.Targets[i].PayloadFormat = "Default"
 		}
 	}
 	return true, nil
@@ -469,6 +488,16 @@ func isEventTypeSupported(eventType string) bool {
 func isNotifyTypeSupported(notifyType string) bool {
 	for _, t := range notification.GetSupportedNotifyTypes() {
 		if t.String() == notifyType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isPayloadFormatSupported(payloadFormat string) bool {
+	for _, t := range notification.GetSupportedPayloadFormats() {
+		if t.String() == payloadFormat {
 			return true
 		}
 	}

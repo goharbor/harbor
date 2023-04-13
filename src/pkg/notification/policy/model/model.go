@@ -81,4 +81,5 @@ type EventTarget struct {
 	Address        string `json:"address"`
 	AuthHeader     string `json:"auth_header,omitempty"`
 	SkipCertVerify bool   `json:"skip_cert_verify"`
+	PayloadFormat  string `json:"payload_format,omitempty"`
 }

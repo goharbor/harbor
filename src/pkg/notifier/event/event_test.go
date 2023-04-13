@@ -1,6 +1,7 @@
 package event
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +44,7 @@ func TestHookEvent_Build(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event := &Event{}
-			err := event.Build(tt.args.hookMetadata)
+			err := event.Build(context.TODO(), tt.args.hookMetadata)
 			if tt.wantErr {
 				require.NotNil(t, err, "Error: %s", err)
 				return
@@ -76,7 +77,7 @@ func TestEvent_Publish(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.args.event.Publish()
+			err := tt.args.event.Publish(context.TODO())
 			if tt.wantErr {
 				require.NotNil(t, err, "Error: %s", err)
 				return

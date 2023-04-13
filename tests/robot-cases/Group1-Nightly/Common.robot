@@ -498,7 +498,6 @@ Test Case - Copy A Image
     Sleep  1
     Go Into Repo  project${random_num1}/redis
     Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}
     Sleep  1
@@ -531,7 +530,6 @@ Test Case - Copy A Image And Accessory
     Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
-    Retry Wait Until Page Contains  Copy artifact successfully
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
     Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
@@ -595,11 +593,9 @@ Test Case - Project Quotas Control Under Copy
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_a}
     Copy Image  ${image_a_ver}  project_b_${d}  ${image_a}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Go Into Project  project_a_${d}
     Go Into Repo  project_a_${d}/${image_b}
-    Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}  is_success=${false}
     Sleep  2
     Go Into Project  project_b_${d}
     Sleep  2
@@ -726,7 +722,7 @@ Test Case - Can Not Copy Image In ReadOnly Mode
     Sleep  1
     Enable Read Only
     Go Into Repo  project${random_num1}/redis
-    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
+    Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  is_success=${false}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}  has_image=${false}
@@ -1015,3 +1011,78 @@ Test Case - Helm3.7 CLI Push And Pull In Harbor
     ${pwd}=    Set Variable    Test1@34
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}
+    Close Browser
+
+Test Case - Job Service Dashboard Job Queues
+    [Tags]  job_service_job_queues
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # Pause GARBAGE_COLLECTION  PURGE_AUDIT_LOG  IMAGE_SCAN  RETENTION jobs
+    Switch To Job Queues
+    Pause Jobs  GARBAGE_COLLECTION  PURGE_AUDIT_LOG  IMAGE_SCAN  RETENTION
+    Check Button Status
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  2.0_scan  2.0_scan
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  3.0_scan  3.0_scan
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  4.0_scan  4.0_scan
+    Switch To Tag Retention
+    Add A Tag Retention Rule
+    # Triggers two RETENTION jobs
+    ${retention_execution1}=  Execute Dry Run  photon  0/0
+    ${retention_execution2}=  Execute Run  photon  0/0
+    # Triggers three IMAGE_SCAN jobs
+    Switch To Project Repo
+    Go Into Repo  photon
+    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Button Click  ${scan_artifact_btn}
+    # Triggers a GARBAGE_COLLECTION job
+    ${gc_execution1}=  GC Now  dry_run=${true}
+    # Triggers a PURGE_AUDIT_LOG job
+    Switch to Log Rotation
+    Purge Now  2  Days  Running
+    # Check job queues
+    Switch To Job Queues
+    Check Pending Job Card  IMAGE_SCAN=3  RETENTION=2  Others=2  Total=7
+    Check Jobs Pending Count  IMAGE_SCAN=3  RETENTION=2  GARBAGE_COLLECTION=1  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  GARBAGE_COLLECTION=${false}  PURGE_AUDIT_LOG=${false}  IMAGE_SCAN=${false}  RETENTION=${false}
+    # Resume GARBAGE_COLLECTION  RETENTION jobs
+    Resume Jobs  GARBAGE_COLLECTION  RETENTION
+    # Check job queues
+    Check Pending Job Card  IMAGE_SCAN=3  PURGE_AUDIT_LOG=1  Others=0  Total=4
+    Check Jobs Pending Count  IMAGE_SCAN=3  RETENTION=0  GARBAGE_COLLECTION=0  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  GARBAGE_COLLECTION=${true}  PURGE_AUDIT_LOG=${false}  IMAGE_SCAN=${false}  RETENTION=${true}
+    # Check retention and GC status
+    Go Into Project  project${d}
+    Switch To Tag Retention
+    Check Retention Execution  ${retention_execution1}  Success  Yes
+    Check Retention Execution  ${retention_execution2}  Success  No
+    Retry GC Should Be Successful  ${gc_execution1}  success to run gc in job
+    # Stop PURGE_AUDIT_LOG  IMAGE_SCAN jobs
+    Switch To Job Queues
+    Stop Pending Jobs  PURGE_AUDIT_LOG  IMAGE_SCAN
+    # Check job queues
+    Check Pending Job Card  first_job=0  second_job=0  the_third_job=0  Total=0
+    Check Jobs Pending Count  IMAGE_SCAN=0  PURGE_AUDIT_LOG=0
+    Check Jobs Latency  GARBAGE_COLLECTION=${true}  PURGE_AUDIT_LOG=${true}  IMAGE_SCAN=${true}  RETENTION=${true}
+    # Triggers a PURGE_AUDIT_LOG job
+    Switch to Log Rotation
+    Purge Now  1  Days  Running
+    # Triggers three IMAGE_SCAN jobs
+    Go Into Project  project${d}
+    Go Into Repo  photon
+    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Button Click  ${scan_artifact_btn}
+    # Check job queues
+    Switch To Job Queues
+    Check Pending Job Card  IMAGE_SCAN=3  PURGE_AUDIT_LOG=1  Others=0  Total=4
+    Check Jobs Pending Count   IMAGE_SCAN=3  PURGE_AUDIT_LOG=1
+    Check Jobs Latency  IMAGE_SCAN=${false}  PURGE_AUDIT_LOG=${false}
+    # Stop all job
+    Stop All Pending Jobs
+    # Check job queues
+    Check Pending Job Card  first_job=0  second_job=0  the_third_job=0  Total=0
+    Check Jobs Pending Count   IMAGE_SCAN=0  PURGE_AUDIT_LOG=0
+    Check Jobs Latency  IMAGE_SCAN=${true}  PURGE_AUDIT_LOG=${true}
+    Resume Jobs  IMAGE_SCAN  PURGE_AUDIT_LOG
+    Close Browser

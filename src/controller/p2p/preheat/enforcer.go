@@ -46,11 +46,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-func init() {
-	// keep only the latest created 50 p2p preheat execution records
-	task.SetExecutionSweeperCount(job.P2PPreheatVendorType, 50)
-}
-
 const (
 	defaultSeverityCode     = 99
 	extraAttrTotal          = "totalCount"
@@ -483,7 +478,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 
 // getVulnerabilitySev gets the severity code value for the given artifact with allowlist option set
 func (de *defaultEnforcer) getVulnerabilitySev(ctx context.Context, p *proModels.Project, art *artifact.Artifact) (uint, error) {
-	vulnerable, err := de.scanCtl.GetVulnerable(ctx, art, p.CVEAllowlist.CVESet())
+	vulnerable, err := de.scanCtl.GetVulnerable(ctx, art, p.CVEAllowlist.CVESet(), p.CVEAllowlist.IsExpired())
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
 			// no vulnerability report

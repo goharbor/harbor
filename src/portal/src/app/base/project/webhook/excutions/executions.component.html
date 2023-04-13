@@ -1,0 +1,134 @@
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <clr-datagrid
+        [clrDgLoading]="loading"
+        (clrDgRefresh)="clrLoadExecutions($event, true, null)">
+        <clr-dg-action-bar class="mt-2">
+            <div class="flex-end">
+                <h4 class="mt-0">
+                    {{ 'P2P_PROVIDER.EXECUTIONS' | translate }}
+                </h4>
+                <span class="refresh-btn">
+                    <clr-icon
+                        shape="refresh"
+                        (click)="refreshExecutions(true, null)"
+                        [hidden]="loading"></clr-icon>
+                </span>
+            </div>
+        </clr-dg-action-bar>
+        <clr-dg-column [clrDgField]="'id'">{{
+            'REPLICATION.ID' | translate
+        }}</clr-dg-column>
+        <clr-dg-column>{{
+            'JOB_SERVICE_DASHBOARD.VENDOR_TYPE' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'status'">{{
+            'DESTINATION.STATUS' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'status'">{{
+            'WEBHOOK.EVENT_TYPE' | translate
+        }}</clr-dg-column>
+        <clr-dg-column>{{ 'WEBHOOK.PAYLOAD_DATA' | translate }}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'start_time'">{{
+            'REPLICATION.CREATION_TIME' | translate
+        }}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'end_time'">{{
+            'REPLICATION.END_TIME' | translate
+        }}</clr-dg-column>
+        <clr-dg-placeholder>{{
+            'P2P_PROVIDER.JOB_PLACEHOLDER' | translate
+        }}</clr-dg-placeholder>
+        <clr-dg-row
+            *ngFor="let execution of executions"
+            [clrDgItem]="execution">
+            <clr-dg-cell>
+                <a href="javascript:void(0)" (click)="goToLink(execution.id)">{{
+                    execution.id
+                }}</a>
+            </clr-dg-cell>
+            <clr-dg-cell>
+                {{ execution.vendor_type }}
+            </clr-dg-cell>
+            <clr-dg-cell
+                >{{ execution.status }}
+                <clr-tooltip>
+                    <clr-icon
+                        *ngIf="execution.status_message"
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="20"></clr-icon>
+                    <clr-tooltip-content
+                        [clrPosition]="'left'"
+                        clrSize="md"
+                        *clrIfOpen>
+                        <span>{{ execution.status_message }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip></clr-dg-cell
+            >
+            <clr-dg-cell>
+                <span
+                    class="label-flex"
+                    *ngIf="execution?.extra_attrs?.event_type">
+                    {{ eventTypeToText(execution?.extra_attrs?.event_type) }}
+                </span>
+            </clr-dg-cell>
+            <clr-dg-cell class="flex">
+                <clr-signpost>
+                    <a class="btn btn-link link-normal" clrSignpostTrigger>
+                        <span *ngIf="useJsonFormat(execution?.vendor_type)">
+                            {{
+                                toString(
+                                    toJson(execution?.extra_attrs?.payload)
+                                )
+                            }}
+                        </span>
+                        <span *ngIf="!useJsonFormat(execution?.vendor_type)">
+                            {{ execution?.extra_attrs?.payload }}
+                        </span>
+                    </a>
+                    <clr-signpost-content
+                        class="pre"
+                        [clrPosition]="'top-middle'"
+                        *clrIfOpen>
+                        <hbr-copy-input
+                            [iconMode]="true"
+                            [defaultValue]="
+                                toString(execution?.extra_attrs?.payload)
+                            "></hbr-copy-input>
+                        <pre *ngIf="!useJsonFormat(execution?.vendor_type)">{{
+                            execution?.extra_attrs?.payload
+                        }}</pre>
+                        <pre
+                            [innerHTML]="
+                                toJson(execution?.extra_attrs?.payload) | json
+                            "
+                            class="abc"
+                            *ngIf="useJsonFormat(execution?.vendor_type)"></pre>
+                    </clr-signpost-content>
+                </clr-signpost>
+            </clr-dg-cell>
+            <clr-dg-cell>{{
+                execution.start_time | harborDatetime : 'short'
+            }}</clr-dg-cell>
+            <clr-dg-cell>{{
+                execution.end_time | harborDatetime : 'short'
+            }}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+            <clr-dg-pagination
+                #pagination
+                [(clrDgPage)]="currentPage"
+                [clrDgPageSize]="pageSize"
+                [clrDgTotalItems]="total">
+                <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                    'PAGINATION.PAGE_SIZE' | translate
+                }}</clr-dg-page-size>
+                <span *ngIf="total"
+                    >{{ pagination.firstItem + 1 }} -
+                    {{ pagination.lastItem + 1 }}
+                    {{ 'REPLICATION.OF' | translate }}</span
+                >
+                {{ total }} {{ 'REPLICATION.ITEMS' | translate }}
+            </clr-dg-pagination>
+        </clr-dg-footer>
+    </clr-datagrid>
+</div>

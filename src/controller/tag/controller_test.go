@@ -236,3 +236,29 @@ func (c *controllerTestSuite) TestAssembleTag() {
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &controllerTestSuite{})
 }
+
+func Test_isValidTag(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"normal", args{`latest`}, true},
+		{"invalid_char", args{`latest&delete`}, false},
+		{"invalid_start", args{`-abc`}, false},
+		{"invalid_start_&", args{`&asdf`}, false},
+		{"valid_start", args{`_abc`}, true},
+		{"pure_number", args{`123456`}, true},
+		{"empty", args{` `}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isValidTag(tt.args.name); got != tt.want {
+				t.Errorf("isValidTag() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestUnmarshalJSONWithACC(t *testing.T) {
-	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_id":8,"type":"signature.cosign"}],
+	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c","type":"signature.cosign"}],
 	"addition_links":{"build_history":{"absolute":false,"href":"/api/v2.0/projects/source_project011642670285/repositories/redis/artifacts/sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c/additions/build_history"},
 	"vulnerabilities":{"absolute":false,"href":"/api/v2.0/projects/source_project011642670285/repositories/redis/artifacts/sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c/additions/vulnerabilities"}},
 	"digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c",
@@ -31,7 +31,7 @@ func TestUnmarshalJSONWithACC(t *testing.T) {
 }
 
 func TestUnmarshalJSONWithACCPartial(t *testing.T) {
-	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_id":8,"type":"signature.cosign"}, {"artifact_id":2, "type":"signature.cosign"}],
+	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","type":"signature.cosign"}, {"artifact_id":2, "type":"signature.cosign"}],
 	"digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c","tags":[{"artifact_id":8,"id":6,"immutable":false,"name":"latest","pull_time":"2022-01-20T09:18:50.783Z","push_time":"2022-01-20T09:18:50.303Z","repository_id":5,"signed":false}],"type":"IMAGE"}]`)
 
 	var artifact []Artifact
@@ -47,7 +47,7 @@ func TestUnmarshalJSONWithACCPartial(t *testing.T) {
 }
 
 func TestUnmarshalJSONWithACCUnknownType(t *testing.T) {
-	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_id":8}],
+	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3"}],
 	"digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c","tags":[{"artifact_id":8,"id":6,"immutable":false,"name":"latest","pull_time":"2022-01-20T09:18:50.783Z","push_time":"2022-01-20T09:18:50.303Z","repository_id":5,"signed":false}],"type":"IMAGE"}]`)
 
 	var artifact []Artifact
