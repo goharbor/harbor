@@ -107,8 +107,9 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 			logger.Errorf("failed to run the task status change post function for task %d: %v", task.ID, err)
 		}
 	}
-	// execution status refresh interval <= 0 means update the status immediately
-	if config.GetExecutionStatusRefreshIntervalSeconds() <= 0 {
+	// 1. execution status refresh interval <= 0 means update the status immediately
+	// 2. if the status is Stopped, we should also update the status immediately to avoid long wait time for user
+	if config.GetExecutionStatusRefreshIntervalSeconds() <= 0 || sc.Status == job.StoppedStatus.String() {
 		// update execution status immediately which may have optimistic lock
 		statusChanged, currentStatus, err := h.executionDAO.RefreshStatus(ctx, task.ExecutionID)
 		if err != nil {
