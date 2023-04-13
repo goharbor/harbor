@@ -13,7 +13,7 @@
         "project": [
           "server/tsconfig.json",
           "tsconfig.json",
-          "e2e/tsconfig.json"
+          "cypress/tsconfig.json"
         ],
         "createDefaultProgram": true
       },
