@@ -112,7 +112,7 @@
     "ng-swagger-gen": "^1.8.1",
 
     // For e2e test. Required
-    "protractor": "^7.0.0",
+    "cypress": "latest"
 
     // For code grammar checking. Optional
     "eslint": "^8.12.0",

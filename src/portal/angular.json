@@ -127,33 +127,24 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
+              "cypress/**/*.ts",
               "server/**/*.ts",
               "src/**/*.ts",
               "src/**/*.html"
             ]
           }
-        }
-      }
-    },
-    "harbor-portal-e2e": {
-      "root": "e2e",
-      "sourceRoot": "e2e",
-      "projectType": "application",
-      "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "./protractor.config.js",
-            "devServerTarget": "harbor-portal:serve"
-          }
         },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
           "options": {
-            "lintFilePatterns": [
-              "e2e/**/*.ts",
-              "e2e/**/*.html"
-            ]
+            "devServerTarget": "harbor-portal:serve",
+            "watch": false,
+            "headless": true
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "harbor-portal:serve:production"
+            }
           }
         }
       }
@@ -168,6 +159,11 @@
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": [
+      "@cypress/schematic",
+      "@cypress/schematic",
+      "@schematics/angular"
+    ]
   }
 }
