@@ -225,12 +225,26 @@ func (w *worker) removeJobFromInProgress(job *Job, fate terminateOp) {
 	conn := w.pool.Get()
 	defer conn.Close()
 
-	conn.Send("MULTI")
-	conn.Send("LREM", job.inProgQueue, 1, job.rawJSON)
-	conn.Send("DECR", redisKeyJobsLock(w.namespace, job.Name))
-	conn.Send("HINCRBY", redisKeyJobsLockInfo(w.namespace, job.Name), w.poolID, -1)
-	fate(conn)
-	if _, err := conn.Do("EXEC"); err != nil {
+	luaScript := `
+		redis.call("LREM", KEYS[1], 1, ARGV[1])
+		redis.call("DECR", KEYS[2])
+		redis.call("HINCRBY", KEYS[3], ARGV[2], -1)
+	`
+
+	args := make([]interface{}, 0)
+	args = append(args, luaScript)
+	args = append(args, 3) // there are three keys
+	args = append(args,
+		job.inProgQueue,                             // key1
+		redisKeyJobsLock(w.namespace, job.Name),     // key2
+		redisKeyJobsLockInfo(w.namespace, job.Name)) // key3
+
+	args = append(args,
+		job.rawJSON, // arg1
+		w.poolID)    // arg2
+
+	err := conn.Send("EVAL", args...)
+	if err != nil {
 		logError("worker.remove_job_from_in_progress.lrem", err)
 	}
 }
