@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -89,10 +89,7 @@ func trimV1Address(address string) (string, error) {
 		apiVersionStr string
 	)
 
-	if strings.HasSuffix(address, "/") {
-		address = address[:len(address)-1]
-	}
-
+	address = strings.TrimSuffix(address, "/")
 	chunks = strings.Split(address, "/")
 	apiVersionStr = chunks[len(chunks)-1]
 	if apiVersionStr == "v1" {
@@ -161,7 +158,7 @@ func (e *V1Endpoint) Ping() (PingResult, error) {
 
 	defer resp.Body.Close()
 
-	jsonString, err := ioutil.ReadAll(resp.Body)
+	jsonString, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return PingResult{Standalone: false}, fmt.Errorf("error while reading the http response: %s", err)
 	}

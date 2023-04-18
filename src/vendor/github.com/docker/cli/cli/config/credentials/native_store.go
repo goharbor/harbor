@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	remoteCredentialsPrefix = "docker-credential-"
+	remoteCredentialsPrefix = "docker-credential-" //nolint:gosec // ignore G101: Potential hardcoded credentials
 	tokenUsername           = "<token>"
 )
 
