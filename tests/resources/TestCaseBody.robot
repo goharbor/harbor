@@ -487,7 +487,7 @@ Verify Webhook By Artifact Pushed Event
     [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
     Switch Window  ${webhook_handle}
     Delete All Requests
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}    
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}
     &{artifact_pushed_property}=  Create Dictionary  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
     Verify Request  &{artifact_pushed_property}
     Clean All Local Images
@@ -563,7 +563,7 @@ Verify Webhook By Replication Finished Event
     Select Rule And Replicate  ${replication_rule_name}
     Retry Wait Until Page Contains  Succeeded
     Switch Window  ${webhook_handle}
-    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}  
+    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
     Verify Request  &{replication_finished_property}
 
 Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
@@ -597,3 +597,57 @@ Verify Webhook By Quota Exceed Event
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}  err_msg=adding 21.1 MiB of storage resource, which when updated to current usage of 48.5 MiB will exceed the configured upper limit of ${storage_quota}.0 MiB.
     &{quota_exceed_property}=  Create Dictionary  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
     Verify Request  &{quota_exceed_property}
+
+Create Schedules For Job Service Dashboard Schedules
+    [Arguments]  ${project_name}  ${schedule_type}  ${schedule_cron}  ${distribution_endpoint}=${null}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${distribution_name}=  Set Variable  distribution${d}
+    ${distribution_endpoint}=  Set Variable If  "${distribution_endpoint}" == "${null}"  https://${d}  ${distribution_endpoint}
+    ${p2p_policy_name}=  Set Variable  policy${d}
+    ${replication_policy_name}=  Set Variable  rule${d}
+    # Create a retention policy triggered by schedule
+    Switch To Tag Retention
+    Add A Tag Retention Rule
+    Set Tag Retention Policy Schedule  ${schedule_type}  ${schedule_cron}
+    # Create a preheat policy triggered by schedule
+    Create An New Distribution  Dragonfly  ${distribution_name}  ${distribution_endpoint}
+    Go Into Project  ${project_name}
+    Create An New P2P Preheat Policy  ${p2p_policy_name}  ${distribution_name}  **  **  Scheduled  ${schedule_type}  ${schedule_cron}
+    # Create a replication policy triggered by schedule
+    Switch to Registries
+    Create A New Endpoint  docker-hub  docker-hub${d}  ${null}  ${null}  ${null}  Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  goharbor/harbor-core  image  docker-hub${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
+    # Set up a schedule to scan all
+    Switch To Vulnerability Page
+    Set Scan Schedule  Custom  value=${schedule_cron}
+    # Set up a schedule to GC
+    Switch To Garbage Collection
+    Set GC Schedule  custom  value=${schedule_cron}
+    # Set up a schedule to log rotation
+    Switch To Log Rotation
+    ${exclude_operations}  Create List  Pull
+    Set Log Rotation Schedule  1  Days  ${schedule_type}  ${schedule_cron}  ${exclude_operations}
+    [Return]  ${replication_policy_name}  ${p2p_policy_name}  ${distribution_name}
+
+Reset Schedules For Job Service Dashboard Schedules
+    [Arguments]  ${project_name}  ${replication_policy_name}  ${p2p_policy_name}
+    Go Into Project  ${project_name}
+    # Reset the schedule of retention policy
+    Switch To Tag Retention
+    Set Tag Retention Policy Schedule  None
+    # Reset the schedule of preheat policy
+    Switch To P2P Preheat
+    Delete A P2P Preheat Policy  ${p2p_policy_name}
+    # Reset the schedule of replication policy
+    Switch To Replication Manage
+    Delete Replication Rule  ${replication_policy_name}
+    # Reset the schedule of scan all
+    Switch To Vulnerability Page
+    Set Scan Schedule  None
+    # Reset the schedule of GC
+    Switch To Garbage Collection
+    Set GC Schedule  None
+    # Reset the schedule of log rotation
+    Switch To Log Rotation
+    Set Log Rotation Schedule  2  Days  None
