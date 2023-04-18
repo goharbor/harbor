@@ -218,16 +218,22 @@ func (c *Call) Unset() *Call {
 
 	foundMatchingCall := false
 
-	for i, call := range c.Parent.ExpectedCalls {
+	// in-place filter slice for calls to be removed - iterate from 0'th to last skipping unnecessary ones
+	var index int // write index
+	for _, call := range c.Parent.ExpectedCalls {
 		if call.Method == c.Method {
 			_, diffCount := call.Arguments.Diff(c.Arguments)
 			if diffCount == 0 {
 				foundMatchingCall = true
-				// Remove from ExpectedCalls
-				c.Parent.ExpectedCalls = append(c.Parent.ExpectedCalls[:i], c.Parent.ExpectedCalls[i+1:]...)
+				// Remove from ExpectedCalls - just skip it
+				continue
 			}
 		}
+		c.Parent.ExpectedCalls[index] = call
+		index++
 	}
+	// trim slice up to last copied index
+	c.Parent.ExpectedCalls = c.Parent.ExpectedCalls[:index]
 
 	if !foundMatchingCall {
 		unlockOnce.Do(c.unlock)
