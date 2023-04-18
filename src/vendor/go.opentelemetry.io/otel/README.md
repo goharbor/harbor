@@ -30,27 +30,41 @@ Project versioning information and stability guarantees can be found in the
 
 ### Compatibility
 
-OpenTelemetry-Go attempts to track the current supported versions of the
-[Go language](https://golang.org/doc/devel/release#policy). The release
-schedule after a new minor version of go is as follows:
+OpenTelemetry-Go ensures compatibility with the current supported versions of
+the [Go language](https://golang.org/doc/devel/release#policy):
 
-- The first release or one month, which ever is sooner, will add build steps for the new go version.
-- The first release after three months will remove support for the oldest go version.
+> Each major Go release is supported until there are two newer major releases.
+> For example, Go 1.5 was supported until the Go 1.7 release, and Go 1.6 was supported until the Go 1.8 release.
 
-This project is tested on the following systems.
+For versions of Go that are no longer supported upstream, opentelemetry-go will
+stop ensuring compatibility with these versions in the following manner:
+
+- A minor release of opentelemetry-go will be made to add support for the new
+  supported release of Go.
+- The following minor release of opentelemetry-go will remove compatibility
+  testing for the oldest (now archived upstream) version of Go. This, and
+  future, releases of opentelemetry-go may include features only supported by
+  the currently supported versions of Go.
+
+Currently, this project supports the following environments.
 
 | OS      | Go Version | Architecture |
 | ------- | ---------- | ------------ |
+| Ubuntu  | 1.20       | amd64        |
+| Ubuntu  | 1.19       | amd64        |
 | Ubuntu  | 1.18       | amd64        |
-| Ubuntu  | 1.17       | amd64        |
+| Ubuntu  | 1.20       | 386          |
+| Ubuntu  | 1.19       | 386          |
 | Ubuntu  | 1.18       | 386          |
-| Ubuntu  | 1.17       | 386          |
+| MacOS   | 1.20       | amd64        |
+| MacOS   | 1.19       | amd64        |
 | MacOS   | 1.18       | amd64        |
-| MacOS   | 1.17       | amd64        |
+| Windows | 1.20       | amd64        |
+| Windows | 1.19       | amd64        |
 | Windows | 1.18       | amd64        |
-| Windows | 1.17       | amd64        |
+| Windows | 1.20       | 386          |
+| Windows | 1.19       | 386          |
 | Windows | 1.18       | 386          |
-| Windows | 1.17       | 386          |
 
 While this project should work for other systems, no compatibility guarantees
 are made for those systems currently.
