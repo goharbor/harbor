@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-var (
+const (
 	maxListMembers = 32
 
 	listDelimiter = ","
@@ -32,15 +32,17 @@ var (
 	withTenantKeyFormat = `[a-z0-9][_0-9a-z\-\*\/]{0,240}@[a-z][_0-9a-z\-\*\/]{0,13}`
 	valueFormat         = `[\x20-\x2b\x2d-\x3c\x3e-\x7e]{0,255}[\x21-\x2b\x2d-\x3c\x3e-\x7e]`
 
-	keyRe    = regexp.MustCompile(`^((` + noTenantKeyFormat + `)|(` + withTenantKeyFormat + `))$`)
-	valueRe  = regexp.MustCompile(`^(` + valueFormat + `)$`)
-	memberRe = regexp.MustCompile(`^\s*((` + noTenantKeyFormat + `)|(` + withTenantKeyFormat + `))=(` + valueFormat + `)\s*$`)
-
 	errInvalidKey    errorConst = "invalid tracestate key"
 	errInvalidValue  errorConst = "invalid tracestate value"
 	errInvalidMember errorConst = "invalid tracestate list-member"
 	errMemberNumber  errorConst = "too many list-members in tracestate"
 	errDuplicate     errorConst = "duplicate list-member in tracestate"
+)
+
+var (
+	keyRe    = regexp.MustCompile(`^((` + noTenantKeyFormat + `)|(` + withTenantKeyFormat + `))$`)
+	valueRe  = regexp.MustCompile(`^(` + valueFormat + `)$`)
+	memberRe = regexp.MustCompile(`^\s*((` + noTenantKeyFormat + `)|(` + withTenantKeyFormat + `))=(` + valueFormat + `)\s*$`)
 )
 
 type member struct {
