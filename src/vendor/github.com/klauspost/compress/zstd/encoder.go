@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"math"
 	rdebug "runtime/debug"
 	"sync"
 
@@ -98,23 +99,25 @@ func (e *Encoder) Reset(w io.Writer) {
 	if cap(s.filling) == 0 {
 		s.filling = make([]byte, 0, e.o.blockSize)
 	}
-	if cap(s.current) == 0 {
-		s.current = make([]byte, 0, e.o.blockSize)
-	}
-	if cap(s.previous) == 0 {
-		s.previous = make([]byte, 0, e.o.blockSize)
+	if e.o.concurrent > 1 {
+		if cap(s.current) == 0 {
+			s.current = make([]byte, 0, e.o.blockSize)
+		}
+		if cap(s.previous) == 0 {
+			s.previous = make([]byte, 0, e.o.blockSize)
+		}
+		s.current = s.current[:0]
+		s.previous = s.previous[:0]
+		if s.writing == nil {
+			s.writing = &blockEnc{lowMem: e.o.lowMem}
+			s.writing.init()
+		}
+		s.writing.initNewEncode()
 	}
 	if s.encoder == nil {
 		s.encoder = e.o.encoder()
 	}
-	if s.writing == nil {
-		s.writing = &blockEnc{lowMem: e.o.lowMem}
-		s.writing.init()
-	}
-	s.writing.initNewEncode()
 	s.filling = s.filling[:0]
-	s.current = s.current[:0]
-	s.previous = s.previous[:0]
 	s.encoder.Reset(e.o.dict, false)
 	s.headerWritten = false
 	s.eofWritten = false
@@ -255,6 +258,46 @@ func (e *Encoder) nextBlock(final bool) error {
 			s.nWritten += int64(len(blk.output))
 			s.eofWritten = true
 		}
+		return s.err
+	}
+
+	// SYNC:
+	if e.o.concurrent == 1 {
+		src := s.filling
+		s.nInput += int64(len(s.filling))
+		if debugEncoder {
+			println("Adding sync block,", len(src), "bytes, final:", final)
+		}
+		enc := s.encoder
+		blk := enc.Block()
+		blk.reset(nil)
+		enc.Encode(blk, src)
+		blk.last = final
+		if final {
+			s.eofWritten = true
+		}
+
+		err := errIncompressible
+		// If we got the exact same number of literals as input,
+		// assume the literals cannot be compressed.
+		if len(src) != len(blk.literals) || len(src) != e.o.blockSize {
+			err = blk.encode(src, e.o.noEntropy, !e.o.allLitEntropy)
+		}
+		switch err {
+		case errIncompressible:
+			if debugEncoder {
+				println("Storing incompressible block as raw")
+			}
+			blk.encodeRaw(src)
+			// In fast mode, we do not transfer offsets, so we don't have to deal with changing the.
+		case nil:
+		default:
+			s.err = err
+			return err
+		}
+		_, s.err = s.w.Write(blk.output)
+		s.nWritten += int64(len(blk.output))
+		s.filling = s.filling[:0]
 		return s.err
 	}
 
@@ -486,8 +529,8 @@ func (e *Encoder) EncodeAll(src, dst []byte) []byte {
 		// If a non-single block is needed the encoder will reset again.
 		e.encoders <- enc
 	}()
-	// Use single segments when above minimum window and below 1MB.
-	single := len(src) < 1<<20 && len(src) > MinWindowSize
+	// Use single segments when above minimum window and below window size.
+	single := len(src) <= e.o.windowSize && len(src) > MinWindowSize
 	if e.o.single != nil {
 		single = *e.o.single
 	}
@@ -509,7 +552,7 @@ func (e *Encoder) EncodeAll(src, dst []byte) []byte {
 	}
 
 	// If we can do everything in one block, prefer that.
-	if len(src) <= maxCompressedBlockSize {
+	if len(src) <= e.o.blockSize {
 		enc.Reset(e.o.dict, true)
 		// Slightly faster with no history and everything in one block.
 		if e.o.crc {
@@ -596,4 +639,38 @@ func (e *Encoder) EncodeAll(src, dst []byte) []byte {
 		}
 	}
 	return dst
+}
+
+// MaxEncodedSize returns the expected maximum
+// size of an encoded block or stream.
+func (e *Encoder) MaxEncodedSize(size int) int {
+	frameHeader := 4 + 2 // magic + frame header & window descriptor
+	if e.o.dict != nil {
+		frameHeader += 4
+	}
+	// Frame content size:
+	if size < 256 {
+		frameHeader++
+	} else if size < 65536+256 {
+		frameHeader += 2
+	} else if size < math.MaxInt32 {
+		frameHeader += 4
+	} else {
+		frameHeader += 8
+	}
+	// Final crc
+	if e.o.crc {
+		frameHeader += 4
+	}
+
+	// Max overhead is 3 bytes/block.
+	// There cannot be 0 blocks.
+	blocks := (size + e.o.blockSize) / e.o.blockSize
+
+	// Combine, add padding.
+	maxSz := frameHeader + 3*blocks + size
+	if e.o.pad > 1 {
+		maxSz += calcSkippableFrame(int64(maxSz), int64(e.o.pad))
+	}
+	return maxSz
 }

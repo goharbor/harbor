@@ -16,6 +16,7 @@ type fastBase struct {
 	cur int32
 	// maximum offset. Should be at least 2x block size.
 	maxMatchOff int32
+	bufferReset int32
 	hist        []byte
 	crc         *xxhash.Digest
 	tmp         [8]byte
@@ -56,8 +57,8 @@ func (e *fastBase) Block() *blockEnc {
 }
 
 func (e *fastBase) addBlock(src []byte) int32 {
-	if debugAsserts && e.cur > bufferReset {
-		panic(fmt.Sprintf("ecur (%d) > buffer reset (%d)", e.cur, bufferReset))
+	if debugAsserts && e.cur > e.bufferReset {
+		panic(fmt.Sprintf("ecur (%d) > buffer reset (%d)", e.cur, e.bufferReset))
 	}
 	// check if we have space already
 	if len(e.hist)+len(src) > cap(e.hist) {
@@ -108,11 +109,6 @@ func (e *fastBase) UseBlock(enc *blockEnc) {
 	e.blk = enc
 }
 
-func (e *fastBase) matchlenNoHist(s, t int32, src []byte) int32 {
-	// Extend the match to be as long as possible.
-	return int32(matchLen(src[s:], src[t:]))
-}
-
 func (e *fastBase) matchlen(s, t int32, src []byte) int32 {
 	if debugAsserts {
 		if s < 0 {
@@ -131,8 +127,6 @@ func (e *fastBase) matchlen(s, t int32, src []byte) int32 {
 			panic(fmt.Sprintf("len(src)-s (%d) > maxCompressedBlockSize (%d)", len(src)-int(s), maxCompressedBlockSize))
 		}
 	}
-
-	// Extend the match to be as long as possible.
 	return int32(matchLen(src[s:], src[t:]))
 }
 
@@ -155,13 +149,13 @@ func (e *fastBase) resetBase(d *dict, singleBlock bool) {
 		if singleBlock {
 			e.lowMem = true
 		}
-		e.ensureHist(d.DictContentSize() + maxCompressedBlockSize)
+		e.ensureHist(d.ContentSize() + maxCompressedBlockSize)
 		e.lowMem = low
 	}
 
 	// We offset current position so everything will be out of reach.
 	// If above reset line, history will be purged.
-	if e.cur < bufferReset {
+	if e.cur < e.bufferReset {
 		e.cur += e.maxMatchOff + int32(len(e.hist))
 	}
 	e.hist = e.hist[:0]
