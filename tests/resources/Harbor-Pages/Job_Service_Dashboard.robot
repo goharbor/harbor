@@ -19,6 +19,10 @@ Documentation  This resource provides any keywords related to the Harbor private
 Switch To Job Queues
     Retry Double Keywords When Error  Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]  Retry Wait Until Page Contains Element  ${job_service_stop_btn}
 
+Switch To Job Schedules
+    Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
+    Retry Double Keywords When Error  Retry Button Click  ${job_service_schedules_btn}  Retry Wait Until Page Contains  Vendor Type
+
 Select Jobs
     [Arguments]  @{job_types}
     FOR  ${job_type}  IN  @{job_types}
@@ -117,3 +121,77 @@ Check Button Status
     Select Jobs  IMAGE_SCAN
     Retry Wait Element Should Be Disabled  ${job_service_resume_btn}
     Retry Wait Element Should Be Disabled  ${job_service_pause_btn}
+
+Check Schedule List
+    [Arguments]  ${schedule_cron}
+    # Check retention policy schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='RETENTION'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check preheat policy schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='P2P_PREHEAT'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check replication policy schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='REPLICATION'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check scan all schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='SCAN_ALL'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check GC schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='GARBAGE_COLLECTION'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check log rotation schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='PURGE_AUDIT_LOG'] and .//clr-dg-cell[text()='${schedule_cron}']]
+    # Check execution sweep schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='EXECUTION_SWEEP'] and .//clr-dg-cell[text()='0 0 * * * *']]
+    # Check system artifact cleanup schedule
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='SYSTEM_ARTIFACT_CLEANUP'] and .//clr-dg-cell[text()='0 0 0 * * *']]
+
+
+Pause All Schedules
+    Retry Double Keywords When Error  Retry Button Click  ${job_service_schedules_pause_all_btn}  Retry Button Click  ${confirm_btn}
+    Retry Wait Until Page Contains  Paused all the schedules successfully
+    Retry Wait Until Page Contains Element  //app-schedule-card//span[text()='Paused']
+
+Resume All Schedules
+    Retry Double Keywords When Error  Retry Button Click  ${job_service_schedules_resume_all_btn}  Retry Button Click  ${confirm_btn}
+    Retry Wait Until Page Contains  Resumed all the schedules successfully
+    Retry Wait Until Page Contains Element  //app-schedule-card//span[text()='Running']
+
+Check Schedules Status Is Pause
+    [Arguments]  ${project_name}  ${replication_rule_name}  ${p2p_policy_name}
+    # Check that the retention policy schedule is Pause
+    Go Into Project  ${project_name}
+    Switch To Tag Retention
+    Retry Wait Until Page Contains Element  //span[text()='Schedule has been paused']
+    # Check that the preheat policy schedule is Pause
+    Switch To P2P Preheat
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='${p2p_policy_name}'] and .//clr-dg-cell[text()=' Scheduled(Paused) ']]
+    # Check that the replication policy schedule is Pause
+    Switch To Replication Manage
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='${replication_rule_name}'] and .//clr-dg-cell[text()=' Scheduled(Paused) ']]
+    # Check that the scan all schedule is Pause
+    Switch To Vulnerability Page
+    Retry Wait Until Page Contains Element  //span[text()='Schedule to scan all has been paused']
+    # Check that the GC schedule is Pause
+    Switch To Garbage Collection
+    Retry Wait Until Page Contains Element  //span[text()='Schedule to GC has been paused']
+    # Check that the log rotation schedule is Pause
+    Switch To Log Rotation
+    Retry Wait Until Page Contains Element  //span[text()='Schedule to purge has been paused']
+
+Check Schedules Status Is Not Pause
+    [Arguments]  ${project_name}  ${replication_rule_name}  ${p2p_policy_name}
+     # Check that the retention policy schedule is not Pause
+    Go Into Project  ${project_name}
+    Switch To Tag Retention
+    Retry Wait Until Page Not Contains Element  //span[text()='Schedule has been paused']
+    # Check that the preheat policy schedule is not Pause
+    Switch To P2P Preheat
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[.//clr-dg-cell[text()='${p2p_policy_name}'] and .//clr-dg-cell[text()=' Scheduled(Paused) ']]
+    # Check that the replication policy schedule is not Pause
+    Switch To Replication Manage
+    Retry Wait Until Page Not Contains Element  //clr-dg-row[.//clr-dg-cell[text()='${replication_rule_name}'] and .//clr-dg-cell[text()=' Scheduled(Paused) ']]
+    # Check that the scan all schedule is not Pause
+    Switch To Vulnerability Page
+    Retry Wait Until Page Not Contains Element  //span[text()='Schedule to scan all has been paused']
+    # Check that the GC schedule is not Pause
+    Switch To Garbage Collection
+    Retry Wait Until Page Not Contains Element  //span[text()='Schedule to GC has been paused']
+    # Check that the log rotation schedule is not Pause
+    Switch To Log Rotation
+    Retry Wait Until Page Not Contains Element  //span[text()='Schedule to purge has been paused']
