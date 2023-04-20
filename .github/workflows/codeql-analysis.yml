@@ -2,21 +2,7 @@ name: "Code scanning - action"
 
 on:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'tests/**'
-      - '!tests/**.sh'
-      - '!tests/apitests/**'
-      - '!tests/ci/**'
   pull_request:
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'tests/**'
-      - '!tests/**.sh'
-      - '!tests/apitests/**'
-      - '!tests/ci/**'
   schedule:
     - cron: '0 16 * * 6'
 

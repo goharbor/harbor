@@ -16,7 +16,7 @@ env:
 
 on:
   pull_request:
-    paths-ignore:
+    paths:
       - 'docs/**'
       - '**.md'
       - 'tests/**'
@@ -24,7 +24,7 @@ on:
       - '!tests/apitests/**'
       - '!tests/ci/**'
   push:
-    paths-ignore:
+    paths:
       - 'docs/**'
       - '**.md'
       - 'tests/**'
