@@ -24,6 +24,10 @@ Switch To Job Schedules
     Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
     Retry Double Keywords When Error  Retry Button Click  ${job_service_schedules_btn}  Retry Wait Until Page Contains  Vendor Type
 
+Switch To Job Workers
+    Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
+    Retry Double Keywords When Error  Retry Button Click  ${job_service_workers_btn}  Retry Wait Until Page Contains  Worker Pools
+
 Select Jobs
     [Arguments]  @{job_types}
     FOR  ${job_type}  IN  @{job_types}
