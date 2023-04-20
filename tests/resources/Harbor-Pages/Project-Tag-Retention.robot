@@ -19,7 +19,6 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-
 Add A Tag Retention Rule
     Retry Element Click  xpath=${project_tag_retention_add_rule_xpath}
     Retry Element Click  xpath=${project_tag_retention_template_xpath}
@@ -84,6 +83,14 @@ Set Daily Schedule
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_schedule_ok_xpath}
     Retry Element Click   xpath=${project_tag_retention_schedule_ok_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_span_daily_xpath}
+
+Set Tag Retention Policy Schedule
+    [Arguments]  ${type}  ${cron}=${null}
+    Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_edit_schedule_xpath}  Retry Wait Element Visible  ${project_tag_retention_schedule_cancel_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_select_policy_xpath}  Retry Element Click  //option[@value='${type}']
+    Run Keyword If  '${type}' == 'Custom'  Retry Text Input  ${project_tag_retention_schedule_cron_input}  ${cron}
+    Run Keyword If  '${type}' == 'None'  Retry Element Click  ${project_tag_retention_config_save_xpath}
+    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_config_save_xpath}  Retry Button Click  ${project_tag_retention_schedule_ok_xpath}
 
 Execute Result Should Be
     [Arguments]  ${image}  ${result}
