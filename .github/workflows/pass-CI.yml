@@ -19,7 +19,38 @@ on:
       - '!tests/ci/**'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  UTTEST:
+    runs-on:
+      - ubuntu-latest
     steps:
-      - run: 'echo "No build required"'
+      - run: 'echo "No run required"'
+
+  APITEST_DB:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  APITEST_DB_PROXY_CACHE:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  APITEST_LDAP:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  OFFLINE:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  UI_UT:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
