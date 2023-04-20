@@ -41,7 +41,7 @@ P2P Preheat Policy Not Exist
     Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}')]
 
 Create An New P2P Preheat Policy
-    [Arguments]  ${policy_name}  ${dist_name}  ${repo}  ${tag}  ${trigger_type}=Manual
+    [Arguments]  ${policy_name}  ${dist_name}  ${repo}  ${tag}  ${trigger_type}=Manual  ${schedule_type}=${null}  ${schedule_cron}=${null}
     Switch To P2P Preheat
     Retry Element Click  ${p2p_preheat_new_policy_btn_id}
     Select Distribution For P2P Preheat  ${dist_name}
@@ -49,6 +49,10 @@ Create An New P2P Preheat Policy
     Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
     Retry Text Input  ${p2p_preheat_tag_input_id}  ${tag}
     Select P2P Preheat Policy Trigger  ${trigger_type}
+    Run Keyword If  '${trigger_type}' == 'Scheduled'  Retry Element Click  ${p2p_preheat_scheduled_edit_id}
+    Run Keyword If  '${trigger_type}' == 'Scheduled'  Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}//option[contains(.,'${schedule_type}')]
+    Run Keyword If  '${schedule_type}' == 'Custom'  Retry Text Input  ${p2p_preheat_scheduled_cron_input_id}  ${schedule_cron}
+    Run Keyword If  '${trigger_type}' == 'Scheduled'  Retry Element Click  ${p2p_preheat_scheduled_save_btn_xpath}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_add_save_btn_id}
     P2P Preheat Policy Exist  ${policy_name}
 
