@@ -19,10 +19,18 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
   push:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
 
 jobs:
   UTTEST:

@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+  push:
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
