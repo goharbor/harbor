@@ -1086,3 +1086,23 @@ Test Case - Job Service Dashboard Job Queues
     Check Jobs Latency  IMAGE_SCAN=${true}  PURGE_AUDIT_LOG=${true}
     Resume Jobs  IMAGE_SCAN  PURGE_AUDIT_LOG
     Close Browser
+
+Test Case - Job Service Dashboard Schedules
+    [Tags]  job_service_schedules
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${schedule_type}=  Set Variable  Custom
+    ${schedule_cron}=  Set Variable  0 0 12 * * ?
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  2.0  2.0
+    ${replication_policy_name}  ${p2p_policy_name}  ${distribution_name}=  Create Schedules For Job Service Dashboard Schedules  project${d}  ${schedule_type}  ${schedule_cron}
+    Switch To Job Schedules
+    Check Schedule List  ${schedule_cron}
+    Pause All Schedules
+    Check Schedules Status Is Pause  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Switch To Job Schedules
+    Resume All Schedules
+    Check Schedules Status Is Not Pause  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Reset Schedules For Job Service Dashboard Schedules  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Close Browser
