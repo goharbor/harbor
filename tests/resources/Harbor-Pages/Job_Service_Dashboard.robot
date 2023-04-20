@@ -23,6 +23,10 @@ Switch To Job Schedules
     Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
     Retry Double Keywords When Error  Retry Button Click  ${job_service_schedules_btn}  Retry Wait Until Page Contains  Vendor Type
 
+Switch To Job Workers
+    Retry Element Click  //clr-main-container//clr-vertical-nav-group//span[contains(.,'Job Service Dashboard')]
+    Retry Double Keywords When Error  Retry Button Click  ${job_service_workers_btn}  Retry Wait Until Page Contains  Worker Pools
+
 Select Jobs
     [Arguments]  @{job_types}
     FOR  ${job_type}  IN  @{job_types}
@@ -195,3 +199,10 @@ Check Schedules Status Is Not Pause
     # Check that the log rotation schedule is not Pause
     Switch To Log Rotation
     Retry Wait Until Page Not Contains Element  //span[text()='Schedule to purge has been paused']
+
+Check Worker Log
+    [Arguments]  ${job_name}  ${expected_log}
+    Retry Link Click  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row[.//clr-dg-cell[text()='${job_name}']]//a
+    Switch Window  locator=NEW
+    Retry Wait Until Page Contains  ${expected_log}
+    Switch Window  locator=MAIN
