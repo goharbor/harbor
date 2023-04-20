@@ -139,7 +139,7 @@ func (sm *sweepManager) ListCandidates(ctx context.Context, vendorType string, r
 			n = n + 1
 		}
 
-		sql = `SELECT id FROM execution WHERE vendor_type = ? AND vendor_id = ? AND start_time < ? AND status IN (?,?,?)`
+		sql = `SELECT id FROM execution WHERE vendor_type = ? AND vendor_id = ? AND start_time < ? AND status IN (?,?,?) ORDER BY id`
 		// default page size is 100000
 		q2 := &q.Query{PageSize: int64(defaultPageSize)}
 		for i := n; i >= 1; i-- {

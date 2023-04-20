@@ -245,7 +245,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 		}
 
 		// Get next cursor
-		cursor, err = strconv.ParseInt(string(reply[0].([]uint8)), 10, 16)
+		cursor, err = strconv.ParseInt(string(reply[0].([]uint8)), 10, 64)
 		if err != nil {
 			return errors.Wrap(err, "scan locks")
 		}
@@ -253,7 +253,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 		if values, ok := reply[1].([]interface{}); ok {
 			for i := 0; i < len(values); i += 2 {
 				k := string(values[i].([]uint8))
-				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 16)
+				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 64)
 				if err != nil {
 					// Ignore and continue
 					logger.Errorf("Malformed lock object for %s: %v", k, err)

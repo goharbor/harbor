@@ -50,11 +50,11 @@ set -e
 function check_golang {
 	if ! go version &> /dev/null
 	then
-		warn "No golang package in your enviroment. You should use golang docker image build binary."
+		warn "No golang package in your environment. You should use golang docker image build binary."
 		return
 	fi
 
-	# docker has been installed and check its version
+	# golang has been installed and check its version
 	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		golang_version=${BASH_REMATCH[1]}
@@ -134,3 +134,5 @@ function check_dockercompose {
 		exit 1
 	fi
 }
+
+
