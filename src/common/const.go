@@ -164,6 +164,9 @@ const (
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
 	DefaultGCTimeWindowHours = int64(2)
 
+	// DefaultGcDeleteConcurrency is the delete concurrency within a gc run
+	DefaultGcDeleteConcurrency = int64(1)
+
 	// Metric setting items
 	MetricEnable = "metric_enable"
 	MetricPort   = "metric_port"

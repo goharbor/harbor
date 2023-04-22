@@ -71,6 +71,7 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
 	parameters["time_window"] = config.GetGCTimeWindow()
+	parameters["delete_concurrency"] = config.GetGCDefaultConcurrency()
 
 	var err error
 	var id int64
