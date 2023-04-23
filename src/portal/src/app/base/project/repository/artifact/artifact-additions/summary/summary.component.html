@@ -4,7 +4,7 @@
             *ngIf="readme"
             class="md-div"
             [innerHTML]="readme | markdown"></div>
-        <div *ngIf="!readme">{{ 'HELM_CHART.NO_README' | translate }}</div>
+        <div *ngIf="!readme">{{ 'ARTIFACT.NO_README' | translate }}</div>
     </div>
 </div>
 <div *ngIf="loading" class="clr-row mt-3 center">

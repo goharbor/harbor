@@ -31,7 +31,7 @@
             </clr-tab>
             <clr-tab *ngIf="getSummary()">
                 <button clrTabLink id="summary-link">
-                    {{ 'HELM_CHART.SUMMARY' | translate }}
+                    {{ 'ARTIFACT.SUMMARY' | translate }}
                 </button>
                 <clr-tab-content id="summary-content" *clrIfActive>
                     <hbr-artifact-summary
@@ -40,7 +40,7 @@
             </clr-tab>
             <clr-tab *ngIf="getDependencies()">
                 <button clrTabLink id="depend-link">
-                    {{ 'HELM_CHART.DEPENDENCIES' | translate }}
+                    {{ 'ARTIFACT.DEPENDENCIES' | translate }}
                 </button>
                 <clr-tab-content id="depend-content" *clrIfActive>
                     <hbr-artifact-dependencies
@@ -51,7 +51,7 @@
             </clr-tab>
             <clr-tab *ngIf="getValues()">
                 <button clrTabLink id="value-link">
-                    {{ 'HELM_CHART.VALUES' | translate }}
+                    {{ 'ARTIFACT.VALUES' | translate }}
                 </button>
                 <clr-tab-content id="value-content" *clrIfActive>
                     <hbr-artifact-values

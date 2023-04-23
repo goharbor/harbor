@@ -1057,7 +1057,18 @@
         "UNTAGGED": "Untagged",
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifacts!",
-        "SCAN_UNSUPPORTED": "Unsupported"
+        "SCAN_UNSUPPORTED": "Unsupported",
+        "SUMMARY": "Summary",
+        "DEPENDENCIES": "Dependencies",
+        "VALUES": "Values",
+        "NAME": "Name",
+        "REPO": "Repository",
+        "OF": "of",
+        "VERSION": "Version",
+        "NO_README": "No readme file provided by this chart.",
+        "ITEMS": "items",
+        "SHOW_KV": "Key Value Pairs",
+        "SHOW_YAML": "YAML File"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
