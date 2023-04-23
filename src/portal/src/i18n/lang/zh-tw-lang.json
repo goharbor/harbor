@@ -1052,7 +1052,18 @@
     "UNTAGGED": "不含有Tag",
     "ALL": "所有",
     "PLACEHOLDER": "未發現任何artifacts!",
-    "SCAN_UNSUPPORTED": "不支持掃描"
+    "SCAN_UNSUPPORTED": "不支持掃描",
+    "SUMMARY": "概要",
+    "DEPENDENCIES": "依賴",
+    "VALUES": "取值",
+    "NAME": "名稱",
+    "REPO": "倉庫",
+    "OF": "共計",
+    "VERSION": "版本",
+    "NO_README": "此Chart未提供README文件",
+    "ITEMS": "條記錄",
+    "SHOW_KV": "展示健值對",
+    "SHOW_YAML": "展示YAML文件"
   },
   "TAG": {
     "CREATION_TIME_PREFIX": "創建時間：",
