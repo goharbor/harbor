@@ -1057,7 +1057,18 @@
         "UNTAGGED": "Untagged",
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifacts!",
-        "SCAN_UNSUPPORTED": "Unsupported"
+        "SCAN_UNSUPPORTED": "Unsupported",
+        "SUMMARY": "Özet",
+        "DEPENDENCIES": "Bağımlılıklar",
+        "VALUES": "Değerler",
+        "NAME": "İsim",
+        "REPO": "Depo",
+        "OF": "of",
+        "VERSION": "Versiyon",
+        "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
+        "ITEMS": "öğeler",
+        "SHOW_KV": "Anahtar Değer Çiftleri",
+        "SHOW_YAML": "YAML Dosyası"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Oluştur",

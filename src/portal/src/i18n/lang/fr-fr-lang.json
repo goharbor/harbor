@@ -1029,7 +1029,18 @@
         "UNTAGGED": "Non tagué",
         "ALL": "Tous",
         "PLACEHOLDER": "Nous n'avons trouvé aucun artefact !",
-        "SCAN_UNSUPPORTED": "Non supporté"
+        "SCAN_UNSUPPORTED": "Non supporté",
+        "SUMMARY": "Résumé",
+        "DEPENDENCIES": "Dépendances",
+        "VALUES": "Valeurs",
+        "NAME": "Nom",
+        "REPO": "Dépôt",
+        "OF": "sur",
+        "VERSION": "Version",
+        "NO_README": "No readme file provided by this chart.",
+        "ITEMS": "items",
+        "SHOW_KV": "Paires Clé/Valeur",
+        "SHOW_YAML": "Fichier YAML"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créé le",

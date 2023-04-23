@@ -1057,7 +1057,18 @@
         "UNTAGGED": "Untagged",
         "ALL": "Alle",
         "PLACEHOLDER": "Keine Artefakte gefunden!",
-        "SCAN_UNSUPPORTED": "Nicht unterstützt"
+        "SCAN_UNSUPPORTED": "Nicht unterstützt",
+        "SUMMARY": "Zusammenfassung",
+        "DEPENDENCIES": "Dependencies",
+        "VALUES": "Values",
+        "NAME": "Name",
+        "REPO": "Repository",
+        "OF": "von",
+        "VERSION": "Version",
+        "NO_README": "Kein Readme für dieses Chart verfügbar.",
+        "ITEMS": "Einträge",
+        "SHOW_KV": "Key/Value-Paare",
+        "SHOW_YAML": "YAML Datei"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Erstellt am",
