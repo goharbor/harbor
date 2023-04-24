@@ -250,8 +250,8 @@ because golint gives suggestions according to the stylistic conventions listed i
 ```
 #Install fgt and golint
 
-go get -u golang.org/x/lint/golint
-go get github.com/GeertJohan/fgt
+go install golang.org/x/lint/golint@latest
+go install github.com/GeertJohan/fgt@latest
 
 #In the #working_dir/harbor, run
 
