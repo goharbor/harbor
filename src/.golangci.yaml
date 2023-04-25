@@ -11,6 +11,8 @@ linters-settings:
     checks: [
       "ST1019",  # Importing the same package multiple times.
     ]
+  goheader:
+    template-path: copyright.tmpl
 
 linters:
   disable-all: true
