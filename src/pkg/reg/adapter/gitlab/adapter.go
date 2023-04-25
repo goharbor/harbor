@@ -128,6 +128,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	} else {
 		pathPatterns = append(pathPatterns, nameFilter)
 	}
+	log.Debugf("Patterns: %v", pathPatterns)
 
 	for _, project := range projects {
 		if !project.RegistryEnabled {
@@ -144,8 +145,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		}
 		for _, repository := range repositories {
 			if !existPatterns(repository.Path, pathPatterns) {
+				log.Debugf("Skipping repository path=%s and id=%d", repository.Path, repository.ID)
 				continue
 			}
+			log.Debugf("Search tags repository path=%s and id=%d", repository.Path, repository.ID)
 			vTags, err := a.clientGitlabAPI.getTags(project.ID, repository.ID)
 			if err != nil {
 				return nil, err
