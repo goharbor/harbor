@@ -1,32 +1,4 @@
 <clr-main-container>
-    <!--<div class="clr-row scanner-info" *ngIf="showScannerInfo && isSystemAdmin">
-        <div class="clr-col-2"></div>
-        <div class="clr-col text-center">
-            <clr-icon shape="info-standard" size="20"></clr-icon>
-            <span class="ml-05"
-                >{{ 'SCANNER.HELP_INFO_1' | translate }}
-                <a
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    href="{{ scannerDocUrl }}"
-                    >{{ 'SCANNER.HELP_INFO_2' | translate }}</a
-                >
-            </span>
-        </div>
-        <div class="clr-col-2 right">
-            <a
-                class="all-scanners"
-                href="#"
-                routerLink="/harbor/interrogation-services/scanners"
-                >{{ 'SCANNER.ALL_SCANNERS' | translate }}</a
-            >
-            <clr-icon
-                (click)="closeInfo()"
-                class="close-icon"
-                shape="times"
-                size="24"></clr-icon>
-        </div>
-    </div>-->
     <app-app-level-alerts></app-app-level-alerts>
     <navigator
         (showAccountSettingsModal)="openModal($event)"
@@ -39,7 +11,7 @@
             [class.content-area-override]="!shouldOverrideContent"
             [class.start-content-padding]="shouldOverrideContent"
             (scroll)="publishScrollEvent()">
-            <global-message></global-message>
+            <global-message class="global-msg"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
             <router-outlet></router-outlet>

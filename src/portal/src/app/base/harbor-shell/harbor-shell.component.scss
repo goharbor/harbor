@@ -38,3 +38,11 @@ clr-vertical-nav {
 .font-size-13 {
     font-size: 13px;
 }
+
+.global-msg {
+    position: absolute;
+    top: 0;
+    left: 2rem;
+    right: 2rem;
+    z-index: 600;
+}
