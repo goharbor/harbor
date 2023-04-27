@@ -201,6 +201,32 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*task.Task, erro
 	return r0, r1
 }
 
+// ListScanTasksByReportUUID provides a mock function with given fields: ctx, uuid
+func (_m *Manager) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*task.Task, error) {
+	ret := _m.Called(ctx, uuid)
+
+	var r0 []*task.Task
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*task.Task, error)); ok {
+		return rf(ctx, uuid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*task.Task); ok {
+		r0 = rf(ctx, uuid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*task.Task)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, uuid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Stop provides a mock function with given fields: ctx, id
 func (_m *Manager) Stop(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
