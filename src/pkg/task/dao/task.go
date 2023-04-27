@@ -53,6 +53,9 @@ type TaskDAO interface {
 	UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) (err error)
 	// ExecutionIDsByVendorAndStatus retrieve the execution id by vendor status
 	ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType, status string) ([]int64, error)
+	// ListScanTasksByReportUUID lists scan tasks by report uuid, although it's a specific case but it will be
+	// more suitable to support multi database in the future.
+	ListScanTasksByReportUUID(ctx context.Context, uuid string) (tasks []*Task, err error)
 }
 
 // NewTaskDAO returns an instance of TaskDAO
@@ -85,6 +88,25 @@ func (t *taskDAO) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	if _, err = qs.All(&tasks); err != nil {
 		return nil, err
 	}
+	return tasks, nil
+}
+
+func (t *taskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*Task, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []*Task{}
+	// Due to the limitation of the beego's orm, the SQL cannot be converted by orm framework,
+	// so we can only execute the query by raw SQL, the SQL filters the task contains the report uuid in the column extra_attrs,
+	// consider from performance side which can using indexes to speed up queries.
+	sql := fmt.Sprintf(`SELECT * FROM task WHERE extra_attrs::jsonb->'report_uuids' @> '["%s"]'`, uuid)
+	_, err = ormer.Raw(sql).QueryRows(&tasks)
+	if err != nil {
+		return nil, err
+	}
+
 	return tasks, nil
 }
 
