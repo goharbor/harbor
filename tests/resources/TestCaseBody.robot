@@ -128,33 +128,6 @@ Body Of Scan Image On Push
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
 
-Body Of Push Signed Image
-    Init Chrome Driver
-    ${d}=  Get Current Date    result_format=%m%s
-    ${user}=  Set Variable  user010
-    ${pwd}=   Set Variable  Test1@34
-    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
-    Create An New Project And Go Into Project  project${d}
-    Body Of Admin Push Signed Image  project${d}  tomcat  latest  ${user}  ${pwd}
-    Body Of Admin Push Signed Image  project${d}  alpine  latest  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Close Browser
-
-Body Of Admin Push Signed Image
-    [Arguments]  ${project}  ${image}  ${tag}  ${user}  ${pwd}  ${with_remove}=${false}  ${clear_trust_dir}=${true}
-    Run Keyword If  ${clear_trust_dir}==${true}  Wait Unitl Command Success  rm -rf ~/.docker/
-    ${src_tag}=   Set Variable  latest
-    ${src_image}=   Set Variable  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${src_tag}
-    Docker Pull  ${src_image}
-    Wait Unitl Command Success  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${project} ${image} ${tag} ${notaryServerEndpoint} ${src_image} ${user} ${pwd}
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/v2.0/projects/${project}/repositories/${image}/artifacts/${tag}?with_signature=true"
-
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  "signed":true
-
-    Run Keyword If  ${with_remove} == ${true}  Notary Remove Signature  ${ip}  ${project}  ${image}  ${tag}  ${user}  ${pwd}
-
 Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s

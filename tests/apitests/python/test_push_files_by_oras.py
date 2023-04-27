@@ -1,12 +1,10 @@
 from __future__ import absolute_import
 import unittest
-import urllib
 
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
 import library.oras
-from library.sign import sign_image
 from library.user import User
 from library.project import Project
 from library.repository import Repository
@@ -26,7 +24,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def tearDown(self):
         #1. Delete user(UA);
-        self.user.delete_user(TestProjects.user_sign_image_id, **ADMIN_CLIENT)
+        self.user.delete_user(TestProjects.user_id, **ADMIN_CLIENT)
 
     def testOrasCli(self):
         """
@@ -47,7 +45,7 @@ class TestProjects(unittest.TestCase):
         user_001_password = "Aa123456"
 
         #1. Create user-001
-        TestProjects.user_sign_image_id, user_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
+        TestProjects.user_id, user_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
 
         TestProjects.USER_CLIENT=dict(with_signature = True, endpoint = url, username = user_name, password = user_001_password)
 
