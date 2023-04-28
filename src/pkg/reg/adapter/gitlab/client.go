@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/lib/log"
 	"io"
 	"net/http"
 	"net/url"
@@ -12,6 +11,7 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
