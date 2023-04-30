@@ -112,6 +112,27 @@ func (t *taskDAOTestSuite) TestList() {
 	t.Require().Len(tasks, 0)
 }
 
+func (t *taskDAOTestSuite) TestListScanTasksByReportUUID() {
+	// should not exist if non set
+	tasks, err := t.taskDAO.ListScanTasksByReportUUID(t.ctx, "fake-report-uuid")
+	t.Require().Nil(err)
+	t.Require().Len(tasks, 0)
+	// create one with report uuid
+	taskID, err := t.taskDAO.Create(t.ctx, &Task{
+		ExecutionID: t.executionID,
+		Status:      "success",
+		StatusCode:  1,
+		ExtraAttrs:  `{"report_uuids": ["fake-report-uuid"]}`,
+	})
+	t.Require().Nil(err)
+	defer t.taskDAO.Delete(t.ctx, taskID)
+	// should exist as created
+	tasks, err = t.taskDAO.ListScanTasksByReportUUID(t.ctx, "fake-report-uuid")
+	t.Require().Nil(err)
+	t.Require().Len(tasks, 1)
+	t.Equal(taskID, tasks[0].ID)
+}
+
 func (t *taskDAOTestSuite) TestGet() {
 	// not exist
 	_, err := t.taskDAO.Get(t.ctx, 10000)
