@@ -182,6 +182,32 @@ func (_m *mockTaskDAO) List(ctx context.Context, query *q.Query) ([]*dao.Task, e
 	return r0, r1
 }
 
+// ListScanTasksByReportUUID provides a mock function with given fields: ctx, uuid
+func (_m *mockTaskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*dao.Task, error) {
+	ret := _m.Called(ctx, uuid)
+
+	var r0 []*dao.Task
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*dao.Task, error)); ok {
+		return rf(ctx, uuid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*dao.Task); ok {
+		r0 = rf(ctx, uuid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*dao.Task)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, uuid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListStatusCount provides a mock function with given fields: ctx, executionID
 func (_m *mockTaskDAO) ListStatusCount(ctx context.Context, executionID int64) ([]*dao.StatusCount, error) {
 	ret := _m.Called(ctx, executionID)

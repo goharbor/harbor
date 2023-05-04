@@ -495,9 +495,6 @@ class HarborAPI:
                     }
                 ],
                 "event_types":[
-                    "downloadChart",
-                    "deleteChart",
-                    "uploadChart",
                     "deleteImage",
                     "pullImage",
                     "pushImage",
@@ -522,9 +519,6 @@ class HarborAPI:
                     "DELETE_ARTIFACT",
                     "PULL_ARTIFACT",
                     "PUSH_ARTIFACT",
-                    "DELETE_CHART",
-                    "DOWNLOAD_CHART",
-                    "UPLOAD_CHART",
                     "QUOTA_EXCEED",
                     "QUOTA_WARNING",
 					"REPLICATION",
@@ -621,10 +615,6 @@ def push_image(image, project):
     os.system("docker login "+args.endpoint+" -u admin"+" -p Harbor12345")
     os.system("docker push "+args.endpoint+"/"+project+"/library/"+image)
 
-def push_signed_image(image, project, tag):
-    print("LOCAL_REGISTRY:{} LOCAL_REGISTRY_NAMESPACE:{}".format(args.LOCAL_REGISTRY, args.LOCAL_REGISTRY_NAMESPACE))
-    os.system("./sign_image.sh" + " " + args.endpoint + " " + project + " " + image + " " + tag + " " + args.LOCAL_REGISTRY + " " + args.LOCAL_REGISTRY_NAMESPACE)
-
 @get_feature_branch
 def set_url(**kwargs):
     global url
@@ -653,14 +643,11 @@ def do_data_creation():
         harborAPI.add_distribution(distribution, version=args.version)
 
     harborAPI.populate_projects("projects", version=args.version)
-    harborAPI.populate_projects("notary_projects", create_project_only=True, version=args.version)
     harborAPI.populate_quotas(version=args.version)
 
     harborAPI.push_artifact_index(data["projects"][0]["name"], data["projects"][0]["artifact_index"]["name"], data["projects"][0]["artifact_index"]["tag"], version=args.version)
     #pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_self_build_image_to_project(data["projects"][0]["name"], args.endpoint, 'admin', 'Harbor12345', "busybox", "latest")
-    for project in data["notary_projects"]:
-        push_signed_image("alpine", project["name"], "latest")
 
     for replicationrule in data["replicationrule"]:
         harborAPI.add_replication_rule(replicationrule, version=args.version)

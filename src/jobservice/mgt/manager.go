@@ -243,7 +243,7 @@ func (bm *basicManager) GetPeriodicExecution(pID string, q *query.Parameter) (re
 	for _, eID := range executionIDs {
 		t := job.NewBasicTrackerWithID(bm.ctx, eID, bm.namespace, bm.pool, nil, nil)
 		if er := t.Load(); er != nil {
-			logger.Errorf("track job %s error: %s", eID, err)
+			logger.Errorf("track job %s error: %s", eID, er)
 			continue
 		}
 

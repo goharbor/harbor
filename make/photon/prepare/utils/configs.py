@@ -1,7 +1,7 @@
 import logging
 import os
 import yaml
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
 from models import InternalTLS, Metric, Trace, PurgeUpload, Cache
 from utils.misc import generate_random_string, owner_can_read, other_can_read
@@ -385,7 +385,7 @@ def get_redis_url(db, redis=None):
     kwargs['scheme'] = kwargs.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
-    kwargs['password_part'] = kwargs.get('password', None) and (':%s@' % kwargs['password']) or ''
+    kwargs['password_part'] = quote(str(kwargs.get('password', None)), safe='') and (':%s@' % quote(str(kwargs['password']), safe='')) or ''
     kwargs['username_part'] = kwargs.get('username', None) or ''
 
     return "{scheme}://{username_part}{password_part}{host}{sentinel_part}{db_part}".format(**kwargs) + get_redis_url_param(kwargs)
