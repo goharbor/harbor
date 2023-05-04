@@ -10,9 +10,8 @@ COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
 COPY ./api/harbor/swagger.yaml /build_dir
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends python-yaml=3.12-1 \
-    && python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json \
+RUN npm install js-yaml@4.1.0 \
+    && node -e "const yaml = require('js-yaml'); const fs = require('fs'); const swagger = yaml.load(fs.readFileSync('swagger.yaml', 'utf8')); fs.writeFileSync('swagger.json', JSON.stringify(swagger));" \
     && npm install
 
 COPY ./LICENSE /build_dir
