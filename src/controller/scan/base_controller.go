@@ -964,15 +964,6 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 		reportUUIDsKey: reportUUIDs,
 	}
 
-	// NOTE: due to the limitation of the beego's orm, the List method of the task manager not support ?! operator for the jsonb field,
-	// we cann't list the tasks for scan reports of uuid1, uuid2 by SQL `SELECT * FROM task WHERE (extra_attrs->'report_uuids')::jsonb ?| array['uuid1', 'uuid2']`
-	// or by `SELECT * FROM task WHERE id IN (SELECT id FROM task WHERE (extra_attrs->'report_uuids')::jsonb ?| array['uuid1', 'uuid2'])`
-	// so save {"report:uuid1": "1", "report:uuid2": "2"} in the extra_attrs of the task, and then list it with
-	// SQL `SELECT * FROM task WHERE extra_attrs->>'report:uuid1' = '1'` in loop
-	for _, reportUUID := range reportUUIDs {
-		extraAttrs["report:"+reportUUID] = "1"
-	}
-
 	_, err = bc.taskMgr.Create(ctx, param.ExecutionID, j, extraAttrs)
 	return err
 }
@@ -1022,11 +1013,12 @@ func (bc *basicController) listScanTasks(ctx context.Context, reportUUIDs []stri
 }
 
 func (bc *basicController) getScanTask(ctx context.Context, reportUUID string) (*task.Task, error) {
-	query := q.New(q.KeyWords{"extra_attrs." + "report:" + reportUUID: "1"})
-	tasks, err := bc.taskMgr.List(bc.cloneCtx(ctx), query)
+	// NOTE: the method uses the postgres' unique operations and should consider here if support other database in the future.
+	tasks, err := bc.taskMgr.ListScanTasksByReportUUID(ctx, reportUUID)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(tasks) == 0 {
 		return nil, errors.NotFoundError(nil).WithMessage("task for report %s not found", reportUUID)
 	}
