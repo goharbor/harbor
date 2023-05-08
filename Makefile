@@ -348,6 +348,9 @@ build_base_docker:
 build_base_images:
 	@echo build_base_images start
 	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		if [ $$name == "db" ] ; then \
+			cd $(MAKEFILEPATH_PHOTON)/$$name && $(MAKEFILEPATH_PHOTON)/$$name/rpm_builder.sh && cd - ; \
+		fi; \
 		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t goharbor/harbor-$$name-base:$(BASEIMAGETAG) .; \
 	done
 	@echo build_base_images done
