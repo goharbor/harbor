@@ -28,7 +28,7 @@ jobs:
       - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.19.8
+          go-version: 1.19.9
         id: go
       - uses: actions/checkout@v3
         with:
