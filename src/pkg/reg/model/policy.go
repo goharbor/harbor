@@ -18,10 +18,12 @@ import "github.com/goharbor/harbor/src/lib/errors"
 
 // const definition
 const (
-	FilterTypeResource = "resource"
-	FilterTypeName     = "name"
-	FilterTypeTag      = "tag"
-	FilterTypeLabel    = "label"
+	FilterTypeResource   = "resource"
+	FilterTypeName       = "name"
+	FilterTypeTag        = "tag"
+	FilterTypeLabel      = "label"
+	FilterTypeLabelRegex = "labelRegex"
+	FilterTypeTagRegex   = "tagRegex"
 
 	TriggerTypeManual     = "manual"
 	TriggerTypeScheduled  = "scheduled"

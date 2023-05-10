@@ -15,10 +15,13 @@
 package filter
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
+
+	"regexp"
 )
 
 // DoFilterArtifacts filter the artifacts according to the filters
@@ -46,6 +49,13 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 				pattern:    filter.Value.(string),
 				decoration: filter.Decoration,
 			}
+
+		case model.FilterTypeTagRegex:
+			f = &artifactTagFilterRegex{
+				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
+			}
+
 		}
 		if f != nil {
 			fs = append(fs, f)
@@ -195,6 +205,111 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 			if err != nil {
 				return nil, err
 			}
+			if a.decoration == model.Excludes {
+				if !match {
+					tags = append(tags, tag)
+				}
+			} else {
+				if match {
+					tags = append(tags, tag)
+				}
+			}
+		}
+		if len(tags) == 0 {
+			continue
+		}
+		// copy a new artifact here to avoid changing the original one
+		if artifact.IsAcc {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   artifact.Tags, // use its own tags to replicate
+			})
+		} else {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   tags, // only replicate the matched tags
+			})
+		}
+	}
+	return result, nil
+}
+
+type artifactTagFilterRegex struct {
+	//regex pattern
+	pattern string
+	// "matches", "excludes"
+	decoration string
+}
+
+func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
+
+	fmt.Println("IN REGEX FILTER FUNCTION")
+	// panic("HII")
+
+	if len(a.pattern) == 0 {
+		return artifacts, nil
+	}
+
+	filterRegexPattern, err := regexp.Compile(a.pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.Artifact
+	for _, artifact := range artifacts {
+		// for individual artifact, use its own tags to match, reserve the matched tags.
+		// for accessory artifact, use the parent tags to match,
+		var tagsForMatching []string
+		if artifact.IsAcc {
+			tagsForMatching = append(tagsForMatching, artifact.ParentTags...)
+		} else {
+			tagsForMatching = append(tagsForMatching, artifact.Tags...)
+		}
+
+		// untagged artifact
+		if len(tagsForMatching) == 0 {
+
+			// match, err := util.Match(a.pattern, "")
+			// if err != nil {
+			// 	return nil, err
+			// }
+
+			match := filterRegexPattern.MatchString("")
+
+			if a.decoration == model.Excludes {
+				if !match {
+					result = append(result, artifact)
+				}
+			} else {
+				if match {
+					result = append(result, artifact)
+				}
+			}
+			continue
+		}
+
+		// tagged artifact
+		var tags []string
+		for _, tag := range tagsForMatching {
+
+			// match, err := util.Match(a.pattern, tag)
+			// if err != nil {
+			// 	return nil, err
+			// }
+
+			fmt.Println("PATTERN: ", a.pattern)
+			fmt.Println("TAG: ", tag)
+
+			match := filterRegexPattern.MatchString(tag)
+
+			fmt.Print("MATCH: ")
+			fmt.Println(match)
+			fmt.Println("")
+
 			if a.decoration == model.Excludes {
 				if !match {
 					tags = append(tags, tag)

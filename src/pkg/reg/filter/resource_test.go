@@ -1,12 +1,98 @@
 package filter
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
+
+
+func TestArtifactTagRegexFilters(t *testing.T) {
+	var artifacts = []*model.Artifact{
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "aaaaa",
+			Tags: []string{
+				"test1",
+				"test2",
+				"harbor1",
+				"1.8.0",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "bbbbb",
+			Tags: []string{
+				"test3",
+				"harbor2",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "ccccc",
+			Tags: []string{
+				"harbor3",
+				"1.9.01",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "ddddd",
+		},
+	}
+
+	var filters = []*model.Filter{
+
+		// {
+		// 	Type:  model.FilterTypeTagRegex,
+		// 	Value: "test.*",
+		// },
+
+		{
+			Type:  model.FilterTypeTagRegex,
+			Value: `^((\d\d?).(\d\d?).(\d\d?(-stable)?))$`,
+		},
+
+	}
+
+	artFilters, err := BuildArtifactFilters(filters)
+	require.Nil(t, err)
+
+	arts, err := artFilters.Filter(artifacts)
+	require.Nil(t, err)
+	require.Equal(t, 2, len(arts))
+	require.EqualValues(t, "aaaaa", arts[0].Digest)
+	fmt.Println(arts[0].Tags)
+	require.EqualValues(t, []string{"1.8.0"}, arts[0].Tags)
+	require.EqualValues(t, "ccccc", arts[1].Digest)
+	require.EqualValues(t, []string{"1.9.01"}, arts[1].Tags)
+
+	filters = []*model.Filter{
+		{
+			Type:       model.FilterTypeTagRegex,
+			Value:      "test*",
+			Decoration: model.Excludes,
+		},
+	}
+
+	artFilters, err = BuildArtifactFilters(filters)
+	require.Nil(t, err)
+
+	arts, err = artFilters.Filter(artifacts)
+	require.Nil(t, err)
+	require.Equal(t, 4, len(arts))
+	require.EqualValues(t, "aaaaa", arts[0].Digest)
+	require.EqualValues(t, []string{"harbor1", "1.8.0"}, arts[0].Tags)
+	require.EqualValues(t, "bbbbb", arts[1].Digest)
+	require.EqualValues(t, []string{"harbor2"}, arts[1].Tags)
+	require.EqualValues(t, "ccccc", arts[2].Digest)
+	require.EqualValues(t, []string{"harbor3", "1.9.01"}, arts[2].Tags)
+	require.EqualValues(t, "ddddd", arts[3].Digest)
+	require.Nil(t, arts[3].Tags)
+}
 
 func TestArtifactTagFilters(t *testing.T) {
 	var artifacts = []*model.Artifact{
@@ -17,6 +103,10 @@ func TestArtifactTagFilters(t *testing.T) {
 				"test1",
 				"test2",
 				"harbor1",
+				"1.10.0-alpha",
+				"1.9.0-rc2",
+				"1.9.0-rc1",
+				"1.8.0",
 			},
 		},
 		{
@@ -25,6 +115,8 @@ func TestArtifactTagFilters(t *testing.T) {
 			Tags: []string{
 				"test3",
 				"harbor2",
+				"1.9.01",
+				"1.9.0",
 			},
 		},
 		{
@@ -41,10 +133,16 @@ func TestArtifactTagFilters(t *testing.T) {
 	}
 
 	var filters = []*model.Filter{
+		// {
+		// 	Type:  model.FilterTypeTag,
+		// 	Value: "test*",
+		// },
+
 		{
 			Type:  model.FilterTypeTag,
-			Value: "test*",
+			Value: `^((\d\d?).(\d\d?).(\d\d?(-stable)?))$`,
 		},
+
 	}
 
 	artFilters, err := BuildArtifactFilters(filters)
@@ -54,7 +152,7 @@ func TestArtifactTagFilters(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 2, len(arts))
 	require.EqualValues(t, "aaaaa", arts[0].Digest)
-	require.EqualValues(t, []string{"test1", "test2"}, arts[0].Tags)
+	require.EqualValues(t, []string{"test1", "test2", "1.8.0", "1.9.0", "1.9.01"}, arts[0].Tags)
 	require.EqualValues(t, "bbbbb", arts[1].Digest)
 	require.EqualValues(t, []string{"test3"}, arts[1].Tags)
 
