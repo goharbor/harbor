@@ -99,6 +99,12 @@ func (c *controllerTestSuite) TestDeletePolicy() {
 	err = c.ctl.DeletePolicy(context.TODO(), 1)
 	c.ErrorIs(err, delExecErr)
 
+	// failed to delete policy due to teams executions deletion error
+	c.execMgr.On("DeleteByVendor", mock.Anything, "WEBHOOK", mock.Anything).Return(nil).Once()
+	c.execMgr.On("DeleteByVendor", mock.Anything, "TEAMS", mock.Anything).Return(delExecErr).Once()
+	err = c.ctl.DeletePolicy(context.TODO(), 1)
+	c.ErrorIs(err, delExecErr)
+
 	// successfully deletion for all
 	c.execMgr.On("DeleteByVendor", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.policyMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)

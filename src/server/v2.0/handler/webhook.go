@@ -80,7 +80,7 @@ func (n *webhookAPI) requireExecutionInPolicy(ctx context.Context, execID, polic
 		return err
 	}
 
-	if exec.VendorID == policyID && (exec.VendorType == job.WebhookJobVendorType || exec.VendorType == job.SlackJobVendorType) {
+	if exec.VendorID == policyID && (exec.VendorType == job.WebhookJobVendorType || exec.VendorType == job.SlackJobVendorType || exec.VendorType == job.TeamsJobVendorType) {
 		return nil
 	}
 
@@ -421,6 +421,10 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		// slack should be migrated as a kind of payload in the future
 		if len(target.PayloadFormat) > 0 && target.Type == "slack" {
 			return false, errors.New(nil).WithMessage("set payload format is not allowed for slack").WithCode(errors.BadRequestCode)
+		}
+
+		if len(target.PayloadFormat) > 0 && target.Type == "teams" {
+			return false, errors.New(nil).WithMessage("set payload format is not allowed for teams").WithCode(errors.BadRequestCode)
 		}
 
 		if len(target.PayloadFormat) > 0 && !isPayloadFormatSupported(target.PayloadFormat) {

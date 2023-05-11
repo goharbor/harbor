@@ -31,7 +31,7 @@ var (
 	Ctl = NewController()
 
 	// webhookJobVendors represents webhook(http) or slack.
-	webhookJobVendors = q.NewOrList([]interface{}{job.WebhookJobVendorType, job.SlackJobVendorType})
+	webhookJobVendors = q.NewOrList([]interface{}{job.WebhookJobVendorType, job.SlackJobVendorType, job.TeamsJobVendorType})
 )
 
 type Controller interface {
@@ -103,12 +103,15 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy) err
 
 func (c *controller) DeletePolicy(ctx context.Context, policyID int64) error {
 	// delete executions under the webhook policy,
-	// there are two vendor types(webhook & slack) needs to be deleted.
+	// there are three vendor types(webhook, slack & teams) needs to be deleted.
 	if err := c.execMgr.DeleteByVendor(ctx, job.WebhookJobVendorType, policyID); err != nil {
 		return errors.Wrapf(err, "failed to delete executions for webhook of policy %d", policyID)
 	}
 	if err := c.execMgr.DeleteByVendor(ctx, job.SlackJobVendorType, policyID); err != nil {
 		return errors.Wrapf(err, "failed to delete executions for slack of policy %d", policyID)
+	}
+	if err := c.execMgr.DeleteByVendor(ctx, job.TeamsJobVendorType, policyID); err != nil {
+		return errors.Wrapf(err, "failed to delete executions for teams of policy %d", policyID)
 	}
 
 	return c.policyMgr.Delete(ctx, policyID)

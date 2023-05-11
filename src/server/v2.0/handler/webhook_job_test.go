@@ -57,7 +57,8 @@ func (suite *WebhookJobTestSuite) TestListWebhookJobs() {
 	suite.webhookCtl.On("CountExecutions", mock.Anything, policyID, mock.Anything).Return(int64(2), nil)
 	t1 := &task.Execution{ID: 1, VendorType: "WEBHOOK", VendorID: policyID, Status: "Success"}
 	t2 := &task.Execution{ID: 2, VendorType: "SLACK", VendorID: policyID, Status: "Stopped"}
-	suite.webhookCtl.On("ListExecutions", mock.Anything, policyID, mock.Anything).Return([]*task.Execution{t1, t2}, nil)
+	t3 := &task.Execution{ID: 2, VendorType: "TEAMS", VendorID: policyID, Status: "Stopped"}
+	suite.webhookCtl.On("ListExecutions", mock.Anything, policyID, mock.Anything).Return([]*task.Execution{t1, t2, t3}, nil)
 
 	{
 		// query has no policy id should got 422
@@ -85,7 +86,7 @@ func (suite *WebhookJobTestSuite) TestListWebhookJobs() {
 		resp, err := suite.GetJSON(url, &body)
 		suite.NoError(err)
 		suite.Equal(200, resp.StatusCode)
-		suite.Len(body, 2)
+		suite.Len(body, 3)
 		// verify backward compatible
 		suite.Equal(body[0].ID, int64(1))
 		suite.Equal(body[0].NotifyType, "http")
@@ -93,6 +94,9 @@ func (suite *WebhookJobTestSuite) TestListWebhookJobs() {
 		suite.Equal(body[1].ID, int64(2))
 		suite.Equal(body[1].NotifyType, "slack")
 		suite.Equal(body[1].Status, "Stopped")
+		suite.Equal(body[2].ID, int64(3))
+		suite.Equal(body[2].NotifyType, "teams")
+		suite.Equal(body[2].Status, "Stopped")
 	}
 
 }

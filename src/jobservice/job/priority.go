@@ -44,6 +44,8 @@ func (ps *defaultSampler) For(job string) uint {
 		return 1
 	case SlackJobVendorType:
 		return 1
+	case TeamsJobVendorType:
+		return 1
 		// add more cases here if specified job priority is required
 	// case XXX:
 	//	return 2000
