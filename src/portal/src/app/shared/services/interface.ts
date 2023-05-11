@@ -141,7 +141,6 @@ export interface AccessLogItem {
  */
 export interface SystemInfo {
     with_trivy?: boolean;
-    with_notary?: boolean;
     with_admiral?: boolean;
     with_chartmuseum?: boolean;
     admiral_endpoint?: string;

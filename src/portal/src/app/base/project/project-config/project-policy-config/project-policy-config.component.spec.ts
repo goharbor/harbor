@@ -15,7 +15,6 @@ import { Component, ViewChild } from '@angular/core';
 const mockSystemInfo: SystemInfo[] = [
     {
         with_trivy: true,
-        with_notary: true,
         with_admiral: false,
         admiral_endpoint: 'NA',
         auth_mode: 'db_auth',
@@ -27,7 +26,6 @@ const mockSystemInfo: SystemInfo[] = [
     },
     {
         with_trivy: false,
-        with_notary: false,
         with_admiral: false,
         admiral_endpoint: 'NA',
         auth_mode: 'db_auth',
