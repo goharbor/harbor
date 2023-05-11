@@ -46,7 +46,8 @@ jobs:
         if: |
             contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
             contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog')
+            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+            github.ref == 'refs/heads/main'
         run: |
           set -x
           echo "BUILD_BASE=true" >> $GITHUB_ENV
