@@ -74,7 +74,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
-	common.WithNotary:                 false,
 }
 
 func (c *controllerTestSuite) TestCRUDUserGroup() {

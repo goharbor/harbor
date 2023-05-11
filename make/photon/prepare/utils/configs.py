@@ -25,9 +25,6 @@ def validate(conf: dict, **kwargs):
 
     # protocol validate
     protocol = conf.get("protocol")
-    if protocol != "https" and kwargs.get('notary_mode'):
-        raise Exception(
-            "Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
         if not conf.get("cert_path") or conf["cert_path"] == default_https_cert_path:
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
@@ -97,7 +94,7 @@ def parse_versions():
     return versions
 
 
-def parse_yaml_config(config_file_path, with_notary, with_trivy):
+def parse_yaml_config(config_file_path, with_trivy):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -115,7 +112,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
         'token_service_url': 'http://core:8080/service/token',
         'jobservice_url': 'http://jobservice:8080',
         'trivy_adapter_url': 'http://trivy-adapter:8080',
-        'notary_url': 'http://notary-server:4443',
     }
 
     config_dict['hostname'] = configs["hostname"]
@@ -159,22 +155,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
         config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
         config_dict['harbor_db_conn_max_lifetime'] = db_configs.get("conn_max_lifetime") or '5m'
         config_dict['harbor_db_conn_max_idle_time'] = db_configs.get("conn_max_idle_time") or '0'
-
-        if with_notary:
-            # notary signer
-            config_dict['notary_signer_db_host'] = 'postgresql'
-            config_dict['notary_signer_db_port'] = 5432
-            config_dict['notary_signer_db_name'] = 'notarysigner'
-            config_dict['notary_signer_db_username'] = 'signer'
-            config_dict['notary_signer_db_password'] = 'password'
-            config_dict['notary_signer_db_sslmode'] = 'disable'
-            # notary server
-            config_dict['notary_server_db_host'] = 'postgresql'
-            config_dict['notary_server_db_port'] = 5432
-            config_dict['notary_server_db_name'] = 'notaryserver'
-            config_dict['notary_server_db_username'] = 'server'
-            config_dict['notary_server_db_password'] = 'password'
-            config_dict['notary_server_db_sslmode'] = 'disable'
 
     # Data path volume
     config_dict['data_volume'] = configs['data_volume']
@@ -287,21 +267,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
         config_dict['harbor_db_conn_max_lifetime'] = external_db_configs['harbor'].get("conn_max_lifetime") or '5m'
         config_dict['harbor_db_conn_max_idle_time'] = external_db_configs['harbor'].get("conn_max_idle_time") or '0'
 
-        if with_notary:
-            # notary signer
-            config_dict['notary_signer_db_host'] = external_db_configs['notary_signer']['host']
-            config_dict['notary_signer_db_port'] = external_db_configs['notary_signer']['port']
-            config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
-            config_dict['notary_signer_db_username'] = external_db_configs['notary_signer']['username']
-            config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
-            config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
-            # notary server
-            config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
-            config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
-            config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']
-            config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
-            config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
-            config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
     else:
         config_dict['external_database'] = False
 
@@ -325,7 +290,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
             False,
             internal_tls_config['dir'],
             configs['data_volume'],
-            with_notary=with_notary,
             with_trivy=with_trivy,
             external_database=config_dict['external_database'])
     else:
@@ -351,7 +315,6 @@ def parse_yaml_config(config_file_path, with_notary, with_trivy):
         config_dict['token_service_url'] = 'https://core:8443/service/token'
         config_dict['jobservice_url'] = 'https://jobservice:8443'
         config_dict['trivy_adapter_url'] = 'https://trivy-adapter:8443'
-        # config_dict['notary_url'] = 'http://notary-server:4443'
 
     # purge upload configs
     purge_upload_config = configs.get('upload_purging')
