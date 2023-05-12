@@ -104,7 +104,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private userPermissionService: UserPermissionService,
         private systemInfoService: SystemInfoService,
-        private appConfigService: AppConfigService,
         private errorHandlerService: ErrorHandler,
         private activatedRoute: ActivatedRoute
     ) {
@@ -434,9 +433,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.tagNameCheckSub.unsubscribe();
     }
-    get withNotary(): boolean {
-        return this.appConfigService.getConfig().with_notary;
-    }
+
     public get registryUrl(): string {
         if (this.systemInfo && this.systemInfo.registry_url) {
             return this.systemInfo.registry_url;

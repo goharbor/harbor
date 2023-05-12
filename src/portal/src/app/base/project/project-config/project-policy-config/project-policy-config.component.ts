@@ -44,7 +44,6 @@ export class ProjectPolicy {
 
     initByProject(pro: Project) {
         this.Public = pro.metadata.public === 'true';
-        this.ContentTrust = pro.metadata.enable_content_trust === 'true';
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';
         this.PreventVulImg = pro.metadata.prevent_vul === 'true';
@@ -168,9 +167,6 @@ export class ProjectPolicyConfigComponent implements OnInit {
             });
     }
 
-    public get withNotary(): boolean {
-        return this.systemInfo ? this.systemInfo.with_notary : false;
-    }
     retrieve(state?: State): any {
         this.projectService.getProject(this.projectId).subscribe(
             response => {
