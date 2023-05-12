@@ -8,6 +8,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.34.28
+	github.com/beego/beego/v2 v2.0.6
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/casbin/casbin v1.9.1
@@ -17,7 +18,6 @@ require (
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
-	github.com/ghodss/yaml v1.0.0
 	github.com/go-asn1-ber/asn1-ber v1.5.1
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.19.6
@@ -40,17 +40,13 @@ require (
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/jackc/pgconn v1.9.0
 	github.com/jackc/pgx/v4 v4.12.0
-	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/jpillora/backoff v1.0.0
-	github.com/miekg/pkcs11 v1.1.1 // indirect
-	github.com/ncw/swift v1.0.49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
-	github.com/robfig/cron v1.0.0 // indirect
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.8.2
@@ -68,6 +64,7 @@ require (
 	golang.org/x/crypto v0.5.0
 	golang.org/x/net v0.9.0
 	golang.org/x/oauth2 v0.5.0
+	golang.org/x/text v0.9.0
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	gopkg.in/h2non/gock.v1 v1.0.16
 	gopkg.in/yaml.v2 v2.4.0
@@ -75,11 +72,7 @@ require (
 	k8s.io/api v0.26.2
 	k8s.io/apimachinery v0.26.2
 	k8s.io/client-go v0.26.2
-)
-
-require (
-	github.com/beego/beego/v2 v2.0.6
-	golang.org/x/text v0.9.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -138,6 +131,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.1.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.8.0 // indirect
+	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -145,15 +139,18 @@ require (
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/ncw/swift v1.0.49 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/robfig/cron v1.0.0 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
@@ -193,7 +190,6 @@ require (
 	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
 replace (
