@@ -15,7 +15,6 @@
 import { ClairDBStatus } from '../shared/services';
 
 export class AppConfig {
-    with_notary: boolean;
     with_trivy: boolean;
     admiral_endpoint: string;
     auth_mode: string;
@@ -33,7 +32,6 @@ export class AppConfig {
 
     constructor() {
         // Set default value
-        this.with_notary = false;
         this.with_trivy = false;
         this.admiral_endpoint = '';
         this.auth_mode = 'db_auth';
