@@ -14,7 +14,7 @@ PGDATANEW=${PGDATA}/pg${PG_VERSION_NEW}
 
 # We should block the upgrade path from 9.6 directly.
 if [ -s $PGDATA/PG_VERSION ]; then
-        echo "Upgrading from PostgreSQL 9.6 to PostgreSQL $PG_VERSION_NEW is not supported in the current Harbor release."             
+        echo "Upgrading from PostgreSQL 9.6 to PostgreSQL $PG_VERSION_NEW is not supported in the current Harbor release."
         echo "You should upgrade to previous Harbor firstly, then upgrade to current release."
         exit 1
 fi
@@ -56,7 +56,7 @@ if [ ! -s $PGDATANEW/PG_VERSION ]; then
                 rm -rf $PGDATAOLD
         else
                 echo "init DB, DB version:$PG_VERSION_NEW"
-                initPG $PGDATANEW true 
+                initPG $PGDATANEW true
         fi
 fi
 

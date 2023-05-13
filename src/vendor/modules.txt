@@ -258,9 +258,6 @@ github.com/felixge/httpsnoop
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/ghodss/yaml v1.0.0
-## explicit
-github.com/ghodss/yaml
 # github.com/go-asn1-ber/asn1-ber v1.5.1
 ## explicit; go 1.13
 github.com/go-asn1-ber/asn1-ber

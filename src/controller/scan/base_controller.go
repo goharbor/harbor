@@ -294,7 +294,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				"name": r.Name,
 			},
 		}
-		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, r.ID, task.ExecutionTriggerManual, extraAttrs)
+		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, artifact.ID, task.ExecutionTriggerManual, extraAttrs)
 		if err != nil {
 			return err
 		}

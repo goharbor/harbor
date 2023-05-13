@@ -24,6 +24,7 @@ RUN cd app-swagger-ui && npm run build
 FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}
 
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/swagger.json /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/app-swagger-ui/dist /usr/share/nginx/html
 
 VOLUME /var/cache/nginx /var/log/nginx /run

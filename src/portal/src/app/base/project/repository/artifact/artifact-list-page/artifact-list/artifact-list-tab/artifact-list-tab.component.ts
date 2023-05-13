@@ -281,9 +281,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.hiddenArray
         );
     }
-    get withNotary(): boolean {
-        return this.appConfigService.getConfig()?.with_notary;
-    }
 
     clrDgRefresh(state: ClrDatagridStateInterface) {
         setTimeout(() => {
