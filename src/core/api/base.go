@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ghodss/yaml"
+	"sigs.k8s.io/yaml"
 
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/models"
