@@ -25,6 +25,7 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
@@ -82,7 +83,7 @@ func (c *Client) getProjects() ([]*Project, error) {
 
 func (c *Client) getProjectsByName(name string) ([]*Project, error) {
 	var projects []*Project
-	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=1&per_page=50", c.url, name)
+	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=true&search_namespaces=true&per_page=50", c.url, name)
 	if err := c.GetAndIteratePagination(urlAPI, &projects); err != nil {
 		return nil, err
 	}
@@ -94,6 +95,7 @@ func (c *Client) getRepositories(projectID int64) ([]*Repository, error) {
 	if err := c.GetAndIteratePagination(urlAPI, &repositories); err != nil {
 		return nil, err
 	}
+	log.Debugf("Count repositories %d in project %d", len(repositories), projectID)
 	return repositories, nil
 }
 
@@ -103,6 +105,7 @@ func (c *Client) getTags(projectID int64, repositoryID int64) ([]*Tag, error) {
 	if err := c.GetAndIteratePagination(urlAPI, &tags); err != nil {
 		return nil, err
 	}
+	log.Debugf("Count tags %d in repository %d, and project  %d", len(tags), repositoryID, projectID)
 	return tags, nil
 }
 
@@ -113,7 +116,6 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr {
 		return errors.New("v should be a pointer to a slice")
@@ -122,7 +124,7 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 	if elemType.Kind() != reflect.Slice {
 		return errors.New("v should be a pointer to a slice")
 	}
-
+	log.Debugf("Gitlab request %s", urlAPI)
 	resources := reflect.Indirect(reflect.New(elemType))
 	for len(endpoint) > 0 {
 		req, err := c.newRequest(http.MethodGet, endpoint, nil)
