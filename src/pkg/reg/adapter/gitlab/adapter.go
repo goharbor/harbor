@@ -15,6 +15,7 @@
 package gitlab
 
 import (
+	"net/url"
 	"strings"
 
 	"github.com/goharbor/harbor/src/lib/log"
@@ -127,6 +128,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	} else {
 		pathPatterns = append(pathPatterns, nameFilter)
 	}
+	log.Debugf("Patterns: %v", pathPatterns)
 
 	for _, project := range projects {
 		if !project.RegistryEnabled {
@@ -143,8 +145,10 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		}
 		for _, repository := range repositories {
 			if !existPatterns(repository.Path, pathPatterns) {
+				log.Debugf("Skipping repository path=%s and id=%d", repository.Path, repository.ID)
 				continue
 			}
+			log.Debugf("Search tags repository path=%s and id=%d", repository.Path, repository.ID)
 			vTags, err := a.clientGitlabAPI.getTags(project.ID, repository.ID)
 			if err != nil {
 				return nil, err
@@ -183,21 +187,12 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 
 func (a *adapter) getProjectsByPattern(pattern string) ([]*Project, error) {
 	var projects []*Project
-	projectset := make(map[string]bool)
 	var err error
 	if len(pattern) > 0 {
 		names, ok := util.IsSpecificPath(pattern)
 		if ok {
 			for _, name := range names {
-				substrings := strings.Split(name, "/")
-				if len(substrings) < 2 {
-					continue
-				}
-				if _, ok := projectset[substrings[1]]; ok {
-					continue
-				}
-				projectset[substrings[1]] = true
-				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(substrings[1])
+				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(url.QueryEscape(name))
 				if err != nil {
 					return nil, err
 				}
@@ -207,20 +202,20 @@ func (a *adapter) getProjectsByPattern(pattern string) ([]*Project, error) {
 				projects = append(projects, projectsByName...)
 			}
 		} else {
-			substrings := strings.Split(pattern, "/")
-			if len(substrings) < 2 {
+			projectName := ""
+			for i, substring := range strings.Split(pattern, "/") {
+				if strings.Contains(substring, "*") {
+					if i != 0 {
+						break
+					}
+				} else {
+					projectName += substring + "/"
+				}
+			}
+			if projectName == "" {
 				return projects, nil
 			}
-			projectName := substrings[1]
-			if projectName == "*" {
-				return projects, nil
-			}
-			projectName = strings.Trim(projectName, "*")
-
-			if strings.Contains(projectName, "*") {
-				return projects, nil
-			}
-			projects, err = a.clientGitlabAPI.getProjectsByName(projectName)
+			projects, err = a.clientGitlabAPI.getProjectsByName(url.QueryEscape(projectName))
 			if err != nil {
 				return nil, err
 			}
