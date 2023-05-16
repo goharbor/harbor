@@ -24,16 +24,16 @@ import (
 //
 // Here is an example of the usage:
 //
-// 	func timedOperation(ctx Context) {
-// 		ctx, done := WithTrace(ctx)
-// 		defer done("this will be the log message")
-// 		// ... function body ...
-// 	}
+//	func timedOperation(ctx Context) {
+//		ctx, done := WithTrace(ctx)
+//		defer done("this will be the log message")
+//		// ... function body ...
+//	}
 //
 // If the function ran for roughly 1s, such a usage would emit a log message
 // as follows:
 //
-// 	INFO[0001] this will be the log message  trace.duration=1.004575763s trace.func=github.com/docker/distribution/context.traceOperation trace.id=<id> ...
+//	INFO[0001] this will be the log message  trace.duration=1.004575763s trace.func=github.com/docker/distribution/context.traceOperation trace.id=<id> ...
 //
 // Notice that the function name is automatically resolved, along with the
 // package and a trace id is emitted that can be linked with parent ids.
