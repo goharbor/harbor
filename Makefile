@@ -104,14 +104,14 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.8.0-patch-redis
+REGISTRYVERSION=v2.8.2-patch-redis
 NOTARYVERSION=v0.6.1
 NOTARYMIGRATEVERSION=v4.11.0
 TRIVYVERSION=v0.39.0
 TRIVYADAPTERVERSION=v0.30.10
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.0
+REGISTRY_SRC_TAG=v2.8.2
 
 # dependency binaries
 NOTARYURL=https://storage.googleapis.com/harbor-builds/bin/notary/release-${NOTARYVERSION}/binary-bundle.tgz
