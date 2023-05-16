@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -30,6 +31,7 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -50,8 +52,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-// DefaultController is a default singleton scan API controller.
-var DefaultController = NewController()
+var (
+	// DefaultController is a default singleton scan API controller.
+	DefaultController = NewController()
+
+	errScanAllStopped = errors.New("scanAll stopped")
+)
 
 // const definitions
 const (
@@ -73,6 +79,9 @@ type uuidGenerator func() (string, error)
 // configGetter is a func template which is used to wrap the config management
 // utility methods.
 type configGetter func(cfg string) (string, error)
+
+// cacheGetter returns cache
+type cacheGetter func() cache.Cache
 
 // launchScanJobParam is a param to launch scan job.
 type launchScanJobParam struct {
@@ -109,6 +118,8 @@ type basicController struct {
 	taskMgr task.Manager
 	// Converter for V1 report to V2 report
 	reportConverter postprocessors.NativeScanReportConverter
+	// cache stores the stop scan all marks
+	cache cacheGetter
 }
 
 // NewController news a scan API controller
@@ -154,6 +165,9 @@ func NewController() Controller {
 		taskMgr: task.Mgr,
 		// Get the scan V1 to V2 report converters
 		reportConverter: postprocessors.Converter,
+		cache: func() cache.Cache {
+			return cache.Default()
+		},
 	}
 }
 
@@ -368,6 +382,44 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 	return executionID, nil
 }
 
+func (bc *basicController) StopScanAll(ctx context.Context, executionID int64, async bool) error {
+	stopScanAll := func(ctx context.Context, executionID int64) error {
+		// mark scan all stopped
+		if err := bc.markScanAllStopped(ctx, executionID); err != nil {
+			return err
+		}
+		// stop the execution and sub tasks
+		return bc.execMgr.Stop(ctx, executionID)
+	}
+
+	if async {
+		go func() {
+			if err := stopScanAll(ctx, executionID); err != nil {
+				log.Errorf("failed to stop scan all, error: %v", err)
+			}
+		}()
+		return nil
+	}
+
+	return stopScanAll(ctx, executionID)
+}
+
+func scanAllStoppedKey(execID int64) string {
+	return fmt.Sprintf("scan_all:execution_id:%d:stopped", execID)
+}
+
+func (bc *basicController) markScanAllStopped(ctx context.Context, execID int64) error {
+	// set the expire time to 2 hours, the duration should be large enough
+	// for controller to capture the stop flag, leverage the key recycled
+	// by redis TTL, no need to clean by scan controller as the new scan all
+	// will have a new unique execution id, the old key has no effects to anything.
+	return bc.cache().Save(ctx, scanAllStoppedKey(execID), "", 2*time.Hour)
+}
+
+func (bc *basicController) isScanAllStopped(ctx context.Context, execID int64) bool {
+	return bc.cache().Contains(ctx, scanAllStoppedKey(execID))
+}
+
 func (bc *basicController) startScanAll(ctx context.Context, executionID int64) error {
 	batchSize := 50
 
@@ -379,8 +431,15 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		UnsupportCount    int `json:"unsupport_count"`
 		UnknowCount       int `json:"unknow_count"`
 	}{}
+	// with cancel function to signal downstream worker
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	for artifact := range ar.Iterator(ctx, batchSize, nil, nil) {
+		if bc.isScanAllStopped(ctx, executionID) {
+			return errScanAllStopped
+		}
+
 		summary.TotalCount++
 
 		scan := func(ctx context.Context) error {
