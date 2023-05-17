@@ -82,7 +82,7 @@ var validRegions = map[string]struct{}{}
 // validObjectACLs contains known s3 object Acls
 var validObjectACLs = map[string]struct{}{}
 
-//DriverParameters A struct that encapsulates all of the driver parameters after all values have been set
+// DriverParameters A struct that encapsulates all of the driver parameters after all values have been set
 type DriverParameters struct {
 	AccessKey                   string
 	SecretKey                   string
@@ -549,9 +549,9 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 
 // Writer returns a FileWriter which will store the content written to it
 // at the location designated by "path" after the call to Commit.
-func (d *driver) Writer(ctx context.Context, path string, append bool) (storagedriver.FileWriter, error) {
+func (d *driver) Writer(ctx context.Context, path string, appendParam bool) (storagedriver.FileWriter, error) {
 	key := d.s3Path(path)
-	if !append {
+	if !appendParam {
 		// TODO (brianbland): cancel other uploads at this path
 		resp, err := d.S3.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
 			Bucket:               aws.String(d.Bucket),
@@ -574,7 +574,7 @@ func (d *driver) Writer(ctx context.Context, path string, append bool) (storaged
 	if err != nil {
 		return nil, parseError(path, err)
 	}
-
+	var allParts []*s3.Part
 	for _, multi := range resp.Uploads {
 		if key != *multi.Key {
 			continue
@@ -587,11 +587,20 @@ func (d *driver) Writer(ctx context.Context, path string, append bool) (storaged
 		if err != nil {
 			return nil, parseError(path, err)
 		}
-		var multiSize int64
-		for _, part := range resp.Parts {
-			multiSize += *part.Size
+		allParts = append(allParts, resp.Parts...)
+		for *resp.IsTruncated {
+			resp, err = d.S3.ListParts(&s3.ListPartsInput{
+				Bucket:           aws.String(d.Bucket),
+				Key:              aws.String(key),
+				UploadId:         multi.UploadId,
+				PartNumberMarker: resp.NextPartNumberMarker,
+			})
+			if err != nil {
+				return nil, parseError(path, err)
+			}
+			allParts = append(allParts, resp.Parts...)
 		}
-		return d.newWriter(key, *multi.UploadId, resp.Parts), nil
+		return d.newWriter(key, *multi.UploadId, allParts), nil
 	}
 	return nil, storagedriver.PathNotFoundError{Path: path}
 }

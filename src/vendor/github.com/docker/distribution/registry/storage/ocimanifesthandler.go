@@ -12,7 +12,7 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
-//ocischemaManifestHandler is a ManifestHandler that covers ocischema manifests.
+// ocischemaManifestHandler is a ManifestHandler that covers ocischema manifests.
 type ocischemaManifestHandler struct {
 	repository   distribution.Repository
 	blobStore    distribution.BlobStore
