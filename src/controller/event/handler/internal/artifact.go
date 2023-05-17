@@ -27,10 +27,13 @@ import (
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 const (
@@ -62,6 +65,11 @@ func init() {
 
 // Handler preprocess artifact event data
 type Handler struct {
+	// execMgr for managing executions
+	execMgr task.ExecutionManager
+	// reportMgr for managing scan reports
+	reportMgr report.Manager
+
 	once sync.Once
 	// pullCountStore caches the pull count group by repository
 	// map[repositoryID]counts
@@ -87,6 +95,8 @@ func (a *Handler) Handle(ctx context.Context, value interface{}) error {
 		return a.onPull(ctx, v.ArtifactEvent)
 	case *event.PushArtifactEvent:
 		return a.onPush(ctx, v.ArtifactEvent)
+	case *event.DeleteArtifactEvent:
+		return a.onDelete(ctx, v.ArtifactEvent)
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}
@@ -240,6 +250,35 @@ func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error 
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}
 	}()
+
+	return nil
+}
+
+func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) error {
+	execMgr := task.ExecMgr
+	reportMgr := report.Mgr
+	// for UT mock
+	if a.execMgr != nil {
+		execMgr = a.execMgr
+	}
+	if a.reportMgr != nil {
+		reportMgr = a.reportMgr
+	}
+
+	// clean up the scan executions of this artifact by id
+	if err := execMgr.DeleteByVendor(ctx, job.ImageScanJobVendorType, event.Artifact.ID); err != nil {
+		log.Errorf("failed to delete scan executions of artifact %d, error: %v", event.Artifact.ID, err)
+	}
+	// clean up the scan reports of this artifact and it's references by digest
+	digests := []string{event.Artifact.Digest}
+	if len(event.Artifact.References) > 0 {
+		for _, ref := range event.Artifact.References {
+			digests = append(digests, ref.ChildDigest)
+		}
+	}
+	if err := reportMgr.DeleteByDigests(ctx, digests...); err != nil {
+		log.Errorf("failed to delete scan reports of artifact %v, error: %v", digests, err)
+	}
 
 	return nil
 }
