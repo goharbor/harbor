@@ -178,3 +178,7 @@ Test Case - Scan Data Export
 Test Case - Job Service Dashboard
     [Tags]  job_service_dashboard
     Harbor API Test  ./tests/apitests/python/test_job_service_dashboard.py
+
+Test Case - Retain Image Last Pull Time
+    [Tags]  retain_image_last_pull_time
+    Harbor API Test  ./tests/apitests/python/test_retain_image_last_pull_time.py
