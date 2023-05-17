@@ -185,13 +185,15 @@ func (t *Token) Verify(verifyOpts VerifyOptions) error {
 
 // VerifySigningKey attempts to get the key which was used to sign this token.
 // The token header should contain either of these 3 fields:
-//      `x5c` - The x509 certificate chain for the signing key. Needs to be
-//              verified.
-//      `jwk` - The JSON Web Key representation of the signing key.
-//              May contain its own `x5c` field which needs to be verified.
-//      `kid` - The unique identifier for the key. This library interprets it
-//              as a libtrust fingerprint. The key itself can be looked up in
-//              the trustedKeys field of the given verify options.
+//
+//	`x5c` - The x509 certificate chain for the signing key. Needs to be
+//	        verified.
+//	`jwk` - The JSON Web Key representation of the signing key.
+//	        May contain its own `x5c` field which needs to be verified.
+//	`kid` - The unique identifier for the key. This library interprets it
+//	        as a libtrust fingerprint. The key itself can be looked up in
+//	        the trustedKeys field of the given verify options.
+//
 // Each of these methods are tried in that order of preference until the
 // signing key is found or an error is returned.
 func (t *Token) VerifySigningKey(verifyOpts VerifyOptions) (signingKey libtrust.PublicKey, err error) {
