@@ -194,7 +194,7 @@ require (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	github.com/docker/distribution => github.com/distribution/distribution v2.8.1+incompatible
+	github.com/docker/distribution => github.com/distribution/distribution v2.8.2+incompatible
 	github.com/goharbor/harbor => ../
 	github.com/gomodule/redigo => github.com/gomodule/redigo v1.8.8
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff

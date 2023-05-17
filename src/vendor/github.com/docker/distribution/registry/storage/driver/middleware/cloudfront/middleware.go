@@ -1,6 +1,5 @@
 // Package middleware - cloudfront wrapper for storage libs
 // N.B. currently only works with S3, not arbitrary sites
-//
 package middleware
 
 import (
@@ -38,7 +37,9 @@ var _ storagedriver.StorageDriver = &cloudFrontStorageMiddleware{}
 
 // Optional options: ipFilteredBy, awsregion
 // ipfilteredby: valid value "none|aws|awsregion". "none", do not filter any IP, default value. "aws", only aws IP goes
-//               to S3 directly. "awsregion", only regions listed in awsregion options goes to S3 directly
+//
+//	to S3 directly. "awsregion", only regions listed in awsregion options goes to S3 directly
+//
 // awsregion: a comma separated string of AWS regions.
 func newCloudFrontStorageMiddleware(storageDriver storagedriver.StorageDriver, options map[string]interface{}) (storagedriver.StorageDriver, error) {
 	// parse baseurl
