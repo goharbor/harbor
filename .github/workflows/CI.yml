@@ -19,10 +19,18 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
   push:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
 
 jobs:
   UTTEST:
@@ -36,7 +44,7 @@ jobs:
       - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-           go-version: 1.20.1
+           go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -97,7 +105,7 @@ jobs:
       - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.20.1
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -152,7 +160,7 @@ jobs:
       - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.20.1
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -207,7 +215,7 @@ jobs:
       - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.20.1
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -260,7 +268,7 @@ jobs:
       - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.20.1
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:

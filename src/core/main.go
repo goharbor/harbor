@@ -1,16 +1,16 @@
-//  Copyright Project Harbor Authors
+// Copyright Project Harbor Authors
 //
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package main
 
@@ -49,6 +49,7 @@ import (
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/gtask"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -207,6 +208,9 @@ func main() {
 	health.RegisterHealthCheckers()
 	registerScanners(orm.Context())
 
+	// start global task pool, do not stop in the gracefulShutdown because it may take long time to finish.
+	gtask.DefaultPool().Start(ctx)
+
 	closing := make(chan struct{})
 	done := make(chan struct{})
 	go gracefulShutdown(closing, done, shutdownTracerProvider)
@@ -259,11 +263,27 @@ func main() {
 			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
 			return
 		}
-
+		// schedule the system jobs with retry as the operation depends on the jobservice,
+		// retry to handle the failure case caused by jobservice.
+		ctx := orm.Context()
+		options = []retry.Option{
+			retry.InitialInterval(time.Millisecond * 500),
+			retry.MaxInterval(time.Second * 10),
+			retry.Timeout(time.Minute * 5),
+			retry.Callback(func(err error, sleep time.Duration) {
+				log.Debugf("failed to schedule system job, retry after %s : %v", sleep, err)
+			}),
+		}
 		// schedule system artifact cleanup job
-		systemartifact.ScheduleCleanupTask(ctx)
+		if err := retry.Retry(func() error {
+			return systemartifact.ScheduleCleanupTask(ctx)
+		}, options...); err != nil {
+			log.Errorf("failed to schedule system artifact cleanup job, error: %v", err)
+		}
 		// schedule system execution sweep job
-		if err := task.ScheduleSweepJob(ctx); err != nil {
+		if err := retry.Retry(func() error {
+			return task.ScheduleSweepJob(ctx)
+		}, options...); err != nil {
 			log.Errorf("failed to schedule system execution sweep job, error: %v", err)
 		}
 	}()

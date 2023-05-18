@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package artifact
 
 import (
@@ -119,8 +133,8 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 		Operator: execution.Trigger,
 		EventData: &model.EventData{
 			Retention: &evtModel.Retention{
-				Total:             task.Total,
-				Retained:          task.Retained,
+				Total:             event.Total,
+				Retained:          event.Retained,
 				HarborHostname:    hostname,
 				ProjectName:       event.Deleted[0].Target.Namespace,
 				RetentionPolicyID: execution.PolicyID,
@@ -138,8 +152,11 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 		}
 		if len(target.Tags) != 0 {
 			deletedArtifact.NameAndTag = target.Repository + ":" + target.Tags[0]
+		} else {
+			// use digest if no tag
+			deletedArtifact.NameAndTag = target.Repository + "@" + target.Digest
 		}
-		payload.EventData.Retention.DeletedArtifact = []*evtModel.ArtifactInfo{deletedArtifact}
+		payload.EventData.Retention.DeletedArtifact = append(payload.EventData.Retention.DeletedArtifact, deletedArtifact)
 	}
 
 	for _, v := range md.Rules {

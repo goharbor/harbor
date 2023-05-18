@@ -199,6 +199,32 @@ func (_m *mockTaskManager) List(ctx context.Context, query *q.Query) ([]*Task, e
 	return r0, r1
 }
 
+// ListScanTasksByReportUUID provides a mock function with given fields: ctx, uuid
+func (_m *mockTaskManager) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*Task, error) {
+	ret := _m.Called(ctx, uuid)
+
+	var r0 []*Task
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*Task, error)); ok {
+		return rf(ctx, uuid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*Task); ok {
+		r0 = rf(ctx, uuid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*Task)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, uuid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Stop provides a mock function with given fields: ctx, id
 func (_m *mockTaskManager) Stop(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)

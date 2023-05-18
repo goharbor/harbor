@@ -60,10 +60,6 @@ Test Case - Robot Account
     [Tags]  robot_account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 
-Test Case - Sign A Image
-    [Tags]  sign_image
-    Harbor API Test  ./tests/apitests/python/test_sign_image.py
-
 Test Case - Project Quota
     [Tags]  quota
     Harbor API Test  ./tests/apitests/python/test_project_quota.py

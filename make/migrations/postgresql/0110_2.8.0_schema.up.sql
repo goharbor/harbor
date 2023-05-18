@@ -91,41 +91,29 @@ SET enabled = false,
     description = 'Chartmuseum is deprecated in Harbor v2.8.0, because this notification policy only has event type about Chartmuseum, so please update or delete this notification policy.'
 WHERE event_types = '[]';
 
-/* insert the default payload_format for http type webhook target */
+/* insert the default payload_format for http type webhook target
+1. separate the original targets(text) to json array elements(targets_expanded)
+2. update the old target to set the payload format if type is 'http' into the targets_updated
+3. finally update back to the original table notification_policy
+*/
 WITH targets_expanded AS (
-    -- Expand the JSON array of targets into separate rows
-    SELECT
-        id,
-        jsonb_array_elements(targets::jsonb) AS target
-    FROM
-        notification_policy
+    SELECT id, jsonb_array_elements(targets::jsonb) AS target
+    FROM notification_policy
 ),
 targets_updated AS (
-    -- Update targets based on the specified conditions
-    SELECT
-        id,
+    SELECT id,
         jsonb_agg(
             CASE
-                -- If target is HTTP and has no payload format, add "Default"
                 WHEN target->>'type' = 'http' AND NOT target ? 'payload_format'
                 THEN target || '{"payload_format":"Default"}'::jsonb
                 ELSE target
             END
         ) AS targets
-    FROM
-        targets_expanded
-    GROUP BY
-        id
+    FROM targets_expanded GROUP BY id
 )
--- Update the original table with the updated targets
-UPDATE
-    notification_policy
-SET
-    targets = targets_updated.targets
-FROM
-    targets_updated
-WHERE
-    notification_policy.id = targets_updated.id;
+UPDATE notification_policy
+SET targets = targets_updated.targets
+FROM targets_updated WHERE notification_policy.id = targets_updated.id;
 
 /* migrate the webhook job to execution and task as the webhook refactor since v2.8 */
 DO $$

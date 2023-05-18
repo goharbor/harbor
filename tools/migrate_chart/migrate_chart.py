@@ -18,9 +18,12 @@ errs = []
 
 def print_exist_errs():
     if errs:
-        click.echo("Following errors exist", err=True)
+        click.echo("There are {} errors exist".format(len(errs)), err=True)
         for e in errs:
             click.echo(e, err=True)
+            # Write the error to file
+            with open("/chart_storage/migration_errors.txt", "a") as f:
+                f.write(e + "\n")
 
 def graceful_exit(signum, frame):
     print_exist_errs()
@@ -36,14 +39,17 @@ class ChartV2:
         self.project = self.filepath.parts[-2]
         parts = self.filepath.stem.split('-')
         flag = False
-        for i in range(len(parts)-1, -1, -1):
-            if parts[i][0].isnumeric():
-                self.name, self.version = '-'.join(parts[:i]), '-'.join(parts[i:])
-                flag = True
-                break
-        if not flag:
-            raise Exception('chart name: {} is illegal'.format('-'.join(parts)))
-
+        try:
+            for i in range(len(parts)-1, -1, -1):
+                if parts[i][0].isnumeric() or ((parts[i][0]=='v' or  parts[i][0]=='v') and parts[i][1].isnumeric()) :
+                    self.name, self.version = '-'.join(parts[:i]), '-'.join(parts[i:])
+                    flag = True
+                    break
+            if not flag:
+                raise Exception('chart name: {} is illegal'.format('-'.join(parts)))
+        except Exception as e:
+            click.echo("Skipped chart: {} due to illegal chart name. Error: {}".format(filepath, e), err=True)
+        return
     def __check_exist(self, hostname, username, password):
         return requests.get(CHART_URL_PATTERN.format(
                 host=hostname,
@@ -59,11 +65,9 @@ class ChartV2:
         if res.status_code == 401:
             raise Exception(res.reason)
 
-        oci_ref = "{host}/{project}/{name}:{version}".format(
+        oci_ref = "oci://{host}/{project}".format(
             host=hostname,
-            project=self.project,
-            name=self.name,
-            version=self.version)
+            project=self.project)
 
         return subprocess.run([MIGRATE_CHART_SCRIPT, HELM_CMD, self.filepath, oci_ref],
         text=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
@@ -81,7 +85,7 @@ def migrate(hostname, username, password):
         raise Exception('This operation only allowed for admin')
     subprocess.run([CA_UPDATE_CMD])
     subprocess.run([HELM_CMD, 'registry', 'login', hostname, '--username', username, '--password', password])
-    charts = [ChartV2(c) for p in CHART_SOURCE_DIR.iterdir() if p.is_dir() for c in p.iterdir() if c.is_file() and c.name != "index-cache.yaml"]
+    charts = [ChartV2(c) for p in CHART_SOURCE_DIR.iterdir() if p.is_dir() for c in p.iterdir() if c.is_file() and c.name.endswith(".tgz")]
     with click.progressbar(charts, label="Migrating chart ...", length=len(charts),
     item_show_func=lambda x: "{}/{}:{} total errors: {}".format(x.project, x.name, x.version, len(errs)) if x else '') as bar:
         for chart in bar:

@@ -12,7 +12,6 @@ import {
     USERSTATICPERMISSION,
 } from '../../../../../shared/services';
 import { delay } from 'rxjs/operators';
-import { AppConfigService } from '../../../../../services/app-config.service';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
 
 describe('ArtifactTagComponent', () => {
@@ -29,18 +28,7 @@ describe('ArtifactTagComponent', () => {
     const mockSystemInfoService = {
         getSystemInfo: () => of(false),
     };
-    const mockAppConfigService = {
-        getConfig: () => {
-            return {
-                project_creation_restriction: '',
-                with_chartmuseum: '',
-                with_notary: '',
-                with_trivy: '',
-                with_admiral: '',
-                registry_url: '',
-            };
-        },
-    };
+
     let userPermissionService;
     const permissions = [
         {
@@ -61,7 +49,6 @@ describe('ArtifactTagComponent', () => {
             providers: [
                 { provide: ErrorHandler, useValue: mockErrorHandler },
                 { provide: ArtifactService, useValue: mockArtifactService },
-                { provide: AppConfigService, useValue: mockAppConfigService },
                 { provide: SystemInfoService, useValue: mockSystemInfoService },
                 {
                     provide: UserPermissionService,

@@ -49,7 +49,8 @@ const (
 var (
 	// executionSweeperCount stores the count for execution retained
 	executionSweeperCount = map[string]int64{
-		ScanAllVendorType:               5,
+		ImageScanJobVendorType:          1,
+		ScanAllVendorType:               1,
 		PurgeAuditVendorType:            10,
 		ExecSweepVendorType:             10,
 		GarbageCollectionVendorType:     50,

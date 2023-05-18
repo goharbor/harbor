@@ -64,6 +64,9 @@ type Manager interface {
 	UpdateStatusInBatch(ctx context.Context, jobIDs []string, status string, batchSize int) error
 	// ExecutionIDsByVendorAndStatus retrieve execution id by vendor type and status
 	ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType, status string) ([]int64, error)
+	// ListScanTasksByReportUUID lists scan tasks by report uuid, although it's a specific case but it will be
+	// more suitable to support multi database in the future.
+	ListScanTasksByReportUUID(ctx context.Context, uuid string) (tasks []*Task, err error)
 }
 
 // NewManager creates an instance of the default task manager
@@ -222,6 +225,20 @@ func (m *manager) Get(ctx context.Context, id int64) (*Task, error) {
 
 func (m *manager) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	tasks, err := m.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var ts []*Task
+	for _, task := range tasks {
+		t := &Task{}
+		t.From(task)
+		ts = append(ts, t)
+	}
+	return ts, nil
+}
+
+func (m *manager) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*Task, error) {
+	tasks, err := m.dao.ListScanTasksByReportUUID(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}

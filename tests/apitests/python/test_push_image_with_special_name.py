@@ -5,7 +5,6 @@ import urllib
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning
 from testutils import harbor_server
 from testutils import TEARDOWN
-from library.sign import sign_image
 from library.artifact import Artifact
 from library.project import Project
 from library.user import User

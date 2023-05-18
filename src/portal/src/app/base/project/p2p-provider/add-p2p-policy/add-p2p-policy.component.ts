@@ -173,7 +173,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                 this.preventVul = project.metadata.prevent_vul === TRUE;
                 this.projectSeverity = project.metadata.severity;
                 this.enableContentTrust =
-                    project.metadata.enable_content_trust === TRUE;
+                    project.metadata.enable_content_trust_cosign === TRUE;
                 this.severity =
                     PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity];
             }
@@ -422,9 +422,6 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
             return this.triggerType === TRIGGER.SCHEDULED;
         }
         return false;
-    }
-    withNotary(): boolean {
-        return this.appConfigService.getConfig().with_notary;
     }
     showExplainForEventBased(): boolean {
         return this.triggerType === TRIGGER.EVENT_BASED;

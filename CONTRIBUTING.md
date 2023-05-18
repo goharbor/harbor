@@ -25,7 +25,7 @@ Follow us on Twitter at [@project_harbor][twitter]
 ### Fork Repository
 
 Fork the Harbor repository on GitHub to your personal account.
-```
+```sh
 #Set golang environment
 export GOPATH=$HOME/go
 mkdir -p $GOPATH/src/github.com/goharbor
@@ -165,6 +165,7 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.5    |    1.17.7     |
 |   2.6    |    1.18.6     |
 |   2.7    |    1.19.4     |
+|   2.8    |    1.20.4     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -209,12 +210,12 @@ Note: If you split your pull request to small changes, please make sure any of t
 Fork the Harbor repository and clone the code to your local workspace. Per Go's [workspace instructions](https://golang.org/doc/code.html#Workspaces), place Harbor's code on your `GOPATH`. Refer to section [Fork Repository](#fork-repository) for details.
 
 Define a local working directory:
-```
+```sh
 working_dir=$GOPATH/src/github.com/goharbor
 ```
 
 Set user to match your github profile name:
-```
+```sh
 user={your github profile name}
 ```
 
@@ -223,7 +224,7 @@ Both `$working_dir` and `$user` are mentioned in the figure above.
 ### Branch
 Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of `main` without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
-```
+```sh
 #goharbor is the origin upstream
 
 cd $working_dir/harbor
@@ -234,7 +235,7 @@ git rebase goharbor/main
 
 Branch from the updated `main` branch:
 
-```
+```sh
 git checkout -b my_feature main
 ```
 
@@ -246,11 +247,11 @@ Try to limit column width to 120 characters for both code and markdown documents
 
 As we are enforcing standards set by [golint](https://github.com/golang/lint), please always run golint on source code before committing your changes. If it reports an issue, in general, the preferred action is to fix the code to comply with the linter's recommendation
 because golint gives suggestions according to the stylistic conventions listed in [Effective Go](https://golang.org/doc/effective_go.html) and the [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments).
-```
+```sh
 #Install fgt and golint
 
-go get -u golang.org/x/lint/golint
-go get github.com/GeertJohan/fgt
+go install golang.org/x/lint/golint@latest
+go install github.com/GeertJohan/fgt@latest
 
 #In the #working_dir/harbor, run
 
@@ -261,13 +262,13 @@ go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
 Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
 
 Run go test cases:
-```
+```sh
 #cd #working_dir/src/[package]
 go test -v ./...
 ```
 
 Run UI library test cases:
-```
+```sh
 #cd #working_dir/src/portal/lib
 npm run test
 ```
@@ -310,7 +311,7 @@ The commit message should follow the convention on [How to Write a Git Commit Me
 
 To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
-```
+```sh
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
 ```
 
@@ -327,7 +328,7 @@ Once your pull request has been opened, harbor will run two CI pipelines against
 
 ### Push and Create PR
 When ready for review, push your branch to your fork repository on `github.com`:
-```
+```sh
 git push --force-with-lease $user my_feature
 
 ```
@@ -364,11 +365,22 @@ The main location for the documentation is the [website repository](https://gith
 
 Documents are written with Markdown. See [Writing on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
 
-## Design new features
+## Develop and propose new features.
+### The following simple process can be used to submit new features or changes to the existing code.
 
-You can propose new designs for existing Harbor features. You can also design entirely new features, Please submit a proposal in GitHub.(https://github.com/goharbor/community/tree/master/proposals). Harbor maintainers will review this proposal as soon as possible. This is necessary to ensure the overall architecture is consistent and to avoid duplicated work in the roadmap.
+- See if your feature is already being worked on. Check both the [Issues](https://github.com/goharbor/harbor/issues) and the [PRs](https://github.com/goharbor/harbor/pulls) in the main Harbor repository as well as the [Community repository](https://github.com/goharbor/community).
+- Submit(open PR) the new proposal at [community/proposals/new](https://github.com/goharbor/community/tree/main/proposals/new) using the already existing [template](https://github.com/goharbor/community/blob/main/proposals/TEMPLATE.md)
+- The proposal must be labeled as "kind/proposal" - check examples [here](https://github.com/goharbor/community/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc+label%3Akind%2Fproposal)
+- The proposal can be modified and adapted to meet the requirements from the community, other maintainers and contributors. The overall architecture needs to be consistent to avoid duplicate work in the [Roadmap](https://github.com/goharbor/harbor/wiki#roadmap).
+- Proposal should be discussed at Community meeting [Community Meeting agenda](https://github.com/goharbor/community/wiki/Harbor-Community-Meetings) to be presented to maintainers and contributors.
+- When reviewed and approved it can be implemented either by the original submitter or anyone else from the community which we highly encourage, as the project is community driven. Open PRs in the respective repositories with all the necessary code and test changes as described in the current document.
+- Once implemented or during the implementation, the PRs are reviewed by maintainers and contributors, following the best practices and methods.
+- After merging the new PRs, the proposal must be moved to [community/proposals](https://github.com/goharbor/community/tree/main/proposals) and marked as done!
+- You have made Harbor even better, congratulations. Thank you!
 
-[community-meetings]: https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md
+
+
+[community-meetings]: https://github.com/goharbor/community/blob/main/MEETING_SCHEDULE.md
 [past-meetings]: https://www.youtube.com/playlist?list=PLgInP-D86bCwTC0DYAa1pgupsQIAWPomv
 [users-slack]: https://cloud-native.slack.com/archives/CC1E09J6S
 [dev-slack]: https://cloud-native.slack.com/archives/CC1E0J0MC

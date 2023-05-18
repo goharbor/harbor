@@ -1,16 +1,26 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package gc
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/registry"
-	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
 )
 
 // delKeys ...
@@ -46,7 +56,7 @@ func delKeys(con redis.Conn, pattern string) error {
 }
 
 // v2DeleteManifest calls the registry API to remove manifest
-func v2DeleteManifest(logger logger.Interface, repository, digest string) error {
+func v2DeleteManifest(repository, digest string) error {
 	exist, _, err := registry.Cli.ManifestExist(repository, digest)
 	if err != nil {
 		return err
@@ -56,16 +66,7 @@ func v2DeleteManifest(logger logger.Interface, repository, digest string) error 
 	if !exist {
 		return nil
 	}
-	return retry.Retry(func() error {
-		err := registry.Cli.DeleteManifest(repository, digest)
-		// if the system is in read-only mode, return an Abort error to skip retrying
-		if err == readonly.Err {
-			return retry.Abort(err)
-		}
-		return err
-	}, retry.Callback(func(err error, sleep time.Duration) {
-		logger.Infof("failed to exec v2DeleteManifest, error: %v, will retry again after: %s", err, sleep)
-	}))
+	return registry.Cli.DeleteManifest(repository, digest)
 }
 
 // ignoreNotFound ignores the NotFoundErr error
