@@ -6516,10 +6516,6 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
-      signed:
-        type: boolean
-        x-omitempty: false
-        description: The attribute indicates whether the tag is signed or not
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -7693,11 +7689,6 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: The current time of the server.
-      with_notary:
-        type: boolean
-        x-nullable: true
-        x-omitempty: true
-        description: If the Harbor instance is deployed with nested notary.
       registry_url:
         type: string
         x-nullable: true

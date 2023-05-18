@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
-	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -353,9 +352,6 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 	}, &artifact.Option{
 		WithLabel: true,
 		WithTag:   true,
-		TagOption: &tag.Option{
-			WithSignature: true,
-		},
 	})
 	if err != nil {
 		return nil, err
@@ -517,16 +513,13 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Projec
 		// TODO: Do we need to support untagged artifacts here?
 		for _, t := range a.Tags {
 			candidates = append(candidates, &selector.Candidate{
-				NamespaceID: p.ProjectID,
-				Namespace:   p.Name,
-				Repository:  pureRepository(p.Name, a.RepositoryName),
-				Kind:        pr.SupportedType,
-				Digest:      a.Digest,
-				Tags:        []string{t.Name},
-				Labels:      getLabels(a.Labels),
-				Signatures: map[string]bool{
-					t.Name: t.Signed,
-				},
+				NamespaceID:           p.ProjectID,
+				Namespace:             p.Name,
+				Repository:            pureRepository(p.Name, a.RepositoryName),
+				Kind:                  pr.SupportedType,
+				Digest:                a.Digest,
+				Tags:                  []string{t.Name},
+				Labels:                getLabels(a.Labels),
 				VulnerabilitySeverity: sev,
 			})
 		}

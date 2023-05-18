@@ -95,7 +95,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithSignature, params.WithAccessory)
+		params.WithLabel, params.WithAccessory)
 
 	// get the total count of artifacts
 	total, err := a.artCtl.Count(ctx, query)
@@ -129,7 +129,7 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	}
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithSignature, params.WithAccessory)
+		params.WithLabel, params.WithAccessory)
 
 	// get the artifact
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
@@ -336,9 +336,6 @@ func (a *artifactAPI) ListTags(ctx context.Context, params operation.ListTagsPar
 
 	// set option
 	option := &tag.Option{}
-	if params.WithSignature != nil {
-		option.WithSignature = *params.WithSignature
-	}
 	if params.WithImmutableStatus != nil {
 		option.WithImmutableStatus = *params.WithImmutableStatus
 	}
@@ -503,7 +500,7 @@ func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labe
 	return nil
 }
 
-func option(withTag, withImmutableStatus, withLabel, withSignature, withAccessory *bool) *artifact.Option {
+func option(withTag, withImmutableStatus, withLabel, withAccessory *bool) *artifact.Option {
 	option := &artifact.Option{
 		WithTag:       true, // return the tag by default
 		WithLabel:     lib.BoolValue(withLabel),
@@ -521,7 +518,6 @@ func option(withTag, withImmutableStatus, withLabel, withSignature, withAccessor
 	if option.WithTag {
 		option.TagOption = &tag.Option{
 			WithImmutableStatus: lib.BoolValue(withImmutableStatus),
-			WithSignature:       lib.BoolValue(withSignature),
 		}
 	}
 

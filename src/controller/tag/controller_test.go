@@ -21,8 +21,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	pkg_artifact "github.com/goharbor/harbor/src/pkg/artifact"
@@ -54,11 +52,6 @@ func (c *controllerTestSuite) SetupTest() {
 		artMgr:       c.artMgr,
 		immutableMtr: c.immutableMtr,
 	}
-
-	var tagCtlTestConfig = map[string]interface{}{
-		common.WithNotary: false,
-	}
-	config.InitWithSettings(tagCtlTestConfig)
 }
 
 func (c *controllerTestSuite) TestEnsureTag() {
