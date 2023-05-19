@@ -49,10 +49,6 @@ github.com/Masterminds/semver/v3
 # github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d
 ## explicit
 github.com/Unknwon/goconfig
-# github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412
-## explicit
-github.com/agl/ed25519
-github.com/agl/ed25519/edwards25519
 # github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 ## explicit
 github.com/aliyun/alibaba-cloud-sdk-go/sdk
@@ -146,10 +142,6 @@ github.com/beorn7/perks/quantile
 # github.com/bmatcuk/doublestar v1.1.1
 ## explicit
 github.com/bmatcuk/doublestar
-# github.com/bugsnag/bugsnag-go v1.5.2
-## explicit
-# github.com/bugsnag/panicwrap v1.2.0
-## explicit
 # github.com/casbin/casbin v1.9.1
 ## explicit
 github.com/casbin/casbin
@@ -185,8 +177,6 @@ github.com/cloudevents/sdk-go/v2/event/datacodec/xml
 github.com/cloudevents/sdk-go/v2/protocol
 github.com/cloudevents/sdk-go/v2/protocol/http
 github.com/cloudevents/sdk-go/v2/types
-# github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e
-## explicit
 # github.com/coreos/go-oidc/v3 v3.0.0
 ## explicit; go 1.14
 github.com/coreos/go-oidc/v3/oidc
@@ -243,9 +233,6 @@ github.com/docker/distribution/registry/storage/driver/swift
 github.com/docker/distribution/testutil
 github.com/docker/distribution/uuid
 github.com/docker/distribution/version
-# github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c
-## explicit
-github.com/docker/go/canonical/json
 # github.com/docker/go-metrics v0.0.1
 ## explicit; go 1.11
 github.com/docker/go-metrics
@@ -359,8 +346,6 @@ github.com/golang/protobuf/ptypes/wrappers
 # github.com/gomodule/redigo v2.0.0+incompatible => github.com/gomodule/redigo v1.8.8
 ## explicit; go 1.16
 github.com/gomodule/redigo/redis
-# github.com/google/certificate-transparency-go v1.0.21
-## explicit
 # github.com/google/go-querystring v1.0.0
 ## explicit
 github.com/google/go-querystring/query
@@ -447,8 +432,6 @@ github.com/jackc/pgtype
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
 github.com/jackc/pgx/v4/stdlib
-# github.com/jinzhu/gorm v1.9.8
-## explicit
 # github.com/jmespath/go-jmespath v0.4.0
 ## explicit; go 1.14
 github.com/jmespath/go-jmespath
@@ -475,9 +458,6 @@ github.com/mattn/go-runewidth
 # github.com/matttproud/golang_protobuf_extensions v1.0.4
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/miekg/pkcs11 v1.1.1
-## explicit; go 1.12
-github.com/miekg/pkcs11
 # github.com/mitchellh/mapstructure v1.4.3
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
@@ -585,21 +565,6 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/http
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924
-# github.com/theupdateframework/notary v0.6.1
-## explicit
-github.com/theupdateframework/notary
-github.com/theupdateframework/notary/client
-github.com/theupdateframework/notary/client/changelist
-github.com/theupdateframework/notary/cryptoservice
-github.com/theupdateframework/notary/storage
-github.com/theupdateframework/notary/trustmanager
-github.com/theupdateframework/notary/trustmanager/yubikey
-github.com/theupdateframework/notary/trustpinning
-github.com/theupdateframework/notary/tuf
-github.com/theupdateframework/notary/tuf/data
-github.com/theupdateframework/notary/tuf/signed
-github.com/theupdateframework/notary/tuf/utils
-github.com/theupdateframework/notary/tuf/validation
 # github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
 ## explicit; go 1.11
 github.com/vmihailenco/msgpack/v5
@@ -875,12 +840,6 @@ google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/fieldmaskpb
 google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/wrapperspb
-# gopkg.in/dancannon/gorethink.v3 v3.0.5
-## explicit
-# gopkg.in/fatih/pool.v2 v2.0.0
-## explicit
-# gopkg.in/gorethink/gorethink.v3 v3.0.5
-## explicit
 # gopkg.in/h2non/gock.v1 v1.0.16
 ## explicit
 gopkg.in/h2non/gock.v1

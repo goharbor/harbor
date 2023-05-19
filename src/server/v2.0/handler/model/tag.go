@@ -36,7 +36,6 @@ func (t *Tag) ToSwagger() *models.Tag {
 		PushTime:     strfmt.DateTime(t.PushTime),
 		RepositoryID: t.RepositoryID,
 		Immutable:    t.Immutable,
-		Signed:       t.Signed,
 	}
 }
 

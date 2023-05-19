@@ -28,6 +28,8 @@ def set_configurations(client, expect_status_code = 200, expect_response_body = 
         conf["audit_log_forward_endpoint"] = config.get("audit_log_forward_endpoint")
     if "skip_audit_log_database" in config and config.get("skip_audit_log_database") is not None:
         conf["skip_audit_log_database"] = config.get("skip_audit_log_database")
+    if "scanner_skip_update_pulltime" in config and config.get("scanner_skip_update_pulltime") is not None:
+        conf["scanner_skip_update_pulltime"] = config.get("scanner_skip_update_pulltime")
 
     try:
         _, status_code, _ = client.update_configurations_with_http_info(conf)
@@ -87,4 +89,9 @@ class Configurations(base.Base, object):
     def set_configurations_of_audit_log_forword(self, audit_log_forward_endpoint=None, skip_audit_log_database=None, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         config=dict(audit_log_forward_endpoint=audit_log_forward_endpoint, skip_audit_log_database=skip_audit_log_database)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
+
+    def set_configurations_of_retain_image_last_pull_time(self, is_skip, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        config=dict(scanner_skip_update_pulltime=is_skip)
         set_configurations(client, expect_status_code = expect_status_code, **config)
