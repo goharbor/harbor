@@ -9,13 +9,12 @@ import (
 // FprintVersion outputs the version string to the writer, in the following
 // format, followed by a newline:
 //
-// 	<cmd> <project> <version>
+//	<cmd> <project> <version>
 //
 // For example, a binary "registry" built from github.com/docker/distribution
 // with version "v2.0" would print the following:
 //
-// 	registry github.com/docker/distribution v2.0
-//
+//	registry github.com/docker/distribution v2.0
 func FprintVersion(w io.Writer) {
 	fmt.Fprintln(w, os.Args[0], Package, Version)
 }

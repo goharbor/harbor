@@ -53,7 +53,6 @@ type Data struct {
 
 type protectedData struct {
 	CurrentTime                 time.Time
-	WithNotary                  bool
 	RegistryURL                 string
 	ExtURL                      string
 	ProjectCreationRestrict     string
@@ -119,7 +118,6 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	enableCADownload := caStatErr == nil && strings.HasPrefix(extURL, "https://")
 	res.Protected = &protectedData{
 		CurrentTime:                 time.Now(),
-		WithNotary:                  config.WithNotary(),
 		ReadOnly:                    config.ReadOnly(ctx),
 		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,

@@ -57,8 +57,6 @@ INTERNAL_NO_PROXY_DN = {
     'jobservice',
     'registry',
     'registryctl',
-    'notary-server',
-    'notary-signer',
     'trivy-adapter',
     'exporter',
     }

@@ -52,7 +52,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/signature"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
@@ -122,7 +121,6 @@ func NewController() Controller {
 		artMgr:       pkg.ArtifactMgr,
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,
-		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
 		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
@@ -137,7 +135,6 @@ type controller struct {
 	artMgr       artifact.Manager
 	artrashMgr   artifactrash.Manager
 	blobMgr      blob.Manager
-	sigMgr       signature.Manager
 	labelMgr     label.Manager
 	immutableMtr match.ImmutableTagMatcher
 	regCli       registry.Client

@@ -12,7 +12,6 @@ from library.project import Project
 from library.user import User
 from library.repository import Repository
 from library.registry import Registry
-from library.repository import pull_harbor_image
 from library.artifact import Artifact
 from library.preheat import Preheat
 import v2_swagger_client

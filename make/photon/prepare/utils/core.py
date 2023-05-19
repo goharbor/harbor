@@ -13,7 +13,7 @@ core_conf = os.path.join(config_dir, "core", "app.conf")
 ca_download_dir = os.path.join(data_dir, 'ca_download')
 
 
-def prepare_core(config_dict, with_notary, with_trivy):
+def prepare_core(config_dict, with_trivy):
     prepare_dir(ca_download_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(core_config_dir)
     # Render Core
@@ -21,7 +21,6 @@ def prepare_core(config_dict, with_notary, with_trivy):
     render_jinja(
         core_env_template_path,
         core_conf_env,
-        with_notary=with_notary,
         with_trivy=with_trivy,
         csrf_key=generate_random_string(32),
         scan_robot_prefix=generate_random_string(8),

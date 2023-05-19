@@ -21,7 +21,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -29,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
-	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -183,7 +181,6 @@ func (c *controller) Update(ctx context.Context, tag *Tag, props ...string) (err
 func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 	option := &Option{
 		WithImmutableStatus: true,
-		WithSignature:       true,
 	}
 	tag, err := c.Get(ctx, id, option)
 	if err != nil {
@@ -192,10 +189,6 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 	if tag.Immutable {
 		return errors.New(nil).WithCode(errors.PreconditionCode).
 			WithMessage("the tag %s configured as immutable, cannot be deleted", tag.Name)
-	}
-	if tag.Signed {
-		return errors.New(nil).WithCode(errors.PreconditionCode).
-			WithMessage("the tag %s with signature cannot be deleted", tag.Name)
 	}
 	return c.tagMgr.Delete(ctx, id)
 }
@@ -222,9 +215,6 @@ func (c *controller) assembleTag(ctx context.Context, tag *model_tag.Tag, option
 	if option.WithImmutableStatus {
 		c.populateImmutableStatus(ctx, t)
 	}
-	if option.WithSignature {
-		c.populateTagSignature(ctx, t, option)
-	}
 	return t
 }
 
@@ -243,20 +233,4 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 		return
 	}
 	tag.Immutable = matched
-}
-
-func (c *controller) populateTagSignature(ctx context.Context, tag *Tag, option *Option) {
-	artifact, err := c.artMgr.Get(ctx, tag.ArtifactID)
-	if err != nil {
-		return
-	}
-	if option.SignatureChecker == nil {
-		chk, err := signature.GetManager().GetCheckerByRepo(ctx, artifact.RepositoryName)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		option.SignatureChecker = chk
-	}
-	tag.Signed = option.SignatureChecker.IsTagSigned(tag.Name, artifact.Digest)
 }

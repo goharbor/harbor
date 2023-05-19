@@ -65,7 +65,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
-	common.WithNotary:                 false,
 }
 
 var ldapCfg = models.LdapConf{
