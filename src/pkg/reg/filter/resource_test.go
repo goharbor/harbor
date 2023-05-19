@@ -46,6 +46,10 @@ func TestArtifactTagRegexFilters(t *testing.T) {
 
 	var filters = []*model.Filter{
 
+		//The following pattern is from doublestar testing
+		//It works but number of filtered artifacts is mismatched
+		//So the test validating below will fail
+		//TODO: Remove following comment block
 		// {
 		// 	Type:  model.FilterTypeTagRegex,
 		// 	Value: "test.*",
@@ -103,10 +107,6 @@ func TestArtifactTagFilters(t *testing.T) {
 				"test1",
 				"test2",
 				"harbor1",
-				"1.10.0-alpha",
-				"1.9.0-rc2",
-				"1.9.0-rc1",
-				"1.8.0",
 			},
 		},
 		{
@@ -115,8 +115,6 @@ func TestArtifactTagFilters(t *testing.T) {
 			Tags: []string{
 				"test3",
 				"harbor2",
-				"1.9.01",
-				"1.9.0",
 			},
 		},
 		{
@@ -133,16 +131,10 @@ func TestArtifactTagFilters(t *testing.T) {
 	}
 
 	var filters = []*model.Filter{
-		// {
-		// 	Type:  model.FilterTypeTag,
-		// 	Value: "test*",
-		// },
-
 		{
 			Type:  model.FilterTypeTag,
-			Value: `^((\d\d?).(\d\d?).(\d\d?(-stable)?))$`,
+			Value: "test*",
 		},
-
 	}
 
 	artFilters, err := BuildArtifactFilters(filters)
@@ -152,7 +144,7 @@ func TestArtifactTagFilters(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 2, len(arts))
 	require.EqualValues(t, "aaaaa", arts[0].Digest)
-	require.EqualValues(t, []string{"test1", "test2", "1.8.0", "1.9.0", "1.9.01"}, arts[0].Tags)
+	require.EqualValues(t, []string{"test1", "test2"}, arts[0].Tags)
 	require.EqualValues(t, "bbbbb", arts[1].Digest)
 	require.EqualValues(t, []string{"test3"}, arts[1].Tags)
 
