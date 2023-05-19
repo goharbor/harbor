@@ -1133,3 +1133,35 @@ Test Case - Job Service Dashboard Workers
     Retry Wait Until Page Not Contains Element  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row//clr-dg-cell[text()='REPLICATION']
     Retry Wait Until Page Contains Element  //app-donut-chart//div[text()=' 0/10 ']
     Close Browser
+
+Test Case - Retain Image Last Pull Time
+    [Tags]  retain_image_last_pull_time
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  alpine
+    ${tag}=  Set Variable  3.10
+    ${project_name}=  Set Variable  project${d}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${project_name}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}  ${tag}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  enable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Be Empty  ${last_pull_time}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  disable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Not Be Empty  ${last_pull_time}
+    Close Browser
