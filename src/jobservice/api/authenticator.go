@@ -15,6 +15,7 @@
 package api
 
 import (
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,7 +67,7 @@ func (sa *SecretAuthenticator) DoAuth(req *http.Request) error {
 	}
 
 	expectedSecret := config.GetUIAuthSecret()
-	if expectedSecret != secret {
+	if subtle.ConstantTimeCompare([]byte(expectedSecret), []byte(secret)) == 0 {
 		return errors.New("unauthorized")
 	}
 
