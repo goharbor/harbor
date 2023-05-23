@@ -60,10 +60,6 @@ Test Case - Robot Account
     [Tags]  robot_account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 
-Test Case - Sign A Image
-    [Tags]  sign_image
-    Harbor API Test  ./tests/apitests/python/test_sign_image.py
-
 Test Case - Project Quota
     [Tags]  quota
     Harbor API Test  ./tests/apitests/python/test_project_quota.py
@@ -182,3 +178,7 @@ Test Case - Scan Data Export
 Test Case - Job Service Dashboard
     [Tags]  job_service_dashboard
     Harbor API Test  ./tests/apitests/python/test_job_service_dashboard.py
+
+Test Case - Retain Image Last Pull Time
+    [Tags]  retain_image_last_pull_time
+    Harbor API Test  ./tests/apitests/python/test_retain_image_last_pull_time.py

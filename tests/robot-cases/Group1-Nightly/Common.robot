@@ -1086,3 +1086,82 @@ Test Case - Job Service Dashboard Job Queues
     Check Jobs Latency  IMAGE_SCAN=${true}  PURGE_AUDIT_LOG=${true}
     Resume Jobs  IMAGE_SCAN  PURGE_AUDIT_LOG
     Close Browser
+
+Test Case - Job Service Dashboard Schedules
+    [Tags]  job_service_schedules
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${schedule_type}=  Set Variable  Custom
+    ${schedule_cron}=  Set Variable  0 0 12 * * ?
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  photon  2.0  2.0
+    ${replication_policy_name}  ${p2p_policy_name}  ${distribution_name}=  Create Schedules For Job Service Dashboard Schedules  project${d}  ${schedule_type}  ${schedule_cron}
+    Switch To Job Schedules
+    Check Schedule List  ${schedule_cron}
+    Pause All Schedules
+    Check Schedules Status Is Pause  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Switch To Job Schedules
+    Resume All Schedules
+    Check Schedules Status Is Not Pause  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Reset Schedules For Job Service Dashboard Schedules  project${d}  ${replication_policy_name}  ${p2p_policy_name}
+    Close Browser
+
+Test Case - Job Service Dashboard Workers
+    [Tags]  job_service_workers
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${project_name}=  Set Variable  project${d}
+    ${endpoint_name}=  Set Variable  e${d}
+    ${rule_name}=  Set Variable  rule${d}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${project_name}
+    Switch to Registries
+    Create A New Endpoint  harbor  ${endpoint_name}  https://${LOCAL_REGISTRY}  ${null}  ${null}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  ${rule_name}  pull  ${LOCAL_REGISTRY_NAMESPACE}/test_replication  image  ${endpoint_name}  ${project_name}  bandwidth=50  bandwidth_unit=Mbps
+    Select Rule And Replicate  ${rule_name}
+    Retry Wait Until Page Contains  Running
+    Switch To Job Workers
+    Retry Wait Until Page Contains Element  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row//clr-dg-cell[text()='REPLICATION']
+    Retry Wait Until Page Contains Element  //app-donut-chart//div[text()=' 1/10 ']
+    Check Worker Log  REPLICATION  copying ${LOCAL_REGISTRY_NAMESPACE}/test_replication
+    Switch To Replication Manage
+    Select Rule  ${rule_name}
+    Retry Action Keyword  Check Latest Replication Job Status  Succeeded
+    Switch To Job Workers
+    Retry Wait Until Page Not Contains Element  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row//clr-dg-cell[text()='REPLICATION']
+    Retry Wait Until Page Contains Element  //app-donut-chart//div[text()=' 0/10 ']
+    Close Browser
+
+Test Case - Retain Image Last Pull Time
+    [Tags]  retain_image_last_pull_time
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  alpine
+    ${tag}=  Set Variable  3.10
+    ${project_name}=  Set Variable  project${d}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${project_name}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}  ${tag}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  enable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Be Empty  ${last_pull_time}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  disable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Not Be Empty  ${last_pull_time}
+    Close Browser

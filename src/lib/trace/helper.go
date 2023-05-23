@@ -22,6 +22,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
@@ -85,4 +86,34 @@ func NewHandler(h http.Handler, operation string) http.Handler {
 // StartTrace returns a new span with the given name.
 func StartTrace(ctx context.Context, tracerName string, spanName string, opts ...oteltrace.SpanStartOption) (context.Context, oteltrace.Span) {
 	return otel.Tracer(tracerName).Start(ctx, spanName, opts...)
+}
+
+/*
+ExractTraceID returns OpenTelemetry Trace ID
+
+	If tracing is enabled, the trace middleware already put the Span into request context,
+		so the func returns the Trace ID form request context
+	If tracing is NOT enabled, the func returns the Trace ID from the request header (if exists)
+	If Trace ID is not found, the func returns empty string
+*/
+func ExractTraceID(r *http.Request) string {
+	var traceID string
+	if Enabled() {
+		sc := oteltrace.SpanContextFromContext(r.Context())
+		if sc.HasTraceID() {
+			traceID = sc.TraceID().String()
+		}
+	}
+	if traceID == "" {
+		if tpHeader := r.Header.Get("traceparent"); tpHeader != "" {
+			var prop propagation.TraceContext
+			ctx := prop.Extract(context.Background(), propagation.HeaderCarrier(r.Header))
+			sc := oteltrace.SpanContextFromContext(ctx)
+			if sc.HasTraceID() {
+				traceID = sc.TraceID().String()
+			}
+		}
+	}
+
+	return traceID
 }

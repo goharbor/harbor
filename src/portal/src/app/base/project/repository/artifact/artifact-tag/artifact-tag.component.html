@@ -105,9 +105,6 @@
     <clr-dg-column *ngIf="hasPullCommand()">{{
         'REPOSITORY.PULL_COMMAND' | translate
     }}</clr-dg-column>
-    <clr-dg-column *ngIf="withNotary">{{
-        'ACCESSORY.NOTARY_SIGNED' | translate
-    }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'pull_time'">{{
         'TAG.PULL_TIME' | translate
     }}</clr-dg-column>
@@ -137,34 +134,6 @@
                 *ngIf="getPullCommand(tag)"
                 [iconMode]="true"
                 [defaultValue]="getPullCommand(tag)"></hbr-copy-input>
-        </clr-dg-cell>
-        <clr-dg-cell *ngIf="withNotary" [ngSwitch]="tag.signed">
-            <div class="cell">
-                <clr-icon
-                    shape="check-circle"
-                    *ngSwitchCase="true"
-                    size="20"
-                    class="color-green"></clr-icon>
-                <clr-icon
-                    shape="times-circle"
-                    *ngSwitchCase="false"
-                    size="16"
-                    class="color-red"></clr-icon>
-                <a
-                    href="javascript:void(0)"
-                    *ngSwitchDefault
-                    role="tooltip"
-                    aria-haspopup="true"
-                    class="tooltip tooltip-top-right">
-                    <clr-icon
-                        shape="help"
-                        class="color-gray"
-                        size="16"></clr-icon>
-                    <span class="tooltip-content">{{
-                        'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate
-                    }}</span>
-                </a>
-            </div>
         </clr-dg-cell>
         <clr-dg-cell>{{
             tag.pull_time !== availableTime

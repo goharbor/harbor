@@ -13,11 +13,9 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-    CanActivate,
     Router,
     ActivatedRouteSnapshot,
     RouterStateSnapshot,
-    CanActivateChild,
 } from '@angular/router';
 import { AppConfigService } from '../../services/app-config.service';
 import { Observable } from 'rxjs';
@@ -26,7 +24,7 @@ import { CommonRoutes } from '../entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class OidcGuard implements CanActivate, CanActivateChild {
+export class OidcGuard {
     constructor(
         private appConfigService: AppConfigService,
         private router: Router

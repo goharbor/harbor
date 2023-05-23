@@ -237,6 +237,7 @@ Delete Replication Rule
     Click Delete Button
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Double Keywords When Error  Retry Element Click  ${dialog_delete}  Retry Wait Until Page Not Contains Element  ${dialog_delete}
+    Reload Page
     Filter Replication Rule  ${name}  exist=${false}
 
 Rename Endpoint

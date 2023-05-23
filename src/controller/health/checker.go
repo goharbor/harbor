@@ -1,4 +1,4 @@
-// Copyright 2019 Project Harbor Authors
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -146,14 +146,6 @@ func registryCtlHealthChecker() health.Checker {
 	return PeriodicHealthChecker(checker, period)
 }
 
-func notaryHealthChecker() health.Checker {
-	url := config.InternalNotaryEndpoint() + "/_notary_server/health"
-	timeout := 60 * time.Second
-	period := 10 * time.Second
-	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusOK)
-	return PeriodicHealthChecker(checker, period)
-}
-
 func databaseHealthChecker() health.Checker {
 	period := 10 * time.Second
 	checker := health.CheckFunc(func() error {
@@ -191,9 +183,6 @@ func RegisterHealthCheckers() {
 	registry["registryctl"] = registryCtlHealthChecker()
 	registry["database"] = databaseHealthChecker()
 	registry["redis"] = redisHealthChecker()
-	if config.WithNotary() {
-		registry["notary"] = notaryHealthChecker()
-	}
 	if config.WithTrivy() {
 		registry["trivy"] = trivyHealthChecker()
 	}

@@ -230,20 +230,6 @@ external_database:
     username: {{ external_database.clair.username }}
     password: {{ external_database.clair.password }}
     ssl_mode: {{ external_database.clair.ssl_mode }}
-  notary_signer:
-    host: {{ external_database.notary_signer.host }}
-    port: {{ external_database.notary_signer.port }}
-    db_name: {{external_database.notary_signer.db_name }}
-    username: {{ external_database.notary_signer.username }}
-    password: {{ external_database.notary_signer.password }}
-    ssl_mode: {{ external_database.notary_signer.ssl_mode }}
-  notary_server:
-    host: {{ external_database.notary_server.host }}
-    port: {{ external_database.notary_server.port }}
-    db_name: {{ external_database.notary_server.db_name }}
-    username: {{ external_database.notary_server.username }}
-    password: {{ external_database.notary_server.password }}
-    ssl_mode: {{ external_database.notary_server.ssl_mode }}
 {% else %}
 # Uncomment external_database if using external database.
 # external_database:

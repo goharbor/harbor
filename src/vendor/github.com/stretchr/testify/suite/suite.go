@@ -22,9 +22,13 @@ var matchMethod = flag.String("testify.m", "", "regular expression to select tes
 // retrieving the current *testing.T context.
 type Suite struct {
 	*assert.Assertions
+
 	mu      sync.RWMutex
 	require *require.Assertions
 	t       *testing.T
+
+	// Parent suite to have access to the implemented methods of parent struct
+	s TestingSuite
 }
 
 // T retrieves the current *testing.T context.
@@ -41,6 +45,12 @@ func (suite *Suite) SetT(t *testing.T) {
 	suite.t = t
 	suite.Assertions = assert.New(t)
 	suite.require = require.New(t)
+}
+
+// SetS needs to set the current test suite as parent
+// to get access to the parent methods
+func (suite *Suite) SetS(s TestingSuite) {
+	suite.s = s
 }
 
 // Require returns a require context for suite.
@@ -85,7 +95,18 @@ func failOnPanic(t *testing.T, r interface{}) {
 // Provides compatibility with go test pkg -run TestSuite/TestName/SubTestName.
 func (suite *Suite) Run(name string, subtest func()) bool {
 	oldT := suite.T()
-	defer suite.SetT(oldT)
+
+	if setupSubTest, ok := suite.s.(SetupSubTest); ok {
+		setupSubTest.SetupSubTest()
+	}
+
+	defer func() {
+		suite.SetT(oldT)
+		if tearDownSubTest, ok := suite.s.(TearDownSubTest); ok {
+			tearDownSubTest.TearDownSubTest()
+		}
+	}()
+
 	return oldT.Run(name, func(t *testing.T) {
 		suite.SetT(t)
 		subtest()
@@ -98,6 +119,7 @@ func Run(t *testing.T, suite TestingSuite) {
 	defer recoverAndFailOnPanic(t)
 
 	suite.SetT(t)
+	suite.SetS(suite)
 
 	var suiteSetupDone bool
 

@@ -104,7 +104,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private userPermissionService: UserPermissionService,
         private systemInfoService: SystemInfoService,
-        private appConfigService: AppConfigService,
         private errorHandlerService: ErrorHandler,
         private activatedRoute: ActivatedRoute
     ) {
@@ -355,57 +354,30 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         operMessage.state = OperationState.progressing;
         operMessage.data.name = tag.name;
         this.operationService.publishInfo(operMessage);
-
-        if (tag.signed) {
-            forkJoin(
-                this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get(
-                    'REPOSITORY.DELETION_SUMMARY_TAG_DENIED'
-                )
-            ).subscribe(res => {
-                const wrongInfo: string =
-                    res[1] +
-                    DeleteTagWithNotoryCommand1 +
-                    this.deletePort(this.registryUrl) +
-                    DeleteTagWithNotoryCommand2 +
-                    this.registryUrl +
-                    '/' +
-                    this.repositoryName +
-                    ' ' +
-                    tag.name;
-                operateChanges(operMessage, OperationState.failure, wrongInfo);
-            });
-            return of(null);
-        } else {
-            const deleteTagParams: ArtifactService.DeleteTagParams = {
-                projectName: this.projectName,
-                repositoryName: dbEncodeURIComponent(this.repositoryName),
-                reference: this.artifactDetails.digest,
-                tagName: tag.name,
-            };
-            return this.artifactService.deleteTag(deleteTagParams).pipe(
-                map(response => {
-                    this.translateService
-                        .get('BATCH.DELETED_SUCCESS')
-                        .subscribe(res => {
-                            operateChanges(operMessage, OperationState.success);
-                        });
-                }),
-                catchError(error => {
-                    const message = errorHandler(error);
-                    this.translateService
-                        .get(message)
-                        .subscribe(res =>
-                            operateChanges(
-                                operMessage,
-                                OperationState.failure,
-                                res
-                            )
-                        );
-                    return of(error);
-                })
-            );
-        }
+        const deleteTagParams: ArtifactService.DeleteTagParams = {
+            projectName: this.projectName,
+            repositoryName: dbEncodeURIComponent(this.repositoryName),
+            reference: this.artifactDetails.digest,
+            tagName: tag.name,
+        };
+        return this.artifactService.deleteTag(deleteTagParams).pipe(
+            map(response => {
+                this.translateService
+                    .get('BATCH.DELETED_SUCCESS')
+                    .subscribe(res => {
+                        operateChanges(operMessage, OperationState.success);
+                    });
+            }),
+            catchError(error => {
+                const message = errorHandler(error);
+                this.translateService
+                    .get(message)
+                    .subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                return of(error);
+            })
+        );
     }
 
     existValid(name) {
@@ -434,9 +406,7 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.tagNameCheckSub.unsubscribe();
     }
-    get withNotary(): boolean {
-        return this.appConfigService.getConfig().with_notary;
-    }
+
     public get registryUrl(): string {
         if (this.systemInfo && this.systemInfo.registry_url) {
             return this.systemInfo.registry_url;

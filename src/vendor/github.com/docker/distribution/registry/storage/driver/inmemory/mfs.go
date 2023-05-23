@@ -279,6 +279,9 @@ func (f *file) sectionReader(offset int64) io.Reader {
 }
 
 func (f *file) ReadAt(p []byte, offset int64) (n int, err error) {
+	if offset >= int64(len(f.data)) {
+		return 0, io.EOF
+	}
 	return copy(p, f.data[offset:]), nil
 }
 

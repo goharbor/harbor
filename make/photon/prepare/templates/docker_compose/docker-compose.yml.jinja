@@ -126,11 +126,6 @@ services:
       - {{data_volume}}/database:/var/lib/postgresql/data:z
     networks:
       harbor:
-  {% if with_notary %}
-      harbor-notary:
-        aliases:
-          - harbor-db
-  {% endif %}
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -184,9 +179,6 @@ services:
 {% endif %}
     networks:
       harbor:
-{% if with_notary %}
-      harbor-notary:
-{% endif %}
     depends_on:
       - log
       - registry
@@ -323,9 +315,6 @@ services:
 {% endif %}
     networks:
       - harbor
-{% if with_notary %}
-      - harbor-notary
-{% endif %}
     ports:
       - {{http_port}}:8080
 {% if protocol == 'https' %}
@@ -333,9 +322,6 @@ services:
 {% endif %}
 {% if metric.enabled %}
       - {{metric.port}}:9090
-{% endif %}
-{% if with_notary %}
-      - 4443:4443
 {% endif %}
     depends_on:
       - registry
@@ -347,86 +333,6 @@ services:
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "proxy"
-{% if with_notary %}
-  notary-server:
-    image: goharbor/notary-server-photon:{{notary_version}}
-    container_name: notary-server
-    restart: always
-    networks:
-      - notary-sig
-      - harbor-notary
-    volumes:
-      - ./common/config/notary:/etc/notary:z
-      - type: bind
-        source: {{data_volume}}/secret/notary/notary-signer-ca.crt
-        target: /etc/notary/notary-signer-ca.crt
-      - type: bind
-        source: {{data_volume}}/secret/registry/root.crt
-        target: /etc/notary/root.crt
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.notary_server_crt_path}}
-        target: /etc/harbor/ssl/notary_server.crt
-      - type: bind
-        source: {{internal_tls.notary_server_key_path}}
-        target: /etc/harbor/ssl/notary_server.key
-{% endif %}
-    env_file:
-      - ./common/config/notary/server_env
-    depends_on:
-  {% if external_database == False %}
-      - postgresql
-  {% endif %}
-      - notary-signer
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://localhost:1514"
-        tag: "notary-server"
-  notary-signer:
-    image: goharbor/notary-signer-photon:{{notary_version}}
-    container_name: notary-signer
-    restart: always
-    networks:
-      harbor-notary:
-      notary-sig:
-        aliases:
-          - notarysigner
-    volumes:
-      - ./common/config/notary:/etc/notary:z
-      - type: bind
-        source: {{data_volume}}/secret/notary/notary-signer.crt
-        target: /etc/notary/notary-signer.crt
-      - type: bind
-        source: {{data_volume}}/secret/notary/notary-signer.key
-        target: /etc/notary/notary-signer.key
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
-{%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.notary_signer_crt_path}}
-        target: /etc/harbor/ssl/notary_signer.crt
-      - type: bind
-        source: {{internal_tls.notary_signer_key_path}}
-        target: /etc/harbor/ssl/notary_signer.key
-{% endif %}
-    env_file:
-      - ./common/config/notary/signer_env
-    depends_on:
-      - log
-  {% if external_database == False %}
-      - postgresql
-  {% endif %}
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://localhost:1514"
-        tag: "notary-signer"
-{% endif %}
 {% if with_trivy %}
   trivy-adapter:
     container_name: trivy-adapter
@@ -494,10 +400,4 @@ services:
 networks:
   harbor:
     external: false
-{% if with_notary %}
-  harbor-notary:
-    external: false
-  notary-sig:
-    external: false
-{% endif %}
 

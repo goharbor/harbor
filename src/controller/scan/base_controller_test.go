@@ -321,7 +321,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 			walkFn(suite.artifact)
 		}).Once()
 
-		mock.OnAnything(suite.taskMgr, "List").Return([]*task.Task{
+		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 			{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Success"},
 		}, nil).Once()
 
@@ -343,7 +343,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 			walkFn(suite.artifact)
 		}).Once()
 
-		mock.OnAnything(suite.taskMgr, "List").Return([]*task.Task{
+		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 			{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Success"},
 		}, nil).Once()
 
@@ -360,7 +360,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 			walkFn(suite.artifact)
 		}).Once()
 
-		mock.OnAnything(suite.taskMgr, "List").Return([]*task.Task{
+		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 			{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Running"},
 		}, nil).Once()
 
@@ -409,37 +409,40 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 // TestScanControllerGetReport ...
 func (suite *ControllerTestSuite) TestScanControllerGetReport() {
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 		walkFn := args.Get(2).(func(*artifact.Artifact) error)
 		walkFn(suite.artifact)
 	}).Once()
 
-	mock.OnAnything(suite.taskMgr, "List").Return([]*task.Task{
+	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 		{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001")},
 	}, nil).Once()
 	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil)
-	rep, err := suite.c.GetReport(context.TODO(), suite.artifact, []string{v1.MimeTypeNativeReport})
+	rep, err := suite.c.GetReport(ctx, suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(rep))
 }
 
 // TestScanControllerGetSummary ...
 func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 		walkFn := args.Get(2).(func(*artifact.Artifact) error)
 		walkFn(suite.artifact)
 	}).Once()
-	mock.OnAnything(suite.taskMgr, "List").Return(nil, nil).Once()
+	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return(nil, nil).Once()
 
-	sum, err := suite.c.GetSummary(context.TODO(), suite.artifact, []string{v1.MimeTypeNativeReport})
+	sum, err := suite.c.GetSummary(ctx, suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(sum))
 }
 
 // TestScanControllerGetScanLog ...
 func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
-	mock.OnAnything(suite.taskMgr, "List").Return([]*task.Task{
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 		{
 			ID:         1,
 			ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"),
@@ -448,7 +451,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
 
 	mock.OnAnything(suite.taskMgr, "GetLog").Return([]byte("log"), nil).Once()
 
-	bytes, err := suite.c.GetScanLog(context.TODO(), &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, "rp-uuid-001")
+	bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, "rp-uuid-001")
 	require.NoError(suite.T(), err)
 	assert.Condition(suite.T(), func() (success bool) {
 		success = len(bytes) > 0
@@ -457,8 +460,8 @@ func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
 }
 
 func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
-	kw1 := q.KeyWords{"extra_attrs.report:rp-uuid-001": "1"}
-	suite.taskMgr.On("List", context.TODO(), q.New(kw1)).Return([]*task.Task{
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	suite.taskMgr.On("ListScanTasksByReportUUID", ctx, "rp-uuid-001").Return([]*task.Task{
 		{
 			ID:         1,
 			ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"),
@@ -469,8 +472,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		walkFn(suite.artifact)
 	})
 	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil)
-	kw2 := q.KeyWords{"extra_attrs.report:rp-uuid-002": "1"}
-	suite.taskMgr.On("List", context.TODO(), q.New(kw2)).Return([]*task.Task{
+	suite.taskMgr.On("ListScanTasksByReportUUID", ctx, "rp-uuid-002").Return([]*task.Task{
 		{
 			ID:         2,
 			ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-002"),
@@ -480,7 +482,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		// Both success
 		mock.OnAnything(suite.taskMgr, "GetLog").Return([]byte("log"), nil).Twice()
 
-		bytes, err := suite.c.GetScanLog(context.TODO(), &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
+		bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Nil(err)
 		suite.NotEmpty(bytes)
 		suite.Contains(string(bytes), "Logs of report rp-uuid-001")
@@ -489,10 +491,10 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 
 	{
 		// One successfully, one failed
-		suite.taskMgr.On("GetLog", context.TODO(), int64(1)).Return([]byte("log"), nil).Once()
-		suite.taskMgr.On("GetLog", context.TODO(), int64(2)).Return(nil, fmt.Errorf("failed")).Once()
+		suite.taskMgr.On("GetLog", ctx, int64(1)).Return([]byte("log"), nil).Once()
+		suite.taskMgr.On("GetLog", ctx, int64(2)).Return(nil, fmt.Errorf("failed")).Once()
 
-		bytes, err := suite.c.GetScanLog(context.TODO(), &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
+		bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Nil(err)
 		suite.NotEmpty(bytes)
 		suite.NotContains(string(bytes), "Logs of report rp-uuid-001")
@@ -502,7 +504,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		// Both failed
 		mock.OnAnything(suite.taskMgr, "GetLog").Return(nil, fmt.Errorf("failed")).Twice()
 
-		bytes, err := suite.c.GetScanLog(context.TODO(), &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
+		bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Error(err)
 		suite.Empty(bytes)
 	}
@@ -511,7 +513,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 		// Both empty
 		mock.OnAnything(suite.taskMgr, "GetLog").Return(nil, nil).Twice()
 
-		bytes, err := suite.c.GetScanLog(context.TODO(), &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
+		bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, base64.StdEncoding.EncodeToString([]byte("rp-uuid-001|rp-uuid-002")))
 		suite.Nil(err)
 		suite.Empty(bytes)
 	}
@@ -560,7 +562,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 			walkFn(suite.artifact)
 		}).Once()
 
-		mock.OnAnything(suite.taskMgr, "List").Return(nil, nil).Once()
+		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return(nil, nil).Once()
 
 		mock.OnAnything(suite.reportMgr, "Delete").Return(nil).Once()
 		mock.OnAnything(suite.reportMgr, "Create").Return("uuid", nil).Once()

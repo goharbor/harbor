@@ -19,9 +19,6 @@ def mark_file(path, mode=0o600, uid=DEFAULT_UID, gid=DEFAULT_GID):
 def validate(conf, **kwargs):
     # Protocol validate
     protocol = conf.get("configuration", "ui_url_protocol")
-    if protocol != "https" and kwargs.get('notary_mode'):
-        raise Exception(
-            "Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
         if not conf.has_option("configuration", "ssl_cert"):
             raise Exception(

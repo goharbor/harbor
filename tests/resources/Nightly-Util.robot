@@ -54,8 +54,6 @@ Nightly Test Setup In Ubuntu For Upgrade
     Prepare Test Tools
     Log To Console  Start Docker Daemon Locally ...
     Run Keyword  Start Docker Daemon Locally
-    #For upgrade pipeline: get notary targets key from last execution.
-    ${rc}  ${output}=  Run And Return Rc And Output  [ -f "/key_store/private_keys_backup.tar.gz" ] && tar -zxvf /key_store/private_keys_backup.tar.gz -C /
 
 CA Setup In ubuntu
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}
@@ -81,8 +79,6 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/adminserver.log
     SSHLibrary.Get File  /var/log/harbor/jobservice.log
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
-    SSHLibrary.Get File  /var/log/harbor/notary-server.log
-    SSHLibrary.Get File  /var/log/harbor/notary-signer.log
     SSHLibrary.Get File  /var/log/harbor/registryctl.log
     Run  rename 's/^/${ip}/' *.log
     Close All Connections
