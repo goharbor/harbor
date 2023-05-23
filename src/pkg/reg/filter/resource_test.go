@@ -251,3 +251,83 @@ func TestArtifactLabelFilters(t *testing.T) {
 	require.EqualValues(t, "ddddd", arts[1].Digest)
 	require.Nil(t, arts[1].Labels)
 }
+
+func TestArtifactLabelFiltersRegex(t *testing.T) {
+	var artifacts = []*model.Artifact{
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "aaaaa",
+			Tags: []string{
+				"test1",
+				"test2",
+				"harbor1",
+			},
+			Labels: []string{
+				"label1",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "bbbbb",
+			Tags: []string{
+				"test3",
+				"harbor2",
+			},
+			Labels: []string{
+				"label1",
+				"label2",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "ccccc",
+			Tags: []string{
+				"harbor3",
+			},
+			Labels: []string{
+				"label3",
+			},
+		},
+		{
+			Type:   model.ResourceTypeArtifact,
+			Digest: "ddddd",
+		},
+	}
+
+	var filters = []*model.Filter{
+		{
+			Type:  model.FilterTypeLabelRegex,
+			Value: []string{`label*`},
+		},
+	}
+
+	artFilters, err := BuildArtifactFilters(filters)
+	require.Nil(t, err)
+
+	arts, err := artFilters.Filter(artifacts)
+
+	require.Nil(t, err)
+	require.Equal(t, 4, len(arts))
+	require.EqualValues(t, "aaaaa", arts[0].Digest)
+	require.EqualValues(t, []string{"label1"}, arts[0].Labels)
+	require.EqualValues(t, "bbbbb", arts[1].Digest)
+	require.EqualValues(t, []string{"label1", "label2"}, arts[1].Labels)
+
+	filters = []*model.Filter{
+		{
+			Type:       model.FilterTypeLabelRegex,
+			Value:      []string{`label1`},
+			Decoration: model.Excludes,
+		},
+	}
+
+	artFilters, err = BuildArtifactFilters(filters)
+	require.Nil(t, err)
+
+	arts, err = artFilters.Filter(artifacts)
+	require.Nil(t, err)
+	require.Equal(t, 2, len(arts))
+	require.EqualValues(t, "bbbbb", arts[0].Digest)
+	require.EqualValues(t, []string{"label1", "label2"}, arts[0].Labels)
+	require.EqualValues(t, "ccccc", arts[1].Digest)
+}

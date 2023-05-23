@@ -60,6 +60,12 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 				decoration: filter.Decoration,
 			}
 
+		case model.FilterTypeLabelRegex:
+			f = &artifactLabelFilterRegex{
+				labels:     filter.Value.([]string),
+				decoration: filter.Decoration,
+			}
+
 		}
 		if f != nil {
 			fs = append(fs, f)
@@ -352,6 +358,73 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 				Labels: artifact.Labels,
 				Tags:   tags, // only replicate the matched tags
 			})
+		}
+	}
+	return result, nil
+}
+
+type artifactLabelFilterRegex struct {
+	labels []string
+	// "matches", "excludes"
+	decoration string
+}
+
+func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
+
+	if len(a.labels) == 0 {
+		return artifacts, nil
+	}
+	var result []*model.Artifact
+	for _, artifact := range artifacts {
+		// labels := map[string]struct{}{}
+		// for _, label := range artifact.Labels {
+		// 	labels[label] = struct{}{}
+		// }
+		match := true
+	outer:
+		for _, label := range a.labels {
+			// if _, exist := labels[label]; !exist {
+			// 	match = false
+			// 	break
+			// }
+
+			filterRegexPattern, err := regexp.Compile(label)
+			if err != nil {
+				return nil, err
+			}
+
+			for i, lbl := range artifact.Labels {
+
+				fmt.Println("ARTIFACT LABEL")
+				fmt.Println(lbl)
+				fmt.Println("FILTER LABEL")
+				fmt.Println(label)
+				fmt.Print("\n")
+
+				exists := filterRegexPattern.MatchString(lbl)
+
+				fmt.Println("DIGEST")
+				fmt.Println(artifacts[i].Digest)
+				fmt.Println("MATCHES")
+				fmt.Println(exists)
+				fmt.Print("\n")
+
+				if !exists {
+					match = false
+					break outer
+				}
+			}
+
+		}
+		// add the artifact to the result list if it contains all labels defined for the filter
+		if a.decoration == model.Excludes {
+			if !match {
+				result = append(result, artifact)
+			}
+		} else {
+			if match {
+				result = append(result, artifact)
+			}
 		}
 	}
 	return result, nil
