@@ -13,11 +13,9 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-    CanActivate,
     Router,
     ActivatedRouteSnapshot,
     RouterStateSnapshot,
-    CanActivateChild,
     NavigationExtras,
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
@@ -31,7 +29,7 @@ import { CommonRoutes, CONFIG_AUTH_MODE } from '../entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class AuthCheckGuard implements CanActivate, CanActivateChild {
+export class AuthCheckGuard {
     constructor(
         private authService: SessionService,
         private router: Router,

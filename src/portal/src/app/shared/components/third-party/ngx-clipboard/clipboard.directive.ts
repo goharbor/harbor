@@ -32,7 +32,6 @@ export class ClipboardDirective implements OnDestroy {
     }
 
     @HostListener('click', ['$event.target'])
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onClick(button: ElementRef) {
         if (!this.clipboardSrv.isSupported) {
             this.handleResult(false, undefined);
