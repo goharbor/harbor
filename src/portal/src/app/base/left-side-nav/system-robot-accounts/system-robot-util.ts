@@ -89,6 +89,7 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
         action: 'delete',
         checked: true,
     },
+    
     {
         resource: 'tag',
         action: 'create',
@@ -112,6 +113,287 @@ export const INITIAL_ACCESSES: FrontAccess[] = [
     {
         resource: 'scan',
         action: 'stop',
+        checked: true,
+    },
+    //New Permissions to be seperated
+    {
+        resource: 'helm-chart',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version-label',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'helm-chart-version-label',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'log',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'member',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'member',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'member',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'member',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'member',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'metadata',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'metadata',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'metadata',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'metadata',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'metadata',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'quota',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'tag-retention',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'tag-retention',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'tag-retention',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'tag-retention',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'tag-retention',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'immutable-tag',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'immutable-tag',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'immutable-tag',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'immutable-tag',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'robot',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'robot',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'robot',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'robot',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'robot',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'notification-policy',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'notification-policy',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'notification-policy',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'notification-policy',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'notification-policy',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'scanner',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'scanner',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'scanner',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'accessory',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'artifact-addition',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'preheat-policy',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'preheat-policy',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'preheat-policy',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'preheat-policy',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'preheat-policy',
+        action: 'update',
+        checked: true,
+    },
+    {
+        resource: 'project',
+        action: 'list',
+        checked: true,
+    },
+    {
+        resource: 'project',
+        action: 'read',
+        checked: true,
+    },
+    {
+        resource: 'project',
+        action: 'create',
+        checked: true,
+    },
+    {
+        resource: 'project',
+        action: 'delete',
+        checked: true,
+    },
+    {
+        resource: 'project',
+        action: 'update',
         checked: true,
     },
 ];
