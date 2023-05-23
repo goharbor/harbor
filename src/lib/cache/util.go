@@ -15,22 +15,8 @@
 package cache
 
 import (
-	"net/url"
 	"sync"
 )
-
-// TODO: use the URL.Redacted when golang upgrade to 1.15
-func redacted(u *url.URL) string {
-	if u == nil {
-		return ""
-	}
-
-	ru := *u
-	if _, has := ru.User.Password(); has {
-		ru.User = url.UserPassword(ru.User.Username(), "xxxxx")
-	}
-	return ru.String()
-}
 
 type keyMutex struct {
 	m *sync.Map
