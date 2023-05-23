@@ -14,7 +14,6 @@
 import { Injectable } from '@angular/core';
 import {
     Router,
-    Resolve,
     RouterStateSnapshot,
     ActivatedRouteSnapshot,
 } from '@angular/router';
@@ -29,7 +28,7 @@ import { dbEncodeURIComponent } from '../../shared/units/utils';
 @Injectable({
     providedIn: 'root',
 })
-export class ArtifactDetailRoutingResolverService implements Resolve<Artifact> {
+export class ArtifactDetailRoutingResolverService {
     constructor(
         private projectService: ProjectService,
         private artifactService: ArtifactService,

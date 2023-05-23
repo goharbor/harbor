@@ -14,7 +14,6 @@
 import { Injectable } from '@angular/core';
 import {
     Router,
-    Resolve,
     RouterStateSnapshot,
     ActivatedRouteSnapshot,
 } from '@angular/router';
@@ -28,7 +27,7 @@ import { RoleInfo, Roles } from '../../shared/entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class ProjectRoutingResolver implements Resolve<Project> {
+export class ProjectRoutingResolver {
     constructor(
         private sessionService: SessionService,
         private projectService: ProjectService,
