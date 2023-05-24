@@ -60,3 +60,5 @@ ${filter_dist_input}  //hbr-filter//input
 ${audit_log_forward_syslog_endpoint_input_id}  //*[@id='auditLogForwardEndpoint']
 ${skip_audit_log_database_checkbox}  //*[@id='skipAuditLogDatabase']
 ${skip_audit_log_database_label}  //clr-checkbox-wrapper//label[contains(@for,'skipAuditLogDatabase')]
+${retain_image_last_pull_time_label}  //clr-checkbox-wrapper//label[contains(@for,'scannerSkipUpdatePullTime')]
+${retain_image_last_pull_time_checkbox}  //*[@id='scannerSkipUpdatePullTime']

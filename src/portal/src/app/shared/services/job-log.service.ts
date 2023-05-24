@@ -74,7 +74,7 @@ export class JobLogDefaultService extends JobLogService {
         if (!this._isSupportedJobType(jobType)) {
             return observableThrowError('Unsupport job type: ' + jobType);
         }
-        if (!jobId || jobId <= 0) {
+        if (!jobId || +jobId <= 0) {
             return observableThrowError('Bad argument');
         }
 

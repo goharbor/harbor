@@ -15,6 +15,7 @@
 package auth
 
 import (
+	"crypto/subtle"
 	"errors"
 	"net/http"
 	"strings"
@@ -54,7 +55,7 @@ func (s *secretHandler) AuthorizeRequest(req *http.Request) error {
 	secInReq := strings.TrimPrefix(auth, HarborSecret)
 
 	for _, v := range s.secrets {
-		if secInReq == v {
+		if subtle.ConstantTimeCompare([]byte(secInReq), []byte(v)) == 1 {
 			return nil
 		}
 	}

@@ -13,11 +13,9 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-    CanActivate,
     Router,
     ActivatedRouteSnapshot,
     RouterStateSnapshot,
-    CanActivateChild,
     NavigationExtras,
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
@@ -31,7 +29,7 @@ import { CommonRoutes, CONFIG_AUTH_MODE } from '../entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class AuthCheckGuard implements CanActivate, CanActivateChild {
+export class AuthCheckGuard {
     constructor(
         private authService: SessionService,
         private router: Router,
@@ -46,13 +44,6 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     ): Observable<boolean> | boolean {
         // When routing change, clear
         this.msgHandler.clear();
-        if (
-            this.appConfigService.getConfig().read_only &&
-            this.appConfigService.getConfig().read_only.toString() === 'true'
-        ) {
-            this.msgHandler.handleReadOnly();
-        }
-
         this.searchTrigger.closeSearch(true);
         return new Observable(observer => {
             // if the url has the queryParam `publicAndNotLogged=yes`, then skip auth check

@@ -82,7 +82,7 @@ func GetAnyKey(digests map[digest.Digest]io.ReadSeeker) (d digest.Digest) {
 	return
 }
 
-// GetAnyKeys ...
+// GetKeys ...
 func GetKeys(digests map[digest.Digest]io.ReadSeeker) (ds []digest.Digest) {
 	for d := range digests {
 		ds = append(ds, d)

@@ -14,7 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from '../../../shared/components/global-message/message.service';
 import { Message } from '../../../shared/components/global-message/message';
 import { JobServiceDashboardHealthCheckService } from '../../left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
-import { AppLevelMessage } from '../../../shared/services/message-handler.service';
+import { AppConfigService } from '../../../services/app-config.service';
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
 @Component({
@@ -29,14 +29,14 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
     appLevelMsgSub: Subscription;
     clearSub: Subscription;
     showLogin: boolean = false;
-    showReadOnly: boolean = false;
     constructor(
         private session: SessionService,
         private scannerService: ScannerService,
         private router: Router,
         private messageService: MessageService,
         private route: ActivatedRoute,
-        private jobServiceDashboardHealthCheckService: JobServiceDashboardHealthCheckService
+        private jobServiceDashboardHealthCheckService: JobServiceDashboardHealthCheckService,
+        private appConfigService: AppConfigService
     ) {}
     ngOnInit() {
         if (
@@ -53,10 +53,6 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
             this.appLevelMsgSub =
                 this.messageService.appLevelAnnounced$.subscribe(message => {
                     this.message = message;
-                    this.showReadOnly =
-                        message.statusCode === httpStatusCode.AppLevelWarning &&
-                        message.message === AppLevelMessage.REPO_READ_ONLY;
-
                     if (message.statusCode === httpStatusCode.Unauthorized) {
                         this.showLogin = true;
                         // User session timed out, then redirect to sign-in page
@@ -86,7 +82,6 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
         if (!this.clearSub) {
             this.clearSub = this.messageService.clearChan$.subscribe(clear => {
                 this.showLogin = false;
-                this.showReadOnly = false;
             });
         }
     }
@@ -96,7 +91,9 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
             this.appLevelMsgSub = null;
         }
     }
-
+    get showReadOnly(): boolean {
+        return this.appConfigService.getConfig()?.read_only;
+    }
     shouldShowScannerInfo(): boolean {
         return (
             this.session.getCurrentUser()?.has_admin_role &&
@@ -186,6 +183,6 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
     }
 
     isLogin(): boolean {
-        return this.session.getCurrentUser()?.has_admin_role;
+        return !!this.session.getCurrentUser();
     }
 }

@@ -28,14 +28,12 @@ import (
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var creatorMap map[string]Creator
 var registryFilterMap map[string]accessFilter
-var notaryFilterMap map[string]accessFilter
 var actionScopeMap = map[rbac.Action]string{
 	// Scopes checked by distribution, see: https://github.com/docker/distribution/blob/master/registry/handlers/app.go
 	rbac.ActionPull:   "pull",
@@ -46,8 +44,6 @@ var actionScopeMap = map[rbac.Action]string{
 }
 
 const (
-	// Notary service
-	Notary = "harbor-notary"
 	// Registry service
 	Registry = "harbor-registry"
 )
@@ -61,23 +57,6 @@ func InitCreators() {
 		},
 		"registry": &registryFilter{},
 	}
-	ext, err := config.ExtURL()
-	if err != nil {
-		log.Warningf("Failed to get ext url, err: %v, the token service will not be functional with notary requests", err)
-	} else {
-		notaryFilterMap = map[string]accessFilter{
-			"repository": &repositoryFilter{
-				parser: &endpointParser{
-					endpoint: ext,
-				},
-			},
-		}
-		creatorMap[Notary] = &generalCreator{
-			service:   Notary,
-			filterMap: notaryFilterMap,
-		}
-	}
-
 	creatorMap[Registry] = &generalCreator{
 		service:   Registry,
 		filterMap: registryFilterMap,
@@ -202,15 +181,6 @@ func resourceScopes(ctx context.Context, rc rbac.Resource) map[string]struct{} {
 		}
 	}
 
-	// "*" is needed in the token for some API in notary server
-	// see https://github.com/goharbor/harbor/issues/14303#issuecomment-788010900
-	// and https://github.com/theupdateframework/notary/blob/84287fd8df4f172c9a8289641cdfa355fc86989d/server/server.go#L200
-	_, ok1 := res["push"]
-	_, ok2 := res["pull"]
-	_, ok3 := res["delete"]
-	if ok1 && ok2 && ok3 {
-		res["*"] = struct{}{}
-	}
 	return res
 }
 

@@ -72,14 +72,6 @@ export class MessageHandlerService implements ErrorHandler {
         }
     }
 
-    public handleReadOnly(): void {
-        this.msgService.announceAppLevelMessage(
-            httpStatusCode.AppLevelWarning,
-            AppLevelMessage.REPO_READ_ONLY,
-            AlertType.WARNING
-        );
-    }
-
     public showError(message: string, params: any): void {
         if (!params) {
             params = {};
@@ -130,8 +122,4 @@ export class MessageHandlerService implements ErrorHandler {
     public log(log: any): void {
         this.showInfo(log);
     }
-}
-
-export enum AppLevelMessage {
-    REPO_READ_ONLY = 'REPO_READ_ONLY',
 }
