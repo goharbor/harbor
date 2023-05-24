@@ -250,7 +250,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	c.tagCtl.On("Ensure").Return(nil)
+	c.tagCtl.On("Ensure").Return(int64(1), nil)
 	c.accMgr.On("Ensure").Return(nil)
 	_, id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, &ArtOption{
 		Tags: []string{"latest"},
@@ -563,7 +563,7 @@ func (c *controllerTestSuite) TestCopy() {
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	c.regCli.On("Copy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	c.tagCtl.On("Ensure").Return(nil)
+	c.tagCtl.On("Ensure").Return(int64(1), nil)
 	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)

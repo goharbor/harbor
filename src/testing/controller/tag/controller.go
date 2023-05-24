@@ -15,9 +15,9 @@ type FakeController struct {
 }
 
 // Ensure ...
-func (f *FakeController) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) error {
+func (f *FakeController) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) (int64, error) {
 	args := f.Called()
-	return args.Error(0)
+	return int64(0), args.Error(1)
 }
 
 // Count ...

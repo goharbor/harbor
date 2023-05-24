@@ -154,7 +154,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 	}
 	if option != nil {
 		for _, tag := range option.Tags {
-			if err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
+			if _, err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
 				return false, 0, err
 			}
 		}
