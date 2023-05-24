@@ -41,7 +41,7 @@ var (
 // Controller manages the tags
 type Controller interface {
 	// Ensure
-	Ensure(ctx context.Context, repositoryID, artifactID int64, name string) error
+	Ensure(ctx context.Context, repositoryID, artifactID int64, name string) (int64, error)
 	// Count returns the total count of tags according to the query.
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List tags according to the query
@@ -74,7 +74,7 @@ type controller struct {
 }
 
 // Ensure ...
-func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) error {
+func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) (int64, error) {
 	query := &q.Query{
 		Keywords: map[string]interface{}{
 			"repository_id": repositoryID,
@@ -85,43 +85,44 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		WithImmutableStatus: true,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 	// the tag already exists under the repository
 	if len(tags) > 0 {
 		tag := tags[0]
 		// the tag already exists under the repository and is attached to the artifact, return directly
 		if tag.ArtifactID == artifactID {
-			return nil
+			return tag.ID, nil
 		}
 		// existing tag must check the immutable status and signature
 		if tag.Immutable {
-			return errors.New(nil).WithCode(errors.PreconditionCode).
+			return 0, errors.New(nil).WithCode(errors.PreconditionCode).
 				WithMessage("the tag %s configured as immutable, cannot be updated", tag.Name)
 		}
 		// the tag exists under the repository, but it is attached to other artifact
 		// update it to point to the provided artifact
 		tag.ArtifactID = artifactID
 		tag.PushTime = time.Now()
-		return c.Update(ctx, tag, "ArtifactID", "PushTime")
+		return tag.ID, c.Update(ctx, tag, "ArtifactID", "PushTime")
 	}
 
 	// the tag doesn't exist under the repository, create it
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	tagID := int64(0)
 	if err = orm.WithTransaction(func(ctx context.Context) error {
 		tag := &Tag{}
 		tag.RepositoryID = repositoryID
 		tag.ArtifactID = artifactID
 		tag.Name = name
 		tag.PushTime = time.Now()
-		_, err = c.Create(ctx, tag)
+		tagID, err = c.Create(ctx, tag)
 		return err
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return tagID, nil
 }
 
 // Count ...
