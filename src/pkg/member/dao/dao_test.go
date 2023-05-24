@@ -22,7 +22,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	testDao "github.com/goharbor/harbor/src/common/dao"
-	_ "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member/models"

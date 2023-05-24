@@ -40,7 +40,6 @@ import (
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
-	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
@@ -74,7 +73,7 @@ type controllerTestSuite struct {
 	abstractor   *fakeAbstractor
 	immutableMtr *immutable.FakeMatcher
 	regCli       *registry.Client
-	accMgr       *accessory.Manager
+	accMgr       *accessorytesting.Manager
 }
 
 func (c *controllerTestSuite) SetupTest() {
