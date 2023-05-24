@@ -44,13 +44,6 @@ export class AuthCheckGuard {
     ): Observable<boolean> | boolean {
         // When routing change, clear
         this.msgHandler.clear();
-        if (
-            this.appConfigService.getConfig().read_only &&
-            this.appConfigService.getConfig().read_only.toString() === 'true'
-        ) {
-            this.msgHandler.handleReadOnly();
-        }
-
         this.searchTrigger.closeSearch(true);
         return new Observable(observer => {
             // if the url has the queryParam `publicAndNotLogged=yes`, then skip auth check

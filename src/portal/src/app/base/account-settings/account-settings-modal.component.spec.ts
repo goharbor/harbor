@@ -18,6 +18,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
 import { ConfirmationDialogService } from '../global-confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
 import { UserService } from '../../../../ng-swagger-gen/services/user.service';
+import { AppConfigService } from '../../services/app-config.service';
 
 describe('AccountSettingsModalComponent', () => {
     let component: AccountSettingsModalComponent;
@@ -74,6 +75,12 @@ describe('AccountSettingsModalComponent', () => {
         },
     };
 
+    const MockedAppConfigService = {
+        getConfig() {
+            return { self_registration: true };
+        },
+    };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [
@@ -110,6 +117,7 @@ describe('AccountSettingsModalComponent', () => {
                     provide: ConfirmationDialogService,
                     useValue: fakeConfirmationDialogService,
                 },
+                { provide: AppConfigService, useValue: MockedAppConfigService },
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
         }).compileComponents();
