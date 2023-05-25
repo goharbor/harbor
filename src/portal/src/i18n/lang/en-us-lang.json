@@ -1228,6 +1228,7 @@
         "PARAMETERS": "Parameters",
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
         "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Triggered dry run successfully"
     },
     "RETAG": {

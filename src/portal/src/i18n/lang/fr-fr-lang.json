@@ -1195,6 +1195,7 @@
         "PARAMETERS": "Paramètres",
         "DELETE_UNTAGGED": "Supprimer les artefacts non tagués",
         "EXPLAIN": "GC est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre",
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès"
     },
     "RETAG": {
