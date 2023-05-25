@@ -1,11 +1,11 @@
 <clr-alerts>
     <clr-alert
         *ngIf="showReadOnly && isLogin()"
-        [clrAlertType]="message?.type"
+        [clrAlertType]="'warning'"
         [clrAlertAppLevel]="true"
         [clrAlertClosable]="false">
         <clr-alert-item>
-            <span class="alert-text">{{ message?.message | translate }}</span>
+            <span class="alert-text">{{ 'REPO_READ_ONLY' | translate }}</span>
         </clr-alert-item>
     </clr-alert>
     <clr-alert

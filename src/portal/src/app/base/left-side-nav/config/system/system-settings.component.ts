@@ -139,12 +139,6 @@ export class SystemSettingsComponent implements OnInit {
                         // Unfortunately API does not do that
                         // So we need to call update function again
                         this.conf.updateConfig();
-                        // Handle read only
-                        if (changes['read_only']) {
-                            this.errorHandler.handleReadOnly();
-                        } else {
-                            this.errorHandler.clear();
-                        }
                         // Reload bootstrap option
                         this.appConfigService.load().subscribe(
                             () => {},

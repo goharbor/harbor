@@ -30,6 +30,7 @@ import { ConfirmationDialogComponent } from '../../shared/components/confirmatio
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
 import { UserService } from 'ng-swagger-gen/services/user.service';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Component({
     selector: 'account-settings-modal',
@@ -72,7 +73,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         private msgHandler: MessageHandlerService,
         private router: Router,
         private searchTrigger: SearchTriggerService,
-        private userService: UserService
+        private userService: UserService,
+        private appConfigService: AppConfigService
     ) {}
 
     private validationStateMap: any = {
@@ -136,29 +138,34 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                             return;
                         }
 
-                        // Mail changed
-                        this.checkOnGoing = true;
-                        this.session
-                            .checkUserExisting('email', this.account.email)
-                            .subscribe(
-                                (res: boolean) => {
-                                    this.checkOnGoing = false;
-                                    this.validationStateMap[key] = !res;
-                                    if (res) {
-                                        this.emailTooltip =
-                                            'TOOLTIP.EMAIL_EXISTING';
+                        // Mail changed, if self-registration disabled, only system admin can check mail-existing status
+                        if (
+                            this.session.getCurrentUser()?.has_admin_role ||
+                            this.appConfigService.getConfig()?.self_registration
+                        ) {
+                            this.checkOnGoing = true;
+                            this.session
+                                .checkUserExisting('email', this.account.email)
+                                .subscribe(
+                                    (res: boolean) => {
+                                        this.checkOnGoing = false;
+                                        this.validationStateMap[key] = !res;
+                                        if (res) {
+                                            this.emailTooltip =
+                                                'TOOLTIP.EMAIL_EXISTING';
+                                        }
+                                        this.mailAlreadyChecked[
+                                            this.account.email
+                                        ] = {
+                                            result: res,
+                                        }; // Tag it checked
+                                    },
+                                    error => {
+                                        this.checkOnGoing = false;
+                                        this.validationStateMap[key] = false; // Not valid @ backend
                                     }
-                                    this.mailAlreadyChecked[
-                                        this.account.email
-                                    ] = {
-                                        result: res,
-                                    }; // Tag it checked
-                                },
-                                error => {
-                                    this.checkOnGoing = false;
-                                    this.validationStateMap[key] = false; // Not valid @ backend
-                                }
-                            );
+                                );
+                        }
                     }
                 }
             }

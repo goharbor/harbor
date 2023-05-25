@@ -84,9 +84,6 @@ export class NavigatorComponent implements OnInit {
             this.translateClarityComponents();
         }
         this.selectedDatetimeRendering = getDatetimeRendering();
-        if (this.appConfigService.getConfig().read_only) {
-            this.msgHandler.handleReadOnly();
-        }
     }
     //Internationalization for Clarity components, refer to https://clarity.design/documentation/internationalization
     translateClarityComponents() {
