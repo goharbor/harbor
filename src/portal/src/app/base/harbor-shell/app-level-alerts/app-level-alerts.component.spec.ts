@@ -7,6 +7,7 @@ import { delay } from 'rxjs/operators';
 import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
 import { ScannerService } from 'ng-swagger-gen/services/scanner.service';
 import { SessionService } from 'src/app/shared/services/session.service';
+import { AppConfigService } from '../../../services/app-config.service';
 
 describe('AppLevelAlertsComponent', () => {
     let component: AppLevelAlertsComponent;
@@ -44,6 +45,11 @@ describe('AppLevelAlertsComponent', () => {
             return { has_admin_role: true };
         },
     };
+    const MockedAppConfigService = {
+        getConfig() {
+            return { read_only: false };
+        },
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -55,6 +61,7 @@ describe('AppLevelAlertsComponent', () => {
                     useValue: fakeScannerService,
                 },
                 { provide: SessionService, useValue: fakeSessionService },
+                { provide: AppConfigService, useValue: MockedAppConfigService },
             ],
         }).compileComponents();
 
