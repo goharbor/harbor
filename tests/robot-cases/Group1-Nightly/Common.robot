@@ -1004,13 +1004,13 @@ Test Case - Export CVE
     Lists Should Be Equal  ${expected_cve_data}  ${actual_cve_data}  ignore_order=True
     Close Browser
 
-Test Case - Helm3.7 CLI Push And Pull In Harbor
+Test Case - Helm CLI Push And Pull In Harbor
     [Tags]  helm_push_and_push
     Init Chrome Driver
     ${user}=    Set Variable    user004
     ${pwd}=    Set Variable    Test1@34
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
-    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm CLI Work Flow  ${user}  ${pwd}
     Close Browser
 
 Test Case - Job Service Dashboard Job Queues
