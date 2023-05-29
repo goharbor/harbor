@@ -46,6 +46,8 @@ const (
 	ensureTagMaxRetry   = 60
 )
 
+var tooManyRequestsError = errors.New("too many requests to upstream registry").WithCode(errors.RateLimitCode)
+
 // BlobGetMiddleware handle get blob request
 func BlobGetMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
@@ -110,6 +112,10 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 		if err := handleManifest(w, r, next); err != nil {
 			if errors.IsNotFoundErr(err) {
 				httpLib.SendError(w, err)
+				return
+			}
+			if errors.IsRateLimitError(err) {
+				httpLib.SendError(w, tooManyRequestsError)
 				return
 			}
 			log.Errorf("failed to proxy manifest, fallback to local, request uri: %v, error: %v", r.RequestURI, err)
@@ -202,7 +208,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
 	}
 	if err != nil {
-		if errors.IsNotFoundErr(err) {
+		if errors.IsNotFoundErr(err) || errors.IsRateLimitError(err) {
 			return err
 		}
 		log.Warningf("Proxy to remote failed, fallback to local repo, error: %v", err)
