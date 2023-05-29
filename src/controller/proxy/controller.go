@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 const (
@@ -117,7 +118,17 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	if a == nil {
 		return fmt.Errorf("the artifact is not ready yet, failed to tag it to %v", tagName)
 	}
-	return tag.Ctl.Ensure(ctx, a.RepositoryID, a.Artifact.ID, tagName)
+	tagID, err := tag.Ctl.Ensure(ctx, a.RepositoryID, a.Artifact.ID, tagName)
+	if err != nil {
+		return err
+	}
+	// update the pull time of tag for the first time cache
+	return tag.Ctl.Update(ctx, &tag.Tag{
+		Tag: model_tag.Tag{
+			ID:       tagID,
+			PullTime: time.Now(),
+		},
+	}, "PullTime")
 }
 
 func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool {
