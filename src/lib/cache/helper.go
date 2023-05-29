@@ -47,7 +47,7 @@ func FetchOrSave(ctx context.Context, c Cache, key string, value interface{}, bu
 
 	defer fetchOrSaveMu.Unlock(lockKey)
 
-	// fetch again to avoid to build the value multi-times
+	// fetch again to avoid building the value multi-times
 	err = c.Fetch(ctx, key, value)
 	if err == nil {
 		return nil
