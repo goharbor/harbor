@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import os
 import base
 
 
-def helm3_7_registry_login(ip, user, password):
-    command = ["helm3.7", "registry", "login", ip, "-u", user, "-p", password]
+def helm_registry_login(ip, user, password):
+    command = ["helm", "registry", "login", ip, "-u", user, "-p", password, "--insecure"]
     base.run_command(command)
 
-def helm3_7_package(file_path):
-    command = ["helm3.7", "package", file_path]
+def helm_package(file_path):
+    command = ["helm", "package", file_path]
     base.run_command(command)
 
-def helm3_7_push(file_path, ip, project_name):
-    command = ["helm3.7", "push", file_path, "oci://{}/{}".format(ip, project_name)]
+def helm_push(file_path, ip, project_name):
+    command = ["helm", "push", file_path, "oci://{}/{}".format(ip, project_name), "--insecure-skip-tls-verify"]
     base.run_command(command)

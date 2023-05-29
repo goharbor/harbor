@@ -163,20 +163,20 @@ Manage Project Member Without Sign In Harbor
     Push image  ${ip}  ${sign_in_user}  ${sign_in_pwd}  project${d}  hello-world
     User Should Be Guest  ${test_user2}  ${sign_in_pwd}  project${d}  is_oidc_mode=${is_oidc_mode}
 
-Helm3.7 CLI Work Flow
+Helm CLI Work Flow
     [Arguments]  ${sign_in_user}  ${sign_in_pwd}
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  project${d}
     Run  rm -rf ./${harbor_helm_name}
     Wait Unitl Command Success  tar zxf ${files_directory}/${harbor_helm_filename}
-    Helm3.7 Registry Login  ${ip}  ${sign_in_user}  ${sign_in_pwd}
-    Helm3.7 Package  ./${harbor_helm_name}
-    Helm3.7 Push  ${harbor_helm_package}  ${ip}  project${d}
+    Helm Registry Login  ${ip}  ${sign_in_user}  ${sign_in_pwd}
+    Helm Package  ./${harbor_helm_name}
+    Helm Push  ${harbor_helm_package}  ${ip}  project${d}
     Run  rm -rf ./${harbor_helm_package}
     Retry File Should Not Exist  ./${harbor_helm_package}
-    Helm3.7 Pull  ${ip}  project${d}  ${harbor_helm_version}
+    Helm Pull  ${ip}  project${d}  ${harbor_helm_version}
     Retry File Should Exist  ./${harbor_helm_package}
-    Helm3.7 Registry Logout  ${ip}
+    Helm Registry Logout  ${ip}
 
 #Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
