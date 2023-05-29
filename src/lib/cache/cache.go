@@ -103,7 +103,7 @@ func Initialize(typ, addr string) error {
 
 	redactedAddr := addr
 	if u, err := url.Parse(addr); err == nil {
-		redactedAddr = redacted(u)
+		redactedAddr = u.Redacted()
 	}
 
 	options := []retry.Option{
