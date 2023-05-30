@@ -32,5 +32,7 @@ comment:
 ignore:
   - "src/vendor"
   - "src/testing"
+  - "src/cmd"
+  - "src/portal"
   - "src/server/v2.0/restapi/**/*"
   - "src/server/v2.0/models"
