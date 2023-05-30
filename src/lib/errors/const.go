@@ -13,6 +13,8 @@ const (
 	ForbiddenCode = "FORBIDDEN"
 	// MethodNotAllowedCode ...
 	MethodNotAllowedCode = "METHOD_NOT_ALLOWED"
+	// RateLimitCode
+	RateLimitCode = "TOO_MANY_REQUEST"
 	// PreconditionCode ...
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
@@ -90,4 +92,9 @@ func IsConflictErr(err error) bool {
 
 func IsChallengesUnsupportedErr(err error) bool {
 	return IsErr(err, ChallengesUnsupportedCode)
+}
+
+// IsRateLimitError checks whether the err chains contains rate limit error
+func IsRateLimitError(err error) bool {
+	return IsErr(err, RateLimitCode)
 }
