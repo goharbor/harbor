@@ -6,5 +6,5 @@ def generate_key_pair():
     base.run_command(command)
 
 def sign_artifact(artifact):
-    command = ["cosign", "sign", "--allow-insecure-registry", "--key", "cosign.key", artifact]
+    command = ["cosign", "sign", "-y", "--allow-insecure-registry", "--key", "cosign.key", artifact]
     base.run_command(command)

@@ -47,11 +47,11 @@ class TestProjects(unittest.TestCase):
     def testPushChartByHelmChartCLI(self):
         """
         Test case:
-            Push Chart File By Helm3.7 CLI
+            Push Chart File By Helm CLI
         Test step and expected result:
             1. Create a new user(UA);
             2. Create a new project(PA) by user(UA);
-            3. Push an chart(CA) to Harbor by helm3.7 CLI successfully;
+            3. Push an chart(CA) to Harbor by helm CLI successfully;
             4. List artifacts successfully;
             5. Get chart(CA) by reference successfully;
             6. Get addition successfully;
@@ -70,15 +70,15 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_push_chart_id, TestProjects.project_push_chart_name = self.project.create_project(
             metadata={"public": "false"}, **TestProjects.USER_CLIENT)
 
-        # 3 Push an chart(CA) to Harbor by helm3.7 CLI successfully;
+        # 3 Push an chart(CA) to Harbor by hel CLI successfully;
         command = ["tar", "zxf", self.chart_file_path]
         base.run_command(command)
-        # 3.1 helm3_7_registry_login;
-        helm.helm3_7_registry_login(ip=harbor_server, user=user_name, password=self.user_push_chart_password)
-        # 3.2 helm3_7_package;
-        helm.helm3_7_package(file_path=self.chart_file_name)
-        # 3.2 helm3_7_push;
-        helm.helm3_7_push(file_path=self.chart_file_package_name, ip=harbor_server,
+        # 3.1 helm_registry_login;
+        helm.helm_registry_login(ip=harbor_server, user=user_name, password=self.user_push_chart_password)
+        # 3.2 helm_package;
+        helm.helm_package(file_path=self.chart_file_name)
+        # 3.2 helm_push;
+        helm.helm_push(file_path=self.chart_file_package_name, ip=harbor_server,
                           project_name=TestProjects.project_push_chart_name)
 
         # 4. List artifacts successfully;
