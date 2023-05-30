@@ -68,7 +68,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+	_, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 
@@ -89,7 +89,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 
@@ -103,7 +103,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 }

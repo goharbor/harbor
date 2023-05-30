@@ -1225,6 +1225,7 @@
         "PARAMETERS": "Parâmetros",
         "DELETE_UNTAGGED": "Permitir coleta de artefatos sem tags",
         "EXPLAIN": "A limpeza exige recursos computacionais e pode impactar performance.",
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Teste executado com sucesso"
     },
     "RETAG": {

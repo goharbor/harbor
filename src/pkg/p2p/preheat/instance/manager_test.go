@@ -10,7 +10,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 )
 
@@ -23,30 +22,30 @@ var lists = []*providerModel.Instance{
 	{Name: "abc"},
 }
 
-func (d *fakeDao) Create(ctx context.Context, instance *provider.Instance) (int64, error) {
+func (d *fakeDao) Create(ctx context.Context, instance *providerModel.Instance) (int64, error) {
 	var args = d.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
 
-func (d *fakeDao) Get(ctx context.Context, id int64) (*provider.Instance, error) {
+func (d *fakeDao) Get(ctx context.Context, id int64) (*providerModel.Instance, error) {
 	var args = d.Called()
-	var instance *provider.Instance
+	var instance *providerModel.Instance
 	if args.Get(0) != nil {
-		instance = args.Get(0).(*provider.Instance)
+		instance = args.Get(0).(*providerModel.Instance)
 	}
 	return instance, args.Error(1)
 }
 
-func (d *fakeDao) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
+func (d *fakeDao) GetByName(ctx context.Context, name string) (*providerModel.Instance, error) {
 	var args = d.Called()
-	var instance *provider.Instance
+	var instance *providerModel.Instance
 	if args.Get(0) != nil {
-		instance = args.Get(0).(*provider.Instance)
+		instance = args.Get(0).(*providerModel.Instance)
 	}
 	return instance, args.Error(1)
 }
 
-func (d *fakeDao) Update(ctx context.Context, instance *provider.Instance, props ...string) error {
+func (d *fakeDao) Update(ctx context.Context, instance *providerModel.Instance, props ...string) error {
 	var args = d.Called()
 	return args.Error(0)
 }
@@ -62,11 +61,11 @@ func (d *fakeDao) Count(ctx context.Context, query *q.Query) (total int64, err e
 	return int64(args.Int(0)), args.Error(1)
 }
 
-func (d *fakeDao) List(ctx context.Context, query *q.Query) (ins []*provider.Instance, err error) {
+func (d *fakeDao) List(ctx context.Context, query *q.Query) (ins []*providerModel.Instance, err error) {
 	var args = d.Called()
-	var instances []*provider.Instance
+	var instances []*providerModel.Instance
 	if args.Get(0) != nil {
-		instances = args.Get(0).([]*provider.Instance)
+		instances = args.Get(0).([]*providerModel.Instance)
 	}
 	return instances, args.Error(1)
 }

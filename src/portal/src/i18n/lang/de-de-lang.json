@@ -1228,6 +1228,7 @@
         "PARAMETERS": "Parameter",
         "DELETE_UNTAGGED": "Erlaube Speicherbereinigung auf Artefakte ohne Tag",
         "EXPLAIN": "Speicherbereinigung (Garbage Collection / GC) ist eine rechenintensive Operation, die die Registry-Leistung beeinflussen kann",
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Probelauf erfolgreich gestartet"
     },
     "RETAG": {

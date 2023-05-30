@@ -57,7 +57,7 @@ func main() {
 	if err := dao.InitDatabase(db); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
-	if err := migration.MigrateDB(db); err != nil {
+	if err := migration.Migrate(db); err != nil {
 		log.Fatalf("failed to migrate DB: %v", err)
 	}
 	log.Info("Migration done.  The data schema in DB is now update to date.")

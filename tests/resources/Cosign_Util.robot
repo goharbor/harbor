@@ -24,7 +24,7 @@ Cosign Generate Key Pair
 
 Cosign Sign
     [Arguments]  ${artifact}
-    Wait Unitl Command Success  cosign sign --allow-insecure-registry --key cosign.key ${artifact}
+    Wait Unitl Command Success  cosign sign -y --allow-insecure-registry --key cosign.key ${artifact}
 
 Cosign Verify
     [Arguments]  ${artifact}  ${signed}
