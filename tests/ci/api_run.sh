@@ -8,7 +8,7 @@ sudo gsutil version -l
 harbor_logs_bucket="harbor-ci-logs"
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-E2E_IMAGE="goharbor/harbor-e2e-engine:latest-api"
+E2E_IMAGE="goharbor/harbor-e2e-engine:5.0.0-api"
 
 # GS util
 function uploader {
