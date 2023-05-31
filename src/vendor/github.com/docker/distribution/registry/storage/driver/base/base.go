@@ -6,14 +6,14 @@
 // struct such that calls are proxied through this implementation. First,
 // declare the internal driver, as follows:
 //
-// 	type driver struct { ... internal ...}
+//	type driver struct { ... internal ...}
 //
 // The resulting type should implement StorageDriver such that it can be the
 // target of a Base struct. The exported type can then be declared as follows:
 //
-// 	type Driver struct {
-// 		Base
-// 	}
+//	type Driver struct {
+//		Base
+//	}
 //
 // Because Driver embeds Base, it effectively implements Base. If the driver
 // needs to intercept a call, before going to base, Driver should implement
@@ -23,15 +23,15 @@
 // To further shield the embed from other packages, it is recommended to
 // employ a private embed struct:
 //
-// 	type baseEmbed struct {
-// 		base.Base
-// 	}
+//	type baseEmbed struct {
+//		base.Base
+//	}
 //
 // Then, declare driver to embed baseEmbed, rather than Base directly:
 //
-// 	type Driver struct {
-// 		baseEmbed
-// 	}
+//	type Driver struct {
+//		baseEmbed
+//	}
 //
 // The type now implements StorageDriver, proxying through Base, without
 // exporting an unnecessary field.
