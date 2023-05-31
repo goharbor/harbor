@@ -147,7 +147,7 @@ func defaultManifestURL(projectName string, name string, a lib.ArtifactInfo) str
 	return fmt.Sprintf("/v2/%s/library/%s/manifests/%s", projectName, name, a.Reference)
 }
 
-// defaultManifestURL return the real url for request with default project
+// defaultBlobURL return the real url for request with default project
 func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
 }
