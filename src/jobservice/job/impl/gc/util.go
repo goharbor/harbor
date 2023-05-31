@@ -76,3 +76,18 @@ func ignoreNotFound(f func() error) error {
 	}
 	return nil
 }
+
+// divide if it is divisible, it gives the quotient. if it's not, it gives the remainder.
+func divide(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("the divided cannot be zero")
+	}
+
+	quotient := a / b
+	remainder := a % b
+
+	if quotient == 0 {
+		return remainder, nil
+	}
+	return quotient, nil
+}

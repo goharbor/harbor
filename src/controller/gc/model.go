@@ -23,6 +23,7 @@ type Policy struct {
 	Trigger        *Trigger               `json:"trigger"`
 	DeleteUntagged bool                   `json:"deleteuntagged"`
 	DryRun         bool                   `json:"dryrun"`
+	Workers        int                    `json:"workers"`
 	ExtraAttrs     map[string]interface{} `json:"extra_attrs"`
 }
 
@@ -60,6 +61,7 @@ type Task struct {
 	RunCount       int32
 	DeleteUntagged bool
 	DryRun         bool
+	Workers        int
 	JobID          string
 	CreationTime   time.Time
 	StartTime      time.Time
