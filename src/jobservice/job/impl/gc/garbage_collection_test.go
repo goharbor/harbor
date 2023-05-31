@@ -217,6 +217,7 @@ func (suite *gcTestSuite) TestRun() {
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.NilCommand, true)
 	mock.OnAnything(ctx, "Get").Return("core url", true)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
 
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
@@ -357,6 +358,7 @@ func (suite *gcTestSuite) TestSweep() {
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.NilCommand, false)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
 
 	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
 	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
@@ -376,6 +378,14 @@ func (suite *gcTestSuite) TestSweep() {
 	}
 
 	suite.Nil(gc.sweep(ctx))
+}
+
+func (suite *gcTestSuite) TestSaveRes() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	ctx.On("GetLogger").Return(logger)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
+	suite.Nil(saveGCRes(ctx, 123456, 100, 100))
 }
 
 func TestGCTestSuite(t *testing.T) {
