@@ -462,7 +462,7 @@ func (a *adapter) getTags(namespace, repo string, page, pageSize int) (*TagsResp
 	return tags, nil
 }
 
-// getFilter gets specific type filter value from filters list.
+// getStringFilterValue gets specific type filter value from filters list.
 func (a *adapter) getStringFilterValue(filterType string, filters []*model.Filter) (string, error) {
 	for _, f := range filters {
 		if f.Type == filterType {
