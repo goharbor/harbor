@@ -35,7 +35,11 @@ func init() {
 	}
 
 	if err := task.RegisterTaskStatusChangePostFunc(job.GarbageCollectionVendorType, gcTaskStatusChange); err != nil {
-		log.Fatalf("failed to register the task status change post for the gc job, error %v", err)
+		log.Fatalf("failed to register the task status change post for the garbage collection job, error %v", err)
+	}
+
+	if err := task.RegisterCheckInProcessor(job.GarbageCollectionVendorType, gcCheckIn); err != nil {
+		log.Fatalf("failed to register the checkin processor for the garbage collection job, error %v", err)
 	}
 }
 
@@ -58,5 +62,44 @@ func gcTaskStatusChange(ctx context.Context, taskID int64, status string) error 
 		}()
 	}
 
+	return nil
+}
+
+func gcCheckIn(ctx context.Context, t *task.Task, sc *job.StatusChange) error {
+	taskID := t.ID
+	status := t.Status
+
+	log.Infof("received garbage collection task status update event: task-%d, status-%s", taskID, status)
+	if sc.CheckIn != "" {
+		var gcObj struct {
+			SweepSize int64 `json:"freed_space"`
+			Blobs     int64 `json:"purged_blobs"`
+			Manifests int64 `json:"purged_manifests"`
+		}
+		if err := json.Unmarshal([]byte(sc.CheckIn), &gcObj); err != nil {
+			log.Errorf("failed to resolve checkin of garbage collection task %d: %v", taskID, err)
+
+			return err
+		}
+		t, err := task.Mgr.Get(ctx, taskID)
+		if err != nil {
+			return err
+		}
+
+		e, err := task.ExecMgr.Get(ctx, t.ExecutionID)
+		if err != nil {
+			return err
+		}
+
+		e.ExtraAttrs["freed_space"] = gcObj.SweepSize
+		e.ExtraAttrs["purged_blobs"] = gcObj.Blobs
+		e.ExtraAttrs["purged_manifests"] = gcObj.Manifests
+
+		err = task.ExecMgr.UpdateExtraAttrs(ctx, e.ID, e.ExtraAttrs)
+		if err != nil {
+			log.G(ctx).WithField("error", err).Errorf("failed to update of garbage collection task %d", taskID)
+			return err
+		}
+	}
 	return nil
 }

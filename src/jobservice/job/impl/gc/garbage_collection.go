@@ -15,6 +15,7 @@
 package gc
 
 import (
+	"encoding/json"
 	"os"
 	"time"
 
@@ -255,8 +256,8 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	gc.logger = ctx.GetLogger()
 	sweepSize := int64(0)
-	blobCnt := 0
-	mfCnt := 0
+	blobCnt := int64(0)
+	mfCnt := int64(0)
 	total := len(gc.deleteSet)
 	for i, blob := range gc.deleteSet {
 		if gc.shouldStop(ctx) {
@@ -413,6 +414,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	}
 	gc.logger.Infof("%d blobs and %d manifests are actually deleted", blobCnt, mfCnt)
 	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
+
+	if err := saveGCRes(ctx, sweepSize, blobCnt, mfCnt); err != nil {
+		gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
+	}
+
 	return nil
 }
 
@@ -646,4 +652,22 @@ func (gc *GarbageCollector) shouldStop(ctx job.Context) bool {
 		return true
 	}
 	return false
+}
+
+func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
+	gcObj := struct {
+		SweepSize int64 `json:"freed_space"`
+		Blobs     int64 `json:"purged_blobs"`
+		Manifests int64 `json:"purged_manifests"`
+	}{
+		SweepSize: sweepSize,
+		Blobs:     blobs,
+		Manifests: manifests,
+	}
+	c, err := json.Marshal(gcObj)
+	if err != nil {
+		return err
+	}
+	_ = ctx.Checkin(string(c))
+	return nil
 }
