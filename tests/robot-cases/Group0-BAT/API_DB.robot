@@ -182,3 +182,7 @@ Test Case - Job Service Dashboard
 Test Case - Retain Image Last Pull Time
     [Tags]  retain_image_last_pull_time
     Harbor API Test  ./tests/apitests/python/test_retain_image_last_pull_time.py
+
+Test Case - Referrers API
+    [Tags]  referrers
+    Harbor API Test  ./tests/apitests/python/test_referrers_api.py
