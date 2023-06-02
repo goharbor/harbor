@@ -291,7 +291,6 @@ paths:
           description: The project is public or private.
           required: false
           type: boolean
-          format: int32
         - name: owner
           in: query
           description: The name of project owner.
