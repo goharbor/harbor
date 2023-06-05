@@ -428,7 +428,8 @@
     "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型",
     "PAYLOAD_FORMAT": "Payload 格式",
     "CLOUD_EVENT": "CloudEvents",
-    "PAYLOAD_DATA": "Payload 資料"
+    "PAYLOAD_DATA": "Payload 資料",
+    "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
   },
   "GROUP": {
     "GROUP": "群組",
