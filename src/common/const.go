@@ -219,6 +219,9 @@ const (
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
 
+	// Customized banner message
+	BannerMessage = "banner_message"
+
 	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
 	UIMaxLengthLimitedOfNumber = 10
 	// ExecutionStatusRefreshIntervalSeconds is the interval seconds for refreshing execution status

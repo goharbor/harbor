@@ -1,3 +1,6 @@
+$input-width: 12rem;
+
+
 .subtitle {
   font-size: 14px;
   font-weight: 600;
@@ -148,11 +151,11 @@
 }
 
 .clr-input {
-  width: 12rem;
+  width: $input-width;
 }
 
 .pro-creation {
-  width: 12rem;
+  width: $input-width;
 }
 
 input::-webkit-outer-spin-button,
@@ -164,4 +167,48 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   appearance: textfield;
+}
+
+.clr-textarea {
+  max-width: none;
+  width: $input-width;
+}
+
+.flex-baseline {
+  display: flex;
+  align-items: baseline;
+}
+
+$message-type-width: 12rem;
+
+.message-type {
+  margin-left: 2rem;
+  width: $message-type-width;
+}
+
+.message-label {
+  margin-right: 0.25rem;
+}
+
+.duration {
+  width: $input-width;
+  display: flex;
+  justify-content: right;
+}
+
+.flex {
+  display: flex;
+}
+
+:host::ng-deep clr-date-container{
+  margin-top: 0;
+  margin-left: 0.5rem;
+}
+
+.message-select {
+  width: 6.75rem;
+}
+
+.date {
+  width: 6rem;
 }

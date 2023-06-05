@@ -804,7 +804,7 @@
         "LABEL": "Labels",
         "REPOSITORY": "Repository",
         "REPO_READ_ONLY": "Repository Read Only",
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SYSTEM": "System Settings",
         "PROJECT_QUOTAS": "Project Quotas",
         "VULNERABILITY": "Vulnerability",
@@ -834,7 +834,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry certificate",
         "NO_CHANGE": "Save abort because nothing changed",
-        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
+        "SKIP_SCANNER_PULL_TIME": "Retain Image \"last pull time\" On Scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Enable sign up.",
             "SELF_REGISTRATION_DISABLE": "Deactivate sign up.",
@@ -1861,5 +1861,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "Select month, the current month is {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "Select year, the current year is {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - Selected"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "Banner Message",
+        "MESSAGE_TYPE": "Message type",
+        "CLOSABLE": "Closable",
+        "FROM": "From",
+        "TO": "To",
+        "SUCCESS": "Success",
+        "INFO": "Info",
+        "WARNING": "Warning",
+        "DANGER": "Danger",
+        "ENTER_MESSAGE": "Enter your message here"
     }
 }

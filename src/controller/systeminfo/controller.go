@@ -47,6 +47,7 @@ type Data struct {
 	PrimaryAuthMode   bool
 	SelfRegistration  bool
 	HarborVersion     string
+	BannerMessage     string
 	AuthProxySettings *models.HTTPAuthProxy
 	Protected         *protectedData
 }
@@ -90,11 +91,18 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		logger.Errorf("Error occurred getting config: %v", err)
 		return nil, err
 	}
+	mgr := config.GetCfgManager(ctx)
+	err = mgr.Load(ctx)
+	if err != nil {
+		logger.Errorf("Error occurred loading config: %v", err)
+		return nil, err
+	}
 	res := &Data{
 		AuthMode:         utils.SafeCastString(cfg[common.AUTHMode]),
 		PrimaryAuthMode:  utils.SafeCastBool(cfg[common.PrimaryAuthMode]),
 		SelfRegistration: utils.SafeCastBool(cfg[common.SelfRegistration]),
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
+		BannerMessage:    utils.SafeCastString(mgr.Get(ctx, common.BannerMessage).GetString()),
 	}
 	if res.AuthMode == common.HTTPAuth {
 		if s, err := config.HTTPAuthProxySetting(ctx); err == nil {

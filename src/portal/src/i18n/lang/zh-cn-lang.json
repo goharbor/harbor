@@ -1857,5 +1857,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "选择月, 当前月是 {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "选择年, 当前年是 {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "已选择 - {FULL_DATE}"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "横幅消息",
+        "MESSAGE_TYPE": "消息类型",
+        "CLOSABLE": "可关闭",
+        "FROM": "从",
+        "TO": "至",
+        "SUCCESS": "成功",
+        "INFO": "信息",
+        "WARNING": "警告",
+        "DANGER": "危险",
+        "ENTER_MESSAGE": "请输入消息内容"
     }
 }
