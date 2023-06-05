@@ -37,9 +37,6 @@ class TestReferrersApi(unittest.TestCase):
             6. Sign image(IA) SBOM with cosign;
             7. Call the referrers api successfully;
             8. Call the referrers api and filter artifact_type;
-        Tear down:
-            1. Delete project(PA);
-            2. Delete user(UA).
         """
         url = ADMIN_CLIENT["endpoint"]
         user_password = "Aa123456"
