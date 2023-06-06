@@ -186,3 +186,7 @@ Test Case - Retain Image Last Pull Time
 Test Case - Referrers API
     [Tags]  referrers
     Harbor API Test  ./tests/apitests/python/test_referrers_api.py
+
+Test Case - Podman Pull And Push To Harbor
+    [Tags]  podman_pull_push
+    Harbor API Test  ./tests/apitests/python/test_podman_pull_push.py
