@@ -431,7 +431,8 @@
         "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich",
         "PAYLOAD_FORMAT": "Payload Format",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "Payload Data"
+        "PAYLOAD_DATA": "Payload Data",
+        "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
     },
     "GROUP": {
         "GROUP": "Gruppe",
