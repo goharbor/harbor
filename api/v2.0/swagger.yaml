@@ -8186,7 +8186,7 @@ definitions:
         x-omitempty: false
       url:
         type: string
-        format: url
+        format: uri
         description: A base URL of the scanner adapter
         example: http://harbor-scanner-trivy:8080
       disabled:
