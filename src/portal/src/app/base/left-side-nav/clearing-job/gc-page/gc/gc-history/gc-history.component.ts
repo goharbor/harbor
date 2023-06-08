@@ -9,6 +9,7 @@ import {
 import { GcService } from '../../../../../../../../ng-swagger-gen/services/gc.service';
 import {
     CURRENT_BASE_HREF,
+    formatSize,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
@@ -201,6 +202,35 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
             }
         }
         return NO;
+    }
+    getBlobs(param: string): number {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.purged_blobs) {
+                return paramObj.purged_blobs;
+            }
+        }
+        return 0;
+    }
+
+    getManifest(param: string): number {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.purged_manifests) {
+                return paramObj.purged_manifests;
+            }
+        }
+        return 0;
+    }
+
+    getSize(param: string): string {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.freed_space) {
+                return formatSize(paramObj.freed_space);
+            }
+        }
+        return null;
     }
 
     getLogLink(id): string {

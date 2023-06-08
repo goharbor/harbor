@@ -26,6 +26,9 @@
     <clr-dg-column>{{ 'GC.TRIGGER_TYPE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'TAG_RETENTION.DRY_RUN' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'STATUS' | translate }}</clr-dg-column>
+    <clr-dg-column class="detail">{{
+        'TAG_RETENTION.DETAILS' | translate
+    }}</clr-dg-column>
     <clr-dg-column>{{ 'CREATION_TIME' | translate }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'update_time'">{{
         'UPDATE_TIME' | translate
@@ -48,6 +51,58 @@
         <clr-dg-cell>{{
             job.job_status.toUpperCase() | translate
         }}</clr-dg-cell>
+        <clr-dg-cell>
+            <div>
+                <span
+                    *ngIf="
+                        getBlobs(job?.job_parameters) &&
+                        getManifest(job?.job_parameters)
+                    "
+                    >{{
+                        'GC.DELETE_BLOB_AND_MANIFEST'
+                            | translate
+                                : {
+                                      blob: getBlobs(job?.job_parameters),
+                                      manifest: getManifest(job?.job_parameters)
+                                  }
+                    }}</span
+                >
+                <span
+                    *ngIf="
+                        getBlobs(job?.job_parameters) &&
+                        !getManifest(job?.job_parameters)
+                    "
+                    >{{
+                        'GC.DELETE_BLOB'
+                            | translate
+                                : {
+                                      blobs: getBlobs(job?.job_parameters),
+                                      manifest: getManifest(job?.job_parameters)
+                                  }
+                    }}</span
+                >
+                <span
+                    *ngIf="
+                        !getBlobs(job?.job_parameters) &&
+                        getManifest(job?.job_parameters)
+                    "
+                    >{{
+                        'GC.DELETE_MANIFEST'
+                            | translate
+                                : {
+                                      blob: getBlobs(job?.job_parameters),
+                                      manifest: getManifest(job?.job_parameters)
+                                  }
+                    }}</span
+                >
+            </div>
+            <div *ngIf="getSize(job?.job_parameters)">
+                {{
+                    'GC.FREE_UP_SIZE'
+                        | translate : { size: getSize(job?.job_parameters) }
+                }}
+            </div>
+        </clr-dg-cell>
         <clr-dg-cell>{{
             job.creation_time | harborDatetime : 'medium'
         }}</clr-dg-cell>

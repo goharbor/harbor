@@ -1227,7 +1227,11 @@
         "DELETE_UNTAGGED": "Permitir coleta de artefatos sem tags",
         "EXPLAIN": "A limpeza exige recursos computacionais e pode impactar performance.",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-        "DRY_RUN_SUCCESS": "Teste executado com sucesso"
+        "DRY_RUN_SUCCESS": "Teste executado com sucesso",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+        "DELETE_BLOB": "{{blob}} blob(s) deleted",
+        "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+        "FREE_UP_SIZE": "{{size}} space freed up"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefato copiado com sucesso",
