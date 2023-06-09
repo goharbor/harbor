@@ -5,6 +5,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${new_webhook_button_xpath}     xpath=//*[@id='new-webhook']
 ${webhook_name_xpath}           xpath=//*[@id='name']
 ${webhook_endpoint_id_xpath}    xpath=//*[@id='edit_endpoint_url']
+${webhook_payload_format_xpath}  xpath=//*[@id='payload-format']
 ${webhook_auth_header_xpath}    xpath=//*[@id='auth_header']
 ${action_webhook_xpath}         xpath=//*[@id='action-webhook']
 ${action_webhook_edit_button}    xpath=//*[@id='edit-webhook']
