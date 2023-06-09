@@ -9,14 +9,19 @@ Switch To Project Webhooks
     Retry Element Click  xpath=//project-detail//a[contains(.,'Webhooks')]
 
 Create A New Webhook
-    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}=@{EMPTY}
+    [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  ${payload_format}=Default  ${event_type}=@{EMPTY}
     Retry Element Click  ${new_webhook_button_xpath}
     Retry Text Input  ${webhook_name_xpath}  ${webhook_name}
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${webhook_endpoint_url}
+    Run Keyword If  '${payload_format}' != 'Default'  Select Payload Format  ${payload_format}
     ${len}=  Get Length  ${event_type}
     Run Keyword If  ${len} > 0  Select Event Type  @{event_type}
     Retry Double Keywords When Error  Retry Element Click  ${create_webhooks_continue_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_webhooks_continue_button_xpath}
     Retry Wait Until Page Contains  ${webhook_name}
+
+Select Payload Format
+    [Arguments]  ${payload_format}
+    Retry Double Keywords When Error  Retry Element Click  ${webhook_payload_format_xpath}  Retry Element Click  ${webhook_payload_format_xpath}//option[@value='${payload_format}']
 
 Select Event Type
     [Arguments]  @{event_type}
@@ -29,7 +34,7 @@ Select Event Type
     END
 
 Update A Webhook
-    [Arguments]  ${old_webhook_name}  ${new_webhook_name}  ${new_webhook_enpoint}
+    [Arguments]  ${old_webhook_name}  ${new_webhook_name}  ${new_webhook_enpoint}  ${payload_format}=Default
     # select one webhook
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${old_webhook_name}')]//div[contains(@class,'datagrid-select')]
     Retry Element Click  ${action_webhook_xpath}
@@ -42,6 +47,7 @@ Update A Webhook
     Retry Element Click  ${action_webhook_edit_button}
     Retry Text Input   ${webhook_name_xpath}   ${new_webhook_name}
     Retry Text Input  ${webhook_endpoint_id_xpath}  ${new_webhook_enpoint}
+    Select Payload Format  ${payload_format}
     Retry Double Keywords When Error  Retry Element Click  ${edit_webhooks_save_button_xpath}  Retry Wait Until Page Not Contains Element  ${edit_webhooks_save_button_xpath}
     Retry Wait Until Page Contains  ${new_webhook_name}
 
