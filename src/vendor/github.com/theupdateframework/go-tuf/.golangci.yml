@@ -1,0 +1,16 @@
+run:
+  # Lint using Go 1.17, since some linters are disabled by default for Go 1.18
+  # until generics are supported.
+  # See https://github.com/golangci/golangci-lint/issues/2649
+  go: '1.17'
+
+linters:
+  disable-all: true
+  enable:
+    - staticcheck
+    - gofmt
+    - govet
+    - gosimple
+    - unused
+    - typecheck
+    - forbidigo

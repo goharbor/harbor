@@ -17,11 +17,9 @@ package attribute // import "go.opentelemetry.io/otel/attribute"
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 
 	"go.opentelemetry.io/otel/internal"
-	"go.opentelemetry.io/otel/internal/attribute"
 )
 
 //go:generate stringer -type=Type
@@ -68,7 +66,12 @@ func BoolValue(v bool) Value {
 
 // BoolSliceValue creates a BOOLSLICE Value.
 func BoolSliceValue(v []bool) Value {
-	return Value{vtype: BOOLSLICE, slice: attribute.BoolSliceValue(v)}
+	cp := make([]bool, len(v))
+	copy(cp, v)
+	return Value{
+		vtype: BOOLSLICE,
+		slice: &cp,
+	}
 }
 
 // IntValue creates an INT64 Value.
@@ -78,14 +81,13 @@ func IntValue(v int) Value {
 
 // IntSliceValue creates an INTSLICE Value.
 func IntSliceValue(v []int) Value {
-	var int64Val int64
-	cp := reflect.New(reflect.ArrayOf(len(v), reflect.TypeOf(int64Val)))
-	for i, val := range v {
-		cp.Elem().Index(i).SetInt(int64(val))
+	cp := make([]int64, 0, len(v))
+	for _, i := range v {
+		cp = append(cp, int64(i))
 	}
 	return Value{
 		vtype: INT64SLICE,
-		slice: cp.Elem().Interface(),
+		slice: &cp,
 	}
 }
 
@@ -99,7 +101,12 @@ func Int64Value(v int64) Value {
 
 // Int64SliceValue creates an INT64SLICE Value.
 func Int64SliceValue(v []int64) Value {
-	return Value{vtype: INT64SLICE, slice: attribute.Int64SliceValue(v)}
+	cp := make([]int64, len(v))
+	copy(cp, v)
+	return Value{
+		vtype: INT64SLICE,
+		slice: &cp,
+	}
 }
 
 // Float64Value creates a FLOAT64 Value.
@@ -112,7 +119,12 @@ func Float64Value(v float64) Value {
 
 // Float64SliceValue creates a FLOAT64SLICE Value.
 func Float64SliceValue(v []float64) Value {
-	return Value{vtype: FLOAT64SLICE, slice: attribute.Float64SliceValue(v)}
+	cp := make([]float64, len(v))
+	copy(cp, v)
+	return Value{
+		vtype: FLOAT64SLICE,
+		slice: &cp,
+	}
 }
 
 // StringValue creates a STRING Value.
@@ -125,7 +137,12 @@ func StringValue(v string) Value {
 
 // StringSliceValue creates a STRINGSLICE Value.
 func StringSliceValue(v []string) Value {
-	return Value{vtype: STRINGSLICE, slice: attribute.StringSliceValue(v)}
+	cp := make([]string, len(v))
+	copy(cp, v)
+	return Value{
+		vtype: STRINGSLICE,
+		slice: &cp,
+	}
 }
 
 // Type returns a type of the Value.
@@ -142,14 +159,10 @@ func (v Value) AsBool() bool {
 // AsBoolSlice returns the []bool value. Make sure that the Value's type is
 // BOOLSLICE.
 func (v Value) AsBoolSlice() []bool {
-	if v.vtype != BOOLSLICE {
-		return nil
+	if s, ok := v.slice.(*[]bool); ok {
+		return *s
 	}
-	return v.asBoolSlice()
-}
-
-func (v Value) asBoolSlice() []bool {
-	return attribute.AsBoolSlice(v.slice)
+	return nil
 }
 
 // AsInt64 returns the int64 value. Make sure that the Value's type is
@@ -161,14 +174,10 @@ func (v Value) AsInt64() int64 {
 // AsInt64Slice returns the []int64 value. Make sure that the Value's type is
 // INT64SLICE.
 func (v Value) AsInt64Slice() []int64 {
-	if v.vtype != INT64SLICE {
-		return nil
+	if s, ok := v.slice.(*[]int64); ok {
+		return *s
 	}
-	return v.asInt64Slice()
-}
-
-func (v Value) asInt64Slice() []int64 {
-	return attribute.AsInt64Slice(v.slice)
+	return nil
 }
 
 // AsFloat64 returns the float64 value. Make sure that the Value's
@@ -180,14 +189,10 @@ func (v Value) AsFloat64() float64 {
 // AsFloat64Slice returns the []float64 value. Make sure that the Value's type is
 // FLOAT64SLICE.
 func (v Value) AsFloat64Slice() []float64 {
-	if v.vtype != FLOAT64SLICE {
-		return nil
+	if s, ok := v.slice.(*[]float64); ok {
+		return *s
 	}
-	return v.asFloat64Slice()
-}
-
-func (v Value) asFloat64Slice() []float64 {
-	return attribute.AsFloat64Slice(v.slice)
+	return nil
 }
 
 // AsString returns the string value. Make sure that the Value's type
@@ -199,14 +204,10 @@ func (v Value) AsString() string {
 // AsStringSlice returns the []string value. Make sure that the Value's type is
 // STRINGSLICE.
 func (v Value) AsStringSlice() []string {
-	if v.vtype != STRINGSLICE {
-		return nil
+	if s, ok := v.slice.(*[]string); ok {
+		return *s
 	}
-	return v.asStringSlice()
-}
-
-func (v Value) asStringSlice() []string {
-	return attribute.AsStringSlice(v.slice)
+	return nil
 }
 
 type unknownValueType struct{}
@@ -217,19 +218,19 @@ func (v Value) AsInterface() interface{} {
 	case BOOL:
 		return v.AsBool()
 	case BOOLSLICE:
-		return v.asBoolSlice()
+		return v.AsBoolSlice()
 	case INT64:
 		return v.AsInt64()
 	case INT64SLICE:
-		return v.asInt64Slice()
+		return v.AsInt64Slice()
 	case FLOAT64:
 		return v.AsFloat64()
 	case FLOAT64SLICE:
-		return v.asFloat64Slice()
+		return v.AsFloat64Slice()
 	case STRING:
 		return v.stringly
 	case STRINGSLICE:
-		return v.asStringSlice()
+		return v.AsStringSlice()
 	}
 	return unknownValueType{}
 }
@@ -238,19 +239,19 @@ func (v Value) AsInterface() interface{} {
 func (v Value) Emit() string {
 	switch v.Type() {
 	case BOOLSLICE:
-		return fmt.Sprint(v.asBoolSlice())
+		return fmt.Sprint(*(v.slice.(*[]bool)))
 	case BOOL:
 		return strconv.FormatBool(v.AsBool())
 	case INT64SLICE:
-		return fmt.Sprint(v.asInt64Slice())
+		return fmt.Sprint(*(v.slice.(*[]int64)))
 	case INT64:
 		return strconv.FormatInt(v.AsInt64(), 10)
 	case FLOAT64SLICE:
-		return fmt.Sprint(v.asFloat64Slice())
+		return fmt.Sprint(*(v.slice.(*[]float64)))
 	case FLOAT64:
 		return fmt.Sprint(v.AsFloat64())
 	case STRINGSLICE:
-		return fmt.Sprint(v.asStringSlice())
+		return fmt.Sprint(*(v.slice.(*[]string)))
 	case STRING:
 		return v.stringly
 	default:

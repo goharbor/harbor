@@ -1,0 +1,37 @@
+run:
+  deadline: 90s
+  skip-dirs:
+    - (^|/)x509($|/)
+    - (^|/)asn1($|/)
+
+linters-settings:
+  gocyclo:
+    min-complexity: 40
+  depguard:
+    list-type: blacklist
+    packages:
+      - ^golang.org/x/net/context$
+      - github.com/gogo/protobuf/proto
+      - encoding/asn1
+      - crypto/x509
+
+linters:
+  disable-all: true
+  enable:
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - megacheck
+    - misspell
+    - govet
+    - depguard
+    - deadcode
+    - ineffassign
+    - varcheck
+    # TODO(gbelvin): write license linter and commit to upstream.
+    # ./scripts/check_license.sh is run by ./scripts/presubmit.sh
+
+issues:
+    # Don't turn off any checks by default. We can do this explicitly if needed.
+    exclude-use-default: false

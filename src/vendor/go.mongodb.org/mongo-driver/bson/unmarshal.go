@@ -23,7 +23,7 @@ type Unmarshaler interface {
 }
 
 // ValueUnmarshaler is an interface implemented by types that can unmarshal a
-// BSON value representaiton of themselves. The BSON bytes and type can be
+// BSON value representation of themselves. The BSON bytes and type can be
 // assumed to be valid. UnmarshalBSONValue must copy the BSON value bytes if it
 // wishes to retain the data after returning.
 type ValueUnmarshaler interface {

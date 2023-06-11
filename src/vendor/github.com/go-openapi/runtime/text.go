@@ -41,7 +41,6 @@ func TextConsumer() Consumer {
 
 		// If the buffer is empty, no need to unmarshal it, which causes a panic.
 		if len(b) == 0 {
-			data = ""
 			return nil
 		}
 

@@ -53,7 +53,7 @@ type DefaultValueDecoders struct{}
 // RegisterDefaultDecoders will register the decoder methods attached to DefaultValueDecoders with
 // the provided RegistryBuilder.
 //
-// There is no support for decoding map[string]interface{} becuase there is no decoder for
+// There is no support for decoding map[string]interface{} because there is no decoder for
 // interface{}, so users must either register this decoder themselves or use the
 // EmptyInterfaceDecoder available in the bson package.
 func (dvd DefaultValueDecoders) RegisterDefaultDecoders(rb *RegistryBuilder) {
@@ -1463,7 +1463,7 @@ func (dvd DefaultValueDecoders) ValueUnmarshalerDecodeValue(dc DecodeContext, vr
 		if !val.CanAddr() {
 			return ValueDecoderError{Name: "ValueUnmarshalerDecodeValue", Types: []reflect.Type{tValueUnmarshaler}, Received: val}
 		}
-		val = val.Addr() // If they type doesn't implement the interface, a pointer to it must.
+		val = val.Addr() // If the type doesn't implement the interface, a pointer to it must.
 	}
 
 	t, src, err := bsonrw.Copier{}.CopyValueToBytes(vr)
@@ -1492,16 +1492,28 @@ func (dvd DefaultValueDecoders) UnmarshalerDecodeValue(dc DecodeContext, vr bson
 		val.Set(reflect.New(val.Type().Elem()))
 	}
 
+	_, src, err := bsonrw.Copier{}.CopyValueToBytes(vr)
+	if err != nil {
+		return err
+	}
+
+	// If the target Go value is a pointer and the BSON field value is empty, set the value to the
+	// zero value of the pointer (nil) and don't call UnmarshalBSON. UnmarshalBSON has no way to
+	// change the pointer value from within the function (only the value at the pointer address),
+	// so it can't set the pointer to "nil" itself. Since the most common Go value for an empty BSON
+	// field value is "nil", we set "nil" here and don't call UnmarshalBSON. This behavior matches
+	// the behavior of the Go "encoding/json" unmarshaler when the target Go value is a pointer and
+	// the JSON field value is "null".
+	if val.Kind() == reflect.Ptr && len(src) == 0 {
+		val.Set(reflect.Zero(val.Type()))
+		return nil
+	}
+
 	if !val.Type().Implements(tUnmarshaler) {
 		if !val.CanAddr() {
 			return ValueDecoderError{Name: "UnmarshalerDecodeValue", Types: []reflect.Type{tUnmarshaler}, Received: val}
 		}
-		val = val.Addr() // If they type doesn't implement the interface, a pointer to it must.
-	}
-
-	_, src, err := bsonrw.Copier{}.CopyValueToBytes(vr)
-	if err != nil {
-		return err
+		val = val.Addr() // If the type doesn't implement the interface, a pointer to it must.
 	}
 
 	fn := val.Convert(tUnmarshaler).MethodByName("UnmarshalBSON")

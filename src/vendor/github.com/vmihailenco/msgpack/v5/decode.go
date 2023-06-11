@@ -70,10 +70,10 @@ type Decoder struct {
 
 	rec []byte // accumulates read data if not nil
 
-	dict          []string
-	flags         uint32
-	structTag     string
-	decodeMapFunc func(*Decoder) (interface{}, error)
+	dict       []string
+	flags      uint32
+	structTag  string
+	mapDecoder func(*Decoder) (interface{}, error)
 }
 
 // NewDecoder returns a new decoder that reads from r.
@@ -98,13 +98,16 @@ func (d *Decoder) ResetDict(r io.Reader, dict []string) {
 	d.resetReader(r)
 	d.flags = 0
 	d.structTag = ""
-	d.decodeMapFunc = nil
+	d.mapDecoder = nil
+	d.dict = dict
+}
 
-	if len(dict) > 0 {
-		d.dict = dict
-	} else {
-		d.dict = d.dict[:0]
-	}
+func (d *Decoder) WithDict(dict []string, fn func(*Decoder) error) error {
+	oldDict := d.dict
+	d.dict = dict
+	err := fn(d)
+	d.dict = oldDict
+	return err
 }
 
 func (d *Decoder) resetReader(r io.Reader) {
@@ -119,7 +122,7 @@ func (d *Decoder) resetReader(r io.Reader) {
 }
 
 func (d *Decoder) SetMapDecoder(fn func(*Decoder) (interface{}, error)) {
-	d.decodeMapFunc = fn
+	d.mapDecoder = fn
 }
 
 // UseLooseInterfaceDecoding causes decoder to use DecodeInterfaceLoose
@@ -338,6 +341,9 @@ func (d *Decoder) DecodeBool() (bool, error) {
 }
 
 func (d *Decoder) bool(c byte) (bool, error) {
+	if c == msgpcode.Nil {
+		return false, nil
+	}
 	if c == msgpcode.False {
 		return false, nil
 	}
@@ -441,6 +447,7 @@ func (d *Decoder) DecodeInterface() (interface{}, error) {
 //   - int8, int16, and int32 are converted to int64,
 //   - uint8, uint16, and uint32 are converted to uint64,
 //   - float32 is converted to float64.
+//   - []byte is converted to string.
 func (d *Decoder) DecodeInterfaceLoose() (interface{}, error) {
 	c, err := d.readCode()
 	if err != nil {
@@ -475,9 +482,8 @@ func (d *Decoder) DecodeInterfaceLoose() (interface{}, error) {
 		return d.uint(c)
 	case msgpcode.Int8, msgpcode.Int16, msgpcode.Int32, msgpcode.Int64:
 		return d.int(c)
-	case msgpcode.Bin8, msgpcode.Bin16, msgpcode.Bin32:
-		return d.bytes(c, nil)
-	case msgpcode.Str8, msgpcode.Str16, msgpcode.Str32:
+	case msgpcode.Str8, msgpcode.Str16, msgpcode.Str32,
+		msgpcode.Bin8, msgpcode.Bin16, msgpcode.Bin32:
 		return d.string(c)
 	case msgpcode.Array16, msgpcode.Array32:
 		return d.decodeSlice(c)

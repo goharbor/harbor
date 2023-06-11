@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"math"
 	"sort"
@@ -19,13 +18,9 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-)
 
-var ejvwPool = sync.Pool{
-	New: func() interface{} {
-		return new(extJSONValueWriter)
-	},
-}
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // ExtJSONValueWriterPool is a pool for ExtJSON ValueWriters.
 type ExtJSONValueWriterPool struct {

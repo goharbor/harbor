@@ -10,8 +10,8 @@
 package primitive
 
 import (
-	"bytes"
 	"crypto/rand"
+	"encoding"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -33,6 +33,9 @@ var NilObjectID ObjectID
 
 var objectIDCounter = readRandomUint32()
 var processUnique = processUniqueBytes()
+
+var _ encoding.TextMarshaler = ObjectID{}
+var _ encoding.TextUnmarshaler = &ObjectID{}
 
 // NewObjectID generates a new ObjectID.
 func NewObjectID() ObjectID {
@@ -67,7 +70,7 @@ func (id ObjectID) String() string {
 
 // IsZero returns true if id is the empty ObjectID.
 func (id ObjectID) IsZero() bool {
-	return bytes.Equal(id[:], NilObjectID[:])
+	return id == NilObjectID
 }
 
 // ObjectIDFromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
@@ -83,7 +86,7 @@ func ObjectIDFromHex(s string) (ObjectID, error) {
 	}
 
 	var oid [12]byte
-	copy(oid[:], b[:])
+	copy(oid[:], b)
 
 	return oid, nil
 }
@@ -92,6 +95,23 @@ func ObjectIDFromHex(s string) (ObjectID, error) {
 func IsValidObjectID(s string) bool {
 	_, err := ObjectIDFromHex(s)
 	return err == nil
+}
+
+// MarshalText returns the ObjectID as UTF-8-encoded text. Implementing this allows us to use ObjectID
+// as a map key when marshalling JSON. See https://pkg.go.dev/encoding#TextMarshaler
+func (id ObjectID) MarshalText() ([]byte, error) {
+	return []byte(id.Hex()), nil
+}
+
+// UnmarshalText populates the byte slice with the ObjectID. Implementing this allows us to use ObjectID
+// as a map key when unmarshalling JSON. See https://pkg.go.dev/encoding#TextUnmarshaler
+func (id *ObjectID) UnmarshalText(b []byte) error {
+	oid, err := ObjectIDFromHex(string(b))
+	if err != nil {
+		return err
+	}
+	*id = oid
+	return nil
 }
 
 // MarshalJSON returns the ObjectID as a string

@@ -11,7 +11,7 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/spf13/viper/CI?style=flat-square)](https://github.com/spf13/viper/actions?query=workflow%3ACI)
 [![Join the chat at https://gitter.im/spf13/viper](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/spf13/viper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spf13/viper?style=flat-square)](https://goreportcard.com/report/github.com/spf13/viper)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.14-61CFDD.svg?style=flat-square)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.15-61CFDD.svg?style=flat-square)
 [![PkgGoDev](https://pkg.go.dev/badge/mod/github.com/spf13/viper)](https://pkg.go.dev/mod/github.com/spf13/viper)
 
 **Go configuration with fangs!**
@@ -119,7 +119,7 @@ viper.AddConfigPath("$HOME/.appname")  // call multiple times to add many search
 viper.AddConfigPath(".")               // optionally look for config in the working directory
 err := viper.ReadInConfig() // Find and read the config file
 if err != nil { // Handle errors reading the config file
-	panic(fmt.Errorf("Fatal error config file: %w \n", err))
+	panic(fmt.Errorf("fatal error config file: %w", err))
 }
 ```
 
@@ -127,11 +127,11 @@ You can handle the specific case where no config file is found like this:
 
 ```go
 if err := viper.ReadInConfig(); err != nil {
-    if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-        // Config file not found; ignore error if desired
-    } else {
-        // Config file was found but another error was produced
-    }
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		// Config file not found; ignore error if desired
+	} else {
+		// Config file was found but another error was produced
+	}
 }
 
 // Config file found and successfully parsed
@@ -175,10 +175,10 @@ Optionally you can provide a function for Viper to run each time a change occurs
 **Make sure you add all of the configPaths prior to calling `WatchConfig()`**
 
 ```go
-viper.WatchConfig()
 viper.OnConfigChange(func(e fsnotify.Event) {
 	fmt.Println("Config file changed:", e.Name)
 })
+viper.WatchConfig()
 ```
 
 ### Reading Config from io.Reader
@@ -354,7 +354,7 @@ func main() {
 
 	i := viper.GetInt("flagname") // retrieve value from viper
 
-	...
+	// ...
 }
 ```
 
@@ -447,6 +447,13 @@ viper.SetConfigType("json") // because there is no file extension in a stream of
 err := viper.ReadRemoteConfig()
 ```
 
+#### etcd3
+```go
+viper.AddRemoteProvider("etcd3", "http://127.0.0.1:4001","/config/hugo.json")
+viper.SetConfigType("json") // because there is no file extension in a stream of bytes, supported extensions are "json", "toml", "yaml", "yml", "properties", "props", "prop", "env", "dotenv"
+err := viper.ReadRemoteConfig()
+```
+
 #### Consul
 You need to set a key to Consul key/value storage with JSON value containing your desired config.
 For example, create a Consul key/value store key `MY_CONSUL_KEY` with value:
@@ -503,18 +510,18 @@ runtime_viper.Unmarshal(&runtime_conf)
 // open a goroutine to watch remote changes forever
 go func(){
 	for {
-	    time.Sleep(time.Second * 5) // delay after each request
+		time.Sleep(time.Second * 5) // delay after each request
 
-	    // currently, only tested with etcd support
-	    err := runtime_viper.WatchRemoteConfig()
-	    if err != nil {
-	        log.Errorf("unable to read remote config: %v", err)
-	        continue
-	    }
+		// currently, only tested with etcd support
+		err := runtime_viper.WatchRemoteConfig()
+		if err != nil {
+			log.Errorf("unable to read remote config: %v", err)
+			continue
+		}
 
-	    // unmarshal new config into our runtime config struct. you can also use channel
-	    // to implement a signal to notify the system of the changes
-	    runtime_viper.Unmarshal(&runtime_conf)
+		// unmarshal new config into our runtime config struct. you can also use channel
+		// to implement a signal to notify the system of the changes
+		runtime_viper.Unmarshal(&runtime_conf)
 	}
 }()
 ```
@@ -546,7 +553,7 @@ Example:
 ```go
 viper.GetString("logfile") // case-insensitive Setting & Getting
 if viper.GetBool("verbose") {
-    fmt.Println("verbose enabled")
+	fmt.Println("verbose enabled")
 }
 ```
 ### Accessing nested keys
@@ -594,7 +601,7 @@ configuration level.
 
 Viper can access array indices by using numbers in the path. For example:
 
-```json
+```jsonc
 {
     "host": {
         "address": "localhost",
@@ -622,7 +629,7 @@ GetInt("host.ports.1") // returns 6029
 Lastly, if there exists a key that matches the delimited key path, its value
 will be returned instead. E.g.
 
-```json
+```jsonc
 {
     "datastore.metric.host": "0.0.0.0",
     "host": {
@@ -669,7 +676,7 @@ So instead of doing that let's pass a Viper instance to the constructor that rep
 ```go
 cache1Config := viper.Sub("cache.cache1")
 if cache1Config == nil { // Sub returns nil if the key cannot be found
-    panic("cache configuration not found")
+	panic("cache configuration not found")
 }
 
 cache1 := NewCache(cache1Config)
@@ -681,10 +688,10 @@ Internally, the `NewCache` function can address `max-items` and `item-size` keys
 
 ```go
 func NewCache(v *Viper) *Cache {
-    return &Cache{
-        MaxItems: v.GetInt("max-items"),
-        ItemSize: v.GetInt("item-size"),
-    }
+	return &Cache{
+		MaxItems: v.GetInt("max-items"),
+		ItemSize: v.GetInt("item-size"),
+	}
 }
 ```
 
@@ -726,18 +733,18 @@ you have to change the delimiter:
 v := viper.NewWithOptions(viper.KeyDelimiter("::"))
 
 v.SetDefault("chart::values", map[string]interface{}{
-    "ingress": map[string]interface{}{
-        "annotations": map[string]interface{}{
-            "traefik.frontend.rule.type":                 "PathPrefix",
-            "traefik.ingress.kubernetes.io/ssl-redirect": "true",
-        },
-    },
+	"ingress": map[string]interface{}{
+		"annotations": map[string]interface{}{
+			"traefik.frontend.rule.type":                 "PathPrefix",
+			"traefik.ingress.kubernetes.io/ssl-redirect": "true",
+		},
+	},
 })
 
 type config struct {
 	Chart struct{
-        Values map[string]interface{}
-    }
+		Values map[string]interface{}
+	}
 }
 
 var C config
@@ -778,6 +785,15 @@ if err != nil {
 
 Viper uses [github.com/mitchellh/mapstructure](https://github.com/mitchellh/mapstructure) under the hood for unmarshaling values which uses `mapstructure` tags by default.
 
+### Decoding custom formats
+
+A frequently requested feature for Viper is adding more value formats and decoders.
+For example, parsing character (dot, comma, semicolon, etc) separated strings into slices.
+
+This is already available in Viper using mapstructure decode hooks.
+
+Read more about the details in [this blog post](https://sagikazarmark.hu/blog/decoding-custom-formats-with-viper/).
+
 ### Marshalling to string
 
 You may need to marshal all the settings held in viper into a string rather than write them to a file.
@@ -785,17 +801,17 @@ You can use your favorite format's marshaller with the config returned by `AllSe
 
 ```go
 import (
-    yaml "gopkg.in/yaml.v2"
-    // ...
+	yaml "gopkg.in/yaml.v2"
+	// ...
 )
 
 func yamlStringSettings() string {
-    c := viper.AllSettings()
-    bs, err := yaml.Marshal(c)
-    if err != nil {
-        log.Fatalf("unable to marshal config to YAML: %v", err)
-    }
-    return string(bs)
+	c := viper.AllSettings()
+	bs, err := yaml.Marshal(c)
+	if err != nil {
+		log.Fatalf("unable to marshal config to YAML: %v", err)
+	}
+	return string(bs)
 }
 ```
 

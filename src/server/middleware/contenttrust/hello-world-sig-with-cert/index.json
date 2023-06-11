@@ -1,0 +1,1 @@
+{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.manifest.v1+json","size":3359,"digest":"sha256:ba0610a89815d7d7a44a1a1041c689fbd4f597ea8595672be5b4fdbb1fcf3f24","annotations":{"org.google.gpc.harbor.project":"","org.google.gpc.harbor.repo":"","org.google.gpc.harbor.tag":"sha256-ad7c8b818cf3016b2b64372e166b339a8e8f0f722a812a867ae20d9a46171dff.sig"}}]}

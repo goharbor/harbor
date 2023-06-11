@@ -1,0 +1,23 @@
+definitions:
+  steps:
+    - step: &Verify
+        script:
+          - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}"
+          - mkdir -pv "${PACKAGE_PATH}"
+          - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+          - cd "${PACKAGE_PATH}"
+          - go version # log the version of Go we are using in this step
+          - export GO111MODULE=on # enable modules inside $GOPATH
+          - go get -v ./...
+          - go build -v ./...
+          - go test -v -race -cpu=1,4 ./...
+          - go vet -v ./...
+
+pipelines:
+  default:  # run on each push
+    - step:
+        image: golang:1.16
+        <<: *Verify
+    - step:
+        image: golang:1.17
+        <<: *Verify

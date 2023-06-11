@@ -44,6 +44,14 @@ func (a *apiError) Code() int32 {
 	return a.code
 }
 
+// MarshalJSON implements the JSON encoding interface
+func (a apiError) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"code":    a.code,
+		"message": a.message,
+	})
+}
+
 // New creates a new API error with a code and a message
 func New(code int32, message string, args ...interface{}) Error {
 	if len(args) > 0 {
@@ -81,7 +89,17 @@ func (m *MethodNotAllowedError) Code() int32 {
 	return m.code
 }
 
+// MarshalJSON implements the JSON encoding interface
+func (m MethodNotAllowedError) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"code":    m.code,
+		"message": m.message,
+		"allowed": m.Allowed,
+	})
+}
+
 func errorAsJSON(err Error) []byte {
+	//nolint:errchkjson
 	b, _ := json.Marshal(struct {
 		Code    int32  `json:"code"`
 		Message string `json:"message"`
@@ -129,7 +147,7 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 			ServeError(rw, r, nil)
 		}
 	case *MethodNotAllowedError:
-		rw.Header().Add("Allow", strings.Join(err.(*MethodNotAllowedError).Allowed, ","))
+		rw.Header().Add("Allow", strings.Join(e.Allowed, ","))
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
 		if r == nil || r.Method != http.MethodHead {
 			_, _ = rw.Write(errorAsJSON(e))

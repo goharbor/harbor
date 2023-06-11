@@ -15,7 +15,6 @@ import (
 
 // ErrNilReader indicates that an operation was attempted on a nil bson.Reader.
 var ErrNilReader = errors.New("nil reader")
-var errValidateDone = errors.New("validation loop complete")
 
 // Raw is a wrapper around a byte slice. It will interpret the slice as a
 // BSON document. This type is a wrapper around a bsoncore.Document. Errors returned from the
@@ -84,9 +83,3 @@ func (r Raw) IndexErr(index uint) (RawElement, error) {
 
 // String implements the fmt.Stringer interface.
 func (r Raw) String() string { return bsoncore.Document(r).String() }
-
-// readi32 is a helper function for reading an int32 from slice of bytes.
-func readi32(b []byte) int32 {
-	_ = b[3] // bounds check hint to compiler; see golang.org/issue/14808
-	return int32(b[0]) | int32(b[1])<<8 | int32(b[2])<<16 | int32(b[3])<<24
-}

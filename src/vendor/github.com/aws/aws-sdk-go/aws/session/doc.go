@@ -208,6 +208,8 @@ env values as well.
 
 	AWS_SDK_LOAD_CONFIG=1
 
+Custom Shared Config and Credential Files
+
 Shared credentials file path can be set to instruct the SDK to use an alternative
 file for the shared credentials. If not set the file will be loaded from
 $HOME/.aws/credentials on Linux/Unix based systems, and
@@ -221,6 +223,8 @@ $HOME/.aws/config on Linux/Unix based systems, and
 %USERPROFILE%\.aws\config on Windows.
 
 	AWS_CONFIG_FILE=$HOME/my_shared_config
+
+Custom CA Bundle
 
 Path to a custom Credentials Authority (CA) bundle PEM file that the SDK
 will use instead of the default system's root CA bundle. Use this only
@@ -242,6 +246,29 @@ Setting a custom HTTPClient in the aws.Config options will override this setting
 To use this option and custom HTTP client, the HTTP client needs to be provided
 when creating the session. Not the service client.
 
+Custom Client TLS Certificate
+
+The SDK supports the environment and session option being configured with
+Client TLS certificates that are sent as a part of the client's TLS handshake
+for client authentication. If used, both Cert and Key values are required. If
+one is missing, or either fail to load the contents of the file an error will
+be returned.
+
+HTTP Client's Transport concrete implementation must be a http.Transport
+or creating the session will fail.
+
+	AWS_SDK_GO_CLIENT_TLS_KEY=$HOME/my_client_key
+	AWS_SDK_GO_CLIENT_TLS_CERT=$HOME/my_client_cert
+
+This can also be configured via the session.Options ClientTLSCert and ClientTLSKey.
+
+	sess, err := session.NewSessionWithOptions(session.Options{
+		ClientTLSCert: myCertFile,
+		ClientTLSKey: myKeyFile,
+	})
+
+Custom EC2 IMDS Endpoint
+
 The endpoint of the EC2 IMDS client can be configured via the environment
 variable, AWS_EC2_METADATA_SERVICE_ENDPOINT when creating the client with a
 Session. See Options.EC2IMDSEndpoint for more details.
@@ -256,7 +283,85 @@ component must be enclosed in square brackets.
 The custom EC2 IMDS endpoint can also be specified via the Session options.
 
   sess, err := session.NewSessionWithOptions(session.Options{
-      EC2IMDSEndpoint: "http://[::1]",
+      EC2MetadataEndpoint: "http://[::1]",
+  })
+
+FIPS and DualStack Endpoints
+
+The SDK can be configured to resolve an endpoint with certain capabilities such as FIPS and DualStack.
+
+You can configure a FIPS endpoint using an environment variable, shared config ($HOME/.aws/config),
+or programmatically.
+
+To configure a FIPS endpoint set the environment variable set the AWS_USE_FIPS_ENDPOINT to true or false to enable
+or disable FIPS endpoint resolution.
+
+  AWS_USE_FIPS_ENDPOINT=true
+
+To configure a FIPS endpoint using shared config, set use_fips_endpoint to true or false to enable
+or disable FIPS endpoint resolution.
+
+  [profile myprofile]
+  region=us-west-2
+  use_fips_endpoint=true
+
+To configure a FIPS endpoint programmatically
+
+  // Option 1: Configure it on a session for all clients
+  sess, err := session.NewSessionWithOptions(session.Options{
+      UseFIPSEndpoint: endpoints.FIPSEndpointStateEnabled,
+  })
+  if err != nil {
+      // handle error
+  }
+
+  client := s3.New(sess)
+
+  // Option 2: Configure it per client
+  sess, err := session.NewSession()
+  if err != nil {
+      // handle error
+  }
+
+  client := s3.New(sess, &aws.Config{
+      UseFIPSEndpoint: endpoints.FIPSEndpointStateEnabled,
+  })
+
+You can configure a DualStack endpoint using an environment variable, shared config ($HOME/.aws/config),
+or programmatically.
+
+To configure a DualStack endpoint set the environment variable set the AWS_USE_DUALSTACK_ENDPOINT to true or false to
+enable or disable DualStack endpoint resolution.
+
+  AWS_USE_DUALSTACK_ENDPOINT=true
+
+To configure a DualStack endpoint using shared config, set use_dualstack_endpoint to true or false to enable
+or disable DualStack endpoint resolution.
+
+  [profile myprofile]
+  region=us-west-2
+  use_dualstack_endpoint=true
+
+To configure a DualStack endpoint programmatically
+
+  // Option 1: Configure it on a session for all clients
+  sess, err := session.NewSessionWithOptions(session.Options{
+      UseDualStackEndpoint: endpoints.DualStackEndpointStateEnabled,
+  })
+  if err != nil {
+      // handle error
+  }
+
+  client := s3.New(sess)
+
+  // Option 2: Configure it per client
+  sess, err := session.NewSession()
+  if err != nil {
+      // handle error
+  }
+
+  client := s3.New(sess, &aws.Config{
+      UseDualStackEndpoint: endpoints.DualStackEndpointStateEnabled,
   })
 */
 package session

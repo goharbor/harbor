@@ -10,12 +10,13 @@ import (
 
 // A Config provides configuration to a service client instance.
 type Config struct {
-	Config        *aws.Config
-	Handlers      request.Handlers
-	PartitionID   string
-	Endpoint      string
-	SigningRegion string
-	SigningName   string
+	Config         *aws.Config
+	Handlers       request.Handlers
+	PartitionID    string
+	Endpoint       string
+	SigningRegion  string
+	SigningName    string
+	ResolvedRegion string
 
 	// States that the signing name did not come from a modeled source but
 	// was derived based on other data. Used by service client constructors
@@ -88,10 +89,6 @@ func (c *Client) NewRequest(operation *request.Operation, params interface{}, da
 // AddDebugHandlers injects debug logging handlers into the service to log request
 // debug information.
 func (c *Client) AddDebugHandlers() {
-	if !c.Config.LogLevel.AtLeast(aws.LogDebug) {
-		return
-	}
-
 	c.Handlers.Send.PushFrontNamed(LogHTTPRequestHandler)
 	c.Handlers.Send.PushBackNamed(LogHTTPResponseHandler)
 }

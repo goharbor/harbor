@@ -73,7 +73,7 @@ func SwaggerUI(opts SwaggerUIOpts, next http.Handler) http.Handler {
 	b := buf.Bytes()
 
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == pth {
+		if path.Join(r.URL.Path) == pth {
 			rw.Header().Set("Content-Type", "text/html; charset=utf-8")
 			rw.WriteHeader(http.StatusOK)
 

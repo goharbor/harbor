@@ -265,13 +265,16 @@ func expectQuality(s string) (q float64, rest string) {
 	case len(s) == 0:
 		return -1, ""
 	case s[0] == '0':
-		q = 0
+		// q is already 0
+		s = s[1:]
 	case s[0] == '1':
+		s = s[1:]
 		q = 1
+	case s[0] == '.':
+		// q is already 0
 	default:
 		return -1, ""
 	}
-	s = s[1:]
 	if !strings.HasPrefix(s, ".") {
 		return q, s
 	}

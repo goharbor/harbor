@@ -5,34 +5,45 @@
 [![Documentation](https://img.shields.io/badge/msgpack-documentation-informational)](https://msgpack.uptrace.dev/)
 [![Chat](https://discordapp.com/api/guilds/752070105847955518/widget.png)](https://discord.gg/rWtp5Aj)
 
-> :heart: [**Uptrace.dev** - distributed traces, logs, and errors in one place](https://uptrace.dev)
+> :heart:
+> [**Uptrace.dev** - All-in-one tool to optimize performance and monitor errors & logs](https://uptrace.dev/?utm_source=gh-msgpack&utm_campaign=gh-msgpack-var2)
 
 - Join [Discord](https://discord.gg/rWtp5Aj) to ask questions.
 - [Documentation](https://msgpack.uptrace.dev)
 - [Reference](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5)
 - [Examples](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#pkg-examples)
 
+Other projects you may like:
+
+- [Bun](https://bun.uptrace.dev) - fast and simple SQL client for PostgreSQL, MySQL, and SQLite.
+- [BunRouter](https://bunrouter.uptrace.dev/) - fast and flexible HTTP router for Go.
+
 ## Features
 
 - Primitives, arrays, maps, structs, time.Time and interface{}.
 - Appengine \*datastore.Key and datastore.Cursor.
-- [CustomEncoder](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-CustomEncoder)/CustomDecoder
-  interfaces for custom encoding.
+- [CustomEncoder]/[CustomDecoder] interfaces for custom encoding.
 - [Extensions](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-RegisterExt) to encode
   type information.
 - Renaming fields via `msgpack:"my_field_name"` and alias via `msgpack:"alias:another_name"`.
 - Omitting individual empty fields via `msgpack:",omitempty"` tag or all
-  [empty fields in a struct](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Marshal--OmitEmpty).
-- [Map keys sorting](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.SortMapKeys).
+  [empty fields in a struct](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Marshal-OmitEmpty).
+- [Map keys sorting](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.SetSortMapKeys).
 - Encoding/decoding all
-  [structs as arrays](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.UseArrayForStructs)
+  [structs as arrays](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.UseArrayEncodedStructs)
   or
-  [individual structs](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Marshal--AsArray).
-- [Encoder.UseJSONTag](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.UseJSONTag) with
-  [Decoder.UseJSONTag](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Decoder.UseJSONTag) can
-  turn msgpack into drop-in replacement for JSON.
+  [individual structs](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Marshal-AsArray).
+- [Encoder.SetCustomStructTag] with [Decoder.SetCustomStructTag] can turn msgpack into drop-in
+  replacement for any tag.
 - Simple but very fast and efficient
-  [queries](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Decoder-Query).
+  [queries](https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#example-Decoder.Query).
+
+[customencoder]: https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#CustomEncoder
+[customdecoder]: https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#CustomDecoder
+[encoder.setcustomstructtag]:
+  https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Encoder.SetCustomStructTag
+[decoder.setcustomstructtag]:
+  https://pkg.go.dev/github.com/vmihailenco/msgpack/v5#Decoder.SetCustomStructTag
 
 ## Installation
 
@@ -73,9 +84,3 @@ func ExampleMarshal() {
     // Output: bar
 }
 ```
-
-## See also
-
-- [Fast and flexible HTTP router](https://github.com/vmihailenco/treemux)
-- [Golang PostgreSQL ORM](https://github.com/go-pg/pg)
-- [Golang message task queue](https://github.com/vmihailenco/taskq)

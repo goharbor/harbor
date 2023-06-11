@@ -141,7 +141,7 @@ func (s *SpecValidator) Validate(data interface{}) (*Result, *Result) {
 
 	errs.Merge(s.validateNonEmptyPathParamNames())
 
-	//errs.Merge(s.validateRefNoSibling()) // warning only
+	// errs.Merge(s.validateRefNoSibling()) // warning only
 	errs.Merge(s.validateReferenced()) // warning only
 
 	return errs, warnings
@@ -543,7 +543,7 @@ DEFINITIONS:
 	for d, schema := range s.spec.Spec().Definitions {
 		if schema.Required != nil { // Safeguard
 			for _, pn := range schema.Required {
-				red := s.validateRequiredProperties(pn, d, &schema)
+				red := s.validateRequiredProperties(pn, d, &schema) //#nosec
 				res.Merge(red)
 				if !red.IsValid() && !s.Options.ContinueOnErrors {
 					break DEFINITIONS // there is an error, let's stop that bleeding
@@ -624,7 +624,7 @@ func (s *SpecValidator) validateParameters() *Result {
 	// - path param must be required
 	res := new(Result)
 	rexGarbledPathSegment := mustCompileRegexp(`.*[{}\s]+.*`)
-	for method, pi := range s.analyzer.Operations() {
+	for method, pi := range s.expandedAnalyzer().Operations() {
 		methodPaths := make(map[string]map[string]string)
 		for path, op := range pi {
 			pathToAdd := pathHelp.stripParametersInPath(path)
@@ -647,7 +647,7 @@ func (s *SpecValidator) validateParameters() *Result {
 				if _, found := methodPaths[method]; !found {
 					methodPaths[method] = map[string]string{}
 				}
-				methodPaths[method][pathToAdd] = path //Original non stripped path
+				methodPaths[method][pathToAdd] = path // Original non stripped path
 
 			}
 
@@ -773,7 +773,7 @@ func (s *SpecValidator) checkUniqueParams(path, method string, op *spec.Operatio
 	if op.Parameters != nil { // Safeguard
 		for _, ppr := range op.Parameters {
 			var ok bool
-			pr, red := paramHelp.resolveParam(path, method, op.ID, &ppr, s)
+			pr, red := paramHelp.resolveParam(path, method, op.ID, &ppr, s) //#nosec
 			res.Merge(red)
 
 			if pr != nil && pr.Name != "" { // params with empty name does no participate the check
@@ -792,4 +792,13 @@ func (s *SpecValidator) checkUniqueParams(path, method string, op *spec.Operatio
 // SetContinueOnErrors sets the ContinueOnErrors option for this validator.
 func (s *SpecValidator) SetContinueOnErrors(c bool) {
 	s.Options.ContinueOnErrors = c
+}
+
+// expandedAnalyzer returns expanded.Analyzer when it is available.
+// otherwise just analyzer.
+func (s *SpecValidator) expandedAnalyzer() *analysis.Spec {
+	if s.expanded != nil && s.expanded.Analyzer != nil {
+		return s.expanded.Analyzer
+	}
+	return s.analyzer
 }

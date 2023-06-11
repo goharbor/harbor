@@ -1,3 +1,9 @@
+// Copyright (C) MongoDB, Inc. 2022-present.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
 // Package bsoncodec provides a system for encoding values to BSON representations and decoding
 // values from BSON representations. This package considers both binary BSON and ExtendedJSON as
 // BSON representations. The types in this package enable a flexible system for handling this

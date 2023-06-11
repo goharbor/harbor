@@ -39,11 +39,11 @@ func NormalizeBucketLocation(loc string) string {
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGETlocation.html
 // for more information on the values that can be returned.
 //
-//     req, result := svc.GetBucketLocationRequest(&s3.GetBucketLocationInput{
-//         Bucket: aws.String(bucket),
-//     })
-//     req.Handlers.Unmarshal.PushBackNamed(NormalizeBucketLocationHandler)
-//     err := req.Send()
+//	req, result := svc.GetBucketLocationRequest(&s3.GetBucketLocationInput{
+//	    Bucket: aws.String(bucket),
+//	})
+//	req.Handlers.Unmarshal.PushBackNamed(NormalizeBucketLocationHandler)
+//	err := req.Send()
 var NormalizeBucketLocationHandler = request.NamedHandler{
 	Name: "awssdk.s3.NormalizeBucketLocation",
 	Fn: func(req *request.Request) {
@@ -65,12 +65,12 @@ var NormalizeBucketLocationHandler = request.NamedHandler{
 // See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGETlocation.html
 // for more information on the values that can be returned.
 //
-//     result, err := svc.GetBucketLocationWithContext(ctx,
-//         &s3.GetBucketLocationInput{
-//             Bucket: aws.String(bucket),
-//         },
-//         s3.WithNormalizeBucketLocation,
-//     )
+//	result, err := svc.GetBucketLocationWithContext(ctx,
+//	    &s3.GetBucketLocationInput{
+//	        Bucket: aws.String(bucket),
+//	    },
+//	    s3.WithNormalizeBucketLocation,
+//	)
 func WithNormalizeBucketLocation(r *request.Request) {
 	r.Handlers.Unmarshal.PushBackNamed(NormalizeBucketLocationHandler)
 }

@@ -125,15 +125,35 @@ const (
 	// "LimitExceededException".
 	//
 	// The operation did not succeed because it would have exceeded a service limit
-	// for your account. For more information, see Amazon ECR Service Quotas (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service-quotas.html)
+	// for your account. For more information, see Amazon ECR service quotas (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service-quotas.html)
 	// in the Amazon Elastic Container Registry User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
+
+	// ErrCodePullThroughCacheRuleAlreadyExistsException for service response error code
+	// "PullThroughCacheRuleAlreadyExistsException".
+	//
+	// A pull through cache rule with these settings already exists for the private
+	// registry.
+	ErrCodePullThroughCacheRuleAlreadyExistsException = "PullThroughCacheRuleAlreadyExistsException"
+
+	// ErrCodePullThroughCacheRuleNotFoundException for service response error code
+	// "PullThroughCacheRuleNotFoundException".
+	//
+	// The pull through cache rule was not found. Specify a valid pull through cache
+	// rule and try again.
+	ErrCodePullThroughCacheRuleNotFoundException = "PullThroughCacheRuleNotFoundException"
 
 	// ErrCodeReferencedImagesNotFoundException for service response error code
 	// "ReferencedImagesNotFoundException".
 	//
 	// The manifest list is referencing an image that does not exist.
 	ErrCodeReferencedImagesNotFoundException = "ReferencedImagesNotFoundException"
+
+	// ErrCodeRegistryPolicyNotFoundException for service response error code
+	// "RegistryPolicyNotFoundException".
+	//
+	// The registry doesn't have an associated registry policy.
+	ErrCodeRegistryPolicyNotFoundException = "RegistryPolicyNotFoundException"
 
 	// ErrCodeRepositoryAlreadyExistsException for service response error code
 	// "RepositoryAlreadyExistsException".
@@ -188,41 +208,58 @@ const (
 	// The image is of a type that cannot be scanned.
 	ErrCodeUnsupportedImageTypeException = "UnsupportedImageTypeException"
 
+	// ErrCodeUnsupportedUpstreamRegistryException for service response error code
+	// "UnsupportedUpstreamRegistryException".
+	//
+	// The specified upstream registry isn't supported.
+	ErrCodeUnsupportedUpstreamRegistryException = "UnsupportedUpstreamRegistryException"
+
 	// ErrCodeUploadNotFoundException for service response error code
 	// "UploadNotFoundException".
 	//
 	// The upload could not be found, or the specified upload ID is not valid for
 	// this repository.
 	ErrCodeUploadNotFoundException = "UploadNotFoundException"
+
+	// ErrCodeValidationException for service response error code
+	// "ValidationException".
+	//
+	// There was an exception validating this request.
+	ErrCodeValidationException = "ValidationException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"EmptyUploadException":                      newErrorEmptyUploadException,
-	"ImageAlreadyExistsException":               newErrorImageAlreadyExistsException,
-	"ImageDigestDoesNotMatchException":          newErrorImageDigestDoesNotMatchException,
-	"ImageNotFoundException":                    newErrorImageNotFoundException,
-	"ImageTagAlreadyExistsException":            newErrorImageTagAlreadyExistsException,
-	"InvalidLayerException":                     newErrorInvalidLayerException,
-	"InvalidLayerPartException":                 newErrorInvalidLayerPartException,
-	"InvalidParameterException":                 newErrorInvalidParameterException,
-	"InvalidTagParameterException":              newErrorInvalidTagParameterException,
-	"KmsException":                              newErrorKmsException,
-	"LayerAlreadyExistsException":               newErrorLayerAlreadyExistsException,
-	"LayerInaccessibleException":                newErrorLayerInaccessibleException,
-	"LayerPartTooSmallException":                newErrorLayerPartTooSmallException,
-	"LayersNotFoundException":                   newErrorLayersNotFoundException,
-	"LifecyclePolicyNotFoundException":          newErrorLifecyclePolicyNotFoundException,
-	"LifecyclePolicyPreviewInProgressException": newErrorLifecyclePolicyPreviewInProgressException,
-	"LifecyclePolicyPreviewNotFoundException":   newErrorLifecyclePolicyPreviewNotFoundException,
-	"LimitExceededException":                    newErrorLimitExceededException,
-	"ReferencedImagesNotFoundException":         newErrorReferencedImagesNotFoundException,
-	"RepositoryAlreadyExistsException":          newErrorRepositoryAlreadyExistsException,
-	"RepositoryNotEmptyException":               newErrorRepositoryNotEmptyException,
-	"RepositoryNotFoundException":               newErrorRepositoryNotFoundException,
-	"RepositoryPolicyNotFoundException":         newErrorRepositoryPolicyNotFoundException,
-	"ScanNotFoundException":                     newErrorScanNotFoundException,
-	"ServerException":                           newErrorServerException,
-	"TooManyTagsException":                      newErrorTooManyTagsException,
-	"UnsupportedImageTypeException":             newErrorUnsupportedImageTypeException,
-	"UploadNotFoundException":                   newErrorUploadNotFoundException,
+	"EmptyUploadException":                       newErrorEmptyUploadException,
+	"ImageAlreadyExistsException":                newErrorImageAlreadyExistsException,
+	"ImageDigestDoesNotMatchException":           newErrorImageDigestDoesNotMatchException,
+	"ImageNotFoundException":                     newErrorImageNotFoundException,
+	"ImageTagAlreadyExistsException":             newErrorImageTagAlreadyExistsException,
+	"InvalidLayerException":                      newErrorInvalidLayerException,
+	"InvalidLayerPartException":                  newErrorInvalidLayerPartException,
+	"InvalidParameterException":                  newErrorInvalidParameterException,
+	"InvalidTagParameterException":               newErrorInvalidTagParameterException,
+	"KmsException":                               newErrorKmsException,
+	"LayerAlreadyExistsException":                newErrorLayerAlreadyExistsException,
+	"LayerInaccessibleException":                 newErrorLayerInaccessibleException,
+	"LayerPartTooSmallException":                 newErrorLayerPartTooSmallException,
+	"LayersNotFoundException":                    newErrorLayersNotFoundException,
+	"LifecyclePolicyNotFoundException":           newErrorLifecyclePolicyNotFoundException,
+	"LifecyclePolicyPreviewInProgressException":  newErrorLifecyclePolicyPreviewInProgressException,
+	"LifecyclePolicyPreviewNotFoundException":    newErrorLifecyclePolicyPreviewNotFoundException,
+	"LimitExceededException":                     newErrorLimitExceededException,
+	"PullThroughCacheRuleAlreadyExistsException": newErrorPullThroughCacheRuleAlreadyExistsException,
+	"PullThroughCacheRuleNotFoundException":      newErrorPullThroughCacheRuleNotFoundException,
+	"ReferencedImagesNotFoundException":          newErrorReferencedImagesNotFoundException,
+	"RegistryPolicyNotFoundException":            newErrorRegistryPolicyNotFoundException,
+	"RepositoryAlreadyExistsException":           newErrorRepositoryAlreadyExistsException,
+	"RepositoryNotEmptyException":                newErrorRepositoryNotEmptyException,
+	"RepositoryNotFoundException":                newErrorRepositoryNotFoundException,
+	"RepositoryPolicyNotFoundException":          newErrorRepositoryPolicyNotFoundException,
+	"ScanNotFoundException":                      newErrorScanNotFoundException,
+	"ServerException":                            newErrorServerException,
+	"TooManyTagsException":                       newErrorTooManyTagsException,
+	"UnsupportedImageTypeException":              newErrorUnsupportedImageTypeException,
+	"UnsupportedUpstreamRegistryException":       newErrorUnsupportedUpstreamRegistryException,
+	"UploadNotFoundException":                    newErrorUploadNotFoundException,
+	"ValidationException":                        newErrorValidationException,
 }

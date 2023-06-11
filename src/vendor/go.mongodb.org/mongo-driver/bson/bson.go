@@ -7,8 +7,6 @@
 // Based on gopkg.in/mgo.v2/bson by Gustavo Niemeyer
 // See THIRD-PARTY-NOTICES for original license terms.
 
-// +build go1.9
-
 package bson // import "go.mongodb.org/mongo-driver/bson"
 
 import (

@@ -1,0 +1,17 @@
+FROM --platform=linux/arm64 busybox:1.34.1 as source
+FROM --platform=linux/arm64 gcr.io/distroless/base-debian11
+
+COPY --from=source /bin/sh /bin/sh
+COPY --from=source /bin/mkdir /bin/mkdir
+
+ADD etcd /usr/local/bin/
+ADD etcdctl /usr/local/bin/
+ADD etcdutl /usr/local/bin/
+ADD var/etcd /var/etcd
+ADD var/lib/etcd /var/lib/etcd
+ENV ETCD_UNSUPPORTED_ARCH=arm64
+
+EXPOSE 2379 2380
+
+# Define default command.
+CMD ["/usr/local/bin/etcd"]

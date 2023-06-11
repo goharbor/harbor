@@ -435,6 +435,10 @@ func (c *Context) Authorize(request *http.Request, route *MatchedRoute) (interfa
 	}
 	if route.Authorizer != nil {
 		if err := route.Authorizer.Authorize(request, usr); err != nil {
+			if _, ok := err.(errors.Error); ok {
+				return nil, nil, err
+			}
+
 			return nil, nil, errors.New(http.StatusForbidden, err.Error())
 		}
 	}
@@ -494,7 +498,9 @@ func (c *Context) Respond(rw http.ResponseWriter, r *http.Request, produces []st
 
 	if resp, ok := data.(Responder); ok {
 		producers := route.Producers
-		prod, ok := producers[format]
+		// producers contains keys with normalized format, if a format has MIME type parameter such as `text/plain; charset=utf-8`
+		// then you must provide `text/plain` to get the correct producer. HOWEVER, format here is not normalized.
+		prod, ok := producers[normalizeOffer(format)]
 		if !ok {
 			prods := c.api.ProducersFor(normalizeOffers([]string{c.api.DefaultProduces()}))
 			pr, ok := prods[c.api.DefaultProduces()]

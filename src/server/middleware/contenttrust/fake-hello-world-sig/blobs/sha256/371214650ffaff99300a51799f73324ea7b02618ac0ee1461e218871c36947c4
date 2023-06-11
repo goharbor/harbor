@@ -1,0 +1,1 @@
+{"architecture":"","created":"0001-01-01T00:00:00Z","history":[{"created":"0001-01-01T00:00:00Z"},{"created":"0001-01-01T00:00:00Z"}],"os":"","rootfs":{"type":"layers","diff_ids":["sha256:f8baa4e6608cf22e91f38c48f3ba4eee2d17a46e136267d7ac222b619c845d2c","sha256:f8baa4e6608cf22e91f38c48f3ba4eee2d17a46e136267d7ac222b619c845d2c"]},"config":{}}

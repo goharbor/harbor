@@ -45,7 +45,7 @@ func (db *DocumentBuilder) AppendInt32(key string, i32 int32) *DocumentBuilder {
 	return db
 }
 
-// AppendDocument will append a bson embeded document element using key
+// AppendDocument will append a bson embedded document element using key
 // and doc to DocumentBuilder.doc
 func (db *DocumentBuilder) AppendDocument(key string, doc []byte) *DocumentBuilder {
 	db.doc = AppendDocumentElement(db.doc, key, doc)

@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+// InputWriterCloseErrorCode is used to denote an error occurred
+// while closing the event stream input writer.
+const InputWriterCloseErrorCode = "EventStreamInputWriterCloseError"
+
 type messageError struct {
 	code string
 	msg  string

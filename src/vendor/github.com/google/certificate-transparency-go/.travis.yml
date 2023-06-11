@@ -1,0 +1,114 @@
+version: ~> 1.0
+os: linux
+dist: xenial
+language: go
+go: "1.14.x"
+go_import_path: github.com/google/certificate-transparency-go
+
+env:
+  global:
+  - GO111MODULE=on
+  - GOPROXY=https://proxy.golang.org
+
+jobs:
+  fast_finish: true
+  include:
+    - name: "go mod tidy"
+      before_install: skip
+      install: skip
+      before_script: go mod tidy -v
+      script: git diff --exit-code -- go.mod go.sum
+    - name: "default build"
+      env:
+      - GOFLAGS=""
+    - name: "build with race detection"
+      env:
+      - GOFLAGS="-race"
+      - PRESUBMIT_OPTS="--no-linters"
+    - name: "build with etcd and coverage report"
+      env:
+      - WITH_ETCD=true
+      - PRESUBMIT_OPTS="--no-linters --coverage"
+      after_success:
+      - cp /tmp/coverage.txt .
+      - bash <(curl -s https://codecov.io/bash)
+    - name: "build with etcd and race detection"
+      env:
+      - WITH_ETCD=true
+      - GOFLAGS="-race"
+      - PRESUBMIT_OPTS="--no-linters"
+    # The CT integration tests do not currently use a pkcs11 key. This only tests the build.
+    - name: "build with PKCS#11 support and race detection"
+      env:
+      - WITH_PKCS11=true
+      - GOFLAGS="-race --tags=pkcs11"
+      - PRESUBMIT_OPTS="--no-linters"
+  allow_failures:
+    - name: "go mod tidy"
+
+
+cache:
+  directories:
+    - "$HOME/gopath/pkg/mod"
+
+services:
+  - docker
+  - mysql
+
+install:
+  - mkdir ../protoc
+  - |
+    (
+      cd ../protoc
+      PROTOC_VERSION=3.11.4
+      wget "https://github.com/google/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-${TRAVIS_OS_NAME}-x86_64.zip"
+      unzip "protoc-${PROTOC_VERSION}-${TRAVIS_OS_NAME}-x86_64.zip"
+    )
+  - export PATH=$(pwd)/../protoc/bin:$PATH
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.21.0
+  - GOPROXY=direct go install
+     github.com/golang/protobuf/proto
+     github.com/golang/protobuf/protoc-gen-go
+     github.com/golang/mock/mockgen
+     go.etcd.io/etcd
+     go.etcd.io/etcd/etcdctl
+     github.com/fullstorydev/grpcurl/cmd/grpcurl
+
+before_script:
+  - |
+      # Use latest versions of Trillian docker images built by the Trillian CI cloudbuilders.
+      export PROJECT_ID=trillian-opensource-ci
+      docker pull gcr.io/$PROJECT_ID/log_server:latest
+      docker tag gcr.io/$PROJECT_ID/log_server:latest deployment_trillian-log-server
+      docker pull gcr.io/$PROJECT_ID/log_signer:latest
+      docker tag gcr.io/$PROJECT_ID/log_signer:latest deployment_trillian-log-signer
+
+      # Bring up an ephemeral trillian instance using the docker-compose config in the Trillian repo:
+      export TRILLIAN_LOCATION="$(go list -f '{{.Dir}}' github.com/google/trillian)"
+      docker-compose -f ${TRILLIAN_LOCATION}/examples/deployment/docker-compose.yml pull mysql trillian-log-server trillian-log-signer
+      docker-compose -f ${TRILLIAN_LOCATION}/examples/deployment/docker-compose.yml up -d mysql trillian-log-server trillian-log-signer
+
+      export TRILLIAN_LOG_SERVER_1="localhost:8090"
+      export TRILLIAN_LOG_SERVERS="${TRILLIAN_LOG_SERVER_1}"
+
+script:
+  - set -e
+  - cd $HOME/gopath/src/github.com/google/certificate-transparency-go
+  - ./scripts/presubmit.sh ${PRESUBMIT_OPTS}
+  - |
+      # Check re-generation didn't change anything
+      status=$(git status --porcelain | grep -v coverage) || :
+      if [[ -n ${status} ]]; then
+        echo "Regenerated files differ from checked-in versions: ${status}"
+        git status
+        git diff
+        exit 1
+      fi
+  - |
+      if [[ "${WITH_ETCD}" == "true" ]]; then
+        export ETCD_DIR="${GOPATH}/bin"
+      fi
+  - ./trillian/integration/integration_test.sh
+  - HAMMER_OPTS="--operations=1500" ./trillian/integration/ct_hammer_test.sh
+  - set +e
+

@@ -118,7 +118,7 @@
 //     types, this tag is ignored.
 //
 //     3. truncate: If the truncate struct tag is specified on a field with a non-float numeric type, BSON doubles unmarshalled
-//     into that field will be trucated at the decimal point. For example, if 3.14 is unmarshalled into a field of type int,
+//     into that field will be truncated at the decimal point. For example, if 3.14 is unmarshalled into a field of type int,
 //     it will be unmarshalled as 3. If this tag is not specified, the decoder will throw an error if the value cannot be
 //     decoded without losing precision. For float64 or non-numeric types, this tag is ignored.
 //

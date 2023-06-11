@@ -14,20 +14,6 @@
 
 package runtime
 
-import "mime/multipart"
+import "github.com/go-openapi/swag"
 
-// File represents an uploaded file.
-type File struct {
-	Data   multipart.File
-	Header *multipart.FileHeader
-}
-
-// Read bytes from the file
-func (f *File) Read(p []byte) (n int, err error) {
-	return f.Data.Read(p)
-}
-
-// Close the file
-func (f *File) Close() error {
-	return f.Data.Close()
-}
+type File = swag.File

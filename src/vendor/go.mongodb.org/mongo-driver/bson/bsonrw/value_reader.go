@@ -86,12 +86,11 @@ type valueReader struct {
 
 // NewBSONDocumentReader returns a ValueReader using b for the underlying BSON
 // representation. Parameter b must be a BSON Document.
-//
-// TODO(skriptble): There's a lack of symmetry between the reader and writer, since the reader takes
-// a []byte while the writer takes an io.Writer. We should have two versions of each, one that takes
-// a []byte and one that takes an io.Reader or io.Writer. The []byte version will need to return a
-// thing that can return the finished []byte since it might be reallocated when appended to.
 func NewBSONDocumentReader(b []byte) ValueReader {
+	// TODO(skriptble): There's a lack of symmetry between the reader and writer, since the reader takes a []byte while the
+	// TODO writer takes an io.Writer. We should have two versions of each, one that takes a []byte and one that takes an
+	// TODO io.Reader or io.Writer. The []byte version will need to return a thing that can return the finished []byte since
+	// TODO it might be reallocated when appended to.
 	return newValueReader(b)
 }
 
@@ -384,9 +383,13 @@ func (vr *valueReader) ReadBinary() (b []byte, btype byte, err error) {
 	if err != nil {
 		return nil, 0, err
 	}
+	// Make a copy of the returned byte slice because it's just a subslice from the valueReader's
+	// buffer and is not safe to return in the unmarshaled value.
+	cp := make([]byte, len(b))
+	copy(cp, b)
 
 	vr.pop()
-	return b, btype, nil
+	return cp, btype, nil
 }
 
 func (vr *valueReader) ReadBoolean() (bool, error) {
@@ -737,6 +740,9 @@ func (vr *valueReader) ReadValue() (ValueReader, error) {
 	return vr, nil
 }
 
+// readBytes reads length bytes from the valueReader starting at the current offset. Note that the
+// returned byte slice is a subslice from the valueReader buffer and must be converted or copied
+// before returning in an unmarshaled value.
 func (vr *valueReader) readBytes(length int32) ([]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("invalid length: %d", length)
@@ -748,6 +754,7 @@ func (vr *valueReader) readBytes(length int32) ([]byte, error) {
 
 	start := vr.offset
 	vr.offset += int64(length)
+
 	return vr.d[start : start+int64(length)], nil
 }
 
@@ -788,16 +795,6 @@ func (vr *valueReader) readCString() (string, error) {
 	// idx does not include the null byte
 	vr.offset += int64(idx) + 1
 	return string(vr.d[start : start+int64(idx)]), nil
-}
-
-func (vr *valueReader) skipCString() error {
-	idx := bytes.IndexByte(vr.d[vr.offset:], 0x00)
-	if idx < 0 {
-		return io.EOF
-	}
-	// idx does not include the null byte
-	vr.offset += int64(idx) + 1
-	return nil
 }
 
 func (vr *valueReader) readString() (string, error) {

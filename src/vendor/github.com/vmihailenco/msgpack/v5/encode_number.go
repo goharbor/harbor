@@ -203,6 +203,14 @@ func (e *Encoder) write8(code byte, n uint64) error {
 	return e.write(e.buf)
 }
 
+func encodeUintValue(e *Encoder, v reflect.Value) error {
+	return e.EncodeUint(v.Uint())
+}
+
+func encodeIntValue(e *Encoder, v reflect.Value) error {
+	return e.EncodeInt(v.Int())
+}
+
 func encodeUint8CondValue(e *Encoder, v reflect.Value) error {
 	return e.encodeUint8Cond(uint8(v.Uint()))
 }

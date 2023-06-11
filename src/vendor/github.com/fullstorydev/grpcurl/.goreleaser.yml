@@ -1,0 +1,40 @@
+builds:
+  - binary: grpcurl
+    main: ./cmd/grpcurl
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - 386
+      - arm64
+      - s390x
+      - ppc64le
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: windows
+        goarch: arm64
+      - goos: darwin
+        goarch: s390x
+      - goos: windows
+        goarch: s390x
+      - goos: darwin
+        goarch: ppc64le
+      - goos: windows
+        goarch: ppc64le
+    ldflags:
+      - -s -w -X main.version=v{{.Version}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    replacements:
+      amd64: x86_64
+      386: x86_32
+      darwin: osx
+    files:
+      - LICENSE

@@ -17,8 +17,7 @@ package otel // import "go.opentelemetry.io/otel"
 import (
 	"log"
 	"os"
-	"sync/atomic"
-	"unsafe"
+	"sync"
 )
 
 var (
@@ -35,26 +34,28 @@ var (
 )
 
 type delegator struct {
-	delegate unsafe.Pointer
+	lock *sync.RWMutex
+	eh   ErrorHandler
 }
 
 func (d *delegator) Handle(err error) {
-	d.getDelegate().Handle(err)
-}
-
-func (d *delegator) getDelegate() ErrorHandler {
-	return *(*ErrorHandler)(atomic.LoadPointer(&d.delegate))
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+	d.eh.Handle(err)
 }
 
 // setDelegate sets the ErrorHandler delegate.
 func (d *delegator) setDelegate(eh ErrorHandler) {
-	atomic.StorePointer(&d.delegate, unsafe.Pointer(&eh))
+	d.lock.Lock()
+	defer d.lock.Unlock()
+	d.eh = eh
 }
 
 func defaultErrorHandler() *delegator {
-	d := &delegator{}
-	d.setDelegate(&errLogger{l: log.New(os.Stderr, "", log.LstdFlags)})
-	return d
+	return &delegator{
+		lock: &sync.RWMutex{},
+		eh:   &errLogger{l: log.New(os.Stderr, "", log.LstdFlags)},
+	}
 }
 
 // errLogger logs errors if no delegate is set, otherwise they are delegated.

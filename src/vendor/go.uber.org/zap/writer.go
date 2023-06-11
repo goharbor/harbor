@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Uber Technologies, Inc.
+// Copyright (c) 2016-2022 Uber Technologies, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@ package zap
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"go.uber.org/zap/zapcore"
 
@@ -71,7 +70,7 @@ func open(paths []string) ([]zapcore.WriteSyncer, func(), error) {
 	for _, path := range paths {
 		sink, err := newSink(path)
 		if err != nil {
-			openErr = multierr.Append(openErr, fmt.Errorf("couldn't open sink %q: %v", path, err))
+			openErr = multierr.Append(openErr, fmt.Errorf("open sink %q: %w", path, err))
 			continue
 		}
 		writers = append(writers, sink)
@@ -79,7 +78,7 @@ func open(paths []string) ([]zapcore.WriteSyncer, func(), error) {
 	}
 	if openErr != nil {
 		close()
-		return writers, nil, openErr
+		return nil, nil, openErr
 	}
 
 	return writers, close, nil
@@ -93,7 +92,7 @@ func open(paths []string) ([]zapcore.WriteSyncer, func(), error) {
 // using zapcore.NewMultiWriteSyncer and zapcore.Lock individually.
 func CombineWriteSyncers(writers ...zapcore.WriteSyncer) zapcore.WriteSyncer {
 	if len(writers) == 0 {
-		return zapcore.AddSync(ioutil.Discard)
+		return zapcore.AddSync(io.Discard)
 	}
 	return zapcore.Lock(zapcore.NewMultiWriteSyncer(writers...))
 }

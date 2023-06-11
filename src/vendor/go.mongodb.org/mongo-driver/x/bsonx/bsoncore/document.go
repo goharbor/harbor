@@ -13,7 +13,6 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/go-stack/stack"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
@@ -37,40 +36,17 @@ func lengthError(bufferType string, length, rem int) error {
 type InsufficientBytesError struct {
 	Source    []byte
 	Remaining []byte
-	Stack     stack.CallStack
 }
 
-// NewInsufficientBytesError creates a new InsufficientBytesError with the given Document, remaining
-// bytes, and the current stack.
+// NewInsufficientBytesError creates a new InsufficientBytesError with the given Document and
+// remaining bytes.
 func NewInsufficientBytesError(src, rem []byte) InsufficientBytesError {
-	return InsufficientBytesError{Source: src, Remaining: rem, Stack: stack.Trace().TrimRuntime()}
+	return InsufficientBytesError{Source: src, Remaining: rem}
 }
 
 // Error implements the error interface.
 func (ibe InsufficientBytesError) Error() string {
 	return "too few bytes to read next component"
-}
-
-// ErrorStack returns a string representing the stack at the point where the error occurred.
-func (ibe InsufficientBytesError) ErrorStack() string {
-	s := bytes.NewBufferString("too few bytes to read next component: [")
-
-	for i, call := range ibe.Stack {
-		if i != 0 {
-			s.WriteString(", ")
-		}
-
-		// go vet doesn't like %k even though it's part of stack's API, so we move the format
-		// string so it doesn't complain. (We also can't make it a constant, or go vet still
-		// complains.)
-		callFormat := "%k.%n %v"
-
-		s.WriteString(fmt.Sprintf(callFormat, call, call, call))
-	}
-
-	s.WriteRune(']')
-
-	return s.String()
 }
 
 // Equal checks that err2 also is an ErrTooSmall.

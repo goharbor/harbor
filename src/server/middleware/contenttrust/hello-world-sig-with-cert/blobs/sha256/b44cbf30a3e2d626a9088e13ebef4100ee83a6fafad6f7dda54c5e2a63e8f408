@@ -1,0 +1,1 @@
+{"critical":{"identity":{"docker-reference":"index.docker.io/library/bundle"},"image":{"docker-manifest-digest":"sha256:ad7c8b818cf3016b2b64372e166b339a8e8f0f722a812a867ae20d9a46171dff"},"type":"cosign container image signature"},"optional":null}

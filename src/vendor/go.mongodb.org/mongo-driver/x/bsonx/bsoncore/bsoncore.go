@@ -15,7 +15,7 @@
 // enough bytes. This library attempts to do no validation, it will only return
 // false if there are not enough bytes for an item to be read. For example, the
 // ReadDocument function checks the length, if that length is larger than the
-// number of bytes availble, it will return false, if there are enough bytes, it
+// number of bytes available, it will return false, if there are enough bytes, it
 // will return those bytes and true. It is the consumers responsibility to
 // validate those bytes.
 //
@@ -65,11 +65,10 @@ func AppendHeader(dst []byte, t bsontype.Type, key string) []byte {
 	// return append(AppendType(dst, t), key+string(0x00)...)
 }
 
-// TODO(skriptble): All of the Read* functions should return src resliced to start just after what
-// was read.
+// TODO(skriptble): All of the Read* functions should return src resliced to start just after what was read.
 
 // ReadType will return the first byte of the provided []byte as a type. If
-// there is no availble byte, false is returned.
+// there is no available byte, false is returned.
 func ReadType(src []byte) (bsontype.Type, []byte, bool) {
 	if len(src) < 1 {
 		return 0, src, false
@@ -197,12 +196,13 @@ func ReadString(src []byte) (string, []byte, bool) {
 
 // AppendDocumentStart reserves a document's length and returns the index where the length begins.
 // This index can later be used to write the length of the document.
-//
-// TODO(skriptble): We really need AppendDocumentStart and AppendDocumentEnd.
-// AppendDocumentStart would handle calling ReserveLength and providing the index of the start of
-// the document. AppendDocumentEnd would handle taking that start index, adding the null byte,
-// calculating the length, and filling in the length at the start of the document.
-func AppendDocumentStart(dst []byte) (index int32, b []byte) { return ReserveLength(dst) }
+func AppendDocumentStart(dst []byte) (index int32, b []byte) {
+	// TODO(skriptble): We really need AppendDocumentStart and AppendDocumentEnd.  AppendDocumentStart would handle calling
+	// TODO ReserveLength and providing the index of the start of the document. AppendDocumentEnd would handle taking that
+	// TODO start index, adding the null byte, calculating the length, and filling in the length at the start of the
+	// TODO document.
+	return ReserveLength(dst)
+}
 
 // AppendDocumentStartInline functions the same as AppendDocumentStart but takes a pointer to the
 // index int32 which allows this function to be used inline.
@@ -231,7 +231,7 @@ func AppendDocumentEnd(dst []byte, index int32) ([]byte, error) {
 // AppendDocument will append doc to dst and return the extended buffer.
 func AppendDocument(dst []byte, doc []byte) []byte { return append(dst, doc...) }
 
-// AppendDocumentElement will append a BSON embeded document element using key
+// AppendDocumentElement will append a BSON embedded document element using key
 // and doc to dst and return the extended buffer.
 func AppendDocumentElement(dst []byte, key string, doc []byte) []byte {
 	return AppendDocument(AppendHeader(dst, bsontype.EmbeddedDocument, key), doc)

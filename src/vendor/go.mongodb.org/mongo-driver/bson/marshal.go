@@ -7,6 +7,9 @@
 package bson
 
 import (
+	"bytes"
+	"encoding/json"
+
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/bson/bsonrw"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
@@ -220,4 +223,26 @@ func MarshalExtJSONAppendWithContext(ec bsoncodec.EncodeContext, dst []byte, val
 	}
 
 	return *sw, nil
+}
+
+// IndentExtJSON will prefix and indent the provided extended JSON src and append it to dst.
+func IndentExtJSON(dst *bytes.Buffer, src []byte, prefix, indent string) error {
+	return json.Indent(dst, src, prefix, indent)
+}
+
+// MarshalExtJSONIndent returns the extended JSON encoding of val with each line with prefixed
+// and indented.
+func MarshalExtJSONIndent(val interface{}, canonical, escapeHTML bool, prefix, indent string) ([]byte, error) {
+	marshaled, err := MarshalExtJSON(val, canonical, escapeHTML)
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+	err = IndentExtJSON(&buf, marshaled, prefix, indent)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }

@@ -17,4 +17,4 @@
 // implementations for trace and metric exporters for third-party
 // collectors, and submodules in the instrumentation directory provide the
 // instrumentation for the popular go libraries.
-package contrib
+package contrib // import "go.opentelemetry.io/contrib"

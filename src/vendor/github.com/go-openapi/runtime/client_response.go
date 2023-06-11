@@ -15,10 +15,9 @@
 package runtime
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-
-	"encoding/json"
 )
 
 // A ClientResponse represents a client response
@@ -27,6 +26,7 @@ type ClientResponse interface {
 	Code() int
 	Message() string
 	GetHeader(string) string
+	GetHeaders(string) []string
 	Body() io.ReadCloser
 }
 
@@ -60,11 +60,51 @@ type APIError struct {
 	Code          int
 }
 
-func (a *APIError) Error() string {
-	resp, _ := json.Marshal(a.Response)
-	return fmt.Sprintf("%s (status %d): %s", a.OperationName, a.Code, resp)
+func (o *APIError) Error() string {
+	var resp []byte
+	if err, ok := o.Response.(error); ok {
+		resp = []byte("'" + err.Error() + "'")
+	} else {
+		resp, _ = json.Marshal(o.Response)
+	}
+	return fmt.Sprintf("%s (status %d): %s", o.OperationName, o.Code, resp)
 }
 
-func (a *APIError) String() string {
-	return a.Error()
+func (o *APIError) String() string {
+	return o.Error()
+}
+
+// IsSuccess returns true when this elapse o k response returns a 2xx status code
+func (o *APIError) IsSuccess() bool {
+	return o.Code/100 == 2
+}
+
+// IsRedirect returns true when this elapse o k response returns a 3xx status code
+func (o *APIError) IsRedirect() bool {
+	return o.Code/100 == 3
+}
+
+// IsClientError returns true when this elapse o k response returns a 4xx status code
+func (o *APIError) IsClientError() bool {
+	return o.Code/100 == 4
+}
+
+// IsServerError returns true when this elapse o k response returns a 5xx status code
+func (o *APIError) IsServerError() bool {
+	return o.Code/100 == 5
+}
+
+// IsCode returns true when this elapse o k response returns a 4xx status code
+func (o *APIError) IsCode(code int) bool {
+	return o.Code == code
+}
+
+// A ClientResponseStatus is a common interface implemented by all responses on the generated code
+// You can use this to treat any client response based on status code
+type ClientResponseStatus interface {
+	IsSuccess() bool
+	IsRedirect() bool
+	IsClientError() bool
+	IsServerError() bool
+	IsCode(int) bool
 }

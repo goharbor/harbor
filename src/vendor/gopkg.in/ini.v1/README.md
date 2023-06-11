@@ -1,6 +1,6 @@
 # INI
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/go-ini/ini/Go?logo=github&style=for-the-badge)](https://github.com/go-ini/ini/actions?query=workflow%3AGo)
+[![GitHub Workflow Status](https://img.shields.io/github/checks-status/go-ini/ini/main?logo=github&style=for-the-badge)](https://github.com/go-ini/ini/actions?query=branch%3Amain)
 [![codecov](https://img.shields.io/codecov/c/github/go-ini/ini/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/go-ini/ini)
 [![GoDoc](https://img.shields.io/badge/GoDoc-Reference-blue?style=for-the-badge&logo=go)](https://pkg.go.dev/github.com/go-ini/ini?tab=doc)
 [![Sourcegraph](https://img.shields.io/badge/view%20on-Sourcegraph-brightgreen.svg?style=for-the-badge&logo=sourcegraph)](https://sourcegraph.com/github.com/go-ini/ini)
@@ -24,7 +24,7 @@ Package ini provides INI file read and write functionality in Go.
 
 ## Installation
 
-The minimum requirement of Go is **1.6**.
+The minimum requirement of Go is **1.13**.
 
 ```sh
 $ go get gopkg.in/ini.v1

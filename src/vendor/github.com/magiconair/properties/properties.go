@@ -786,7 +786,6 @@ func expand(s string, keys []string, prefix, postfix string, values map[string]s
 		}
 		s = s[:start] + new_val + s[end+1:]
 	}
-	return s, nil
 }
 
 // encode encodes a UTF-8 string to ISO-8859-1 and escapes some characters.

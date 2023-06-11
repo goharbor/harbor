@@ -111,7 +111,7 @@ func (d DBPointer) String() string {
 
 // Equal compares d to d2 and returns true if they are equal.
 func (d DBPointer) Equal(d2 DBPointer) bool {
-	return d.DB == d2.DB && bytes.Equal(d.Pointer[:], d2.Pointer[:])
+	return d == d2
 }
 
 // IsZero returns if d is the empty DBPointer.

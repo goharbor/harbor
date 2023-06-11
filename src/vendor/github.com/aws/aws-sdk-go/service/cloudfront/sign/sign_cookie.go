@@ -81,37 +81,38 @@ func NewCookieSigner(keyID string, privKey *rsa.PrivateKey, opts ...func(*Cookie
 // server's response.
 //
 // Example:
-//    s := sign.NewCookieSigner(keyID, privKey)
 //
-//    // Get Signed cookies for a resource that will expire in 1 hour
-//    cookies, err := s.Sign("*", time.Now().Add(1 * time.Hour))
-//    if err != nil {
-//        fmt.Println("failed to create signed cookies", err)
-//        return
-//    }
+//	s := sign.NewCookieSigner(keyID, privKey)
 //
-//    // Or get Signed cookies for a resource that will expire in 1 hour
-//    // and set path and domain of cookies
-//    cookies, err := s.Sign("*", time.Now().Add(1 * time.Hour), func(o *sign.CookieOptions) {
-//        o.Path = "/"
-//        o.Domain = ".example.com"
-//    })
-//    if err != nil {
-//        fmt.Println("failed to create signed cookies", err)
-//        return
-//    }
+//	// Get Signed cookies for a resource that will expire in 1 hour
+//	cookies, err := s.Sign("*", time.Now().Add(1 * time.Hour))
+//	if err != nil {
+//	    fmt.Println("failed to create signed cookies", err)
+//	    return
+//	}
 //
-//    // Server Response via http.ResponseWriter
-//    for _, c := range cookies {
-//        http.SetCookie(w, c)
-//    }
+//	// Or get Signed cookies for a resource that will expire in 1 hour
+//	// and set path and domain of cookies
+//	cookies, err := s.Sign("*", time.Now().Add(1 * time.Hour), func(o *sign.CookieOptions) {
+//	    o.Path = "/"
+//	    o.Domain = ".example.com"
+//	})
+//	if err != nil {
+//	    fmt.Println("failed to create signed cookies", err)
+//	    return
+//	}
 //
-//    // Client request via the cookie jar
-//    if client.CookieJar != nil {
-//        for _, c := range cookies {
-//           client.Cookie(w, c)
-//        }
-//    }
+//	// Server Response via http.ResponseWriter
+//	for _, c := range cookies {
+//	    http.SetCookie(w, c)
+//	}
+//
+//	// Client request via the cookie jar
+//	if client.CookieJar != nil {
+//	    for _, c := range cookies {
+//	       client.Cookie(w, c)
+//	    }
+//	}
 func (s CookieSigner) Sign(u string, expires time.Time, opts ...func(*CookieOptions)) ([]*http.Cookie, error) {
 	scheme, err := cookieURLScheme(u)
 	if err != nil {
@@ -150,55 +151,56 @@ func cookieURLScheme(u string) (string, error) {
 // server's response.
 //
 // Example:
-//    s := sign.NewCookieSigner(keyID, privKey)
 //
-//    policy := &sign.Policy{
-//        Statements: []sign.Statement{
-//            {
-//                // Read the provided documentation on how to set this
-//                // correctly, you'll probably want to use wildcards.
-//                Resource: rawCloudFrontURL,
-//                Condition: sign.Condition{
-//                    // Optional IP source address range
-//                    IPAddress: &sign.IPAddress{SourceIP: "192.0.2.0/24"},
-//                    // Optional date URL is not valid until
-//                    DateGreaterThan: &sign.AWSEpochTime{time.Now().Add(30 * time.Minute)},
-//                    // Required date the URL will expire after
-//                    DateLessThan: &sign.AWSEpochTime{time.Now().Add(1 * time.Hour)},
-//                },
-//            },
-//        },
-//    }
+//	s := sign.NewCookieSigner(keyID, privKey)
 //
-//    // Get Signed cookies for a resource that will expire in 1 hour
-//    cookies, err := s.SignWithPolicy(policy)
-//    if err != nil {
-//        fmt.Println("failed to create signed cookies", err)
-//        return
-//    }
+//	policy := &sign.Policy{
+//	    Statements: []sign.Statement{
+//	        {
+//	            // Read the provided documentation on how to set this
+//	            // correctly, you'll probably want to use wildcards.
+//	            Resource: rawCloudFrontURL,
+//	            Condition: sign.Condition{
+//	                // Optional IP source address range
+//	                IPAddress: &sign.IPAddress{SourceIP: "192.0.2.0/24"},
+//	                // Optional date URL is not valid until
+//	                DateGreaterThan: &sign.AWSEpochTime{time.Now().Add(30 * time.Minute)},
+//	                // Required date the URL will expire after
+//	                DateLessThan: &sign.AWSEpochTime{time.Now().Add(1 * time.Hour)},
+//	            },
+//	        },
+//	    },
+//	}
 //
-//    // Or get Signed cookies for a resource that will expire in 1 hour
-//    // and set path and domain of cookies
-//    cookies, err := s.SignWithPolicy(policy, func(o *sign.CookieOptions) {
-//        o.Path = "/"
-//        o.Domain = ".example.com"
-//    })
-//    if err != nil {
-//        fmt.Println("failed to create signed cookies", err)
-//        return
-//    }
+//	// Get Signed cookies for a resource that will expire in 1 hour
+//	cookies, err := s.SignWithPolicy(policy)
+//	if err != nil {
+//	    fmt.Println("failed to create signed cookies", err)
+//	    return
+//	}
 //
-//    // Server Response via http.ResponseWriter
-//    for _, c := range cookies {
-//        http.SetCookie(w, c)
-//    }
+//	// Or get Signed cookies for a resource that will expire in 1 hour
+//	// and set path and domain of cookies
+//	cookies, err := s.SignWithPolicy(policy, func(o *sign.CookieOptions) {
+//	    o.Path = "/"
+//	    o.Domain = ".example.com"
+//	})
+//	if err != nil {
+//	    fmt.Println("failed to create signed cookies", err)
+//	    return
+//	}
 //
-//    // Client request via the cookie jar
-//    if client.CookieJar != nil {
-//        for _, c := range cookies {
-//           client.Cookie(w, c)
-//        }
-//    }
+//	// Server Response via http.ResponseWriter
+//	for _, c := range cookies {
+//	    http.SetCookie(w, c)
+//	}
+//
+//	// Client request via the cookie jar
+//	if client.CookieJar != nil {
+//	    for _, c := range cookies {
+//	       client.Cookie(w, c)
+//	    }
+//	}
 func (s CookieSigner) SignWithPolicy(p *Policy, opts ...func(*CookieOptions)) ([]*http.Cookie, error) {
 	return createCookies(p, s.keyID, s.privKey, s.Opts.apply(opts...))
 }

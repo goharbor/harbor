@@ -1,11 +1,14 @@
 package msgpack
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/vmihailenco/msgpack/v5/msgpcode"
 )
+
+var errArrayStruct = errors.New("msgpack: number of fields in array-encoded struct has changed")
 
 var (
 	mapStringStringPtrType = reflect.TypeOf((*map[string]string)(nil))
@@ -40,27 +43,10 @@ func decodeMapValue(d *Decoder, v reflect.Value) error {
 }
 
 func (d *Decoder) decodeMapDefault() (interface{}, error) {
-	if d.decodeMapFunc != nil {
-		return d.decodeMapFunc(d)
+	if d.mapDecoder != nil {
+		return d.mapDecoder(d)
 	}
-
-	n, err := d.DecodeMapLen()
-	if err != nil {
-		return nil, err
-	}
-	if n == -1 {
-		return nil, nil
-	}
-
-	code, err := d.PeekCode()
-	if err != nil {
-		return nil, err
-	}
-
-	if msgpcode.IsString(code) || msgpcode.IsBin(code) || msgpcode.IsExt(code) {
-		return d.decodeMap(n)
-	}
-	return d.decodeUntypedMap(n)
+	return d.DecodeMap()
 }
 
 // DecodeMapLen decodes map length. Length is -1 when map is nil.
@@ -156,14 +142,13 @@ func (d *Decoder) DecodeMap() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if n == -1 {
 		return nil, nil
 	}
-	return d.decodeMap(n)
-}
 
-func (d *Decoder) decodeMap(n int) (map[string]interface{}, error) {
 	m := make(map[string]interface{}, min(n, maxMapSize))
+
 	for i := 0; i < n; i++ {
 		mk, err := d.DecodeString()
 		if err != nil {
@@ -175,21 +160,20 @@ func (d *Decoder) decodeMap(n int) (map[string]interface{}, error) {
 		}
 		m[mk] = mv
 	}
+
 	return m, nil
 }
 
-func (d *Decoder) DecodeUntypedMap() (interface{}, error) {
+func (d *Decoder) DecodeUntypedMap() (map[interface{}]interface{}, error) {
 	n, err := d.DecodeMapLen()
 	if err != nil {
 		return nil, err
 	}
+
 	if n == -1 {
 		return nil, nil
 	}
-	return d.decodeUntypedMap(n)
-}
 
-func (d *Decoder) decodeUntypedMap(n int) (interface{}, error) {
 	m := make(map[interface{}]interface{}, min(n, maxMapSize))
 
 	for i := 0; i < n; i++ {
@@ -209,12 +193,14 @@ func (d *Decoder) decodeUntypedMap(n int) (interface{}, error) {
 	return m, nil
 }
 
+// DecodeTypedMap decodes a typed map. Typed map is a map that has a fixed type for keys and values.
+// Key and value types may be different.
 func (d *Decoder) DecodeTypedMap() (interface{}, error) {
 	n, err := d.DecodeMapLen()
 	if err != nil {
 		return nil, err
 	}
-	if n == -1 {
+	if n <= 0 {
 		return nil, nil
 	}
 
@@ -291,56 +277,60 @@ func decodeStructValue(d *Decoder, v reflect.Value) error {
 		return err
 	}
 
-	var isArray bool
-
 	n, err := d.mapLen(c)
-	if err != nil {
-		var err2 error
-		n, err2 = d.arrayLen(c)
-		if err2 != nil {
+	if err == nil {
+		return d.decodeStruct(v, n)
+	}
+
+	var err2 error
+	n, err2 = d.arrayLen(c)
+	if err2 != nil {
+		return err
+	}
+
+	if n <= 0 {
+		v.Set(reflect.Zero(v.Type()))
+		return nil
+	}
+
+	fields := structs.Fields(v.Type(), d.structTag)
+	if n != len(fields.List) {
+		return errArrayStruct
+	}
+
+	for _, f := range fields.List {
+		if err := f.DecodeValue(d, v); err != nil {
 			return err
 		}
-		isArray = true
 	}
+
+	return nil
+}
+
+func (d *Decoder) decodeStruct(v reflect.Value, n int) error {
 	if n == -1 {
 		v.Set(reflect.Zero(v.Type()))
 		return nil
 	}
 
 	fields := structs.Fields(v.Type(), d.structTag)
-	if isArray {
-		for i, f := range fields.List {
-			if i >= n {
-				break
-			}
-			if err := f.DecodeValue(d, v); err != nil {
-				return err
-			}
-		}
-
-		// Skip extra values.
-		for i := len(fields.List); i < n; i++ {
-			if err := d.Skip(); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
 	for i := 0; i < n; i++ {
-		name, err := d.bytesTemp()
+		name, err := d.decodeStringTemp()
 		if err != nil {
 			return err
 		}
 
-		if f := fields.Map[string(name)]; f != nil {
+		if f := fields.Map[name]; f != nil {
 			if err := f.DecodeValue(d, v); err != nil {
 				return err
 			}
-		} else if d.flags&disallowUnknownFieldsFlag != 0 {
+			continue
+		}
+
+		if d.flags&disallowUnknownFieldsFlag != 0 {
 			return fmt.Errorf("msgpack: unknown field %q", name)
-		} else if err := d.Skip(); err != nil {
+		}
+		if err := d.Skip(); err != nil {
 			return err
 		}
 	}

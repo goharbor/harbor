@@ -76,27 +76,3 @@ func (sw *SliceWriter) Write(p []byte) (int, error) {
 	*sw = append(*sw, p...)
 	return written, nil
 }
-
-type writer []byte
-
-func (w *writer) Write(p []byte) (int, error) {
-	index := len(*w)
-	return w.WriteAt(p, int64(index))
-}
-
-func (w *writer) WriteAt(p []byte, off int64) (int, error) {
-	newend := off + int64(len(p))
-	if newend < int64(len(*w)) {
-		newend = int64(len(*w))
-	}
-
-	if newend > int64(cap(*w)) {
-		buf := make([]byte, int64(2*cap(*w))+newend)
-		copy(buf, *w)
-		*w = buf
-	}
-
-	*w = []byte(*w)[:newend]
-	copy([]byte(*w)[off:], p)
-	return len(p), nil
-}

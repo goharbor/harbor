@@ -36,13 +36,13 @@ import (
 // causer (from github.com/pkg/errors), a ${key}Causes field is added with an
 // array of objects containing the errors this error was comprised of.
 //
-//  {
-//    "error": err.Error(),
-//    "errorVerbose": fmt.Sprintf("%+v", err),
-//    "errorCauses": [
-//      ...
-//    ],
-//  }
+//	{
+//	  "error": err.Error(),
+//	  "errorVerbose": fmt.Sprintf("%+v", err),
+//	  "errorCauses": [
+//	    ...
+//	  ],
+//	}
 func encodeError(key string, err error, enc ObjectEncoder) (retErr error) {
 	// Try to capture panics (from nil references or otherwise) when calling
 	// the Error() method

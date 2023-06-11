@@ -1,96 +1,117 @@
 # Release Process
 
-There are two types of release for the `go.opentelemetry.io/contrib` repo
-and submodules.
+This project uses the [`multimod` releaser
+tool](https://github.com/open-telemetry/opentelemetry-go-build-tools/tree/main/multimod)
+to manage releases. This document will walk you through how to perform a
+release using this tool for this repository.
 
-1. **Case 1** A release due to changes independent of the
-`go.opentelemetry.io/otel` module, e.g. perhaps a critical bug fix in
-one of the contrib modules.
+## Start a release
 
-2. **Case 2** A release due to a breaking API change in
-`go.opentelemetry.io/otel` which all modules in this repo
-depend on.
+First, decide which module sets will have their versions chagned and what those
+versions will be. If you are making a release to upgrade the upstream
+go.opentelemetry.io/otel packages, all module sets will likely need to be
+released.
 
-## Pre-Release
+### Create a release branch
 
-Update go.mod for submodules to depend on the upcoming new release of
-the module in this repo, `go.opentelemetry.io/contrib`.  Decide on the
-next version of the semantic tag to apply to the contrib
-module based on whether you fall into Case 1 or Case 2.
+Update the versions of the module sets you have identified in `versions.yaml`.
+Commit this change to a new release branch.
 
-### Case 1
+### Upgrade go.opentelemetry.io/otel packages
 
-If the changes are all internal to this repo, then the new tag will
-most often be a patch or minor version upgrade to the existing tag on
-this module. Let's call this `<new_contrib_tag>`.
+If the upstream go.opentelemetry.io/otel project has made a release, this
+project needs to be upgraded to use that release.
 
-### Case 2
+```sh
+make sync-core COREPATH=<path to go.opentelemetry.io/otel repository>
+```
 
-If a new release is required due to breaking changes in
-`go.opentelemetry.io/otel`, then the new semantic tag for this repo
-should be bumped to match the `go.opentelemetry.io/otel` new tag.
-Let's call this `<new_otel_tag>`. The script checks that
-`go.opentelemetry.io/otel@v<new_otel_tag>` is a valid tag, so you need
-to wait until that tag has been pushed in the main repo.
+This will use `multimod` to upgrade all go.opentelemetry.io/otel packages to
+the latest tag found in the local copy of the project. Be sure to have this
+project up to date.
 
-In nearly all cases, `<new_contrib_tag>` should be the same as
-`<new_otel_tag>`.
+Commit these changes to your release branch.
 
-1. Run `pre_release.sh` script to create a branch `pre_release_<new_contrib_tag>`.
-   The script will also run `go mod tidy` and `make ci`.
+### Update module set versions
 
-   * **Case 1** `./pre_release.sh -t <new_contrib_tag>`
-   * **Case 2** `./pre_release.sh -o <new_otel_tag> [-t <new_contrib_tag>]`
+Set the version for all the module sets you have identified to be released.
 
-2. If you used `-o <new_otel_tag>` to rewrite the modules to depend on
-   a new version of `go.opentelemetry.io/otel`, there will likely be
-   breaking changes that require fixes to the files in this
-   `contrib` repo.  Make the appropriate fixes to address any API
-   breaks and run through the
+```sh
+make prerelease MODSET=<module set>
+```
 
-        ```
-        git commit -m "fixes due to API changes"
-        make precommit
-        ```
+This will use `multimod` to upgrade the module's versions and create a new
+"prerelease" branch for the changes. Verify the changes that were made.
 
-   cycle until everything passes
+```sh
+git diff HEAD..prerelease_<module set>_<version>
+```
 
-4. Push the changes to upstream.
+Fix any issues if they exist in that prerelease branch, and when ready, merge
+it into your release branch.
 
-    ```
-    git diff main
-    git push
-    ```
+```sh
+git merge prerelease_<module set>_<version>
+```
 
-5. Create a PR on github and merge the PR once approved.
+### Update the CHANGELOG.md
 
+Update the [Changelog](./CHANGELOG.md). Make sure only changes relevant to this
+release are included and the changes are communicated in language that
+non-contributors to the project can understand.
 
-### Tag
-Now create a `<new_contrib_tag>` on the commit hash of the changes made in pre-release step,
+Double check there is no change missing by looking directly at the commits
+since the last release tag.
 
-1. Run the tag.sh script.
+```sh
+git --no-pager log --pretty=oneline "<last tag>..HEAD"
+```
 
-    ```
-    ./tag.sh <new_contrib_tag> <commit-hash>
-    ```
-2. Push tags upstream. Make sure you push upstream for all the sub-module tags as well.
+Be sure to update all the appropriate links at the bottom of the file.
 
-    ```
-    git push upstream <new_contrib_tag>
-    git push upstream <submodules-path/new_contrib_tag>
-    ...
-    ```
+Finally, commit this change to your release branch.
+
+### Make a Pull Request
+
+Push your release branch and create a pull request for the changes. Be sure to
+include the curated chagnes your included in the changelog in the description.
+Especially include the change PR references, as this will help show viewers of
+the repository looking at these PRs that they are included in the release.
+
+## Tag a release
+
+Once the Pull Request with all the version changes has been approved and merged
+it is time to tag the merged commit.
+
+***IMPORTANT***: It is critical you use the same tag that you used in the
+Pre-Release step! Failure to do so will leave things in a broken state. As long
+as you do not change `versions.yaml` between pre-release and this step, things
+should be fine.
+
+1. For each module set that will be released, run the `add-tags` make target
+   using the `<commit-hash>` of the commit on the main branch for the merged
+   Pull Request.
+
+   ```sh
+   make add-tags MODSET=<module set> COMMIT=<commit hash>
+   ```
+
+   It should only be necessary to provide an explicit `COMMIT` value if the
+   current `HEAD` of your working directory is not the correct commit.
+
+2. Push tags to the upstream remote (not your fork:
+   `github.com/open-telemetry/opentelemetry-go-contrib.git`). Make sure you
+   push all sub-modules as well.
+
+   ```sh
+   export VERSION="<version>"
+   for t in $( git tag -l | grep "$VERSION" ); do git push upstream "$t"; done
+   ```
 
 ## Release
-Now create a release for the new `<new_contrib_tag>` on github.
-The release body should include all the release notes in the Changelog for this release.
-Additionally, the `tag.sh` script generates commit logs since last release which can be used to suppliment the release notes.
 
-<!-- ## Verify Examples -->
-<!-- After releasing run following script to verify that examples build outside of the otel repo. -->
-<!-- The script copies examples into a different directory and builds them. -->
-
-<!-- ``` -->
-<!-- ./verify_examples.sh -->
-<!-- ``` -->
-
+Finally create a Release on GitHub. If you are release multiple versions for
+different module sets, be sure to use the stable release tag but be sure to
+include each version in the release title (i.e. `Release v1.0.0/v0.25.0`). The
+release body should include all the curated changes from the Changelog for this
+release.

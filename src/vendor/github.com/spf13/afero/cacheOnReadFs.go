@@ -75,6 +75,10 @@ func (u *CacheOnReadFs) copyToLayer(name string) error {
 	return copyToLayer(u.base, u.layer, name)
 }
 
+func (u *CacheOnReadFs) copyFileToLayer(name string, flag int, perm os.FileMode) error {
+	return copyFileToLayer(u.base, u.layer, name, flag, perm)
+}
+
 func (u *CacheOnReadFs) Chtimes(name string, atime, mtime time.Time) error {
 	st, _, err := u.cacheStatus(name)
 	if err != nil {
@@ -212,7 +216,7 @@ func (u *CacheOnReadFs) OpenFile(name string, flag int, perm os.FileMode) (File,
 	switch st {
 	case cacheLocal, cacheHit:
 	default:
-		if err := u.copyToLayer(name); err != nil {
+		if err := u.copyFileToLayer(name, flag, perm); err != nil {
 			return nil, err
 		}
 	}

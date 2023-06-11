@@ -38,6 +38,8 @@ const (
 	BinaryUUIDOld     byte = 0x03
 	BinaryUUID        byte = 0x04
 	BinaryMD5         byte = 0x05
+	BinaryEncrypted   byte = 0x06
+	BinaryColumn      byte = 0x07
 	BinaryUserDefined byte = 0x80
 )
 

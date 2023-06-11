@@ -220,7 +220,7 @@ func BearerAuth(name string, authenticate ScopedTokenAuthentication) runtime.Aut
 	const prefix = "Bearer "
 	return ScopedAuthenticator(func(r *ScopedAuthRequest) (bool, interface{}, error) {
 		var token string
-		hdr := r.Request.Header.Get("Authorization")
+		hdr := r.Request.Header.Get(runtime.HeaderAuthorization)
 		if strings.HasPrefix(hdr, prefix) {
 			token = strings.TrimPrefix(hdr, prefix)
 		}
@@ -250,7 +250,7 @@ func BearerAuthCtx(name string, authenticate ScopedTokenAuthenticationCtx) runti
 	const prefix = "Bearer "
 	return ScopedAuthenticator(func(r *ScopedAuthRequest) (bool, interface{}, error) {
 		var token string
-		hdr := r.Request.Header.Get("Authorization")
+		hdr := r.Request.Header.Get(runtime.HeaderAuthorization)
 		if strings.HasPrefix(hdr, prefix) {
 			token = strings.TrimPrefix(hdr, prefix)
 		}

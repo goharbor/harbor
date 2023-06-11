@@ -12,12 +12,12 @@ var valueEncoders []encoderFunc
 func init() {
 	valueEncoders = []encoderFunc{
 		reflect.Bool:          encodeBoolValue,
-		reflect.Int:           encodeInt64CondValue,
+		reflect.Int:           encodeIntValue,
 		reflect.Int8:          encodeInt8CondValue,
 		reflect.Int16:         encodeInt16CondValue,
 		reflect.Int32:         encodeInt32CondValue,
 		reflect.Int64:         encodeInt64CondValue,
-		reflect.Uint:          encodeUint64CondValue,
+		reflect.Uint:          encodeUintValue,
 		reflect.Uint8:         encodeUint8CondValue,
 		reflect.Uint16:        encodeUint16CondValue,
 		reflect.Uint32:        encodeUint32CondValue,
@@ -139,7 +139,7 @@ func encodeCustomValuePtr(e *Encoder, v reflect.Value) error {
 }
 
 func encodeCustomValue(e *Encoder, v reflect.Value) error {
-	if nilable(v) && v.IsNil() {
+	if nilable(v.Kind()) && v.IsNil() {
 		return e.EncodeNil()
 	}
 
@@ -155,7 +155,7 @@ func marshalValuePtr(e *Encoder, v reflect.Value) error {
 }
 
 func marshalValue(e *Encoder, v reflect.Value) error {
-	if nilable(v) && v.IsNil() {
+	if nilable(v.Kind()) && v.IsNil() {
 		return e.EncodeNil()
 	}
 
@@ -190,8 +190,8 @@ func encodeUnsupportedValue(e *Encoder, v reflect.Value) error {
 	return fmt.Errorf("msgpack: Encode(unsupported %s)", v.Type())
 }
 
-func nilable(v reflect.Value) bool {
-	switch v.Kind() {
+func nilable(kind reflect.Kind) bool {
+	switch kind {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
 		return true
 	}
@@ -208,7 +208,7 @@ func marshalBinaryValueAddr(e *Encoder, v reflect.Value) error {
 }
 
 func marshalBinaryValue(e *Encoder, v reflect.Value) error {
-	if nilable(v) && v.IsNil() {
+	if nilable(v.Kind()) && v.IsNil() {
 		return e.EncodeNil()
 	}
 
@@ -231,7 +231,7 @@ func marshalTextValueAddr(e *Encoder, v reflect.Value) error {
 }
 
 func marshalTextValue(e *Encoder, v reflect.Value) error {
-	if nilable(v) && v.IsNil() {
+	if nilable(v.Kind()) && v.IsNil() {
 		return e.EncodeNil()
 	}
 

@@ -1,6 +1,7 @@
 package afero
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -8,7 +9,10 @@ import (
 	"time"
 )
 
-var _ Lstater = (*BasePathFs)(nil)
+var (
+	_ Lstater        = (*BasePathFs)(nil)
+	_ fs.ReadDirFile = (*BasePathFile)(nil)
+)
 
 // The BasePathFs restricts all operations to a given path within an Fs.
 // The given file name to the operations on this Fs will be prepended with
@@ -31,6 +35,14 @@ type BasePathFile struct {
 func (f *BasePathFile) Name() string {
 	sourcename := f.File.Name()
 	return strings.TrimPrefix(sourcename, filepath.Clean(f.path))
+}
+
+func (f *BasePathFile) ReadDir(n int) ([]fs.DirEntry, error) {
+	if rdf, ok := f.File.(fs.ReadDirFile); ok {
+		return rdf.ReadDir(n)
+
+	}
+	return readDirFile{f.File}.ReadDir(n)
 }
 
 func NewBasePathFs(source Fs, path string) Fs {

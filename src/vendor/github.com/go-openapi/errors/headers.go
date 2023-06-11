@@ -15,6 +15,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -38,11 +39,28 @@ func (e *Validation) Code() int32 {
 	return e.code
 }
 
-// ValidateName produces an error message name for an aliased property
+// MarshalJSON implements the JSON encoding interface
+func (e Validation) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"code":    e.code,
+		"message": e.message,
+		"in":      e.In,
+		"name":    e.Name,
+		"value":   e.Value,
+		"values":  e.Values,
+	})
+}
+
+// ValidateName sets the name for a validation or updates it for a nested property
 func (e *Validation) ValidateName(name string) *Validation {
-	if e.Name == "" && name != "" {
-		e.Name = name
-		e.message = name + e.message
+	if name != "" {
+		if e.Name == "" {
+			e.Name = name
+			e.message = name + e.message
+		} else {
+			e.Name = name + "." + e.Name
+			e.message = name + "." + e.message
+		}
 	}
 	return e
 }

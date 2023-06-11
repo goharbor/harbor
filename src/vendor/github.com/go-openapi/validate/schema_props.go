@@ -163,7 +163,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *Result {
 		}
 
 		if validated != 1 {
-			additionalMsg := ""
+			var additionalMsg string
 			if validated == 0 {
 				additionalMsg = "Found none valid"
 			} else {
@@ -187,7 +187,7 @@ func (s *schemaPropsValidator) Validate(data interface{}) *Result {
 			result := allOfSchema.Validate(data)
 			// We keep inner IMPORTANT! errors no matter what MatchCount tells us
 			keepResultAllOf.Merge(result.keepRelevantErrors())
-			//keepResultAllOf.Merge(result)
+			// keepResultAllOf.Merge(result)
 			if result.IsValid() {
 				validated++
 			}

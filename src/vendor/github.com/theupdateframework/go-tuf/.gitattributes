@@ -1,0 +1,5 @@
+# go enforces lf line endings
+*.go eol=lf
+
+# testdata should not be mangled by git
+*.json binary
