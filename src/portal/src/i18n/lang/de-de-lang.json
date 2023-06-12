@@ -1035,6 +1035,7 @@
     "PUSH_IMAGE": {
         "TITLE": "Push Befehl",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "Paketiere ein Chart für dieses Projekt:",
