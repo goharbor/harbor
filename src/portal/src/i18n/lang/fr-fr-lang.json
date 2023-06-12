@@ -1197,7 +1197,11 @@
         "DELETE_UNTAGGED": "Supprimer les artefacts non tagués",
         "EXPLAIN": "GC est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-        "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès"
+        "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+        "DELETE_BLOB": "{{blob}} blob(s) deleted",
+        "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+        "FREE_UP_SIZE": "{{size}} space freed up"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefact copié",

@@ -1230,7 +1230,11 @@
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
         "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-        "DRY_RUN_SUCCESS": "Triggered dry run successfully"
+        "DRY_RUN_SUCCESS": "Triggered dry run successfully",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+        "DELETE_BLOB": "{{blob}} blob(s) deleted",
+        "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+        "FREE_UP_SIZE": "{{size}} space freed up"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",

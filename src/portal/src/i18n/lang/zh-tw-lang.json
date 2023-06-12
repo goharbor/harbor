@@ -1219,7 +1219,11 @@
     "DELETE_UNTAGGED": "允許對未標籤檔案進行垃圾收集",
     "EXPLAIN": "清理垃圾是一個計算密集的操作，可能影響註冊表的效能",
     "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-    "DRY_RUN_SUCCESS": "成功觸發測試執行"
+    "DRY_RUN_SUCCESS": "成功觸發測試執行",
+    "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+    "DELETE_BLOB": "{{blob}} blob(s) deleted",
+    "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+    "FREE_UP_SIZE": "{{size}} space freed up"
   },
   "RETAG": {
     "MSG_SUCCESS": "Artifact 複製成功",
