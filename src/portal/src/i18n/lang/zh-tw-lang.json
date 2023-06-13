@@ -1029,6 +1029,7 @@
   "PUSH_IMAGE": {
     "TITLE": "推送映像檔的 Docker 命令",
     "DOCKER": "Docker",
+    "PODMAN": "Podman",
     "HELM": "Helm",
     "CNAB": "CNAB",
     "TAG_COMMAND_CHART": "為此專案打包 Chart",

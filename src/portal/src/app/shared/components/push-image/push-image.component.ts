@@ -27,6 +27,11 @@ export class PushImageButtonComponent {
     public get pushCommandImage(): string {
         return `docker push ${this.registryUrl}/${this.projectName}/REPOSITORY[:TAG]`;
     }
+
+    public get podmanPushCommand(): string {
+        return `podman push IMAGE_ID ${this.registryUrl}/${this.projectName}/REPOSITORY[:TAG]`;
+    }
+
     public get tagCommandChart(): string {
         return `helm package CHART_PATH`;
     }
