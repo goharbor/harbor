@@ -71,6 +71,10 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 		return "", "", errors.Wrap(err, "Error when converting vulnerability report")
 	}
 
+	if err := c.updateReport(ctx, rawReport.Vulnerabilities, reportUUID); err != nil {
+		return "", "", errors.Wrap(err, "Error when updating report")
+	}
+
 	rawReport.Vulnerabilities = nil
 	data, err := json.Marshal(rawReport)
 	if err != nil {
