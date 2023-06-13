@@ -76,8 +76,7 @@
                         'GC.DELETE_BLOB'
                             | translate
                                 : {
-                                      blobs: getBlobs(job?.job_parameters),
-                                      manifest: getManifest(job?.job_parameters)
+                                      blob: getBlobs(job?.job_parameters),
                                   }
                     }}</span
                 >
@@ -90,7 +89,6 @@
                         'GC.DELETE_MANIFEST'
                             | translate
                                 : {
-                                      blob: getBlobs(job?.job_parameters),
                                       manifest: getManifest(job?.job_parameters)
                                   }
                     }}</span

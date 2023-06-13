@@ -1034,6 +1034,7 @@
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "在项目中打包 chart",

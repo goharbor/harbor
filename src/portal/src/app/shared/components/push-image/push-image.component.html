@@ -72,6 +72,23 @@
                     </article>
                 </section>
                 <section>
+                    <h5 class="mt-0">
+                        {{ 'PUSH_IMAGE.PODMAN' | translate }}
+                        {{ 'PUSH_IMAGE.TITLE' | translate }}
+                    </h5>
+                    <article class="commands-section">
+                        <hbr-copy-input
+                            (onCopyError)="onCpError($event)"
+                            inputSize="65"
+                            headerTitle="{{
+                                'PUSH_IMAGE.PUSH_COMMAND' | translate
+                            }}"
+                            defaultValue="{{
+                                podmanPushCommand
+                            }}"></hbr-copy-input>
+                    </article>
+                </section>
+                <section>
                     <h5>
                         {{ 'PUSH_IMAGE.HELM' | translate }}
                         {{ 'PUSH_IMAGE.TITLE' | translate }}

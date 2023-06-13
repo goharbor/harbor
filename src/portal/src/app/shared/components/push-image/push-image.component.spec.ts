@@ -43,7 +43,7 @@ describe('PushImageButtonComponent (inline template)', () => {
         await fixture.whenStable();
         let copyInputs: HTMLInputElement[] =
             fixture.nativeElement.querySelectorAll('.command-input');
-        expect(copyInputs.length).toEqual(5);
+        expect(copyInputs.length).toEqual(6);
         expect(copyInputs[0].value.trim()).toEqual(
             `docker tag SOURCE_IMAGE[:TAG] https://testing.harbor.com/testing/REPOSITORY[:TAG]`
         );
