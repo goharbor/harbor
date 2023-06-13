@@ -129,7 +129,7 @@
     "ADMIN_RENAME_BUTTON": "更改帳號名稱",
     "RENAME_CONFIRM_INFO": "更改帳號名稱為 admin@harbor.local 是無法撤回的，您確定要更改嗎？",
     "CLI_PASSWORD": "CLI 密碼",
-    "CLI_PASSWORD_TIP": "當存取 Harbor 的 Docker / Helm CLI 時，可以使用此 CLI 密碼作為密碼。",
+    "CLI_PASSWORD_TIP": "The CLI secret can be used as a password, for Docker or Helm client. With the OIDC auth mode enabled, we strongly recommend using robot accounts, as CLI secrets depend on the validity of the ID token and require the user to regularly log in to the UI to refresh the token.",
     "COPY_SUCCESS": "複製成功",
     "COPY_ERROR": "複製失敗",
     "ADMIN_CLI_SECRET_BUTTON": "產生新的 CLI 密碼",

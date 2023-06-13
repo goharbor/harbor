@@ -130,7 +130,7 @@
         "RENAME_SUCCESS": "Yeniden adlandırma başarılı!",
         "RENAME_CONFIRM_INFO": "Uyarı, ismi admin@harbor.local olarak değiştirmek geri alınamaz.",
         "CLI_PASSWORD": "CLI şifresi",
-        "CLI_PASSWORD_TIP": "Harbour'a erişmek için docker / helm cli kullanırken bu cli sırrını şifre olarak kullanabilirsiniz.",
+        "CLI_PASSWORD_TIP": "The CLI secret can be used as a password, for Docker or Helm client. With the OIDC auth mode enabled, we strongly recommend using robot accounts, as CLI secrets depend on the validity of the ID token and require the user to regularly log in to the UI to refresh the token.",
         "COPY_SUCCESS": "kopyalama başarılı",
         "COPY_ERROR": "kopyalama başarısız",
         "ADMIN_CLI_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
