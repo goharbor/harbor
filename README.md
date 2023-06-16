@@ -1,11 +1,13 @@
 # Roadmap and Goals
 1. Set up a Harbor
 - Status: pending support for linux OS
+- Use the [demo site](https://demo.goharbor.io) as the learning environment
 
 2. Study how to use Harbor
 - Status: learning project configuration
 
 3. Set up a Harbor Doc Website
+- Refer to [Setup_doc_website.md](Setup_doc_website.md)
 4. Contribute to Harbor Doc Website
 
 ## Questions
