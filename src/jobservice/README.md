@@ -413,7 +413,7 @@ worker_pool:
 
 #Loggers for the running job
 job_loggers:
-  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+  - name: "STD_OUTPUT" # logger backend name, only support "DB", "FILE" and "STD_OUTPUT"
     level: "DEBUG" # INFO/DEBUG/WARNING/ERROR/FATAL
   - name: "FILE"
     level: "DEBUG"
@@ -423,6 +423,10 @@ job_loggers:
       duration: 1 #days
       settings: # Customized settings of sweeper
         work_dir: "/tmp/job_logs"
+  - name: "DB"
+    level: "DEBUG"
+    sweeper:
+      duration: 1 #days
 
 #Loggers for the job service
 loggers:
