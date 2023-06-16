@@ -129,7 +129,7 @@
         "RENAME_SUCCESS": "Renomeado com sucesso!",
         "RENAME_CONFIRM_INFO": "Atenção do nome para admin@harbor.local não poderá ser desfeita.",
         "CLI_PASSWORD": "Segredo CLI",
-        "CLI_PASSWORD_TIP": "Você pode usar este segredo como senha ao usar docker/helm cli para acessar o Harbor.",
+        "CLI_PASSWORD_TIP": "The CLI secret can be used as a password, for Docker or Helm client. With the OIDC auth mode enabled, we strongly recommend using robot accounts, as CLI secrets depend on the validity of the ID token and require the user to regularly log in to the UI to refresh the token.",
         "COPY_SUCCESS": "Cópia feita com sucesso",
         "COPY_ERROR": "Cópia falhou",
         "ADMIN_CLI_SECRET_BUTTON": "REDEFINIR SEGREDO",
