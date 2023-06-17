@@ -447,10 +447,15 @@ func (e *executionDAO) AsyncRefreshStatus(ctx context.Context, id int64, vendor 
 // scanAndRefreshOutdateStatus scans the outdate execution status from redis and then refresh the status to db,
 // do not want to expose to external use so keep it as private.
 func scanAndRefreshOutdateStatus(ctx context.Context) {
-	keys, err := cache.Default().Keys(ctx, "execution:id:")
+	iter, err := cache.Default().Scan(ctx, "execution:id:*vendor:*status_outdate")
 	if err != nil {
 		log.Errorf("failed to scan the outdate executions, error: %v", err)
 		return
+	}
+
+	var keys []string
+	for iter.Next(ctx) {
+		keys = append(keys, iter.Val())
 	}
 	// return earlier if no keys found which represents no outdate execution
 	if len(keys) == 0 {

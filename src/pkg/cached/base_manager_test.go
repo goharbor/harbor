@@ -30,6 +30,7 @@ var testResourceType = "resource-test"
 
 type testCache struct {
 	*testcache.Cache
+	iterator *testcache.Iterator
 }
 
 func (tc *testCache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
@@ -47,7 +48,7 @@ type baseManagerTestSuite struct {
 }
 
 func (m *baseManagerTestSuite) SetupTest() {
-	m.cache = &testCache{Cache: &testcache.Cache{}}
+	m.cache = &testCache{Cache: &testcache.Cache{}, iterator: &testcache.Iterator{}}
 	m.mgr = NewBaseManager(testResourceType).WithCacheClient(m.cache)
 }
 
@@ -72,10 +73,11 @@ func (m *baseManagerTestSuite) TestResourceType() {
 }
 
 func (m *baseManagerTestSuite) TestCountCache() {
-	m.cache.On("Keys", mock.Anything, testResourceType).Return([]string{"k1", "k2"}, nil).Once()
+	m.cache.iterator.On("Next", mock.Anything).Return(false).Once()
+	m.cache.On("Scan", mock.Anything, mock.Anything).Return(m.cache.iterator, nil).Once()
 	c, err := m.mgr.CountCache(context.TODO())
 	m.NoError(err)
-	m.Equal(int64(2), c)
+	m.Equal(int64(0), c)
 }
 
 func (m *baseManagerTestSuite) TestDeleteCache() {
@@ -85,9 +87,8 @@ func (m *baseManagerTestSuite) TestDeleteCache() {
 }
 
 func (m *baseManagerTestSuite) TestFlushAll() {
-	m.cache.On("Keys", mock.Anything, testResourceType).Return([]string{"k1", "k2"}, nil).Once()
-	m.cache.On("Delete", mock.Anything, "k1").Return(nil).Once()
-	m.cache.On("Delete", mock.Anything, "k2").Return(nil).Once()
+	m.cache.iterator.On("Next", mock.Anything).Return(false).Once()
+	m.cache.On("Scan", mock.Anything, mock.Anything).Return(m.cache.iterator, nil).Once()
 	err := m.mgr.FlushAll(context.TODO())
 	m.NoError(err)
 }
