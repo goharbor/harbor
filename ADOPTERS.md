@@ -35,7 +35,7 @@ be added to this list as they transition to production deployments.
 <a href="https://www.163yun.com" target="_blank" border="0"><img alt="Netease Cloud" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/wangyi.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.yanrongyun.com" target="_blank" border="0"><img alt="Yanrongyun" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/Yanrong.jpg" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.dynatrace.com/" target="_blank" border="0"><img alt="Dynatrace" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/dynatrace-logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.dynatrace.com/" target="_blank" border="0"><img alt="Dynatrace" src="https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/users-partners/dynatrace-logo.png"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 
 
