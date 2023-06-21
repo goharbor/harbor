@@ -123,6 +123,71 @@
                     </label>
                 </clr-radio-wrapper>
             </clr-radio-container>
+
+
+            <!-- filter type -->
+            <clr-radio-container clrInline>
+                <label>{{ 'REPLICATION.REPLI_MODE' | translate }}</label>
+                <clr-radio-wrapper>
+                    <input
+                        clrRadio
+                        type="radio"
+                        id="double_star"
+                        name="filterType"
+                        [value]="true"
+                        [disabled]="policyId2 >= 0 || onGoing2"
+                        [(ngModel)]="isRegexMode"
+                        (change)="pushModeChange2()"
+                        [ngModelOptions]="{ standalone: true }" />
+                    <label for="double_star"
+                        >Double Star
+                        <clr-tooltip class="mode-tooltip">
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="md"
+                                *clrIfOpen>
+                                <span>{{
+                                    'TOOLTIP.PUSH_BASED' | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-radio-wrapper>
+                <clr-radio-wrapper>
+                    <input
+                        clrRadio
+                        type="radio"
+                        id="regular_expression"
+                        name="filterType"
+                        [value]="false"
+                        [disabled]="policyId2 >= 0 || onGoing2"
+                        [(ngModel)]="isRegexMode"
+                        (change)="pullModeChange2()"
+                        [ngModelOptions]="{ standalone: true }" />
+                    <label for="regular_expression"
+                        >RegularExpression
+                        <clr-tooltip class="mode-tooltip">
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="md"
+                                *clrIfOpen>
+                                <span>{{
+                                    'TOOLTIP.PULL_BASED' | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-radio-wrapper>
+            </clr-radio-container>
+
             <!--source registry-->
             <div class="clr-form-control" *ngIf="!isPushMode">
                 <label class="required clr-control-label">{{
