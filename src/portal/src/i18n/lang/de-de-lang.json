@@ -105,7 +105,9 @@
         "OIDC_VERIFYCERT": "Box deaktivieren, falls der OIDC Server mit selbstsignierten Zertifikaten betrieben wird.",
         "OIDC_AUTOONBOARD": "Überspringe die Startseite, hierdurch können Nutzer ihren Nutzernamen nicht ändern. Der Nutzername wird aus dem ID Token übernommen.",
         "OIDC_USER_CLAIM": "Der Name des Claims im ID Token, aus dem der Nutzername stammt. Falls das Feld leer ist, wird 'name' verwendet.",
-        "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer."
+        "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer.",
+        "REGEX_BASED": "Filtern Sie Artefakte nach Regeln für reguläre Ausdrücke.",
+        "DOUBLE_STAR_BASED": "Filtern Sie Artefakte nach Doppelsternregeln."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Aktuelles Passwort eingeben",
