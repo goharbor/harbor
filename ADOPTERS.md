@@ -37,7 +37,7 @@ be added to this list as they transition to production deployments.
 <a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.dynatrace.com/" target="_blank" border="0"><img alt="Dynatrace" src="https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/users-partners/dynatrace-logo.png"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
-
+<a href="https://www.dhl.com/" target="_blank" border="0"><img alt="DHL" src="https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/users-partners/dhl-logo.png"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
 
