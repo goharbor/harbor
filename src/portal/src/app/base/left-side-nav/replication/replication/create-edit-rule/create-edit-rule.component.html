@@ -135,9 +135,9 @@
                         id="double_star"
                         name="filterType"
                         [value]="true"
-                        [disabled]="policyId2 >= 0 || onGoing2"
+                        [disabled]="policyId >= 0 || onGoing"
                         [(ngModel)]="isRegexMode"
-                        (change)="pushModeChange2()"
+                        (change)="disableRegexFilterMode()"
                         [ngModelOptions]="{ standalone: true }" />
                     <label for="double_star"
                         >Double Star
@@ -164,9 +164,9 @@
                         id="regular_expression"
                         name="filterType"
                         [value]="false"
-                        [disabled]="policyId2 >= 0 || onGoing2"
+                        [disabled]="policyId >= 0 || onGoing"
                         [(ngModel)]="isRegexMode"
-                        (change)="pullModeChange2()"
+                        (change)="enableRegexFilterMode()"
                         [ngModelOptions]="{ standalone: true }" />
                     <label for="regular_expression"
                         >RegularExpression
