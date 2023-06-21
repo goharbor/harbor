@@ -653,7 +653,8 @@
         "COPY_BY_CHUNK": "Copier par morceaux",
         "COPY_BY_CHUNK_TIP": "Specifie si le blob doit être copié par morceaux. Transférer par morceaux peut augmenter le nombre de requêtes faites à l'API.",
         "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'exécution",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILTER_TYPE":"Type de filtre"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Endpoint",
