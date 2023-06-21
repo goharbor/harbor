@@ -127,7 +127,7 @@
 
             <!-- filter type -->
             <clr-radio-container clrInline>
-                <label>{{ 'REPLICATION.REPLI_MODE' | translate }}</label>
+                <label>{{ 'REPLICATION.FILTER_TYPE' | translate }}</label>
                 <clr-radio-wrapper>
                     <input
                         clrRadio
@@ -151,7 +151,7 @@
                                 clrSize="md"
                                 *clrIfOpen>
                                 <span>{{
-                                    'TOOLTIP.PUSH_BASED' | translate
+                                    'TOOLTIP.DOUBLE_STAR_BASED' | translate
                                 }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>
@@ -180,7 +180,7 @@
                                 clrSize="md"
                                 *clrIfOpen>
                                 <span>{{
-                                    'TOOLTIP.PULL_BASED' | translate
+                                    'TOOLTIP.REGEX_BASED' | translate
                                 }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>
