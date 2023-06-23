@@ -429,7 +429,8 @@
     "PAYLOAD_FORMAT": "Payload 格式",
     "CLOUD_EVENT": "CloudEvents",
     "PAYLOAD_DATA": "Payload 資料",
-    "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
+    "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits",
+    "CDEVENT": "CDEvents"
   },
   "GROUP": {
     "GROUP": "群組",

@@ -431,7 +431,8 @@
         "PAYLOAD_FORMAT": "载荷形式",
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "载荷数据",
-        "SLACK_RATE_LIMIT": "请注意 Slack 的速率限制"
+        "SLACK_RATE_LIMIT": "请注意 Slack 的速率限制",
+        "CDEVENT": "CDEvents"
     },
     "GROUP": {
         "GROUP": "组",
