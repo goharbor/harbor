@@ -9,6 +9,10 @@ make/dev/core/harbor_core
 make/dev/jobservice/harbor_jobservice
 make/photon/*/binary/
 make/photon/prepare/versions
+# binaries
+make/photon/core/harbor_core
+make/photon/jobservice/harbor_jobservice
+make/photon/registryctl/harbor_registryctl
 
 src/adminserver/adminserver
 src/core/core

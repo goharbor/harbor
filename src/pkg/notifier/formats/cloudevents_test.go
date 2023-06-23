@@ -32,7 +32,7 @@ func TestCloudEvents_Format(t *testing.T) {
 	ce := &CloudEvents{}
 	// invalid case
 	{
-		header, data, err := ce.Format(nil, nil)
+		header, data, err := ce.Format(context.TODO(), nil)
 		assert.Error(t, err)
 		assert.Nil(t, header)
 		assert.Nil(t, data)

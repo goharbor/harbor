@@ -102,7 +102,7 @@ func initSupportedNotifyType() {
 		supportedNotifyTypes = append(supportedNotifyTypes, NotifyType(notifyType))
 	}
 
-	payloadFormats := []string{formats.DefaultFormat, formats.CloudEventsFormat}
+	payloadFormats := []string{formats.DefaultFormat, formats.CloudEventsFormat, formats.CDEventsFormat}
 	for _, payloadFormat := range payloadFormats {
 		supportedPayloadFormatTypes = append(supportedPayloadFormatTypes, PayloadFormatType(payloadFormat))
 	}
