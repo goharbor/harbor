@@ -5,36 +5,52 @@
     (clrDgRefresh)="getCurrentArtifactTags($event)"
     [(clrDgSelected)]="selectedRow">
     <clr-dg-action-bar>
-        <button
-            *ngIf="!isProxyCacheProject"
-            id="new-tag"
-            type="button"
-            [disabled]="!hasCreateTagPermission"
-            class="btn btn-secondary"
-            (click)="addTag()">
-            <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
-                'TAG.ADD_TAG' | translate
-            }}
-        </button>
-        <button
-            id="delete-tag"
-            type="button"
-            class="btn btn-secondary"
-            [disabled]="
-                !(
-                    selectedRow.length >= 1 &&
-                    !hasImmutableOnTag() &&
-                    hasDeleteTagPermission
-                )
-            "
-            (click)="removeTag()">
-            <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{
-                'TAG.REMOVE_TAG' | translate
-            }}
-        </button>
-        <span class="refresh-btn" (click)="refresh()">
-            <clr-icon shape="refresh"></clr-icon>
-        </span>
+        <div class="action-bar">
+            <div>
+                <button
+                    *ngIf="!isProxyCacheProject"
+                    id="new-tag"
+                    type="button"
+                    [disabled]="!hasCreateTagPermission"
+                    class="btn btn-secondary"
+                    (click)="addTag()">
+                    <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
+                        'TAG.ADD_TAG' | translate
+                    }}
+                </button>
+                <button
+                    id="delete-tag"
+                    type="button"
+                    class="btn btn-secondary"
+                    [disabled]="
+                        !(
+                            selectedRow.length >= 1 &&
+                            !hasImmutableOnTag() &&
+                            hasDeleteTagPermission
+                        )
+                    "
+                    (click)="removeTag()">
+                    <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{
+                        'TAG.REMOVE_TAG' | translate
+                    }}
+                </button>
+            </div>
+            <div class="right-pos">
+                <app-pull-command
+                    [isTagMode]="true"
+                    [artifact]="artifactDetails"
+                    [accessoryType]="accessoryType"
+                    [registryUrl]="registryUrl"
+                    [projectName]="projectName"
+                    [repoName]="repositoryName"
+                    [selectedTags]="selectedRow"
+                    class="mr-1"></app-pull-command>
+                <span class="refresh-btn" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </span>
+            </div>
+        </div>
+
         <form
             #tagForm="ngForm"
             [hidden]="!newTagformShow"
@@ -102,9 +118,6 @@
     <clr-dg-column [clrDgField]="'name'">{{
         'TAG.NAME' | translate
     }}</clr-dg-column>
-    <clr-dg-column *ngIf="hasPullCommand()">{{
-        'REPOSITORY.PULL_COMMAND' | translate
-    }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'pull_time'">{{
         'TAG.PULL_TIME' | translate
     }}</clr-dg-column>
@@ -127,13 +140,6 @@
                     'REPOSITORY.IMMUTABLE' | translate
                 }}</span>
             </div>
-        </clr-dg-cell>
-        <clr-dg-cell *ngIf="hasPullCommand()">
-            <hbr-copy-input
-                [title]="getPullCommand(tag)"
-                *ngIf="getPullCommand(tag)"
-                [iconMode]="true"
-                [defaultValue]="getPullCommand(tag)"></hbr-copy-input>
         </clr-dg-cell>
         <clr-dg-cell>{{
             tag.pull_time !== availableTime
