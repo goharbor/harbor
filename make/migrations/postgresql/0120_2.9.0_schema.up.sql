@@ -5,3 +5,72 @@ UPDATE execution SET vendor_id = (extra_attrs -> 'artifact' ->> 'id')::integer
 WHERE jsonb_path_exists(extra_attrs::jsonb, '$.artifact.id')
 AND vendor_id IN (SELECT id FROM scanner_registration)
 AND vendor_type = 'IMAGE_SCAN';
+
+/* extract score from vendor attribute */
+UPDATE vulnerability_record
+SET cvss_score_v3 = (vendor_attributes->'CVSS'->'nvd'->>'V3Score')::double precision
+WHERE jsonb_path_exists(vendor_attributes::jsonb, '$.CVSS.nvd.V3Score');
+
+/* add summary information in scan_report */
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS critical_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS high_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS medium_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS low_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS none_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS unknown_cnt BIGINT;
+ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS fixable_cnt BIGINT;
+
+/* extract summary information for previous scan_report */
+DO
+$$
+    DECLARE
+        report RECORD;
+        v RECORD;
+        critical_count BIGINT;
+        high_count BIGINT;
+        none_count BIGINT;
+        medium_count BIGINT;
+        low_count BIGINT;
+        unknown_count BIGINT;
+        fixable_count BIGINT;
+    BEGIN
+        FOR report IN SELECT uuid FROM scan_report
+            LOOP
+                critical_count := 0;
+                high_count := 0;
+                medium_count := 0;
+                none_count := 0;
+                low_count := 0;
+                unknown_count := 0;
+                FOR v IN SELECT vr.severity, vr.fixed_version
+                         FROM report_vulnerability_record rvr,
+                              vulnerability_record vr
+                         WHERE rvr.report_uuid = report.uuid
+                           AND rvr.vuln_record_id = vr.id
+                    LOOP
+                        IF v.severity = 'Critical' THEN
+                            critical_count = critical_count + 1;
+                        ELSIF v.severity = 'High' THEN
+                            high_count = high_count + 1;
+                        ELSIF v.severity = 'Medium' THEN
+                            medium_count = medium_count + 1;
+                        ELSIF v.severity = 'Low' THEN
+                            low_count = low_count + 1;
+                        ELSIF v.severity = 'None' THEN
+                            none_count = none_count + 1;
+                        ELSIF v.severity = 'Unknown' THEN
+                            unknown_count = unknown_count + 1;
+                        ELSIF v.fixed_version IS NOT NULL THEN
+                            fixable_count = fixable_count + 1;
+                        END IF;
+                    END LOOP;
+                UPDATE scan_report
+                SET critical_cnt = critical_count,
+                    high_cnt     = high_count,
+                    medium_cnt   = medium_count,
+                    low_cnt      = low_count,
+                    unknown_cnt  = unknown_count
+                WHERE uuid = report.uuid;
+            END LOOP;
+    END
+$$;

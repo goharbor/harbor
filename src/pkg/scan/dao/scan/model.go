@@ -22,16 +22,22 @@ import (
 // Report of the scan.
 // Identified by the `digest`, `registration_uuid` and `mime_type`.
 type Report struct {
-	ID               int64  `orm:"pk;auto;column(id)"`
-	UUID             string `orm:"unique;column(uuid)"`
-	Digest           string `orm:"column(digest)"`
-	RegistrationUUID string `orm:"column(registration_uuid)"`
-	MimeType         string `orm:"column(mime_type)"`
-	Report           string `orm:"column(report);type(json)"`
-
-	Status    string    `orm:"-"`
-	StartTime time.Time `orm:"-"`
-	EndTime   time.Time `orm:"-"`
+	ID               int64     `orm:"pk;auto;column(id)"`
+	UUID             string    `orm:"unique;column(uuid)"`
+	Digest           string    `orm:"column(digest)"`
+	RegistrationUUID string    `orm:"column(registration_uuid)"`
+	MimeType         string    `orm:"column(mime_type)"`
+	Report           string    `orm:"column(report);type(json)"`
+	CriticalCnt      int64     `orm:"column(critical_cnt)"`
+	HighCnt          int64     `orm:"column(high_cnt)"`
+	MediumCnt        int64     `orm:"column(medium_cnt)"`
+	LowCnt           int64     `orm:"column(low_cnt)"`
+	UnknownCnt       int64     `orm:"column(unknown_cnt)"`
+	NoneCnt          int64     `orm:"column(none_cnt)"`
+	FixableCnt       int64     `orm:"column(fixable_cnt)"`
+	Status           string    `orm:"-"`
+	StartTime        time.Time `orm:"-"`
+	EndTime          time.Time `orm:"-"`
 }
 
 // TableName for Report
