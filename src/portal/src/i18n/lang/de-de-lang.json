@@ -1044,7 +1044,8 @@
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
         "TAG_COMMAND": "Tag ein Image für dieses Projekt:",
         "PUSH_COMMAND": "Push ein Image für dieses Projekt:",
-        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
+        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",

@@ -1016,7 +1016,8 @@
         "TOOLTIP": "Commandes pour push un artefact dans ce projet.",
         "TAG_COMMAND": "Taguer une image pour ce projet :",
         "PUSH_COMMAND": "Push une image dans ce projet :",
-        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
+        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrer les artefacts",
