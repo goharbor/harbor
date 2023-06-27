@@ -1038,7 +1038,8 @@
     "TOOLTIP": "將映像檔推送至此專案的參考命令。",
     "TAG_COMMAND": "在項目中標記映像檔：",
     "PUSH_COMMAND": "推送映像檔到目前項目：",
-    "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。"
+    "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。",
+    "COPY_PULL_COMMAND": "COPY PULL COMMAND"
   },
   "ARTIFACT": {
     "FILTER_FOR_ARTIFACTS": "篩選器",

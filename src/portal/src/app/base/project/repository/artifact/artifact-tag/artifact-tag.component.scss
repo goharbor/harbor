@@ -39,9 +39,6 @@
 }
 
 .refresh-btn {
-  float: right;
-  margin-top: 15px;
-  margin-right: 20px;
   cursor: pointer;
 }
 
@@ -49,4 +46,16 @@
   position: absolute;
   right: -.7rem;
   top: 1.2rem;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.right-pos {
+  margin-right: 35px;
+  display: flex;
+  align-items: center;
 }

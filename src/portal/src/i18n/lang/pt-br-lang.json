@@ -1041,7 +1041,8 @@
         "TOOLTIP": "Referência de comandos para enviar artefatos a este projeto.",
         "TAG_COMMAND": "Colocar tag em uma imagem deste projeto:",
         "PUSH_COMMAND": "Envia uma imagem a esse projeto:",
-        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
+        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrar",
