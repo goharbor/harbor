@@ -68,6 +68,7 @@ To let the job service recognize the job, the implementation of job should follo
 A valid job must implement the job interface. For the details of each method defined in the job interface, you can refer the comments attached with the method.
 
 ```go
+
 // Interface defines the related injection and run entry methods.
 type Interface interface {
 	// Declare how many times the job can be retried if failed.
@@ -76,7 +77,13 @@ type Interface interface {
 	// uint: the failure count allowed. If it is set to 0, then default value 4 is used.
 	MaxFails() uint
 
-	// Tell the worker pool if retry the failed job when the fails is
+	// Max currency of the job. Unlike the WorkerPool concurrency, it controls the limit on the number jobs of that type
+	// that can be active at one time by within a single redis instance.
+	//
+	// The default value is 0, which means "no limit on job concurrency".
+	MaxCurrency() uint
+
+	// Tell the worker worker if retry the failed job when the fails is
 	// still less that the number declared by the method 'MaxFails'.
 	//
 	// Returns:
@@ -87,18 +94,18 @@ type Interface interface {
 	//
 	// Return:
 	// error if parameters are not valid. NOTES: If no parameters needed, directly return nil.
-	Validate(params map[string]interface{}) error
+	Validate(params Parameters) error
 
 	// Run the business logic here.
 	// The related arguments will be injected by the workerpool.
 	//
-	// ctx env.JobContext            : Job execution context.
+	// ctx Context                   : Job execution context.
 	// params map[string]interface{} : parameters with key-pair style for the job execution.
 	//
 	// Returns:
 	//  error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned
 	//
-	Run(ctx env.JobContext, params map[string]interface{}) error
+	Run(ctx Context, params Parameters) error
 }
 ```
 
@@ -180,14 +187,19 @@ func (dj *DemoJob) MaxFails() uint {
 	return 3
 }
 
+// MaxCurrency is implementation of same method in Interface.
+func (dj *DemoJob) MaxCurrency() uint {
+	return 1
+}
+
 // ShouldRetry ...
 func (dj *DemoJob) ShouldRetry() bool {
 	return true
 }
 
 // Validate is implementation of same method in Interface.
-func (dj *DemoJob) Validate(params map[string]interface{}) error {
-	if params == nil || len(params) == 0 {
+func (dj *DemoJob) Validate(params job.Parameters) error {
+	if len(params) == 0 {
 		return errors.New("parameters required for replication job")
 	}
 	name, ok := params["image"]
@@ -196,14 +208,14 @@ func (dj *DemoJob) Validate(params map[string]interface{}) error {
 	}
 
 	if !strings.HasPrefix(name.(string), "demo") {
-		return fmt.Errorf("expected '%s' but got '%s'", "demo steven", name)
+		return fmt.Errorf("expected '%s' but got '%s'", "demo *", name)
 	}
 
 	return nil
 }
 
 // Run the replication logic here.
-func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (dj *DemoJob) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 
 	defer func() {
@@ -292,7 +304,7 @@ Any jobs can launch new jobs through the launch function in the job context. All
 
 ```go
 
-func (j *Job) Run(ctx env.JobContext, params map[string]interface{}) error{
+func (j *Job) Run(ctx job.Context, params job.Parameters) error{
     // ...
     subJob, err := ctx.LaunchJob(models.JobRequest{})
     // ...
@@ -333,6 +345,7 @@ var knownLoggers = map[string]*Declaration{
 So far, only the following two backends are supported:
 
 * **STD_OUTPUT**: Output the log to the std stream (stdout/stderr)
+* **DB**: Output the log to the database with the table name `job_log`
 * **FILE**: Output the log to the log files
   * sweeper supports
   * getter supports
@@ -354,7 +367,7 @@ An example:
 ```yaml
 #Loggers
 loggers:
-  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+  - name: "STD_OUTPUT" # logger backend name, only support "DB", "FILE" and "STD_OUTPUT"
     level: "DEBUG" # INFO/DEBUG/WARNING/ERROR/FATAL
   - name: "FILE"
     level: "DEBUG"
@@ -364,6 +377,10 @@ loggers:
       duration: 1 #days
       settings: # Customized settings of sweeper
         work_dir: "/tmp/job_logs"
+  - name: "DB"
+    level: "DEBUG"
+    sweeper:
+      duration: 1 #days
 ```
 
 ## Configuration
