@@ -64,8 +64,9 @@ type GarbageCollector struct {
 	// As table blob has no repositories data, and the repositories are required when to delete a manifest, so use the table ArtifactTrash to capture them.
 	trashedArts map[string][]model.ArtifactTrash
 	// hold all of GC candidates(non-referenced blobs), it's captured by mark and consumed by sweep.
-	deleteSet       []*blobModels.Blob
-	timeWindowHours int64
+	deleteSet         []*blobModels.Blob
+	timeWindowHours   int64
+	findBlobsPageSize int64
 }
 
 // MaxFails implements the interface in job/Interface
@@ -129,6 +130,15 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 	if exist {
 		if timeWindow, ok := timeWindow.(float64); ok {
 			gc.timeWindowHours = int64(timeWindow)
+		}
+	}
+
+	// find blobs page size: default 1000,and for testing/debugging, it can be set to 100
+	gc.findBlobsPageSize = 1000
+	findBlobsPageSize, exist := params["find_blobs_page_size"]
+	if exist {
+		if pageSize, ok := findBlobsPageSize.(float64); ok {
+			gc.findBlobsPageSize = int64(pageSize)
 		}
 	}
 
@@ -552,7 +562,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobMo
 		}
 		p := result.Data
 
-		ps := 1000
+		ps := gc.findBlobsPageSize
 		lastBlobID := int64(0)
 		timeRG := q.Range{
 			Max: time.Now().Add(-time.Duration(gc.timeWindowHours) * time.Hour).Format(time.RFC3339),
@@ -573,7 +583,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobMo
 					"id":          &blobRG,
 				},
 				PageNumber: 1,
-				PageSize:   int64(ps),
+				PageSize:   ps,
 				Sorts: []*q.Sort{
 					q.NewSort("id", false),
 				},
@@ -596,7 +606,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobMo
 					break
 				}
 			}
-			if len(blobs) < ps {
+			if len(blobs) < int(ps) {
 				break
 			}
 			lastBlobID = blobs[len(blobs)-1].ID

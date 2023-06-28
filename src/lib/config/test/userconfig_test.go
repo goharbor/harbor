@@ -61,6 +61,7 @@ func TestConfig(t *testing.T) {
 	t.Setenv("TOKEN_PRIVATE_KEY_PATH", "")
 	t.Setenv("JOBSERVICE_URL", "http://myjob:8888")
 	t.Setenv("GC_TIME_WINDOW_HOURS", "0")
+	t.Setenv("GC_BLOBS_FIND_PAGE_SIZE", "100")
 
 	Init()
 	ctx := orm.Context()
@@ -181,7 +182,7 @@ func TestConfig(t *testing.T) {
 	assert.True(NotificationEnable(ctx))
 	assert.Equal(int64(0), GetGCTimeWindow())
 	assert.Equal("robot$", RobotPrefix(ctx))
-
+	assert.Equal(int64(100), GetGCBlobsFindPageSize())
 }
 
 func currPath() string {

@@ -158,9 +158,10 @@ func (suite *gcTestSuite) TestInit() {
 		registryCtlClient: suite.registryCtlClient,
 	}
 	params := map[string]interface{}{
-		"delete_untagged": true,
-		"redis_url_reg":   "redis url",
-		"time_window":     1,
+		"delete_untagged":      true,
+		"redis_url_reg":        "redis url",
+		"time_window":          1,
+		"find_blobs_page_size": 100,
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
@@ -276,9 +277,10 @@ func (suite *gcTestSuite) TestRun() {
 		registryCtlClient: suite.registryCtlClient,
 	}
 	params := map[string]interface{}{
-		"delete_untagged": false,
-		"redis_url_reg":   tests.GetRedisURL(),
-		"time_window":     1,
+		"delete_untagged":      false,
+		"redis_url_reg":        tests.GetRedisURL(),
+		"time_window":          1,
+		"find_blobs_page_size": 100,
 	}
 
 	suite.Nil(gc.Run(ctx, params))

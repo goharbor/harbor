@@ -160,6 +160,8 @@ const (
 
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
 	DefaultGCTimeWindowHours = int64(2)
+	// DefaultGCFindBlobsPageSize is the find need remove blob page size used by GC, default is 1000 because ob join slow
+	DefaultGCFindBlobsPageSize = int64(1000)
 
 	// Metric setting items
 	MetricEnable = "metric_enable"

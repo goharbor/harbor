@@ -127,6 +127,18 @@ func GetGCTimeWindow() int64 {
 	return common.DefaultGCTimeWindowHours
 }
 
+// GetGCBlobsFindPageSize returns the find blobs blob.
+func GetGCBlobsFindPageSize() int64 {
+	// the env is for testing/debugging. For production, Do NOT set it.
+	if env, exist := os.LookupEnv("GC_BLOBS_FIND_PAGE_SIZE"); exist {
+		pageSize, err := strconv.ParseInt(env, 10, 64)
+		if err == nil {
+			return pageSize
+		}
+	}
+	return common.DefaultGCFindBlobsPageSize
+}
+
 // GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
 func GetExecutionStatusRefreshIntervalSeconds() int64 {
 	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()
