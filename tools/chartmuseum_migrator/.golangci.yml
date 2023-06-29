@@ -1,0 +1,19 @@
+run:
+  deadline: 10m
+  modules-download-mode: vendor
+
+linters:
+  enable-all: true
+  disable:
+    - deadcode # Deprecated: replaced by unused
+    - exhaustivestruct # Deprecated: https://github.com/golangci/golangci-lint/issues/2923
+    - golint # Deprecated: replaced by revive
+    - ifshort # Deprecated
+    - interfacer # Deprecated
+    - maligned # Deprecated: replaced by govet 'fieldalignment'
+    - nosnakecase # Deprecated: replaced by revive(var-naming)
+    - scopelint # Deprecated: replaced by revive
+    - structcheck # Deprecated: replaced by unused
+    - tagliatelle
+    - testpackage
+    - varcheck # Deprecated: replaced by unused
