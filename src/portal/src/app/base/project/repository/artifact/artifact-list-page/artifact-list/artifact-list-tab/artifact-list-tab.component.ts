@@ -57,9 +57,6 @@ import {
     ArtifactFilterEvent,
     ArtifactFront as Artifact,
     ArtifactFront,
-    ArtifactType,
-    getPullCommandByDigest,
-    getPullCommandByTag,
 } from '../../../artifact';
 import { Project } from '../../../../../project';
 import { ArtifactService as NewArtifactService } from '../../../../../../../../../ng-swagger-gen/services/artifact.service';
@@ -456,32 +453,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             st.page.to = this.pageSize - 1;
         }
         this.clrLoad(st);
-    }
-
-    getPullCommand(artifact: Artifact): string {
-        let pullCommand: string = '';
-        if (
-            artifact.type === ArtifactType.CHART &&
-            artifact.tags &&
-            artifact.tags[0]
-        ) {
-            pullCommand = getPullCommandByTag(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.tags[0]?.name
-            );
-        } else {
-            pullCommand = getPullCommandByDigest(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.digest
-            );
-        }
-        return pullCommand;
     }
 
     canAddLabel(): boolean {

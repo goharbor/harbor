@@ -126,6 +126,12 @@
                     </clr-dropdown>
                 </div>
                 <div class="right-pos">
+                    <app-pull-command
+                        [registryUrl]="registryUrl"
+                        [projectName]="projectName"
+                        [repoName]="repoName"
+                        [selectedRow]="selectedRow"
+                        class="mr-1"></app-pull-command>
                     <app-artifact-filter
                         [withDivider]="true"
                         (filterEvent)="filterEvent($event)"
@@ -140,11 +146,6 @@
                 ><ng-template
                     [clrDgHideableColumn]="{ hidden: hiddenArray[0] }">
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
-                </ng-template>
-            </clr-dg-column>
-            <clr-dg-column class="pull-command-column">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
-                    {{ 'REPOSITORY.PULL_COMMAND' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column *ngIf="depth">
@@ -243,15 +244,6 @@
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <hbr-copy-input
-                        [title]="getPullCommand(artifact)"
-                        *ngIf="getPullCommand(artifact)"
-                        [iconMode]="true"
-                        [defaultValue]="
-                            getPullCommand(artifact)
-                        "></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
                     <div class="cell">
