@@ -161,9 +161,11 @@ func (suite *gcTestSuite) TestInit() {
 		"delete_untagged": true,
 		"redis_url_reg":   "redis url",
 		"time_window":     1,
+		"workers":         float64(3),
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
+	suite.Equal(3, gc.workers)
 
 	params = map[string]interface{}{
 		"delete_untagged": "unsupported",
@@ -279,6 +281,7 @@ func (suite *gcTestSuite) TestRun() {
 		"delete_untagged": false,
 		"redis_url_reg":   tests.GetRedisURL(),
 		"time_window":     1,
+		"workers":         3,
 	}
 
 	suite.Nil(gc.Run(ctx, params))
@@ -375,6 +378,7 @@ func (suite *gcTestSuite) TestSweep() {
 				ContentType: schema2.MediaTypeLayer,
 			},
 		},
+		workers: 3,
 	}
 
 	suite.Nil(gc.sweep(ctx))
