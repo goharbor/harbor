@@ -24,7 +24,6 @@ Delete Success
     FOR  ${obj}  IN  @{obj}
         Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     END
-    Sleep  1
 
 Delete Fail
     [Arguments]  @{obj}

@@ -54,10 +54,8 @@ Test Case - Scan A Tag In The Repo
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
-
     Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
-    Go Into Project  library
-    Go Into Repo  hello-world
+    Go Into Repo  library  hello-world
     Select Object  latest
     Scan Is Disabled
     Close Browser
@@ -83,8 +81,7 @@ Test Case - Project Level Image Serverity Policy
     ${image}=  Set Variable  redis
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
-    Go Into Project  project${d}
-    Go Into Repo  ${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Navigate To Projects
     Go Into Project  project${d}
