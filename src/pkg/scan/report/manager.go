@@ -101,6 +101,9 @@ type Manager interface {
 	//    []*scan.Report : report list
 	//    error        : non nil error if any errors occurred
 	List(ctx context.Context, query *q.Query) ([]*scan.Report, error)
+
+	// Update update report information
+	Update(ctx context.Context, r *scan.Report, cols ...string) error
 }
 
 // basicManager is a default implementation of report manager.
@@ -218,4 +221,8 @@ func (bm *basicManager) DeleteByDigests(ctx context.Context, digests ...string) 
 
 func (bm *basicManager) List(ctx context.Context, query *q.Query) ([]*scan.Report, error) {
 	return bm.dao.List(ctx, query)
+}
+
+func (bm *basicManager) Update(ctx context.Context, r *scan.Report, cols ...string) error {
+	return bm.dao.Update(ctx, r, cols...)
 }
