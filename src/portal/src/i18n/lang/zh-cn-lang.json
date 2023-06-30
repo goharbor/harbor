@@ -1233,7 +1233,8 @@
         "DELETE_BLOB_AND_MANIFEST": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除",
         "DELETE_BLOB": "{{blob}}个 blob(s) 已删除",
         "DELETE_MANIFEST": "{{manifest}}个 manifest(s) 已删除",
-        "FREE_UP_SIZE": "{{size}}的空间已清理"
+        "FREE_UP_SIZE": "{{size}}的空间已清理",
+        "WORKERS_TOOLTIP": "设置可并行执行垃圾回收任务的工作者数量，默认值为1。"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
