@@ -126,12 +126,12 @@ func (suite *CacheTestSuite) TestScan() {
 		}
 	}
 	{
-		// no match should return all keys
+		// return all keys with test-scan-*
 		expect := []string{"test-scan-0", "test-scan-1", "test-scan-2"}
 		// seed data
 		seed(3)
 		// test scan
-		iter, err := suite.cache.Scan(suite.ctx, "")
+		iter, err := suite.cache.Scan(suite.ctx, "test-scan-*")
 		suite.NoError(err)
 		got := []string{}
 		for iter.Next(suite.ctx) {
@@ -143,12 +143,12 @@ func (suite *CacheTestSuite) TestScan() {
 	}
 
 	{
-		// with match should return matched keys
+		// return matched keys with test-scan-1*
 		expect := []string{"test-scan-1", "test-scan-10"}
 		// seed data
 		seed(11)
 		// test scan
-		iter, err := suite.cache.Scan(suite.ctx, "*test-scan-1*")
+		iter, err := suite.cache.Scan(suite.ctx, "test-scan-1*")
 		suite.NoError(err)
 		got := []string{}
 		for iter.Next(suite.ctx) {
