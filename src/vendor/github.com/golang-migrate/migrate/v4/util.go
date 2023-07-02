@@ -16,7 +16,6 @@ type MultiError struct {
 // NewMultiError returns an error type holding multiple errors.
 //
 // Deprecated: Use github.com/hashicorp/go-multierror instead
-//
 func NewMultiError(errs ...error) MultiError {
 	compactErrs := make([]error, 0)
 	for _, e := range errs {
@@ -53,7 +52,7 @@ func FilterCustomQuery(u *nurl.URL) *nurl.URL {
 	ux := *u
 	vx := make(nurl.Values)
 	for k, v := range ux.Query() {
-		if len(k) <= 1 || (len(k) > 1 && k[0:2] != "x-") {
+		if len(k) <= 1 || k[0:2] != "x-" {
 			vx[k] = v
 		}
 	}
