@@ -136,9 +136,7 @@
                         name="filterType"
                         [value]="true"
                         [disabled]="policyId >= 0 || onGoing"
-                        [(ngModel)]="isRegexMode"
-                        (change)="disableRegexFilterMode()"
-                        [ngModelOptions]="{ standalone: true }" />
+                        (change)="disableRegexFilterMode()" />
                     <label for="double_star"
                         >Double Star
                         <clr-tooltip class="mode-tooltip">
@@ -165,9 +163,7 @@
                         name="filterType"
                         [value]="false"
                         [disabled]="policyId >= 0 || onGoing"
-                        [(ngModel)]="isRegexMode"
-                        (change)="enableRegexFilterMode()"
-                        [ngModelOptions]="{ standalone: true }" />
+                        (change)="enableRegexFilterMode()" />
                     <label for="regular_expression"
                         >RegularExpression
                         <clr-tooltip class="mode-tooltip">
