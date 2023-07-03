@@ -162,19 +162,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
-        [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            true,
-            false,
-            false,
-            false,
-        ]
+        [false, false, false, false, false, false, true, false, false, false]
     );
     deleteAccessorySub: Subscription;
     copyDigestSub: Subscription;
