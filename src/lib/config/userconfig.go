@@ -255,3 +255,8 @@ func ScannerSkipUpdatePullTime(ctx context.Context) bool {
 	log.Infof("skip_update_pull_time:%v", DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool())
 	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()
 }
+
+// BannerMessage returns the customized banner message
+func BannerMessage(ctx context.Context) string {
+	return DefaultMgr().Get(ctx, common.BannerMessage).GetString()
+}
