@@ -29,6 +29,8 @@ export class AppConfig {
     registry_storage_provider_name: string;
     read_only: boolean;
     show_popular_repo: boolean;
+    banner_message: string;
+    current_time: string;
 
     constructor() {
         // Set default value
@@ -49,5 +51,6 @@ export class AppConfig {
         this.registry_storage_provider_name = '';
         this.read_only = false;
         this.show_popular_repo = false;
+        this.banner_message = '';
     }
 }

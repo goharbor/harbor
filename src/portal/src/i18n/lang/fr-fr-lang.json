@@ -1827,5 +1827,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "Sélectionner le mois, le mois courant est {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "Sélectionner l'année, l'année courante est {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - Sélectionné"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "Banner Message",
+        "MESSAGE_TYPE": "Message type",
+        "CLOSABLE": "Closable",
+        "FROM": "From",
+        "TO": "To",
+        "SUCCESS": "Success",
+        "INFO": "Info",
+        "WARNING": "Warning",
+        "DANGER": "Danger",
+        "ENTER_MESSAGE": "Enter your message here"
     }
 }
