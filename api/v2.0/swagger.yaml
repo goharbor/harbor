@@ -7682,6 +7682,12 @@ definitions:
   GeneralInfo:
     type: object
     properties:
+      banner_message:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The banner message for the UI. It is the stringified result of the banner message object.
+        example: "{\"closable\":true,\"message\":\"your banner message content\",\"type\":\"warning\",\"fromDate\":\"06/19/2023\",\"toDate\":\"06/21/2023\"}"
       current_time:
         type: string
         format: date-time
@@ -8820,6 +8826,9 @@ definitions:
       session_timeout:
         $ref: '#/definitions/IntegerConfigItem'
         description: The session timeout in minutes
+      banner_message:
+        $ref: '#/definitions/StringConfigItem'
+        description: The banner message for the UI.It is the stringified result of the banner message object
   Configurations:
     type: object
     properties:
@@ -9086,6 +9095,11 @@ definitions:
       scanner_skip_update_pulltime:
         type: boolean
         description: Whether or not to skip update pull time for scanner
+        x-omitempty: true
+        x-isnullable: true
+      banner_message:
+        type: string
+        description: The banner message for the UI.It is the stringified result of the banner message object
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:

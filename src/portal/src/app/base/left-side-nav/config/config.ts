@@ -114,6 +114,7 @@ export class Configuration {
     skip_audit_log_database: BoolValueItem;
     session_timeout: NumberValueItem;
     scanner_skip_update_pulltime: BoolValueItem;
+    banner_message: StringValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem('db_auth', true);
         this.primary_auth_mode = new BoolValueItem(false, true);
@@ -190,6 +191,10 @@ export class Configuration {
         this.skip_audit_log_database = new BoolValueItem(false, true);
         this.session_timeout = new NumberValueItem(60, true);
         this.scanner_skip_update_pulltime = new BoolValueItem(false, true);
+        this.banner_message = new StringValueItem(
+            JSON.stringify(new BannerMessage()),
+            true
+        );
     }
 }
 
@@ -208,3 +213,28 @@ export enum Triggers {
     SCHEDULE = 'Schedule',
     EVENT = 'Event',
 }
+
+export class BannerMessage {
+    message: string;
+    closable: boolean;
+    type: string;
+    fromDate: Date;
+    toDate: Date;
+    constructor() {
+        this.closable = false;
+    }
+}
+
+export enum BannerMessageType {
+    SUCCESS = 'success',
+    INFO = 'info',
+    WARNING = 'warning',
+    ERROR = 'danger',
+}
+
+export const BannerMessageI18nMap = {
+    [BannerMessageType.SUCCESS]: 'BANNER_MESSAGE.SUCCESS',
+    [BannerMessageType.INFO]: 'BANNER_MESSAGE.INFO',
+    [BannerMessageType.WARNING]: 'BANNER_MESSAGE.WARNING',
+    [BannerMessageType.ERROR]: 'BANNER_MESSAGE.DANGER',
+};

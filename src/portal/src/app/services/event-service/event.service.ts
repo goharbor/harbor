@@ -81,4 +81,5 @@ export enum HarborEvent {
     REFRESH_EXPORT_JOBS = 'refreshExportJobs',
     DELETE_ACCESSORY = 'deleteAccessory',
     COPY_DIGEST = 'copyDigest',
+    REFRESH_BANNER_MESSAGE = 'refreshBannerMessage',
 }

@@ -1,6 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Configuration } from '../config';
+import {
+    BannerMessage,
+    BannerMessageI18nMap,
+    BannerMessageType,
+    Configuration,
+} from '../config';
 import {
     CURRENT_BASE_HREF,
     getChanges,
@@ -10,13 +15,19 @@ import { ConfigService } from '../config.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { finalize } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../../services/event-service/event.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
     styleUrls: ['./system-settings.component.scss'],
 })
-export class SystemSettingsComponent implements OnInit {
+export class SystemSettingsComponent implements OnInit, OnDestroy {
+    bannerMessageTypes: string[] = Object.values(BannerMessageType);
     onGoing = false;
     downloadLink: string;
     get currentConfig(): Configuration {
@@ -26,18 +37,90 @@ export class SystemSettingsComponent implements OnInit {
     set currentConfig(cfg: Configuration) {
         this.conf.setConfig(cfg);
     }
+
+    messageText: string;
+    messageType: string;
+    messageClosable: boolean;
+    messageFromDate: Date;
+    messageToDate: Date;
+    // the copy of bannerMessage
+    messageTextCopy: string;
+    messageTypeCopy: string;
+    messageClosableCopy: boolean;
+    messageFromDateCopy: Date;
+    messageToDateCopy: Date;
+    bannerRefreshSub: Subscription;
+
     @ViewChild('systemConfigFrom') systemSettingsForm: NgForm;
 
     constructor(
         private appConfigService: AppConfigService,
         private errorHandler: MessageHandlerService,
-        private conf: ConfigService
+        private conf: ConfigService,
+        private event: EventService
     ) {
         this.downloadLink = CURRENT_BASE_HREF + '/systeminfo/getcert';
     }
 
     ngOnInit() {
         this.conf.resetConfig();
+        if (!this.bannerRefreshSub) {
+            this.bannerRefreshSub = this.event.subscribe(
+                HarborEvent.REFRESH_BANNER_MESSAGE,
+                () => {
+                    this.setValueForBannerMessage();
+                }
+            );
+        }
+        if (this.currentConfig.banner_message) {
+            this.setValueForBannerMessage();
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.bannerRefreshSub) {
+            this.bannerRefreshSub.unsubscribe();
+            this.bannerRefreshSub = null;
+        }
+    }
+
+    setValueForBannerMessage() {
+        if (this.currentConfig.banner_message.value) {
+            this.messageText = (
+                JSON.parse(
+                    this.currentConfig.banner_message.value
+                ) as BannerMessage
+            ).message;
+            this.messageType = (
+                JSON.parse(
+                    this.currentConfig.banner_message.value
+                ) as BannerMessage
+            ).type;
+            this.messageClosable = (
+                JSON.parse(
+                    this.currentConfig.banner_message.value
+                ) as BannerMessage
+            ).closable;
+            this.messageFromDate = (
+                JSON.parse(
+                    this.currentConfig.banner_message.value
+                ) as BannerMessage
+            ).fromDate;
+            this.messageToDate = (
+                JSON.parse(
+                    this.currentConfig.banner_message.value
+                ) as BannerMessage
+            ).toDate;
+        } else {
+            this.messageText = null;
+            this.messageType = BannerMessageType.WARNING;
+            this.messageClosable = false;
+        }
+        this.messageTextCopy = this.messageText;
+        this.messageTypeCopy = this.messageType;
+        this.messageClosableCopy = this.messageClosable;
+        this.messageFromDateCopy = this.messageFromDate;
+        this.messageToDateCopy = this.messageToDate;
     }
 
     get editable(): boolean {
@@ -69,7 +152,17 @@ export class SystemSettingsComponent implements OnInit {
     }
 
     public hasChanges(): boolean {
-        return !isEmpty(this.getChanges());
+        return !isEmpty(this.getChanges()) || this.hasBannerMessageChanged();
+    }
+
+    hasBannerMessageChanged() {
+        return (
+            this.messageTextCopy != this.messageText ||
+            this.messageTypeCopy != this.messageType ||
+            this.messageClosableCopy != this.messageClosable ||
+            this.messageFromDateCopy != this.messageFromDate ||
+            this.messageToDateCopy != this.messageToDate
+        );
     }
 
     public getChanges() {
@@ -96,7 +189,8 @@ export class SystemSettingsComponent implements OnInit {
                 prop === 'audit_log_forward_endpoint' ||
                 prop === 'skip_audit_log_database' ||
                 prop === 'session_timeout' ||
-                prop === 'scanner_skip_update_pulltime'
+                prop === 'scanner_skip_update_pulltime' ||
+                prop === 'banner_message'
             ) {
                 changes[prop] = allChanges[prop];
             }
@@ -128,6 +222,19 @@ export class SystemSettingsComponent implements OnInit {
      */
     public save(): void {
         let changes = this.getChanges();
+        if (this.hasBannerMessageChanged()) {
+            const bm = new BannerMessage();
+            bm.message = this.messageText;
+            bm.type = this.messageType;
+            bm.closable = this.messageClosable;
+            bm.fromDate = this.messageFromDate;
+            bm.toDate = this.messageToDate;
+            if (bm.message) {
+                changes['banner_message'] = JSON.stringify(bm);
+            } else {
+                changes['banner_message'] = '';
+            }
+        }
         if (!isEmpty(changes)) {
             this.onGoing = true;
             this.conf
@@ -183,5 +290,9 @@ export class SystemSettingsComponent implements OnInit {
         if (!e?.target?.value) {
             this.currentConfig.skip_audit_log_database.value = false;
         }
+    }
+
+    translateMessageType(type: string): string {
+        return BannerMessageI18nMap[type] || type;
     }
 }

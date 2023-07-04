@@ -15,6 +15,10 @@ import { MessageService } from '../../../shared/components/global-message/messag
 import { Message } from '../../../shared/components/global-message/message';
 import { JobServiceDashboardHealthCheckService } from '../../left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
 import { AppConfigService } from '../../../services/app-config.service';
+import {
+    BannerMessage,
+    BannerMessageType,
+} from '../../left-side-nav/config/config';
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
 @Component({
@@ -184,5 +188,80 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
 
     isLogin(): boolean {
         return !!this.session.getCurrentUser();
+    }
+
+    hasValidBannerMessage(): boolean {
+        if (
+            this.appConfigService.getConfig()?.banner_message &&
+            this.appConfigService.getConfig()?.current_time
+        ) {
+            const current = new Date(
+                this.appConfigService.getConfig()?.current_time
+            );
+            const bm = JSON.parse(
+                this.appConfigService.getConfig()?.banner_message
+            ) as BannerMessage;
+            if (bm?.fromDate && bm?.toDate) {
+                return (
+                    new Date(current) <= new Date(bm.toDate) &&
+                    new Date(current) >= new Date(bm.fromDate)
+                );
+            }
+            if (bm?.fromDate && !bm?.toDate) {
+                return new Date(current) >= new Date(bm.fromDate);
+            }
+
+            if (!bm?.fromDate && bm?.toDate) {
+                return new Date(current) <= new Date(bm.toDate);
+            }
+        }
+        return false;
+    }
+
+    getBannerMessage() {
+        if (
+            this.appConfigService.getConfig()?.banner_message &&
+            (
+                JSON.parse(
+                    this.appConfigService.getConfig()?.banner_message
+                ) as BannerMessage
+            )?.message
+        ) {
+            return (
+                JSON.parse(
+                    this.appConfigService.getConfig()?.banner_message
+                ) as BannerMessage
+            )?.message;
+        }
+        return null;
+    }
+
+    getBannerMessageType() {
+        if (
+            this.appConfigService.getConfig()?.banner_message &&
+            (
+                JSON.parse(
+                    this.appConfigService.getConfig()?.banner_message
+                ) as BannerMessage
+            )?.type
+        ) {
+            return (
+                JSON.parse(
+                    this.appConfigService.getConfig()?.banner_message
+                ) as BannerMessage
+            )?.type;
+        }
+        return BannerMessageType.WARNING;
+    }
+
+    getBannerMessageClosable(): boolean {
+        if (this.appConfigService.getConfig()?.banner_message) {
+            return (
+                JSON.parse(
+                    this.appConfigService.getConfig()?.banner_message
+                ) as BannerMessage
+            )?.closable;
+        }
+        return true;
     }
 }
