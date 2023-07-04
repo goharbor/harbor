@@ -20,3 +20,5 @@ export const YES: string = 'TAG_RETENTION.YES';
 export const NO: string = 'TAG_RETENTION.NO';
 
 export const REFRESH_STATUS_TIME_DIFFERENCE: number = 5000;
+
+export const WORKER_OPTIONS: number[] = [1, 2, 3, 4, 5];

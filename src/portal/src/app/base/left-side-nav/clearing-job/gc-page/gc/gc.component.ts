@@ -10,7 +10,9 @@ import { GcHistoryComponent } from './gc-history/gc-history.component';
 import {
     JOB_STATUS,
     REFRESH_STATUS_TIME_DIFFERENCE,
+    WORKER_OPTIONS,
 } from '../../clearing-job-interfact';
+import { clone } from '../../../../../shared/units/utils';
 
 const ONE_MINUTE = 60000;
 
@@ -27,6 +29,8 @@ export class GcComponent implements OnInit, OnDestroy {
     @ViewChild(CronScheduleComponent)
     cronScheduleComponent: CronScheduleComponent;
     shouldDeleteUntagged: boolean;
+    workerNum: number = 1;
+    workerOptions: number[] = clone(WORKER_OPTIONS);
     dryRunOnGoing: boolean = false;
 
     lastCompletedTime: string;
@@ -116,8 +120,10 @@ export class GcComponent implements OnInit, OnDestroy {
             this.shouldDeleteUntagged = JSON.parse(
                 gcHistory.job_parameters
             ).delete_untagged;
+            this.workerNum = +JSON.parse(gcHistory.job_parameters).workers;
         } else {
             this.shouldDeleteUntagged = false;
+            this.workerNum = 1;
         }
     }
 
@@ -132,6 +138,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         delete_untagged: this.shouldDeleteUntagged,
+                        workers: +this.workerNum,
                         dry_run: false,
                     },
                     schedule: {
@@ -157,6 +164,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         delete_untagged: this.shouldDeleteUntagged,
+                        workers: +this.workerNum,
                         dry_run: true,
                     },
                     schedule: {
@@ -188,6 +196,7 @@ export class GcComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             delete_untagged: this.shouldDeleteUntagged,
+                            workers: +this.workerNum,
                             dry_run: false,
                         },
                         schedule: {
@@ -212,6 +221,7 @@ export class GcComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             delete_untagged: this.shouldDeleteUntagged,
+                            workers: +this.workerNum,
                             dry_run: false,
                         },
                         schedule: {
