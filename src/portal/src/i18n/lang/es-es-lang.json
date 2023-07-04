@@ -1233,7 +1233,8 @@
         "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
         "DELETE_BLOB": "{{blob}} blob(s) deleted",
         "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
-        "FREE_UP_SIZE": "{{size}} space freed up"
+        "FREE_UP_SIZE": "{{size}} space freed up",
+        "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
