@@ -331,6 +331,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			"IMAGE_GC":                          (*legacy.GarbageCollectionScheduler)(nil),
 			"IMAGE_SCAN_ALL":                    (*legacy.ScanAllScheduler)(nil),
 			job.SystemArtifactCleanupVendorType: (*systemartifact.Cleanup)(nil),
+			job.ExecSweepVendorType:             (*task.SweepJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

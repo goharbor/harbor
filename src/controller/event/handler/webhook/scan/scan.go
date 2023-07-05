@@ -18,8 +18,6 @@ import (
 	"context"
 	"time"
 
-	o "github.com/beego/beego/v2/client/orm"
-
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
@@ -27,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -66,17 +63,17 @@ func (si *Handler) Handle(ctx context.Context, value interface{}) error {
 	}
 
 	// Get project
-	prj, err := project.Ctl.Get(orm.Context(), e.Artifact.NamespaceID, project.Metadata(true))
+	prj, err := project.Ctl.Get(ctx, e.Artifact.NamespaceID, project.Metadata(true))
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}
 
-	payload, err := constructScanImagePayload(e, prj)
+	payload, err := constructScanImagePayload(ctx, e, prj)
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}
 
-	err = util.SendHookWithPolicies(policies, payload, e.EventType)
+	err = util.SendHookWithPolicies(ctx, policies, payload, e.EventType)
 	if err != nil {
 		return errors.Wrap(err, "scan preprocess handler")
 	}
@@ -89,7 +86,7 @@ func (si *Handler) IsStateful() bool {
 	return false
 }
 
-func constructScanImagePayload(event *event.ScanImageEvent, project *proModels.Project) (*model.Payload, error) {
+func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent, project *proModels.Project) (*model.Payload, error) {
 	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
 		repoType = proModels.ProjectPublic
@@ -120,8 +117,6 @@ func constructScanImagePayload(event *event.ScanImageEvent, project *proModels.P
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
 	}
-
-	ctx := orm.NewContext(context.TODO(), o.NewOrm())
 
 	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest, nil)
 	if err != nil {

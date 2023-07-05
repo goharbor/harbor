@@ -159,4 +159,12 @@ describe('ListReplicationRuleComponent (inline template)', () => {
             fixture.nativeElement.querySelector('.modal-body');
         expect(body).toBeFalsy();
     });
+
+    it('the length of hide array should equal to the number of column', async () => {
+        comp.loading = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const cols = fixture.nativeElement.querySelectorAll('clr-dg-column');
+        expect(cols.length).toEqual(comp.hiddenArray.length);
+    });
 });

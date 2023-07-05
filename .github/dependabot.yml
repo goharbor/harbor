@@ -13,7 +13,6 @@ updates:
       interval: "daily"
     labels:
       - "release-note/infra"
-      - "release-note/update"
     assignees:
       - "OrlinVasilev"
     reviewers:

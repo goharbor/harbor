@@ -20,7 +20,6 @@ describe('RepositoryComponentGridview (inline template)', () => {
     let compRepo: RepositoryGridviewComponent;
     let fixtureRepo: ComponentFixture<RepositoryGridviewComponent>;
     let mockSystemInfo: SystemInfo = {
-        with_notary: true,
         with_admiral: false,
         admiral_endpoint: 'NA',
         auth_mode: 'db_auth',

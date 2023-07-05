@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-    CanActivate,
-    ActivatedRouteSnapshot,
-    RouterStateSnapshot,
-} from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { UserPrivilegeServeItem } from 'src/app/shared/services/interface';
 import { MemberPermissionGuard } from '../../../shared/router-guard/member-permission-guard-activate.service';
@@ -11,7 +7,7 @@ import { MemberPermissionGuard } from '../../../shared/router-guard/member-permi
 @Injectable({
     providedIn: 'root',
 })
-export class TagFeatureGuardService implements CanActivate {
+export class TagFeatureGuardService {
     constructor(private memberPermissionGuard: MemberPermissionGuard) {}
 
     canActivate(

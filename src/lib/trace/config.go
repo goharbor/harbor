@@ -171,7 +171,7 @@ func NewConfig(opts ...Option) Config {
 	return c
 }
 
-// GetConfig returns the global configuration for trace
+// GetGlobalConfig returns the global configuration for trace
 func GetGlobalConfig() Config {
 	return C
 }

@@ -130,7 +130,7 @@
         "RENAME_SUCCESS": "Umbenennen erfolgreich!",
         "RENAME_CONFIRM_INFO": "Warnung, ändern des Namens auf admin@harbor.local, dies kann nicht rückgängig gemacht werden.",
         "CLI_PASSWORD": "CLI Secret",
-        "CLI_PASSWORD_TIP": "Das CLI Secret kann als Passwort mittels docker/helm cli verwendet werden, um auf Harbor zuzugreifen.",
+        "CLI_PASSWORD_TIP": "Das CLI-Secret kann als Passwort für den Docker- oder Helm-Client verwendet werden. Bei aktiviertem OIDC-Autorisierungsmodus empfehlen wir dringend die Verwendung von Robot-Zugängen, da CLI-Secrets von der Gültigkeit des ID-Tokens abhängen und regelmäßiges Anmelden über die Benutzeroberfläche erfordern.",
         "COPY_SUCCESS": "Kopieren erfolgreich",
         "COPY_ERROR": "Kopieren fehlgeschlagen",
         "ADMIN_CLI_SECRET_BUTTON": "ERZEUGE SECRET",
@@ -247,10 +247,10 @@
         "INLINE_HELP_PUBLIC": "Wenn ein Projekt öffentlich ist, hat jeder lesenden Zugriff auf die Repositories innerhalb des Projekts. Der Nutzer muss nicht \"docker login\" vor dem Pull eines Images durchführen.",
         "OF": "von",
         "COUNT_QUOTA": "Anzahlbeschränkung",
-        "STORAGE_QUOTA": "Speicherbeschränkung",
+        "STORAGE_QUOTA": "Project quota limits",
         "COUNT_QUOTA_TIP": "Bitte einen Wert zwischen '1' & '100.000.000' wählen. '-1' für unbegrenzt.",
         "STORAGE_QUOTA_TIP": "Die obere Grenze der Speicherbeschränkung akzeptiert ausschließlich Integer-Werte, begrenzt auf '1024TB'. '-1' für keine Speicherbeschränkung",
-        "QUOTA_UNLIMIT_TIP": "Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
+        "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
@@ -348,7 +348,7 @@
         "ENABLED_STATE": "Aktivierungszustand",
         "NUMBER_REQUIRED": "Feld ist erforderlich und sollte ein Integer größer 0 sein.",
         "DESCRIPTION": "Beschreibung",
-        "CREATETION": "Erstellt am",
+        "CREATION": "Erstellt am",
         "EXPIRATION": "Ablaufdatum",
         "TOKEN_EXPIRATION": "Robot Token Ablauf (Tage)",
         "ACTION": "Aktion",
@@ -431,7 +431,8 @@
         "EVENT_TYPE_REQUIRED": "Mindestens ein Event Typ ist erforderlich",
         "PAYLOAD_FORMAT": "Payload Format",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "Payload Data"
+        "PAYLOAD_DATA": "Payload Data",
+        "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
     },
     "GROUP": {
         "GROUP": "Gruppe",
@@ -832,7 +833,7 @@
         "ROOT_CERT_LINK": "Download",
         "REGISTRY_CERTIFICATE": "Registry Zertifikat",
         "NO_CHANGE": "Speichern abgebrochen, da nichts verändert wurde",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
@@ -855,7 +856,7 @@
             "HOURLY_CRON": "Läuft einmal am Anfang jeder Stunde. Identisch zu 0 0 * * * *.",
             "WEEKLY_CRON": "Läuft wöchentlich um Mitternacht zwischen Sa/So. Identisch zu 0 0 0 * * 0.",
             "DAILY_CRON": "Läuft täglich um Mitternacht. Identisch zu 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1034,6 +1035,7 @@
     "PUSH_IMAGE": {
         "TITLE": "Push Befehl",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "Paketiere ein Chart für dieses Projekt:",
@@ -1042,7 +1044,8 @@
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
         "TAG_COMMAND": "Tag ein Image für dieses Projekt:",
         "PUSH_COMMAND": "Push ein Image für dieses Projekt:",
-        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
+        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",
@@ -1057,7 +1060,18 @@
         "UNTAGGED": "Untagged",
         "ALL": "Alle",
         "PLACEHOLDER": "Keine Artefakte gefunden!",
-        "SCAN_UNSUPPORTED": "Nicht unterstützt"
+        "SCAN_UNSUPPORTED": "Nicht unterstützt",
+        "SUMMARY": "Zusammenfassung",
+        "DEPENDENCIES": "Dependencies",
+        "VALUES": "Values",
+        "NAME": "Name",
+        "REPO": "Repository",
+        "OF": "von",
+        "VERSION": "Version",
+        "NO_README": "Kein Readme für dieses Chart verfügbar.",
+        "ITEMS": "Einträge",
+        "SHOW_KV": "Key/Value-Paare",
+        "SHOW_YAML": "YAML Datei"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Erstellt am",
@@ -1115,14 +1129,14 @@
         "DELETE": "Löschen",
         "OF": "von",
         "PROJECT_QUOTA_DEFAULT_ARTIFACT": "Standard Artefaktanzahl pro Projekt",
-        "PROJECT_QUOTA_DEFAULT_DISK": "Standard Speicherplatz pro Projekt",
+        "PROJECT_QUOTA_DEFAULT_DISK": "Default quota space per project",
         "EDIT_PROJECT_QUOTAS": "Projekt-Begrenzung ändern",
         "EDIT_DEFAULT_PROJECT_QUOTAS": "Ändern der Standard Projekt-Begrenzung",
         "SET_QUOTAS": "Setze die Projekt-Begrenzung für das Projekt '{{params}}'",
         "SET_DEFAULT_QUOTAS": "Setze die Standard Projekt-Begrenzung für neue Projekte",
         "COUNT_QUOTA": "Artefakt Anzahl",
         "COUNT_DEFAULT_QUOTA": "Standard Artefakt Anzahl",
-        "STORAGE_QUOTA": "Speicherbelegung",
+        "STORAGE_QUOTA": "Project quota limits",
         "STORAGE_DEFAULT_QUOTA": "Standard Speicherbelegung",
         "SAVE_SUCCESS": "Ändern der Begrenzung erfolgreich",
         "UNLIMITED": "unlimitiert",
@@ -1217,7 +1231,13 @@
         "PARAMETERS": "Parameter",
         "DELETE_UNTAGGED": "Erlaube Speicherbereinigung auf Artefakte ohne Tag",
         "EXPLAIN": "Speicherbereinigung (Garbage Collection / GC) ist eine rechenintensive Operation, die die Registry-Leistung beeinflussen kann",
-        "DRY_RUN_SUCCESS": "Probelauf erfolgreich gestartet"
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
+        "DRY_RUN_SUCCESS": "Probelauf erfolgreich gestartet",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+        "DELETE_BLOB": "{{blob}} blob(s) deleted",
+        "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+        "FREE_UP_SIZE": "{{size}} space freed up",
+        "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefakt erfolgreich kopiert",
@@ -1786,7 +1806,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSIEREN — Pausiert die Ausführung aller Pläne.",
         "SCHEDULE_RESUME_BTN_INFO": "FORTSETZEN — Setzt die Ausführung aller Pläne fort.",
         "WORKER_FREE_BTN_INFO": "Halte den aktuell laufenden Job an um den Arbeiter zu befreien.",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",
@@ -1826,7 +1850,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",
@@ -1838,5 +1861,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "Select month, the current month is {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "Select year, the current year is {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - Selected"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "Banner Message",
+        "MESSAGE_TYPE": "Message type",
+        "CLOSABLE": "Closable",
+        "FROM": "From",
+        "TO": "To",
+        "SUCCESS": "Success",
+        "INFO": "Info",
+        "WARNING": "Warning",
+        "DANGER": "Danger",
+        "ENTER_MESSAGE": "Enter your message here"
     }
 }

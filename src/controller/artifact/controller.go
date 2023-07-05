@@ -19,6 +19,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -51,7 +52,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/signature"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
@@ -121,7 +121,6 @@ func NewController() Controller {
 		artMgr:       pkg.ArtifactMgr,
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,
-		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
 		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
@@ -136,7 +135,6 @@ type controller struct {
 	artMgr       artifact.Manager
 	artrashMgr   artifactrash.Manager
 	blobMgr      blob.Manager
-	sigMgr       signature.Manager
 	labelMgr     label.Manager
 	immutableMtr match.ImmutableTagMatcher
 	regCli       registry.Client
@@ -156,12 +154,12 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 	}
 	if option != nil {
 		for _, tag := range option.Tags {
-			if err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
+			if _, err = c.tagCtl.Ensure(ctx, artifact.RepositoryID, artifact.ID, tag); err != nil {
 				return false, 0, err
 			}
 		}
 		for _, acc := range option.Accs {
-			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
+			if err = c.accessoryMgr.Ensure(ctx, artifact.Digest, artifact.RepositoryName, artifact.ID, acc.ArtifactID, acc.Size, acc.Digest, acc.Type); err != nil {
 				return false, 0, err
 			}
 		}
@@ -487,6 +485,21 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 
 	// copy accessory if contains any
 	for _, acc := range srcArt.Accessories {
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactRepo": srcRepo, "SubjectArtifactDigest": acc.GetData().Digest}))
+		if err != nil {
+			return 0, err
+		}
+		// copy the fork which root is the accessory self with a temp array
+		// to avoid infinite recursion, disable this part in UT.
+		if os.Getenv("UTTEST") != "true" {
+			if len(accs) > 0 {
+				tmpDstAccs := make([]*accessorymodel.AccessoryData, 0)
+				_, err = c.copyDeeply(ctx, srcRepo, acc.GetData().Digest, dstRepo, true, false, &tmpDstAccs)
+				if err != nil {
+					return 0, err
+				}
+			}
+		}
 		dstAcc := &accessorymodel.AccessoryData{
 			Digest: acc.GetData().Digest,
 			Type:   acc.GetData().Type,
@@ -567,8 +580,8 @@ func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int
 				LabelID:    labelID,
 				Ctx:        ctx,
 			}
-			if err := e.Build(metaData); err == nil {
-				if err := e.Publish(); err != nil {
+			if err := e.Build(ctx, metaData); err == nil {
+				if err := e.Publish(ctx); err != nil {
 					log.Error(errors.Wrap(err, "mark label to resource handler: event publish"))
 				}
 			} else {
@@ -722,7 +735,7 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 }
 
 func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
-	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest}))
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
 	if err != nil {
 		log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
 		return

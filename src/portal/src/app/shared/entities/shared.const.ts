@@ -33,6 +33,7 @@ export const dismissInterval = 10 * 1000;
 export const httpStatusCode = {
     Unauthorized: 401,
     Forbidden: 403,
+    AppLevelWarning: 503,
 };
 export const enum ConfirmationTargets {
     EMPTY,
@@ -367,7 +368,6 @@ export const stringsForClarity: Partial<ClrCommonStrings> = {
     loading: 'CLARITY.LOADING',
     // Date Picker
     datepickerDialogLabel: 'CLARITY.DATE_PICKER_DIALOG_LABEL',
-    datepickerToggle: 'CLARITY.DATE_PICKER_TOGGLE',
     datepickerToggleChooseDateLabel:
         'CLARITY.DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL',
     datepickerToggleChangeDateLabel:

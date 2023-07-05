@@ -14,7 +14,7 @@ import (
 func TestMaxFails(t *testing.T) {
 	rep := &WebhookJob{}
 	t.Run("default max fails", func(t *testing.T) {
-		assert.Equal(t, uint(10), rep.MaxFails())
+		assert.Equal(t, uint(3), rep.MaxFails())
 	})
 
 	t.Run("user defined max fails", func(t *testing.T) {
@@ -24,7 +24,7 @@ func TestMaxFails(t *testing.T) {
 
 	t.Run("user defined wrong max fails", func(t *testing.T) {
 		t.Setenv(maxFails, "abc")
-		assert.Equal(t, uint(10), rep.MaxFails())
+		assert.Equal(t, uint(3), rep.MaxFails())
 	})
 }
 
@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          ts.URL,
-		"auth_header":      "auth_test",
+		"header":           `{"Authorization": ["auth_test"]}`,
 	}
 	// test correct webhook response
 	assert.Nil(t, rep.Run(ctx, params))
@@ -77,7 +77,7 @@ func TestRun(t *testing.T) {
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          tsWrong.URL,
-		"auth_header":      "auth_test",
+		"header":           `{"Authorization": ["auth_test"]}`,
 	}
 	// test incorrect webhook response
 	assert.NotNil(t, rep.Run(ctx, paramsWrong))

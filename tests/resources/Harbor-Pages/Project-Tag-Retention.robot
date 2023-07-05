@@ -19,7 +19,6 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-
 Add A Tag Retention Rule
     Retry Element Click  xpath=${project_tag_retention_add_rule_xpath}
     Retry Element Click  xpath=${project_tag_retention_template_xpath}
@@ -85,10 +84,18 @@ Set Daily Schedule
     Retry Element Click   xpath=${project_tag_retention_schedule_ok_xpath}
     Retry Wait Until Page Contains Element  xpath=${project_tag_retention_span_daily_xpath}
 
+Set Tag Retention Policy Schedule
+    [Arguments]  ${type}  ${cron}=${null}
+    Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_edit_schedule_xpath}  Retry Wait Element Visible  ${project_tag_retention_schedule_cancel_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_select_policy_xpath}  Retry Element Click  //option[@value='${type}']
+    Run Keyword If  '${type}' == 'Custom'  Retry Text Input  ${project_tag_retention_schedule_cron_input}  ${cron}
+    Run Keyword If  '${type}' == 'None'  Retry Element Click  ${project_tag_retention_config_save_xpath}
+    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  ${project_tag_retention_config_save_xpath}  Retry Button Click  ${project_tag_retention_schedule_ok_xpath}
+
 Execute Result Should Be
     [Arguments]  ${image}  ${result}
     FOR  ${idx}  IN RANGE  0  20
-        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=//div[contains(@role, 'grid')]//div[contains(@class, 'datagrid-row-master') and contains(@role, 'row')]//clr-datagrid//div[contains(@role, 'grid')]//div[contains(@class, 'datagrid-row-master') and contains(@role, 'row')]//div[contains(@class, 'datagrid-row-scrollable') and contains(., '${result}') and contains(., '${image}')]
+        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  //app-tag-retention-tasks//clr-datagrid//clr-dg-row[contains(., '${image}') and contains(., '${result}')]
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  1
         Retry Element Click  ${project_tag_retention_refresh_xpath}
@@ -101,19 +108,20 @@ Execute Result Should Be
 Execute Dry Run
     [Arguments]  ${image}  ${result}
     Retry Element Click  xpath=${project_tag_retention_dry_run_xpath}
-    Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
-    Sleep    5
-    Retry Element Click  xpath=${project_tag_retention_record_yes_xpath}
-    # memcached:123 should be deleted and hello-world:latest should be retained
+    Retry Button Click  //clr-expandable-animation//button[1]
     Execute Result Should Be  ${image}  ${result}
+    ${execution_id}=  Get Text  ${project_tag_retention_latest_execution_id_xpath}
+    [Return]  ${execution_id}
 
 Execute Run
     [Arguments]  ${image}  ${result}=${null}
     Retry Element Click  xpath=${project_tag_retention_run_now_xpath}
     Retry Element Click  xpath=${project_tag_retention_execute_run_xpath}
-    Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_no_xpath}
-    Sleep    5
-    Retry Element Click  xpath=${project_tag_retention_record_no_xpath}
-    # memcached:123 should be deleted and hello-world:latest should be retained
+    Retry Button Click  //clr-expandable-animation//button
     Run Keyword If  '${result}' != '${null}'  Execute Result Should Be  ${image}  ${result}
+    ${execution_id}=  Get Text  ${project_tag_retention_latest_execution_id_xpath}
+    [Return]  ${execution_id}
 
+Check Retention Execution
+    [Arguments]  ${execution_id}  ${status}  ${dry_run}
+    Retry Wait Until Page Contains Element  //clr-datagrid//clr-dg-row//div[contains(., '${execution_id}') and contains(., '${status}') and contains(., '${dry_run}')]

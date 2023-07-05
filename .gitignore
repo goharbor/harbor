@@ -41,6 +41,8 @@ src/portal/src/lib/coverage
 src/portal/ng-swagger-gen
 src/portal/docker-build/nginx.conf
 src/portal/.angular
+src/portal/cypress/videos
+src/portal/cypress/screenshots
 **/npm*.log
 
 **/*ngsummary.json

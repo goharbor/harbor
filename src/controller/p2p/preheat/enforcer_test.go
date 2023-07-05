@@ -125,7 +125,6 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		Name:         "library",
 		CVEAllowlist: models2.CVEAllowlist{},
 		Metadata: map[string]string{
-			proMetaKeyContentTrust:  "true",
 			proMetaKeyVulnerability: "true",
 			proMetaKeySeverity:      "high",
 		},
@@ -260,12 +259,10 @@ func mockArtifacts() []*car.Artifact {
 					Tag: ta.Tag{
 						Name: "prod",
 					},
-					Signed: true,
 				}, {
 					Tag: ta.Tag{
 						Name: "stage",
 					},
-					Signed: false,
 				},
 			},
 			Labels: []*model.Label{
@@ -288,12 +285,10 @@ func mockArtifacts() []*car.Artifact {
 					Tag: ta.Tag{
 						Name: "latest",
 					},
-					Signed: true,
 				}, {
 					Tag: ta.Tag{
 						Name: "stage",
 					},
-					Signed: true,
 				},
 			},
 			Labels: []*model.Label{

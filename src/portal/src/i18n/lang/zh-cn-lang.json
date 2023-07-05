@@ -129,7 +129,7 @@
         "ADMIN_RENAME_BUTTON": "更改用户名",
         "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 您确定更改吗?",
         "CLI_PASSWORD": "CLI密码",
-        "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
+        "CLI_PASSWORD_TIP": "CLI 密码可用作访问 Docker 或 Helm 客户端的密码。 启用 OIDC 授权模式后，我们强烈建议您使用机器人帐户来访问Docker 或 Helm 客户端，因为 CLI 密码的有效性取决于用户的 ID 令牌，这意味着您需要定期登录 UI 来刷新令牌。",
         "COPY_SUCCESS": "复制成功",
         "COPY_ERROR": "复制失败",
         "ADMIN_CLI_SECRET_BUTTON": "生成新的CLI密码",
@@ -246,10 +246,10 @@
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
         "COUNT_QUOTA": "存储数量",
-        "STORAGE_QUOTA": "存储容量",
+        "STORAGE_QUOTA": "项目配额限制",
         "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
-        "STORAGE_QUOTA_TIP": "存储配额的上限仅采用整数值，上限为1024TB。输入“-1”作为无限制配额。",
-        "QUOTA_UNLIMIT_TIP": "如果您想要对存储不设置上限，请输入-1。",
+        "STORAGE_QUOTA_TIP": "项目配额的上限仅采用整数值，上限为1024TB。输入“-1”作为无限制配额。",
+        "QUOTA_UNLIMIT_TIP": "项目可以使用的最大逻辑空间。如果您想要不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
         "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
@@ -345,7 +345,7 @@
         "TOKEN": "令牌",
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
         "ENABLED_STATE": "启用状态",
-        "CREATETION": "创建时间",
+        "CREATION": "创建时间",
         "EXPIRATION": "过期时间",
         "NUMBER_REQUIRED": "此项为必填项且为不为0的整数。",
         "TOKEN_EXPIRATION": "机器人账户令牌过期时间(天)",
@@ -430,7 +430,8 @@
         "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
         "PAYLOAD_FORMAT": "载荷形式",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "载荷数据"
+        "PAYLOAD_DATA": "载荷数据",
+        "SLACK_RATE_LIMIT": "请注意 Slack 的速率限制"
     },
     "GROUP": {
         "GROUP": "组",
@@ -510,7 +511,6 @@
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
         "BOTH": "全部",
-        "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
         "TASK_ID": "任务ID",
@@ -536,7 +536,6 @@
         "REPLICATION_TITLE": "复制规则确认",
         "REPLICATION_SUMMARY": "确认复制规则 {{param}}?",
         "DELETION_SUMMARY_FAILURE": "有 pending/running/retrying 状态，不能删除",
-        "REPLICATE_SUMMARY_FAILURE": "有 pending/running 状态，不能删除",
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
@@ -857,7 +856,7 @@
             "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 0 * * 0",
             "DAILY_CRON": "每天午夜运行一次。相当于 0 0 0 * * *",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "当镜像是由扫描器拉取时，不更新该镜像的拉取时间属性。"
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "镜像被扫描后，不更新该镜像的拉取时间属性。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1035,6 +1034,7 @@
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "在项目中打包 chart",
@@ -1043,7 +1043,8 @@
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。",
+        "COPY_PULL_COMMAND": "复制拉取命令"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1058,7 +1059,18 @@
         "UNTAGGED": "不含有 Tag",
         "ALL": "所有",
         "PLACEHOLDER": "未发现任何 artifacts!",
-        "SCAN_UNSUPPORTED": "不支持扫描"
+        "SCAN_UNSUPPORTED": "不支持扫描",
+        "SUMMARY": "概要",
+        "DEPENDENCIES": "依赖",
+        "VALUES": "取值",
+        "NAME": "名称",
+        "REPO": "仓库",
+        "OF": "共计",
+        "VERSION": "版本",
+        "NO_README": "此Chart未提供README文件",
+        "ITEMS": "条记录",
+        "SHOW_KV": "展示健值对",
+        "SHOW_YAML": "展示YAML文件"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
@@ -1116,14 +1128,14 @@
         "DELETE": "删除",
         "OF": "of",
         "PROJECT_QUOTA_DEFAULT_ARTIFACT": "每个项目的默认项目计数",
-        "PROJECT_QUOTA_DEFAULT_DISK": "每个项目的默认磁盘空间",
+        "PROJECT_QUOTA_DEFAULT_DISK": "每个项目的默认配额空间",
         "EDIT_PROJECT_QUOTAS": "修改项目容量",
         "EDIT_DEFAULT_PROJECT_QUOTAS": "修改项目默认配额",
         "SET_QUOTAS": "设置项目“{{params}}”的项目配额",
         "SET_DEFAULT_QUOTAS": "创建新项目时设置默认项目配额",
         "COUNT_QUOTA": "配额数量",
         "COUNT_DEFAULT_QUOTA": "默认配额数量",
-        "STORAGE_QUOTA": "配额存储",
+        "STORAGE_QUOTA": "项目配额限制",
         "STORAGE_DEFAULT_QUOTA": "默认配额存储",
         "SAVE_SUCCESS": "项目容量修改成功",
         "UNLIMITED": "不设限",
@@ -1216,7 +1228,13 @@
         "PARAMETERS": "参数",
         "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
         "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
-        "DRY_RUN_SUCCESS": "触发模拟运行成功"
+        "EXPLAIN_TIME_WINDOW": "在最近的两小时（默认窗口期）内被推送的 Artifacts 不会被当做垃圾回收的目标",
+        "DRY_RUN_SUCCESS": "触发模拟运行成功",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除",
+        "DELETE_BLOB": "{{blob}}个 blob(s) 已删除",
+        "DELETE_MANIFEST": "{{manifest}}个 manifest(s) 已删除",
+        "FREE_UP_SIZE": "{{size}}的空间已清理",
+        "WORKERS_TOOLTIP": "设置可并行执行垃圾回收任务的工作者数量，默认值为1。"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
@@ -1785,7 +1803,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "暂停 — 暂停所有定时任务，暂停中的定时任务将不会被执行。",
         "SCHEDULE_RESUME_BTN_INFO": "重启 — 重启所有定时任务，定时任务在触发时会正常执行。",
         "WORKER_FREE_BTN_INFO": "停下选中的工作者当前正在执行的任务以便释放该工作者，被释放的工作者会继续执行其他任务。",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "检测到有任务已等待执行超过 24 小时。 请检查任务中心的",
+        "WAITING_TOO_LONG_2": "仪表盘。",
+        "WAITING_TOO_LONG_3": "更多详情，请参考 ",
+        "WAITING_TOO_LONG_4": "Wiki。"
     },
     "CLARITY": {
         "OPEN": "打开",
@@ -1825,7 +1847,6 @@
         "SIGNPOST_CLOSE": "指示牌关闭",
         "LOADING": "加载中",
         "DATE_PICKER_DIALOG_LABEL": "选择日期",
-        "DATE_PICKER_TOGGLE": "切换日期选择器",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "选择日期",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "选择日期, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "前一月",
@@ -1837,5 +1858,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "选择月, 当前月是 {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "选择年, 当前年是 {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "已选择 - {FULL_DATE}"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "横幅消息",
+        "MESSAGE_TYPE": "消息类型",
+        "CLOSABLE": "可关闭",
+        "FROM": "从",
+        "TO": "至",
+        "SUCCESS": "成功",
+        "INFO": "信息",
+        "WARNING": "警告",
+        "DANGER": "危险",
+        "ENTER_MESSAGE": "请输入消息内容"
     }
 }

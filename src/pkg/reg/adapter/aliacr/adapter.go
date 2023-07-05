@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package aliacr
 
 import (
@@ -33,7 +47,9 @@ func init() {
 // example:
 // https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-var regRegion = regexp.MustCompile(`https://(registry|cr)\.([\w\-]+)\.aliyuncs\.com`)
+// https://registry-vpc.%s.aliyuncs.com
+// https://registry-internal.%s.aliyuncs.com
+var regRegion = regexp.MustCompile(`https://(registry|cr|registry-vpc|registry-internal)\.([\w\-]+)\.aliyuncs\.com`)
 
 func getRegion(url string) (region string, err error) {
 	if url == "" {
@@ -52,8 +68,15 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	// fix url (allow user input cr service url)
-	registry.URL = fmt.Sprintf(registryEndpointTpl, region)
+	switch true {
+	case strings.Contains(registry.URL, "registry-vpc"):
+		registry.URL = fmt.Sprintf(registryVPCEndpointTpl, region)
+	case strings.Contains(registry.URL, "registry-internal"):
+		registry.URL = fmt.Sprintf(registryInternalEndpointTpl, region)
+	default:
+		// fix url (allow user input cr service url)
+		registry.URL = fmt.Sprintf(registryEndpointTpl, region)
+	}
 	realm, service, err := util.Ping(registry)
 	if err != nil {
 		return nil, err
@@ -152,6 +175,14 @@ func getAdapterInfo() *model.AdapterPattern {
 		endpoints = append(endpoints, &model.Endpoint{
 			Key:   e,
 			Value: fmt.Sprintf("https://registry.%s.aliyuncs.com", e),
+		})
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e + "-vpc",
+			Value: fmt.Sprintf("https://registry-vpc.%s.aliyuncs.com", e),
+		})
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e + "-internal",
+			Value: fmt.Sprintf("https://registry-internal.%s.aliyuncs.com", e),
 		})
 	}
 	info := &model.AdapterPattern{

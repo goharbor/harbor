@@ -1,16 +1,17 @@
-// Copyright 2018 Project Harbor Authors
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	  http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package token
 
 import (
@@ -259,7 +260,6 @@ func TestFilterAccess(t *testing.T) {
 	var err error
 	s := []string{"registry:catalog:*"}
 	a1 := GetResourceActions(s)
-	a2 := GetResourceActions(s)
 	a3 := GetResourceActions(s)
 
 	ra1 := token.ResourceActions{
@@ -282,12 +282,6 @@ func TestFilterAccess(t *testing.T) {
 	}), a1, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
-
-	err = filterAccess(ctx(&fakeSecurityContext{
-		isAdmin: true,
-	}), a2, nil, notaryFilterMap)
-	assert.Nil(t, err, "Unexpected error: %v", err)
-	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
 	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: false,
@@ -341,7 +335,6 @@ func TestResourceScopes(t *testing.T) {
 				"scanner-pull": {},
 				"push":         {},
 				"delete":       {},
-				"*":            {},
 			},
 		},
 		{

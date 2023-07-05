@@ -29,7 +29,3 @@ Test Case - Manage project publicity
 Test Case - Scan A Tag In The Repo
     [Tags]  trivy
     Body Of Scan A Tag In The Repo  vmware/photon  1.0
-
-Test Case - Admin Push Signed Image
-    [tags]  sign_image
-    Body Of Push Signed Image

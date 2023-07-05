@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
-    CanActivate,
     Router,
     ActivatedRouteSnapshot,
     RouterStateSnapshot,
-    CanActivateChild,
 } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ErrorHandler } from '../units/error-handler';
@@ -14,7 +12,7 @@ import { CommonRoutes } from '../entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class MemberPermissionGuard implements CanActivate, CanActivateChild {
+export class MemberPermissionGuard {
     constructor(
         private router: Router,
         private errorHandler: ErrorHandler,

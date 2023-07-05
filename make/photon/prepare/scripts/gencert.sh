@@ -94,27 +94,6 @@ echo subjectAltName = DNS.1:trivy-adapter > extfile.cnf
 openssl x509 -req -days $DAYS -sha256 -in trivy_adapter.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -extfile extfile.cnf -out trivy_adapter.crt
 
 
-# generate notary_signer key
-openssl req -new \
-        -newkey rsa:4096 -nodes -sha256 -keyout notary_signer.key \
-        -out notary_signer.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary-signer"
-
-# sign notary_signer csr with CA certificate and key
-echo subjectAltName = DNS.1:notary-signer > extfile.cnf
-openssl x509 -req -days $DAYS -sha256 -in notary_signer.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -extfile extfile.cnf -out notary_signer.crt
-
-# generate notary_server key
-openssl req -new \
-        -newkey rsa:4096 -nodes -sha256 -keyout notary_server.key \
-        -out notary_server.csr \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=VMware/CN=notary-server"
-
-# sign notary_server csr with CA certificate and key
-echo subjectAltName = DNS.1:notary-server > extfile.cnf
-openssl x509 -req -days $DAYS -sha256 -in notary_server.csr -CA harbor_internal_ca.crt -CAkey harbor_internal_ca.key -CAcreateserial -extfile extfile.cnf -out notary_server.crt
-
-
 # generate harbor_db key
 openssl req -new \
         -newkey rsa:4096 -nodes -sha256 -keyout harbor_db.key \

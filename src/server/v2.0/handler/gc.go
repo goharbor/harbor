@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package handler
 
 import (
@@ -85,6 +99,17 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if workers, ok := parameters["workers"].(json.Number); ok {
+			wInt, err := workers.Int64()
+			if err != nil {
+				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+			}
+			if !validateWorkers(int(wInt)) {
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+			}
+			policy.Workers = int(wInt)
+		}
+
 		id, err = g.gcCtr.Start(ctx, policy, task.ExecutionTriggerManual)
 	case ScheduleNone:
 		err = g.gcCtr.DeleteSchedule(ctx)
@@ -97,6 +122,16 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		}
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
+		}
+		if workers, ok := parameters["workers"].(json.Number); ok {
+			wInt, err := workers.Int64()
+			if err != nil {
+				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+			}
+			if !validateWorkers(int(wInt)) {
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+			}
+			policy.Workers = int(wInt)
 		}
 		err = g.updateSchedule(ctx, scheType, cron, policy)
 	}
@@ -245,4 +280,11 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 	}
 
 	return operation.NewStopGCOK()
+}
+
+func validateWorkers(workers int) bool {
+	if workers <= 0 || workers > 5 {
+		return false
+	}
+	return true
 }

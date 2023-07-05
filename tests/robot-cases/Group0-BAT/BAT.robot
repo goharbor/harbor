@@ -35,22 +35,6 @@ Test Case - Registry Basic Verfication
 
     Close Browser
 
-Test Case - Notary Basic Verfication
-    Enable Notary Client
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
-
-    Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    #Should Contain  ${output}  sha256
-
 Test Case - Ldap Basic Verfication
     Switch To LDAP
     Init Chrome Driver

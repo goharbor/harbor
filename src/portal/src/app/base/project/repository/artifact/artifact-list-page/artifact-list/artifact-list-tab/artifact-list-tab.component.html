@@ -8,6 +8,7 @@
 <div class="row tag-row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-datagrid
+            #datagrid
             [clrDgLoading]="loading"
             (clrDgRefresh)="clrDgRefresh($event)"
             [(clrDgSelected)]="selectedRow">
@@ -125,6 +126,12 @@
                     </clr-dropdown>
                 </div>
                 <div class="right-pos">
+                    <app-pull-command
+                        [registryUrl]="registryUrl"
+                        [projectName]="projectName"
+                        [repoName]="repoName"
+                        [selectedRow]="selectedRow"
+                        class="mr-1"></app-pull-command>
                     <app-artifact-filter
                         [withDivider]="true"
                         (filterEvent)="filterEvent($event)"
@@ -136,34 +143,56 @@
             </clr-dg-action-bar>
 
             <clr-dg-column class="flex-max-width" [clrDgSortBy]="'digest'"
-                >{{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
+                ><ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[0] }">
+                    {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
+                </ng-template>
             </clr-dg-column>
-            <clr-dg-column class="pull-command-column">{{
-                'REPOSITORY.PULL_COMMAND' | translate
-            }}</clr-dg-column>
-            <clr-dg-column *ngIf="depth">{{
-                'REPOSITORY.PLATFORM' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{ 'REPOSITORY.TAGS' | translate }}</clr-dg-column>
-            <clr-dg-column class="co-signed-column">{{
-                'ACCESSORY.CO_SIGNED' | translate
-            }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="'size'">{{
-                'REPOSITORY.SIZE' | translate
-            }}</clr-dg-column>
-            <clr-dg-column class="vul-column">{{
-                'REPOSITORY.VULNERABILITY' | translate
-            }}</clr-dg-column>
-            <clr-dg-column class="annotations-column">{{
-                'ARTIFACT.ANNOTATION' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{ 'REPOSITORY.LABELS' | translate }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="pushComparator">{{
-                'REPOSITORY.PUSH_TIME' | translate
-            }}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="pullComparator">{{
-                'REPOSITORY.PULL_TIME' | translate
-            }}</clr-dg-column>
+            <clr-dg-column *ngIf="depth">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
+                    {{ 'REPOSITORY.PLATFORM' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column>
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
+                    {{ 'REPOSITORY.TAGS' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="co-signed-column">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[3] }">
+                    {{ 'ACCESSORY.CO_SIGNED' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="'size'">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
+                    {{ 'REPOSITORY.SIZE' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="vul-column">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[5] }">
+                    {{ 'REPOSITORY.VULNERABILITY' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="annotations-column">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
+                    {{ 'ARTIFACT.ANNOTATION' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column>
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
+                    {{ 'REPOSITORY.LABELS' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pushComparator">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+                    {{ 'REPOSITORY.PUSH_TIME' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pullComparator">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
+                    {{ 'REPOSITORY.PULL_TIME' | translate }}
+                </ng-template>
+            </clr-dg-column>
             <clr-dg-placeholder>{{
                 'ARTIFACT.PLACEHOLDER' | translate
             }}</clr-dg-placeholder>
@@ -187,7 +216,7 @@
                             class="digest margin-left-5"
                             (click)="goIntoArtifactSummaryPage(artifact)"
                             title="{{ artifact.digest }}">
-                            {{ artifact.digest | slice: 0:15 }}</a
+                            {{ artifact.digest | slice : 0 : 15 }}</a
                         >
                         <clr-tooltip
                             *ngIf="
@@ -214,15 +243,6 @@
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <hbr-copy-input
-                        [title]="getPullCommand(artifact)"
-                        *ngIf="getPullCommand(artifact)"
-                        [iconMode]="true"
-                        [defaultValue]="
-                            getPullCommand(artifact)
-                        "></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
                     <div class="cell">
@@ -270,15 +290,6 @@
                                                         | uppercase
                                                 }}
                                             </th>
-                                            <th
-                                                *ngIf="withNotary"
-                                                class="left tag-header-color">
-                                                {{
-                                                    'ACCESSORY.NOTARY_SIGNED'
-                                                        | translate
-                                                        | uppercase
-                                                }}
-                                            </th>
                                             <th class="left tag-header-color">
                                                 {{
                                                     'REPOSITORY.PULL_TIME'
@@ -302,41 +313,6 @@
                                             *ngFor="let tag of artifact.tags">
                                             <td class="left tag-body-color">
                                                 {{ tag.name }}
-                                            </td>
-                                            <td
-                                                *ngIf="withNotary"
-                                                class="left tag-body-color"
-                                                [ngSwitch]="tag.signed">
-                                                <div class="cell">
-                                                    <clr-icon
-                                                        shape="check-circle"
-                                                        *ngSwitchCase="true"
-                                                        size="20"
-                                                        class="color-green"></clr-icon>
-                                                    <clr-icon
-                                                        shape="times-circle"
-                                                        *ngSwitchCase="false"
-                                                        size="16"
-                                                        class="color-red"></clr-icon>
-                                                    <a
-                                                        href="javascript:void(0)"
-                                                        *ngSwitchDefault
-                                                        role="tooltip"
-                                                        aria-haspopup="true"
-                                                        class="tooltip tooltip-top-right">
-                                                        <clr-icon
-                                                            shape="help"
-                                                            class="color-gray"
-                                                            size="16"></clr-icon>
-                                                        <span
-                                                            class="tooltip-content"
-                                                            >{{
-                                                                'REPOSITORY.NOTARY_IS_UNDETERMINED'
-                                                                    | translate
-                                                            }}</span
-                                                        >
-                                                    </a>
-                                                </div>
                                             </td>
                                             <td class="left tag-body-color">
                                                 {{
@@ -481,7 +457,7 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        {{ artifact.push_time | harborDatetime: 'short' }}
+                        {{ artifact.push_time | harborDatetime : 'short' }}
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
@@ -489,7 +465,8 @@
                         {{
                             artifact.pull_time === availableTime
                                 ? ''
-                                : (artifact.pull_time | harborDatetime: 'short')
+                                : (artifact.pull_time
+                                  | harborDatetime : 'short')
                         }}
                     </div>
                 </clr-dg-cell>
@@ -497,7 +474,6 @@
                     ngProjectAs="clr-dg-row-detail"
                     *ngIf="artifact?.accessories?.length">
                     <sub-accessories
-                        (deleteAccessory)="deleteAccessory($event)"
                         [projectName]="projectName"
                         [repositoryName]="repoName"
                         [artifactDigest]="artifact?.digest"

@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package systemartifact
 
 import (
@@ -5,7 +19,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -23,10 +36,6 @@ const (
 var (
 	sched = scheduler.Sched
 )
-
-func init() {
-	task.SetExecutionSweeperCount(job.SystemArtifactCleanupVendorType, 50)
-}
 
 var Ctl = NewController()
 
@@ -67,7 +76,7 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 			return err
 		}
 
-		logger.Info("Created job for scan data export successfully")
+		log.Info("Created job for scan data export successfully")
 		return nil
 	}
 	go func(ctx context.Context) {
@@ -81,7 +90,7 @@ func (c *controller) Start(ctx context.Context, async bool, trigger string) erro
 		}
 		err = c.createCleanupTask(ctx, jobParams, execID)
 		if err != nil {
-			logger.Errorf("Encountered error in scan data artifact cleanup : %v", err)
+			log.Errorf("Encountered error in scan data artifact cleanup : %v", err)
 			return
 		}
 	}(c.makeCtx())
@@ -101,7 +110,7 @@ func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parame
 	_, err := c.taskMgr.Create(ctx, execID, j)
 
 	if err != nil {
-		logger.Errorf("Unable to create a scan data export job in clean-up mode : %v", err)
+		log.Errorf("Unable to create a scan data export job in clean-up mode : %v", err)
 		c.markError(ctx, execID, err)
 		return err
 	}
@@ -111,44 +120,45 @@ func (c *controller) createCleanupTask(ctx context.Context, jobParams job.Parame
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {
 	// try to stop the execution first in case that some tasks are already created
 	if err := c.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
-		logger.Errorf("failed to stop the execution %d: %v", executionID, err)
+		log.Errorf("failed to stop the execution %d: %v", executionID, err)
 	}
 	if err := c.execMgr.MarkError(ctx, executionID, err.Error()); err != nil {
-		logger.Errorf("failed to mark error for the execution %d: %v", executionID, err)
+		log.Errorf("failed to mark error for the execution %d: %v", executionID, err)
 	}
 }
 
 // ScheduleCleanupTask schedules a system artifact cleanup task
-func ScheduleCleanupTask(ctx context.Context) {
-	scheduleSystemArtifactCleanJob(ctx)
+func ScheduleCleanupTask(ctx context.Context) error {
+	return scheduleSystemArtifactCleanJob(ctx)
 }
 
-func scheduleSystemArtifactCleanJob(ctx context.Context) {
+func scheduleSystemArtifactCleanJob(ctx context.Context) error {
 	schedule, err := getSystemArtifactCleanupSchedule(ctx)
 	if err != nil {
-		return
+		return err
 	}
 	if schedule != nil {
-		logger.Debugf(" Export data cleanup job already scheduled with ID : %v.", schedule.ID)
-		return
+		log.Debugf("Export data cleanup job already scheduled with ID : %v.", schedule.ID)
+		return nil
 	}
 	scheduleID, err := sched.Schedule(ctx, job.SystemArtifactCleanupVendorType, 0, cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, nil)
 	if err != nil {
 		log.Errorf("Encountered error when scheduling scan data export cleanup job : %v", err)
-		return
+		return err
 	}
 	log.Infof("Scheduled scan data export cleanup job with ID : %v", scheduleID)
+	return nil
 }
 
 func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule, error) {
 	query := q.New(map[string]interface{}{"vendor_type": job.SystemArtifactCleanupVendorType})
 	schedules, err := sched.ListSchedules(ctx, query)
 	if err != nil {
-		logger.Errorf("Unable to check if export data cleanup job is already scheduled : %v", err)
+		log.Errorf("Unable to check if export data cleanup job is already scheduled : %v", err)
 		return nil, err
 	}
 	if len(schedules) > 0 {
-		logger.Infof("Found export data cleanup job with schedule id : %v", schedules[0].ID)
+		log.Debugf("Found export data cleanup job with schedule id : %v", schedules[0].ID)
 		return schedules[0], nil
 	}
 	return nil, nil

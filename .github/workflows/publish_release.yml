@@ -22,7 +22,7 @@ jobs:
       - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v1
         with:
           version: '285.0.0'
       - name: Prepare Assets
@@ -50,7 +50,7 @@ jobs:
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@1.0.11
+        uses: docker-practice/actions-setup-docker@master
         with:
           docker_version: 20.10
           docker_channel: stable
@@ -58,7 +58,10 @@ jobs:
         run: |
           tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
           docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          source tools/release/release_utils.sh && publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }} ${{ secrets.DOCKER_HUB_PASSWORD }}
+          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
+          source tools/release/release_utils.sh
+          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }} ${{ secrets.DOCKER_HUB_PASSWORD }} $images
+          publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt

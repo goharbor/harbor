@@ -247,6 +247,7 @@ func (suite *ScanAllTestSuite) TestStopScanAll() {
 	times := 3
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
+	mock.OnAnything(suite.scanCtl, "StopScanAll").Return(nil).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{

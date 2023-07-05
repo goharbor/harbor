@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+  push:
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+
+jobs:
+  UTTEST:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  APITEST_DB:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  APITEST_DB_PROXY_CACHE:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  APITEST_LDAP:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  OFFLINE:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'
+
+  UI_UT:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - run: 'echo "No run required"'

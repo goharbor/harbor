@@ -161,9 +161,11 @@ func (suite *gcTestSuite) TestInit() {
 		"delete_untagged": true,
 		"redis_url_reg":   "redis url",
 		"time_window":     1,
+		"workers":         float64(3),
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
+	suite.Equal(3, gc.workers)
 
 	params = map[string]interface{}{
 		"delete_untagged": "unsupported",
@@ -217,6 +219,7 @@ func (suite *gcTestSuite) TestRun() {
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.NilCommand, true)
 	mock.OnAnything(ctx, "Get").Return("core url", true)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
 
 	suite.artifactCtl.On("List").Return([]*artifact.Artifact{
 		{
@@ -278,6 +281,7 @@ func (suite *gcTestSuite) TestRun() {
 		"delete_untagged": false,
 		"redis_url_reg":   tests.GetRedisURL(),
 		"time_window":     1,
+		"workers":         3,
 	}
 
 	suite.Nil(gc.Run(ctx, params))
@@ -357,6 +361,7 @@ func (suite *gcTestSuite) TestSweep() {
 	logger := &mockjobservice.MockJobLogger{}
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.NilCommand, false)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
 
 	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
 	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
@@ -373,9 +378,18 @@ func (suite *gcTestSuite) TestSweep() {
 				ContentType: schema2.MediaTypeLayer,
 			},
 		},
+		workers: 3,
 	}
 
 	suite.Nil(gc.sweep(ctx))
+}
+
+func (suite *gcTestSuite) TestSaveRes() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	ctx.On("GetLogger").Return(logger)
+	mock.OnAnything(ctx, "Checkin").Return(nil)
+	suite.Nil(saveGCRes(ctx, 123456, 100, 100))
 }
 
 func TestGCTestSuite(t *testing.T) {

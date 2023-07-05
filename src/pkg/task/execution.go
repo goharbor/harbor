@@ -21,19 +21,16 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
 var (
 	// ExecMgr is a global execution manager instance
-	ExecMgr               = NewExecutionManager()
-	executionSweeperCount = map[string]uint8{}
-	ErrTimeOut            = errors.New("stopping the execution timeout")
+	ExecMgr    = NewExecutionManager()
+	ErrTimeOut = errors.New("stopping the execution timeout")
 )
 
 // ExecutionManager manages executions.
@@ -83,8 +80,6 @@ func NewExecutionManager() ExecutionManager {
 		executionDAO: dao.NewExecutionDAO(),
 		taskMgr:      Mgr,
 		taskDAO:      dao.NewTaskDAO(),
-		ormCreator:   orm.Crt,
-		wp:           lib.NewWorkerPool(10),
 	}
 }
 
@@ -92,8 +87,6 @@ type executionManager struct {
 	executionDAO dao.ExecutionDAO
 	taskMgr      Manager
 	taskDAO      dao.TaskDAO
-	ormCreator   orm.Creator
-	wp           *lib.WorkerPool
 }
 
 func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -126,89 +119,7 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 		return 0, err
 	}
 
-	// sweep the execution records to avoid the execution/task records explosion
-	go func() {
-		e.wp.GetWorker()
-		defer e.wp.ReleaseWorker()
-		// as we start a new transaction here to do the sweep work, the current execution record
-		// may be not visible(when the transaction in which the current execution is created
-		// in isn't committed), this will cause that there are one more execution records than expected
-		ctx := orm.NewContext(context.Background(), e.ormCreator.Create())
-		if err := e.sweep(ctx, vendorType, vendorID); err != nil {
-			log.Errorf("failed to sweep the executions of %s: %v", vendorType, err)
-			return
-		}
-	}()
-
 	return id, nil
-}
-
-func (e *executionManager) sweep(ctx context.Context, vendorType string, vendorID int64) error {
-	size := int64(executionSweeperCount[vendorType])
-	if size == 0 {
-		log.Debugf("the execution sweeper size doesn't set for %s, skip sweep", vendorType)
-		return nil
-	}
-
-	// get the #size execution record
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"VendorType": vendorType,
-			"VendorID":   vendorID,
-		},
-		Sorts: []*q.Sort{
-			{
-				Key:  "StartTime",
-				DESC: true,
-			}},
-		PageSize:   1,
-		PageNumber: size,
-	}
-	executions, err := e.executionDAO.List(ctx, query)
-	if err != nil {
-		return err
-	}
-	// list is null means that the execution count < size, return directly
-	if len(executions) == 0 {
-		return nil
-	}
-
-	query.Keywords["StartTime"] = &q.Range{
-		Max: executions[0].StartTime,
-	}
-	totalOfCandidate, err := e.executionDAO.Count(ctx, query)
-	if err != nil {
-		return err
-	}
-	// n is the page count of all candidates
-	n := totalOfCandidate / 1000
-	if totalOfCandidate%1000 > 0 {
-		n = n + 1
-	}
-	query.PageSize = 1000
-	for i := n; i >= 1; i-- {
-		query.PageNumber = i
-		executions, err := e.List(ctx, query)
-		if err != nil {
-			return err
-		}
-		for _, execution := range executions {
-			// if the status of the execution isn't final, skip
-			if !job.Status(execution.Status).Final() {
-				continue
-			}
-
-			log.Debugf("delete execution %d by sweeper", execution.ID)
-			if err = e.Delete(ctx, execution.ID); err != nil {
-				// the execution may be deleted by the other sweep operation, ignore the not found error
-				if errors.IsNotFoundErr(err) {
-					continue
-				}
-				log.Errorf("failed to delete the execution %d: %v", execution.ID, err)
-			}
-		}
-	}
-	return nil
 }
 
 func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
@@ -449,11 +360,4 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 	}
 
 	return exec
-}
-
-// SetExecutionSweeperCount sets the count of execution records retained by the sweeper
-// If no count is set for the specified vendor, the default value will be used
-// The sweeper retains the latest created #count execution records for the specified vendor
-func SetExecutionSweeperCount(vendorType string, count uint8) {
-	executionSweeperCount[vendorType] = count
 }

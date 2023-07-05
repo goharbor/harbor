@@ -92,7 +92,6 @@ const (
 	MaxJobWorkers                    = "max_job_workers"
 	TokenExpiration                  = "token_expiration"
 	AdminInitialPassword             = "admin_initial_password"
-	WithNotary                       = "with_notary"
 	WithTrivy                        = "with_trivy"
 	ScanAllPolicy                    = "scan_all_policy"
 	UAAEndpoint                      = "uaa_endpoint"
@@ -127,9 +126,7 @@ const (
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
 	TrivyAdapterURL                   = "trivy_adapter_url"
-	NotaryURL                         = "notary_url"
 	DefaultCoreEndpoint               = "http://core:8080"
-	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LDAPGroupType                     = 1
 	HTTPGroupType                     = 2
 	OIDCGroupType                     = 3
@@ -222,6 +219,11 @@ const (
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
 
+	// Customized banner message
+	BannerMessage = "banner_message"
+
 	// UIMaxLengthLimitedOfNumber is the max length that UI limited for type number
 	UIMaxLengthLimitedOfNumber = 10
+	// ExecutionStatusRefreshIntervalSeconds is the interval seconds for refreshing execution status
+	ExecutionStatusRefreshIntervalSeconds = "execution_status_refresh_interval_seconds"
 )

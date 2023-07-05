@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/metric"
 	"github.com/goharbor/harbor/src/server/middleware/quota"
 	"github.com/goharbor/harbor/src/server/middleware/repoproxy"
+	"github.com/goharbor/harbor/src/server/middleware/subject"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
@@ -53,7 +54,6 @@ func RegisterRoutes() {
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
-		Middleware(contenttrust.Notary()).
 		Middleware(contenttrust.Cosign()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
@@ -62,7 +62,6 @@ func RegisterRoutes() {
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
-		Middleware(contenttrust.Notary()).
 		Middleware(contenttrust.Cosign()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
@@ -80,6 +79,7 @@ func RegisterRoutes() {
 		Middleware(immutable.Middleware()).
 		Middleware(quota.PutManifestMiddleware()).
 		Middleware(cosign.SignatureMiddleware()).
+		Middleware(subject.Middleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// blob head

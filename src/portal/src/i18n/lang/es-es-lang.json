@@ -130,7 +130,7 @@
         "RENAME_SUCCESS": "Rename success!",
         "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone.",
         "CLI_PASSWORD": "CLI secreto",
-        "CLI_PASSWORD_TIP": "Puede utilizar este generador CLI secreto como utilizando Docker / Helm CLI para acceder a puerto.",
+        "CLI_PASSWORD_TIP": "El secreto CLI puede utilizarse como contraseña, para Docker o para el cliente Helm. Con el modo de autenticación de OIDC activado, recomendamos encarecidamente usar cuentas de robot, ya que los secretos de CLI dependen de la validez del token de ID y requieren que el usuario inicie sesión regularmente en la interfaz de usuario para actualizar el token.",
         "COPY_SUCCESS": "Copiar el éxito",
         "COPY_ERROR": "Copia no",
         "ADMIN_CLI_SECRET_BUTTON": "GENERATE SECRET",
@@ -248,10 +248,10 @@
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
         "OF": "of",
         "COUNT_QUOTA": "Count quota",
-        "STORAGE_QUOTA": "Storage quota",
+        "STORAGE_QUOTA": "Project quota limits",
         "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
         "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
-        "QUOTA_UNLIMIT_TIP": "For unlimited quota enter '-1'.",
+        "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
@@ -347,7 +347,7 @@
         "TOKEN": "Secret",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
-        "CREATETION": "Created time",
+        "CREATION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -432,7 +432,8 @@
         "EVENT_TYPE_REQUIRED": "Require at least one event type",
         "PAYLOAD_FORMAT": "Payload Format",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "Payload Data"
+        "PAYLOAD_DATA": "Payload Data",
+        "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
     },
     "GROUP": {
         "GROUP": "Group",
@@ -511,7 +512,6 @@
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirme Stop Executions",
         "BOTH": "both",
-        "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "De que desea detener las ejecuciones {{param}}?",
         "TASK_ID": "Task ID",
@@ -833,7 +833,7 @@
         "ROOT_CERT_LINK": "Descargar",
         "REGISTRY_CERTIFICATE": "Certificado de registro",
         "NO_CHANGE": "Save abort because nothing changed",
-        "SKIP_SCANNER_PULL_TIME": "Skip to update pull time for scanner",
+        "SKIP_SCANNER_PULL_TIME": "Retain image \"last pull time\" on scanning",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",
@@ -851,12 +851,11 @@
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
-            "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Skip to update pull time when pulling image from scanner."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
 
         },
         "LDAP": {
@@ -1035,6 +1034,7 @@
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "Package a chart for this project:",
@@ -1043,7 +1043,8 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Tag an image for this project:",
         "PUSH_COMMAND": "Push an image to this project:",
-        "COPY_ERROR": "Copy failed, please try to manually copy the command references."
+        "COPY_ERROR": "Copy failed, please try to manually copy the command references.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1058,7 +1059,18 @@
         "UNTAGGED": "Untagged",
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifacts!",
-        "SCAN_UNSUPPORTED": "Unsupported"
+        "SCAN_UNSUPPORTED": "Unsupported",
+        "SUMMARY": "Summary",
+        "DEPENDENCIES": "Dependencies",
+        "VALUES": "Values",
+        "NAME": "Name",
+        "REPO": "Repository",
+        "OF": "of",
+        "VERSION": "Version",
+        "NO_README": "No readme file provided by this chart.",
+        "ITEMS": "items",
+        "SHOW_KV": "Key Value Pairs",
+        "SHOW_YAML": "YAML File"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
@@ -1117,14 +1129,14 @@
         "DELETE": "Delete",
         "OF": "of",
         "PROJECT_QUOTA_DEFAULT_ARTIFACT": "Default artifact count per project",
-        "PROJECT_QUOTA_DEFAULT_DISK": "Default disk space per project",
+        "PROJECT_QUOTA_DEFAULT_DISK": "Default quota space per project",
         "EDIT_PROJECT_QUOTAS": "Edit Project Quotas",
         "EDIT_DEFAULT_PROJECT_QUOTAS": "Edit Default Project Quotas",
         "SET_QUOTAS": "Set the project quotas for project '{{params}}'",
         "SET_DEFAULT_QUOTAS": "Set the default project quotas when creating new projects",
         "COUNT_QUOTA": "Count quota",
         "COUNT_DEFAULT_QUOTA": "Default count quota",
-        "STORAGE_QUOTA": "Storage quota",
+        "STORAGE_QUOTA": "Project quota limits",
         "STORAGE_DEFAULT_QUOTA": "Default storage quota",
         "SAVE_SUCCESS": "Quota edit success",
         "UNLIMITED": "unlimited",
@@ -1216,7 +1228,13 @@
         "PARAMETERS": "Parameters",
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
         "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
-        "DRY_RUN_SUCCESS": "Triggered dry run successfully"
+        "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
+        "DRY_RUN_SUCCESS": "Triggered dry run successfully",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+        "DELETE_BLOB": "{{blob}} blob(s) deleted",
+        "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+        "FREE_UP_SIZE": "{{size}} space freed up",
+        "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
@@ -1785,7 +1803,11 @@
         "SCHEDULE_PAUSE_BTN_INFO": "PAUSE — Pause all schedules to execute.",
         "SCHEDULE_RESUME_BTN_INFO": "RESUME — Resume all schedules to execute.",
         "WORKER_FREE_BTN_INFO": "Stop the current running job to free the worker",
-        "CRON": "Cron"
+        "CRON": "Cron",
+        "WAITING_TOO_LONG_1": "Certain jobs have been pending for execution for over 24 hours. Please check the job service ",
+        "WAITING_TOO_LONG_2": "dashboard.",
+        "WAITING_TOO_LONG_3": "For more details, please refer to the ",
+        "WAITING_TOO_LONG_4": "Wiki."
     },
     "CLARITY": {
         "OPEN": "Open",
@@ -1825,7 +1847,6 @@
         "SIGNPOST_CLOSE": "Signpost Close",
         "LOADING": "LOADING",
         "DATE_PICKER_DIALOG_LABEL": "Choose date",
-        "DATE_PICKER_TOGGLE": "Toggle datepicker",
         "DATE_PICKER_TOGGLE_CHOOSE_DATE_LABEL": "Choose date",
         "DATE_PICKER_TOGGLE_CHANGE_DATE_LABEL": "Change date, {SELECTED_DATE}",
         "DATE_PICKER_PREVIOUS_MONTH": "Previous month",
@@ -1837,5 +1858,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "Select month, the current month is {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "Select year, the current year is {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - Selected"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "Banner Message",
+        "MESSAGE_TYPE": "Message type",
+        "CLOSABLE": "Closable",
+        "FROM": "From",
+        "TO": "To",
+        "SUCCESS": "Success",
+        "INFO": "Info",
+        "WARNING": "Warning",
+        "DANGER": "Danger",
+        "ENTER_MESSAGE": "Enter your message here"
     }
 }

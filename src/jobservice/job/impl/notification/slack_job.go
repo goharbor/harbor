@@ -1,8 +1,22 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package notification
 
 import (
 	"bytes"
-	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -22,9 +36,8 @@ type SlackJob struct {
 
 // MaxFails returns that how many times this job can fail.
 func (sj *SlackJob) MaxFails() (result uint) {
-	// Default max fails count is 10, and its max retry interval is around 3h
-	// Large enough to ensure most situations can notify successfully
-	result = 10
+	// Default max fails count is 3
+	result = 3
 	if maxFails, exist := os.LookupEnv(maxFails); exist {
 		mf, err := strconv.ParseUint(maxFails, 10, 32)
 		if err != nil {
@@ -79,11 +92,14 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
+	sj.logger.Info("start to run slack job")
+
 	err := sj.execute(params)
 	if err != nil {
-		sj.logger.Error(err)
+		sj.logger.Errorf("exit slack job, error: %s", err)
+	} else {
+		sj.logger.Info("success to run slack job")
 	}
-
 	// Wait a second for slack rate limit, refer to https://api.slack.com/docs/rate-limits
 	time.Sleep(time.Second)
 	return err
@@ -111,17 +127,25 @@ func (sj *SlackJob) execute(params map[string]interface{}) error {
 
 	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to generate request")
 	}
 	req.Header.Set("Content-Type", "application/json")
 
+	sj.logger.Infof("send request to remote endpoint, body: %s", payload)
+
 	resp, err := sj.client.Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error to send request")
 	}
+
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("slack job(target: %s) response code is %d", address, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			sj.logger.Errorf("error to read response body, error: %s", err)
+		}
+
+		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	return nil
 }

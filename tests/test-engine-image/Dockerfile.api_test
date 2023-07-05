@@ -3,10 +3,12 @@ FROM photon:4.0
 ENV LANG C.UTF-8
 ENV HELM_EXPERIMENTAL_OCI=1
 ENV COSIGN_PASSWORD=Harbor12345
+ENV COSIGN_EXPERIMENTAL=1
+ENV COSIGN_OCI_EXPERIMENTAL=1
 
 COPY --from=tool_builder /tool/tools.tar.gz /usr/local/bin
 
-RUN tdnf install -y \
+RUN tdnf update -y && tdnf install -y \
     wget \
     git \
     openjdk8 \
@@ -42,5 +44,7 @@ RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh && \
     mkdir -p $HOME/.pki/nssdb && \
     echo Harbor12345 > password.ca && \
     certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
+
+RUN tdnf install -y podman
 
 VOLUME /var/lib/docker

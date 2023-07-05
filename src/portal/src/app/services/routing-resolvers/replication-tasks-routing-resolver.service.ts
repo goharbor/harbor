@@ -14,7 +14,6 @@
 import { Injectable } from '@angular/core';
 import {
     Router,
-    Resolve,
     RouterStateSnapshot,
     ActivatedRouteSnapshot,
 } from '@angular/router';
@@ -26,9 +25,7 @@ import { ReplicationExecution } from '../../../../ng-swagger-gen/models/replicat
 @Injectable({
     providedIn: 'root',
 })
-export class ReplicationTasksRoutingResolverService
-    implements Resolve<ReplicationExecution>
-{
+export class ReplicationTasksRoutingResolverService {
     constructor(
         private replicationService: ReplicationService,
         private router: Router

@@ -1,16 +1,16 @@
-//  Copyright Project Harbor Authors
+// Copyright Project Harbor Authors
 //
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package proxy
 
@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 const (
@@ -117,7 +118,17 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	if a == nil {
 		return fmt.Errorf("the artifact is not ready yet, failed to tag it to %v", tagName)
 	}
-	return tag.Ctl.Ensure(ctx, a.RepositoryID, a.Artifact.ID, tagName)
+	tagID, err := tag.Ctl.Ensure(ctx, a.RepositoryID, a.Artifact.ID, tagName)
+	if err != nil {
+		return err
+	}
+	// update the pull time of tag for the first time cache
+	return tag.Ctl.Update(ctx, &tag.Tag{
+		Tag: model_tag.Tag{
+			ID:       tagID,
+			PullTime: time.Now(),
+		},
+	}, "PullTime")
 }
 
 func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool {
@@ -155,6 +166,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	remoteRepo := getRemoteRepo(art)
 	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
+		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
+			return true, nil, nil
+		}
 		return false, nil, err
 	}
 	if !exist || desc == nil {
@@ -239,7 +253,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 			}
 		}
 		if a != nil {
-			SendPullEvent(a, art.Tag, operator)
+			SendPullEvent(bCtx, a, art.Tag, operator)
 		}
 	}(operator.FromContext(ctx))
 

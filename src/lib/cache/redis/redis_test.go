@@ -110,28 +110,54 @@ func (suite *CacheTestSuite) TestPing() {
 	suite.NoError(suite.cache.Ping(suite.ctx))
 }
 
-func (suite *CacheTestSuite) TestKeys() {
-	key1 := "p1"
-	key2 := "p2"
+func (suite *CacheTestSuite) TestScan() {
+	seed := func(n int) {
+		for i := 0; i < n; i++ {
+			key := fmt.Sprintf("test-scan-%d", i)
+			err := suite.cache.Save(suite.ctx, key, "")
+			suite.NoError(err)
+		}
+	}
+	clean := func(n int) {
+		for i := 0; i < n; i++ {
+			key := fmt.Sprintf("test-scan-%d", i)
+			err := suite.cache.Delete(suite.ctx, key)
+			suite.NoError(err)
+		}
+	}
+	{
+		// no match should return all keys
+		expect := []string{"test-scan-0", "test-scan-1", "test-scan-2"}
+		// seed data
+		seed(3)
+		// test scan
+		iter, err := suite.cache.Scan(suite.ctx, "")
+		suite.NoError(err)
+		got := []string{}
+		for iter.Next(suite.ctx) {
+			got = append(got, iter.Val())
+		}
+		suite.ElementsMatch(expect, got)
+		// clean up
+		clean(3)
+	}
 
-	var err error
-	err = suite.cache.Save(suite.ctx, key1, "hello, p1")
-	suite.Nil(err)
-	err = suite.cache.Save(suite.ctx, key2, "hello, p2")
-	suite.Nil(err)
-
-	// should match all
-	keys, err := suite.cache.Keys(suite.ctx, "p")
-	suite.Nil(err)
-	suite.ElementsMatch([]string{"p1", "p2"}, keys)
-	// only get p1
-	keys, err = suite.cache.Keys(suite.ctx, key1)
-	suite.Nil(err)
-	suite.Equal([]string{"p1"}, keys)
-	// only get p2
-	keys, err = suite.cache.Keys(suite.ctx, key2)
-	suite.Nil(err)
-	suite.Equal([]string{"p2"}, keys)
+	{
+		// with match should return matched keys
+		expect := []string{"test-scan-1", "test-scan-10"}
+		// seed data
+		seed(11)
+		// test scan
+		iter, err := suite.cache.Scan(suite.ctx, "*test-scan-1*")
+		suite.NoError(err)
+		got := []string{}
+		for iter.Next(suite.ctx) {
+			got = append(got, iter.Val())
+		}
+		suite.ElementsMatch(expect, got)
+		// clean up
+		clean(11)
+	}
 }
 
 func TestCacheTestSuite(t *testing.T) {

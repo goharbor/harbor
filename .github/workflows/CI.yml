@@ -19,10 +19,18 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
   push:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
 
 jobs:
   UTTEST:
@@ -33,10 +41,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.19
+      - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-           go-version: 1.19.4
+           go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -94,10 +102,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.19
+      - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.19.4
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -149,10 +157,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.19
+      - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.19.4
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -204,10 +212,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.19
+      - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.19.4
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:
@@ -257,10 +265,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.19
+      - name: Set up Go 1.20
         uses: actions/setup-go@v1
         with:
-          go-version: 1.19.4
+          go-version: 1.20.4
         id: go
       - uses: actions/checkout@v3
         with:

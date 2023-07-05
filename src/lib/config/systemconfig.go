@@ -1,30 +1,16 @@
-//  Copyright Project Harbor Authors
+// Copyright Project Harbor Authors
 //
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//    http://www.apache.org/licenses/LICENSE-2.0
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-
-//  Copyright Project Harbor Authors
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package config
 
@@ -141,9 +127,9 @@ func GetGCTimeWindow() int64 {
 	return common.DefaultGCTimeWindowHours
 }
 
-// WithNotary returns a bool value to indicate if Harbor's deployed with Notary
-func WithNotary() bool {
-	return DefaultMgr().Get(backgroundCtx, common.WithNotary).GetBool()
+// GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
+func GetExecutionStatusRefreshIntervalSeconds() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()
 }
 
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
@@ -202,12 +188,6 @@ func LocalCoreURL() string {
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
 	return InternalCoreURL() + "/service/token"
-}
-
-// InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
-// This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
-func InternalNotaryEndpoint() string {
-	return DefaultMgr().Get(backgroundCtx, common.NotaryURL).GetString()
 }
 
 // TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.

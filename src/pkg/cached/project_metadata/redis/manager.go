@@ -119,14 +119,14 @@ func (m *Manager) Update(ctx context.Context, projectID int64, meta map[string]s
 		return err
 	}
 	// lookup all keys with projectID prefix
-	keys, err := m.CacheClient(ctx).Keys(ctx, prefix)
+	iter, err := m.CacheClient(ctx).Scan(ctx, prefix)
 	if err != nil {
 		return err
 	}
 
-	for _, key := range keys {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) }); err != nil {
-			log.Errorf("delete project metadata cache key %s error: %v", key, err)
+	for iter.Next(ctx) {
+		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, iter.Val()) }); err != nil {
+			log.Errorf("delete project metadata cache key %s error: %v", iter.Val(), err)
 		}
 	}
 
