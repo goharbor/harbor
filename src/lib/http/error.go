@@ -37,6 +37,7 @@ var (
 		errors.MethodNotAllowedCode:            http.StatusMethodNotAllowed,
 		errors.DENIED:                          http.StatusForbidden,
 		errors.NotFoundCode:                    http.StatusNotFound,
+		errors.RateLimitCode:                   http.StatusTooManyRequests,
 		errors.ConflictCode:                    http.StatusConflict,
 		errors.PreconditionCode:                http.StatusPreconditionFailed,
 		errors.ViolateForeignKeyConstraintCode: http.StatusPreconditionFailed,

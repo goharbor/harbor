@@ -93,16 +93,6 @@ DOCKERFILEPATH_REGISTRYCTL=$(DOCKERFILEPATH)/$(REGISTRYCTL)
 DOCKERFILENAME_REGISTRYCTL=Dockerfile
 DOCKERIMAGENAME_REGISTRYCTL=$(IMAGENAMESPACE)/harbor-$(REGISTRYCTL)
 
-NOTARYSERVER=notary-server
-NOTARYSIGNER=notary-signer
-DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
-DOCKERFILEPATH_NOTARYSERVER=$(DOCKERFILEPATH)/$(NOTARYSERVER)
-DOCKERFILENAME_NOTARYSERVER=Dockerfile
-DOCKERIMAGENAME_NOTARYSERVER=$(IMAGENAMESPACE)/$(NOTARYSERVER)-photon
-DOCKERFILEPATH_NOTARYSIGNER=$(DOCKERFILEPATH)/$(NOTARYSIGNER)
-DOCKERFILENAME_NOTARYSIGNER=Dockerfile
-DOCKERIMAGENAME_NOTARYSIGNER=$(IMAGENAMESPACE)/$(NOTARYSIGNER)-photon
-
 REDIS=redis
 DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/$(REDIS)
 DOCKERFILENAME_REDIS=Dockerfile
@@ -182,24 +172,6 @@ _build_nginx:
 	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_NGINX)/$(DOCKERFILENAME_NGINX) -t $(DOCKERIMAGENAME_NGINX):$(VERSIONTAG) .
 	@echo "Done."
 
-_build_notary:
-	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		$(call _build_base,$(NOTARYSERVER),$(DOCKERFILEPATH_NOTARYSERVER)) ; \
-		$(call _build_base,$(NOTARYSIGNER),$(DOCKERFILEPATH_NOTARYSIGNER)) ; \
-		if [ "$(BUILDBIN)" != "true" ] ; then \
-			rm -rf $(DOCKERFILEPATH_NOTARY)/binary && mkdir -p $(DOCKERFILEPATH_NOTARY)/binary && \
-			$(call _get_binary, $(NOTARYURL), $(DOCKERFILEPATH_NOTARY)/binary-bundle.tgz); \
-			cd $(DOCKERFILEPATH_NOTARY) && tar -zvxf binary-bundle.tgz && cd - ; \
-		else \
-			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) $(NOTARYMIGRATEVERSION) && cd - ; \
-		fi ; \
-		echo "building notary container for photon..."; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_NOTARYSIGNER)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(VERSIONTAG) . ; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_NOTARYSERVER)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(VERSIONTAG) . ; \
-		rm -rf $(DOCKERFILEPATH_NOTARY)/binary; \
-		echo "Done."; \
-	fi
-
 _build_registry:
 	@$(call _build_base,$(REGISTRY),$(DOCKERFILEPATH_REG))
 	@if [ "$(BUILDBIN)" != "true" ] ; then \
@@ -261,7 +233,7 @@ define _build_base
 	fi
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_trivy_adapter _build_redis _compile_and_build_exporter
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_trivy_adapter _build_redis _compile_and_build_exporter
 	@if [ -n "$(REGISTRYUSER)"  ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
 		docker logout ; \
 	fi

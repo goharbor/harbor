@@ -13,11 +13,9 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import {
-    CanActivate,
     Router,
     ActivatedRouteSnapshot,
     RouterStateSnapshot,
-    CanActivateChild,
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
 import { Observable } from 'rxjs';
@@ -26,7 +24,7 @@ import { CommonRoutes } from '../entities/shared.const';
 @Injectable({
     providedIn: 'root',
 })
-export class SignInGuard implements CanActivate, CanActivateChild {
+export class SignInGuard {
     constructor(private authService: SessionService, private router: Router) {}
 
     canActivate(

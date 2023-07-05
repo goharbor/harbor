@@ -25,7 +25,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/pkg/blob"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -160,7 +159,7 @@ func (suite *ControllerTestSuite) TestFindMissingAssociationsForProjectByArtifac
 		suite.Len(blobs, 0)
 	}
 
-	blobs := []*blob.Blob{{Digest: "1"}, {Digest: "2"}, {Digest: "3"}}
+	blobs := []*pkg_blob.Blob{{Digest: "1"}, {Digest: "2"}, {Digest: "3"}}
 
 	{
 		mock.OnAnything(blobMgr, "List").Return(nil, nil).Once()
@@ -177,7 +176,7 @@ func (suite *ControllerTestSuite) TestFindMissingAssociationsForProjectByArtifac
 	}
 
 	{
-		associated := []*blob.Blob{{Digest: "1"}}
+		associated := []*pkg_blob.Blob{{Digest: "1"}}
 		mock.OnAnything(blobMgr, "List").Return(associated, nil).Once()
 		missing, err := ctl.FindMissingAssociationsForProject(ctx, projectID, blobs)
 		suite.Nil(err)
@@ -312,7 +311,7 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 func (suite *ControllerTestSuite) TestTouch() {
 	ctx := suite.Context()
 
-	err := Ctl.Touch(ctx, &blob.Blob{
+	err := Ctl.Touch(ctx, &pkg_blob.Blob{
 		Status: models.StatusNone,
 	})
 	suite.NotNil(err)
@@ -333,7 +332,7 @@ func (suite *ControllerTestSuite) TestTouch() {
 func (suite *ControllerTestSuite) TestFail() {
 	ctx := suite.Context()
 
-	err := Ctl.Fail(ctx, &blob.Blob{
+	err := Ctl.Fail(ctx, &pkg_blob.Blob{
 		Status: models.StatusNone,
 	})
 	suite.NotNil(err)

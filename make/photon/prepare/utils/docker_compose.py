@@ -8,7 +8,7 @@ docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'do
 docker_compose_yml_path = '/compose_location/docker-compose.yml'
 
 # render docker-compose
-def prepare_docker_compose(configs, with_trivy, with_notary):
+def prepare_docker_compose(configs, with_trivy):
     versions = parse_versions()
     VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
 
@@ -16,7 +16,6 @@ def prepare_docker_compose(configs, with_trivy, with_notary):
         'version': VERSION_TAG,
         'reg_version': VERSION_TAG,
         'redis_version': VERSION_TAG,
-        'notary_version': VERSION_TAG,
         'trivy_adapter_version': VERSION_TAG,
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],
@@ -24,7 +23,6 @@ def prepare_docker_compose(configs, with_trivy, with_notary):
         'http_port': configs['http_port'],
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
-        'with_notary': with_notary,
         'with_trivy': with_trivy,
     }
 

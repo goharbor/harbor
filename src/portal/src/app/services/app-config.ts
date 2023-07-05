@@ -15,7 +15,6 @@
 import { ClairDBStatus } from '../shared/services';
 
 export class AppConfig {
-    with_notary: boolean;
     with_trivy: boolean;
     admiral_endpoint: string;
     auth_mode: string;
@@ -30,10 +29,11 @@ export class AppConfig {
     registry_storage_provider_name: string;
     read_only: boolean;
     show_popular_repo: boolean;
+    banner_message: string;
+    current_time: string;
 
     constructor() {
         // Set default value
-        this.with_notary = false;
         this.with_trivy = false;
         this.admiral_endpoint = '';
         this.auth_mode = 'db_auth';
@@ -51,5 +51,6 @@ export class AppConfig {
         this.registry_storage_provider_name = '';
         this.read_only = false;
         this.show_popular_repo = false;
+        this.banner_message = '';
     }
 }

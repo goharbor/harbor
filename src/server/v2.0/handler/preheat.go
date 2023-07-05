@@ -487,7 +487,7 @@ func convertPolicyToPayload(policy *policy.Schema) (*models.PreheatPolicy, error
 	}, nil
 }
 
-// convertParamPolicyToPolicy converts params policy to pkg model policy
+// convertParamPolicyToModelPolicy converts params policy to pkg model policy
 func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schema, error) {
 	if model == nil {
 		return nil, errors.New("policy can not be nil")

@@ -260,7 +260,6 @@ func TestFilterAccess(t *testing.T) {
 	var err error
 	s := []string{"registry:catalog:*"}
 	a1 := GetResourceActions(s)
-	a2 := GetResourceActions(s)
 	a3 := GetResourceActions(s)
 
 	ra1 := token.ResourceActions{
@@ -283,12 +282,6 @@ func TestFilterAccess(t *testing.T) {
 	}), a1, nil, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
-
-	err = filterAccess(ctx(&fakeSecurityContext{
-		isAdmin: true,
-	}), a2, nil, notaryFilterMap)
-	assert.Nil(t, err, "Unexpected error: %v", err)
-	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
 	err = filterAccess(ctx(&fakeSecurityContext{
 		isAdmin: false,
@@ -342,7 +335,6 @@ func TestResourceScopes(t *testing.T) {
 				"scanner-pull": {},
 				"push":         {},
 				"delete":       {},
-				"*":            {},
 			},
 		},
 		{

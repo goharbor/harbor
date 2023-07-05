@@ -115,6 +115,16 @@ type Controller interface {
 	//     error  : non nil error if any errors occurred
 	ScanAll(ctx context.Context, trigger string, async bool) (int64, error)
 
+	// StopScanAll stops the scanAll
+	//
+	//   Arguments:
+	//     ctx context.Context : the context for this method
+	//     executionID int64   : the id of scan all execution
+	//     async bool          : stop scan all in background
+	//   Returns:
+	//     error  : non nil error if any errors occurred
+	StopScanAll(ctx context.Context, executionID int64, async bool) error
+
 	// GetVulnerable returns the vulnerable of the artifact for the allowlist
 	//
 	//   Arguments:

@@ -38,16 +38,10 @@ func getServer(t *testing.T) *httptest.Server {
 		w.Header().Set("X-Next-Page", "")
 
 		switch search {
-		case "dev-docker":
+		case "library/dev-docker", "library", "library/", "dev-docker/", "dev-docker":
 			mustWriteHTTPResponse(t, w, "testdata/projects/dev-docker.json")
 			break
-		case "dev-":
-			mustWriteHTTPResponse(t, w, "testdata/projects/dev-docker.json")
-			break
-		case "-docker":
-			mustWriteHTTPResponse(t, w, "testdata/projects/-docker.json")
-			break
-		case "":
+		case "", "library/dockers":
 			mustWriteHTTPResponse(t, w, "testdata/projects/all.json")
 			break
 		default:

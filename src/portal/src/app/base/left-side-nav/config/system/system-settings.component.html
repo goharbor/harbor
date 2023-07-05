@@ -346,6 +346,127 @@
                     " />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label">{{
+                'BANNER_MESSAGE.BANNER_MESSAGE' | translate
+            }}</label>
+            <div class="clr-control-container flex-baseline">
+                <div class="clr-textarea-wrapper">
+                    <textarea
+                        id="banner-message"
+                        placeholder="{{
+                            'BANNER_MESSAGE.ENTER_MESSAGE' | translate
+                        }}"
+                        autocomplete="off"
+                        class="clr-textarea"
+                        [(ngModel)]="messageText"
+                        [ngModelOptions]="{ standalone: true }"
+                        [disabled]="
+                            !currentConfig.banner_message.editable
+                        "></textarea>
+                </div>
+                <div class="message-type">
+                    <div
+                        class="clr-select-wrapper"
+                        [ngClass]="{
+                            'clr-form-control-disable':
+                                !currentConfig.banner_message.editable ||
+                                !messageText
+                        }">
+                        <label class="message-label">{{
+                            'BANNER_MESSAGE.MESSAGE_TYPE' | translate
+                        }}</label>
+                        <select
+                            id="banner-message-type"
+                            class="clr-select message-select"
+                            [(ngModel)]="messageType"
+                            [ngModelOptions]="{ standalone: true }"
+                            [disabled]="
+                                !currentConfig.banner_message.editable ||
+                                !messageText
+                            ">
+                            <option
+                                *ngFor="let t of bannerMessageTypes"
+                                value="{{ t }}">
+                                {{ translateMessageType(t) | translate }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div
+                    class="clr-checkbox-wrapper ml-1"
+                    [ngClass]="{
+                        'clr-form-control-disable':
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                    }">
+                    <input
+                        class="clr-checkbox-inline"
+                        type="checkbox"
+                        [(ngModel)]="messageClosable"
+                        [ngModelOptions]="{ standalone: true }"
+                        [disabled]="
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                        "
+                        id="banner-message-closable" />
+                    <label
+                        class="clr-control-label"
+                        for="banner-message-closable"
+                        >{{ 'BANNER_MESSAGE.CLOSABLE' | translate }}</label
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div class="clr-form-control">
+            <label class="clr-control-label"></label>
+            <div class="clr-control-container flex-baseline">
+                <div class="clr-textarea-wrapper duration">
+                    <label>{{ 'REPLICATION.DURATION' | translate }}</label>
+                </div>
+                <div
+                    class="clr-input-wrapper flex message-type"
+                    [ngClass]="{
+                        'clr-form-control-disable':
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                    }">
+                    <label>{{ 'BANNER_MESSAGE.FROM' | translate }}</label>
+                    <input
+                        class="date"
+                        type="date"
+                        id="from"
+                        clrDate
+                        [(ngModel)]="messageFromDate"
+                        [ngModelOptions]="{ standalone: true }"
+                        [disabled]="
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                        " />
+                </div>
+                <div
+                    class="clr-checkbox-wrapper flex ml-1"
+                    [ngClass]="{
+                        'clr-form-control-disable':
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                    }">
+                    <label>{{ 'BANNER_MESSAGE.TO' | translate }}</label>
+                    <input
+                        class="date"
+                        clrDate
+                        type="date"
+                        id="to"
+                        [(ngModel)]="messageToDate"
+                        [disabled]="
+                            !currentConfig.banner_message.editable ||
+                            !messageText
+                        "
+                        [ngModelOptions]="{ standalone: true }" />
+                </div>
+            </div>
+        </div>
     </section>
 </form>
 <div>

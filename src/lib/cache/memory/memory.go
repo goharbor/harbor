@@ -117,27 +117,55 @@ func (c *Cache) Save(ctx context.Context, key string, value interface{}, expirat
 	return nil
 }
 
-// Keys returns the key matched by prefixes.
-func (c *Cache) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
-	// if no prefix, means match all keys.
-	matchAll := len(prefixes) == 0
-	// range map to get all keys
-	keys := make([]string, 0)
+// Scan scans the keys matched by match string
+func (c *Cache) Scan(ctx context.Context, match string) (cache.Iterator, error) {
+	var keys []string
 	c.storage.Range(func(k, v interface{}) bool {
-		ks := k.(string)
-		if matchAll {
-			keys = append(keys, ks)
-		} else {
-			for _, p := range prefixes {
-				if strings.HasPrefix(ks, c.opts.Key(p)) {
-					keys = append(keys, strings.TrimPrefix(ks, c.opts.Prefix))
-				}
+		matched := true
+		if match != "" {
+			matched = strings.Contains(k.(string), match)
+		}
+
+		if matched {
+			if v.(*entry).isExpirated() {
+				c.storage.Delete(k)
+			} else {
+				keys = append(keys, strings.TrimPrefix(k.(string), c.opts.Prefix))
 			}
 		}
 		return true
 	})
 
-	return keys, nil
+	return &ScanIterator{keys: keys}, nil
+}
+
+// ScanIterator is a ScanIterator for memory cache
+type ScanIterator struct {
+	mu   sync.Mutex
+	pos  int
+	keys []string
+}
+
+// Next checks whether has the next element
+func (i *ScanIterator) Next(ctx context.Context) bool {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	i.pos++
+	return i.pos <= len(i.keys)
+}
+
+// Val returns the key
+func (i *ScanIterator) Val() string {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	var val string
+	if i.pos <= len(i.keys) {
+		val = i.keys[i.pos-1]
+	}
+
+	return val
 }
 
 // New returns memory cache

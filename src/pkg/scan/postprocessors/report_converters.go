@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
@@ -151,7 +152,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	var newRecords []*scan.VulnerabilityRecord
 	for _, v := range vulnReport.Vulnerabilities {
 		if !s.Exists(v.Key()) {
-			newRecords = append(newRecords, toVulnerabilityRecord(v, registrationUUID))
+			newRecords = append(newRecords, toVulnerabilityRecord(ctx, v, registrationUUID))
 		}
 	}
 
@@ -230,7 +231,7 @@ func (c *nativeToRelationalSchemaConverter) getNativeV1ReportFromResolvedData(ct
 	return report, nil
 }
 
-func toVulnerabilityRecord(item *vuln.VulnerabilityItem, registrationUUID string) *scan.VulnerabilityRecord {
+func toVulnerabilityRecord(ctx context.Context, item *vuln.VulnerabilityItem, registrationUUID string) *scan.VulnerabilityRecord {
 	record := new(scan.VulnerabilityRecord)
 
 	record.CVEID = item.ID
@@ -261,6 +262,12 @@ func toVulnerabilityRecord(item *vuln.VulnerabilityItem, registrationUUID string
 		if err == nil {
 			record.VendorAttributes = string(vendorAttributes)
 		}
+
+		// parse the NVD score from the vendor attributes
+		nvdScore := parseScoreFromVendorAttribute(ctx, string(vendorAttributes))
+		if record.CVE3Score == nil {
+			record.CVE3Score = &nvdScore
+		}
 	}
 
 	return record
@@ -289,4 +296,79 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 	item.VendorAttributes = vendorAttributes
 
 	return item
+}
+
+// updateReport updates the report summary with the vulnerability counts
+func (c *nativeToRelationalSchemaConverter) updateReport(ctx context.Context, vulnerabilities []*vuln.VulnerabilityItem, reportUUID string) error {
+	log.G(ctx).WithFields(log.Fields{"reportUUID": reportUUID}).Debugf("Update report summary for report")
+	CriticalCnt := int64(0)
+	HighCnt := int64(0)
+	MediumCnt := int64(0)
+	LowCnt := int64(0)
+	NoneCnt := int64(0)
+	UnknownCnt := int64(0)
+	FixableCnt := int64(0)
+
+	for _, v := range vulnerabilities {
+		v.Severity = vuln.ParseSeverityVersion3(v.Severity.String())
+		switch v.Severity {
+		case vuln.Critical:
+			CriticalCnt++
+		case vuln.High:
+			HighCnt++
+		case vuln.Medium:
+			MediumCnt++
+		case vuln.Low:
+			LowCnt++
+		case vuln.None:
+			NoneCnt++
+		case vuln.Unknown:
+			UnknownCnt++
+		}
+		if len(v.FixVersion) > 0 {
+			FixableCnt++
+		}
+	}
+
+	reports, err := report.Mgr.List(ctx, q.New(q.KeyWords{"uuid": reportUUID}))
+	if err != nil {
+		return err
+	}
+	if len(reports) == 0 {
+		return errors.New(nil).WithMessage("report not found, uuid:%v", reportUUID)
+	}
+	r := reports[0]
+
+	r.CriticalCnt = CriticalCnt
+	r.HighCnt = HighCnt
+	r.MediumCnt = MediumCnt
+	r.LowCnt = LowCnt
+	r.NoneCnt = NoneCnt
+	r.FixableCnt = FixableCnt
+	r.UnknownCnt = UnknownCnt
+
+	return report.Mgr.Update(ctx, r, "CriticalCnt", "HighCnt", "MediumCnt", "LowCnt", "NoneCnt", "UnknownCnt", "FixableCnt")
+}
+
+// CVSS ...
+type CVSS struct {
+	NVD Nvd `json:"nvd"`
+}
+
+// Nvd ...
+type Nvd struct {
+	V3Score float64 `json:"V3Score"`
+}
+
+func parseScoreFromVendorAttribute(ctx context.Context, vendorAttribute string) (NvdV3Score float64) {
+	var data map[string]CVSS
+	err := json.Unmarshal([]byte(vendorAttribute), &data)
+	if err != nil {
+		log.G(ctx).Errorf("failed to parse vendor_attribute, error %v", err)
+		return 0
+	}
+	if cvss, ok := data["CVSS"]; ok {
+		return cvss.NVD.V3Score
+	}
+	return 0
 }

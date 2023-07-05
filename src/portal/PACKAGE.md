@@ -1,7 +1,7 @@
 ```text
 {
   "name": "harbor",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
@@ -27,8 +27,7 @@
     "test:chrome-debug": "ng test --code-coverage --browsers Chrome --watch",
 
      // E2e related. Currently not used
-    "pree2e": "webdriver-manager update",
-    "e2e": "protractor",
+    "e2e": "ng e2e",
 
     "build": "ng build --aot",
     "release": "ng build --configuration production",
@@ -47,28 +46,28 @@
   "private": true,
   "dependencies": {
      // Angular framework. Required
-    "@angular/animations": "^15.2.1",
-    "@angular/common": "^15.2.1",
-    "@angular/compiler": "^15.2.1,
-    "@angular/core": "^15.2.1",
-    "@angular/forms": "^15.2.1",
-    "@angular/localize": "^15.2.1",
-    "@angular/platform-browser": "^15.2.1",
-    "@angular/platform-browser-dynamic": "^15.2.1",
-    "@angular/router": "^15.2.1",
+    "@angular/animations": "^16.0.2",
+    "@angular/common": "^16.0.2",
+    "@angular/compiler": "^16.0.2,
+    "@angular/core": "^16.0.2",
+    "@angular/forms": "^16.0.2",
+    "@angular/localize": "^16.0.2",
+    "@angular/platform-browser": "^16.0.2",
+    "@angular/platform-browser-dynamic": "^16.0.2",
+    "@angular/router": "^16.0.2",
     "rxjs": "^7.4.0",
     "tslib": "^2.2.0",
-    "zone.js": "~0.11.4",
+    "zone.js": "~0.13.0",
 
     // Clarity UI. Required
-    "@clr/angular": "15.0.1",
-    "@cds/core": "6.2.3",
+    "@cds/core": "6.4.2",
+    "@clr/angular": "15.4.0",
     "@clr/icons": "13.0.2",
-    "@clr/ui": "15.0.1",
+    "@clr/ui": "15.4.0",
 
     // For Harbor i18n functionality. Required
-    "@ngx-translate/core": "^14.0.0",
-    "@ngx-translate/http-loader": "^7.0.0",
+    "@ngx-translate/core": "15.0.0",
+    "@ngx-translate/http-loader": "8.0.0",
 
     // For cron string checking. Required
     "cron-validator": "^1.2.1",
@@ -80,24 +79,24 @@
     "ngx-cookie": "^5.0.2",
 
     // To render markdown data. Required
-    "ngx-markdown": "~15.1.1",
+    "ngx-markdown": "16.0.0",
 
     // To convert yaml to json. Required
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     // Angular framework. Required
-    "@angular-devkit/build-angular": "^15.2.1",
-    "@angular/cli": "^15.2.1",
-    "@angular/compiler-cli": "^15.2.1",
+    "@angular-devkit/build-angular": "^16.0.2",
+    "@angular/cli": "^16.0.2",
+    "@angular/compiler-cli": "^16.0.2",
     "@types/jasmine": "~4.3.0",
     "@types/node": "^16.11.6",
-    "typescript": "~4.8.2",
+    "typescript": "~5.0.4",
 
     // For unit test. Required
     "jasmine-core": "~4.5.0",
     "jasmine-spec-reporter": "~7.0.0",
-    "karma": "^6.3.17",
+    "karma": "^6.4.2",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "^2.2.0",
     "karma-jasmine": "~4.0.1",
@@ -112,7 +111,7 @@
     "ng-swagger-gen": "^1.8.1",
 
     // For e2e test. Required
-    "cypress": "latest"
+    "cypress": "12.12.0"
 
     // For code grammar checking. Optional
     "eslint": "^8.12.0",

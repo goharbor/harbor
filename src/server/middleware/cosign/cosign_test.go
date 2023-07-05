@@ -15,7 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
-	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
@@ -153,7 +152,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignature() {
 		suite.Equal(artID, accs[0].GetData().ArtifactID)
 		suite.Equal(name, accs[0].GetData().SubArtifactRepo)
 		suite.True(accs[0].IsHard())
-		suite.Equal(model.TypeCosignSignature, accs[0].GetData().Type)
+		suite.Equal(accessorymodel.TypeCosignSignature, accs[0].GetData().Type)
 	})
 }
 
@@ -181,7 +180,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignatureDup() {
 		suite.Equal(1, len(accs))
 		suite.Equal(descriptor.Digest.String(), accs[0].GetData().Digest)
 		suite.True(accs[0].IsHard())
-		suite.Equal(model.TypeCosignSignature, accs[0].GetData().Type)
+		suite.Equal(accessorymodel.TypeCosignSignature, accs[0].GetData().Type)
 	})
 }
 

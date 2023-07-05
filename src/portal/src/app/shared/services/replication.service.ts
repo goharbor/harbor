@@ -350,7 +350,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
 
     public deleteReplicationRule(ruleId: number | string): Observable<any> {
-        if (!ruleId || ruleId <= 0) {
+        if (!ruleId || +ruleId <= 0) {
             return observableThrowError('Bad argument');
         }
 
@@ -379,7 +379,7 @@ export class ReplicationDefaultService extends ReplicationService {
         ruleId: number | string,
         enablement: number
     ): Observable<any> {
-        if (!ruleId || ruleId <= 0) {
+        if (!ruleId || +ruleId <= 0) {
             return observableThrowError('Bad argument');
         }
 
@@ -393,7 +393,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
 
     public disableReplicationRule(ruleId: number | string): Observable<any> {
-        if (!ruleId || ruleId <= 0) {
+        if (!ruleId || +ruleId <= 0) {
             return observableThrowError('Bad argument');
         }
 
@@ -408,7 +408,7 @@ export class ReplicationDefaultService extends ReplicationService {
         ruleId: number | string,
         queryParams?: RequestQueryParams
     ): Observable<ReplicationExecution> {
-        if (!ruleId || ruleId <= 0) {
+        if (!ruleId || +ruleId <= 0) {
             return observableThrowError('Bad argument');
         }
 
@@ -454,7 +454,7 @@ export class ReplicationDefaultService extends ReplicationService {
     public getExecutionById(
         executionId: number | string
     ): Observable<ReplicationExecution> {
-        if (!executionId || executionId <= 0) {
+        if (!executionId || +executionId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         let requestUrl: string = `${this._replicateUrl}/executions/${executionId}`;
@@ -493,7 +493,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
 
     public getJobLog(jobId: number | string): Observable<string> {
-        if (!jobId || jobId <= 0) {
+        if (!jobId || +jobId <= 0) {
             return observableThrowError('Bad argument');
         }
 
@@ -504,7 +504,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
 
     public stopJobs(jobId: number | string): Observable<any> {
-        if (!jobId || jobId <= 0) {
+        if (!jobId || +jobId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         let requestUrl: string = `${this._replicateUrl}/executions/${jobId}`;

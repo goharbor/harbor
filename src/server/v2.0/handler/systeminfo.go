@@ -86,6 +86,7 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		PrimaryAuthMode:  &d.PrimaryAuthMode,
 		SelfRegistration: &d.SelfRegistration,
 		HarborVersion:    &d.HarborVersion,
+		BannerMessage:    &d.BannerMessage,
 	}
 	if d.AuthProxySettings != nil {
 		res.AuthproxySettings = &models.AuthproxySetting{
@@ -102,7 +103,6 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.ProjectCreationRestriction = &d.Protected.ProjectCreationRestrict
 		res.ExternalURL = &d.Protected.ExtURL
 		res.RegistryURL = &d.Protected.RegistryURL
-		res.WithNotary = &d.Protected.WithNotary
 		res.ReadOnly = &d.Protected.ReadOnly
 		res.RegistryStorageProviderName = &d.Protected.RegistryStorageProviderName
 		res.NotificationEnable = &d.Protected.NotificationEnable

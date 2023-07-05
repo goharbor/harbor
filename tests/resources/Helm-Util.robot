@@ -18,22 +18,22 @@ Library  OperatingSystem
 Library  Process
 
 *** Keywords ***
-Helm3.7 Registry Login
+Helm Registry Login
     [Arguments]  ${ip}  ${user}  ${password}
-    Wait Unitl Command Success  helm3.7 registry login ${ip} -u ${user} -p ${password}
+    Wait Unitl Command Success  helm registry login ${ip} -u ${user} -p ${password} --insecure
 
-Helm3.7 Package
+Helm Package
     [Arguments]  ${file_path}
-    Wait Unitl Command Success  helm3.7 package ${file_path}
+    Wait Unitl Command Success  helm package ${file_path}
 
-Helm3.7 Push
+Helm Push
     [Arguments]  ${file_path}  ${ip}  ${repo_name}
-    Wait Unitl Command Success  helm3.7 push ${file_path} oci://${ip}/${repo_name}
+    Wait Unitl Command Success  helm push ${file_path} oci://${ip}/${repo_name} --insecure-skip-tls-verify
 
-Helm3.7 Pull
+Helm Pull
     [Arguments]  ${ip}  ${repo_name}  ${version}
-    Wait Unitl Command Success  helm3.7 pull oci://${ip}/${repo_name}/harbor --version ${version}
+    Wait Unitl Command Success  helm pull oci://${ip}/${repo_name}/harbor --version ${version} --insecure-skip-tls-verify
 
-Helm3.7 Registry Logout
+Helm Registry Logout
     [Arguments]  ${ip}
-    Wait Unitl Command Success  helm3.7 registry logout ${ip}
+    Wait Unitl Command Success  helm registry logout ${ip}

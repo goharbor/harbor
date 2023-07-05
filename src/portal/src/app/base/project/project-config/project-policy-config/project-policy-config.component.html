@@ -32,18 +32,6 @@
                     'ACCESSORY.CO_SIGN' | translate
                 }}</label>
             </clr-checkbox-wrapper>
-            <clr-checkbox-wrapper *ngIf="withNotary">
-                <input
-                    id="content-trust"
-                    type="checkbox"
-                    clrCheckbox
-                    [(ngModel)]="projectPolicy.ContentTrust"
-                    name="content-trust"
-                    [disabled]="!hasChangeConfigRole" />
-                <label for="content-trust">{{
-                    'ACCESSORY.NOTARY' | translate
-                }}</label>
-            </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext">
                 {{ 'PROJECT_CONFIG.CONTENT_TRUST_POLCIY' | translate }}
             </clr-control-helper>

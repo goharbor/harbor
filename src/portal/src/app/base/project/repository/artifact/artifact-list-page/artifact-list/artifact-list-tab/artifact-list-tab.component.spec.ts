@@ -353,6 +353,13 @@ describe('ArtifactListTabComponent (inline template)', () => {
             fixture.nativeElement.querySelector('.confirmation-title')
         ).toBeTruthy();
     });
+    it('the length of hide array should equal to the number of column', async () => {
+        comp.loading = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const cols = fixture.nativeElement.querySelectorAll('.datagrid-column');
+        expect(cols.length).toEqual(comp.hiddenArray.length);
+    });
 });
 
 async function stepOpenAction(fixture, comp) {

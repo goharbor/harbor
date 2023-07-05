@@ -157,7 +157,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 
 		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
 
-		suite.execMgr.On("MarkDone", context.TODO(), executionID, mock.Anything).Return(nil).Once()
+		suite.execMgr.On("MarkDone", mock.Anything, executionID, mock.Anything).Return(nil).Once()
 
 		suite.NoError(scanAllCallback(context.TODO(), ""))
 	}

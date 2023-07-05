@@ -31,7 +31,7 @@ func (s *sysInfoCtlTestSuite) SetupTest() {
 		common.RegistryStorageProviderName: "filesystem",
 		common.ReadOnly:                    false,
 		common.NotificationEnable:          false,
-		common.WithNotary:                  true,
+		common.BannerMessage:               "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 	}
 
 	config.InitWithSettings(conf)
@@ -59,6 +59,7 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 				AuthMode:         "db_auth",
 				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
+				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 			},
 		},
 		{
@@ -67,8 +68,8 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 				AuthMode:         "db_auth",
 				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
+				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 				Protected: &protectedData{
-					WithNotary:              true,
 					RegistryURL:             "test.goharbor.io",
 					ExtURL:                  "https://test.goharbor.io",
 					ProjectCreationRestrict: "everyone",

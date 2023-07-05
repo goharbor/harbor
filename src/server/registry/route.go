@@ -54,7 +54,6 @@ func RegisterRoutes() {
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
-		Middleware(contenttrust.Notary()).
 		Middleware(contenttrust.Cosign()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
@@ -63,7 +62,6 @@ func RegisterRoutes() {
 		Path("/*/manifests/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
-		Middleware(contenttrust.Notary()).
 		Middleware(contenttrust.Cosign()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)

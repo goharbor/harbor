@@ -89,41 +89,59 @@ export enum AccessoryQueryParams {
     ACCESSORY_TYPE = 'accessoryType',
 }
 
+export function hasPullCommand(artifact: Artifact): boolean {
+    return (
+        artifact.type === ArtifactType.IMAGE ||
+        artifact.type === ArtifactType.CNAB ||
+        artifact.type === ArtifactType.CHART
+    );
+}
+
 export function getPullCommandByDigest(
     artifactType: string,
     url: string,
-    digest: string
+    digest: string,
+    client: Clients
 ): string {
-    let pullCommand: string = '';
     if (artifactType && url && digest) {
         if (artifactType === ArtifactType.IMAGE) {
-            pullCommand = `docker pull ${url}@${digest}`;
+            if (client === Clients.DOCKER) {
+                return `${Clients.DOCKER} pull ${url}@${digest}`;
+            }
+            if (client === Clients.PODMAN) {
+                return `${Clients.PODMAN} pull ${url}@${digest}`;
+            }
         }
         if (artifactType === ArtifactType.CNAB) {
-            pullCommand = `cnab-to-oci pull ${url}@${digest}`;
+            return `${Clients.CNAB} pull ${url}@${digest}`;
         }
     }
-    return pullCommand;
+    return null;
 }
 
 export function getPullCommandByTag(
     artifactType: string,
     url: string,
-    tag: string
+    tag: string,
+    client: Clients
 ): string {
-    let pullCommand: string = '';
     if (artifactType && url && tag) {
         if (artifactType === ArtifactType.IMAGE) {
-            pullCommand = `docker pull ${url}:${tag}`;
+            if (client === Clients.DOCKER) {
+                return `${Clients.DOCKER} pull ${url}:${tag}`;
+            }
+            if (client === Clients.PODMAN) {
+                return `${Clients.PODMAN} pull ${url}:${tag}`;
+            }
         }
         if (artifactType === ArtifactType.CNAB) {
-            pullCommand = `cnab-to-oci pull ${url}:${tag}`;
+            return `cnab-to-oci pull ${url}:${tag}`;
         }
         if (artifactType === ArtifactType.CHART) {
-            pullCommand = `helm pull oci://${url} --version ${tag}`;
+            return `helm pull oci://${url} --version ${tag}`;
         }
     }
-    return pullCommand;
+    return null;
 }
 
 export interface ArtifactFilterEvent {
@@ -132,4 +150,18 @@ export interface ArtifactFilterEvent {
     isLabel?: boolean;
     isInputTag?: boolean;
     label?: Label;
+}
+
+export enum Clients {
+    DOCKER = 'docker',
+    PODMAN = 'podman',
+    CHART = 'helm',
+    CNAB = 'cnab-to-oci',
+}
+
+export enum ClientNames {
+    DOCKER = 'Docker',
+    PODMAN = 'Podman',
+    CHART = 'Helm',
+    CNAB = 'CNAB',
 }

@@ -87,14 +87,14 @@ func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	}
 }
 
-// WithMaxIdleConnsPerHost returns a TransportOption that configures the transport to use the specified number of idle connections per host
+// WithMaxIdleConns returns a TransportOption that configures the transport to use the specified number of idle connections per host
 func WithMaxIdleConns(maxIdleConns int) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.MaxIdleConns = maxIdleConns
 	}
 }
 
-// WithIdleConnTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
+// WithIdleconnectionTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
 func WithIdleconnectionTimeout(idleConnectionTimeout time.Duration) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		tr.IdleConnTimeout = idleConnectionTimeout

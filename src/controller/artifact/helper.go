@@ -40,7 +40,13 @@ func Iterator(ctx context.Context, chunkSize int, query *q.Query, option *Option
 			}
 
 			for _, artifact := range artifacts {
-				ch <- artifact
+				select {
+				case <-ctx.Done():
+					log.G(ctx).Errorf("context done, list artifacts exited, error: %v", ctx.Err())
+					return
+				case ch <- artifact:
+					continue
+				}
 			}
 
 			if len(artifacts) < chunkSize {

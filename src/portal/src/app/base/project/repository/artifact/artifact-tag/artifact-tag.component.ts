@@ -23,13 +23,7 @@ import {
     OperateInfo,
     OperationState,
 } from '../../../../../shared/components/operation/operate';
-import {
-    AccessoryQueryParams,
-    AccessoryType,
-    ArtifactFront as Artifact,
-    ArtifactType,
-    getPullCommandByTag,
-} from '../artifact';
+import { AccessoryQueryParams, ArtifactFront as Artifact } from '../artifact';
 import { ArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { Tag } from '../../../../../../../ng-swagger-gen/models/tag';
 import {
@@ -49,7 +43,6 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
 } from '../../../../../shared/units/utils';
-import { AppConfigService } from '../../../../../services/app-config.service';
 import { errorHandler } from '../../../../../shared/units/shared.utils';
 import { ConfirmationDialogComponent } from '../../../../../shared/components/confirmation-dialog';
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
@@ -59,8 +52,6 @@ import { ActivatedRoute } from '@angular/router';
 class InitTag {
     name = '';
 }
-const DeleteTagWithNotoryCommand1 = 'notary -s https://';
-const DeleteTagWithNotoryCommand2 = ':4443 -d ~/.docker/trust remove -p ';
 @Component({
     selector: 'artifact-tag',
     templateUrl: './artifact-tag.component.html',
@@ -73,7 +64,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     @Input() projectId: number;
     @Input() repositoryName: string;
     newTagName = new InitTag();
-    newTagForm: NgForm;
     @ViewChild('newTagForm', { static: true }) currentForm: NgForm;
     selectedRow: Tag[] = [];
     isTagNameExist = false;
@@ -87,7 +77,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     hasCreateTagPermission: boolean;
 
     totalCount: number = 0;
-    allTags: Tag[] = [];
     currentTags: Tag[] = [];
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_TAGS_COMPONENT
@@ -104,7 +93,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private userPermissionService: UserPermissionService,
         private systemInfoService: SystemInfoService,
-        private appConfigService: AppConfigService,
         private errorHandlerService: ErrorHandler,
         private activatedRoute: ActivatedRoute
     ) {
@@ -342,12 +330,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             }
         }
     }
-    deletePort(url): string {
-        if (url && url.indexOf(':') !== -1) {
-            return url.split(':')[0];
-        }
-        return url;
-    }
     delOperate(tag: Tag): Observable<any> | null {
         // init operation info
         let operMessage = new OperateInfo();
@@ -355,57 +337,30 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         operMessage.state = OperationState.progressing;
         operMessage.data.name = tag.name;
         this.operationService.publishInfo(operMessage);
-
-        if (tag.signed) {
-            forkJoin(
-                this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get(
-                    'REPOSITORY.DELETION_SUMMARY_TAG_DENIED'
-                )
-            ).subscribe(res => {
-                const wrongInfo: string =
-                    res[1] +
-                    DeleteTagWithNotoryCommand1 +
-                    this.deletePort(this.registryUrl) +
-                    DeleteTagWithNotoryCommand2 +
-                    this.registryUrl +
-                    '/' +
-                    this.repositoryName +
-                    ' ' +
-                    tag.name;
-                operateChanges(operMessage, OperationState.failure, wrongInfo);
-            });
-            return of(null);
-        } else {
-            const deleteTagParams: ArtifactService.DeleteTagParams = {
-                projectName: this.projectName,
-                repositoryName: dbEncodeURIComponent(this.repositoryName),
-                reference: this.artifactDetails.digest,
-                tagName: tag.name,
-            };
-            return this.artifactService.deleteTag(deleteTagParams).pipe(
-                map(response => {
-                    this.translateService
-                        .get('BATCH.DELETED_SUCCESS')
-                        .subscribe(res => {
-                            operateChanges(operMessage, OperationState.success);
-                        });
-                }),
-                catchError(error => {
-                    const message = errorHandler(error);
-                    this.translateService
-                        .get(message)
-                        .subscribe(res =>
-                            operateChanges(
-                                operMessage,
-                                OperationState.failure,
-                                res
-                            )
-                        );
-                    return of(error);
-                })
-            );
-        }
+        const deleteTagParams: ArtifactService.DeleteTagParams = {
+            projectName: this.projectName,
+            repositoryName: dbEncodeURIComponent(this.repositoryName),
+            reference: this.artifactDetails.digest,
+            tagName: tag.name,
+        };
+        return this.artifactService.deleteTag(deleteTagParams).pipe(
+            map(response => {
+                this.translateService
+                    .get('BATCH.DELETED_SUCCESS')
+                    .subscribe(res => {
+                        operateChanges(operMessage, OperationState.success);
+                    });
+            }),
+            catchError(error => {
+                const message = errorHandler(error);
+                this.translateService
+                    .get(message)
+                    .subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                return of(error);
+            })
+        );
     }
 
     existValid(name) {
@@ -414,10 +369,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
         } else {
             this.isTagNameExist = false;
         }
-    }
-    toggleTagListOpenOrClose() {
-        this.openTag = !this.openTag;
-        this.newTagformShow = false;
     }
     hasImmutableOnTag(): boolean {
         return this.selectedRow.some(artifact => artifact.immutable);
@@ -434,34 +385,11 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.tagNameCheckSub.unsubscribe();
     }
-    get withNotary(): boolean {
-        return this.appConfigService.getConfig().with_notary;
-    }
+
     public get registryUrl(): string {
         if (this.systemInfo && this.systemInfo.registry_url) {
             return this.systemInfo.registry_url;
         }
         return location.hostname;
-    }
-    hasPullCommand(): boolean {
-        return (
-            this.artifactDetails &&
-            (this.artifactDetails.type === ArtifactType.IMAGE ||
-                this.artifactDetails.type === ArtifactType.CHART ||
-                this.artifactDetails.type === ArtifactType.CNAB) &&
-            this.accessoryType !== AccessoryType.COSIGN &&
-            this.accessoryType !== AccessoryType.NYDUS
-        );
-    }
-    getPullCommand(tag: Tag): string {
-        let pullCommand: string = '';
-        if (tag && tag.name && this.artifactDetails) {
-            pullCommand = getPullCommandByTag(
-                this.artifactDetails?.type,
-                `${this.registryUrl}/${this.projectName}/${this.repositoryName}`,
-                tag.name
-            );
-        }
-        return pullCommand;
     }
 }

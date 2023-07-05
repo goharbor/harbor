@@ -1004,13 +1004,13 @@ Test Case - Export CVE
     Lists Should Be Equal  ${expected_cve_data}  ${actual_cve_data}  ignore_order=True
     Close Browser
 
-Test Case - Helm3.7 CLI Push And Pull In Harbor
+Test Case - Helm CLI Push And Pull In Harbor
     [Tags]  helm_push_and_push
     Init Chrome Driver
     ${user}=    Set Variable    user004
     ${pwd}=    Set Variable    Test1@34
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
-    Retry Keyword N Times When Error  4  Helm3.7 CLI Work Flow  ${user}  ${pwd}
+    Retry Keyword N Times When Error  4  Helm CLI Work Flow  ${user}  ${pwd}
     Close Browser
 
 Test Case - Job Service Dashboard Job Queues
@@ -1132,4 +1132,36 @@ Test Case - Job Service Dashboard Workers
     Switch To Job Workers
     Retry Wait Until Page Not Contains Element  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row//clr-dg-cell[text()='REPLICATION']
     Retry Wait Until Page Contains Element  //app-donut-chart//div[text()=' 0/10 ']
+    Close Browser
+
+Test Case - Retain Image Last Pull Time
+    [Tags]  retain_image_last_pull_time
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  alpine
+    ${tag}=  Set Variable  3.10
+    ${project_name}=  Set Variable  project${d}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  ${project_name}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}  ${tag}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  enable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Be Empty  ${last_pull_time}
+    Switch To Configuration System Setting
+    Set Up Retain Image Last Pull Time  disable
+    Go Into Project  ${project_name}
+    Go Into Repo  ${project_name}/${image}
+    Scan Repo  ${tag}  Succeed
+    Sleep  15
+    Reload Page
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Should Not Be Empty  ${last_pull_time}
     Close Browser

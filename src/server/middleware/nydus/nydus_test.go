@@ -15,7 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
-	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
@@ -172,7 +171,7 @@ func (suite *MiddlewareTestSuite) TestNydusAccelerator() {
 		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
 		suite.Equal(artID, accs[0].GetData().ArtifactID)
 		suite.True(accs[0].IsHard())
-		suite.Equal(model.TypeNydusAccelerator, accs[0].GetData().Type)
+		suite.Equal(accessorymodel.TypeNydusAccelerator, accs[0].GetData().Type)
 	})
 }
 
@@ -199,7 +198,7 @@ func (suite *MiddlewareTestSuite) TestNydusAcceleratorDup() {
 		suite.Equal(1, len(accs))
 		suite.Equal(descriptor.Digest.String(), accs[0].GetData().Digest)
 		suite.True(accs[0].IsHard())
-		suite.Equal(model.TypeNydusAccelerator, accs[0].GetData().Type)
+		suite.Equal(accessorymodel.TypeNydusAccelerator, accs[0].GetData().Type)
 	})
 }
 

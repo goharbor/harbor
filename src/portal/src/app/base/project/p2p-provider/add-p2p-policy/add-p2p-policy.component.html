@@ -288,7 +288,7 @@
                     </div>
                     <div
                         class="clr-form-control margin-top-06"
-                        *ngIf="withNotary() && enableContentTrust">
+                        *ngIf="enableContentTrust">
                         <label class="clr-control-label width-6rem">
                             <span>{{
                                 'P2P_PROVIDER.CRITERIA' | translate
@@ -330,12 +330,10 @@
                         </div>
                     </div>
                     <div
-                        class="clr-form-control margin-top-06"
-                        *ngIf="preventVul"
-                        [ngClass]="{ 'mt-1': !withNotary() }">
+                        class="clr-form-control margin-top-06 mt-1"
+                        *ngIf="preventVul">
                         <label for="repo" class="clr-control-label width-6rem">
-                            <ng-container
-                                *ngIf="!(withNotary() && enableContentTrust)">
+                            <ng-container *ngIf="!enableContentTrust">
                                 <span>{{
                                     'P2P_PROVIDER.CRITERIA' | translate
                                 }}</span>

@@ -185,6 +185,13 @@ func (c *controller) updateUsageWithRetry(ctx context.Context, reference, refere
 			return retry.Abort(err)
 		}
 
+		// The PR https://github.com/goharbor/harbor/pull/17392 optimized the logic for post upload blob which use size 0
+		// for checking quota, this will increase the pressure of optimistic lock, so here return earlier
+		// if the quota usage has not changed to reduce the probability of optimistic lock.
+		if types.Equals(used, newUsed) {
+			return nil
+		}
+
 		q.SetUsed(newUsed)
 
 		err = c.quotaMgr.Update(ctx, q)

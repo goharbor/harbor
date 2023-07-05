@@ -18,7 +18,7 @@ var (
 	errInvalidURL = errors.New("invalid URL on layer")
 )
 
-//schema2ManifestHandler is a ManifestHandler that covers schema2 manifests.
+// schema2ManifestHandler is a ManifestHandler that covers schema2 manifests.
 type schema2ManifestHandler struct {
 	repository   distribution.Repository
 	blobStore    distribution.BlobStore

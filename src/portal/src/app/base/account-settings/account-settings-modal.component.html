@@ -224,7 +224,9 @@
             type="button"
             id="submit-btn"
             class="btn btn-primary"
-            [disabled]="!isValid || showProgress || !isUserDataChange()"
+            [disabled]="
+                !isValid || showProgress || !isUserDataChange() || checkProgress
+            "
             (click)="submit()">
             {{ 'BUTTON.OK' | translate }}
         </button>

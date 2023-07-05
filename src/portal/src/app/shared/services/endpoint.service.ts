@@ -175,7 +175,7 @@ export class EndpointDefaultService extends EndpointService {
     }
 
     public getEndpoint(endpointId: number | string): Observable<Endpoint> {
-        if (!endpointId || endpointId <= 0) {
+        if (!endpointId || +endpointId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
@@ -205,7 +205,7 @@ export class EndpointDefaultService extends EndpointService {
         endpointId: number | string,
         endpoint: Endpoint
     ): Observable<any> {
-        if (!endpointId || endpointId <= 0) {
+        if (!endpointId || +endpointId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         if (!endpoint) {
@@ -218,7 +218,7 @@ export class EndpointDefaultService extends EndpointService {
     }
 
     public deleteEndpoint(endpointId: number | string): Observable<any> {
-        if (!endpointId || endpointId <= 0) {
+        if (!endpointId || +endpointId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
@@ -240,7 +240,7 @@ export class EndpointDefaultService extends EndpointService {
     public getEndpointWithReplicationRules(
         endpointId: number | string
     ): Observable<any> {
-        if (!endpointId || endpointId <= 0) {
+        if (!endpointId || +endpointId <= 0) {
             return observableThrowError('Bad request argument.');
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}/policies`;

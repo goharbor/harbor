@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -74,12 +73,10 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, params operation.StopScanA
 	if execution == nil {
 		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("no scan all job is found currently"))
 	}
-	go func(ctx context.Context, eid int64) {
-		err := s.execMgr.Stop(ctx, eid)
-		if err != nil {
-			log.Errorf("failed to stop the execution of executionID=%+v", execution.ID)
-		}
-	}(s.makeCtx(), execution.ID)
+
+	if err = s.scanCtl.StopScanAll(s.makeCtx(), execution.ID, true); err != nil {
+		return s.SendError(ctx, err)
+	}
 
 	return operation.NewStopScanAllAccepted()
 }

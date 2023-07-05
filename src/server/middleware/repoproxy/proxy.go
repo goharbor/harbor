@@ -46,6 +46,8 @@ const (
 	ensureTagMaxRetry   = 60
 )
 
+var tooManyRequestsError = errors.New("too many requests to upstream registry").WithCode(errors.RateLimitCode)
+
 // BlobGetMiddleware handle get blob request
 func BlobGetMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
@@ -112,6 +114,10 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 				httpLib.SendError(w, err)
 				return
 			}
+			if errors.IsRateLimitError(err) {
+				httpLib.SendError(w, tooManyRequestsError)
+				return
+			}
 			log.Errorf("failed to proxy manifest, fallback to local, request uri: %v, error: %v", r.RequestURI, err)
 			next.ServeHTTP(w, r)
 		}
@@ -141,7 +147,7 @@ func defaultManifestURL(projectName string, name string, a lib.ArtifactInfo) str
 	return fmt.Sprintf("/v2/%s/library/%s/manifests/%s", projectName, name, a.Reference)
 }
 
-// defaultManifestURL return the real url for request with default project
+// defaultBlobURL return the real url for request with default project
 func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
 }
@@ -202,7 +208,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
 	}
 	if err != nil {
-		if errors.IsNotFoundErr(err) {
+		if errors.IsNotFoundErr(err) || errors.IsRateLimitError(err) {
 			return err
 		}
 		log.Warningf("Proxy to remote failed, fallback to local repo, error: %v", err)
