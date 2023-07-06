@@ -237,7 +237,6 @@ Wait Unitl Command Success
         Log  Trying ${cmd}: ${n} ...  console=True
         ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
         Exit For Loop If  '${rc}'=='0'
-        Sleep  2
     END
     Log  Command Result is ${output}
     Should Be Equal As Strings  '${rc}'  '0'
@@ -256,7 +255,7 @@ Retry Keyword N Times When Error
         ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
         Run Keyword If  '${keyword}'=='Make Swagger Client'  Exit For Loop If  '${out[0]}'=='PASS' and '${out[1]}'=='0'
         ...  ELSE  Exit For Loop If  '${out[0]}'=='PASS'
-        Sleep  10
+        Sleep  5
     END
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'

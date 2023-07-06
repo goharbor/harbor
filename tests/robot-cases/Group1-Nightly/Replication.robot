@@ -33,7 +33,6 @@ ${REMOTE_SERVER_API_ENDPOINT}  ${REMOTE_SERVER_URL}/api
 
 *** Test Cases ***
 Test Case - Get Harbor Version
-#Just get harbor version and log it
     Get Harbor Version
 
 Test Case - Pro Replication Rules Add
@@ -45,7 +44,6 @@ Test Case - Pro Replication Rules Add
     Close Browser
 
 Test Case - Harbor Endpoint Verification
-    #This case need vailid info and selfsign cert
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -57,12 +55,11 @@ Test Case - Harbor Endpoint Verification
     Close Browser
 
 Test Case - Harbor Endpoint Add
-    #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint    harbor    testabc    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
+    Create A New Endpoint  harbor  testabc  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  Y
     Close Browser
 
 Test Case - Harbor Endpoint Edit
@@ -171,7 +168,7 @@ Test Case - Replication Of Push Images from Self To Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Replication Manage
     Select Rule And Replicate  rule${d}
-    Sleep  20
+    Check Latest Replication Job Status  Succeeded
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  hello-world
@@ -191,8 +188,7 @@ Test Case - Replication Exclusion Mode And Set Bandwidth
     # push mode
     Switch To System Labels
     Create New Labels  bad_${d}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/busybox
+    Go Into Repo  project${d}  busybox
     Add Labels To Tag  latest  bad_${d}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -207,10 +203,10 @@ Test Case - Replication Exclusion Mode And Set Bandwidth
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Replication Manage
     Select Rule And Replicate  rule${d}
-    Retry Wait Until Page Contains  Succeeded
+    Check Latest Replication Job Status  Succeeded
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Image Should Be Replicated To Project  project_dest${d}  hello-world  period=0
+    Image Should Be Replicated To Project  project_dest${d}  hello-world
     # make sure the excluded image is not replication
     Retry Wait Until Page Contains  1 - 1 of 1 items
 
@@ -223,8 +219,8 @@ Test Case - Replication Exclusion Mode And Set Bandwidth
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  pull  project${d}/*  image  e${d}  project${d}  filter_tag=3.10  filter_tag_model=excluding  filter_label=bad_${d}  filter_label_model=excluding  bandwidth=2  bandwidth_unit=Mbps
     Select Rule And Replicate  rule${d}
-    Retry Wait Until Page Contains  Succeeded
-    Image Should Be Replicated To Project  project${d}  hello-world  period=0
+    Check Latest Replication Job Status  Succeeded
+    Image Should Be Replicated To Project  project${d}  hello-world
     # make sure the excluded image is not replication
     Retry Wait Until Page Contains  1 - 1 of 1 items
     Close Browser
@@ -264,6 +260,7 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  pull  a/*  image  e${d}  project${d}
     Select Rule And Replicate  rule${d}
+    Check Latest Replication Job Status  Succeeded
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  alpine
     Image Should Be Replicated To Project  project${d}  hello-world
@@ -281,6 +278,7 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
     Filter Replication Rule  rule${d}
     Select Rule And Replicate  rule${d}
+    Check Latest Replication Job Status  Succeeded
     Image Should Be Replicated To Project  project${d}  httpd
     Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser
@@ -308,8 +306,8 @@ Test Case - Replication Of Push Images to Gitlab Triggered By Event
 
 Test Case - Replication Of Pull Manifest List and CNAB from Harbor To Self
     &{image1_with_tag}=	 Create Dictionary  image=busybox  tag=1.32.0  total_artifact_count=9  archive_count=0
-    &{image2_with_tag}=	 Create Dictionary  image=index101603308079  tag=index_tag101603308079  total_artifact_count=2  archive_count=0
-    &{image3_with_tag}=	 Create Dictionary  image=cnab011609785126  tag=cnab_tag011609785126  total_artifact_count=3  archive_count=2
+    &{image2_with_tag}=	 Create Dictionary  image=index  tag=index_tag  total_artifact_count=2  archive_count=0
+    &{image3_with_tag}=	 Create Dictionary  image=cnab  tag=cnab_tag  total_artifact_count=3  archive_count=2
     ${image1}=  Get From Dictionary  ${image1_with_tag}  image
     ${image2}=  Get From Dictionary  ${image2_with_tag}  image
     ${image3}=  Get From Dictionary  ${image3_with_tag}  image
@@ -386,20 +384,19 @@ Test Case - Robot Account Do Replication
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_dest${d}
     Select Rule And Replicate  rule_push_${d}
-    Retry Wait Until Page Contains  Succeeded
+    Check Latest Replication Job Status  Succeeded
     Logout Harbor
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}
     Should Be Signed By Cosign  ${tag1}
-    Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed By Cosign  ${tag2}
     Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     # pull mode
     Logout Harbor
@@ -408,18 +405,17 @@ Test Case - Robot Account Do Replication
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project_dest${d}/*  image  e${d}  project_dest${d}
     Select Rule And Replicate  rule_pull_${d}
-    Retry Wait Until Page Contains  Succeeded
-    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
+    Check Latest Replication Job Status  Succeeded
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}
     Should Be Signed By Cosign  ${tag1}
-    Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed By Cosign  ${tag2}
     Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     Close Browser
 
@@ -458,9 +454,9 @@ Test Case - Replication Triggered By Events
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
-    Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
-    Image Should Be Replicated To Project  project_dest${d}  ${index}  period=0
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}
+    Image Should Be Replicated To Project  project_dest${d}  ${image2}
+    Image Should Be Replicated To Project  project_dest${d}  ${index}
     # sign
     Cosign Generate Key Pair
     Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -469,32 +465,28 @@ Test Case - Replication Triggered By Events
     Cosign Sign  ${ip}/project${d}/${index}@${image1sha256}
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project${d}
-    Retry Double Keywords When Error  Go Into Repo  project${d}/${image1}  Should Be Signed By Cosign  ${tag1}
-    Back Project Home  project${d}
-    Retry Double Keywords When Error  Go Into Repo  project${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project${d}
-    Go Into Repo  project${d}/${index}
+    Go Into Repo  project${d}  ${image1}
+    Should Be Signed By Cosign  ${tag1}
+    Go Into Repo  project${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project${d}
-    Retry Double Keywords When Error  Go Into Repo  project${d}/${image2}  Should Not Be Signed By Cosign  ${tag2}
-    Back Project Home  project${d}
-    Go Into Repo  project${d}/${index}
+    Go Into Repo  project${d}  ${image2}
+    Should Not Be Signed By Cosign  ${tag2}
+    Go Into Repo  project${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
-    Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${image1}
+    Should Be Signed By Cosign  ${tag1}
+    Go Into Repo  project_dest${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${image2}  Should Not Be Signed By Cosign  ${tag2}
-    Back Project Home  project_dest${d}
-    Go Into Repo  project_dest${d}/${index}
+    Go Into Repo  project_dest${d}  ${image2}
+    Should Not Be Signed By Cosign  ${tag2}
+    Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
     Logout Harbor
     # delete
@@ -502,12 +494,10 @@ Test Case - Replication Triggered By Events
     Go Into Project  project${d}
     Delete Repo  project${d}  ${image2}
     Repo Not Exist  project${d}  ${image2}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image1}
+    Go Into Repo  project${d}  ${image1}
     Retry Double Keywords When Error  Delete Accessory  ${tag1}  Should be Accessory deleted  ${tag1}
     Should Not Be Signed By Cosign  ${tag1}
-    Back Project Home  project${d}
-    Go Into Repo  project${d}/${index}
+    Go Into Repo  project${d}  ${index}
     Retry Double Keywords When Error  Delete Accessory  ${index_tag}  Should be Accessory deleted  ${index_tag}
     Should Not Be Signed By Cosign  ${index_tag}
     Click Index Achieve  ${index_tag}
@@ -516,14 +506,13 @@ Test Case - Replication Triggered By Events
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  project_dest${d}
-    Go Into Repo  project_dest${d}/${image2}
+    Go Into Repo  project_dest${d}  ${image2}
     Wait Until Page Contains  We couldn't find any artifacts!
-    Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${image1}  Should be Accessory deleted  ${tag1}
+    Go Into Repo  project_dest${d}  ${image1}
+    Should be Accessory deleted  ${tag1}
     Should Not Be Signed By Cosign  ${tag1}
-    Back Project Home  project_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_dest${d}/${index}  Should be Accessory deleted  ${index_tag}
+    Go Into Repo  project_dest${d}  ${index}
+    Should be Accessory deleted  ${index_tag}
     Should Not Be Signed By Cosign  ${index_tag}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should be Accessory deleted  ${image1_short_sha256}
     Should Not Be Signed By Cosign  ${image1_short_sha256}
@@ -603,16 +592,15 @@ Test Case - Enable Replication Of Cosign Deployment Security Policy
     Repo Exist  project_pull_dest${d}  ${image1}
     Repo Exist  project_pull_dest${d}  ${image2}
     Repo Exist  project_pull_dest${d}  ${index}
-    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
-    Back Project Home  project_pull_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
-    Back Project Home  project_pull_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_pull_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project_pull_dest${d}
-    Go Into Repo  project_pull_dest${d}/${index}
+    Go Into Repo  project_pull_dest${d}  ${image1}
+    Should Be Signed By Cosign  ${tag1}
+    Go Into Repo  project_pull_dest${d}  ${image2}
+    Should Be Signed By Cosign  ${tag2}
+    Go Into Repo  project_pull_dest${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project_pull_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project_pull_dest${d}
-    Go Into Repo  project_pull_dest${d}/${index}
+    Go Into Repo  project_pull_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
     # check project_push_dest
     Go Into Project  project_push_dest${d}
@@ -620,16 +608,15 @@ Test Case - Enable Replication Of Cosign Deployment Security Policy
     Repo Exist  project_push_dest${d}  ${image1}
     Repo Exist  project_push_dest${d}  ${image2}
     Repo Exist  project_push_dest${d}  ${index}
-    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image1}  Should Be Signed By Cosign  ${tag1}
-    Back Project Home  project_push_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${image2}  Should Be Signed By Cosign  ${tag2}
-    Back Project Home  project_push_dest${d}
-    Retry Double Keywords When Error  Go Into Repo  project_push_dest${d}/${index}  Should Be Signed By Cosign  ${index_tag}
-    Back Project Home  project_push_dest${d}
-    Go Into Repo  project_push_dest${d}/${index}
+    Go Into Repo  project_push_dest${d}  ${image1}
+    Should Be Signed By Cosign  ${tag1}
+    Go Into Repo  project_push_dest${d}  ${image2}
+    Should Be Signed By Cosign  ${tag2}
+    Go Into Repo  project_push_dest${d}  ${index}
+    Should Be Signed By Cosign  ${index_tag}
+    Go Into Repo  project_push_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Back Project Home  project_push_dest${d}
-    Go Into Repo  project_push_dest${d}/${index}
+    Go Into Repo  project_push_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
     Close Browser
 
@@ -653,7 +640,7 @@ Test Case - Carvel Imgpkg Copy To Harbor
     Imgpkg Copy From Registry To Registry  ${ip}/project${d}/${repository}:${tag}  ${ip1}/project_dest${d}/${repository}
     Refresh Repositories
     Repo Exist  project_dest${d}  ${repository}
-    Go Into Repo  project_dest${d}/${repository}
+    Go Into Repo  project_dest${d}  ${repository}
     Artifact Exist  ${tag}
     Back Project Home  project_dest${d}
     Delete Repo  project_dest${d}  ${repository}
@@ -664,7 +651,7 @@ Test Case - Carvel Imgpkg Copy To Harbor
     Refresh Repositories
     Repo Exist  project_dest${d}  ${repository}
     Retry Element Click  ${repo_search_icon}
-    Go Into Repo  project_dest${d}/${repository}
+    Go Into Repo  project_dest${d}  ${repository}
     Artifact Exist  ${tag}
     Docker Logout  ${ip}
     Docker Logout  ${ip1}

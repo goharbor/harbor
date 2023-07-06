@@ -31,8 +31,6 @@ Filter Replication Rule
 Filter Registry
     [Arguments]  ${registry_name}
     ${registry_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${registry_name}')]
-    Switch To Replication Manage
-    Switch To Registries
     Retry Element Click  ${filter_registry_btn}
     Retry Text Input  ${filter_registry_input}  ${registry_name}
     Retry Wait Until Page Contains Element   ${registry_name_element}
@@ -138,7 +136,6 @@ Create A Rule With Existing Endpoint
     Run Keyword If  '${bandwidth_unit}' != 'Kbps'  Select Bandwidth Unit  ${bandwidth_unit}
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
-    Sleep  2
 
 Endpoint Is Unpingable
     Retry Element Click  ${ping_test_button}
@@ -151,20 +148,16 @@ Endpoint Is Pingable
 Disable Certificate Verification
     Checkbox Should Be Selected  ${destination_insecure_checkbox}
     Retry Element Click  ${destination_insecure_xpath}
-    Sleep  1
 
 Enable Certificate Verification
     Checkbox Should Not Be Selected  ${destination_insecure_checkbox}
     Retry Element Click  ${destination_insecure_xpath}
-    Sleep  1
 
 Switch To Registries
     Retry Element Click  ${nav_to_registries}
-    Sleep  1
 
 Switch To Replication Manage
     Retry Element Click  ${nav_to_replications}
-    Sleep  1
 
 Trigger Replication Manual
     [Arguments]  ${rule}
@@ -176,9 +169,7 @@ Trigger Replication Manual
     #change from click to mouse down and up
     Mouse Down  ${dialog_replicate}
     Mouse Up  ${dialog_replicate}
-    Sleep  2
     Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${rule}')]/../div/clr-icon[@shape='success-standard']
-    Sleep  1
 
 Rename Rule
     [Arguments]  ${rule}  ${newname}
@@ -192,7 +183,7 @@ Rename Rule
 
 Select Rule
     [Arguments]  ${rule}
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[1]/div  Retry Wait Element  ${replication_rule_exec_id}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${rule}')]/div/div[1]/div  Element Should Be Enabled  ${replication_rule_exec_id}
 
 Stop Jobs
     Retry Element Click  ${stop_jobs_button}
@@ -249,10 +240,8 @@ Rename Endpoint
 
 Delete Endpoint
     [Arguments]  ${name}
-    Retry Element Click  ${endpoint_filter_search}
-    Retry Text Input   ${endpoint_filter_input}  ${name}
-    #click checkbox before target endpoint
-    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]  Retry Wait Element  ${registry_del_btn}
+    Filter Registry  ${name}
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]  Checkbox Should Be Selected  //clr-dg-row[contains(.,'${name}')]//input
     Retry Element Click  ${registry_del_btn}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
@@ -264,21 +253,20 @@ Select Rule And Replicate
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
 Image Should Be Replicated To Project
-    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=20  ${tag}=${EMPTY}  ${expected_image_size_in_regexp}=${null}  ${total_artifact_count}=${null}  ${archive_count}=${null}
+    [Arguments]  ${project}  ${image}  ${times}=6  ${tag}=${EMPTY}  ${expected_image_size_in_regexp}=${null}  ${total_artifact_count}=${null}  ${archive_count}=${null}
     FOR  ${n}  IN RANGE  0  ${times}
-        Sleep  ${period}
-        Go Into Project    ${project}
+        Go Into Project  ${project}
         Switch To Project Repo
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
         Log To Console  Return value is ${out[0]}
         Continue For Loop If  '${out[0]}'=='FAIL'
-        Go Into Repo  ${project}/${image}
-        ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[5]/div
+        Go Into Repo  ${project}  ${image}
+        ${size}=  Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Get Text  //clr-dg-row[contains(., '${tag}')]//clr-dg-cell[4]/div
         Run Keyword If  '${tag}'!='${EMPTY}' and '${expected_image_size_in_regexp}'!='${null}'  Should Match Regexp  '${size}'  '${expected_image_size_in_regexp}'
         ${index_out}  Go Into Index And Contain Artifacts  ${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  return_immediately=${true}
         Log All  index_out: ${index_out}
         Run Keyword If  '${index_out}'=='PASS'  Exit For Loop
-        Sleep  30
+        Sleep  10
     END
 
 Verify Artifacts Counts In Archive

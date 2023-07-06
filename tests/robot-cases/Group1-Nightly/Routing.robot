@@ -93,7 +93,7 @@ Test Case - Open CVE Details Page
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Artifact  ${sha256}
     Retry Double Keywords When Error  Click Link New Tab And Switch  //hbr-artifact-vulnerabilities//clr-dg-row//a[contains(.,'${cve}')]  Retry Wait Element  //h1[contains(.,'${cve}')]

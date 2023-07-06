@@ -7,11 +7,8 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Goto Project Config
-    Sleep  3
     Retry Element Click  //project-detail//ul/li[contains(.,'Summary')]
-    Sleep  3
     Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(.,'Prevent vulnerable images from running.')]
-    Sleep  2
 
 Click Project Public
     Mouse Down  //hbr-project-policy-config//input[@name='public']
@@ -36,7 +33,6 @@ Click Auto Scan
     Mouse Up  //hbr-project-policy-config//input[@name='scan-image-on-push']
 
 Save Project Config
-    Sleep  1
     Retry Element Click  //hbr-project-policy-config//button[contains(.,'SAVE')]
 
 Public Should Be Selected
