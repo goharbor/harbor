@@ -62,8 +62,7 @@ Body Of Scan A Tag In The Repo
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}:${tag_argument}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image_argument}
+    Go Into Repo  project${d}  ${image_argument}
     Scan Repo  ${tag_argument}  Succeed
     Scan Result Should Display In List Row  ${tag_argument}  is_no_vulerabilty=${is_no_vulerabilty}
     Pull Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}  ${tag_argument}
@@ -76,8 +75,7 @@ Body Of Scan Image With Empty Vul
     ${tag}=  Set Variable  ${tag_argument}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  ${image_argument}:${tag_argument}
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Go Into Repo  ${image_argument}
+    Go Into Repo  library  ${image_argument}
     Scan Repo  ${tag}  Succeed
     Scan Result Should Display In List Row  ${tag}  is_no_vulerabilty=${true}
     Close Browser
@@ -90,9 +88,7 @@ Body Of Manual Scan All
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Trigger Scan Now And Wait Until The Result Appears
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  redis
+    Go Into Repo  library  redis
     Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
@@ -105,8 +101,7 @@ Body Of View Scan Results
     Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
+    Go Into Repo  project${d}  tomcat
     Scan Repo  latest  Succeed
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
@@ -121,9 +116,7 @@ Body Of Scan Image On Push
     Goto Project Config
     Enable Scan On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
-    Navigate To Projects
-    Go Into Project  project${d}
-    Go Into Repo  memcached
+    Go Into Repo  project${d}  memcached
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
@@ -193,8 +186,7 @@ Body Of Verfiy System Level CVE Allowlist
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Logout Harbor
 
@@ -229,8 +221,7 @@ Body Of Verfiy Project Level CVE Allowlist
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
     Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
     Add Items to Project CVE Allowlist    ${most_cve_list}
@@ -259,8 +250,7 @@ Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
@@ -313,6 +303,7 @@ Body Of Replication Of Pull Images from Registry To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  pull  ${src_project_name}  all  e${d}  ${_des_pro_name}  flattening=${flattening}
     Select Rule And Replicate  rule${d}
+    Check Latest Replication Job Status  Succeeded
     Run Keyword If  '${verify_verbose}'=='Y'  Verify Artifact Display Verbose  ${_des_pro_name}  @{target_images}
     ...  ELSE  Verify Artifact Display  ${_des_pro_name}  @{target_images}
     Close Browser
@@ -329,7 +320,7 @@ Verify Artifact Display Verbose
         ${total_artifact_count}=  Get From Dictionary  ${item}  total_artifact_count
         ${archive_count}=  Get From Dictionary  ${item}  archive_count
         Log To Console  Check image ${image}:${tag} replication to Project ${pro_name}
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  times=6
+        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}
     END
 
 Verify Artifact Display
@@ -340,7 +331,7 @@ Verify Artifact Display
         ${item}=  Get Substring  ${item}  1  -1
         ${item}=  Evaluate  ${item}
         ${image}=  Get From Dictionary  ${item}  image
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  times=6
+        Image Should Be Replicated To Project  ${pro_name}  ${image}
     END
 
 Replication With Flattening
@@ -375,7 +366,6 @@ Replication With Flattening
 
 Check Harbor Api Page
     Retry Link Click  //a[contains(.,'Harbor API V2.0')]
-    Sleep  3
     Switch Window  locator=NEW
     Title Should Be  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
@@ -434,8 +424,7 @@ Verify Webhook By Artifact Deleted Event
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     @{tag_list}  Create List  ${tag}
     Multi-delete Artifact  @{tag_list}
     Switch Window  ${webhook_handle}
@@ -447,8 +436,7 @@ Verify Webhook By Scanning Finished Event
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Scan Repo  ${tag}  Succeed
     Switch Window  ${webhook_handle}
     &{scanning_finished_property}=  Create Dictionary  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
@@ -487,7 +475,7 @@ Verify Webhook By Replication Status Changed Event
     Switch Window  ${harbor_handle}
     Switch To Replication Manage
     Select Rule And Replicate  ${replication_rule_name}
-    Retry Wait Until Page Contains  Succeeded
+    Check Latest Replication Job Status  Succeeded
     Switch Window  ${webhook_handle}
     &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
     Verify Request  &{replication_finished_property}

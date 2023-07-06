@@ -36,42 +36,14 @@ Test Case - Push ORAS and Display
     [Tags]  push_oras
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-
     Sign In Harbor  ${HARBOR_URL}  user010  Test1@34
     Create An New Project And Go Into Project  test${d}
-
     ${repo_name}=  Set Variable  hello-oras-artifact
     ${tag}=  Set Variable  1.0.0
     Retry Keyword N Times When Error  5  Oras Push  ${ip}  user010  Test1@34  test${d}  ${repo_name}  ${tag}
-
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/${repo_name}
-
-    Go Into Repo  test${d}/${repo_name}
+    Go Into Repo  test${d}  ${repo_name}
     Wait Until Page Contains  ${tag}
     Close Browser
-
-## TODO: uncomment it once #14470 fixed
-# Test Case - Push SIF and Display
-#     [Tags]  push_sif
-#     Init Chrome Driver
-#     ${d}=    Get Current Date    result_format=%m%s
-#     ${user}=  Set Variable  user010
-#     ${pwd}=  Set Variable  Test1@34
-
-#     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
-#     Create An New Project And Go Into Project  test${d}
-
-#     ${repo_name}=  Set Variable  busybox
-#     ${tag}=  Set Variable  1.28
-#     Retry Keyword N Times When Error  5  Push Singularity To Harbor  library:  library/default/  ${ip}  ${user}  ${pwd}  test${d}  ${repo_name}  ${tag}
-
-#     Go Into Project  test${d}
-#     Wait Until Page Contains  test${d}/${repo_name}
-
-#     Go Into Repo  test${d}/${repo_name}
-#     Wait Until Page Contains  ${tag}
-#     Close Browser
 
 Test Case - Push CNAB Bundle and Display
     [Tags]  push_cnab
@@ -91,12 +63,11 @@ Test Case - Push CNAB Bundle and Display
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
-
-    Go Into Repo  test${d}/cnab${d}
+    Go Into Repo  test${d}  cnab${d}
     Wait Until Page Contains  cnab_tag${d}
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/cnab${d}
-    Go Into Repo  test${d}/cnab${d}
+    Go Into Repo  test${d}  cnab${d}
     Go Into Index And Contain Artifacts  cnab_tag${d}  total_artifact_count=3  archive_count=2
     Close Browser
 
@@ -118,8 +89,7 @@ Test Case - Repo Size
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  alpine  2.6  2.6
-    Go Into Project  library
-    Go Into Repo  alpine
+    Go Into Repo  library  alpine
     Wait Until Page Contains  1.92MiB
     Close Browser
 
@@ -229,7 +199,6 @@ Test Case - Update Label
    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
    Switch To System Labels
    Create New Labels  label_${d}
-   Sleep  3
    ${d1}=    Get Current Date
    Update A Label  label_${d}
    Close Browser
@@ -240,7 +209,6 @@ Test Case - Delete Label
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Labels
     Create New Labels  label_${d}
-    Sleep  3
     Delete A Label  label_${d}
     Close Browser
 
@@ -286,8 +254,6 @@ Test Case - User View Logs
     Delete Repo  project${d}  ${replication_image}
     Delete Repo  project${d}  ${img}
 
-    Sleep  3
-
     Go To Project Log
     Advanced Search Should Display
 
@@ -326,7 +292,6 @@ Test Case - Edit Project Creation
     Project Creation Should Display
     Logout Harbor
 
-    Sleep  3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Set Pro Create Admin Only
     Logout Harbor
@@ -346,8 +311,7 @@ Test Case - Edit Repo Info
     Sign In Harbor  ${HARBOR_URL}  user011  Test1@34
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user011  Test1@34  project${d}  hello-world
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/hello-world
+    Go Into Repo  project${d}  hello-world
     Edit Repo Info
     Close Browser
 
@@ -382,7 +346,6 @@ Test Case - Delete Multi Repo
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user013  Test1@34  project${d}  hello-world
     Push Image  ${ip}  user013  Test1@34  project${d}  busybox
-    Sleep  2
     Go Into Project  project${d}
     @{repo_list}  Create List  hello-world  busybox
     Multi-delete Object  ${repo_delete_btn}  @{repo_list}
@@ -397,8 +360,7 @@ Test Case - Delete Multi Artifacts
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
-    Go Into Project  project${d}
-    Go Into Repo  redis
+    Go Into Repo  project${d}  redis
     @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
     Multi-delete Artifact  @{tag_list}
     # Verify
@@ -436,13 +398,10 @@ Test Case - Project Admin Operate Labels
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user019  Test1@34
     Create An New Project And Go Into Project  project${d}
-    Sleep  2
     # Add labels
     Switch To Project Label
     Create New Labels  label_${d}
-    Sleep  2
     Update A Label  label_${d}
-    Sleep  2
     Delete A Label  label_${d}
     Close Browser
 
@@ -454,14 +413,11 @@ Test Case - Project Admin Add Labels To Repo
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
     Go Into Project  project${d}
-    Sleep  2
     # Add labels
     Switch To Project Label
     Create New Labels  label111
     Create New Labels  label22
-    Sleep  2
-    Switch To Project Repo
-    Go Into Repo  project${d}/redis
+    Go Into Repo  project${d}  redis
     Add Labels To Tag  3.2.10-alpine  label111
     Add Labels To Tag  4.0.7-alpine  label22
     Filter Labels In Tags  label111  label22
@@ -480,7 +436,6 @@ Test Case - Developer Operate Labels
 
     Sign In Harbor  ${HARBOR_URL}  user022  Test1@34
     Go Into Project  project${d}  has_image=${false}
-    Sleep  3
     Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
@@ -493,17 +448,13 @@ Test Case - Copy A Image
     Create An New Project And Go Into Project  project${random_num1}${random_num2}
     Create An New Project And Go Into Project  project${random_num1}
 
-    Sleep  1
     Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
-    Sleep  1
-    Go Into Repo  project${random_num1}/redis
+    Go Into Repo  project${random_num1}  redis
     Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}
-    Sleep  1
     Page Should Contain  ${target_image_name}
-    Go Into Repo  project${random_num1}${random_num2}/${target_image_name}
-    Sleep  1
+    Go Into Repo  project${random_num1}${random_num2}  ${target_image_name}
     Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
@@ -527,12 +478,14 @@ Test Case - Copy A Image And Accessory
     Docker Login  ${ip}  ${user}  ${pwd}
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
     Docker Logout  ${ip}
-    Retry Double Keywords When Error  Go Into Repo  ${source_project}/${image}  Should Be Signed By Cosign  ${tag}
+    Go Into Repo  ${source_project}  ${image}
+    Should Be Signed By Cosign  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
-    Retry Double Keywords When Error  Go Into Repo  ${target_project}/${image}  Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Go Into Repo  ${target_project}  ${image}
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
     Should Be Signed By Cosign  ${tag}
     Close Browser
 
@@ -590,15 +543,11 @@ Test Case - Project Quotas Control Under Copy
     Create An New Project And Go Into Project  project_b_${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project_a_${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project_a_${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
-    Go Into Project  project_a_${d}
-    Go Into Repo  project_a_${d}/${image_a}
+    Go Into Repo  project_a_${d}  ${image_a}
     Copy Image  ${image_a_ver}  project_b_${d}  ${image_a}
-    Go Into Project  project_a_${d}
-    Go Into Repo  project_a_${d}/${image_b}
+    Go Into Repo  project_a_${d}  ${image_b}
     Copy Image  ${image_b_ver}  project_b_${d}  ${image_b}  is_success=${false}
-    Sleep  2
     Go Into Project  project_b_${d}
-    Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
     Close Browser
@@ -609,8 +558,7 @@ Test Case - Tag CRUD
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
-    Switch To Project Repo
-    Go Into Repo   hello-world
+    Go Into Repo   project${d}  hello-world
     Go Into Artifact   latest
     Should Contain Tag   latest
     # add more than one tag
@@ -696,15 +644,12 @@ Test Case - Push Docker Manifest Index and Display
 
     Docker Push Index  ${ip}  user010  Test1@34  ${ip}/test${d}/index${d}:index_tag${d}  ${ip}/test${d}/${image_a}:${image_a_ver}  ${ip}/test${d}/${image_b}:${image_b_ver}
 
-    Go Into Project  test${d}
-    Wait Until Page Contains  test${d}/index${d}
-
-    Go Into Repo  test${d}/index${d}
+    Go Into Repo  test${d}  index${d}
     Wait Until Page Contains  index_tag${d}
 
     Go Into Project  test${d}
     Wait Until Page Contains  test${d}/index${d}
-    Go Into Repo  test${d}/index${d}
+    Go Into Repo  test${d}  index${d}
     Go Into Index And Contain Artifacts  index_tag${d}  total_artifact_count=2
     Close Browser
 
@@ -717,19 +662,15 @@ Test Case - Can Not Copy Image In ReadOnly Mode
     Create An New Project And Go Into Project  project${random_num1}${random_num2}
     Create An New Project And Go Into Project  project${random_num1}
 
-    Sleep  1
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${random_num1}  redis  ${image_tag}
-    Sleep  1
     Enable Read Only
-    Go Into Repo  project${random_num1}/redis
+    Go Into Repo  project${random_num1}  redis
     Copy Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  is_success=${false}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num1}${random_num2}  has_image=${false}
-    Sleep  10
     Go Into Project  project${random_num1}${random_num2}  has_image=${false}
     Disable Read Only
-    Sleep  10
     Close Browser
 
 Test Case - Read Only Mode
@@ -742,7 +683,6 @@ Test Case - Read Only Mode
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
 
     Disable Read Only
-    Sleep  5
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
@@ -831,7 +771,8 @@ Test Case - Cosign And Cosign Deployment Security Policy
 
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
     Go Into Project  project${d}
-    Retry Double Keywords When Error  Go Into Repo  project${d}/${image}  Should Not Be Signed By Cosign  ${tag}
+    Go Into Repo  project${d}  ${image}
+    Should Not Be Signed By Cosign  ${tag}
     Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
     Cosign Generate Key Pair
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
@@ -863,8 +804,7 @@ Test Case - Audit Log And Purge
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag1}  ${tag1}
     Clean All Local Images
     Verify Log  ${user}  project${d}/${image}:${tag1}  artifact  create
-    Go Into Project  project${d}
-    Go Into Repo  ${image}
+    Go Into Repo  project${d}  ${image}
     Go Into Artifact  ${tag1}
     # create tag
     Add A New Tag   ${tag2}
@@ -878,8 +818,7 @@ Test Case - Audit Log And Purge
     Docker Pull  ${ip}/project${d}/${image}:${tag1}
     Docker Logout  ${ip}
     Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  pull
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     # delete artifact
     @{tag_list}  Create List  ${tag1}
     Multi-delete Artifact  @{tag_list}
@@ -928,8 +867,7 @@ Test Case - Audit Log Forward
     Retry Action Keyword  Verify Log In Syslog Service  ${HARBOR_ADMIN}  project${d}/${image}:${tag1}  artifact  create
     # Enable Skip Audit Log Database
     Enable Skip Audit Log Database
-    Go Into Project  project${d}
-    Go Into Repo  ${image}
+    Go Into Repo  project${d}  ${image}
     Go Into Artifact  ${tag1}
     # create tag
     Add A New Tag   ${tag2}
@@ -939,8 +877,7 @@ Test Case - Audit Log Forward
     Set Audit Log Forward  ${null}  Configuration has been successfully saved.
     Retry Wait Element Should Be Disabled  ${skip_audit_log_database_checkbox}
     Checkbox Should Not Be Selected  ${skip_audit_log_database_checkbox}
-    Go Into Project  project${d}
-    Go Into Repo  ${image}
+    Go Into Repo  project${d}  ${image}
     Go Into Artifact  ${tag1}
     # delete tag
     Delete A Tag  ${tag2}
@@ -979,17 +916,15 @@ Test Case - Export CVE
     # scan images
     Refresh Repositories
     FOR  ${image}  IN  @{images.keys()}
-        Go Into Repo  ${image}
+        Go Into Repo  project${d}  ${image}
         Scan Repo  ${images['${image}']}  Succeed
-        Back Project Home  project${d}
     END
+    Back Project Home  project${d}
     Switch To Project Label
     Create New Labels  ${labels}[1]
-    Switch To Project Repo
-    Go Into Repo  nginx
+    Go Into Repo  project${d}  nginx
     Add Labels To Tag  ${images['nginx']}  ${labels}[0]
-    Back Project Home  project${d}
-    Go Into Repo  redis
+    Go Into Repo  project${d}  redis
     Add Labels To Tag  ${images['redis']}  ${labels}[1]
     Navigate To Projects
     Should Not Be Export CVEs
@@ -1032,8 +967,7 @@ Test Case - Job Service Dashboard Job Queues
     ${retention_execution1}=  Execute Dry Run  photon  0/0
     ${retention_execution2}=  Execute Run  photon  0/0
     # Triggers three IMAGE_SCAN jobs
-    Switch To Project Repo
-    Go Into Repo  photon
+    Go Into Repo  project${d}  photon
     Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Triggers a GARBAGE_COLLECTION job
@@ -1069,8 +1003,7 @@ Test Case - Job Service Dashboard Job Queues
     Switch to Log Rotation
     Purge Now  1  Days  Running
     # Triggers three IMAGE_SCAN jobs
-    Go Into Project  project${d}
-    Go Into Repo  photon
+    Go Into Repo  project${d}  photon
     Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Check job queues
@@ -1117,15 +1050,15 @@ Test Case - Job Service Dashboard Workers
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
     Switch to Registries
-    Create A New Endpoint  harbor  ${endpoint_name}  https://${LOCAL_REGISTRY}  ${null}  ${null}
+    Create A New Endpoint  harbor  ${endpoint_name}  https://cicd.harbor.vmwarecna.net  ${null}  ${null}
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  ${rule_name}  pull  ${LOCAL_REGISTRY_NAMESPACE}/test_replication  image  ${endpoint_name}  ${project_name}  bandwidth=50  bandwidth_unit=Mbps
+    Create A Rule With Existing Endpoint  ${rule_name}  pull  nightly/test_replication  image  ${endpoint_name}  ${project_name}  bandwidth=50  bandwidth_unit=Mbps
     Select Rule And Replicate  ${rule_name}
-    Retry Wait Until Page Contains  Running
+    Check Latest Replication Job Status  InProgress
     Switch To Job Workers
     Retry Wait Until Page Contains Element  //clr-datagrid[.//button[text()='Worker ID']]//clr-dg-row//clr-dg-cell[text()='REPLICATION']
     Retry Wait Until Page Contains Element  //app-donut-chart//div[text()=' 1/10 ']
-    Check Worker Log  REPLICATION  copying ${LOCAL_REGISTRY_NAMESPACE}/test_replication
+    Check Worker Log  REPLICATION  copying nightly/test_replication
     Switch To Replication Manage
     Select Rule  ${rule_name}
     Retry Action Keyword  Check Latest Replication Job Status  Succeeded
@@ -1146,22 +1079,20 @@ Test Case - Retain Image Last Pull Time
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}  ${tag}
     Switch To Configuration System Setting
     Set Up Retain Image Last Pull Time  enable
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
     Should Be Empty  ${last_pull_time}
     Switch To Configuration System Setting
     Set Up Retain Image Last Pull Time  disable
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
     Should Not Be Empty  ${last_pull_time}
     Close Browser
