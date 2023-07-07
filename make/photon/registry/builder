@@ -22,7 +22,7 @@ cur=$PWD
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 
-# add patch 3599
+# add patch 3599 to update AWS SDK
 echo 'add patch https://github.com/distribution/distribution/pull/3599 ...'
 cd $TEMP
 wget https://github.com/distribution/distribution/pull/3599.patch
