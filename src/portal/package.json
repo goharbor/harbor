@@ -81,7 +81,7 @@
     "ng-swagger-gen": "^1.8.1",
     "prettier": "^2.6.2",
     "prettier-eslint": "^14.0.2",
-    "stylelint": "^14.16.1",
+    "stylelint": "^15.10.1",
     "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-prettier-scss": "^0.0.1",
     "stylelint-config-standard": "^29.0.0",
