@@ -95,3 +95,4 @@ ${del_remote_checkbox}  //label[@for='ruleDeletion']
 ${filter_registry_btn}  //hbr-filter
 ${filter_registry_input}  //input[contains(@class,'filter-input')]
 ${flattening_select}  //select[@id='dest_namespace_replace_count']
+${copy_by_chunk_checkbox}  //label[@for='by-chunk']

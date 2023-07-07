@@ -384,9 +384,10 @@ Test Case - Robot Account Do Replication
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_dest${d}
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_dest${d}  copy_by_chunk=${true}
     Select Rule And Replicate  rule_push_${d}
-    Retry Wait Until Page Contains  Succeeded
+    Check Latest Replication Job Status  Succeeded
+    Check Latest Replication Enabled Copy By Chunk
     Logout Harbor
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
@@ -406,10 +407,11 @@ Test Case - Robot Account Do Replication
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_dest${d}
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project_dest${d}/*  image  e${d}  project_dest${d}
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project_dest${d}/*  image  e${d}  project_dest${d}  copy_by_chunk=${true}
     Select Rule And Replicate  rule_pull_${d}
-    Retry Wait Until Page Contains  Succeeded
-    Image Should Be Replicated To Project  project_dest${d}  ${image1}  period=0
+    Check Latest Replication Job Status  Succeeded
+    Check Latest Replication Enabled Copy By Chunk
+    Image Should Be Replicated To Project  project_dest${d}  ${image1}
     Should Be Signed By Cosign  ${tag1}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}  period=0
     Should Be Signed By Cosign  ${tag2}
