@@ -130,7 +130,7 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 	payload := &model.Payload{
 		Type:     event.EventType,
 		OccurAt:  event.OccurAt.Unix(),
-		Operator: execution.Trigger,
+		Operator: execution.Operator,
 		EventData: &model.EventData{
 			Retention: &evtModel.Retention{
 				Total:             event.Total,

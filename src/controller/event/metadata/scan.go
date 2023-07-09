@@ -24,14 +24,11 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
-const (
-	autoTriggeredOperator = "auto"
-)
-
 // ScanImageMetaData defines meta data of image scanning event
 type ScanImageMetaData struct {
 	Artifact *v1.Artifact
 	Status   string
+	Operator string
 }
 
 // Resolve image scanning metadata into common chart event
@@ -57,7 +54,7 @@ func (si *ScanImageMetaData) Resolve(evt *event.Event) error {
 		EventType: eventType,
 		Artifact:  si.Artifact,
 		OccurAt:   time.Now(),
-		Operator:  autoTriggeredOperator,
+		Operator:  si.Operator,
 	}
 
 	evt.Topic = topic
