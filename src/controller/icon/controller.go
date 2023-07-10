@@ -57,6 +57,10 @@ var (
 			path:   "./icons/cosign.png",
 			resize: false,
 		},
+		icon.DigestOfIconAccNotation: {
+			path:   "./icons/notation.png",
+			resize: false,
+		},
 		icon.DigestOfIconAccNydus: {
 			path:   "./icons/nydus.png",
 			resize: false,
