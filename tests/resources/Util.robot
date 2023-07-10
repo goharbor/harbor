@@ -226,9 +226,9 @@ Text Input
 
 Clear Field Of Characters
     [Arguments]  ${field}  ${character count}
-    [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
+    [Documentation]  This keyword pushes the BACKSPACE key a specified number of times in a specified field.
     FOR  ${index}  IN RANGE  ${character count}
-        Press Keys  ${field}  \\8
+        Press Keys  ${field}  BACKSPACE
     END
 
 Wait Unitl Command Success
