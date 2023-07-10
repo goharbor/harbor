@@ -64,6 +64,7 @@ require (
 	golang.org/x/crypto v0.5.0
 	golang.org/x/net v0.9.0
 	golang.org/x/oauth2 v0.5.0
+	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.9.0
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 	gopkg.in/h2non/gock.v1 v1.0.16
@@ -162,7 +163,6 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/sync v0.3.0
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/term v0.7.0 // indirect
 	google.golang.org/api v0.110.0 // indirect
