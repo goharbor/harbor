@@ -226,4 +226,6 @@ const (
 	UIMaxLengthLimitedOfNumber = 10
 	// ExecutionStatusRefreshIntervalSeconds is the interval seconds for refreshing execution status
 	ExecutionStatusRefreshIntervalSeconds = "execution_status_refresh_interval_seconds"
+	// QuotaUpdateProvider is the provider for updating quota, currently support Redis and DB
+	QuotaUpdateProvider = "quota_update_provider"
 )

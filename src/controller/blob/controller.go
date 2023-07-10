@@ -323,7 +323,12 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 
 func (c *controller) SetAcceptedBlobSize(ctx context.Context, sessionID string, size int64) error {
 	key := blobSizeKey(sessionID)
-	err := libredis.Instance().Set(ctx, key, size, c.blobSizeExpiration).Err()
+	rc, err := libredis.GetRegistryClient()
+	if err != nil {
+		return err
+	}
+
+	err = rc.Set(ctx, key, size, c.blobSizeExpiration).Err()
 	if err != nil {
 		log.Errorf("failed to set accepted blob size for session %s in redis, error: %v", sessionID, err)
 		return err
@@ -334,7 +339,12 @@ func (c *controller) SetAcceptedBlobSize(ctx context.Context, sessionID string, 
 
 func (c *controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) (int64, error) {
 	key := blobSizeKey(sessionID)
-	size, err := libredis.Instance().Get(ctx, key).Int64()
+	rc, err := libredis.GetRegistryClient()
+	if err != nil {
+		return 0, err
+	}
+
+	size, err := rc.Get(ctx, key).Int64()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, nil

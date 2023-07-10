@@ -132,6 +132,11 @@ func GetExecutionStatusRefreshIntervalSeconds() int64 {
 	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()
 }
 
+// GetQuotaUpdateProvider returns the provider for updating quota.
+func GetQuotaUpdateProvider() string {
+	return DefaultMgr().Get(backgroundCtx, common.QuotaUpdateProvider).GetString()
+}
+
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
