@@ -400,62 +400,107 @@ Prepare Image Package Test Files
     ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}
 
 Verify Webhook By Artifact Pushed Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${pwd}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_pushed_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_pushed_property}  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    ...  ELSE  Set To Dictionary  ${artifact_pushed_property}  specversion=1.0  type=harbor.artifact.pushed  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}
-    &{artifact_pushed_property}=  Create Dictionary  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    Switch Window  ${harbor_handle}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact pushed  ${artifact_pushed_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{artifact_pushed_property}
     Clean All Local Images
 
 Verify Webhook By Artifact Pulled Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${pwd}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_pulled_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_pulled_property}  type=PULL_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}
+    ...  ELSE  Set To Dictionary  ${artifact_pulled_property}  specversion=1.0  type=harbor.artifact.pulled  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Clean All Local Images
     Docker Login  ${ip}  ${user}  ${pwd}
     Docker Pull  ${ip}/${project_name}/${image}:${tag}
     Docker Logout  ${ip}
-    &{artifact_pulled_property}=  Create Dictionary  type=PULL_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact pulled  ${artifact_pulled_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{artifact_pulled_property}
 
 Verify Webhook By Artifact Deleted Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_deleted_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_deleted_property}  type=DELETE_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    ...  ELSE  Set To Dictionary  ${artifact_deleted_property}  specversion=1.0  type=harbor.artifact.deleted  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Go Into Repo  ${project_name}  ${image}
     @{tag_list}  Create List  ${tag}
     Multi-delete Artifact  @{tag_list}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact deleted  ${artifact_deleted_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{artifact_deleted_property}=  Create Dictionary  type=DELETE_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
     Verify Request  &{artifact_deleted_property}
 
 Verify Webhook By Scanning Finished Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{scanning_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_finished_property}  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_finished_property}  specversion=1.0  type=harbor.scan.completed  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Success
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Go Into Repo  ${project_name}  ${image}
     Scan Repo  ${tag}  Succeed
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Scanning finished  ${scanning_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{scanning_finished_property}=  Create Dictionary  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
     Verify Request  &{scanning_finished_property}
 
 Verify Webhook By Scanning Stopped Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{scanning_stopped_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_stopped_property}  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_stopped_property}  specversion=1.0  type=harbor.scan.stopped  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Stopped
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Scan Artifact  ${project_name}  ${image}
     Stop Scan Artifact
     Check Scan Artifact Job Status Is Stopped
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Scanning stopped  ${scanning_stopped_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{scanning_stopped_property}=  Create Dictionary  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
     Verify Request  &{scanning_stopped_property}
 
 Verify Webhook By Tag Retention Finished Event
-    [Arguments]  ${project_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{tag_retention_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${tag_retention_finished_property}  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
+    ...  ELSE  Set To Dictionary  ${tag_retention_finished_property}  specversion=1.0  type=harbor.tag_retention.finished  datacontenttype=application/json  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Switch Window  ${webhook_handle}
     Delete All Requests
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag1}  ${tag1}
@@ -464,24 +509,39 @@ Verify Webhook By Tag Retention Finished Event
     Go Into Project  ${project_name}
     Switch To Tag Retention
     Execute Run  ${image}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Tag retention finished  ${tag_retention_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{tag_retention_finished_property}=  Create Dictionary  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Verify Request  &{tag_retention_finished_property}
+    Wait Until Page Contains  "total":2
+    Wait Until Page Contains  "retained":1
 
 Verify Webhook By Replication Status Changed Event
-    [Arguments]  ${project_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{replication_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
+    ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Switch To Replication Manage
     Select Rule And Replicate  ${replication_rule_name}
     Check Latest Replication Job Status  Succeeded
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Replication status changed  ${replication_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
     Verify Request  &{replication_finished_property}
 
 Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
-    [Arguments]  ${webhook_endpoint_url}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${webhook_endpoint_url}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     ${d}=  Get Current Date  result_format=%m%s
     ${image}=  Set Variable  nginx
     ${tag1}=  Set Variable  1.17.6
@@ -490,26 +550,46 @@ Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=MiB
     Switch To Project Webhooks
     ${event_type}  Create List  Quota near threshold
-    Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${event_type}
+    Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${payload_format}  ${event_type}
+    &{quota_near_threshold_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_near_threshold_property}  type=QUOTA_WARNING  name=nginx  namespace=project${d}
+    ...  ELSE  Set To Dictionary  ${quota_near_threshold_property}  specversion=1.0  type=harbor.quota.warned  datacontenttype=application/json  name=${image}  repo_full_name=project${d}/${image}  namespace=project${d}
     Switch Window  ${webhook_handle}
     Delete All Requests
     # Quota near threshold
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  ${tag1}  ${tag1}
-    &{quota_near_threshold_property}=  Create Dictionary  type=QUOTA_WARNING  name=nginx  namespace=project${d}
+    Switch Window  ${harbor_handle}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'webhook${d}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Quota near threshold  ${quota_near_threshold_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{quota_near_threshold_property}
-    Retry Action Keyword  Verify Webhook By Quota Exceed Event  project${d}  webhook${d}  ${image}  ${tag2}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Quota Exceed Event  project${d}  webhook${d}  ${image}  ${tag2}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
 
 Verify Webhook By Quota Exceed Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{quota_exceed_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_exceed_property}  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
+    ...  ELSE  Set To Dictionary  ${quota_exceed_property}  specversion=1.0  type=harbor.quota.exceeded  datacontenttype=application/json  name=${image}  repo_full_name=${project_name}/${image}  namespace=${project_name}
     # Quota exceed
     Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
     Delete A Webhook  ${webhook_name}
     ${event_type}  Create List  Quota exceed
-    Create A New Webhook  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}
+    Create A New Webhook  ${webhook_name}  ${webhook_endpoint_url}  ${payload_format}  ${event_type}
     Switch Window  ${webhook_handle}
     Delete All Requests
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}  err_msg=adding 21.1 MiB of storage resource, which when updated to current usage of 48.5 MiB will exceed the configured upper limit of ${storage_quota}.0 MiB.
-    &{quota_exceed_property}=  Create Dictionary  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Quota exceed  ${quota_exceed_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{quota_exceed_property}
 
 Create Schedules For Job Service Dashboard Schedules
