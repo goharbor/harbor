@@ -17,23 +17,23 @@ var drivers = make(map[string]Driver)
 // Driver is the interface every source driver must implement.
 //
 // How to implement a source driver?
-//   1. Implement this interface.
-//   2. Optionally, add a function named `WithInstance`.
-//      This function should accept an existing source instance and a Config{} struct
-//      and return a driver instance.
-//   3. Add a test that calls source/testing.go:Test()
-//   4. Add own tests for Open(), WithInstance() (when provided) and Close().
-//      All other functions are tested by tests in source/testing.
-//      Saves you some time and makes sure all source drivers behave the same way.
-//   5. Call Register in init().
+//  1. Implement this interface.
+//  2. Optionally, add a function named `WithInstance`.
+//     This function should accept an existing source instance and a Config{} struct
+//     and return a driver instance.
+//  3. Add a test that calls source/testing.go:Test()
+//  4. Add own tests for Open(), WithInstance() (when provided) and Close().
+//     All other functions are tested by tests in source/testing.
+//     Saves you some time and makes sure all source drivers behave the same way.
+//  5. Call Register in init().
 //
 // Guidelines:
-//   * All configuration input must come from the URL string in func Open()
+//   - All configuration input must come from the URL string in func Open()
 //     or the Config{} struct in WithInstance. Don't os.Getenv().
-//   * Drivers are supposed to be read only.
-//   * Ideally don't load any contents (into memory) in Open or WithInstance.
+//   - Drivers are supposed to be read only.
+//   - Ideally don't load any contents (into memory) in Open or WithInstance.
 type Driver interface {
-	// Open returns a a new driver instance configured with parameters
+	// Open returns a new driver instance configured with parameters
 	// coming from the URL string. Migrate will call this function
 	// only once per instance.
 	Open(url string) (Driver, error)

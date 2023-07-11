@@ -26,6 +26,7 @@ const (
 	XIDOID              = 28
 	CIDOID              = 29
 	JSONOID             = 114
+	JSONArrayOID        = 199
 	PointOID            = 600
 	LsegOID             = 601
 	PathOID             = 602
@@ -74,12 +75,15 @@ const (
 	JSONBArrayOID       = 3807
 	DaterangeOID        = 3912
 	Int4rangeOID        = 3904
+	Int4multirangeOID   = 4451
 	NumrangeOID         = 3906
+	NummultirangeOID    = 4532
 	TsrangeOID          = 3908
 	TsrangeArrayOID     = 3909
 	TstzrangeOID        = 3910
 	TstzrangeArrayOID   = 3911
 	Int8rangeOID        = 3926
+	Int8multirangeOID   = 4536
 )
 
 type Status byte
@@ -288,10 +292,13 @@ func NewConnInfo() *ConnInfo {
 	ci.RegisterDataType(DataType{Value: &Int2{}, Name: "int2", OID: Int2OID})
 	ci.RegisterDataType(DataType{Value: &Int4{}, Name: "int4", OID: Int4OID})
 	ci.RegisterDataType(DataType{Value: &Int4range{}, Name: "int4range", OID: Int4rangeOID})
+	ci.RegisterDataType(DataType{Value: &Int4multirange{}, Name: "int4multirange", OID: Int4multirangeOID})
 	ci.RegisterDataType(DataType{Value: &Int8{}, Name: "int8", OID: Int8OID})
 	ci.RegisterDataType(DataType{Value: &Int8range{}, Name: "int8range", OID: Int8rangeOID})
+	ci.RegisterDataType(DataType{Value: &Int8multirange{}, Name: "int8multirange", OID: Int8multirangeOID})
 	ci.RegisterDataType(DataType{Value: &Interval{}, Name: "interval", OID: IntervalOID})
 	ci.RegisterDataType(DataType{Value: &JSON{}, Name: "json", OID: JSONOID})
+	ci.RegisterDataType(DataType{Value: &JSONArray{}, Name: "_json", OID: JSONArrayOID})
 	ci.RegisterDataType(DataType{Value: &JSONB{}, Name: "jsonb", OID: JSONBOID})
 	ci.RegisterDataType(DataType{Value: &JSONBArray{}, Name: "_jsonb", OID: JSONBArrayOID})
 	ci.RegisterDataType(DataType{Value: &Line{}, Name: "line", OID: LineOID})
@@ -300,6 +307,7 @@ func NewConnInfo() *ConnInfo {
 	ci.RegisterDataType(DataType{Value: &Name{}, Name: "name", OID: NameOID})
 	ci.RegisterDataType(DataType{Value: &Numeric{}, Name: "numeric", OID: NumericOID})
 	ci.RegisterDataType(DataType{Value: &Numrange{}, Name: "numrange", OID: NumrangeOID})
+	ci.RegisterDataType(DataType{Value: &Nummultirange{}, Name: "nummultirange", OID: NummultirangeOID})
 	ci.RegisterDataType(DataType{Value: &OIDValue{}, Name: "oid", OID: OIDOID})
 	ci.RegisterDataType(DataType{Value: &Path{}, Name: "path", OID: PathOID})
 	ci.RegisterDataType(DataType{Value: &Point{}, Name: "point", OID: PointOID})
@@ -527,8 +535,22 @@ type scanPlanDataTypeSQLScanner DataType
 func (plan *scanPlanDataTypeSQLScanner) Scan(ci *ConnInfo, oid uint32, formatCode int16, src []byte, dst interface{}) error {
 	scanner, ok := dst.(sql.Scanner)
 	if !ok {
-		newPlan := ci.PlanScan(oid, formatCode, dst)
-		return newPlan.Scan(ci, oid, formatCode, src, dst)
+		dv := reflect.ValueOf(dst)
+		if dv.Kind() != reflect.Ptr || !dv.Type().Elem().Implements(scannerType) {
+			newPlan := ci.PlanScan(oid, formatCode, dst)
+			return newPlan.Scan(ci, oid, formatCode, src, dst)
+		}
+		if src == nil {
+			// Ensure the pointer points to a zero version of the value
+			dv.Elem().Set(reflect.Zero(dv.Type().Elem()))
+			return nil
+		}
+		dv = dv.Elem()
+		// If the pointer is to a nil pointer then set that before scanning
+		if dv.Kind() == reflect.Ptr && dv.IsNil() {
+			dv.Set(reflect.New(dv.Type().Elem()))
+		}
+		scanner = dv.Interface().(sql.Scanner)
 	}
 
 	dt := (*DataType)(plan)
@@ -587,8 +609,30 @@ func (plan *scanPlanDataTypeAssignTo) Scan(ci *ConnInfo, oid uint32, formatCode 
 type scanPlanSQLScanner struct{}
 
 func (scanPlanSQLScanner) Scan(ci *ConnInfo, oid uint32, formatCode int16, src []byte, dst interface{}) error {
-	scanner := dst.(sql.Scanner)
-	if formatCode == BinaryFormatCode {
+	scanner, ok := dst.(sql.Scanner)
+	if !ok {
+		dv := reflect.ValueOf(dst)
+		if dv.Kind() != reflect.Ptr || !dv.Type().Elem().Implements(scannerType) {
+			newPlan := ci.PlanScan(oid, formatCode, dst)
+			return newPlan.Scan(ci, oid, formatCode, src, dst)
+		}
+		if src == nil {
+			// Ensure the pointer points to a zero version of the value
+			dv.Elem().Set(reflect.Zero(dv.Elem().Type()))
+			return nil
+		}
+		dv = dv.Elem()
+		// If the pointer is to a nil pointer then set that before scanning
+		if dv.Kind() == reflect.Ptr && dv.IsNil() {
+			dv.Set(reflect.New(dv.Type().Elem()))
+		}
+		scanner = dv.Interface().(sql.Scanner)
+	}
+	if src == nil {
+		// This is necessary because interface value []byte:nil does not equal nil:nil for the binary format path and the
+		// text format path would be converted to empty string.
+		return scanner.Scan(nil)
+	} else if formatCode == BinaryFormatCode {
 		return scanner.Scan(src)
 	} else {
 		return scanner.Scan(string(src))
@@ -751,6 +795,18 @@ func (scanPlanString) Scan(ci *ConnInfo, oid uint32, formatCode int16, src []byt
 	return newPlan.Scan(ci, oid, formatCode, src, dst)
 }
 
+var scannerType = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
+
+func isScanner(dst interface{}) bool {
+	if _, ok := dst.(sql.Scanner); ok {
+		return true
+	}
+	if t := reflect.TypeOf(dst); t != nil && t.Kind() == reflect.Ptr && t.Elem().Implements(scannerType) {
+		return true
+	}
+	return false
+}
+
 // PlanScan prepares a plan to scan a value into dst.
 func (ci *ConnInfo) PlanScan(oid uint32, formatCode int16, dst interface{}) ScanPlan {
 	switch formatCode {
@@ -815,13 +871,13 @@ func (ci *ConnInfo) PlanScan(oid uint32, formatCode int16, dst interface{}) Scan
 	}
 
 	if dt != nil {
-		if _, ok := dst.(sql.Scanner); ok {
+		if isScanner(dst) {
 			return (*scanPlanDataTypeSQLScanner)(dt)
 		}
 		return (*scanPlanDataTypeAssignTo)(dt)
 	}
 
-	if _, ok := dst.(sql.Scanner); ok {
+	if isScanner(dst) {
 		return scanPlanSQLScanner{}
 	}
 
@@ -869,72 +925,77 @@ var nameValues map[string]Value
 
 func init() {
 	nameValues = map[string]Value{
-		"_aclitem":     &ACLItemArray{},
-		"_bool":        &BoolArray{},
-		"_bpchar":      &BPCharArray{},
-		"_bytea":       &ByteaArray{},
-		"_cidr":        &CIDRArray{},
-		"_date":        &DateArray{},
-		"_float4":      &Float4Array{},
-		"_float8":      &Float8Array{},
-		"_inet":        &InetArray{},
-		"_int2":        &Int2Array{},
-		"_int4":        &Int4Array{},
-		"_int8":        &Int8Array{},
-		"_numeric":     &NumericArray{},
-		"_text":        &TextArray{},
-		"_timestamp":   &TimestampArray{},
-		"_timestamptz": &TimestamptzArray{},
-		"_uuid":        &UUIDArray{},
-		"_varchar":     &VarcharArray{},
-		"_jsonb":       &JSONBArray{},
-		"aclitem":      &ACLItem{},
-		"bit":          &Bit{},
-		"bool":         &Bool{},
-		"box":          &Box{},
-		"bpchar":       &BPChar{},
-		"bytea":        &Bytea{},
-		"char":         &QChar{},
-		"cid":          &CID{},
-		"cidr":         &CIDR{},
-		"circle":       &Circle{},
-		"date":         &Date{},
-		"daterange":    &Daterange{},
-		"float4":       &Float4{},
-		"float8":       &Float8{},
-		"hstore":       &Hstore{},
-		"inet":         &Inet{},
-		"int2":         &Int2{},
-		"int4":         &Int4{},
-		"int4range":    &Int4range{},
-		"int8":         &Int8{},
-		"int8range":    &Int8range{},
-		"interval":     &Interval{},
-		"json":         &JSON{},
-		"jsonb":        &JSONB{},
-		"line":         &Line{},
-		"lseg":         &Lseg{},
-		"macaddr":      &Macaddr{},
-		"name":         &Name{},
-		"numeric":      &Numeric{},
-		"numrange":     &Numrange{},
-		"oid":          &OIDValue{},
-		"path":         &Path{},
-		"point":        &Point{},
-		"polygon":      &Polygon{},
-		"record":       &Record{},
-		"text":         &Text{},
-		"tid":          &TID{},
-		"timestamp":    &Timestamp{},
-		"timestamptz":  &Timestamptz{},
-		"tsrange":      &Tsrange{},
-		"_tsrange":     &TsrangeArray{},
-		"tstzrange":    &Tstzrange{},
-		"_tstzrange":   &TstzrangeArray{},
-		"unknown":      &Unknown{},
-		"uuid":         &UUID{},
-		"varbit":       &Varbit{},
-		"varchar":      &Varchar{},
-		"xid":          &XID{},
+		"_aclitem":       &ACLItemArray{},
+		"_bool":          &BoolArray{},
+		"_bpchar":        &BPCharArray{},
+		"_bytea":         &ByteaArray{},
+		"_cidr":          &CIDRArray{},
+		"_date":          &DateArray{},
+		"_float4":        &Float4Array{},
+		"_float8":        &Float8Array{},
+		"_inet":          &InetArray{},
+		"_int2":          &Int2Array{},
+		"_int4":          &Int4Array{},
+		"_int8":          &Int8Array{},
+		"_numeric":       &NumericArray{},
+		"_text":          &TextArray{},
+		"_timestamp":     &TimestampArray{},
+		"_timestamptz":   &TimestamptzArray{},
+		"_uuid":          &UUIDArray{},
+		"_varchar":       &VarcharArray{},
+		"_json":          &JSONArray{},
+		"_jsonb":         &JSONBArray{},
+		"aclitem":        &ACLItem{},
+		"bit":            &Bit{},
+		"bool":           &Bool{},
+		"box":            &Box{},
+		"bpchar":         &BPChar{},
+		"bytea":          &Bytea{},
+		"char":           &QChar{},
+		"cid":            &CID{},
+		"cidr":           &CIDR{},
+		"circle":         &Circle{},
+		"date":           &Date{},
+		"daterange":      &Daterange{},
+		"float4":         &Float4{},
+		"float8":         &Float8{},
+		"hstore":         &Hstore{},
+		"inet":           &Inet{},
+		"int2":           &Int2{},
+		"int4":           &Int4{},
+		"int4range":      &Int4range{},
+		"int4multirange": &Int4multirange{},
+		"int8":           &Int8{},
+		"int8range":      &Int8range{},
+		"int8multirange": &Int8multirange{},
+		"interval":       &Interval{},
+		"json":           &JSON{},
+		"jsonb":          &JSONB{},
+		"line":           &Line{},
+		"lseg":           &Lseg{},
+		"ltree":          &Ltree{},
+		"macaddr":        &Macaddr{},
+		"name":           &Name{},
+		"numeric":        &Numeric{},
+		"numrange":       &Numrange{},
+		"nummultirange":  &Nummultirange{},
+		"oid":            &OIDValue{},
+		"path":           &Path{},
+		"point":          &Point{},
+		"polygon":        &Polygon{},
+		"record":         &Record{},
+		"text":           &Text{},
+		"tid":            &TID{},
+		"timestamp":      &Timestamp{},
+		"timestamptz":    &Timestamptz{},
+		"tsrange":        &Tsrange{},
+		"_tsrange":       &TsrangeArray{},
+		"tstzrange":      &Tstzrange{},
+		"_tstzrange":     &TstzrangeArray{},
+		"unknown":        &Unknown{},
+		"uuid":           &UUID{},
+		"varbit":         &Varbit{},
+		"varchar":        &Varchar{},
+		"xid":            &XID{},
 	}
 }

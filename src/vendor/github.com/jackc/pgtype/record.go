@@ -6,7 +6,7 @@ import (
 )
 
 // Record is the generic PostgreSQL record type such as is created with the
-// "row" function. Record only implements BinaryEncoder and Value. The text
+// "row" function. Record only implements BinaryDecoder and Value. The text
 // format output format from PostgreSQL does not include type information and is
 // therefore impossible to decode. No encoders are implemented because
 // PostgreSQL does not support input of generic records.

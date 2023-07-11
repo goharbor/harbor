@@ -13,8 +13,6 @@ type extendedQueryBuilder struct {
 	paramValueBytes []byte
 	paramFormats    []int16
 	resultFormats   []int16
-
-	resetCount int
 }
 
 func (eqb *extendedQueryBuilder) AppendParam(ci *pgtype.ConnInfo, oid uint32, arg interface{}) error {
@@ -34,32 +32,27 @@ func (eqb *extendedQueryBuilder) AppendResultFormat(f int16) {
 	eqb.resultFormats = append(eqb.resultFormats, f)
 }
 
+// Reset readies eqb to build another query.
 func (eqb *extendedQueryBuilder) Reset() {
 	eqb.paramValues = eqb.paramValues[0:0]
 	eqb.paramValueBytes = eqb.paramValueBytes[0:0]
 	eqb.paramFormats = eqb.paramFormats[0:0]
 	eqb.resultFormats = eqb.resultFormats[0:0]
 
-	eqb.resetCount++
-
-	// Every so often shrink our reserved memory if it is abnormally high
-	if eqb.resetCount%128 == 0 {
-		if cap(eqb.paramValues) > 64 {
-			eqb.paramValues = make([][]byte, 0, cap(eqb.paramValues)/2)
-		}
-
-		if cap(eqb.paramValueBytes) > 256 {
-			eqb.paramValueBytes = make([]byte, 0, cap(eqb.paramValueBytes)/2)
-		}
-
-		if cap(eqb.paramFormats) > 64 {
-			eqb.paramFormats = make([]int16, 0, cap(eqb.paramFormats)/2)
-		}
-		if cap(eqb.resultFormats) > 64 {
-			eqb.resultFormats = make([]int16, 0, cap(eqb.resultFormats)/2)
-		}
+	if cap(eqb.paramValues) > 64 {
+		eqb.paramValues = make([][]byte, 0, 64)
 	}
 
+	if cap(eqb.paramValueBytes) > 256 {
+		eqb.paramValueBytes = make([]byte, 0, 256)
+	}
+
+	if cap(eqb.paramFormats) > 64 {
+		eqb.paramFormats = make([]int16, 0, 64)
+	}
+	if cap(eqb.resultFormats) > 64 {
+		eqb.resultFormats = make([]int16, 0, 64)
+	}
 }
 
 func (eqb *extendedQueryBuilder) encodeExtendedParamValue(ci *pgtype.ConnInfo, oid uint32, formatCode int16, arg interface{}) ([]byte, error) {

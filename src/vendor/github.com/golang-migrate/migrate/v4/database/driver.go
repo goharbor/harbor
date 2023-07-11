@@ -1,4 +1,4 @@
-// Package database provides the Database interface.
+// Package database provides the Driver interface.
 // All database drivers must implement this interface, register themselves,
 // optionally provide a `WithInstance` function and pass the tests
 // in package database/testing.
@@ -25,22 +25,22 @@ var drivers = make(map[string]Driver)
 // Driver is the interface every database driver must implement.
 //
 // How to implement a database driver?
-//   1. Implement this interface.
-//   2. Optionally, add a function named `WithInstance`.
-//      This function should accept an existing DB instance and a Config{} struct
-//      and return a driver instance.
-//   3. Add a test that calls database/testing.go:Test()
-//   4. Add own tests for Open(), WithInstance() (when provided) and Close().
-//      All other functions are tested by tests in database/testing.
-//      Saves you some time and makes sure all database drivers behave the same way.
-//   5. Call Register in init().
-//   6. Create a internal/cli/build_<driver-name>.go file
-//   7. Add driver name in 'DATABASE' variable in Makefile
+//  1. Implement this interface.
+//  2. Optionally, add a function named `WithInstance`.
+//     This function should accept an existing DB instance and a Config{} struct
+//     and return a driver instance.
+//  3. Add a test that calls database/testing.go:Test()
+//  4. Add own tests for Open(), WithInstance() (when provided) and Close().
+//     All other functions are tested by tests in database/testing.
+//     Saves you some time and makes sure all database drivers behave the same way.
+//  5. Call Register in init().
+//  6. Create a internal/cli/build_<driver-name>.go file
+//  7. Add driver name in 'DATABASE' variable in Makefile
 //
 // Guidelines:
-//   * Don't try to correct user input. Don't assume things.
+//   - Don't try to correct user input. Don't assume things.
 //     When in doubt, return an error and explain the situation to the user.
-//   * All configuration input must come from the URL string in func Open()
+//   - All configuration input must come from the URL string in func Open()
 //     or the Config{} struct in WithInstance. Don't os.Getenv().
 type Driver interface {
 	// Open returns a new driver instance configured with parameters
