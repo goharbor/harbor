@@ -66,11 +66,13 @@ func (i *Migrations) Append(m *Migration) (ok bool) {
 }
 
 func (i *Migrations) buildIndex() {
-	i.index = make(uintSlice, 0)
+	i.index = make(uintSlice, 0, len(i.migrations))
 	for version := range i.migrations {
 		i.index = append(i.index, version)
 	}
-	sort.Sort(i.index)
+	sort.Slice(i.index, func(x, y int) bool {
+		return i.index[x] < i.index[y]
+	})
 }
 
 func (i *Migrations) First() (version uint, ok bool) {
@@ -125,18 +127,6 @@ func (i *Migrations) findPos(version uint) int {
 }
 
 type uintSlice []uint
-
-func (s uintSlice) Len() int {
-	return len(s)
-}
-
-func (s uintSlice) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s uintSlice) Less(i, j int) bool {
-	return s[i] < s[j]
-}
 
 func (s uintSlice) Search(x uint) int {
 	return sort.Search(len(s), func(i int) bool { return s[i] >= x })

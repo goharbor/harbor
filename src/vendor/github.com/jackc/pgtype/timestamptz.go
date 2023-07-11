@@ -48,6 +48,14 @@ func (dst *Timestamptz) Set(src interface{}) error {
 		} else {
 			return dst.Set(*value)
 		}
+	case string:
+		return dst.DecodeText(nil, []byte(value))
+	case *string:
+		if value == nil {
+			*dst = Timestamptz{Status: Null}
+		} else {
+			return dst.Set(*value)
+		}
 	case InfinityModifier:
 		*dst = Timestamptz{InfinityModifier: value, Status: Present}
 	default:
@@ -124,7 +132,7 @@ func (dst *Timestamptz) DecodeText(ci *ConnInfo, src []byte) error {
 			return err
 		}
 
-		*dst = Timestamptz{Time: tim, Status: Present}
+		*dst = Timestamptz{Time: normalizePotentialUTC(tim), Status: Present}
 	}
 
 	return nil
@@ -148,8 +156,10 @@ func (dst *Timestamptz) DecodeBinary(ci *ConnInfo, src []byte) error {
 	case negativeInfinityMicrosecondOffset:
 		*dst = Timestamptz{Status: Present, InfinityModifier: -Infinity}
 	default:
-		microsecSinceUnixEpoch := microsecFromUnixEpochToY2K + microsecSinceY2K
-		tim := time.Unix(microsecSinceUnixEpoch/1000000, (microsecSinceUnixEpoch%1000000)*1000)
+		tim := time.Unix(
+			microsecFromUnixEpochToY2K/1000000+microsecSinceY2K/1000000,
+			(microsecFromUnixEpochToY2K%1000000*1000)+(microsecSinceY2K%1000000*1000),
+		)
 		*dst = Timestamptz{Time: tim, Status: Present}
 	}
 
@@ -229,6 +239,9 @@ func (src Timestamptz) Value() (driver.Value, error) {
 		if src.InfinityModifier != None {
 			return src.InfinityModifier.String(), nil
 		}
+		if src.Time.Location().String() == time.UTC.String() {
+			return src.Time.UTC(), nil
+		}
 		return src.Time, nil
 	case Null:
 		return nil, nil
@@ -287,8 +300,23 @@ func (dst *Timestamptz) UnmarshalJSON(b []byte) error {
 			return err
 		}
 
-		*dst = Timestamptz{Time: tim, Status: Present}
+		*dst = Timestamptz{Time: normalizePotentialUTC(tim), Status: Present}
 	}
 
 	return nil
+}
+
+// Normalize timestamps in UTC location to behave similarly to how the Golang
+// standard library does it: UTC timestamps lack a .loc value.
+//
+// Reason for this: when comparing two timestamps with reflect.DeepEqual (generally
+// speaking not a good idea, but several testing libraries (for example testify)
+// does this), their location data needs to be equal for them to be considered
+// equal.
+func normalizePotentialUTC(timestamp time.Time) time.Time {
+	if timestamp.Location().String() != time.UTC.String() {
+		return timestamp
+	}
+
+	return timestamp.UTC()
 }

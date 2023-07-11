@@ -11,7 +11,7 @@ import (
 
 // ArrayType represents an array type. While it implements Value, this is only in service of its type conversion duties
 // when registered as a data type in a ConnType. It should not be used directly as a Value. ArrayType is a convenience
-// type for types that do not have an concrete array type.
+// type for types that do not have a concrete array type.
 type ArrayType struct {
 	elements   []ValueTranscoder
 	dimensions []ArrayDimension
