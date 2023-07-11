@@ -117,7 +117,6 @@ Test Case - OIDC Group User
     Should Be Equal As Strings  '${output[0]}'  'FAIL'
     Close Browser
 
-
 Test Case - Delete An OIDC User In Local DB
     Init Chrome Driver
     # sign in with admin role
@@ -131,4 +130,45 @@ Test Case - Delete An OIDC User In Local DB
     Sleep  2
     Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin_user}  password=${admin_pwd}  login_with_provider=ldap
     Should Contain Target User
+    Close Browser
+
+Test Case - OIDC Group Filter
+    [Tags]  group_filter
+    Init Chrome Driver
+    ${oidc_user}=  Set Variable  mike02
+    ${oidc_pwd}=  Set Variable  zhu88jie
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
+    Retry Element Click  //clr-vertical-nav//span[contains(.,'Groups')]
+    Retry Wait Until Page Contains Element  //clr-dg-pagination//div[contains(@class, 'pagination-description')]
+    ${total}=  Get Text  //clr-dg-pagination//div[contains(@class, 'pagination-description')]
+    # Delete all groups
+    Run Keyword If  '${total}' != '0 items'  Run Keywords  Retry Element Click  //div[@class='clr-checkbox-wrapper']//label  AND  Retry Button Click  //button[contains(.,'Delete')]  AND  Retry Button Click  //button[contains(.,'DELETE')]
+    # Set OIDCGroupFilter to .*users
+    Switch To Configuration Authentication
+    Retry Text Input  //*[@id='OIDCGroupFilter']  .*users
+    Retry Element Click  ${config_auth_save_button_xpath}
+    Logout Harbor
+    # Login to the Harbor using OIDC user
+    Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${oidc_user}  password=${oidc_pwd}  login_with_provider=ldap
+    Logout Harbor
+    # Check that there is only one harbor_users group
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
+    Retry Element Click  //clr-vertical-nav//span[contains(.,'Groups')]
+    Retry Wait Until Page Contains Element  //app-group//clr-dg-row//clr-dg-cell[text()='harbor_users']
+    ${count}=  Get Element Count  //app-group//clr-dg-row
+    Should Be Equal As Integers  ${count}  1
+    # Reset OIDCGroupFilter
+    Switch To Configuration Authentication
+    Clear Field Of Characters  //*[@id='OIDCGroupFilter']  7
+    Retry Element Click  ${config_auth_save_button_xpath}
+    Logout Harbor
+    # Login to the Harbor using OIDC user
+    Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${oidc_user}  password=${oidc_pwd}  login_with_provider=ldap
+    Logout Harbor
+    # Check that there are more than one groups
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
+    Retry Element Click  //clr-vertical-nav//span[contains(.,'Groups')]
+    Retry Wait Until Page Contains Element  //app-group//clr-dg-row//clr-dg-cell[text()='harbor_users']
+    ${count}=  Get Element Count  //app-group//clr-dg-row
+    Should Be True  ${count} > 1
     Close Browser
