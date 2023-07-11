@@ -47,9 +47,18 @@ type Logger interface {
 	Log(ctx context.Context, level LogLevel, msg string, data map[string]interface{})
 }
 
+// LoggerFunc is a wrapper around a function to satisfy the pgx.Logger interface
+type LoggerFunc func(ctx context.Context, level LogLevel, msg string, data map[string]interface{})
+
+// Log delegates the logging request to the wrapped function
+func (f LoggerFunc) Log(ctx context.Context, level LogLevel, msg string, data map[string]interface{}) {
+	f(ctx, level, msg, data)
+}
+
 // LogLevelFromString converts log level string to constant
 //
 // Valid levels:
+//
 //	trace
 //	debug
 //	info

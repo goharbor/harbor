@@ -2,7 +2,6 @@ package pgproto3
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 
@@ -64,7 +63,7 @@ func (src SASLInitialResponse) MarshalJSON() ([]byte, error) {
 	}{
 		Type:          "SASLInitialResponse",
 		AuthMechanism: src.AuthMechanism,
-		Data:          hex.EncodeToString(src.Data),
+		Data:          string(src.Data),
 	})
 }
 
@@ -83,12 +82,6 @@ func (dst *SASLInitialResponse) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	dst.AuthMechanism = msg.AuthMechanism
-	if msg.Data != "" {
-		decoded, err := hex.DecodeString(msg.Data)
-		if err != nil {
-			return err
-		}
-		dst.Data = decoded
-	}
+	dst.Data = []byte(msg.Data)
 	return nil
 }
