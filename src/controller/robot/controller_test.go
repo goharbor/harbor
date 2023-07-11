@@ -301,6 +301,12 @@ func (suite *ControllerTestSuite) TestIsValidSec() {
 	suite.False(IsValidSec(sec))
 	sec = "123abc"
 	suite.False(IsValidSec(sec))
+	// secret of length 128 characters long should be ok
+	sec = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcd"
+	suite.True(IsValidSec(sec))
+	// secret of length larger than 128 characters long, such as 129 characters long, should return false
+	sec = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcde"
+	suite.False(IsValidSec(sec))
 }
 
 func (suite *ControllerTestSuite) TestCreateSec() {
