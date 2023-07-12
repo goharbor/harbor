@@ -416,5 +416,5 @@ var (
 )
 
 func IsValidSec(secret string) bool {
-	return len(secret) >= 8 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret)
+	return len(secret) >= 8 && len(secret) <= 128 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret)
 }
