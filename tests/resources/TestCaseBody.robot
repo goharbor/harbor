@@ -171,37 +171,44 @@ Helm CLI Work Flow
     Retry File Should Exist  ./${harbor_helm_package}
     Helm Registry Logout  ${ip}
 
-#Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Logout Harbor
-
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
     Switch To Configuration Security
+    Retry Wait Element Visible  //li[text()=' None ']
     # Add Items To System CVE Allowlist    CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528
-    Add Items To System CVE Allowlist    ${most_cve_list}
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Add Items To System CVE Allowlist  ${most_cve_list}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
     # Add Items To System CVE Allowlist    CVE-2021-43519
-    Add Items To System CVE Allowlist    ${single_cve}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Allowlist  count=9
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Add Items To System CVE Allowlist  ${single_cve}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
 
+    Delete Top Item In System CVE Allowlist  count=9
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}
     Close Browser
 
@@ -209,55 +216,70 @@ Body Of Verfiy Project Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    ${image_argument}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Allowlist    ${most_cve_list}
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items to Project CVE Allowlist    ${single_cve}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Add Items to Project CVE Allowlist  ${most_cve_list}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    Add Items to Project CVE Allowlist  ${single_cve}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Delete Top Item In Project CVE Allowlist
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Close Browser
 
 Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     [Arguments]  ${image_argument}  ${sha256_argument}  ${cve_list}
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    ${image_argument}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=   Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configuration Security
     Add Items To System CVE Allowlist  ${cve_list}
     Logout Harbor
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
     Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Go Into Project  project${d}
     Set Project To Project Level CVE Allowlist
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Add System CVE Allowlist to Project CVE Allowlist By Add System Button Click
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
     Close Browser
 
 Body Of Replication Of Push Images to Registry Triggered By Event
