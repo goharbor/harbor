@@ -1,5 +1,14 @@
 <clr-alerts>
     <clr-alert
+        *ngIf="hasValidBannerMessage() && isLogin()"
+        [clrAlertType]="getBannerMessageType()"
+        [clrAlertAppLevel]="true"
+        [clrAlertClosable]="getBannerMessageClosable()">
+        <clr-alert-item>
+            <span class="alert-text">{{ getBannerMessage() }}</span>
+        </clr-alert-item>
+    </clr-alert>
+    <clr-alert
         *ngIf="showReadOnly && isLogin()"
         [clrAlertType]="'warning'"
         [clrAlertAppLevel]="true"

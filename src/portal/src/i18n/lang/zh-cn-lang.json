@@ -129,7 +129,7 @@
         "ADMIN_RENAME_BUTTON": "更改用户名",
         "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 您确定更改吗?",
         "CLI_PASSWORD": "CLI密码",
-        "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
+        "CLI_PASSWORD_TIP": "CLI 密码可用作访问 Docker 或 Helm 客户端的密码。 启用 OIDC 授权模式后，我们强烈建议您使用机器人帐户来访问Docker 或 Helm 客户端，因为 CLI 密码的有效性取决于用户的 ID 令牌，这意味着您需要定期登录 UI 来刷新令牌。",
         "COPY_SUCCESS": "复制成功",
         "COPY_ERROR": "复制失败",
         "ADMIN_CLI_SECRET_BUTTON": "生成新的CLI密码",
@@ -430,7 +430,8 @@
         "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
         "PAYLOAD_FORMAT": "载荷形式",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "载荷数据"
+        "PAYLOAD_DATA": "载荷数据",
+        "SLACK_RATE_LIMIT": "请注意 Slack 的速率限制"
     },
     "GROUP": {
         "GROUP": "组",
@@ -1033,6 +1034,7 @@
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "在项目中打包 chart",
@@ -1041,7 +1043,8 @@
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。",
+        "COPY_PULL_COMMAND": "复制拉取命令"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1226,7 +1229,12 @@
         "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
         "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
         "EXPLAIN_TIME_WINDOW": "在最近的两小时（默认窗口期）内被推送的 Artifacts 不会被当做垃圾回收的目标",
-        "DRY_RUN_SUCCESS": "触发模拟运行成功"
+        "DRY_RUN_SUCCESS": "触发模拟运行成功",
+        "DELETE_BLOB_AND_MANIFEST": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除",
+        "DELETE_BLOB": "{{blob}}个 blob(s) 已删除",
+        "DELETE_MANIFEST": "{{manifest}}个 manifest(s) 已删除",
+        "FREE_UP_SIZE": "{{size}}的空间已清理",
+        "WORKERS_TOOLTIP": "设置可并行执行垃圾回收任务的工作者数量，默认值为1。"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
@@ -1850,5 +1858,17 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "选择月, 当前月是 {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "选择年, 当前年是 {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "已选择 - {FULL_DATE}"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "横幅消息",
+        "MESSAGE_TYPE": "消息类型",
+        "CLOSABLE": "可关闭",
+        "FROM": "从",
+        "TO": "至",
+        "SUCCESS": "成功",
+        "INFO": "信息",
+        "WARNING": "警告",
+        "DANGER": "危险",
+        "ENTER_MESSAGE": "请输入消息内容"
     }
 }

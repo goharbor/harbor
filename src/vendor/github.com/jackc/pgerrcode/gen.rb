@@ -1,4 +1,4 @@
-# Run this script against the data in table A.1. on https://www.postgresql.org/docs/13/errcodes-appendix.html.
+# Run this script against the data in table A.1. on https://www.postgresql.org/docs/14/errcodes-appendix.html.
 #
 # Source data should be formatted like the following:
 #
@@ -57,7 +57,7 @@ puts <<~STR
 // Package pgerrcode contains constants for PostgreSQL error codes.
 package pgerrcode
 
-// Source: https://www.postgresql.org/docs/13/errcodes-appendix.html
+// Source: https://www.postgresql.org/docs/14/errcodes-appendix.html
 // See gen.rb for script that can convert the error code table to Go code.
 
 const (

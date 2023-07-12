@@ -62,8 +62,7 @@ Body Of Scan A Tag In The Repo
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}:${tag_argument}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image_argument}
+    Go Into Repo  project${d}  ${image_argument}
     Scan Repo  ${tag_argument}  Succeed
     Scan Result Should Display In List Row  ${tag_argument}  is_no_vulerabilty=${is_no_vulerabilty}
     Pull Image  ${ip}  user023  Test1@34  project${d}  ${image_argument}  ${tag_argument}
@@ -76,8 +75,7 @@ Body Of Scan Image With Empty Vul
     ${tag}=  Set Variable  ${tag_argument}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  ${image_argument}:${tag_argument}
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Go Into Repo  ${image_argument}
+    Go Into Repo  library  ${image_argument}
     Scan Repo  ${tag}  Succeed
     Scan Result Should Display In List Row  ${tag}  is_no_vulerabilty=${true}
     Close Browser
@@ -90,9 +88,7 @@ Body Of Manual Scan All
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
     Trigger Scan Now And Wait Until The Result Appears
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  redis
+    Go Into Repo  library  redis
     Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
@@ -105,8 +101,7 @@ Body Of View Scan Results
     Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
+    Go Into Repo  project${d}  tomcat
     Scan Repo  latest  Succeed
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
@@ -121,9 +116,7 @@ Body Of Scan Image On Push
     Goto Project Config
     Enable Scan On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
-    Navigate To Projects
-    Go Into Project  project${d}
-    Go Into Repo  memcached
+    Go Into Repo  project${d}  memcached
     Scan Result Should Display In List Row  latest
     View Repo Scan Details  @{vulnerability_levels}
     Close Browser
@@ -178,38 +171,44 @@ Helm CLI Work Flow
     Retry File Should Exist  ./${harbor_helm_package}
     Helm Registry Logout  ${ip}
 
-#Important Note: All CVE IDs in CVE Allowlist cases must unique!
 Body Of Verfiy System Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Logout Harbor
-
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}  is_in=No
     Switch To Configuration Security
+    Retry Wait Element Visible  //li[text()=' None ']
     # Add Items To System CVE Allowlist    CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528
-    Add Items To System CVE Allowlist    ${most_cve_list}
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Add Items To System CVE Allowlist  ${most_cve_list}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
     # Add Items To System CVE Allowlist    CVE-2021-43519
-    Add Items To System CVE Allowlist    ${single_cve}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Allowlist  count=9
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    Add Items To System CVE Allowlist  ${single_cve}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The system CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
 
+    Delete Top Item In System CVE Allowlist  count=9
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
     Check Listed In CVE Allowlist  project${d}  ${image}  ${sha256}  ${single_cve}
     Close Browser
 
@@ -217,57 +216,70 @@ Body Of Verfiy Project Level CVE Allowlist
     [Arguments]  ${image_argument}  ${sha256_argument}  ${most_cve_list}  ${single_cve}
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    ${image_argument}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=  Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Allowlist    ${most_cve_list}
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items to Project CVE Allowlist    ${single_cve}
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Add Items to Project CVE Allowlist  ${most_cve_list}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    Add Items to Project CVE Allowlist  ${single_cve}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Delete Top Item In Project CVE Allowlist
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Close Browser
 
 Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System
     [Arguments]  ${image_argument}  ${sha256_argument}  ${cve_list}
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    ${image_argument}
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  ${image_argument}
     ${sha256}=  Set Variable  ${sha256_argument}
-    ${signin_user}=    Set Variable  user025
-    ${signin_pwd}=    Set Variable  Test1@34
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${signin_user}=  Set Variable  user025
+    ${signin_pwd}=   Set Variable  Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configuration Security
     Add Items To System CVE Allowlist  ${cve_list}
     Logout Harbor
-    Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
-    Create An New Project And Go Into Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
+    Sign In Harbor  ${HARBOR_URL}  ${signin_user}  ${signin_pwd}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  2
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Go Into Project  project${d}
     Set Project To Project Level CVE Allowlist
-    Cannot Pull Image  ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
     Add System CVE Allowlist to Project CVE Allowlist By Add System Button Click
-    Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
+    Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}
+    # Set System CVE Allowlist expires to expired
+    Set CVE Allowlist Expires  ${True}
+    Retry Wait Until Page Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
+    Cannot Pull Image  ${ip}  ${signin_user}  ${signin_pwd}  project${d}  ${image}  tag=${sha256}  err_msg=cannot be pulled due to configured policy
+    # Set System CVE Allowlist expires to not expired
+    Set CVE Allowlist Expires  ${False}
+    Retry Wait Until Page Does Not Contains  The project CVE allowlist has expired. You can enable the allowlist by extending the expiration date.
     Close Browser
 
 Body Of Replication Of Push Images to Registry Triggered By Event
@@ -313,6 +325,7 @@ Body Of Replication Of Pull Images from Registry To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  pull  ${src_project_name}  all  e${d}  ${_des_pro_name}  flattening=${flattening}
     Select Rule And Replicate  rule${d}
+    Check Latest Replication Job Status  Succeeded
     Run Keyword If  '${verify_verbose}'=='Y'  Verify Artifact Display Verbose  ${_des_pro_name}  @{target_images}
     ...  ELSE  Verify Artifact Display  ${_des_pro_name}  @{target_images}
     Close Browser
@@ -329,7 +342,7 @@ Verify Artifact Display Verbose
         ${total_artifact_count}=  Get From Dictionary  ${item}  total_artifact_count
         ${archive_count}=  Get From Dictionary  ${item}  archive_count
         Log To Console  Check image ${image}:${tag} replication to Project ${pro_name}
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}  times=6
+        Image Should Be Replicated To Project  ${pro_name}  ${image}  tag=${tag}  total_artifact_count=${total_artifact_count}  archive_count=${archive_count}
     END
 
 Verify Artifact Display
@@ -340,7 +353,7 @@ Verify Artifact Display
         ${item}=  Get Substring  ${item}  1  -1
         ${item}=  Evaluate  ${item}
         ${image}=  Get From Dictionary  ${item}  image
-        Image Should Be Replicated To Project  ${pro_name}  ${image}  times=6
+        Image Should Be Replicated To Project  ${pro_name}  ${image}
     END
 
 Replication With Flattening
@@ -375,7 +388,6 @@ Replication With Flattening
 
 Check Harbor Api Page
     Retry Link Click  //a[contains(.,'Harbor API V2.0')]
-    Sleep  3
     Switch Window  locator=NEW
     Title Should Be  Harbor Swagger
     Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
@@ -410,64 +422,107 @@ Prepare Image Package Test Files
     ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}
 
 Verify Webhook By Artifact Pushed Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${pwd}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_pushed_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_pushed_property}  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    ...  ELSE  Set To Dictionary  ${artifact_pushed_property}  specversion=1.0  type=harbor.artifact.pushed  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project_name}  ${image}  ${tag}
-    &{artifact_pushed_property}=  Create Dictionary  type=PUSH_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    Switch Window  ${harbor_handle}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact pushed  ${artifact_pushed_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{artifact_pushed_property}
     Clean All Local Images
 
 Verify Webhook By Artifact Pulled Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${pwd}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_pulled_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_pulled_property}  type=PULL_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}
+    ...  ELSE  Set To Dictionary  ${artifact_pulled_property}  specversion=1.0  type=harbor.artifact.pulled  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Clean All Local Images
     Docker Login  ${ip}  ${user}  ${pwd}
     Docker Pull  ${ip}/${project_name}/${image}:${tag}
     Docker Logout  ${ip}
-    &{artifact_pulled_property}=  Create Dictionary  type=PULL_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact pulled  ${artifact_pulled_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{artifact_pulled_property}
 
 Verify Webhook By Artifact Deleted Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{artifact_deleted_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${artifact_deleted_property}  type=DELETE_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
+    ...  ELSE  Set To Dictionary  ${artifact_deleted_property}  specversion=1.0  type=harbor.artifact.deleted  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  operator=${user}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     @{tag_list}  Create List  ${tag}
     Multi-delete Artifact  @{tag_list}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Artifact deleted  ${artifact_deleted_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{artifact_deleted_property}=  Create Dictionary  type=DELETE_ARTIFACT  operator=${user}  namespace=${project_name}  name=${image}  tag=${tag}
     Verify Request  &{artifact_deleted_property}
 
 Verify Webhook By Scanning Finished Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{scanning_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_finished_property}  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_finished_property}  specversion=1.0  type=harbor.scan.completed  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Success
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Scan Repo  ${tag}  Succeed
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Scanning finished  ${scanning_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{scanning_finished_property}=  Create Dictionary  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
     Verify Request  &{scanning_finished_property}
 
 Verify Webhook By Scanning Stopped Event
-    [Arguments]  ${project_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{scanning_stopped_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_stopped_property}  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_stopped_property}  specversion=1.0  type=harbor.scan.stopped  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Stopped
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Scan Artifact  ${project_name}  ${image}
     Stop Scan Artifact
     Check Scan Artifact Job Status Is Stopped
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Scanning stopped  ${scanning_stopped_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{scanning_stopped_property}=  Create Dictionary  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
     Verify Request  &{scanning_stopped_property}
 
 Verify Webhook By Tag Retention Finished Event
-    [Arguments]  ${project_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{tag_retention_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${tag_retention_finished_property}  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
+    ...  ELSE  Set To Dictionary  ${tag_retention_finished_property}  specversion=1.0  type=harbor.tag_retention.finished  datacontenttype=application/json  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Switch Window  ${webhook_handle}
     Delete All Requests
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag1}  ${tag1}
@@ -476,24 +531,39 @@ Verify Webhook By Tag Retention Finished Event
     Go Into Project  ${project_name}
     Switch To Tag Retention
     Execute Run  ${image}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Tag retention finished  ${tag_retention_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{tag_retention_finished_property}=  Create Dictionary  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Verify Request  &{tag_retention_finished_property}
+    Wait Until Page Contains  "total":2
+    Wait Until Page Contains  "retained":1
 
 Verify Webhook By Replication Status Changed Event
-    [Arguments]  ${project_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{replication_finished_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
+    ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
     Switch To Replication Manage
     Select Rule And Replicate  ${replication_rule_name}
-    Retry Wait Until Page Contains  Succeeded
+    Check Latest Replication Job Status  Succeeded
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Replication status changed  ${replication_finished_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
     Switch Window  ${webhook_handle}
-    &{replication_finished_property}=  Create Dictionary  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
     Verify Request  &{replication_finished_property}
 
 Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
-    [Arguments]  ${webhook_endpoint_url}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${webhook_endpoint_url}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     ${d}=  Get Current Date  result_format=%m%s
     ${image}=  Set Variable  nginx
     ${tag1}=  Set Variable  1.17.6
@@ -502,26 +572,46 @@ Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=MiB
     Switch To Project Webhooks
     ${event_type}  Create List  Quota near threshold
-    Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${event_type}
+    Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${payload_format}  ${event_type}
+    &{quota_near_threshold_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_near_threshold_property}  type=QUOTA_WARNING  name=nginx  namespace=project${d}
+    ...  ELSE  Set To Dictionary  ${quota_near_threshold_property}  specversion=1.0  type=harbor.quota.warned  datacontenttype=application/json  name=${image}  repo_full_name=project${d}/${image}  namespace=project${d}
     Switch Window  ${webhook_handle}
     Delete All Requests
     # Quota near threshold
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  ${tag1}  ${tag1}
-    &{quota_near_threshold_property}=  Create Dictionary  type=QUOTA_WARNING  name=nginx  namespace=project${d}
+    Switch Window  ${harbor_handle}
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'webhook${d}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Quota near threshold  ${quota_near_threshold_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{quota_near_threshold_property}
-    Retry Action Keyword  Verify Webhook By Quota Exceed Event  project${d}  webhook${d}  ${image}  ${tag2}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Quota Exceed Event  project${d}  webhook${d}  ${image}  ${tag2}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
 
 Verify Webhook By Quota Exceed Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    &{quota_exceed_property}=  Create Dictionary
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_exceed_property}  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
+    ...  ELSE  Set To Dictionary  ${quota_exceed_property}  specversion=1.0  type=harbor.quota.exceeded  datacontenttype=application/json  name=${image}  repo_full_name=${project_name}/${image}  namespace=${project_name}
     # Quota exceed
     Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
     Delete A Webhook  ${webhook_name}
     ${event_type}  Create List  Quota exceed
-    Create A New Webhook  ${webhook_name}  ${webhook_endpoint_url}  ${event_type}
+    Create A New Webhook  ${webhook_name}  ${webhook_endpoint_url}  ${payload_format}  ${event_type}
     Switch Window  ${webhook_handle}
     Delete All Requests
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}  err_msg=adding 21.1 MiB of storage resource, which when updated to current usage of 48.5 MiB will exceed the configured upper limit of ${storage_quota}.0 MiB.
-    &{quota_exceed_property}=  Create Dictionary  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}:${tag}
+    Switch Window  ${harbor_handle}
+    Go Into Project  ${project_name}
+    Switch To Project Webhooks
+    Retry Element Click   xpath=//clr-dg-row[contains(.,'${webhook_name}')]//div[contains(@class,'datagrid-select')]
+    ${webhook_execution_id}=  Get Latest Webhook Execution ID
+    Retry Action Keyword  Verify Webhook Execution  ${webhook_execution_id}  WEBHOOK  Success  Quota exceed  ${quota_exceed_property}
+    Verify Webhook Execution Log  ${webhook_execution_id}
+    Switch Window  ${webhook_handle}
     Verify Request  &{quota_exceed_property}
 
 Create Schedules For Job Service Dashboard Schedules

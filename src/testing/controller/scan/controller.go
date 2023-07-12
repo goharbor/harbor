@@ -205,6 +205,20 @@ func (_m *Controller) Stop(ctx context.Context, _a1 *artifact.Artifact) error {
 	return r0
 }
 
+// StopScanAll provides a mock function with given fields: ctx, executionID, async
+func (_m *Controller) StopScanAll(ctx context.Context, executionID int64, async bool) error {
+	ret := _m.Called(ctx, executionID, async)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, bool) error); ok {
+		r0 = rf(ctx, executionID, async)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewController interface {
 	mock.TestingT
 	Cleanup(func())

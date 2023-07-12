@@ -159,6 +159,7 @@ func (suite *MiddlewareTestSuite) TestSubject() {
 		suite.Equal(name, accs[0].GetData().SubArtifactRepo)
 		suite.True(accs[0].IsHard())
 		suite.Equal(accessorymodel.TypeSubject, accs[0].GetData().Type)
+		suite.Equal(subArtDigest, res.Header().Values("OCI-Subject")[0])
 	})
 }
 

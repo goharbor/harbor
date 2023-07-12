@@ -1,7 +1,7 @@
 // Package pgerrcode contains constants for PostgreSQL error codes.
 package pgerrcode
 
-// Source: https://www.postgresql.org/docs/13/errcodes-appendix.html
+// Source: https://www.postgresql.org/docs/14/errcodes-appendix.html
 // See gen.rb for script that can convert the error code table to Go code.
 
 const (
@@ -295,6 +295,7 @@ const (
 	CrashShutdown        = "57P02"
 	CannotConnectNow     = "57P03"
 	DatabaseDropped      = "57P04"
+	IdleSessionTimeout   = "57P05"
 
 	// Class 58 — System Error (errors external to PostgreSQL itself)
 	SystemError   = "58000"
@@ -678,7 +679,7 @@ func IsObjectNotInPrerequisiteState(code string) bool {
 // IsOperatorIntervention asserts the error code class is Class 57 — Operator Intervention
 func IsOperatorIntervention(code string) bool {
 	switch code {
-	case OperatorIntervention, QueryCanceled, AdminShutdown, CrashShutdown, CannotConnectNow, DatabaseDropped:
+	case OperatorIntervention, QueryCanceled, AdminShutdown, CrashShutdown, CannotConnectNow, DatabaseDropped, IdleSessionTimeout:
 		return true
 	}
 	return false

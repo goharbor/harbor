@@ -38,7 +38,7 @@ func (s *ScannerRegistration) ToSwagger(ctx context.Context) *models.ScannerRegi
 	return &models.ScannerRegistration{
 		UUID:             s.UUID,
 		Name:             s.Name,
-		URL:              s.URL,
+		URL:              strfmt.URI(s.URL),
 		Description:      s.Description,
 		Auth:             s.Auth,
 		AccessCredential: s.AccessCredential,

@@ -463,8 +463,7 @@ Verify Artifact Index
     FOR    ${project}    IN    @{project}
         ${name}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].artifact_index.name
         ${tag}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].artifact_index.tag
-        Go Into Project  ${project}  has_image=${true}
-        Go Into Repo  ${project}/${name}[0]
+        Go Into Repo  ${project}  ${name}[0]
         Go Into Index And Contain Artifacts  ${tag}[0]  total_artifact_count=2
         Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project}  ${name}[0]:${tag}[0]
         Navigate To Projects
@@ -474,9 +473,7 @@ Verify Artifact Index
 Loop Repo
     [Arguments]  ${project}  @{repos}
     FOR    ${repo}    IN    @{repos}
-        Navigate To Projects
-        Go Into Project  ${project}  has_image=${true}
-        Go Into Repo  ${project}/${repo}[0][cache_image_namespace]/${repo}[0][cache_image]
+        Go Into Repo  ${project}  ${repo}[0][cache_image_namespace]/${repo}[0][cache_image]
         Pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project}  ${repo}[0][cache_image_namespace]/${repo}[0][cache_image]:${repo}[0][tag]
     END
 

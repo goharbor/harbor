@@ -204,7 +204,7 @@ func (dst *Float8) DecodeBinary(ci *ConnInfo, src []byte) error {
 	}
 
 	if len(src) != 8 {
-		return fmt.Errorf("invalid length for float4: %v", len(src))
+		return fmt.Errorf("invalid length for float8: %v", len(src))
 	}
 
 	n := int64(binary.BigEndian.Uint64(src))

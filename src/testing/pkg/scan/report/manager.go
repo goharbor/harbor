@@ -127,6 +127,27 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*scan.Report, er
 	return r0, r1
 }
 
+// Update provides a mock function with given fields: ctx, r, cols
+func (_m *Manager) Update(ctx context.Context, r *scan.Report, cols ...string) error {
+	_va := make([]interface{}, len(cols))
+	for _i := range cols {
+		_va[_i] = cols[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, r)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *scan.Report, ...string) error); ok {
+		r0 = rf(ctx, r, cols...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateReportData provides a mock function with given fields: ctx, uuid, _a2
 func (_m *Manager) UpdateReportData(ctx context.Context, uuid string, _a2 string) error {
 	ret := _m.Called(ctx, uuid, _a2)

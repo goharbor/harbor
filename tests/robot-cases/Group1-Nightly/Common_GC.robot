@@ -45,8 +45,7 @@ Test Case - GC Untagged Images
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     # make hello-world untagged
-    Go Into Project   project${d}
-    Go Into Repo   hello-world
+    Go Into Repo  project${d}  hello-world
     Go Into Artifact   latest
     Should Contain Tag   latest
     Delete A Tag   latest
@@ -55,18 +54,14 @@ Test Case - GC Untagged Images
     GC Now
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
-    Go Into Project   project${d}
-    Switch To Project Repo
-    Go Into Repo   hello-world
+    Go Into Repo   project${d}  hello-world
     Should Contain Artifact
     # run gc with param delete untagged artifacts checked,  should delete hello-world
     Switch To Garbage Collection
     GC Now  untag=${true}
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
-    Go Into Project   project${d}
-    Switch To Project Repo
-    Go Into Repo   hello-world
+    Go Into Repo  project${d}  hello-world
     Should Not Contain Any Artifact
     Close Browser
 

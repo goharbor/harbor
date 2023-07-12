@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -49,6 +50,7 @@ import (
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
+	mockcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
@@ -77,6 +79,7 @@ type ControllerTestSuite struct {
 	ar              artifact.Controller
 	c               Controller
 	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
+	cache           *mockcache.Cache
 }
 
 // TestController is the entry point of ControllerTestSuite.
@@ -271,6 +274,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	suite.taskMgr = &tasktesting.Manager{}
 
+	suite.cache = &mockcache.Cache{}
+
 	suite.c = &basicController{
 		manager: mgr,
 		ar:      suite.ar,
@@ -298,6 +303,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		execMgr:         suite.execMgr,
 		taskMgr:         suite.taskMgr,
 		reportConverter: &postprocessorstesting.ScanReportV1ToV2Converter{},
+		cache:           func() cache.Cache { return suite.cache },
 	}
 }
 
@@ -522,25 +528,25 @@ func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 func (suite *ControllerTestSuite) TestScanAll() {
 	{
 		// no artifacts found when scan all
-		ctx := context.TODO()
-
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
 
-		suite.taskMgr.On("Count", ctx, q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
+		suite.taskMgr.On("Count", mock.Anything, q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
 
 		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
 
-		suite.execMgr.On("MarkDone", ctx, executionID, mock.Anything).Return(nil).Once()
+		suite.execMgr.On("MarkDone", mock.Anything, executionID, mock.Anything).Return(nil).Once()
 
-		_, err := suite.c.ScanAll(ctx, "SCHEDULE", false)
+		suite.cache.On("Contains", mock.Anything, scanAllStoppedKey(1)).Return(false).Once()
+
+		_, err := suite.c.ScanAll(context.TODO(), "SCHEDULE", false)
 		suite.NoError(err)
 	}
 
@@ -551,7 +557,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", ctx, "SCAN_ALL", int64(0), "SCHEDULE",
+			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
 		).Return(executionID, nil).Once()
 
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
@@ -568,11 +574,26 @@ func (suite *ControllerTestSuite) TestScanAll() {
 		mock.OnAnything(suite.reportMgr, "Create").Return("uuid", nil).Once()
 		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed")).Once()
 		mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
-		suite.execMgr.On("MarkError", ctx, executionID, mock.Anything).Return(nil).Once()
+		suite.execMgr.On("MarkError", mock.Anything, executionID, mock.Anything).Return(nil).Once()
 
 		_, err := suite.c.ScanAll(ctx, "SCHEDULE", false)
 		suite.NoError(err)
 	}
+}
+
+func (suite *ControllerTestSuite) TestStopScanAll() {
+	mockExecID := int64(100)
+	// mock error case
+	mockErr := fmt.Errorf("stop scan all error")
+	suite.cache.On("Save", mock.Anything, scanAllStoppedKey(mockExecID), mock.Anything, mock.Anything).Return(mockErr).Once()
+	err := suite.c.StopScanAll(context.TODO(), mockExecID, false)
+	suite.EqualError(err, mockErr.Error())
+
+	// mock normal case
+	suite.cache.On("Save", mock.Anything, scanAllStoppedKey(mockExecID), mock.Anything, mock.Anything).Return(nil).Once()
+	suite.execMgr.On("Stop", mock.Anything, mockExecID).Return(nil).Once()
+	err = suite.c.StopScanAll(context.TODO(), mockExecID, false)
+	suite.NoError(err)
 }
 
 func (suite *ControllerTestSuite) TestDeleteReports() {

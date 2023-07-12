@@ -33,12 +33,14 @@ type managerTestSuite struct {
 	cachedManager CachedManager
 	repoMgr       *testRepo.Manager
 	cache         *testcache.Cache
+	iterator      *testcache.Iterator
 	ctx           context.Context
 }
 
 func (m *managerTestSuite) SetupTest() {
 	m.repoMgr = &testRepo.Manager{}
 	m.cache = &testcache.Cache{}
+	m.iterator = &testcache.Iterator{}
 	m.cachedManager = NewManager(m.repoMgr)
 	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
@@ -166,10 +168,11 @@ func (m *managerTestSuite) TestResourceType() {
 }
 
 func (m *managerTestSuite) TestCountCache() {
-	m.cache.On("Keys", mock.Anything, mock.Anything).Return([]string{"1"}, nil).Once()
+	m.iterator.On("Next", mock.Anything).Return(false).Once()
+	m.cache.On("Scan", mock.Anything, mock.Anything).Return(m.iterator, nil).Once()
 	c, err := m.cachedManager.CountCache(m.ctx)
 	m.NoError(err)
-	m.Equal(int64(1), c)
+	m.Equal(int64(0), c)
 }
 
 func (m *managerTestSuite) TestDeleteCache() {
@@ -179,7 +182,8 @@ func (m *managerTestSuite) TestDeleteCache() {
 }
 
 func (m *managerTestSuite) TestFlushAll() {
-	m.cache.On("Keys", mock.Anything, mock.Anything).Return([]string{"1"}, nil).Once()
+	m.iterator.On("Next", mock.Anything).Return(false).Once()
+	m.cache.On("Scan", mock.Anything, mock.Anything).Return(m.iterator, nil).Once()
 	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	err := m.cachedManager.FlushAll(m.ctx)
 	m.NoError(err)

@@ -1,0 +1,46 @@
+{
+	"SPDXID": "SPDXRef-DOCUMENT",
+	"creationInfo": {
+		"created": "2023-05-31T07:43:35.672590648Z",
+		"creators": [
+			"Tool: trivy",
+			"Organization: aquasecurity"
+		]
+	},
+	"dataLicense": "CC0-1.0",
+	"documentDescribes": [
+		"SPDXRef-ContainerImage-8e8b2798af13ee89"
+	],
+	"documentNamespace": "http://aquasecurity.github.io/trivy/container_image/artifact_test:dev-9648faf4-428e-46ad-a9e6-1d3f84c6f297",
+	"name": "artifact_test:dev",
+	"packages": [
+		{
+			"SPDXID": "SPDXRef-ContainerImage-8e8b2798af13ee89",
+			"attributionTexts": [
+				"SchemaVersion: 2",
+				"ImageID: sha256:9517d37fc3457e070719ed8dead2a9134dd9d5126dd6ef55d15685337c3dc711",
+				"RepoDigest: 10.202.250.222/test02/test@sha256:0feefb1b81993c1299a7f75a2c86d7cfed4b25859037657377d563d955e8e20f",
+				"DiffID: sha256:6b245f040973e14e29f371ff2b4059c84ab2de8b7b9a04bc21fd4a7b0a72c446",
+				"DiffID: sha256:6491a698ac806b35795f23098e169f50b2b6f179900b5625e5677cb1df2651ca",
+				"RepoTag: artifact_test:dev"
+			],
+			"externalRefs": [
+				{
+					"referenceCategory": "PACKAGE-MANAGER",
+					"referenceLocator": "pkg:oci/test@sha256:0feefb1b81993c1299a7f75a2c86d7cfed4b25859037657377d563d955e8e20f?repository_url=10.202.250.222%2Ftest02%2Ftest\u0026arch=amd64",
+					"referenceType": "purl"
+				}
+			],
+			"filesAnalyzed": false,
+			"name": "artifact_test:dev"
+		}
+	],
+	"relationships": [
+		{
+			"relatedSpdxElement": "SPDXRef-ContainerImage-8e8b2798af13ee89",
+			"relationshipType": "DESCRIBE",
+			"spdxElementId": "SPDXRef-DOCUMENT"
+		}
+	],
+	"spdxVersion": "SPDX-2.2"
+}

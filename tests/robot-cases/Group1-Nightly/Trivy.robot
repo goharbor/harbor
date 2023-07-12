@@ -54,10 +54,8 @@ Test Case - Scan A Tag In The Repo
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
-
     Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
-    Go Into Project  library
-    Go Into Repo  hello-world
+    Go Into Repo  library  hello-world
     Select Object  latest
     Scan Is Disabled
     Close Browser
@@ -83,8 +81,7 @@ Test Case - Project Level Image Serverity Policy
     ${image}=  Set Variable  redis
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
-    Go Into Project  project${d}
-    Go Into Repo  ${image}
+    Go Into Repo  project${d}  ${image}
     Scan Repo  ${sha256}  Succeed
     Navigate To Projects
     Go Into Project  project${d}
@@ -98,9 +95,11 @@ Test Case - Verfiy System Level CVE Allowlist
     Body Of Verfiy System Level CVE Allowlist  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528  CVE-2021-43519
 
 Test Case - Verfiy Project Level CVE Allowlist
+    [Tags]  proj_cve
     Body Of Verfiy Project Level CVE Allowlist  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528  CVE-2021-43519
 
 Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System
+    [Tags]  proj_cve_quick_add_sys
     Body Of Verfiy Project Level CVE Allowlist By Quick Way of Add System  goharbor/harbor-portal  55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d  CVE-2021-36222\nCVE-2021-43527 \nCVE-2021-4044 \nCVE-2021-36084 \nCVE-2021-36085 \nCVE-2021-36086 \nCVE-2021-37750 \nCVE-2021-40528 \nCVE-2021-43519
 
 Test Case - Stop Scan And Stop Scan All

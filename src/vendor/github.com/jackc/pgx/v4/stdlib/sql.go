@@ -84,7 +84,13 @@ func init() {
 		configs: make(map[string]*pgx.ConnConfig),
 	}
 	fakeTxConns = make(map[*pgx.Conn]*sql.Tx)
-	sql.Register("pgx", pgxDriver)
+
+	// if pgx driver was already registered by different pgx major version then we
+	// skip registration under the default name.
+	if !contains(sql.Drivers(), "pgx") {
+		sql.Register("pgx", pgxDriver)
+	}
+	sql.Register("pgx/v4", pgxDriver)
 
 	databaseSQLResultFormats = pgx.QueryResultFormatsByOID{
 		pgtype.BoolOID:        1,
@@ -101,6 +107,17 @@ func init() {
 		pgtype.TimestamptzOID: 1,
 		pgtype.XIDOID:         1,
 	}
+}
+
+// TODO replace by slices.Contains when experimental package will be merged to stdlib
+// https://pkg.go.dev/golang.org/x/exp/slices#Contains
+func contains(list []string, y string) bool {
+	for _, x := range list {
+		if x == y {
+			return true
+		}
+	}
+	return false
 }
 
 var (
@@ -163,7 +180,7 @@ func RandomizeHostOrderFunc(ctx context.Context, connConfig *pgx.ConnConfig) err
 	return nil
 }
 
-func OpenDB(config pgx.ConnConfig, opts ...OptionOpenDB) *sql.DB {
+func GetConnector(config pgx.ConnConfig, opts ...OptionOpenDB) driver.Connector {
 	c := connector{
 		ConnConfig:    config,
 		BeforeConnect: func(context.Context, *pgx.ConnConfig) error { return nil }, // noop before connect by default
@@ -175,7 +192,11 @@ func OpenDB(config pgx.ConnConfig, opts ...OptionOpenDB) *sql.DB {
 	for _, opt := range opts {
 		opt(&c)
 	}
+	return c
+}
 
+func OpenDB(config pgx.ConnConfig, opts ...OptionOpenDB) *sql.DB {
+	c := GetConnector(config, opts...)
 	return sql.OpenDB(c)
 }
 

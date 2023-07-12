@@ -16,6 +16,8 @@ type Frontend struct {
 	authenticationOk                AuthenticationOk
 	authenticationCleartextPassword AuthenticationCleartextPassword
 	authenticationMD5Password       AuthenticationMD5Password
+	authenticationGSS               AuthenticationGSS
+	authenticationGSSContinue       AuthenticationGSSContinue
 	authenticationSASL              AuthenticationSASL
 	authenticationSASLContinue      AuthenticationSASLContinue
 	authenticationSASLFinal         AuthenticationSASLFinal
@@ -77,6 +79,9 @@ func (f *Frontend) Receive() (BackendMessage, error) {
 		f.msgType = header[0]
 		f.bodyLen = int(binary.BigEndian.Uint32(header[1:])) - 4
 		f.partialMsg = true
+		if f.bodyLen < 0 {
+			return nil, errors.New("invalid message with negative body length received")
+		}
 	}
 
 	msgBody, err := f.cr.Next(f.bodyLen)
@@ -178,9 +183,9 @@ func (f *Frontend) findAuthenticationMessageType(src []byte) (BackendMessage, er
 	case AuthTypeSCMCreds:
 		return nil, errors.New("AuthTypeSCMCreds is unimplemented")
 	case AuthTypeGSS:
-		return nil, errors.New("AuthTypeGSS is unimplemented")
+		return &f.authenticationGSS, nil
 	case AuthTypeGSSCont:
-		return nil, errors.New("AuthTypeGSSCont is unimplemented")
+		return &f.authenticationGSSContinue, nil
 	case AuthTypeSSPI:
 		return nil, errors.New("AuthTypeSSPI is unimplemented")
 	case AuthTypeSASL:

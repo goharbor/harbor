@@ -73,3 +73,4 @@ package pkg
 //go:generate mockery --case snake --dir ../../pkg/jobmonitor --name QueueManager --output ./jobmonitor --outpkg jobmonitor
 //go:generate mockery --case snake --dir ../../pkg/jobmonitor --name RedisClient --output ./jobmonitor --outpkg jobmonitor
 //go:generate mockery --case snake --dir ../../pkg/queuestatus --name Manager --output ./queuestatus --outpkg queuestatus
+//go:generate mockery --case snake --dir ../../pkg/securityhub --name Manager --output ./securityhub --outpkg securityhub

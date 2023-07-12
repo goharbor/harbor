@@ -36,6 +36,8 @@ type DAO interface {
 	List(ctx context.Context, query *q.Query) ([]*Report, error)
 	// UpdateReportData only updates the `report` column with conditions matched.
 	UpdateReportData(ctx context.Context, uuid string, report string) error
+	// Update update report
+	Update(ctx context.Context, r *Report, cols ...string) error
 }
 
 // New returns an instance of the default DAO
@@ -96,4 +98,15 @@ func (d *dao) UpdateReportData(ctx context.Context, uuid string, report string) 
 
 	_, err = qt.Filter("uuid", uuid).Update(data)
 	return err
+}
+
+func (d *dao) Update(ctx context.Context, r *Report, cols ...string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	if _, err := o.Update(r, cols...); err != nil {
+		return err
+	}
+	return nil
 }

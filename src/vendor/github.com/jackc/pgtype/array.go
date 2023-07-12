@@ -305,7 +305,7 @@ func arrayParseInteger(buf *bytes.Buffer) (int32, error) {
 			return 0, err
 		}
 
-		if '0' <= r && r <= '9' {
+		if ('0' <= r && r <= '9') || r == '-' {
 			s.WriteRune(r)
 		} else {
 			buf.UnreadRune()

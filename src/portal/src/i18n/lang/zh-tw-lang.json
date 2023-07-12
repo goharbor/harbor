@@ -129,7 +129,7 @@
     "ADMIN_RENAME_BUTTON": "更改帳號名稱",
     "RENAME_CONFIRM_INFO": "更改帳號名稱為 admin@harbor.local 是無法撤回的，您確定要更改嗎？",
     "CLI_PASSWORD": "CLI 密碼",
-    "CLI_PASSWORD_TIP": "當存取 Harbor 的 Docker / Helm CLI 時，可以使用此 CLI 密碼作為密碼。",
+    "CLI_PASSWORD_TIP": "The CLI secret can be used as a password, for Docker or Helm client. With the OIDC auth mode enabled, we strongly recommend using robot accounts, as CLI secrets depend on the validity of the ID token and require the user to regularly log in to the UI to refresh the token.",
     "COPY_SUCCESS": "複製成功",
     "COPY_ERROR": "複製失敗",
     "ADMIN_CLI_SECRET_BUTTON": "產生新的 CLI 密碼",
@@ -428,7 +428,8 @@
     "EVENT_TYPE_REQUIRED": "請至少選擇一種事件類型",
     "PAYLOAD_FORMAT": "Payload 格式",
     "CLOUD_EVENT": "CloudEvents",
-    "PAYLOAD_DATA": "Payload 資料"
+    "PAYLOAD_DATA": "Payload 資料",
+    "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
   },
   "GROUP": {
     "GROUP": "群組",
@@ -1028,6 +1029,7 @@
   "PUSH_IMAGE": {
     "TITLE": "推送映像檔的 Docker 命令",
     "DOCKER": "Docker",
+    "PODMAN": "Podman",
     "HELM": "Helm",
     "CNAB": "CNAB",
     "TAG_COMMAND_CHART": "為此專案打包 Chart",
@@ -1036,7 +1038,8 @@
     "TOOLTIP": "將映像檔推送至此專案的參考命令。",
     "TAG_COMMAND": "在項目中標記映像檔：",
     "PUSH_COMMAND": "推送映像檔到目前項目：",
-    "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。"
+    "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。",
+    "COPY_PULL_COMMAND": "COPY PULL COMMAND"
   },
   "ARTIFACT": {
     "FILTER_FOR_ARTIFACTS": "篩選器",
@@ -1218,7 +1221,12 @@
     "DELETE_UNTAGGED": "允許對未標籤檔案進行垃圾收集",
     "EXPLAIN": "清理垃圾是一個計算密集的操作，可能影響註冊表的效能",
     "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-    "DRY_RUN_SUCCESS": "成功觸發測試執行"
+    "DRY_RUN_SUCCESS": "成功觸發測試執行",
+    "DELETE_BLOB_AND_MANIFEST": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted",
+    "DELETE_BLOB": "{{blob}} blob(s) deleted",
+    "DELETE_MANIFEST": "{{manifest}} manifest(s) deleted",
+    "FREE_UP_SIZE": "{{size}} space freed up",
+    "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
   },
   "RETAG": {
     "MSG_SUCCESS": "Artifact 複製成功",
@@ -1842,5 +1850,17 @@
     "DATE_PICKER_SELECT_MONTH_TEXT": "選擇月份，目前月份為 {CALENDAR_MONTH}",
     "DATE_PICKER_SELECT_YEAR_TEXT": "選擇年份，目前年份為 {CALENDAR_YEAR}",
     "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - 已選擇"
+  },
+  "BANNER_MESSAGE": {
+    "BANNER_MESSAGE": "Banner Message",
+    "MESSAGE_TYPE": "Message type",
+    "CLOSABLE": "Closable",
+    "FROM": "From",
+    "TO": "To",
+    "SUCCESS": "Success",
+    "INFO": "Info",
+    "WARNING": "Warning",
+    "DANGER": "Danger",
+    "ENTER_MESSAGE": "Enter your message here"
   }
 }
