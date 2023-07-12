@@ -277,6 +277,13 @@ Delete Top Item In System CVE Allowlist
     END
     Retry Element Click  ${config_security_save_button_xpath}
 
+Set CVE Allowlist Expires
+    [Arguments]  ${expired}
+    Retry Button Click  ${cve_allowlist_expires_btn}
+    ${element}=  Set Variable If  ${expired}  ${cve_allowlist_expires_yesterday}  ${cve_allowlist_expires_tomorrow}
+    Retry Element Click  ${element}
+    Retry Element Click  //button[contains(.,'SAVE')]
+
 Get Project Count Quota Text From Project Quotas List
     [Arguments]    ${project_name}
     Switch To Project Quotas
