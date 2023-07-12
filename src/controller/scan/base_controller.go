@@ -192,16 +192,8 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 			return nil
 		}
 
-		supported := hasCapability(r, a)
-
-		if !supported && a.IsImageIndex() {
-			// image index not supported by the scanner, so continue to walk its children
-			return nil
-		}
-
-		artifacts = append(artifacts, a)
-
-		if supported {
+		if hasCapability(r, a) {
+			artifacts = append(artifacts, a)
 			scannable = true
 			return ar.ErrSkip // this artifact supported by the scanner, skip to walk its children
 		}
