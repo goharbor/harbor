@@ -199,7 +199,7 @@ func TestValidate(t *testing.T) {
 	err = policy.Validate()
 	assert.True(errors.IsErr(err, errors.BadRequestCode))
 
-	// pass
+	// invalid cron: * is not allowed for the Seconds field of the cron setting
 	policy = &Policy{
 		Name: "policy01",
 		SrcRegistry: &model.Registry{
@@ -222,6 +222,35 @@ func TestValidate(t *testing.T) {
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
 				Cron: "* * * * * *",
+			},
+		},
+	}
+	err = policy.Validate()
+	assert.True(errors.IsErr(err, errors.BadRequestCode))
+
+	// pass
+	policy = &Policy{
+		Name: "policy01",
+		SrcRegistry: &model.Registry{
+			ID: 0,
+		},
+		DestRegistry: &model.Registry{
+			ID: 1,
+		},
+		Filters: []*model.Filter{
+			{
+				Type:  model.FilterTypeResource,
+				Value: "image",
+			},
+			{
+				Type:  model.FilterTypeName,
+				Value: "library/**",
+			},
+		},
+		Trigger: &model.Trigger{
+			Type: model.TriggerTypeScheduled,
+			Settings: &model.TriggerSettings{
+				Cron: "0 * * * * *",
 			},
 		},
 	}

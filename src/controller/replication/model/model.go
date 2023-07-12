@@ -108,6 +108,10 @@ func (p *Policy) Validate() error {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessage("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
 			}
+			cronParts := strings.Split(p.Trigger.Settings.Cron, " ")
+			if cronParts[0] == "*" {
+				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("* is not allowed for the Seconds field of the cron setting")
+			}
 		default:
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("invalid trigger type")
