@@ -6063,13 +6063,13 @@ paths:
         - $ref: '#/parameters/requestId'
         - name: with_dangerous_cve
           in: query
-          description: Specify whether the dangerous CVE is include in the security summary
+          description: Specify whether the dangerous CVEs are included inside summary information
           type: boolean
           required: false
           default: false
         - name: with_dangerous_artifact
           in: query
-          description: Specify whether the dangerous artifacts is include in the security summary
+          description: Specify whether the dangerous Artifact are included inside summary information
           type: boolean
           required: false
           default: false                  
@@ -6086,6 +6086,61 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+
+  /security/vul:
+    get:
+      summary: Get the vulnerability list.
+      description: |
+        Get the vulnerability list. use q to pass the query condition, 
+        supported conditions:
+        cve_id(exact match)
+        cvss_score_v3(range condition)
+        severity(exact match)
+        repository_name(exact match) 
+        project_id(exact match) 
+        package(exact match)
+        and tag(exact match) 
+      tags:
+        - securityhub
+      operationId: ListVulnerabilities
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: tune_count
+          in: query
+          description: Enable to ignore X-Total-Count when the total count > 1000, if the total count is less than 1000, the real total count is returned, else -1.
+          type: boolean
+          required: false
+          default: false
+        - name: with_tag
+          in: query
+          description: Specify whether the tag information is included inside vulnerability information
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: The vulnerability list.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/VulnerabilityItem'
+          headers:
+            X-Total-Count:
+              description: The total count of vulnerabilities
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'          
+
 parameters:
   query:
     name: q
@@ -9760,3 +9815,50 @@ definitions:
         type: integer
         x-omitempty: false
         description: the count of medium vulnerabilities
+
+  VulnerabilityItem:
+    type: object
+    description: the vulnerability item info
+    properties:
+      project_id:
+        type: integer
+        format: int64
+        description: the project ID of the artifact
+      repository_name:
+        type: string
+        description: the repository name of the artifact
+      digest:
+        type: string
+        description: the digest of the artifact
+      tags:
+        type: array
+        items:
+          type: string
+        description: the tags of the artifact
+      cve_id:
+        type: string
+        description: the CVE id of the vulnerability.
+      severity:
+        type: string
+        description: the severity of the vulnerability
+      cvss_v3_score:
+        type: number
+        format: float
+        description: the nvd cvss v3 score of the vulnerability
+      package:
+        type: string
+        description: the package of the vulnerability
+      version:
+        type: string
+        description: the version of the package
+      fixed_version:
+        type: string
+        description: the fixed version of the package
+      desc:
+        type: string
+        description: The description of the vulnerability
+      links:
+        type: array
+        items: 
+          type: string
+        description: Links of the vulnerability

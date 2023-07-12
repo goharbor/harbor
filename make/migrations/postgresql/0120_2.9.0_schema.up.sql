@@ -11,6 +11,8 @@ UPDATE vulnerability_record
 SET cvss_score_v3 = (vendor_attributes->'CVSS'->'nvd'->>'V3Score')::double precision
 WHERE jsonb_path_exists(vendor_attributes::jsonb, '$.CVSS.nvd.V3Score');
 
+CREATE INDEX IF NOT EXISTS idx_vulnerability_record_cvss_score_v3 ON vulnerability_record (cvss_score_v3);
+
 /* add summary information in scan_report */
 ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS critical_cnt BIGINT;
 ALTER TABLE scan_report ADD COLUMN IF NOT EXISTS high_cnt BIGINT;
