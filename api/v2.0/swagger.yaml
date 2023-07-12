@@ -6052,7 +6052,40 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-
+  /security/summary:
+    get:
+      summary: Get vulnerability system summary
+      description: Retrieve the vulnerability summary of the system
+      tags:
+        - securityhub
+      operationId: getSecuritySummary
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: with_dangerous_cve
+          in: query
+          description: Specify whether the dangerous CVE is include in the security summary
+          type: boolean
+          required: false
+          default: false
+        - name: with_dangerous_artifact
+          in: query
+          description: Specify whether the dangerous artifacts is include in the security summary
+          type: boolean
+          required: false
+          default: false                  
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/SecuritySummary'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -9614,3 +9647,116 @@ definitions:
         type: boolean
         description: if the scheduler is paused
         x-omitempty: false
+  SecuritySummary:
+    type: object
+    description: the security summary
+    properties:
+      critical_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of critical vulnerabilities
+      high_cnt:
+        type: integer
+        format: int64
+        description: the count of high vulnerabilities
+      medium_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of medium vulnerabilities
+      low_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of low vulnerabilities
+      none_cnt:
+        type: integer
+        format: int64
+        description: the count of none vulnerabilities
+      unknown_cnt:
+        type: integer
+        format: int64
+        description: the count of unknown vulnerabilities
+      total_vuls:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of total vulnerabilities
+      scanned_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of scanned artifacts
+      total_artifact:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the total count of artifacts
+      fixable_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of fixable vulnerabilities
+      dangerous_cves:
+        type: array
+        x-omitempty: true
+        description: the list of dangerous CVEs
+        items:
+          $ref: '#/definitions/DangerousCVE'
+      dangerous_artifacts:
+        type: array
+        x-omitempty: true
+        description: the list of dangerous artifacts
+        items:
+          $ref: '#/definitions/DangerousArtifact'
+  DangerousCVE:
+    type: object
+    description: the dangerous CVE information
+    properties:
+      cve_id: 
+        type: string
+        description: the cve id
+      severity:
+        type: string
+        description: the severity of the CVE        
+      cvss_score_v3:
+        type: number
+        format: float64
+        description: the cvss score v3
+      desc:
+        type: string
+        description: the description of the CVE
+      package:
+        type: string
+        description: the package of the CVE      
+      version:
+        type: string
+        description: the version of the package
+  DangerousArtifact:
+    type: object
+    description: the dangerous artifact information
+    properties:
+      project_id: 
+        type: integer
+        format: int64
+        description: the project id of the artifact
+      repository_name:
+        type: string
+        description: the repository name of the artifact
+      digest: 
+        type: string
+        description: the digest of the artifact
+      critical_cnt:
+        type: integer
+        x-omitempty: false
+        description: the count of critical vulnerabilities
+      high_cnt:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: the count of high vulnerabilities
+      medium_cnt:
+        type: integer
+        x-omitempty: false
+        description: the count of medium vulnerabilities
