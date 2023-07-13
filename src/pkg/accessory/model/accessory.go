@@ -68,6 +68,9 @@ const (
 	// TypeCosignSignature ...
 	TypeCosignSignature = "signature.cosign"
 
+	// TypeNotationSignature ...
+	TypeNotationSignature = "signature.notation"
+
 	// TypeNydusAccelerator ...
 	TypeNydusAccelerator = "accelerator.nydus"
 
