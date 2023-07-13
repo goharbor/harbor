@@ -636,29 +636,25 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 				if !walked[child.Digest] {
 					queue.PushBack(child)
 				}
-				if len(child.Accessories) != 0 {
-					for _, acc := range child.Accessories {
-						accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
-						if err != nil {
-							return err
-						}
-						if !walked[accArt.Digest] {
-							queue.PushBack(accArt)
-						}
+				for _, acc := range child.Accessories {
+					accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
+					if err != nil {
+						return err
+					}
+					if !walked[accArt.Digest] {
+						queue.PushBack(accArt)
 					}
 				}
 			}
 		}
 
-		if len(artifact.Accessories) > 0 {
-			for _, acc := range artifact.Accessories {
-				accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
-				if err != nil {
-					return err
-				}
-				if !walked[accArt.Digest] {
-					queue.PushBack(accArt)
-				}
+		for _, acc := range artifact.Accessories {
+			accArt, err := c.Get(ctx, acc.GetData().ArtifactID, option)
+			if err != nil {
+				return err
+			}
+			if !walked[accArt.Digest] {
+				queue.PushBack(accArt)
 			}
 		}
 	}
