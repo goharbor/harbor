@@ -23,7 +23,8 @@ const (
 	DigestOfIconWASM    = "sha256:badd7693bcaf115be202748241dd0ea6ee3b0524bfab9ac22d1e1c43721afec6"
 
 	// ToDo add the accessories images
-	DigestOfIconAccDefault = ""
-	DigestOfIconAccCosign  = "sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882"
-	DigestOfIconAccNydus   = "sha256:dfcb6617cd9c144358dc1b305b87bbe34f0b619f1e329116e6aee2e41f2e34cf"
+	DigestOfIconAccDefault  = ""
+	DigestOfIconAccCosign   = "sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882"
+	DigestOfIconAccNotation = "sha256:3ac706e102bbe9362b400aa162df58135d35e66b9c3bee2165de92022d25fe34"
+	DigestOfIconAccNydus    = "sha256:dfcb6617cd9c144358dc1b305b87bbe34f0b619f1e329116e6aee2e41f2e34cf"
 )
