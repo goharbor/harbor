@@ -45,7 +45,7 @@ class TestProjects(unittest.TestCase):
             4. Image(IA) should exist;
             5. Pull image(IA) successfully;
             6. Enable content trust in project(PA) configuration;
-            7. Pull image(IA) failed and the reason is "The image is not signed in Cosign".
+            7. Pull image(IA) failed and the reason is "The image is not signed".
         Tear down:
             1. Delete repository(RA) by user(UA);
             2. Delete project(PA);
@@ -79,12 +79,12 @@ class TestProjects(unittest.TestCase):
         self.project.update_project(TestProjects.project_content_trust_id, metadata = {"enable_content_trust_cosign": "true"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
         self.project.get_project(TestProjects.project_content_trust_id)
 
-        #7. Pull image(IA) failed and the reason is "The image is not signed in Cosign".
+        #7. Pull image(IA) failed and the reason is "The image is not signed".
         docker_image_clean_all()
         restart_process("containerd")
         restart_process("dockerd")
         time.sleep(30)
-        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Cosign")
+        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed")
 
 if __name__ == '__main__':
     unittest.main()

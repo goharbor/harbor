@@ -15,6 +15,7 @@
 package contenttrust
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -27,12 +28,10 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 
-// Cosign handle docker pull content trust check
-func Cosign() func(http.Handler) http.Handler {
+// ContentTrust handle docker pull content trust check
+func ContentTrust() func(http.Handler) http.Handler {
 	return middleware.BeforeRequest(func(r *http.Request) error {
 		ctx := r.Context()
-
-		logger := log.G(ctx)
 
 		none := lib.ArtifactInfo{}
 		af := lib.GetArtifactInfo(ctx)
@@ -44,42 +43,56 @@ func Cosign() func(http.Handler) http.Handler {
 			return err
 		}
 
-		// If cosign policy enabled, it has to at least have one cosign signature.
+		// If signature policy enabled, it has to at least have one signature.
 		if pro.ContentTrustCosignEnabled() {
-			art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, &artifact.Option{
-				WithAccessory: true,
-			})
-			if err != nil {
+			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeCosignSignature); err != nil {
 				return err
-			}
-
-			ok, err := util.SkipPolicyChecking(r, pro.ProjectID, art.ID)
-			if err != nil {
-				return err
-			}
-			if ok {
-				logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", af.Repository, af.Digest)
-				return nil
-			}
-
-			if len(art.Accessories) == 0 {
-				pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed in Cosign.")
-				return pkgE
-			}
-
-			var hasCosignSignature bool
-			for _, acc := range art.Accessories {
-				if acc.GetData().Type == model.TypeCosignSignature {
-					hasCosignSignature = true
-					break
-				}
-			}
-			if !hasCosignSignature {
-				pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed in Cosign.")
-				return pkgE
 			}
 		}
-
+		if pro.ContentTrustEnabled() {
+			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeNotationSignature); err != nil {
+				return err
+			}
+		}
 		return nil
 	})
+}
+
+func signatureChecking(ctx context.Context, r *http.Request, af lib.ArtifactInfo, projectID int64, signatureType string) error {
+	logger := log.G(ctx)
+
+	art, err := artifact.Ctl.GetByReference(ctx, af.Repository, af.Reference, &artifact.Option{
+		WithAccessory: true,
+	})
+	if err != nil {
+		return err
+	}
+
+	ok, err := util.SkipPolicyChecking(r, projectID, art.ID)
+	if err != nil {
+		return err
+	}
+	if ok {
+		logger.Debugf("skip the checking of pulling artifact %s@%s", af.Repository, af.Digest)
+		return nil
+	}
+
+	if len(art.Accessories) == 0 {
+		pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed.")
+		return pkgE
+	}
+
+	var hasSignature bool
+	for _, acc := range art.Accessories {
+		if acc.GetData().Type == signatureType {
+			hasSignature = true
+			break
+		}
+	}
+	if !hasSignature {
+		pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed.")
+		return pkgE
+	}
+
+	return nil
 }
