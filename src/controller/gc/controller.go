@@ -205,6 +205,7 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
 	extras := make(map[string]interface{})
 	extras["delete_untagged"] = policy.DeleteUntagged
+	extras["workers"] = policy.Workers
 	return c.schedulerMgr.Schedule(ctx, job.GarbageCollectionVendorType, -1, cronType, cron, job.GarbageCollectionVendorType, policy, extras)
 }
 
