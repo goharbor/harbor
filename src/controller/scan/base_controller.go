@@ -633,10 +633,6 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	for _, group := range groupReports {
 		if len(group) != 0 {
 			reports = append(reports, group...)
-		} else {
-			// NOTE: If the artifact is OCI image, this happened when the artifact is not scanned,
-			// but its children artifacts may scanned so return empty report
-			return nil, nil
 		}
 	}
 
