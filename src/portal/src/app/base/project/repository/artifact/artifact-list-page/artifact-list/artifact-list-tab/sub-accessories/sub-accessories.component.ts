@@ -4,6 +4,7 @@ import {
     ChangeDetectorRef,
     Component,
     Input,
+    OnDestroy,
     OnInit,
 } from '@angular/core';
 import {
@@ -31,6 +32,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../../../../../services/event-service/event.service';
+import { Subscription } from 'rxjs';
 
 export const ACCESSORY_PAGE_SIZE: number = 5;
 
@@ -40,7 +42,9 @@ export const ACCESSORY_PAGE_SIZE: number = 5;
     styleUrls: ['./sub-accessories.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush, // use OnPush Strategy to avoid ExpressionChangedAfterItHasBeenCheckedError
 })
-export class SubAccessoriesComponent implements OnInit, AfterViewInit {
+export class SubAccessoriesComponent
+    implements OnInit, AfterViewInit, OnDestroy
+{
     @Input()
     projectName: string;
     @Input()
@@ -56,6 +60,7 @@ export class SubAccessoriesComponent implements OnInit, AfterViewInit {
     page: number = 1;
     displayedAccessories: AccessoryFront[] = [];
     loading: boolean = false;
+    iconSub: Subscription;
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
@@ -71,8 +76,24 @@ export class SubAccessoriesComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        if (!this.iconSub) {
+            this.iconSub = this.event.subscribe(
+                HarborEvent.RETRIEVED_ICON,
+                () => {
+                    this.cdf.detectChanges();
+                }
+            );
+        }
         this.displayedAccessories = clone(this.accessories);
     }
+
+    ngOnDestroy() {
+        if (this.iconSub) {
+            this.iconSub.unsubscribe();
+            this.iconSub = null;
+        }
+    }
+
     size(size: number) {
         return formatSize(size.toString());
     }

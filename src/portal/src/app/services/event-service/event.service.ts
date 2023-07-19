@@ -82,4 +82,5 @@ export enum HarborEvent {
     DELETE_ACCESSORY = 'deleteAccessory',
     COPY_DIGEST = 'copyDigest',
     REFRESH_BANNER_MESSAGE = 'refreshBannerMessage',
+    RETRIEVED_ICON = 'retrievedIcon',
 }

@@ -44,6 +44,7 @@ export class ProjectPolicy {
 
     initByProject(pro: Project) {
         this.Public = pro.metadata.public === 'true';
+        this.ContentTrust = pro.metadata.enable_content_trust === 'true';
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';
         this.PreventVulImg = pro.metadata.prevent_vul === 'true';

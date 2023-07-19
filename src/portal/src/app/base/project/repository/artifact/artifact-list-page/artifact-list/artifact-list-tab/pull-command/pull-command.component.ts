@@ -102,6 +102,7 @@ export class PullCommandComponent {
                 artifact?.type === ArtifactType.CHART ||
                 artifact?.type === ArtifactType.CNAB) &&
             this.accessoryType !== AccessoryType.COSIGN &&
+            this.accessoryType !== AccessoryType.NOTATION &&
             this.accessoryType !== AccessoryType.NYDUS
         );
     }
