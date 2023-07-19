@@ -1593,7 +1593,7 @@
         "PREHEAT_EXPLAIN": "Aufwärmen wird das Image dem P2P Netzwerk hinzufügen",
         "CRITERIA_EXPLAIN": "Wie unter 'Deployment Sicherheit' im Konfiguration Tab",
         "SKIP_CERT_VERIFY": "Aktiviere die Checkbox, falls die Remote-Registry ein selbsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.",
-        "NAME_TOOLTIP": "Der Name muss mindestens 2 Zeichen lang sein. Mit Kleinbuchstaben, Ziffern und ._-. Er muss mit Buchstaben oder Ziffern beginnen.",
+        "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
         "NEED_HELP": "Bitte den Systemadministrator um das Hinzufügen eines Providers"
     },
     "PAGINATION": {

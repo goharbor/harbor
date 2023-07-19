@@ -1590,7 +1590,7 @@
         "PREHEAT_EXPLAIN": "Pré-análise torna suas imagens mais confiáveis perante a rede P2P",
         "CRITERIA_EXPLAIN": "Conforme especificado na 'Segurança da implantação', na aba Configurações.",
         "SKIP_CERT_VERIFY": "Marque para ignorar certificados inválidos ou auto-assinados.",
-        "NAME_TOOLTIP": "Nome da política deve ter no mínimo 2 caracteres. Pode conter ser composto de letras, números e dos símbolos ._- e deve começar com uma letra ou número.",
+        "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
         "NEED_HELP": "Solicite ao administrador do sistema a inclusão de um fornecedor."
     },
     "PAGINATION": {
