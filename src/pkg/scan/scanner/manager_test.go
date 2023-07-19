@@ -111,3 +111,12 @@ func (suite *BasicManagerTestSuite) TestDefault() {
 	require.NotNil(suite.T(), dr)
 	assert.Equal(suite.T(), true, dr.IsDefault)
 }
+
+// TestGetDefaultScanner tests the get default scanner
+func (suite *BasicManagerTestSuite) TestGetDefaultScanner() {
+	ctx := suite.Context()
+	suite.mgr.SetAsDefault(ctx, suite.sampleUUID)
+	scanner, err := suite.mgr.DefaultScannerUUID(ctx)
+	suite.NoError(err)
+	suite.Equal(suite.sampleUUID, scanner)
+}

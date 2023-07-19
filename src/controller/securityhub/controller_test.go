@@ -21,13 +21,14 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/securityhub/model"
+	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
 	artifactMock "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	scannerMock "github.com/goharbor/harbor/src/testing/pkg/scan/scanner"
 	securityMock "github.com/goharbor/harbor/src/testing/pkg/securityhub"
+	tagMock "github.com/goharbor/harbor/src/testing/pkg/tag"
 )
 
 var sum = &model.Summary{
@@ -45,6 +46,7 @@ type ControllerTestSuite struct {
 	artifactMgr *artifactMock.Manager
 	scannerMgr  *scannerMock.Manager
 	secHubMgr   *securityMock.Manager
+	tagMgr      *tagMock.FakeManager
 }
 
 // TestController is the entry of controller test suite
@@ -57,10 +59,13 @@ func (suite *ControllerTestSuite) SetupTest() {
 	suite.artifactMgr = &artifactMock.Manager{}
 	suite.secHubMgr = &securityMock.Manager{}
 	suite.scannerMgr = &scannerMock.Manager{}
+	suite.tagMgr = &tagMock.FakeManager{}
+
 	suite.c = &controller{
 		artifactMgr: suite.artifactMgr,
 		secHubMgr:   suite.secHubMgr,
 		scannerMgr:  suite.scannerMgr,
+		tagMgr:      suite.tagMgr,
 	}
 }
 
@@ -74,7 +79,7 @@ func (suite *ControllerTestSuite) TestSecuritySummary() {
 	mock.OnAnything(suite.artifactMgr, "Count").Return(int64(1234), nil)
 	mock.OnAnything(suite.secHubMgr, "ScannedArtifactsCount").Return(int64(1000), nil)
 	mock.OnAnything(suite.secHubMgr, "Summary").Return(sum, nil).Twice()
-	mock.OnAnything(suite.scannerMgr, "GetDefault").Return(&scanner.Registration{UUID: "ruuid"}, nil)
+	mock.OnAnything(suite.scannerMgr, "DefaultScannerUUID").Return("ruuid", nil)
 	summary, err := suite.c.SecuritySummary(ctx, 0, WithArtifact(false), WithCVE(false))
 	suite.NoError(err)
 	suite.NotNil(summary)
@@ -119,7 +124,7 @@ func (suite *ControllerTestSuite) TestSecuritySummary() {
 // TestSecuritySummaryError tests the security summary with error
 func (suite *ControllerTestSuite) TestSecuritySummaryError() {
 	ctx := suite.Context()
-	mock.OnAnything(suite.scannerMgr, "GetDefault").Return(&scanner.Registration{UUID: "ruuid"}, nil)
+	mock.OnAnything(suite.scannerMgr, "DefaultScannerUUID").Return("ruuid", nil)
 	mock.OnAnything(suite.secHubMgr, "ScannedArtifactsCount").Return(int64(1000), nil)
 	mock.OnAnything(suite.secHubMgr, "Summary").Return(nil, errors.New("invalid project")).Once()
 	summary, err := suite.c.SecuritySummary(ctx, 0, WithCVE(false), WithArtifact(false))
@@ -133,25 +138,63 @@ func (suite *ControllerTestSuite) TestSecuritySummaryError() {
 
 }
 
-// TestGetDefaultScanner tests the get default scanner
-func (suite *ControllerTestSuite) TestGetDefaultScanner() {
-	ctx := suite.Context()
-	mock.OnAnything(suite.scannerMgr, "GetDefault").Return(&scanner.Registration{UUID: ""}, nil).Once()
-	scanner, err := suite.c.defaultScannerUUID(ctx)
-	suite.NoError(err)
-	suite.Equal("", scanner)
-
-	mock.OnAnything(suite.scannerMgr, "GetDefault").Return(nil, errors.New("failed to get scanner")).Once()
-	scanner, err = suite.c.defaultScannerUUID(ctx)
-	suite.Error(err)
-	suite.Equal("", scanner)
-}
-
 func (suite *ControllerTestSuite) TestScannedArtifact() {
 	ctx := suite.Context()
-	mock.OnAnything(suite.scannerMgr, "GetDefault").Return(&scanner.Registration{UUID: "ruuid"}, nil)
+	mock.OnAnything(suite.scannerMgr, "DefaultScannerUUID").Return("ruuid", nil)
 	mock.OnAnything(suite.secHubMgr, "ScannedArtifactsCount").Return(int64(1000), nil)
 	scanned, err := suite.c.scannedArtifactCount(ctx, 0)
 	suite.NoError(err)
 	suite.Equal(int64(1000), scanned)
+}
+
+// TestAttachTags test the attachTags
+func (suite *ControllerTestSuite) TestAttachTags() {
+	ctx := suite.Context()
+	tagList := []*tag.Tag{
+		{ArtifactID: int64(1), Name: "latest"},
+		{ArtifactID: int64(1), Name: "tag1"},
+		{ArtifactID: int64(1), Name: "tag2"},
+		{ArtifactID: int64(1), Name: "tag3"},
+		{ArtifactID: int64(1), Name: "tag4"},
+		{ArtifactID: int64(1), Name: "tag5"},
+		{ArtifactID: int64(1), Name: "tag6"},
+		{ArtifactID: int64(1), Name: "tag7"},
+		{ArtifactID: int64(1), Name: "tag8"},
+		{ArtifactID: int64(1), Name: "tag9"},
+		{ArtifactID: int64(1), Name: "tag10"},
+	}
+	vulItems := []*model.VulnerabilityItem{
+		{ArtifactID: int64(1)},
+	}
+	mock.OnAnything(suite.c.tagMgr, "List").Return(tagList, nil).Once()
+	resultItems, err := suite.c.attachTags(ctx, vulItems)
+	suite.NoError(err)
+	suite.Equal(len(vulItems), len(resultItems))
+	suite.Equal([]string{"latest"}, resultItems[0].Tags[:1])
+	suite.Equal(10, len(resultItems[0].Tags))
+}
+
+// TestListVuls tests the list vulnerabilities
+func (suite *ControllerTestSuite) TestListVuls() {
+	ctx := suite.Context()
+	vulItems := []*model.VulnerabilityItem{
+		{ArtifactID: int64(1)},
+	}
+	tagList := []*tag.Tag{
+		{ArtifactID: int64(1), Name: "latest"},
+	}
+	mock.OnAnything(suite.c.secHubMgr, "ListVuls").Return(vulItems, nil)
+	mock.OnAnything(suite.c.tagMgr, "List").Return(tagList, nil).Once()
+	vulResult, err := suite.c.ListVuls(ctx, "", 0, true, nil)
+	suite.NoError(err)
+	suite.Equal(1, len(vulResult))
+	suite.Equal(int64(1), vulResult[0].ArtifactID)
+}
+
+func (suite *ControllerTestSuite) TestCountVuls() {
+	ctx := suite.Context()
+	mock.OnAnything(suite.c.secHubMgr, "TotalVuls").Return(int64(10), nil)
+	count, err := suite.c.CountVuls(ctx, "", 0, true, nil)
+	suite.NoError(err)
+	suite.Equal(int64(10), count)
 }
