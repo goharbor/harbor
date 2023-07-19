@@ -58,7 +58,7 @@ class TestProxyCache(unittest.TestCase):
 
         image_for_docker = dict(image = "for_proxy", tag = "1.0")
         image_for_ctr = dict(image = "redis", tag = "latest")
-        index_for_docker = dict(image = "index081597864867", tag = "index_tag081597864867")
+        index_for_docker = dict(image = "index", tag = "index_tag")
         access_key = ""
         access_secret = ""
 

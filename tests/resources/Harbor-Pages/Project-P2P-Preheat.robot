@@ -150,8 +150,7 @@ Verify Artifact Is Labeled Event
     Go Into Project  ${project_name}
     Switch To Project Label
     Create New Labels  ${label}
-    Switch To Project Repo
-    Go Into Repo  ${image}
+    Go Into Repo  ${project_name}  ${image}
     Add Labels To Tag  ${tag}  ${label}
     Back Project Home  ${project_name}
     Switch To P2P Preheat

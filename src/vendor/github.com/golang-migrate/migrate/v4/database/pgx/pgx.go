@@ -7,19 +7,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go.uber.org/atomic"
 	"io"
-	"io/ioutil"
 	nurl "net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"go.uber.org/atomic"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/multistmt"
-	multierror "github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/go-multierror"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -28,6 +28,7 @@ import (
 func init() {
 	db := Postgres{}
 	database.Register("pgx", &db)
+	database.Register("pgx4", &db)
 }
 
 var (
@@ -150,7 +151,7 @@ func (p *Postgres) Open(url string) (database.Driver, error) {
 	// i.e. pgx://user:password@host:port/db => postgres://user:password@host:port/db
 	purl.Scheme = "postgres"
 
-	db, err := sql.Open("pgx", migrate.FilterCustomQuery(purl).String())
+	db, err := sql.Open("pgx/v4", migrate.FilterCustomQuery(purl).String())
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +266,7 @@ func (p *Postgres) Run(migration io.Reader) error {
 		}
 		return err
 	}
-	migr, err := ioutil.ReadAll(migration)
+	migr, err := io.ReadAll(migration)
 	if err != nil {
 		return err
 	}

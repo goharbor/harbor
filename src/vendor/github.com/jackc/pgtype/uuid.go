@@ -18,14 +18,15 @@ func (dst *UUID) Set(src interface{}) error {
 		return nil
 	}
 
-	if value, ok := src.(interface{ Get() interface{} }); ok {
+	switch value := src.(type) {
+	case interface{ Get() interface{} }:
 		value2 := value.Get()
 		if value2 != value {
 			return dst.Set(value2)
 		}
-	}
-
-	switch value := src.(type) {
+	case fmt.Stringer:
+		value2 := value.String()
+		return dst.Set(value2)
 	case [16]byte:
 		*dst = UUID{Bytes: value, Status: Present}
 	case []byte:

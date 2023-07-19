@@ -39,7 +39,37 @@ func (dst *Text) Set(src interface{}) error {
 		} else {
 			*dst = Text{String: string(value), Status: Present}
 		}
+	case fmt.Stringer:
+		if value == fmt.Stringer(nil) {
+			*dst = Text{Status: Null}
+		} else {
+			*dst = Text{String: value.String(), Status: Present}
+		}
 	default:
+		// Cannot be part of the switch: If Value() returns nil on
+		// non-string, we should still try to checks the underlying type
+		// using reflection.
+		//
+		// For example the struct might implement driver.Valuer with
+		// pointer receiver and fmt.Stringer with value receiver.
+		if value, ok := src.(driver.Valuer); ok {
+			if value == driver.Valuer(nil) {
+				*dst = Text{Status: Null}
+				return nil
+			} else {
+				v, err := value.Value()
+				if err != nil {
+					return fmt.Errorf("driver.Valuer Value() method failed: %w", err)
+				}
+
+				// Handles also v == nil case.
+				if s, ok := v.(string); ok {
+					*dst = Text{String: s, Status: Present}
+					return nil
+				}
+			}
+		}
+
 		if originalSrc, ok := underlyingStringType(src); ok {
 			return dst.Set(originalSrc)
 		}

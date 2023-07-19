@@ -38,7 +38,7 @@ import (
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 )
 
-type CosignMiddlewareTestSuite struct {
+type ContentTrustMiddlewareTestSuite struct {
 	suite.Suite
 
 	originalArtifactController artifact.Controller
@@ -56,7 +56,7 @@ type CosignMiddlewareTestSuite struct {
 	next http.Handler
 }
 
-func (suite *CosignMiddlewareTestSuite) SetupTest() {
+func (suite *ContentTrustMiddlewareTestSuite) SetupTest() {
 	suite.originalArtifactController = artifact.Ctl
 	suite.artifactController = &artifacttesting.Controller{}
 	artifact.Ctl = suite.artifactController
@@ -89,13 +89,13 @@ func (suite *CosignMiddlewareTestSuite) SetupTest() {
 
 }
 
-func (suite *CosignMiddlewareTestSuite) TearDownTest() {
+func (suite *ContentTrustMiddlewareTestSuite) TearDownTest() {
 	artifact.Ctl = suite.originalArtifactController
 	project.Ctl = suite.originalProjectController
 	accessory.Mgr = suite.originalAccessMgr
 }
 
-func (suite *CosignMiddlewareTestSuite) makeRequest(setHeader ...bool) *http.Request {
+func (suite *ContentTrustMiddlewareTestSuite) makeRequest(setHeader ...bool) *http.Request {
 	req := httptest.NewRequest("GET", "/v1/library/photon/manifests/2.0", nil)
 	info := lib.ArtifactInfo{
 		Repository: "library/photon",
@@ -111,29 +111,29 @@ func (suite *CosignMiddlewareTestSuite) makeRequest(setHeader ...bool) *http.Req
 	return req.WithContext(lib.WithArtifactInfo(req.Context(), info))
 }
 
-func (suite *CosignMiddlewareTestSuite) TestGetArtifactFailed() {
+func (suite *ContentTrustMiddlewareTestSuite) TestGetArtifactFailed() {
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(nil, fmt.Errorf("error"))
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusInternalServerError)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestGetProjectFailed() {
+func (suite *ContentTrustMiddlewareTestSuite) TestGetProjectFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(nil, fmt.Errorf("err"))
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusInternalServerError)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestContentTrustDisabled() {
+func (suite *ContentTrustMiddlewareTestSuite) TestContentTrustDisabled() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	suite.project.Metadata[proModels.ProMetaEnableContentTrustCosign] = "false"
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
@@ -141,19 +141,19 @@ func (suite *CosignMiddlewareTestSuite) TestContentTrustDisabled() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestNoneArtifact() {
+func (suite *ContentTrustMiddlewareTestSuite) TestNoneArtifact() {
 	req := httptest.NewRequest("GET", "/v1/library/photon/manifests/nonexist", nil)
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusNotFound)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestAuthenticatedUserPulling() {
+func (suite *ContentTrustMiddlewareTestSuite) TestAuthenticatedUserPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
@@ -166,11 +166,11 @@ func (suite *CosignMiddlewareTestSuite) TestAuthenticatedUserPulling() {
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestScannerPulling() {
+func (suite *ContentTrustMiddlewareTestSuite) TestScannerPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
@@ -183,11 +183,11 @@ func (suite *CosignMiddlewareTestSuite) TestScannerPulling() {
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
-func (suite *CosignMiddlewareTestSuite) TestCosignPulling() {
+func (suite *ContentTrustMiddlewareTestSuite) TestCosignPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
@@ -200,12 +200,12 @@ func (suite *CosignMiddlewareTestSuite) TestCosignPulling() {
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
 // pull a public project a un-signed image when policy checker is enabled.
-func (suite *CosignMiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
+func (suite *ContentTrustMiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
@@ -217,12 +217,12 @@ func (suite *CosignMiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 
 // pull cosign signature when policy checker is enabled.
-func (suite *CosignMiddlewareTestSuite) TestSignaturePulling() {
+func (suite *ContentTrustMiddlewareTestSuite) TestCosignSignaturePulling() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	acc := &basemodel.Default{
@@ -240,10 +240,70 @@ func (suite *CosignMiddlewareTestSuite) TestSignaturePulling() {
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()
 
-	Cosign()(suite.next).ServeHTTP(rr, req)
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
+}
+
+// notation signature checking when policy checker is enabled.
+func (suite *ContentTrustMiddlewareTestSuite) TestNotationSignaturePulling() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: suite.artifact.Digest,
+			Type:              accessorymodel.TypeNotationSignature,
+		},
+	}
+	suite.project.Metadata[proModels.ProMetaEnableContentTrust] = "true"
+	suite.project.Metadata[proModels.ProMetaEnableContentTrustCosign] = "false"
+	suite.artifact.Accessories = []accessorymodel.Accessory{acc}
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
+		acc,
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
+}
+
+// notation & cosign signature when both policy checker are enabled.
+func (suite *ContentTrustMiddlewareTestSuite) TestBothSignaturePulling() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	acc1 := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: suite.artifact.Digest,
+			Type:              accessorymodel.TypeNotationSignature,
+		},
+	}
+	acc2 := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:                1,
+			ArtifactID:        3,
+			SubArtifactDigest: suite.artifact.Digest,
+			Type:              accessorymodel.TypeCosignSignature,
+		},
+	}
+	suite.project.Metadata[proModels.ProMetaEnableContentTrust] = "true"
+	suite.project.Metadata[proModels.ProMetaEnableContentTrustCosign] = "true"
+	suite.artifact.Accessories = []accessorymodel.Accessory{acc1, acc2}
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
+		acc1, acc2,
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
 func TestCosignMiddlewareTestSuite(t *testing.T) {
-	suite.Run(t, &CosignMiddlewareTestSuite{})
+	suite.Run(t, &ContentTrustMiddlewareTestSuite{})
 }

@@ -24,6 +24,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -203,7 +204,11 @@ func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType
 		}
 	}
 
-	return s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, cronType, cron, scan.ScanAllCallback, nil, nil)
+	cbParams := map[string]interface{}{
+		// the operator of schedule job is harbor-jobservice
+		"operator": secret.JobserviceUser,
+	}
+	return s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, cronType, cron, scan.ScanAllCallback, cbParams, nil)
 }
 
 func (s *scanAllAPI) getScanAllSchedule(ctx context.Context) (*scheduler.Schedule, error) {

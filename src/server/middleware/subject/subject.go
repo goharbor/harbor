@@ -32,6 +32,11 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
+var (
+	// the media type of notation signature layer
+	mediaTypeNotationLayer = "application/vnd.cncf.notary.signature"
+)
+
 /*
 	{
 	  "schemaVersion": 2,
@@ -115,7 +120,12 @@ func Middleware() func(http.Handler) http.Handler {
 				SubArtifactDigest: mf.Subject.Digest.String(),
 				Size:              art.Size,
 				Digest:            art.Digest,
-				Type:              model.TypeSubject,
+			}
+			switch mf.Config.MediaType {
+			case mediaTypeNotationLayer:
+				accData.Type = model.TypeNotationSignature
+			default:
+				accData.Type = model.TypeSubject
 			}
 			if subjectArt != nil {
 				accData.SubArtifactID = subjectArt.ID

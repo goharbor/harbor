@@ -38,6 +38,7 @@ type Execution struct {
 	Status    string    `json:"status"`
 	Trigger   string    `json:"trigger"`
 	DryRun    bool      `json:"dry_run"`
+	Operator  string    `json:"operator"`
 	Type      string    `json:"-"`
 }
 

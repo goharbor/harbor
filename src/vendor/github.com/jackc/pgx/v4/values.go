@@ -78,6 +78,8 @@ func convertSimpleArgument(ci *pgtype.ConnInfo, arg interface{}) (interface{}, e
 		return arg, nil
 	case bool:
 		return arg, nil
+	case time.Duration:
+		return fmt.Sprintf("%d microsecond", int64(arg)/1000), nil
 	case time.Time:
 		return arg, nil
 	case string:

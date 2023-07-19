@@ -12,39 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package redis
+package notation
 
 import (
-	"os"
-	"sync"
-
-	"github.com/go-redis/redis/v8"
-
-	"github.com/goharbor/harbor/src/lib/cache"
-	libredis "github.com/goharbor/harbor/src/lib/cache/redis"
+	"github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/goharbor/harbor/src/pkg/accessory/model/base"
 )
 
-var (
-	// instance is a global redis client.
-	_instance *redis.Client
-	_once     sync.Once
-)
+// Signature signature model
+type Signature struct {
+	base.Default
+}
 
-// Instance returns the redis instance.
-func Instance() *redis.Client {
-	_once.Do(func() {
-		url := os.Getenv("_REDIS_URL_REG")
-		if url == "" {
-			url = "redis://localhost:6379/1"
-		}
+// Kind gives the reference type of notation signature.
+func (c *Signature) Kind() string {
+	return model.RefHard
+}
 
-		c, err := libredis.New(cache.Options{Address: url})
-		if err != nil {
-			panic(err)
-		}
+// IsHard ...
+func (c *Signature) IsHard() bool {
+	return true
+}
 
-		_instance = c.(*libredis.Cache).Client
-	})
+// New returns notation signature
+func New(data model.AccessoryData) model.Accessory {
+	return &Signature{base.Default{
+		Data: data,
+	}}
+}
 
-	return _instance
+func init() {
+	model.Register(model.TypeNotationSignature, New)
 }

@@ -155,7 +155,7 @@ func Login(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	user, err := authenticator.Authenticate(ctx, m)
 	if err != nil {
 		if _, ok = err.(ErrAuth); ok {
-			log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+			log.Warningf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
 			lock.Lock(m.Principal)
 			time.Sleep(frozenTime)
 		}

@@ -30,8 +30,9 @@ var (
 
 	// icon digests for each known type
 	defaultIcons = map[string]string{
-		model.TypeCosignSignature:  icon.DigestOfIconAccCosign,
-		model.TypeNydusAccelerator: icon.DigestOfIconAccNydus,
+		model.TypeCosignSignature:   icon.DigestOfIconAccCosign,
+		model.TypeNotationSignature: icon.DigestOfIconAccNotation,
+		model.TypeNydusAccelerator:  icon.DigestOfIconAccNydus,
 	}
 )
 

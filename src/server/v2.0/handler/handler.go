@@ -69,6 +69,7 @@ func New() http.Handler {
 		ScanDataExportAPI:     newScanDataExportAPI(),
 		JobserviceAPI:         newJobServiceAPI(),
 		ScheduleAPI:           newScheduleAPI(),
+		SecurityhubAPI:        newSecurityAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
