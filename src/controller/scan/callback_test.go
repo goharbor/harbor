@@ -24,9 +24,11 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/task"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
@@ -35,6 +37,8 @@ import (
 
 type CallbackTestSuite struct {
 	suite.Suite
+
+	ctx context.Context
 
 	artifactCtl *artifacttesting.Controller
 
@@ -51,6 +55,7 @@ type CallbackTestSuite struct {
 }
 
 func (suite *CallbackTestSuite) SetupSuite() {
+	suite.ctx = orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	suite.artifactCtl = &artifacttesting.Controller{}
 	artifactCtl = suite.artifactCtl
 
@@ -79,56 +84,56 @@ func (suite *CallbackTestSuite) SetupSuite() {
 func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 	{
 		// get task failed
-		suite.taskMgr.On("Get", context.TODO(), int64(1)).Return(nil, fmt.Errorf("not found")).Once()
-		suite.Error(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
+		suite.taskMgr.On("Get", mock.Anything, int64(1)).Return(nil, fmt.Errorf("not found")).Once()
+		suite.Error(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
 	{
 		// status success
-		suite.taskMgr.On("Get", context.TODO(), int64(1)).Return(
+		suite.taskMgr.On("Get", mock.Anything, int64(1)).Return(
 			&task.Task{
 				ExtraAttrs: suite.makeExtraAttrs(0, 1),
 			},
 			nil,
 		).Once()
-		suite.robotCtl.On("Delete", context.TODO(), int64(1)).Return(nil).Once()
-		suite.NoError(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
+		suite.robotCtl.On("Delete", mock.Anything, int64(1)).Return(nil).Once()
+		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
 	{
 		// status success, delete robot failed
-		suite.taskMgr.On("Get", context.TODO(), int64(1)).Return(
+		suite.taskMgr.On("Get", mock.Anything, int64(1)).Return(
 			&task.Task{
 				ExtraAttrs: suite.makeExtraAttrs(0, 1),
 			},
 			nil,
 		).Once()
-		suite.robotCtl.On("Delete", context.TODO(), int64(1)).Return(fmt.Errorf("failed")).Once()
-		suite.NoError(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
+		suite.robotCtl.On("Delete", mock.Anything, int64(1)).Return(fmt.Errorf("failed")).Once()
+		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
 	{
 		// status success, artifact not found
-		suite.taskMgr.On("Get", context.TODO(), int64(1)).Return(
+		suite.taskMgr.On("Get", mock.Anything, int64(1)).Return(
 			&task.Task{
 				ExtraAttrs: suite.makeExtraAttrs(1, 0),
 			},
 			nil,
 		).Once()
-		suite.artifactCtl.On("Get", context.TODO(), int64(1), (*artifact.Option)(nil)).Return(nil, fmt.Errorf("not found")).Once()
-		suite.NoError(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
+		suite.artifactCtl.On("Get", mock.Anything, int64(1), (*artifact.Option)(nil)).Return(nil, fmt.Errorf("not found")).Once()
+		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
 	{
 		// status success
-		suite.taskMgr.On("Get", context.TODO(), int64(1)).Return(
+		suite.taskMgr.On("Get", mock.Anything, int64(1)).Return(
 			&task.Task{
 				ExtraAttrs: suite.makeExtraAttrs(1, 0),
 			},
 			nil,
 		).Once()
-		suite.artifactCtl.On("Get", context.TODO(), int64(1), (*artifact.Option)(nil)).Return(&artifact.Artifact{}, nil).Once()
-		suite.NoError(scanTaskStatusChange(context.TODO(), 1, job.SuccessStatus.String()))
+		suite.artifactCtl.On("Get", mock.Anything, int64(1), (*artifact.Option)(nil)).Return(&artifact.Artifact{}, nil).Once()
+		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 }
 
@@ -136,21 +141,21 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 	{
 		// create execution failed
 		suite.execMgr.On(
-			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
-		).Return(int64(0), fmt.Errorf("failed")).Once()
+			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
+			mock.Anything).Return(int64(0), fmt.Errorf("failed")).Once()
 
-		suite.Error(scanAllCallback(context.TODO(), ""))
+		suite.Error(scanAllCallback(suite.ctx, ""))
 	}
 
 	{
 		executionID := int64(1)
 
 		suite.execMgr.On(
-			"Create", context.TODO(), "SCAN_ALL", int64(0), "SCHEDULE",
-		).Return(executionID, nil).Once()
+			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
+			mock.Anything).Return(executionID, nil).Once()
 
 		suite.execMgr.On(
-			"Get", context.TODO(), executionID,
+			"Get", mock.Anything, executionID,
 		).Return(&task.Execution{}, nil)
 
 		mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
@@ -159,7 +164,7 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 
 		suite.execMgr.On("MarkDone", mock.Anything, executionID, mock.Anything).Return(nil).Once()
 
-		suite.NoError(scanAllCallback(context.TODO(), ""))
+		suite.NoError(scanAllCallback(suite.ctx, ""))
 	}
 }
 

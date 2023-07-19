@@ -32,8 +32,9 @@ type QuotaMetaData struct {
 	// used to define the event topic
 	Level int
 	// the msg contains the limitation and current usage of quota
-	Msg     string
-	OccurAt time.Time
+	Msg      string
+	OccurAt  time.Time
+	Operator string
 }
 
 // Resolve quota exceed into common image event
@@ -54,6 +55,7 @@ func (q *QuotaMetaData) Resolve(evt *event.Event) error {
 		OccurAt:   q.OccurAt,
 		RepoName:  q.RepoName,
 		Msg:       q.Msg,
+		Operator:  q.Operator,
 	}
 	if q.Tag != "" || q.Digest != "" {
 		data.Resource = &event2.ImgResource{

@@ -76,3 +76,12 @@ $$
             END LOOP;
     END
 $$;
+
+/* Refactor the structure of replication schedule callback_func_param, convert the raw id to json object for extending */
+/*       callback_func_param
+    Old:         100
+    New:  {"policy_id": 100}
+*/
+UPDATE schedule SET callback_func_param = json_build_object('policy_id', callback_func_param::int)::text
+WHERE vendor_type='REPLICATION'
+AND callback_func_param NOT LIKE '%policy_id%';

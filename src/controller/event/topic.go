@@ -307,6 +307,7 @@ type QuotaEvent struct {
 	OccurAt   time.Time
 	RepoName  string
 	Msg       string
+	Operator  string
 }
 
 func (q *QuotaEvent) String() string {
