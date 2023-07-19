@@ -1582,7 +1582,7 @@
     "PREHEAT_EXPLAIN": "預熱將把映像檔遷移到 P2P 網絡",
     "CRITERIA_EXPLAIN": "如配置標籤下 '部署安全性' 部分所指定",
     "SKIP_CERT_VERIFY": "遠端提供者使用自簽名或不受信任的憑證時，勾選此框以跳過憑證驗證。",
-    "NAME_TOOLTIP": "策略名稱應至少包含2個字元，使用小寫字母、數字和 ._-，並且必須以字母或數字開頭。",
+    "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
     "NEED_HELP": "請向您的系統管理員尋求幫助以先新增一個供應商"
   },
   "PAGINATION": {
