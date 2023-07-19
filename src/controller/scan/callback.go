@@ -16,9 +16,11 @@ package scan
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -38,6 +40,7 @@ var (
 	robotCtl    = robot.Ctl
 	scanCtl     = DefaultController
 	taskMgr     = task.Mgr
+	execMgr     = task.ExecMgr
 )
 
 func init() {
@@ -56,6 +59,17 @@ func init() {
 }
 
 func scanAllCallback(ctx context.Context, param string) error {
+	if param != "" {
+		params := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(param), &params); err != nil {
+			return err
+		}
+
+		if op, ok := params["operator"].(string); ok {
+			ctx = context.WithValue(ctx, operator.ContextKey{}, op)
+		}
+	}
+
 	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
 	return err
 }
@@ -67,6 +81,11 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 
 	if js.Final() {
 		t, err := taskMgr.Get(ctx, taskID)
+		if err != nil {
+			return err
+		}
+
+		exec, err := execMgr.Get(ctx, t.ExecutionID)
 		if err != nil {
 			return err
 		}
@@ -96,6 +115,10 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 						MimeType:    art.ManifestMediaType,
 					},
 					Status: status,
+				}
+
+				if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
+					e.Operator = operator
 				}
 				// fire event
 				notification.AddEvent(ctx, e)

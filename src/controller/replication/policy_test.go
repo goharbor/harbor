@@ -15,6 +15,8 @@
 package replication
 
 import (
+	"context"
+
 	repmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
@@ -68,7 +70,7 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 		ID: 1,
 	}, nil)
 	mock.OnAnything(r.scheduler, "Schedule").Return(int64(1), nil)
-	id, err := r.ctl.CreatePolicy(nil, &repmodel.Policy{
+	id, err := r.ctl.CreatePolicy(context.TODO(), &repmodel.Policy{
 		Name: "rule",
 		SrcRegistry: &model.Registry{
 			ID: 1,
@@ -95,7 +97,7 @@ func (r *replicationTestSuite) TestUpdatePolicy() {
 	mock.OnAnything(r.scheduler, "UnScheduleByVendor").Return(nil)
 	mock.OnAnything(r.scheduler, "Schedule").Return(int64(1), nil)
 	mock.OnAnything(r.repMgr, "Update").Return(nil)
-	err := r.ctl.UpdatePolicy(nil, &repmodel.Policy{
+	err := r.ctl.UpdatePolicy(context.TODO(), &repmodel.Policy{
 		ID:   1,
 		Name: "rule",
 		SrcRegistry: &model.Registry{

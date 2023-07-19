@@ -532,7 +532,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 
 		suite.execMgr.On(
 			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
-		).Return(executionID, nil).Once()
+			mock.Anything).Return(executionID, nil).Once()
+		suite.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{ID: executionID}, nil).Once()
 
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 
@@ -558,7 +559,8 @@ func (suite *ControllerTestSuite) TestScanAll() {
 
 		suite.execMgr.On(
 			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
-		).Return(executionID, nil).Once()
+			mock.Anything).Return(executionID, nil).Once()
+		suite.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{ID: executionID}, nil).Once()
 
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 
