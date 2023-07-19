@@ -25,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -246,6 +247,10 @@ func (a *Handler) asyncFlushPullCount(ctx context.Context) {
 
 func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
 	go func() {
+		if event.Operator != "" {
+			ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
+		}
+
 		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}

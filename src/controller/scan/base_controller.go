@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	ar "github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/robot"
 	sc "github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -308,6 +309,9 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				"name": r.Name,
 			},
 		}
+		if op := operator.FromContext(ctx); op != "" {
+			extraAttrs["operator"] = op
+		}
 		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, artifact.ID, task.ExecutionTriggerManual, extraAttrs)
 		if err != nil {
 			return err
@@ -353,7 +357,11 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact) erro
 }
 
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	executionID, err := bc.execMgr.Create(ctx, job.ScanAllVendorType, 0, trigger)
+	extra := make(map[string]interface{})
+	if op := operator.FromContext(ctx); op != "" {
+		extra["operator"] = op
+	}
+	executionID, err := bc.execMgr.Create(ctx, job.ScanAllVendorType, 0, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
@@ -468,7 +476,18 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 		}
 	}
 
-	extraAttrs := map[string]interface{}{"summary": summary}
+	exec, err := bc.execMgr.Get(ctx, executionID)
+	if err != nil {
+		return err
+	}
+
+	extraAttrs := exec.ExtraAttrs
+	if extraAttrs == nil {
+		extraAttrs = map[string]interface{}{"summary": summary}
+	} else {
+		extraAttrs["summary"] = summary
+	}
+
 	if err := bc.execMgr.UpdateExtraAttrs(ctx, executionID, extraAttrs); err != nil {
 		log.Errorf("failed to set the summary info for the scan all execution, error: %v", err)
 		return err
