@@ -15,12 +15,14 @@
 package dao
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
 	testDao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	htesting "github.com/goharbor/harbor/src/testing"
 )
 
@@ -61,7 +63,6 @@ values  (1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.8
 	})
 }
 
-// TearDownTest clears enf for test case.
 func (suite *SecurityDaoTestSuite) TearDownTest() {
 	testDao.ExecuteBatchSQL([]string{
 		`delete from scan_report where uuid = 'uuid'`,
@@ -101,4 +102,89 @@ func (suite *SecurityDaoTestSuite) TestGetDangerousCVEs() {
 	records, err := suite.dao.DangerousCVEs(suite.Context(), `uuid2`, 0, nil)
 	suite.NoError(err, "Error when fetching most dangerous artifact")
 	suite.Equal(5, len(records))
+}
+
+func Test_checkQFilter(t *testing.T) {
+	type args struct {
+		query     *q.Query
+		filterMap map[string]*filterMetaData
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"happy_path", args{q.New(q.KeyWords{"sample": 1}), map[string]*filterMetaData{"sample": &filterMetaData{intType, exactMatchFilter}}}, false},
+		{"happy_path_cve_id", args{q.New(q.KeyWords{"cve_id": "CVE-2023-2345"}), map[string]*filterMetaData{"cve_id": &filterMetaData{stringType, exactMatchFilter}}}, false},
+		{"happy_path_severity", args{q.New(q.KeyWords{"severity": "Critical"}), map[string]*filterMetaData{"severity": &filterMetaData{stringType, exactMatchFilter}}}, false},
+		{"happy_path_cvss_score_v3", args{q.New(q.KeyWords{"cvss_score_v3": &q.Range{Min: 2.0, Max: 3.0}}), map[string]*filterMetaData{"cvss_score_v3": &filterMetaData{rangeType, rangeFilter}}}, false},
+		{"unhappy_path", args{q.New(q.KeyWords{"sample": 1}), map[string]*filterMetaData{"a": &filterMetaData{DataType: intType}}}, true},
+		{"unhappy_path2", args{q.New(q.KeyWords{"cve_id": 1}), map[string]*filterMetaData{"cve_id": &filterMetaData{stringType, exactMatchFilter}}}, true},
+		{"unhappy_path3", args{q.New(q.KeyWords{"severity": &q.Range{Min: 2.0, Max: 10.0}}), map[string]*filterMetaData{"severity": &filterMetaData{stringType, exactMatchFilter}}}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := checkQFilter(tt.args.query, tt.args.filterMap); (err != nil) != tt.wantErr {
+				t.Errorf("checkQFilter() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func (suite *SecurityDaoTestSuite) TestExacthMatchFilter() {
+	type args struct {
+		ctx   context.Context
+		key   string
+		query *q.Query
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantSQLStr string
+		wantParams []interface{}
+	}{
+		{"normal", args{suite.Context(), "cve_id", q.New(q.KeyWords{"cve_id": "CVE-2023-2345"})}, " and cve_id = ?", []interface{}{"CVE-2023-2345"}},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			gotSQLStr, gotParams := exactMatchFilter(tt.args.ctx, tt.args.key, tt.args.query)
+			suite.Equal(gotSQLStr, tt.wantSQLStr, "exactMatchFilter() gotSqlStr = %v, want %v", gotSQLStr, tt.wantSQLStr)
+			suite.Equal(gotParams, tt.wantParams, "exactMatchFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
+		})
+	}
+}
+
+func (suite *SecurityDaoTestSuite) TestRangeFilter() {
+	type args struct {
+		ctx   context.Context
+		key   string
+		query *q.Query
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantSQLStr string
+		wantParams []interface{}
+	}{
+		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{1.0, 2.0}})}, " and cvss_score_v3 between ? and ?", []interface{}{1.0, 2.0}},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			gotSQLStr, gotParams := rangeFilter(tt.args.ctx, tt.args.key, tt.args.query)
+			suite.Equal(tt.wantSQLStr, gotSQLStr, "exactMatchFilter() gotSqlStr = %v, want %v", gotSQLStr, tt.wantSQLStr)
+			suite.Equal(tt.wantParams, gotParams, "exactMatchFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
+		})
+	}
+}
+
+func (suite *SecurityDaoTestSuite) TestCountVul() {
+	count, err := suite.dao.CountVulnerabilities(suite.Context(), "ruuid", 0, true, nil)
+	suite.NoError(err)
+	suite.Equal(int64(1), count)
+}
+
+func (suite *SecurityDaoTestSuite) TestListVul() {
+	vuls, err := suite.dao.ListVulnerabilities(suite.Context(), "ruuid", 0, nil)
+	suite.NoError(err)
+	suite.Equal(1, len(vuls))
 }

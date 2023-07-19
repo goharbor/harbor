@@ -16,10 +16,12 @@ package handler
 
 import (
 	"context"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	securityModel "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/securityhub"
 
@@ -92,6 +94,55 @@ func toDangerousCves(cves []*scan.VulnerabilityRecord) []*models.DangerousCVE {
 			Version:     vul.PackageVersion,
 			Severity:    vul.Severity,
 			CvssScoreV3: *vul.CVE3Score,
+		})
+	}
+	return result
+}
+
+func (s *securityAPI) ListVulnerabilities(ctx context.Context, params securityModel.ListVulnerabilitiesParams) middleware.Responder {
+	if err := s.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceSecurityHub); err != nil {
+		return s.SendError(ctx, err)
+	}
+	query, err := s.BuildQuery(ctx, params.Q, nil, params.Page, params.PageSize)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+	scannerUUID, err := scanner.Mgr.DefaultScannerUUID(ctx)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+	cnt, err := s.controller.CountVuls(ctx, scannerUUID, 0, *params.TuneCount, query)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+	vuls, err := s.controller.ListVuls(ctx, scannerUUID, 0, *params.WithTag, query)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+	link := s.Links(ctx, params.HTTPRequest.URL, cnt, query.PageNumber, query.PageSize).String()
+	return securityModel.NewListVulnerabilitiesOK().WithPayload(toVulnerabilities(vuls)).WithLink(link).WithXTotalCount(cnt)
+}
+
+func toVulnerabilities(vuls []*secHubModel.VulnerabilityItem) []*models.VulnerabilityItem {
+	result := make([]*models.VulnerabilityItem, 0)
+	for _, item := range vuls {
+		score := float32(0)
+		if item.CVE3Score != nil {
+			score = float32(*item.CVE3Score)
+		}
+		result = append(result, &models.VulnerabilityItem{
+			ProjectID:      item.ProjectID,
+			RepositoryName: item.RepositoryName,
+			Digest:         item.Digest,
+			CVEID:          item.CVEID,
+			Severity:       item.Severity,
+			Package:        item.Package,
+			Tags:           item.Tags,
+			Version:        item.PackageVersion,
+			FixedVersion:   item.Fix,
+			Desc:           item.Description,
+			CvssV3Score:    score,
+			Links:          strings.Split(item.URLs, "|"),
 		})
 	}
 	return result
