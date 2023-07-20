@@ -1590,7 +1590,7 @@
         "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
         "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
-        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
         "NEED_HELP": "Please ask your system admin to add a provider first"
     },
     "PAGINATION": {
@@ -1870,5 +1870,26 @@
         "WARNING": "Warning",
         "DANGER": "Danger",
         "ENTER_MESSAGE": "Enter your message here"
+    },
+    "SECURITY_HUB": {
+        "SECURITY_HUB": "Security Hub",
+        "ARTIFACTS": "artifact(s)",
+        "SCANNED": "scanned",
+        "NOT_SCANNED": "not scanned",
+        "TOTAL_VUL": "Total Vulnerabilities",
+        "TOTAL_AND_FIXABLE": "{{totalNum}} total with {{fixableNum}} fixable",
+        "TOP_5_ARTIFACT": "Top 5 Most Dangerous Artifacts",
+        "TOP_5_CVE": "Top 5 Most Dangerous CVEs",
+        "CVE_ID": "CVE ID",
+        "VUL": "Vulnerabilities",
+        "CVE": "CVEs",
+        "FILTER_BY": "Filter by",
+        "OPTION_ALL": "All",
+        "OPTION_PROJECT_ID_NAME": "Project id or name",
+        "SEARCH": "SEARCH",
+        "REPO_NAME": "Repository Name",
+        "TOOLTIP": "All filters except CVSS3 only support exact matches",
+        "NO_VUL": "We could not find any vulnerability",
+        "INVALID_VALUE": "Invalid range"
     }
 }

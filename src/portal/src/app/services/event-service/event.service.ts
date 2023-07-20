@@ -83,4 +83,5 @@ export enum HarborEvent {
     COPY_DIGEST = 'copyDigest',
     REFRESH_BANNER_MESSAGE = 'refreshBannerMessage',
     RETRIEVED_ICON = 'retrievedIcon',
+    THEME_CHANGE = 'themeChange',
 }
