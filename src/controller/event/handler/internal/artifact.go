@@ -270,17 +270,25 @@ func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) erro
 		reportMgr = a.reportMgr
 	}
 
-	// clean up the scan executions of this artifact by id
-	if err := execMgr.DeleteByVendor(ctx, job.ImageScanJobVendorType, event.Artifact.ID); err != nil {
-		log.Errorf("failed to delete scan executions of artifact %d, error: %v", event.Artifact.ID, err)
-	}
-	// clean up the scan reports of this artifact and it's references by digest
+	ids := []int64{event.Artifact.ID}
 	digests := []string{event.Artifact.Digest}
 	if len(event.Artifact.References) > 0 {
 		for _, ref := range event.Artifact.References {
+			ids = append(ids, ref.ChildID)
 			digests = append(digests, ref.ChildDigest)
 		}
 	}
+
+	// clean up the scan executions of this artifact and it's references by id
+	log.Debugf("delete the associated scan executions of artifacts %v as the artifacts have been deleted", ids)
+	for _, id := range ids {
+		if err := execMgr.DeleteByVendor(ctx, job.ImageScanJobVendorType, id); err != nil {
+			log.Errorf("failed to delete scan executions of artifact %d, error: %v", id, err)
+		}
+	}
+
+	// clean up the scan reports of this artifact and it's references by digest
+	log.Debugf("delete the associated scan reports of artifacts %v as the artifacts have been deleted", digests)
 	if err := reportMgr.DeleteByDigests(ctx, digests...); err != nil {
 		log.Errorf("failed to delete scan reports of artifact %v, error: %v", digests, err)
 	}
