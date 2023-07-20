@@ -20,6 +20,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/docker/distribution/manifest/schema2"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -35,6 +36,9 @@ import (
 var (
 	// the media type of notation signature layer
 	mediaTypeNotationLayer = "application/vnd.cncf.notary.signature"
+
+	// annotation of nydus image
+	layerAnnotationNydusBootstrap = "containerd.io/snapshot/nydus-bootstrap"
 )
 
 /*
@@ -121,11 +125,14 @@ func Middleware() func(http.Handler) http.Handler {
 				Size:              art.Size,
 				Digest:            art.Digest,
 			}
+			accData.Type = model.TypeSubject
 			switch mf.Config.MediaType {
+			case schema2.MediaTypeImageConfig:
+				if isNydusImage(mf) {
+					accData.Type = model.TypeNydusAccelerator
+				}
 			case mediaTypeNotationLayer:
 				accData.Type = model.TypeNotationSignature
-			default:
-				accData.Type = model.TypeSubject
 			}
 			if subjectArt != nil {
 				accData.SubArtifactID = subjectArt.ID
@@ -144,4 +151,18 @@ func Middleware() func(http.Handler) http.Handler {
 
 		return nil
 	})
+}
+
+// isNydusImage checks if the image is a nydus image.
+func isNydusImage(manifest *ocispec.Manifest) bool {
+	layers := manifest.Layers
+	if len(layers) != 0 {
+		desc := layers[len(layers)-1]
+		if desc.Annotations == nil {
+			return false
+		}
+		_, hasAnno := desc.Annotations[layerAnnotationNydusBootstrap]
+		return hasAnno
+	}
+	return false
 }
