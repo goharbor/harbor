@@ -17,6 +17,7 @@ import { Repository } from '../../../../../ng-swagger-gen/models/repository';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { SessionService } from '../../services/session.service';
 import { UN_LOGGED_PARAM, YES } from '../../../account/sign-in/sign-in.service';
+import { getRepoLink } from '../../../base/left-side-nav/interrogation-services/vulnerability-database/security-hub.interface';
 
 @Component({
     selector: 'list-repository-ro',
@@ -25,20 +26,13 @@ import { UN_LOGGED_PARAM, YES } from '../../../account/sign-in/sign-in.service';
 })
 export class ListRepositoryROComponent {
     @Input() repositories: Repository[];
-
+    readonly getLink = getRepoLink;
     constructor(
         private router: Router,
         private searchTrigger: SearchTriggerService,
         private sessionService: SessionService
     ) {}
 
-    getLink(projectId: number, repoName: string) {
-        let projectName = repoName.split('/')[0];
-        let repositorieName = projectName
-            ? repoName.substr(projectName.length + 1)
-            : repoName;
-        return ['/harbor/projects', projectId, 'repositories', repositorieName];
-    }
     getQueryParams() {
         if (this.sessionService.getCurrentUser()) {
             return null;
