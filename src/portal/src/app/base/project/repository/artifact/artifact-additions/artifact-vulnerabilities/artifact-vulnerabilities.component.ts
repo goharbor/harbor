@@ -22,7 +22,6 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
     SEVERITY_LEVEL_MAP,
-    VULNERABILITY_SEVERITY,
 } from '../../../../../../shared/units/utils';
 import { ResultBarChartComponent } from '../../vulnerability-scanning/result-bar-chart.component';
 import { Subscription } from 'rxjs';
@@ -32,6 +31,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../../../services/event-service/event.service';
+import { severityText } from '../../../../../left-side-nav/interrogation-services/vulnerability-database/security-hub.interface';
 
 @Component({
     selector: 'hbr-artifact-vulnerabilities',
@@ -73,6 +73,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         PageSizeMapKeys.ARTIFACT_VUL_COMPONENT,
         25
     );
+    readonly severityText = severityText;
     constructor(
         private errorHandler: ErrorHandler,
         private additionsService: AdditionsService,
@@ -235,23 +236,6 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
 
     refresh(): void {
         this.getVulnerabilities();
-    }
-
-    severityText(severity: string): string {
-        switch (severity) {
-            case VULNERABILITY_SEVERITY.CRITICAL:
-                return 'VULNERABILITY.SEVERITY.CRITICAL';
-            case VULNERABILITY_SEVERITY.HIGH:
-                return 'VULNERABILITY.SEVERITY.HIGH';
-            case VULNERABILITY_SEVERITY.MEDIUM:
-                return 'VULNERABILITY.SEVERITY.MEDIUM';
-            case VULNERABILITY_SEVERITY.LOW:
-                return 'VULNERABILITY.SEVERITY.LOW';
-            case VULNERABILITY_SEVERITY.NONE:
-                return 'VULNERABILITY.SEVERITY.NONE';
-            default:
-                return 'UNKNOWN';
-        }
     }
 
     scanNow() {

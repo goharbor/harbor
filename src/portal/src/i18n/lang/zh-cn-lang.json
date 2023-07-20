@@ -1870,5 +1870,26 @@
         "WARNING": "警告",
         "DANGER": "危险",
         "ENTER_MESSAGE": "请输入消息内容"
+    },
+    "SECURITY_HUB": {
+        "SECURITY_HUB": "安全中心",
+        "ARTIFACTS": "Artifact(s)",
+        "SCANNED": "已扫描",
+        "NOT_SCANNED": "未扫描",
+        "TOTAL_VUL": "漏洞总览",
+        "TOTAL_AND_FIXABLE": "{{totalNum}} 个漏洞中 {{fixableNum}} 可修复",
+        "TOP_5_ARTIFACT": "最危险的5个 Artifacts",
+        "TOP_5_CVE": "最危险的5个 CVEs",
+        "CVE_ID": "CVE ID",
+        "VUL": "漏洞",
+        "CVE": "CVEs",
+        "FILTER_BY": "过滤条件",
+        "OPTION_ALL": "全部",
+        "OPTION_PROJECT_ID_NAME": "项目 ID 或 名称",
+        "SEARCH": "搜索",
+        "REPO_NAME": "仓库名称",
+        "TOOLTIP": "CVSS3 除外的所有过滤项只支持精确匹配",
+        "NO_VUL": "未找到任何漏洞",
+        "INVALID_VALUE": "无效范围"
     }
 }
