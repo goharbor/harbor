@@ -944,16 +944,19 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             page: 1,
                             pageSize: ACCESSORY_PAGE_SIZE,
                         };
-                    listTagParams.q = encodeURIComponent(
-                        `type=${AccessoryType.COSIGN}`
-                    );
-                    const cosignParam = listTagParams;
-                    listTagParams.q = encodeURIComponent(
-                        `type=${AccessoryType.NOTATION}`
-                    );
                     forkJoin([
-                        this.newArtifactService.listAccessories(cosignParam),
-                        this.newArtifactService.listAccessories(listTagParams),
+                        this.newArtifactService.listAccessories({
+                            ...listTagParams,
+                            q: encodeURIComponent(
+                                `type=${AccessoryType.COSIGN}`
+                            ),
+                        }),
+                        this.newArtifactService.listAccessories({
+                            ...listTagParams,
+                            q: encodeURIComponent(
+                                `type=${AccessoryType.NOTATION}`
+                            ),
+                        }),
                     ]).subscribe({
                         next: res => {
                             if (
