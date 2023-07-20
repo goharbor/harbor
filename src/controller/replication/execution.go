@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
 	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -104,7 +105,11 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			WithMessage("the policy %d is disabled", policy.ID)
 	}
 	// create an execution record
-	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger)
+	extra := make(map[string]interface{})
+	if op := operator.FromContext(ctx); op != "" {
+		extra["operator"] = op
+	}
+	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
@@ -263,7 +268,7 @@ func (c *controller) GetTaskLog(ctx context.Context, id int64) ([]byte, error) {
 }
 
 func convertExecution(exec *task.Execution) *Execution {
-	return &Execution{
+	replicationExec := &Execution{
 		ID:            exec.ID,
 		PolicyID:      exec.VendorID,
 		Status:        exec.Status,
@@ -273,6 +278,12 @@ func convertExecution(exec *task.Execution) *Execution {
 		StartTime:     exec.StartTime,
 		EndTime:       exec.EndTime,
 	}
+
+	if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
+		replicationExec.Operator = operator
+	}
+
+	return replicationExec
 }
 
 func convertTask(task *task.Task) *Task {

@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/goharbor/harbor/src/pkg/securityhub"
 	secHubModel "github.com/goharbor/harbor/src/pkg/securityhub/model"
+	"github.com/goharbor/harbor/src/pkg/tag"
 )
 
 // Ctl is the global controller for security hub
@@ -63,26 +64,32 @@ func WithArtifact(enable bool) Option {
 type Controller interface {
 	// SecuritySummary returns the security summary of the specified project.
 	SecuritySummary(ctx context.Context, projectID int64, options ...Option) (*secHubModel.Summary, error)
+	// ListVuls list vulnerabilities by query
+	ListVuls(ctx context.Context, scannerUUID string, projectID int64, withTag bool, query *q.Query) ([]*secHubModel.VulnerabilityItem, error)
+	// CountVuls get all vulnerability count by query
+	CountVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error)
 }
 
 type controller struct {
 	artifactMgr artifact.Manager
 	scannerMgr  scanner.Manager
 	secHubMgr   securityhub.Manager
+	tagMgr      tag.Manager
 }
 
 // NewController ...
 func NewController() Controller {
 	return &controller{
 		artifactMgr: pkg.ArtifactMgr,
-		scannerMgr:  scanner.New(),
+		scannerMgr:  scanner.Mgr,
 		secHubMgr:   securityhub.Mgr,
+		tagMgr:      tag.Mgr,
 	}
 }
 
 func (c *controller) SecuritySummary(ctx context.Context, projectID int64, options ...Option) (*secHubModel.Summary, error) {
 	opts := newOptions(options...)
-	scannerUUID, err := c.defaultScannerUUID(ctx)
+	scannerUUID, err := c.scannerMgr.DefaultScannerUUID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +121,7 @@ func (c *controller) SecuritySummary(ctx context.Context, projectID int64, optio
 }
 
 func (c *controller) scannedArtifactCount(ctx context.Context, projectID int64) (int64, error) {
-	scannerUUID, err := c.defaultScannerUUID(ctx)
+	scannerUUID, err := c.scannerMgr.DefaultScannerUUID(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -128,11 +135,49 @@ func (c *controller) totalArtifactCount(ctx context.Context, projectID int64) (i
 	return c.artifactMgr.Count(ctx, q.New(q.KeyWords{"project_id": projectID}))
 }
 
-// defaultScannerUUID returns the default scanner uuid.
-func (c *controller) defaultScannerUUID(ctx context.Context) (string, error) {
-	reg, err := c.scannerMgr.GetDefault(ctx)
+func (c *controller) ListVuls(ctx context.Context, scannerUUID string, projectID int64, withTag bool, query *q.Query) ([]*secHubModel.VulnerabilityItem, error) {
+	vuls, err := c.secHubMgr.ListVuls(ctx, scannerUUID, projectID, query)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return reg.UUID, nil
+	if withTag {
+		return c.attachTags(ctx, vuls)
+	}
+	return vuls, nil
+}
+
+func (c *controller) attachTags(ctx context.Context, vuls []*secHubModel.VulnerabilityItem) ([]*secHubModel.VulnerabilityItem, error) {
+	// get all artifact_ids
+	artifactTagMap := make(map[int64][]string, 0)
+	for _, v := range vuls {
+		artifactTagMap[v.ArtifactID] = make([]string, 0)
+	}
+
+	// get tags in the artifact list
+	var artifactIds []interface{}
+	for k := range artifactTagMap {
+		artifactIds = append(artifactIds, k)
+	}
+	query := q.New(q.KeyWords{"artifact_id": q.NewOrList(artifactIds)})
+	tags, err := c.tagMgr.List(ctx, query)
+	if err != nil {
+		return vuls, err
+	}
+	for _, tag := range tags {
+		artifactTagMap[tag.ArtifactID] = append(artifactTagMap[tag.ArtifactID], tag.Name)
+	}
+
+	// attach tags, only show 10 tags
+	for _, v := range vuls {
+		if len(artifactTagMap[v.ArtifactID]) > 10 {
+			v.Tags = artifactTagMap[v.ArtifactID][:10]
+			continue
+		}
+		v.Tags = artifactTagMap[v.ArtifactID]
+	}
+	return vuls, nil
+}
+
+func (c *controller) CountVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
+	return c.secHubMgr.TotalVuls(ctx, scannerUUID, projectID, tuneCount, query)
 }

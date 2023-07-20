@@ -70,6 +70,32 @@ func (_m *Manager) DangerousCVEs(ctx context.Context, scannerUUID string, projec
 	return r0, r1
 }
 
+// ListVuls provides a mock function with given fields: ctx, scannerUUID, projectID, query
+func (_m *Manager) ListVuls(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
+	ret := _m.Called(ctx, scannerUUID, projectID, query)
+
+	var r0 []*model.VulnerabilityItem
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, *q.Query) ([]*model.VulnerabilityItem, error)); ok {
+		return rf(ctx, scannerUUID, projectID, query)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, *q.Query) []*model.VulnerabilityItem); ok {
+		r0 = rf(ctx, scannerUUID, projectID, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*model.VulnerabilityItem)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, *q.Query) error); ok {
+		r1 = rf(ctx, scannerUUID, projectID, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ScannedArtifactsCount provides a mock function with given fields: ctx, scannerUUID, projectID, query
 func (_m *Manager) ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error) {
 	ret := _m.Called(ctx, scannerUUID, projectID, query)
@@ -113,6 +139,30 @@ func (_m *Manager) Summary(ctx context.Context, scannerUUID string, projectID in
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, int64, *q.Query) error); ok {
 		r1 = rf(ctx, scannerUUID, projectID, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TotalVuls provides a mock function with given fields: ctx, scannerUUID, projectID, tuneCount, query
+func (_m *Manager) TotalVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
+	ret := _m.Called(ctx, scannerUUID, projectID, tuneCount, query)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, bool, *q.Query) (int64, error)); ok {
+		return rf(ctx, scannerUUID, projectID, tuneCount, query)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, bool, *q.Query) int64); ok {
+		r0 = rf(ctx, scannerUUID, projectID, tuneCount, query)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, bool, *q.Query) error); ok {
+		r1 = rf(ctx, scannerUUID, projectID, tuneCount, query)
 	} else {
 		r1 = ret.Error(1)
 	}

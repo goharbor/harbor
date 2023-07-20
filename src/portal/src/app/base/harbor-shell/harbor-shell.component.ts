@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
+    ChangeDetectorRef,
     Component,
+    ElementRef,
+    OnDestroy,
     OnInit,
     ViewChild,
-    OnDestroy,
-    ElementRef,
-    ChangeDetectorRef,
 } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AppConfigService } from '../../services/app-config.service';
 import { ModalEvent } from '../modal-event';
@@ -192,5 +192,6 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         if (localStorage) {
             localStorage.setItem(HAS_STYLE_MODE, this.styleMode);
         }
+        this.event.publish(HarborEvent.THEME_CHANGE);
     }
 }

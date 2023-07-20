@@ -20,12 +20,23 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 )
 
+// ContextKey is the key for storing operator in the context.
+type ContextKey struct{}
+
 // FromContext return the event operator from context
 func FromContext(ctx context.Context) string {
+	var operator string
 	sc, ok := security.FromContext(ctx)
-	if !ok {
-		return ""
+	if ok {
+		operator = sc.GetUsername()
+	}
+	// retrieve from context if not found in security context
+	if operator == "" {
+		op, ok := ctx.Value(ContextKey{}).(string)
+		if ok {
+			operator = op
+		}
 	}
 
-	return sc.GetUsername()
+	return operator
 }

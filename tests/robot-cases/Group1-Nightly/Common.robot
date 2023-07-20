@@ -773,7 +773,7 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Go Into Project  project${d}
     Go Into Repo  project${d}  ${image}
     Should Not Be Signed By Cosign  ${tag}
-    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed in Cosign.
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed.
     Cosign Generate Key Pair
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
 

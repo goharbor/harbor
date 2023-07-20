@@ -38,6 +38,10 @@ type Manager interface {
 	ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error)
 	// DangerousCVEs returns the most dangerous CVEs for the given scanner.
 	DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error)
+	// TotalVuls return the count of vulnerabilities
+	TotalVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error)
+	// ListVuls returns vulnerabilities list
+	ListVuls(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.VulnerabilityItem, error)
 }
 
 // NewManager news security manager.
@@ -66,4 +70,12 @@ func (s *securityManager) ScannedArtifactsCount(ctx context.Context, scannerUUID
 
 func (s *securityManager) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
 	return s.dao.DangerousCVEs(ctx, scannerUUID, projectID, query)
+}
+
+func (s *securityManager) TotalVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
+	return s.dao.CountVulnerabilities(ctx, scannerUUID, projectID, tuneCount, query)
+}
+
+func (s *securityManager) ListVuls(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
+	return s.dao.ListVulnerabilities(ctx, scannerUUID, projectID, query)
 }

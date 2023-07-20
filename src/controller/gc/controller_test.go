@@ -150,6 +150,7 @@ func (g *gcCtrTestSuite) TestCreateSchedule() {
 	p := Policy{
 		DeleteUntagged: true,
 		ExtraAttrs:     dataMap,
+		Workers:        3,
 	}
 	id, err := g.ctl.CreateSchedule(nil, "Daily", "* * * * * *", p)
 	g.Nil(err)

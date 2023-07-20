@@ -25,7 +25,7 @@ import { ClrLoadingState } from '@clr/angular';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { ArtifactModule } from '../../../artifact.module';
 
-describe('ArtifactListTabComponent (inline template)', () => {
+describe('ArtifactListTabComponent', () => {
     let comp: ArtifactListTabComponent;
     let fixture: ComponentFixture<ArtifactListTabComponent>;
     const mockActivatedRoute = {

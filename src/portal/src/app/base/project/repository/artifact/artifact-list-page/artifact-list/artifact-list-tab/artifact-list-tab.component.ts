@@ -932,33 +932,45 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
     checkCosignAsync(artifacts: ArtifactFront[]) {
-        if (artifacts && artifacts.length) {
-            artifacts.forEach(item => {
-                item.coSigned = CHECKING;
-                const listTagParams: NewArtifactService.ListAccessoriesParams =
-                    {
-                        projectName: this.projectName,
-                        repositoryName: dbEncodeURIComponent(this.repoName),
-                        reference: item.digest,
-                        q: encodeURIComponent(`type=${AccessoryType.COSIGN}`),
-                        page: 1,
-                        pageSize: ACCESSORY_PAGE_SIZE,
-                    };
-                this.newArtifactService
-                    .listAccessories(listTagParams)
-                    .subscribe(
-                        res => {
-                            if (res?.length) {
+        if (artifacts) {
+            if (artifacts.length) {
+                artifacts.forEach(item => {
+                    item.coSigned = CHECKING;
+                    const listTagParams: NewArtifactService.ListAccessoriesParams =
+                        {
+                            projectName: this.projectName,
+                            repositoryName: dbEncodeURIComponent(this.repoName),
+                            reference: item.digest,
+                            page: 1,
+                            pageSize: ACCESSORY_PAGE_SIZE,
+                        };
+                    listTagParams.q = encodeURIComponent(
+                        `type=${AccessoryType.COSIGN}`
+                    );
+                    const cosignParam = listTagParams;
+                    listTagParams.q = encodeURIComponent(
+                        `type=${AccessoryType.NOTATION}`
+                    );
+                    forkJoin([
+                        this.newArtifactService.listAccessories(cosignParam),
+                        this.newArtifactService.listAccessories(listTagParams),
+                    ]).subscribe({
+                        next: res => {
+                            if (
+                                res?.length &&
+                                (res[0]?.length || res[1]?.length)
+                            ) {
                                 item.coSigned = TRUE;
                             } else {
                                 item.coSigned = FALSE;
                             }
                         },
-                        err => {
+                        error: err => {
                             item.coSigned = FALSE;
-                        }
-                    );
-            });
+                        },
+                    });
+                });
+            }
         }
     }
     // return true if all selected rows are in "running" state

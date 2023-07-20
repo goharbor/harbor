@@ -109,6 +109,7 @@ func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtif
 					}},
 			},
 		},
+		Operator: event.Operator,
 	}
 	return repevent.Handle(ctx, e)
 }
@@ -140,6 +141,7 @@ func (r *Handler) handleDeleteArtifact(ctx context.Context, event *event.DeleteA
 			},
 			Deleted: true,
 		},
+		Operator: event.Operator,
 	}
 	return repevent.Handle(ctx, e)
 }
@@ -180,6 +182,7 @@ func (r *Handler) handleCreateTag(ctx context.Context, event *event.CreateTagEve
 					}},
 			},
 		},
+		Operator: event.Operator,
 	}
 	return repevent.Handle(ctx, e)
 }
@@ -212,6 +215,7 @@ func (r *Handler) handleDeleteTag(ctx context.Context, event *event.DeleteTagEve
 			Deleted:     true,
 			IsDeleteTag: true,
 		},
+		Operator: event.Operator,
 	}
 	return repevent.Handle(ctx, e)
 }

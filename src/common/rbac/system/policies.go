@@ -86,5 +86,6 @@ var (
 		{Resource: rbac.ResourceJobServiceMonitor, Action: rbac.ActionStop},
 
 		{Resource: rbac.ResourceSecurityHub, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceSecurityHub, Action: rbac.ActionList},
 	}
 )

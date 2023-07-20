@@ -1590,7 +1590,7 @@
         "PREHEAT_EXPLAIN": "Pré-análise torna suas imagens mais confiáveis perante a rede P2P",
         "CRITERIA_EXPLAIN": "Conforme especificado na 'Segurança da implantação', na aba Configurações.",
         "SKIP_CERT_VERIFY": "Marque para ignorar certificados inválidos ou auto-assinados.",
-        "NAME_TOOLTIP": "Nome da política deve ter no mínimo 2 caracteres. Pode conter ser composto de letras, números e dos símbolos ._- e deve começar com uma letra ou número.",
+        "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
         "NEED_HELP": "Solicite ao administrador do sistema a inclusão de um fornecedor."
     },
     "PAGINATION": {
@@ -1685,7 +1685,7 @@
         "ACCESSORIES": "Accessories",
         "SUBJECT_ARTIFACT": "Subject Artifact",
         "CO_SIGN": "Cosign",
-        "NOTARY": "Notary",
+        "NOTARY": "Notation",
         "PLACEHOLDER": "We couldn't find any accessories!"
     },
     "CLEARANCES": {
@@ -1870,5 +1870,26 @@
         "WARNING": "Warning",
         "DANGER": "Danger",
         "ENTER_MESSAGE": "Enter your message here"
+    },
+    "SECURITY_HUB": {
+        "SECURITY_HUB": "Security Hub",
+        "ARTIFACTS": "artifact(s)",
+        "SCANNED": "scanned",
+        "NOT_SCANNED": "not scanned",
+        "TOTAL_VUL": "Total Vulnerabilities",
+        "TOTAL_AND_FIXABLE": "{{totalNum}} total with {{fixableNum}} fixable",
+        "TOP_5_ARTIFACT": "Top 5 Most Dangerous Artifacts",
+        "TOP_5_CVE": "Top 5 Most Dangerous CVEs",
+        "CVE_ID": "CVE ID",
+        "VUL": "Vulnerabilities",
+        "CVE": "CVEs",
+        "FILTER_BY": "Filter by",
+        "OPTION_ALL": "All",
+        "OPTION_PROJECT_ID_NAME": "Project id or name",
+        "SEARCH": "SEARCH",
+        "REPO_NAME": "Repository Name",
+        "TOOLTIP": "All filters except CVSS3 only support exact matches",
+        "NO_VUL": "We could not find any vulnerability",
+        "INVALID_VALUE": "Invalid range"
     }
 }
