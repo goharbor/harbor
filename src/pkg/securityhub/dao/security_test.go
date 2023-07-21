@@ -68,6 +68,7 @@ func (suite *SecurityDaoTestSuite) TearDownTest() {
 		`delete from scan_report where uuid = 'uuid'`,
 		`delete from artifact where digest = 'digest1001'`,
 		`delete from scanner_registration where uuid='ruuid'`,
+		`delete from scanner_registration where uuid='uuid2'`,
 		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
 		`delete from report_vulnerability_record where report_uuid='ruuid'`,
 		`delete from vulnerability_record where registration_uuid ='uuid2'`,
