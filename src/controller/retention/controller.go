@@ -100,6 +100,10 @@ func (r *defaultController) GetRetention(ctx context.Context, id int64) (*policy
 
 // CreateRetention Create Retention
 func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metadata) (int64, error) {
+	err := p.ValidateRetentionPolicy()
+	if err != nil {
+		return 0, err
+	}
 	id, err := r.manager.CreatePolicy(ctx, p)
 	if err != nil {
 		return 0, err
@@ -125,6 +129,10 @@ func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metad
 
 // UpdateRetention Update Retention
 func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metadata) error {
+	err := p.ValidateRetentionPolicy()
+	if err != nil {
+		return err
+	}
 	p0, err := r.manager.GetPolicy(ctx, p.ID)
 	if err != nil {
 		return err

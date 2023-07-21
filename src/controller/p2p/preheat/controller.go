@@ -294,6 +294,12 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		return 0, err
 	}
 
+	// valid policy schema
+	err = schema.ValidatePreheatPolicy()
+	if err != nil {
+		return 0, err
+	}
+
 	id, err = c.pManager.Create(ctx, schema)
 	if err != nil {
 		return
@@ -356,6 +362,12 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// Get full model of updating policy
 	err = schema.Decode()
+	if err != nil {
+		return err
+	}
+
+	// valid policy schema
+	err = schema.ValidatePreheatPolicy()
 	if err != nil {
 		return err
 	}
