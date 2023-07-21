@@ -78,7 +78,7 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
-				Cron: "0 * * * * *",
+				Cron: "0 0 * * * *",
 			},
 		},
 		Enabled: true,
@@ -106,7 +106,7 @@ func (r *replicationTestSuite) TestUpdatePolicy() {
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
-				Cron: "0 * * * * *",
+				Cron: "0 0 * * * *",
 			},
 		},
 		Enabled: true,

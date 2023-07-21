@@ -9,6 +9,10 @@ import { Project } from '../../project';
 import { artifactDefault } from './artifact';
 import { SafeUrl } from '@angular/platform-browser';
 import { ArtifactService } from './artifact.service';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../../services/event-service/event.service';
 
 @Component({
     selector: 'artifact-summary',
@@ -38,7 +42,8 @@ export class ArtifactSummaryComponent implements OnInit {
         private route: ActivatedRoute,
         private appConfigService: AppConfigService,
         private router: Router,
-        private frontEndArtifactService: ArtifactService
+        private frontEndArtifactService: ArtifactService,
+        private event: EventService
     ) {}
 
     goBack(): void {
@@ -109,6 +114,8 @@ export class ArtifactSummaryComponent implements OnInit {
                 this.getIconFromBackEnd();
             }
         }
+        // scroll to the top for harbor container HTML element
+        this.event.publish(HarborEvent.SCROLL_TO_POSITION, 0);
     }
     onBack(): void {
         this.backEvt.emit(this.repositoryName);

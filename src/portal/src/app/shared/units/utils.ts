@@ -1042,4 +1042,5 @@ export enum PageSizeMapKeys {
     WORKER_LIST_COMPONENT_WORKER = 'WorkerListComponentWorker',
     SCHEDULE_LIST_COMPONENT = 'ScheduleListComponent',
     PENDING_LIST_COMPONENT = 'PendingListComponent',
+    SECURITY_HUB_VUL = 'SecurityHubComponent',
 }
