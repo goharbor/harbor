@@ -140,7 +140,9 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.20.4
+GOVERSION=1.20.6
+GOBUILDIMAGE=goharbor/golang:$(GOVERSION)
+PUSHGOIMAGE=false
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -451,6 +453,15 @@ package_offline: update_prepare_version compile build
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
+
+build_golang:
+	@echo "build goharbor/golang image"
+	$(DOCKERBUILD) --build-arg GOVERSION=$(GOVERSION) -f $(MAKEPATH)/photon/golang/Dockerfile -t $(GOBUILDIMAGE) .
+	@if [ "$(PUSHGOIMAGE)" = "true" ] ; then \
+	echo "push goharbor/golang image"; \
+	docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+	docker push $(GOBUILDIMAGE); \
+	fi; \
 
 gosec:
 	#go get github.com/securego/gosec/cmd/gosec
