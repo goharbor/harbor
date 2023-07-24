@@ -1,3 +1,6 @@
+DROP DATABASE IF EXISTS notaryserver WITH (FORCE);
+DROP DATABASE IF EXISTS notarysigner WITH (FORCE);
+
 CREATE INDEX IF NOT EXISTS idx_task_extra_attrs_report_uuids ON task USING gin ((extra_attrs::jsonb->'report_uuids'));
 
 /* Set the vendor_id of IMAGE_SCAN to the artifact id instead of scanner id, which facilitates execution sweep */
