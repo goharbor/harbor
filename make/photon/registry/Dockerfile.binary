@@ -1,4 +1,6 @@
-FROM golang:1.20.4
+FROM goharbor/golang:1.20.6
+
+RUN tdnf install make -y
 
 ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
 ENV BUILDTAGS include_oss include_gcs

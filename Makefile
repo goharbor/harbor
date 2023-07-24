@@ -145,7 +145,8 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.20.4
+GOVERSION=1.20.6
+GOBUILDIMAGE=goharbor/golang:$(GOVERSION)
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -457,7 +458,7 @@ package_online: update_prepare_version
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-package_offline: update_prepare_version compile build
+package_offline: build_golang update_prepare_version compile build
 
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
@@ -471,6 +472,11 @@ package_offline: update_prepare_version compile build
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
+build_golang:
+	@echo "build goharbor/golang image"
+	$(DOCKERBUILD) --build-arg GOVERSION=$(GOVERSION) -f $(MAKEPATH)/photon/golang/Dockerfile -t $(GOBUILDIMAGE) .
+	@echo "Done."
+
 gosec:
 	#go get github.com/securego/gosec/cmd/gosec
 	#go get github.com/dghubble/sling
@@ -481,7 +487,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis mocks_check misspell commentfmt lint
+go_check: build_golang gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
