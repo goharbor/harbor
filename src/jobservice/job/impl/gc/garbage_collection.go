@@ -15,7 +15,9 @@
 package gc
 
 import (
+	"context"
 	"encoding/json"
+	"net/url"
 	"os"
 	"sync/atomic"
 	"time"
@@ -28,9 +30,9 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
-	redisLib "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -185,13 +187,13 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 			if err == errGcStop {
 				// we may already delete several artifacts before receiving the stop signal, so try to clean up the cache
 				gc.logger.Info("received the stop signal, quit GC job after cleaning up the cache.")
-				return gc.cleanCache()
+				return gc.cleanCache(ctx.SystemContext())
 			}
 			gc.logger.Errorf("failed to execute GC job at sweep phase, error: %v", err)
 			return err
 		}
 
-		if err := gc.cleanCache(); err != nil {
+		if err := gc.cleanCache(ctx.SystemContext()); err != nil {
 			return err
 		}
 	}
@@ -480,21 +482,18 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 
 // cleanCache is to clean the registry cache for GC.
 // To do this is because the issue https://github.com/docker/distribution/issues/2094
-func (gc *GarbageCollector) cleanCache() error {
-	pool, err := redisLib.GetRedisPool("GarbageCollector", gc.redisURL, &redisLib.PoolParam{
-		PoolMaxIdle:           0,
-		PoolMaxActive:         1,
-		PoolIdleTimeout:       60 * time.Second,
-		DialConnectionTimeout: dialConnectionTimeout,
-		DialReadTimeout:       dialReadTimeout,
-		DialWriteTimeout:      dialWriteTimeout,
-	})
+func (gc *GarbageCollector) cleanCache(ctx context.Context) error {
+	u, err := url.Parse(gc.redisURL)
 	if err != nil {
-		gc.logger.Errorf("failed to connect to redis %v", err)
+		gc.logger.Errorf("failed to parse redis url %s, error: %v", gc.redisURL, err)
 		return err
 	}
-	con := pool.Get()
-	defer con.Close()
+
+	c, err := cache.New(u.Scheme, cache.Address(gc.redisURL))
+	if err != nil {
+		gc.logger.Errorf("failed to get redis client: %v", err)
+		return err
+	}
 
 	// clean all keys in registry redis DB.
 
@@ -503,7 +502,7 @@ func (gc *GarbageCollector) cleanCache() error {
 	// 2) "repository::library/hello-world::blobs::sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f"
 	patterns := []string{blobPrefix, repoPrefix}
 	for _, pattern := range patterns {
-		if err := delKeys(con, pattern); err != nil {
+		if err := delKeys(ctx, c, pattern); err != nil {
 			gc.logger.Errorf("failed to clean registry cache %v, pattern %s", err, pattern)
 			return err
 		}
