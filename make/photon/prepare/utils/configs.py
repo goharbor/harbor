@@ -3,7 +3,7 @@ import os
 import yaml
 from urllib.parse import urlencode, quote
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric, Trace, PurgeUpload, Cache
+from models import InternalTLS, Metric, Trace, PurgeUpload, Cache, Core
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -84,6 +84,9 @@ def validate(conf: dict, **kwargs):
 
     if conf.get('cache'):
         conf['cache'].validate()
+
+    if conf.get('core'):
+        conf['core'].validate()
 
 
 def parse_versions():
@@ -323,6 +326,10 @@ def parse_yaml_config(config_file_path, with_trivy):
     # cache configs
     cache_config = configs.get('cache')
     config_dict['cache'] = Cache(cache_config or {})
+
+    # core configs
+    core_config = configs.get('core')
+    config_dict['core'] = Core(core_config or {})
 
     return config_dict
 
