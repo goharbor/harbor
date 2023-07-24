@@ -59,8 +59,8 @@ var (
 	// quotaExpireTimeout is the expire time for quota when update quota by redis
 	quotaExpireTimeout = time.Minute * 5
 
-	updateQuotaProviderRedis updateQuotaProviderType = "Redis"
-	updateQuotaProviderDB    updateQuotaProviderType = "DB"
+	updateQuotaProviderRedis updateQuotaProviderType = "redis"
+	updateQuotaProviderDB    updateQuotaProviderType = "db"
 )
 
 var (
