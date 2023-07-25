@@ -46,11 +46,17 @@ func ContentTrust() func(http.Handler) http.Handler {
 		// If signature policy enabled, it has to at least have one signature.
 		if pro.ContentTrustCosignEnabled() {
 			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeCosignSignature); err != nil {
+				if errors.IsErr(err, errors.PROJECTPOLICYVIOLATION) {
+					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed by cosign.")
+				}
 				return err
 			}
 		}
 		if pro.ContentTrustEnabled() {
 			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeNotationSignature); err != nil {
+				if errors.IsErr(err, errors.PROJECTPOLICYVIOLATION) {
+					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed by notation.")
+				}
 				return err
 			}
 		}
@@ -78,8 +84,7 @@ func signatureChecking(ctx context.Context, r *http.Request, af lib.ArtifactInfo
 	}
 
 	if len(art.Accessories) == 0 {
-		pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed.")
-		return pkgE
+		return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION)
 	}
 
 	var hasSignature bool
@@ -90,8 +95,7 @@ func signatureChecking(ctx context.Context, r *http.Request, af lib.ArtifactInfo
 		}
 	}
 	if !hasSignature {
-		pkgE := errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed.")
-		return pkgE
+		return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION)
 	}
 
 	return nil

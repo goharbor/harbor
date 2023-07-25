@@ -46,6 +46,7 @@ type GCHistory struct {
 	Parameters   string         `json:"job_parameters"`
 	Status       string         `json:"job_status"`
 	UUID         string         `json:"-"`
+	JobID        string         `json:"job_id"`
 	Deleted      bool           `json:"deleted"`
 	CreationTime time.Time      `json:"creation_time"`
 	UpdateTime   time.Time      `json:"update_time"`
@@ -60,6 +61,7 @@ func (h *GCHistory) ToSwagger() *models.GCHistory {
 		JobParameters: h.Parameters,
 		Deleted:       h.Deleted,
 		JobStatus:     h.Status,
+		JobID:         h.JobID,
 		Schedule: &models.ScheduleObj{
 			// covert MANUAL to Manual because the type of the ScheduleObj
 			// must be 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'

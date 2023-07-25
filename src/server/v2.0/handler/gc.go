@@ -195,6 +195,17 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 		if err != nil {
 			return g.SendError(ctx, err)
 		}
+
+		tasks, err := g.gcCtr.ListTasks(ctx, q.New(q.KeyWords{
+			"ExecutionID": exec.ID,
+		}))
+		if err != nil {
+			return g.SendError(ctx, err)
+		}
+		if len(tasks) == 0 {
+			return g.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", exec.ID))
+		}
+
 		hs = append(hs, &model.GCHistory{
 			ID:         exec.ID,
 			Name:       job.GarbageCollectionVendorType,
@@ -203,6 +214,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 			Schedule: &model.ScheduleParam{
 				Type: exec.Trigger,
 			},
+			JobID:        tasks[0].JobID,
 			Status:       exec.Status,
 			CreationTime: exec.StartTime,
 			UpdateTime:   exec.UpdateTime,
@@ -234,6 +246,16 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 		return g.SendError(ctx, err)
 	}
 
+	tasks, err := g.gcCtr.ListTasks(ctx, q.New(q.KeyWords{
+		"ExecutionID": params.GCID,
+	}))
+	if err != nil {
+		return g.SendError(ctx, err)
+	}
+	if len(tasks) == 0 {
+		return g.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", params.GCID))
+	}
+
 	res := &model.GCHistory{
 		ID:         exec.ID,
 		Name:       job.GarbageCollectionVendorType,
@@ -243,6 +265,7 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 		Schedule: &model.ScheduleParam{
 			Type: exec.Trigger,
 		},
+		JobID:        tasks[0].JobID,
 		CreationTime: exec.StartTime,
 		UpdateTime:   exec.UpdateTime,
 	}
