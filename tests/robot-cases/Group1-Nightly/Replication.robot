@@ -90,7 +90,7 @@ Test Case - Replication Rule Edit
     ${resource_type}=    Set Variable    image
     ${dest_namespace}=    Set Variable    dest_namespace${d}
     ${mode}=    Set Variable    Scheduled
-    ${cron_str}=    Set Variable    10 10 10 * * *
+    ${cron_str}=    Set Variable    0 0 0 * * 0
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
     Create A New Endpoint    harbor    ${endpoint1}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
