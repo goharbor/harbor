@@ -84,7 +84,7 @@ class TestProjects(unittest.TestCase):
         restart_process("containerd")
         restart_process("dockerd")
         time.sleep(30)
-        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed")
+        pull_harbor_image(harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], TestProjects.repo_name, tag, expected_error_message = "The image is not signed by cosign")
 
 if __name__ == '__main__':
     unittest.main()
