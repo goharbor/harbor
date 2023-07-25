@@ -7,9 +7,14 @@ AND vendor_id IN (SELECT id FROM scanner_registration)
 AND vendor_type = 'IMAGE_SCAN';
 
 /* extract score from vendor attribute */
-UPDATE vulnerability_record
-SET cvss_score_v3 = (vendor_attributes->'CVSS'->'nvd'->>'V3Score')::double precision
-WHERE jsonb_path_exists(vendor_attributes::jsonb, '$.CVSS.nvd.V3Score');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM vulnerability_record WHERE cvss_score_v3 IS NOT NULL LIMIT 1) THEN
+        UPDATE vulnerability_record
+        SET cvss_score_v3 = (vendor_attributes->'CVSS'->'nvd'->>'V3Score')::double precision
+        WHERE jsonb_path_exists(vendor_attributes::jsonb, '$.CVSS.nvd.V3Score');
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_vulnerability_record_cvss_score_v3 ON vulnerability_record (cvss_score_v3);
 CREATE INDEX IF NOT EXISTS idx_vulnerability_registration_uuid ON vulnerability_record (registration_uuid);
@@ -40,6 +45,18 @@ $$
         unknown_count BIGINT;
         fixable_count BIGINT;
     BEGIN
+        IF EXISTS (SELECT 1
+                   FROM scan_report
+                   WHERE critical_cnt IS NOT NULL
+                     AND high_cnt IS NOT NULL
+                     AND medium_cnt IS NOT NULL
+                     AND low_cnt IS NOT NULL
+                     AND unknown_cnt IS NOT NULL
+                     AND fixable_cnt IS NOT NULL
+                   LIMIT 1) THEN
+            RETURN;
+        END IF;
+
         FOR report IN SELECT uuid FROM scan_report
             LOOP
                 critical_count := 0;
