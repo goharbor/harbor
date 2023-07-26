@@ -16,6 +16,8 @@ item=0
 with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
+# assume no systemd for now
+have_systemd=$false
 
 # flag to using docker compose v1 or v2, default would using v1 docker-compose
 DOCKER_COMPOSE=docker-compose
@@ -73,7 +75,44 @@ if [ -n "$DOCKER_COMPOSE ps -q"  ]
 fi
 echo ""
 
-h2 "[Step $item]: starting Harbor ..."
-$DOCKER_COMPOSE up -d
+if [ -d /etc/systemd ]
+then
+    have_systemd=true
+    h2 "[Step $item]: installing Harbor systemd service ..."; let item+=1
+
+    cat >/etc/systemd/system/harbor.service <<EOF
+[Unit]
+Description=Harbor Cloud Native Registry
+Documentation=https://goharbor.io
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5
+ExecStart=${DOCKER_COMPOSE} -f ${workdir}/docker-compose.yml up
+ExecStop=${DOCKER_COMPOSE} -f ${workdir}/docker-compose.yml down -v
+ExecStopPost=${DOCKER_COMPOSE} -f ${workdir}/docker-compose.yml rm -f
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    note "Reloading systemd unit files ..."
+    systemctl daemon-reload
+
+    note "Setting Harbor to start on boot ..."
+    systemctl enable harbor
+fi
+
+h2 "[Step $item]: starting Harbor ..."; let item+=1
+
+if [ $have_systemd ]
+then
+    systemctl start harbor
+else
+    $DOCKER_COMPOSE up -d
+fi
 
 success $"----Harbor has been installed and started successfully.----"
