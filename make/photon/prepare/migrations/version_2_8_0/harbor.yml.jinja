@@ -396,7 +396,11 @@ external_redis:
   # username:
   {% endif %}
   # sentinel_master_set must be set to support redis+sentinel
+  {% if external_redis.sentinel_master_set is defined %}
+  sentinel_master_set: {{ external_redis.sentinel_master_set }}
+  {% else %}
   #sentinel_master_set:
+  {% endif %}
   # db_index 0 is for core, it's unchangeable
   registry_db_index: {{ external_redis.registry_db_index }}
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
