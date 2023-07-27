@@ -241,3 +241,14 @@ class Cache:
         if not self.expire_hours or self.expire_hours <= 0:
             raise Exception('cache expire hours should be positive number')
         return
+
+class Core:
+    def __init__(self, config: dict):
+        self.quota_update_provider = config.get('quota_update_provider') or 'db'
+
+    def validate(self):
+        if not self.quota_update_provider:
+            return
+
+        if self.quota_update_provider not in ['db', 'redis']:
+            raise Exception('invalid quota update provider: {}'.format(self.quota_update_provider))

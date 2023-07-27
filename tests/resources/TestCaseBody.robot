@@ -480,10 +480,10 @@ Verify Webhook By Artifact Deleted Event
     Verify Request  &{artifact_deleted_property}
 
 Verify Webhook By Scanning Finished Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{scanning_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_finished_property}  type=SCANNING_COMPLETED  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
-    ...  ELSE  Set To Dictionary  ${scanning_finished_property}  specversion=1.0  type=harbor.scan.completed  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Success
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_finished_property}  type=SCANNING_COMPLETED  operator=${user}  scan_status=Success  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_finished_property}  specversion=1.0  type=harbor.scan.completed  datacontenttype=application/json  operator=${user}  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Success
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
@@ -499,10 +499,10 @@ Verify Webhook By Scanning Finished Event
     Verify Request  &{scanning_finished_property}
 
 Verify Webhook By Scanning Stopped Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{scanning_stopped_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_stopped_property}  type=SCANNING_STOPPED  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
-    ...  ELSE  Set To Dictionary  ${scanning_stopped_property}  specversion=1.0  type=harbor.scan.stopped  datacontenttype=application/json  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Stopped
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${scanning_stopped_property}  type=SCANNING_STOPPED  operator=${user}  scan_status=Stopped  namespace=${project_name}  tag=${tag}  name=${image}
+    ...  ELSE  Set To Dictionary  ${scanning_stopped_property}  specversion=1.0  type=harbor.scan.stopped  datacontenttype=application/json  operator=${user}  namespace=${project_name}  name=${image}  repo_full_name=${project_name}/${image}  tag=${tag}  scan_status=Stopped
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
@@ -519,10 +519,10 @@ Verify Webhook By Scanning Stopped Event
     Verify Request  &{scanning_stopped_property}
 
 Verify Webhook By Tag Retention Finished Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag1}  ${tag2}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{tag_retention_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${tag_retention_finished_property}  type=TAG_RETENTION  operator=MANUAL  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
-    ...  ELSE  Set To Dictionary  ${tag_retention_finished_property}  specversion=1.0  type=harbor.tag_retention.finished  datacontenttype=application/json  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${tag_retention_finished_property}  type=TAG_RETENTION  operator=${user}  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
+    ...  ELSE  Set To Dictionary  ${tag_retention_finished_property}  specversion=1.0  type=harbor.tag_retention.finished  datacontenttype=application/json  operator=${user}  project_name=${project_name}  name_tag=${image}:${tag2}  status=SUCCESS
     Switch Window  ${webhook_handle}
     Delete All Requests
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag1}  ${tag1}
@@ -543,10 +543,10 @@ Verify Webhook By Tag Retention Finished Event
     Wait Until Page Contains  "retained":1
 
 Verify Webhook By Replication Status Changed Event
-    [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
+    [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{replication_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=MANUAL  registry_type=harbor  harbor_hostname=${ip}
-    ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  trigger_type=MANUAL  namespace=${project_name}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${ip}
+    ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  operator=${user}  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests
     Switch Window  ${harbor_handle}
@@ -574,8 +574,8 @@ Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
     ${event_type}  Create List  Quota near threshold
     Create A New Webhook  webhook${d}  ${webhook_endpoint_url}  ${payload_format}  ${event_type}
     &{quota_near_threshold_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_near_threshold_property}  type=QUOTA_WARNING  name=nginx  namespace=project${d}
-    ...  ELSE  Set To Dictionary  ${quota_near_threshold_property}  specversion=1.0  type=harbor.quota.warned  datacontenttype=application/json  name=${image}  repo_full_name=project${d}/${image}  namespace=project${d}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_near_threshold_property}  type=QUOTA_WARNING  operator=${HARBOR_ADMIN}  name=nginx  namespace=project${d}
+    ...  ELSE  Set To Dictionary  ${quota_near_threshold_property}  specversion=1.0  type=harbor.quota.warned  datacontenttype=application/json  operator=${HARBOR_ADMIN}  name=${image}  repo_full_name=project${d}/${image}  namespace=project${d}
     Switch Window  ${webhook_handle}
     Delete All Requests
     # Quota near threshold
@@ -592,8 +592,8 @@ Verify Webhook By Quota Near Threshold Event And Quota Exceed Event
 Verify Webhook By Quota Exceed Event
     [Arguments]  ${project_name}  ${webhook_name}  ${image}  ${tag}  ${webhook_endpoint_url}  ${storage_quota}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{quota_exceed_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_exceed_property}  type=QUOTA_EXCEED  name=${image}  namespace=${project_name}
-    ...  ELSE  Set To Dictionary  ${quota_exceed_property}  specversion=1.0  type=harbor.quota.exceeded  datacontenttype=application/json  name=${image}  repo_full_name=${project_name}/${image}  namespace=${project_name}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${quota_exceed_property}  type=QUOTA_EXCEED  operator=${HARBOR_ADMIN}  name=${image}  namespace=${project_name}
+    ...  ELSE  Set To Dictionary  ${quota_exceed_property}  specversion=1.0  type=harbor.quota.exceeded  datacontenttype=application/json  operator=${HARBOR_ADMIN}  name=${image}  repo_full_name=${project_name}/${image}  namespace=${project_name}
     # Quota exceed
     Switch Window  ${harbor_handle}
     Go Into Project  ${project_name}

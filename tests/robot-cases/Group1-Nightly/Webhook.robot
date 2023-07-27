@@ -84,9 +84,9 @@ Test Case - Scan Event Type Webhook Functionality
     ${webhook_handle}=  Set Variable  ${handles}[0]
     ${harbor_handle}=  Set Variable  ${handles}[1]
     # Scanning finished
-    Retry Action Keyword  Verify Webhook By Scanning Finished Event  project${d}  webhook${d}  ${image1}  ${tag1}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Scanning Finished Event  project${d}  webhook${d}  ${image1}  ${tag1}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}
     # Scanning stopped
-    Retry Action Keyword  Verify Webhook By Scanning Stopped Event  project${d}  webhook${d}  ${image2}  ${tag2}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Scanning Stopped Event  project${d}  webhook${d}  ${image2}  ${tag2}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}
     Close Browser
 
 Test Case - Tag Retention And Replication Event Type Webhook Functionality
@@ -116,9 +116,9 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality
     ${webhook_handle}=  Set Variable  ${handles}[0]
     ${harbor_handle}=  Set Variable  ${handles}[1]
     # Tag retention finished
-    Retry Action Keyword  Verify Webhook By Tag Retention Finished Event  project${d}  webhook${d}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Tag Retention Finished Event  project${d}  webhook${d}  ${image}  ${tag1}  ${tag2}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}
     # Replication status changed
-    Retry Action Keyword  Verify Webhook By Replication Status Changed Event  project${d}  webhook${d}  project_push_dest${d}  rule_push_${d}  ${harbor_handle}  ${webhook_handle}
+    Retry Action Keyword  Verify Webhook By Replication Status Changed Event  project${d}  webhook${d}  project_push_dest${d}  rule_push_${d}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}
     Close Browser
 
 Test Case - Tag Quota Event Type Webhook Functionality
@@ -183,9 +183,9 @@ Test Case - Scan Event Type Webhook Functionality By CloudEvents Format
     ${webhook_handle}=  Set Variable  ${handles}[0]
     ${harbor_handle}=  Set Variable  ${handles}[1]
     # Scanning finished
-    Retry Action Keyword  Verify Webhook By Scanning Finished Event  project${d}  webhook${d}  ${image1}  ${tag1}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
+    Retry Action Keyword  Verify Webhook By Scanning Finished Event  project${d}  webhook${d}  ${image1}  ${tag1}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
     # Scanning stopped
-    Retry Action Keyword  Verify Webhook By Scanning Stopped Event  project${d}  webhook${d}  ${image2}  ${tag2}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
+    Retry Action Keyword  Verify Webhook By Scanning Stopped Event  project${d}  webhook${d}  ${image2}  ${tag2}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
     Close Browser
 
 Test Case - Tag Retention And Replication Event Type Webhook Functionality By CloudEvents Format
@@ -216,9 +216,9 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality By Cl
     ${webhook_handle}=  Set Variable  ${handles}[0]
     ${harbor_handle}=  Set Variable  ${handles}[1]
     # Tag retention finished
-    Retry Action Keyword  Verify Webhook By Tag Retention Finished Event  project${d}  webhook${d}  ${image}  ${tag1}  ${tag2}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
+    Retry Action Keyword  Verify Webhook By Tag Retention Finished Event  project${d}  webhook${d}  ${image}  ${tag1}  ${tag2}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
     # Replication status changed
-    Retry Action Keyword  Verify Webhook By Replication Status Changed Event  project${d}  webhook${d}  project_push_dest${d}  rule_push_${d}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
+    Retry Action Keyword  Verify Webhook By Replication Status Changed Event  project${d}  webhook${d}  project_push_dest${d}  rule_push_${d}  ${HARBOR_ADMIN}  ${harbor_handle}  ${webhook_handle}  ${payload_format}
     Close Browser
 
 Test Case - Tag Quota Event Type Webhook Functionality By CloudEvents Format

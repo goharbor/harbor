@@ -48,10 +48,9 @@ order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
 	// sql to query the scanned artifact count
-	scannedArtifactCountSQL = `select count(1) 
-           from artifact a 
-      left join scan_report s on a.digest = s.digest 
-          where s.registration_uuid= ? and s.uuid is not null`
+	scannedArtifactCountSQL = `select count(1)
+from artifact
+where exists (select 1 from scan_report s where artifact.digest = s.digest and s.registration_uuid = ?) `
 
 	// sql to query the dangerous CVEs
 	dangerousCVESQL = `select vr.*

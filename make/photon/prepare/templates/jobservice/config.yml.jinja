@@ -29,8 +29,13 @@ worker_pool:
     idle_timeout_second: 3600
 #Loggers for the running job
 job_loggers:
-  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+  # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
+  {% for component in job_loggers %}
+    {% if component == 'STD_OUTPUT' %}
+  - name: "STD_OUTPUT"
     level: "{{level}}" # INFO/DEBUG/WARNING/ERROR/FATAL
+    {% endif %}
+    {% if component == 'FILE' %}
   - name: "FILE"
     level: "{{level}}"
     settings: # Customized settings of logger
@@ -39,6 +44,14 @@ job_loggers:
       duration: {{logger_sweeper_duration}} #days
       settings: # Customized settings of sweeper
         work_dir: "/var/log/jobs"
+    {% endif %}
+    {% if component == 'DB' %}
+  - name: "DB"
+    level: "{{level}}"
+    sweeper:
+      duration: {{logger_sweeper_duration}} #days
+    {% endif %}
+  {% endfor %}
 
 #Loggers for the job service
 loggers:
