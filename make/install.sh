@@ -9,7 +9,8 @@ set +o noglob
 
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
 Please set --with-trivy if needs enable Trivy in Harbor.
-Please do NOT set --with-chartmuseum, as chartmusuem has been deprecated and removed.'
+Please do NOT set --with-chartmuseum, as chartmusuem has been deprecated and removed.
+Please do NOT set --with-notary, as notary has been deprecated and removed.'
 item=0
 
 # clair is deprecated
