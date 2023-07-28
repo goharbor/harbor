@@ -230,6 +230,9 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		blobs = append(blobs, orphanBlobs...)
 	}
 	if len(blobs) == 0 {
+		if err := saveGCRes(ctx, int64(0), int64(0), int64(0)); err != nil {
+			gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
+		}
 		gc.logger.Info("no need to execute GC as there is no non referenced artifacts.")
 		return nil
 	}
@@ -269,6 +272,12 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
 	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
+
+	if gc.dryRun {
+		if err := saveGCRes(ctx, makeSize, int64(blobCt), int64(mfCt)); err != nil {
+			gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
+		}
+	}
 	return nil
 }
 
