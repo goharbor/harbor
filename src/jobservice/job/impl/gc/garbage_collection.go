@@ -554,6 +554,7 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 					ManifestMediaType: untagged.ManifestMediaType,
 					RepositoryName:    untagged.RepositoryName,
 					Digest:            untagged.Digest,
+					CreationTime:      time.Now(),
 				}
 				allTrashedArts = append(allTrashedArts, simulateDeletion)
 			} else {
