@@ -1,7 +1,7 @@
 import { throwError as observableThrowError, Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import { catchError, share } from 'rxjs/operators';
 import { Project } from '../../base/project/project-config/project-policy-config/project';
 import { ProjectPolicy } from '../../base/project/project-config/project-policy-config/project-policy-config.component';
 import {
@@ -10,6 +10,7 @@ import {
     buildHttpRequestOptionsWithObserveResponse,
     CURRENT_BASE_HREF,
 } from '../units/utils';
+import { CacheObservable } from '../units/cache-util';
 
 /**
  * Define the service methods to handle the Project related things.
@@ -87,18 +88,26 @@ export abstract class ProjectService {
  */
 @Injectable()
 export class ProjectDefaultService extends ProjectService {
+    // to avoid multiple requests for one navigating action
+    private _sharedProjectObservableMap: {
+        [key: number | string]: Observable<Project>;
+    } = {};
     constructor(private http: HttpClient) {
         super();
     }
-
+    @CacheObservable({ maxAge: 1000 * 60 })
     public getProject(projectId: number | string): Observable<Project> {
         if (!projectId) {
             return observableThrowError('Bad argument');
         }
         let baseUrl: string = CURRENT_BASE_HREF + '/projects';
-        return this.http
+        if (this._sharedProjectObservableMap[projectId]) {
+            return this._sharedProjectObservableMap[projectId];
+        }
+        this._sharedProjectObservableMap[projectId] = this.http
             .get<Project>(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
-            .pipe(catchError(error => observableThrowError(error)));
+            .pipe(share());
+        return this._sharedProjectObservableMap[projectId];
     }
 
     public updateProjectPolicy(
