@@ -46,6 +46,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     selectedRow: GCHistory[] = [];
     isStopOnGoing: boolean = false;
     subscription: Subscription;
+    protected readonly NO = NO;
+    protected readonly YES = YES;
     constructor(
         private gcService: GcService,
         private errorHandler: ErrorHandler,
@@ -154,6 +156,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                                             item2.job_status = item.job_status;
                                             item2.update_time =
                                                 item.update_time;
+                                            item2.job_parameters =
+                                                item.job_parameters;
                                         }
                                     });
                                 });
@@ -230,7 +234,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                 return formatSize(paramObj.freed_space);
             }
         }
-        return null;
+        return '0';
     }
 
     getLogLink(id): string {
@@ -264,5 +268,9 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
             ConfirmationButtons.CONFIRM_CANCEL
         );
         this.confirmationDialogService.openComfirmDialog(StopExecutionsMessage);
+    }
+
+    shouldShowDetails(status: string): boolean {
+        return status !== JOB_STATUS.PENDING && status !== JOB_STATUS.RUNNING;
     }
 }
