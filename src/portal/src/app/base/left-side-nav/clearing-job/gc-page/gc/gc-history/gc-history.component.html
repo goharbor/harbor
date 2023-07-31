@@ -52,54 +52,26 @@
             job.job_status.toUpperCase() | translate
         }}</clr-dg-cell>
         <clr-dg-cell>
-            <div>
-                <span
-                    *ngIf="
-                        getBlobs(job?.job_parameters) &&
-                        getManifest(job?.job_parameters)
-                    "
-                    >{{
-                        'GC.DELETE_BLOB_AND_MANIFEST'
-                            | translate
-                                : {
-                                      blob: getBlobs(job?.job_parameters),
-                                      manifest: getManifest(job?.job_parameters)
-                                  }
-                    }}</span
-                >
-                <span
-                    *ngIf="
-                        getBlobs(job?.job_parameters) &&
-                        !getManifest(job?.job_parameters)
-                    "
-                    >{{
-                        'GC.DELETE_BLOB'
-                            | translate
-                                : {
-                                      blob: getBlobs(job?.job_parameters),
-                                  }
-                    }}</span
-                >
-                <span
-                    *ngIf="
-                        !getBlobs(job?.job_parameters) &&
-                        getManifest(job?.job_parameters)
-                    "
-                    >{{
-                        'GC.DELETE_MANIFEST'
-                            | translate
-                                : {
-                                      manifest: getManifest(job?.job_parameters)
-                                  }
-                    }}</span
-                >
-            </div>
-            <div *ngIf="getSize(job?.job_parameters)">
-                {{
-                    'GC.FREE_UP_SIZE'
-                        | translate : { size: getSize(job?.job_parameters) }
-                }}
-            </div>
+            <ng-container *ngIf="shouldShowDetails(job?.job_status)">
+                <span *ngIf="isDryRun(job?.job_parameters) === NO">{{
+                    'GC.DELETE_DETAIL'
+                        | translate
+                            : {
+                                  blob: getBlobs(job?.job_parameters),
+                                  manifest: getManifest(job?.job_parameters),
+                                  size: getSize(job?.job_parameters)
+                              }
+                }}</span>
+                <span *ngIf="isDryRun(job?.job_parameters) === YES">{{
+                    'GC.DELETE_DETAIL_DRY_RUN'
+                        | translate
+                            : {
+                                  blob: getBlobs(job?.job_parameters),
+                                  manifest: getManifest(job?.job_parameters),
+                                  size: getSize(job?.job_parameters)
+                              }
+                }}</span>
+            </ng-container>
         </clr-dg-cell>
         <clr-dg-cell>{{
             job.creation_time | harborDatetime : 'medium'

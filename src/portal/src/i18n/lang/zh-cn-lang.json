@@ -1230,10 +1230,8 @@
         "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
         "EXPLAIN_TIME_WINDOW": "在最近的两小时（默认窗口期）内被推送的 Artifacts 不会被当做垃圾回收的目标",
         "DRY_RUN_SUCCESS": "触发模拟运行成功",
-        "DELETE_BLOB_AND_MANIFEST": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除",
-        "DELETE_BLOB": "{{blob}}个 blob(s) 已删除",
-        "DELETE_MANIFEST": "{{manifest}}个 manifest(s) 已删除",
-        "FREE_UP_SIZE": "{{size}}的空间已清理",
+        "DELETE_DETAIL": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除，{{size}}的空间已清理",
+        "DELETE_DETAIL_DRY_RUN": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 将被删除，{{size}}的空间将被清理",
         "WORKERS_TOOLTIP": "设置可并行执行垃圾回收任务的工作者数量，默认值为1。"
     },
     "RETAG": {
