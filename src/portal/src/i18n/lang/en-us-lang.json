@@ -1887,7 +1887,7 @@
         "CVE": "CVEs",
         "FILTER_BY": "Filter by",
         "OPTION_ALL": "All",
-        "OPTION_PROJECT_ID_NAME": "Project Id or Name",
+        "OPTION_PROJECT_ID_NAME": "Project Name",
         "SEARCH": "SEARCH",
         "REPO_NAME": "Repository Name",
         "TOOLTIP": "All filters except CVSS3 only support exact matches",

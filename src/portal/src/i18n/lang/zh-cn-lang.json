@@ -1883,7 +1883,7 @@
         "CVE": "CVEs",
         "FILTER_BY": "过滤条件",
         "OPTION_ALL": "全部",
-        "OPTION_PROJECT_ID_NAME": "项目 ID 或 名称",
+        "OPTION_PROJECT_ID_NAME": "项目名称",
         "SEARCH": "搜索",
         "REPO_NAME": "仓库名称",
         "TOOLTIP": "CVSS3 除外的所有过滤项只支持精确匹配",
