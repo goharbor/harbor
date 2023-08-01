@@ -434,17 +434,22 @@
                             !messageText
                     }">
                     <label>{{ 'BANNER_MESSAGE.FROM' | translate }}</label>
-                    <input
-                        class="date"
-                        type="date"
-                        id="from"
-                        clrDate
-                        [(ngModel)]="messageFromDate"
-                        [ngModelOptions]="{ standalone: true }"
-                        [disabled]="
-                            !currentConfig.banner_message.editable ||
-                            !messageText
-                        " />
+                    <clr-date-container>
+                        <input
+                            class="date"
+                            type="date"
+                            id="from"
+                            autocomplete="off"
+                            min="{{ currentDate | date : 'yyyy-MM-dd' }}"
+                            max="{{ messageToDate | date : 'yyyy-MM-dd' }}"
+                            clrDate
+                            [(ngModel)]="messageFromDate"
+                            [ngModelOptions]="{ standalone: true }"
+                            [disabled]="
+                                !currentConfig.banner_message.editable ||
+                                !messageText
+                            " />
+                    </clr-date-container>
                 </div>
                 <div
                     class="clr-checkbox-wrapper flex ml-1"
@@ -454,17 +459,21 @@
                             !messageText
                     }">
                     <label>{{ 'BANNER_MESSAGE.TO' | translate }}</label>
-                    <input
-                        class="date"
-                        clrDate
-                        type="date"
-                        id="to"
-                        [(ngModel)]="messageToDate"
-                        [disabled]="
-                            !currentConfig.banner_message.editable ||
-                            !messageText
-                        "
-                        [ngModelOptions]="{ standalone: true }" />
+                    <clr-date-container>
+                        <input
+                            class="date"
+                            clrDate
+                            type="date"
+                            id="to"
+                            min="{{ minDateForEndDay | date : 'yyyy-MM-dd' }}"
+                            autocomplete="off"
+                            [(ngModel)]="messageToDate"
+                            [disabled]="
+                                !currentConfig.banner_message.editable ||
+                                !messageText
+                            "
+                            [ngModelOptions]="{ standalone: true }" />
+                    </clr-date-container>
                 </div>
             </div>
         </div>
