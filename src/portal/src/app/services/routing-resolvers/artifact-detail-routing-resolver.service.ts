@@ -42,7 +42,7 @@ export class ArtifactDetailRoutingResolverService {
         const projectId: string = route.params['id'];
         const repositoryName: string = route.params['repo'];
         const artifactDigest: string = route.params['digest'];
-        return this.projectService.getProject(projectId).pipe(
+        return this.projectService.getProjectFromCache(projectId).pipe(
             mergeMap((project: Project) => {
                 return forkJoin([
                     this.artifactService.getArtifact({

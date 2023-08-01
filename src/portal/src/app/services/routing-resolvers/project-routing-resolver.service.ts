@@ -43,7 +43,7 @@ export class ProjectRoutingResolver {
         if (!projectId) {
             projectId = route.queryParams['project_id'];
         }
-        return this.projectService.getProject(projectId).pipe(
+        return this.projectService.getProjectFromCache(projectId).pipe(
             map(
                 (project: Project) => {
                     if (project) {

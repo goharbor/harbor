@@ -72,7 +72,7 @@ export class MemberGuard {
         route: ActivatedRouteSnapshot
     ): Observable<boolean> {
         // Note: current user will have the permission to visit the project when the user can get response from GET /projects/:id API.
-        return this.projectService.getProject(projectId).pipe(
+        return this.projectService.getProjectFromCache(projectId).pipe(
             map(() => {
                 return true;
             }),
