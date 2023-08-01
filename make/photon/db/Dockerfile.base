@@ -1,11 +1,13 @@
-FROM photon:4.0
+FROM photon:5.0
 
 ENV PGDATA /var/lib/postgresql/data
 
-RUN tdnf install -y postgresql13 >> /dev/null
-RUN tdnf install -y shadow gzip postgresql findutils bc >> /dev/null \
+RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
-    && useradd -m -r -g postgres --uid=999 postgres \
+    && useradd -m -r -g postgres --uid=999 postgres
+
+RUN tdnf install -y postgresql13-server >> /dev/null
+RUN tdnf install -y gzip postgresql14-server findutils bc >> /dev/null \
     && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
     && chown -R postgres:postgres /run/postgresql \
