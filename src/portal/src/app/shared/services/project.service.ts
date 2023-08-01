@@ -32,6 +32,19 @@ export abstract class ProjectService {
     abstract getProject(projectId: number | string): Observable<Project>;
 
     /**
+     * Get info about a specific Project from cache, if no cache, get it from the back end then store it in cache.
+     *
+     * @abstract
+     *  ** deprecated param {string|number} [projectId]
+     * returns {(Observable<Project> )}
+     *
+     * @memberOf ProjectService
+     */
+    abstract getProjectFromCache(
+        projectId: number | string
+    ): Observable<Project>;
+
+    /**
      * Update the specified project.
      *
      * @abstract
@@ -95,12 +108,22 @@ export class ProjectDefaultService extends ProjectService {
     constructor(private http: HttpClient) {
         super();
     }
-    @CacheObservable({ maxAge: 1000 * 60 })
+
     public getProject(projectId: number | string): Observable<Project> {
         if (!projectId) {
             return observableThrowError('Bad argument');
         }
         let baseUrl: string = CURRENT_BASE_HREF + '/projects';
+        return this.http
+            .get<Project>(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
+            .pipe(catchError(error => observableThrowError(error)));
+    }
+
+    @CacheObservable({ maxAge: 1000 * 30 })
+    public getProjectFromCache(
+        projectId: number | string
+    ): Observable<Project> {
+        const baseUrl: string = CURRENT_BASE_HREF + '/projects';
         if (this._sharedProjectObservableMap[projectId]) {
             return this._sharedProjectObservableMap[projectId];
         }
