@@ -31,6 +31,7 @@ type ExecHistory struct {
 	ID           int64          `json:"id"`
 	Name         string         `json:"job_name"`
 	Kind         string         `json:"job_kind"`
+	JobID        string         `json:"job_id"`
 	Parameters   string         `json:"job_parameters"`
 	Status       string         `json:"job_status"`
 	UUID         string         `json:"-"`
@@ -45,6 +46,7 @@ func (h *ExecHistory) ToSwagger() *models.ExecHistory {
 		ID:            h.ID,
 		JobName:       h.Name,
 		JobKind:       h.Kind,
+		JobID:         h.JobID,
 		JobParameters: h.Parameters,
 		Deleted:       h.Deleted,
 		JobStatus:     h.Status,

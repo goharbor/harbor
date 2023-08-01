@@ -7889,6 +7889,9 @@ definitions:
       job_status:
         type: string
         description: the status of gc job.
+      job_id:
+        type: string
+        description: the id of gc job.
       deleted:
         type: boolean
         description: if gc job was deleted.
@@ -7909,6 +7912,9 @@ definitions:
       job_name:
         type: string
         description: the job name of purge job.
+      job_id:
+        type: string
+        description: the id of the running job
       job_kind:
         type: string
         description: the job kind of purge job.

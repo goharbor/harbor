@@ -171,10 +171,21 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 		if err != nil {
 			return p.SendError(ctx, err)
 		}
+		tasks, err := p.taskCtl.List(ctx, q.New(q.KeyWords{
+			"ExecutionID": exec.ID,
+		}))
+		if err != nil {
+			return p.SendError(ctx, err)
+		}
+		if len(tasks) == 0 {
+			return p.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("garbage collection %d log is not found", exec.ID))
+		}
+
 		hs = append(hs, &model.ExecHistory{
 			ID:         exec.ID,
 			Name:       job.PurgeAuditVendorType,
 			Kind:       exec.Trigger,
+			JobID:      tasks[0].JobID,
 			Parameters: string(extraAttrsString),
 			Schedule: &model.ScheduleParam{
 				Type: exec.Trigger,
