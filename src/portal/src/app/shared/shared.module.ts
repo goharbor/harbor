@@ -78,6 +78,7 @@ import { LabelSelectorComponent } from './components/label-selector/label-select
 import { ScrollSectionDirective } from './directives/scroll/scroll-section.directive';
 import { ScrollManagerService } from './directives/scroll/scroll-manager.service';
 import { ScrollAnchorDirective } from './directives/scroll/scroll-anchor.directive';
+import { AppLevelAlertsComponent } from './components/app-level-alerts/app-level-alerts.component';
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;
@@ -147,6 +148,7 @@ ClarityIcons.add({
         HarborDatetimePipe,
         RemainingTimeComponent,
         LabelSelectorComponent,
+        AppLevelAlertsComponent,
     ],
     exports: [
         TranslateModule,
@@ -188,6 +190,7 @@ ClarityIcons.add({
         HarborDatetimePipe,
         RemainingTimeComponent,
         LabelSelectorComponent,
+        AppLevelAlertsComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },
