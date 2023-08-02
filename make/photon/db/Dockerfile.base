@@ -17,4 +17,4 @@ RUN tdnf install -y gzip postgresql14-server findutils bc >> /dev/null \
     && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/14/share/postgresql/postgresql.conf.sample \
     && tdnf clean all
 
-RUN tdnf erase -y toybox && tdnf install -y util-linux net-tools
+RUN tdnf erase -y toybox && tdnf install -y util-linux net-tools tar
