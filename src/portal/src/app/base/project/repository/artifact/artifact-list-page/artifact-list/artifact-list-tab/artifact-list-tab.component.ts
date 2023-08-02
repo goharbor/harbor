@@ -881,8 +881,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                     projectName: this.projectName,
                     repositoryName: dbEncodeURIComponent(this.repoName),
                     reference: item.digest,
-                    withSignature: true,
-                    withImmutableStatus: true,
                     page: 1,
                     pageSize: 8,
                 };
@@ -935,43 +933,30 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (artifacts) {
             if (artifacts.length) {
                 artifacts.forEach(item => {
-                    item.coSigned = CHECKING;
-                    const listTagParams: NewArtifactService.ListAccessoriesParams =
-                        {
+                    item.signed = CHECKING;
+                    this.newArtifactService
+                        .listAccessories({
                             projectName: this.projectName,
                             repositoryName: dbEncodeURIComponent(this.repoName),
                             reference: item.digest,
                             page: 1,
                             pageSize: ACCESSORY_PAGE_SIZE,
-                        };
-                    forkJoin([
-                        this.newArtifactService.listAccessories({
-                            ...listTagParams,
                             q: encodeURIComponent(
-                                `type=${AccessoryType.COSIGN}`
+                                `type={${AccessoryType.COSIGN} ${AccessoryType.NOTATION}}`
                             ),
-                        }),
-                        this.newArtifactService.listAccessories({
-                            ...listTagParams,
-                            q: encodeURIComponent(
-                                `type=${AccessoryType.NOTATION}`
-                            ),
-                        }),
-                    ]).subscribe({
-                        next: res => {
-                            if (
-                                res?.length &&
-                                (res[0]?.length || res[1]?.length)
-                            ) {
-                                item.coSigned = TRUE;
-                            } else {
-                                item.coSigned = FALSE;
-                            }
-                        },
-                        error: err => {
-                            item.coSigned = FALSE;
-                        },
-                    });
+                        })
+                        .subscribe({
+                            next: res => {
+                                if (res?.length) {
+                                    item.signed = TRUE;
+                                } else {
+                                    item.signed = FALSE;
+                                }
+                            },
+                            error: err => {
+                                item.signed = FALSE;
+                            },
+                        });
                 });
             }
         }
