@@ -656,10 +656,11 @@
     "BANDWIDTH_TOOLTIP": "設定每個執行的最大網路頻寬。請注意並發執行的數量。若要無限制頻寬，請輸入 -1",
     "UNLIMITED": "無限制",
     "UNREACHABLE_SOURCE_REGISTRY": "無法連接到來源登錄，請在編輯此規則之前確保來源登錄可用：{{error}}",
-    "CRON_ERROR_TIP": "欄位為必填，「分鐘」欄位不允許使用「*」",
+    "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
     "COPY_BY_CHUNK": "分段複製",
     "COPY_BY_CHUNK_TIP": "指定是否按分段複製 blob。分段傳輸可能會增加 API 請求的數量。",
-    "TRIGGER_STOP_SUCCESS": "成功觸發停止執行"
+    "TRIGGER_STOP_SUCCESS": "成功觸發停止執行",
+    "CRON_STR": "Cron String"
   },
   "DESTINATION": {
     "NEW_ENDPOINT": "新增目標",
