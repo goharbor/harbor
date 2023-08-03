@@ -647,10 +647,11 @@
         "BANDWIDTH_TOOLTIP": "Définissez la bande passante réseau maximale pour chaque exécution. Veuillez faire attention au nombre d'exécutions simultanées. Pour une bande passante illimitée, veuillez entrer -1",
         "UNLIMITED": "Illimitée",
         "UNREACHABLE_SOURCE_REGISTRY": "Échec de connexion au registre source. Veuillez vérifier que le registre source est disponible avant d'éditer cette règle: {{error}}",
-        "CRON_ERROR_TIP": "Ce champ est requis et \"*\" n'est pas autorisé pour le champ \"Minutes\"",
+        "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
         "COPY_BY_CHUNK": "Copier par morceaux",
         "COPY_BY_CHUNK_TIP": "Specifie si le blob doit être copié par morceaux. Transférer par morceaux peut augmenter le nombre de requêtes faites à l'API.",
-        "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'exécution"
+        "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'exécution",
+        "CRON_STR": "Cron String"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Endpoint",

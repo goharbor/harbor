@@ -596,11 +596,15 @@
                             formGroupName="trigger_settings"
                             class="clr-form-control">
                             <div class="flex" [hidden]="isNotSchedule()">
-                                <label for="targetCron" class="required"
-                                    >Cron String</label
+                                <label
+                                    for="targetCron"
+                                    class="required sub-label"
+                                    >{{
+                                        'REPLICATION.CRON_STR' | translate
+                                    }}</label
                                 >
                                 <div
-                                    class="clr-control-container"
+                                    class="clr-control-container no-extend"
                                     [class.clr-error]="
                                         cronInputShouldShowError()
                                     ">
@@ -615,6 +619,19 @@
                                             pattern="^0\s(?!(\*\s)).+$"
                                             class="form-control cron-input clr-input"
                                             formControlName="cron" />
+                                        <clr-tooltip class="des-tooltip">
+                                            <clr-icon
+                                                clrTooltipTrigger
+                                                shape="info-circle"
+                                                size="24"></clr-icon>
+                                            <clr-tooltip-content
+                                                class="flatten"
+                                                clrPosition="top-left"
+                                                clrSize="lg"
+                                                *clrIfOpen>
+                                                <cron-tooltip></cron-tooltip>
+                                            </clr-tooltip-content>
+                                        </clr-tooltip>
                                     </div>
                                     <clr-control-error
                                         *ngIf="cronInputShouldShowError()">
@@ -624,19 +641,6 @@
                                         }}
                                     </clr-control-error>
                                 </div>
-                                <a
-                                    href="javascript:void(0)"
-                                    role="tooltip"
-                                    aria-haspopup="true"
-                                    class="tooltip tooltip-lg tooltip-top-left top-7 cron-tooltip">
-                                    <clr-icon
-                                        shape="info-circle"
-                                        class="info-tips-icon"
-                                        size="24"></clr-icon>
-                                    <div class="tooltip-content table-box">
-                                        <cron-tooltip></cron-tooltip>
-                                    </div>
-                                </a>
                             </div>
                         </div>
                     </div>
