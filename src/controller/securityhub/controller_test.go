@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/mock"
-	artifactMock "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	scannerMock "github.com/goharbor/harbor/src/testing/pkg/scan/scanner"
 	securityMock "github.com/goharbor/harbor/src/testing/pkg/securityhub"
 	tagMock "github.com/goharbor/harbor/src/testing/pkg/tag"
@@ -42,11 +41,10 @@ var sum = &model.Summary{
 
 type ControllerTestSuite struct {
 	htesting.Suite
-	c           *controller
-	artifactMgr *artifactMock.Manager
-	scannerMgr  *scannerMock.Manager
-	secHubMgr   *securityMock.Manager
-	tagMgr      *tagMock.FakeManager
+	c          *controller
+	scannerMgr *scannerMock.Manager
+	secHubMgr  *securityMock.Manager
+	tagMgr     *tagMock.FakeManager
 }
 
 // TestController is the entry of controller test suite
@@ -56,16 +54,14 @@ func TestController(t *testing.T) {
 
 // SetupTest prepares env for the controller test suite
 func (suite *ControllerTestSuite) SetupTest() {
-	suite.artifactMgr = &artifactMock.Manager{}
 	suite.secHubMgr = &securityMock.Manager{}
 	suite.scannerMgr = &scannerMock.Manager{}
 	suite.tagMgr = &tagMock.FakeManager{}
 
 	suite.c = &controller{
-		artifactMgr: suite.artifactMgr,
-		secHubMgr:   suite.secHubMgr,
-		scannerMgr:  suite.scannerMgr,
-		tagMgr:      suite.tagMgr,
+		secHubMgr:  suite.secHubMgr,
+		scannerMgr: suite.scannerMgr,
+		tagMgr:     suite.tagMgr,
 	}
 }
 
@@ -76,7 +72,7 @@ func (suite *ControllerTestSuite) TearDownTest() {
 func (suite *ControllerTestSuite) TestSecuritySummary() {
 	ctx := suite.Context()
 
-	mock.OnAnything(suite.artifactMgr, "Count").Return(int64(1234), nil)
+	mock.OnAnything(suite.secHubMgr, "TotalArtifactsCount").Return(int64(1234), nil)
 	mock.OnAnything(suite.secHubMgr, "ScannedArtifactsCount").Return(int64(1000), nil)
 	mock.OnAnything(suite.secHubMgr, "Summary").Return(sum, nil).Twice()
 	mock.OnAnything(suite.scannerMgr, "DefaultScannerUUID").Return("ruuid", nil)
@@ -125,12 +121,13 @@ func (suite *ControllerTestSuite) TestSecuritySummary() {
 func (suite *ControllerTestSuite) TestSecuritySummaryError() {
 	ctx := suite.Context()
 	mock.OnAnything(suite.scannerMgr, "DefaultScannerUUID").Return("ruuid", nil)
+	mock.OnAnything(suite.secHubMgr, "TotalArtifactsCount").Return(int64(0), errors.New("project not found")).Once()
 	mock.OnAnything(suite.secHubMgr, "ScannedArtifactsCount").Return(int64(1000), nil)
 	mock.OnAnything(suite.secHubMgr, "Summary").Return(nil, errors.New("invalid project")).Once()
 	summary, err := suite.c.SecuritySummary(ctx, 0, WithCVE(false), WithArtifact(false))
 	suite.Error(err)
 	suite.Nil(summary)
-	mock.OnAnything(suite.artifactMgr, "Count").Return(int64(0), errors.New("failed to connect db")).Once()
+	mock.OnAnything(suite.secHubMgr, "TotalArtifactsCount").Return(int64(0), errors.New("failed to connect db")).Once()
 	mock.OnAnything(suite.secHubMgr, "Summary").Return(sum, nil).Once()
 	summary, err = suite.c.SecuritySummary(ctx, 0, WithCVE(false), WithArtifact(false))
 	suite.Error(err)
