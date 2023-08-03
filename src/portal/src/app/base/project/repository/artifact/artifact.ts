@@ -9,7 +9,7 @@ export interface ArtifactFront extends Artifact {
     pullCommand?: string;
     annotationsArray?: Array<{ [key: string]: any }>;
     tagNumber?: number;
-    coSigned?: string;
+    signed?: string;
     accessoryNumber?: number;
 }
 

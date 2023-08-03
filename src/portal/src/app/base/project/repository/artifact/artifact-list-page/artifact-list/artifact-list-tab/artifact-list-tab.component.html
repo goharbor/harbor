@@ -343,16 +343,16 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <span
-                        *ngIf="artifact.coSigned === 'checking'"
+                        *ngIf="artifact.signed === 'checking'"
                         class="spinner spinner-inline ml-2"></span>
                     <clr-icon
                         shape="check-circle"
-                        *ngIf="artifact.coSigned === 'true'"
+                        *ngIf="artifact.signed === 'true'"
                         size="20"
                         class="signed"></clr-icon>
                     <clr-icon
                         shape="times-circle"
-                        *ngIf="artifact.coSigned === 'false'"
+                        *ngIf="artifact.signed === 'false'"
                         size="16"
                         class="color-red"></clr-icon>
                 </clr-dg-cell>
