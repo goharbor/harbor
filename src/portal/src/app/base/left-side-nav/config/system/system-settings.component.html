@@ -465,7 +465,7 @@
                             clrDate
                             type="date"
                             id="to"
-                            min="{{ minDateForEndDay | date : 'yyyy-MM-dd' }}"
+                            min="{{ minDateForEndDay() | date : 'yyyy-MM-dd' }}"
                             autocomplete="off"
                             [(ngModel)]="messageToDate"
                             [disabled]="
