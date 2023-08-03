@@ -1,24 +1,21 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SCANNERS_DOC } from '../../left-side-nav/interrogation-services/scanner/scanner';
-import { SessionService } from '../../../shared/services/session.service';
-import { DEFAULT_PAGE_SIZE, delUrlParam } from '../../../shared/units/utils';
+import { SCANNERS_DOC } from '../../../base/left-side-nav/interrogation-services/scanner/scanner';
+import { SessionService } from '../../services/session.service';
+import { DEFAULT_PAGE_SIZE, delUrlParam } from '../../units/utils';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { ScannerService } from '../../../../../ng-swagger-gen/services/scanner.service';
 import { UN_LOGGED_PARAM } from '../../../account/sign-in/sign-in.service';
-import {
-    CommonRoutes,
-    httpStatusCode,
-} from '../../../shared/entities/shared.const';
+import { CommonRoutes, httpStatusCode } from '../../entities/shared.const';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from '../../../shared/components/global-message/message.service';
-import { Message } from '../../../shared/components/global-message/message';
-import { JobServiceDashboardHealthCheckService } from '../../left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
+import { MessageService } from '../global-message/message.service';
+import { Message } from '../global-message/message';
+import { JobServiceDashboardHealthCheckService } from '../../../base/left-side-nav/job-service-dashboard/job-service-dashboard-health-check.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import {
     BannerMessage,
     BannerMessageType,
-} from '../../left-side-nav/config/config';
+} from '../../../base/left-side-nav/config/config';
 const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
 const YES: string = 'yes';
 @Component({
@@ -191,13 +188,10 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
     }
 
     hasValidBannerMessage(): boolean {
-        if (
-            this.appConfigService.getConfig()?.banner_message &&
-            this.appConfigService.getConfig()?.current_time
-        ) {
-            const current = new Date(
-                this.appConfigService.getConfig()?.current_time
-            );
+        const current: Date = this.appConfigService.getConfig()?.current_time
+            ? new Date(this.appConfigService.getConfig()?.current_time)
+            : new Date();
+        if (this.appConfigService.getConfig()?.banner_message) {
             const bm = JSON.parse(
                 this.appConfigService.getConfig()?.banner_message
             ) as BannerMessage;
