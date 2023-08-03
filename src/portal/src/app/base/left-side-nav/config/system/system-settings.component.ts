@@ -51,8 +51,6 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
     messageToDateCopy: Date;
     bannerRefreshSub: Subscription;
     currentDate: Date = new Date();
-    minDateForEndDay: Date;
-
     @ViewChild('systemConfigFrom') systemSettingsForm: NgForm;
 
     constructor(
@@ -62,9 +60,6 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
         private event: EventService
     ) {
         this.downloadLink = CURRENT_BASE_HREF + '/systeminfo/getcert';
-        this.minDateForEndDay = this.messageFromDate
-            ? this.messageFromDate
-            : this.currentDate;
     }
 
     ngOnInit() {
@@ -299,5 +294,9 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
 
     translateMessageType(type: string): string {
         return BannerMessageI18nMap[type] || type;
+    }
+
+    minDateForEndDay(): Date {
+        return this.messageFromDate ? this.messageFromDate : this.currentDate;
     }
 }
