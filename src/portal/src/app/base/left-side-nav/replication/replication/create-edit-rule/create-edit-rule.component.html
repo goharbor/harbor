@@ -645,7 +645,7 @@
                         </div>
                     </div>
                     <div
-                        class="clr-checkbox-wrapper clr-form-control mt-0"
+                        class="clr-checkbox-wrapper mt-0"
                         [hidden]="isNotEventBased()">
                         <input
                             type="checkbox"
@@ -653,9 +653,13 @@
                             [checked]="false"
                             id="ruleDeletion"
                             formControlName="deletion" />
-                        <label for="ruleDeletion">{{
-                            'REPLICATION.DELETE_REMOTE_IMAGES' | translate
-                        }}</label>
+                        <label
+                            class="clr-control-label event-label"
+                            for="ruleDeletion"
+                            >{{
+                                'REPLICATION.DELETE_REMOTE_IMAGES' | translate
+                            }}</label
+                        >
                     </div>
                 </div>
             </div>
