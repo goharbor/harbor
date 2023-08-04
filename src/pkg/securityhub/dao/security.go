@@ -79,12 +79,27 @@ WHERE EXISTS (SELECT 1
                                                                                       WHERE s.digest = a.digest and s.registration_uuid = ?))`
 
 	// sql to query the dangerous CVEs
-	dangerousCVESQL = `select vr.*
-from vulnerability_record vr
-where vr.cvss_score_v3 is not null
-and vr.registration_uuid = ?
-order by vr.cvss_score_v3 desc
-limit 5`
+	// sort the CVEs by CVSS score and severity level, make sure it is referred by a report
+	dangerousCVESQL = `SELECT vr.id,
+       vr.cve_id,
+       vr.package,
+       vr.cvss_score_v3,
+       vr.description,
+       vr.fixed_version,
+       vr.severity,
+       CASE vr.severity
+           WHEN 'Critical' THEN 5
+           WHEN 'High' THEN 4
+           WHEN 'Medium' THEN 3
+           WHEN 'Low' THEN 2
+           WHEN 'None' THEN 1
+           WHEN 'Unknown' THEN 0 END AS severity_level
+FROM vulnerability_record vr
+WHERE EXISTS (SELECT 1 FROM report_vulnerability_record WHERE vuln_record_id = vr.id)
+  AND vr.cvss_score_v3 IS NOT NULL
+  AND vr.registration_uuid = ?
+ORDER BY vr.cvss_score_v3 DESC, severity_level DESC
+LIMIT 5`
 
 	// sql to query vulnerabilities
 	vulnerabilitySQL = `select  vr.cve_id, vr.cvss_score_v3, vr.package, a.repository_name, a.id artifact_id, a.digest, vr.package, vr.package_version, vr.severity, vr.fixed_version, vr.description, vr.urls, a.project_id

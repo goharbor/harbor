@@ -70,8 +70,8 @@ values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16
 		INSERT INTO vulnerability_record(cve_id, registration_uuid, cvss_score_v3, package) VALUES ('CVE-2021-21345', 'uuid2', 9.9, 'com.thoughtworks.xstream:xstream');
 		INSERT INTO vulnerability_record(cve_id, registration_uuid, cvss_score_v3, package) VALUES ('CVE-2016-1585', 'uuid2', 9.8, 'libapparmor1');
 		INSERT INTO vulnerability_record(cve_id, registration_uuid, cvss_score_v3, package) VALUES ('CVE-2023-0950', 'uuid2', 9.8, 'ure');
-		INSERT INTO vulnerability_record(cve_id, registration_uuid, cvss_score_v3, package) VALUES ('CVE-2022-47629', 'uuid2', 9.8, 'libksba8');
-		`,
+		INSERT INTO vulnerability_record(cve_id, registration_uuid, cvss_score_v3, package) VALUES ('CVE-2022-47629', 'uuid2', 9.8, 'libksba8');`,
+		`INSERT INTO report_vulnerability_record(report_uuid, vuln_record_id) select 'uuid', id vuln_record_id from vulnerability_record where cve_id in ('CVE-2021-44228', 'CVE-2021-21345', 'CVE-2016-1585', 'CVE-2023-0950', 'CVE-2022-47629')`,
 	})
 }
 
@@ -86,6 +86,7 @@ func (suite *SecurityDaoTestSuite) TearDownTest() {
 		`delete from scanner_registration where uuid='uuid2'`,
 		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
 		`delete from report_vulnerability_record where report_uuid='ruuid'`,
+		`delete from report_vulnerability_record where report_uuid='uuid'`,
 		`delete from vulnerability_record where registration_uuid ='uuid2'`,
 		`delete from tag where name='tag_test'`,
 	})
