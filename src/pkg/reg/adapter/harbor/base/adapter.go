@@ -164,7 +164,8 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 	for p := range projects {
 		ps = append(ps, p)
 	}
-	q := fmt.Sprintf("name={%s}", strings.Join(ps, " "))
+	// query by project name, decorate the name as string to avoid parsed as int by server in case of pure numbers as project name
+	q := fmt.Sprintf("name={'%s'}", strings.Join(ps, " "))
 	// get exist projects
 	queryProjects, err := a.Client.ListProjectsWithQuery(q, false)
 	if err != nil {
