@@ -44,6 +44,9 @@ func (suite *SecurityDaoTestSuite) SetupSuite() {
 // SetupTest prepares env for test case.
 func (suite *SecurityDaoTestSuite) SetupTest() {
 	testDao.ExecuteBatchSQL([]string{
+		`delete from tag`,
+		`delete from artifact_accessory`,
+		`delete from artifact`,
 		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('uuid', 'digest1001', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 50, 50, 50, 0, 0, 20)`,
 		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
 values  (1001, 1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.docker.distribution.manifest.v2+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
@@ -191,7 +194,7 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 func (suite *SecurityDaoTestSuite) TestCountArtifact() {
 	count, err := suite.dao.TotalArtifactsCount(suite.Context(), 0)
 	suite.NoError(err)
-	suite.Equal(int64(4), count)
+	suite.Equal(int64(1), count)
 }
 func (suite *SecurityDaoTestSuite) TestCountVul() {
 	count, err := suite.dao.CountVulnerabilities(suite.Context(), "ruuid", 0, true, nil)
