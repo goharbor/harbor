@@ -44,9 +44,19 @@ func (suite *SecurityDaoTestSuite) SetupSuite() {
 // SetupTest prepares env for test case.
 func (suite *SecurityDaoTestSuite) SetupTest() {
 	testDao.ExecuteBatchSQL([]string{
+		`delete from tag`,
+		`delete from artifact_accessory`,
+		`delete from artifact`,
 		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('uuid', 'digest1001', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 50, 50, 50, 0, 0, 20)`,
-		`insert into artifact (project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
-values  (1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.docker.distribution.manifest.v2+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values  (1001, 1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.docker.distribution.manifest.v2+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1002, 1, 'library/hello-world', 'digest1002', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+		`insert into tag (id, repository_id, artifact_id, name, push_time, pull_time) values (1001, 1742, 1001, 'latest', '2023-06-02 01:45:55.050785', '2023-06-02 09:16:47.838778')`,
+		`INSERT INTO artifact_accessory (id, artifact_id, subject_artifact_id, type, size, digest, creation_time, subject_artifact_digest, subject_artifact_repo) VALUES (1001, 1002, 1, 'signature.cosign', 2109, 'sha256:08c64c0de2667abcf3974b4b75b82903f294680b81584318adc4826d0dcb7a9c', '2023-08-03 04:54:32.102928', 'sha256:a97a153152fcd6410bdf4fb64f5622ecf97a753f07dcc89dab14509d059736cf', 'library/nuxeo')`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1001, 1001, 1003, 'sha256:d2b2f2980e9ccc570e5726b56b54580f23a018b7b7314c9eaff7e5e479c78657', '{"architecture":"amd64","os":"linux"}', '', null)`,
 		`insert into scanner_registration (name, url, uuid, auth) values('trivy', 'https://www.vmware.com', 'ruuid', 'empty')`,
 		`insert into vulnerability_record (id, cve_id, registration_uuid, cvss_score_v3) values (1, '2023-4567-12345', 'ruuid', 9.8)`,
 		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('uuid', 1)`,
@@ -66,7 +76,10 @@ values  (1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.8
 func (suite *SecurityDaoTestSuite) TearDownTest() {
 	testDao.ExecuteBatchSQL([]string{
 		`delete from scan_report where uuid = 'uuid'`,
+		`delete from tag where id = 1001`,
 		`delete from artifact where digest = 'digest1001'`,
+		`delete from artifact_accessory where id = 1001`,
+		`delete from artifact_reference where id = 1001`,
 		`delete from scanner_registration where uuid='ruuid'`,
 		`delete from scanner_registration where uuid='uuid2'`,
 		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
@@ -178,6 +191,11 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 	}
 }
 
+func (suite *SecurityDaoTestSuite) TestCountArtifact() {
+	count, err := suite.dao.TotalArtifactsCount(suite.Context(), 0)
+	suite.NoError(err)
+	suite.Equal(int64(1), count)
+}
 func (suite *SecurityDaoTestSuite) TestCountVul() {
 	count, err := suite.dao.CountVulnerabilities(suite.Context(), "ruuid", 0, true, nil)
 	suite.NoError(err)

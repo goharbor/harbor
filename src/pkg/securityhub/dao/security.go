@@ -47,10 +47,36 @@ where a.digest = s.digest
 order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
-	// sql to query the scanned artifact count
-	scannedArtifactCountSQL = `select count(1)
-from artifact
-where exists (select 1 from scan_report s where artifact.digest = s.digest and s.registration_uuid = ?) `
+	// sql to query the total artifact count, exclude the artifact accessory, and child artifact in image index
+	totalArtifactCountSQL = `SELECT COUNT(1)
+FROM artifact A
+WHERE NOT EXISTS (select 1 from artifact_accessory acc WHERE acc.artifact_id = a.id)
+  AND (EXISTS (SELECT 1 FROM tag WHERE tag.artifact_id = a.id)
+    OR NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id))`
+
+	// sql to query the scanned artifact count, exclude the artifact accessory, and child artifact in image index,
+	// and include the image index artifact which at least one child artifact is scanned
+	scannedArtifactCountSQL = `SELECT COUNT(1)
+FROM artifact a
+WHERE EXISTS (SELECT 1
+              FROM scan_report s
+              WHERE a.digest = s.digest
+                AND s.registration_uuid = ?)
+    -- exclude artifact accessory
+    AND NOT EXISTS (SELECT 1 FROM artifact_accessory acc WHERE acc.artifact_id = a.id)
+    -- exclude artifact without tag and part of the image index
+    AND EXISTS (SELECT 1
+                FROM tag
+                WHERE tag.artifact_id = id
+                   OR (NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id)))
+   -- include image index which is scanned
+   OR EXISTS (SELECT 1
+              FROM scan_report s,
+                   artifact_reference ref
+              WHERE s.digest = ref.child_digest
+                AND ref.parent_id = a.id AND s.registration_uuid = ?  AND NOT EXISTS (SELECT 1
+                                                                                      FROM scan_report s
+                                                                                      WHERE s.digest = a.digest and s.registration_uuid = ?))`
 
 	// sql to query the dangerous CVEs
 	dangerousCVESQL = `select vr.*
@@ -143,6 +169,8 @@ type SecurityHubDao interface {
 	DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error)
 	// DangerousArtifacts returns top 5 dangerous artifact for the given scanner. return top 5 result
 	DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.DangerousArtifact, error)
+	// TotalArtifactsCount return the count of total artifacts.
+	TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error)
 	// ScannedArtifactsCount return the count of scanned artifacts.
 	ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error)
 	// ListVulnerabilities search vulnerability record by cveID
@@ -157,6 +185,19 @@ func New() SecurityHubDao {
 }
 
 type dao struct {
+}
+
+func (d *dao) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error) {
+	if projectID != 0 {
+		return 0, nil
+	}
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var count int64
+	err = o.Raw(totalArtifactCountSQL).QueryRow(&count)
+	return count, err
 }
 
 func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error) {
@@ -199,7 +240,7 @@ func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, pro
 	if err != nil {
 		return cnt, err
 	}
-	err = o.Raw(scannedArtifactCountSQL, scannerUUID).QueryRow(&cnt)
+	err = o.Raw(scannedArtifactCountSQL, scannerUUID, scannerUUID, scannerUUID).QueryRow(&cnt)
 	return cnt, err
 }
 func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
