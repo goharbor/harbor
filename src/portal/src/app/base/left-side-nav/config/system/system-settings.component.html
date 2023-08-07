@@ -443,6 +443,7 @@
                             min="{{ currentDate | date : 'yyyy-MM-dd' }}"
                             max="{{ messageToDate | date : 'yyyy-MM-dd' }}"
                             clrDate
+                            readonly
                             [(ngModel)]="messageFromDate"
                             [ngModelOptions]="{ standalone: true }"
                             [disabled]="
@@ -463,9 +464,10 @@
                         <input
                             class="date"
                             clrDate
+                            readonly
                             type="date"
                             id="to"
-                            min="{{ minDateForEndDay | date : 'yyyy-MM-dd' }}"
+                            min="{{ minDateForEndDay() | date : 'yyyy-MM-dd' }}"
                             autocomplete="off"
                             [(ngModel)]="messageToDate"
                             [disabled]="

@@ -33,6 +33,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
+	pkgArt "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -70,6 +72,8 @@ type Handler struct {
 	execMgr task.ExecutionManager
 	// reportMgr for managing scan reports
 	reportMgr report.Manager
+	// artMgr for managing artifacts
+	artMgr pkgArt.Manager
 
 	once sync.Once
 	// pullCountStore caches the pull count group by repository
@@ -262,12 +266,16 @@ func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error 
 func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) error {
 	execMgr := task.ExecMgr
 	reportMgr := report.Mgr
+	artMgr := pkg.ArtifactMgr
 	// for UT mock
 	if a.execMgr != nil {
 		execMgr = a.execMgr
 	}
 	if a.reportMgr != nil {
 		reportMgr = a.reportMgr
+	}
+	if a.artMgr != nil {
+		artMgr = a.artMgr
 	}
 
 	ids := []int64{event.Artifact.ID}
@@ -278,7 +286,20 @@ func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) erro
 			digests = append(digests, ref.ChildDigest)
 		}
 	}
+	// check if the digest also referenced by other artifacts, should exclude it to delete the scan report if still referenced by others.
+	unrefDigests := []string{}
+	for _, digest := range digests {
+		// with the base=* to query all artifacts includes untagged and references
+		count, err := artMgr.Count(ctx, q.New(q.KeyWords{"digest": digest, "base": "*"}))
+		if err != nil {
+			log.Errorf("failed to count the artifact with the digest %s, error: %v", digest, err)
+			continue
+		}
 
+		if count == 0 {
+			unrefDigests = append(unrefDigests, digest)
+		}
+	}
 	// clean up the scan executions of this artifact and it's references by id
 	log.Debugf("delete the associated scan executions of artifacts %v as the artifacts have been deleted", ids)
 	for _, id := range ids {
@@ -288,9 +309,9 @@ func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) erro
 	}
 
 	// clean up the scan reports of this artifact and it's references by digest
-	log.Debugf("delete the associated scan reports of artifacts %v as the artifacts have been deleted", digests)
-	if err := reportMgr.DeleteByDigests(ctx, digests...); err != nil {
-		log.Errorf("failed to delete scan reports of artifact %v, error: %v", digests, err)
+	log.Debugf("delete the associated scan reports of artifacts %v as the artifacts have been deleted", unrefDigests)
+	if err := reportMgr.DeleteByDigests(ctx, unrefDigests...); err != nil {
+		log.Errorf("failed to delete scan reports of artifact %v, error: %v", unrefDigests, err)
 	}
 
 	return nil
