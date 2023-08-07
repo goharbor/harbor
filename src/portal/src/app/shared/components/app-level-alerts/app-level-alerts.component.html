@@ -3,6 +3,7 @@
         *ngIf="hasValidBannerMessage()"
         [clrAlertType]="getBannerMessageType()"
         [clrAlertAppLevel]="true"
+        [(clrAlertClosed)]="bannerMessageClosed"
         [clrAlertClosable]="getBannerMessageClosable()">
         <clr-alert-item>
             <span class="alert-text banner-message">{{

@@ -39,6 +39,15 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
         private jobServiceDashboardHealthCheckService: JobServiceDashboardHealthCheckService,
         private appConfigService: AppConfigService
     ) {}
+
+    get bannerMessageClosed(): boolean {
+        return this.appConfigService.getBannerMessageClosed();
+    }
+
+    set bannerMessageClosed(v: boolean) {
+        this.appConfigService.setBannerMessageClosed(v);
+    }
+
     ngOnInit() {
         if (
             !(
