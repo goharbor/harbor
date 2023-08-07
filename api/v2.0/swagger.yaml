@@ -7965,8 +7965,9 @@ definitions:
       type:
         type: string
         description: |
-          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual' and 'None'.
-          'Manual' means to trigger it right away and 'None' means to cancel the schedule.
+          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual', 'None' and 'Schedule'.
+          'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and 
+          'None' means to cancel the schedule.
         enum:
           - Hourly
           - Daily
@@ -7974,6 +7975,7 @@ definitions:
           - Custom
           - Manual
           - None
+          - Schedule
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
