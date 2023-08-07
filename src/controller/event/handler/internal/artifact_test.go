@@ -35,6 +35,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	scannerCtlMock "github.com/goharbor/harbor/src/testing/controller/scanner"
+	"github.com/goharbor/harbor/src/testing/mock"
+	artMock "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	projectMock "github.com/goharbor/harbor/src/testing/pkg/project"
 	reportMock "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	taskMock "github.com/goharbor/harbor/src/testing/pkg/task"
@@ -50,6 +52,7 @@ type ArtifactHandlerTestSuite struct {
 	scannerCtl     scanner.Controller
 	reportMgr      *reportMock.Manager
 	execMgr        *taskMock.ExecutionManager
+	artMgr         *artMock.Manager
 }
 
 // TestArtifactHandler tests ArtifactHandler.
@@ -66,7 +69,8 @@ func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	suite.scannerCtl = &scannerCtlMock.Controller{}
 	suite.execMgr = &taskMock.ExecutionManager{}
 	suite.reportMgr = &reportMock.Manager{}
-	suite.handler = &Handler{execMgr: suite.execMgr, reportMgr: suite.reportMgr}
+	suite.artMgr = &artMock.Manager{}
+	suite.handler = &Handler{execMgr: suite.execMgr, reportMgr: suite.reportMgr, artMgr: suite.artMgr}
 
 	// mock artifact
 	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
@@ -163,6 +167,7 @@ func (suite *ArtifactHandlerTestSuite) TestOnDelete() {
 	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(1)).Return(nil).Times(1)
 	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(2)).Return(nil).Times(1)
 	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(3)).Return(nil).Times(1)
+	suite.artMgr.On("Count", suite.ctx, mock.Anything).Return(int64(0), nil).Times(3)
 	suite.reportMgr.On("DeleteByDigests", suite.ctx, "mock-digest", "ref-1", "ref-2").Return(nil).Times(1)
 	err := suite.handler.onDelete(suite.ctx, evt)
 	suite.Nil(err, "onDelete should return nil")
