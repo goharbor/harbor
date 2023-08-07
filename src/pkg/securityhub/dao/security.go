@@ -104,18 +104,24 @@ where a.digest = s.digest
 )
 
 type filterMetaData struct {
-	DataType   string
+	// DataType is the data type of the filter, it could be stringType, rangeType
+	DataType string
+	// ColumnName is the column name in the database, if it is empty, the key will be used as the column name
+	ColumnName string
+	// FilterFunc is the function to generate the filter sql, default is exactMatchFilter
 	FilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
 }
 
+// filterMap define the query condition
 var filterMap = map[string]*filterMetaData{
-	"cve_id":          &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"severity":        &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
+	"cve_id":          &filterMetaData{DataType: stringType},
+	"severity":        &filterMetaData{DataType: stringType},
 	"cvss_score_v3":   &filterMetaData{DataType: rangeType, FilterFunc: rangeFilter},
-	"project_id":      &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"repository_name": &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"package":         &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
+	"project_id":      &filterMetaData{DataType: stringType},
+	"repository_name": &filterMetaData{DataType: stringType},
+	"package":         &filterMetaData{DataType: stringType},
 	"tag":             &filterMetaData{DataType: stringType, FilterFunc: tagFilter},
+	"digest":          &filterMetaData{DataType: stringType, ColumnName: "a.digest"},
 }
 
 var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
@@ -125,7 +131,11 @@ func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr s
 		return
 	}
 	if val, ok := query.Keywords[key]; ok {
-		sqlStr = fmt.Sprintf(" and %v = ?", key)
+		col := key
+		if len(filterMap[key].ColumnName) > 0 {
+			col = filterMap[key].ColumnName
+		}
+		sqlStr = fmt.Sprintf(" and %v = ?", col)
 		params = append(params, val)
 		return
 	}
@@ -325,6 +335,9 @@ func applyVulFilter(ctx context.Context, sqlStr string, query *q.Query, params [
 	queryStr = sqlStr
 	newParam = params
 	for k, m := range filterMap {
+		if m.FilterFunc == nil {
+			m.FilterFunc = exactMatchFilter // default filter function is exactMatchFilter
+		}
 		s, p := m.FilterFunc(ctx, k, query)
 		queryStr = queryStr + s
 		newParam = append(newParam, p...)
