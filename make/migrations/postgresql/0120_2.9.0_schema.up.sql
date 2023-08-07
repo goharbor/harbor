@@ -16,6 +16,9 @@ BEGIN
     END IF;
 END $$;
 
+/* to improve the query of dangerousCVESQL it requires to query with vuln_record_id */
+CREATE INDEX IF NOT EXISTS idx_report_vulnerability_record_vuln_record_id ON report_vulnerability_record (vuln_record_id);
+
 CREATE INDEX IF NOT EXISTS idx_vulnerability_record_cvss_score_v3 ON vulnerability_record (cvss_score_v3);
 CREATE INDEX IF NOT EXISTS idx_vulnerability_registration_uuid ON vulnerability_record (registration_uuid);
 CREATE INDEX IF NOT EXISTS idx_vulnerability_record_cve_id ON vulnerability_record (cve_id);
