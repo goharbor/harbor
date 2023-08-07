@@ -49,7 +49,7 @@ class TestScanImageInPublicProject(unittest.TestCase):
                 self.scan.scan_artifact(project_name, repo_name, tag, expect_status_code=401, username=None, password=None)
 
                 with created_user(password) as (_, username1):
-                    # scan image with non project memeber
+                    # scan image with non project member
                     self.scan.scan_artifact(project_name, repo_name, tag, expect_status_code=403, username=username1, password=password)
 
                 self.scan.scan_artifact(project_name, repo_name, tag, username=username, password=password)
