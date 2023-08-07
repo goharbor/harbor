@@ -34,6 +34,8 @@ type Manager interface {
 	Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error)
 	// DangerousArtifacts returns the most dangerous artifact for the given scanner.
 	DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.DangerousArtifact, error)
+	// TotalArtifactsCount return the count of artifacts.
+	TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error)
 	// ScannedArtifactsCount return the count of scanned artifacts.
 	ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error)
 	// DangerousCVEs returns the most dangerous CVEs for the given scanner.
@@ -54,6 +56,10 @@ func NewManager() Manager {
 // securityManager is a default implementation of security manager.
 type securityManager struct {
 	dao dao.SecurityHubDao
+}
+
+func (s *securityManager) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error) {
+	return s.dao.TotalArtifactsCount(ctx, projectID)
 }
 
 func (s *securityManager) Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error) {

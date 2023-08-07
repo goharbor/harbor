@@ -146,6 +146,30 @@ func (_m *Manager) Summary(ctx context.Context, scannerUUID string, projectID in
 	return r0, r1
 }
 
+// TotalArtifactsCount provides a mock function with given fields: ctx, projectID
+func (_m *Manager) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error) {
+	ret := _m.Called(ctx, projectID)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (int64, error)); ok {
+		return rf(ctx, projectID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) int64); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TotalVuls provides a mock function with given fields: ctx, scannerUUID, projectID, tuneCount, query
 func (_m *Manager) TotalVuls(ctx context.Context, scannerUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
 	ret := _m.Called(ctx, scannerUUID, projectID, tuneCount, query)
