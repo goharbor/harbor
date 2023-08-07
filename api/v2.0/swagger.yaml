@@ -6099,7 +6099,8 @@ paths:
         repository_name(exact match) 
         project_id(exact match) 
         package(exact match)
-        and tag(exact match) 
+        tag(exact match) 
+        digest(exact match)
       tags:
         - securityhub
       operationId: ListVulnerabilities
