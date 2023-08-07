@@ -200,7 +200,7 @@ fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
 #
-# latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
+# latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfully.
 #
 if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ]; then
     echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_offline_build_bundle > $latest_build_file
