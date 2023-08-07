@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -60,6 +61,7 @@ values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16
 		`insert into scanner_registration (name, url, uuid, auth) values('trivy', 'https://www.vmware.com', 'ruuid', 'empty')`,
 		`insert into vulnerability_record (id, cve_id, registration_uuid, cvss_score_v3) values (1, '2023-4567-12345', 'ruuid', 9.8)`,
 		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('uuid', 1)`,
+		`INSERT INTO tag (repository_id, artifact_id, name) VALUES (1, (select id from artifact where repository_name = 'library/hello-world' limit 1), 'tag_test')`,
 	})
 
 	testDao.ExecuteBatchSQL([]string{
@@ -85,6 +87,7 @@ func (suite *SecurityDaoTestSuite) TearDownTest() {
 		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
 		`delete from report_vulnerability_record where report_uuid='ruuid'`,
 		`delete from vulnerability_record where registration_uuid ='uuid2'`,
+		`delete from tag where name='tag_test'`,
 	})
 }
 
@@ -128,13 +131,13 @@ func Test_checkQFilter(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"happy_path", args{q.New(q.KeyWords{"sample": 1}), map[string]*filterMetaData{"sample": &filterMetaData{intType, exactMatchFilter}}}, false},
-		{"happy_path_cve_id", args{q.New(q.KeyWords{"cve_id": "CVE-2023-2345"}), map[string]*filterMetaData{"cve_id": &filterMetaData{stringType, exactMatchFilter}}}, false},
-		{"happy_path_severity", args{q.New(q.KeyWords{"severity": "Critical"}), map[string]*filterMetaData{"severity": &filterMetaData{stringType, exactMatchFilter}}}, false},
-		{"happy_path_cvss_score_v3", args{q.New(q.KeyWords{"cvss_score_v3": &q.Range{Min: 2.0, Max: 3.0}}), map[string]*filterMetaData{"cvss_score_v3": &filterMetaData{rangeType, rangeFilter}}}, false},
+		{"happy_path", args{q.New(q.KeyWords{"sample": 1}), map[string]*filterMetaData{"sample": &filterMetaData{DataType: intType}}}, false},
+		{"happy_path_cve_id", args{q.New(q.KeyWords{"cve_id": "CVE-2023-2345"}), map[string]*filterMetaData{"cve_id": &filterMetaData{DataType: stringType}}}, false},
+		{"happy_path_severity", args{q.New(q.KeyWords{"severity": "Critical"}), map[string]*filterMetaData{"severity": &filterMetaData{DataType: stringType}}}, false},
+		{"happy_path_cvss_score_v3", args{q.New(q.KeyWords{"cvss_score_v3": &q.Range{Min: 2.0, Max: 3.0}}), map[string]*filterMetaData{"cvss_score_v3": &filterMetaData{DataType: rangeType, FilterFunc: rangeFilter}}}, false},
 		{"unhappy_path", args{q.New(q.KeyWords{"sample": 1}), map[string]*filterMetaData{"a": &filterMetaData{DataType: intType}}}, true},
-		{"unhappy_path2", args{q.New(q.KeyWords{"cve_id": 1}), map[string]*filterMetaData{"cve_id": &filterMetaData{stringType, exactMatchFilter}}}, true},
-		{"unhappy_path3", args{q.New(q.KeyWords{"severity": &q.Range{Min: 2.0, Max: 10.0}}), map[string]*filterMetaData{"severity": &filterMetaData{stringType, exactMatchFilter}}}, true},
+		{"unhappy_path2", args{q.New(q.KeyWords{"cve_id": 1}), map[string]*filterMetaData{"cve_id": &filterMetaData{DataType: stringType}}}, true},
+		{"unhappy_path3", args{q.New(q.KeyWords{"severity": &q.Range{Min: 2.0, Max: 10.0}}), map[string]*filterMetaData{"severity": &filterMetaData{DataType: stringType}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,6 +161,7 @@ func (suite *SecurityDaoTestSuite) TestExacthMatchFilter() {
 		wantParams []interface{}
 	}{
 		{"normal", args{suite.Context(), "cve_id", q.New(q.KeyWords{"cve_id": "CVE-2023-2345"})}, " and cve_id = ?", []interface{}{"CVE-2023-2345"}},
+		{"digest", args{suite.Context(), "digest", q.New(q.KeyWords{"digest": "digest123"})}, " and a.digest = ?", []interface{}{"digest123"}},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
@@ -206,4 +210,51 @@ func (suite *SecurityDaoTestSuite) TestListVul() {
 	vuls, err := suite.dao.ListVulnerabilities(suite.Context(), "ruuid", 0, nil)
 	suite.NoError(err)
 	suite.Equal(1, len(vuls))
+}
+
+func (suite *SecurityDaoTestSuite) TestTagFilter() {
+	type args struct {
+		ctx   context.Context
+		key   string
+		query *q.Query
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantSqlStr string
+		wantParams []interface{}
+	}{
+		{"normal", args{suite.Context(), "tag", q.New(q.KeyWords{"tag": "tag_test"})}, " and a.id IN", nil},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			gotSqlStr, gotParams := tagFilter(tt.args.ctx, tt.args.key, tt.args.query)
+			suite.True(strings.Contains(gotSqlStr, tt.wantSqlStr), "tagFilter() gotSqlStr = %v, want %v", gotSqlStr, tt.wantSqlStr)
+			suite.Equal(gotParams, tt.wantParams, "tagFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
+		})
+	}
+}
+
+func (suite *SecurityDaoTestSuite) TestApplyVulFilter() {
+	type args struct {
+		ctx    context.Context
+		sqlStr string
+		query  *q.Query
+		params []interface{}
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantSqlStr string
+		wantParams []interface{}
+	}{
+		{"normal", args{suite.Context(), "select * from vulnerability_record", q.New(q.KeyWords{"tag": "tag_test"}), nil}, " and a.id IN", nil},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			gotSqlStr, gotParams := applyVulFilter(tt.args.ctx, tt.args.sqlStr, tt.args.query, tt.args.params)
+			suite.True(strings.Contains(gotSqlStr, tt.wantSqlStr), "applyVulFilter() gotSqlStr = %v, want %v", gotSqlStr, tt.wantSqlStr)
+			suite.Equal(gotParams, tt.wantParams, "applyVulFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
+		})
+	}
 }
