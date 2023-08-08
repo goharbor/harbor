@@ -58,14 +58,8 @@ class TestProjects(unittest.TestCase):
             type = "slack",
             auth_header = "aaa"
         )
-        target_2 = v2_swagger_client.WebhookTargetObject(
-            address = "https://202.10.12.13",
-            skip_cert_verify = False,
-            type = "http",
-            auth_header = "aaa"
-        )
         #This need to be removed once issue #13378 fixed.
-        policy_id, policy_name = self.webhook.create_webhook(self.project_id, [target_1, target_2], **self.USER_CLIENT)
+        policy_id, policy_name = self.webhook.create_webhook(self.project_id, [target_1], **self.USER_CLIENT)
         target_1 = v2_swagger_client.WebhookTargetObject(
             address = "https://hooks.slack.com/services/new",
             skip_cert_verify = True,

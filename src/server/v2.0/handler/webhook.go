@@ -17,7 +17,9 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
@@ -414,6 +416,10 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		// Prevent SSRF security issue #3755
 		target.Address = url.Scheme + "://" + url.Host + url.Path
 
+		if err := validateAddress(target.Address); err != nil {
+			return false, errors.New(err).WithCode(errors.BadRequestCode)
+		}
+
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessage("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
 		}
@@ -473,6 +479,19 @@ func (n *webhookAPI) constructPolicyWithTriggerTime(ctx context.Context, policie
 		}
 	}
 	return res, nil
+}
+
+// validateAddress validate the address is connectable
+func validateAddress(address string) error {
+	request, _ := http.NewRequest("GET", address, nil)
+	client := http.Client{
+		Timeout: time.Second * 3,
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		return errors.New(err).WithCode(errors.BadRequestCode)
+	}
+	return resp.Body.Close()
 }
 
 func isEventTypeSupported(eventType string) bool {

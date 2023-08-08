@@ -17,6 +17,8 @@ package handler
 import (
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -92,7 +94,12 @@ func (suite *WebhookTestSuite) TestCreateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "Hello, World!")
+		})
+		server := httptest.NewServer(handler)
+		defer server.Close()
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: server.URL}}})
 		suite.NoError(err)
 		suite.Equal(201, resp.StatusCode)
 	}
@@ -121,7 +128,12 @@ func (suite *WebhookTestSuite) TestUpdateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "Hello, World!")
+		})
+		server := httptest.NewServer(handler)
+		defer server.Close()
+		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: server.URL}}})
 		suite.NoError(err)
 		suite.Equal(200, resp.StatusCode)
 	}
@@ -230,6 +242,22 @@ func (suite *WebhookTestSuite) TestGetSupportedEventTypes() {
 	suite.Equal(200, resp.StatusCode)
 	suite.Len(body.EventType, len(notification.GetSupportedEventTypes()))
 	suite.Len(body.NotifyType, len(notification.GetSupportedNotifyTypes()))
+}
+
+func (suite *WebhookTestSuite) Test_validateAddress() {
+	err := validateAddress("http://123:8080")
+	suite.Error(err)
+
+	err = validateAddress("https://1.2.3.4")
+	suite.Error(err)
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello, World!")
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	err = validateAddress(server.URL)
+	suite.NoError(err)
 }
 
 func TestWebhookTestSuite(t *testing.T) {
