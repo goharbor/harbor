@@ -527,7 +527,8 @@ trace:
   #   url_path: /v1/traces
   #   compression: false
   #   insecure: true
-  #   timeout: 10s
+  #   # timeout is in seconds
+  #   timeout: 10
   {% endif%}
 {% else %}
 # trace:
@@ -550,7 +551,8 @@ trace:
 #   #   url_path: /v1/traces
 #   #   compression: false
 #   #   insecure: true
-#   #   timeout: 10s
+#   #   # timeout is in seconds
+#   #   timeout: 10
 {% endif %}
 
 # enable purge _upload directories
