@@ -291,6 +291,8 @@ jobs:
           sudo service docker restart
       - name: script
         run: |
+          docker system prune -af
+          docker builder prune -af 
           echo IP: $IP
           df -h
           cd src/github.com/goharbor/harbor
