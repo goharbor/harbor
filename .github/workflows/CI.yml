@@ -293,6 +293,7 @@ jobs:
         run: |
           docker system prune -af
           docker builder prune -af 
+          docker volume prune -af
           echo IP: $IP
           df -h
           cd src/github.com/goharbor/harbor
