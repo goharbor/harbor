@@ -18,4 +18,4 @@ ENV PATH $GOPATH/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 1777 "$GOPATH"
 WORKDIR $GOPATH
 
-RUN tdnf install make build-essential -y
+RUN tdnf install make build-essential git -y
