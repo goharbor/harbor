@@ -17,7 +17,7 @@ MAIN_GO_PATH="$3"
 BIN_NAME="$4"
 
 #install git
-sudo apt-get upgrade -y && sudo apt-get install -y git
+apt-get upgrade -y && apt-get install -y git
 
 #Get the source code
 git clone $GIT_PATH src_code
