@@ -301,6 +301,22 @@ func CronParser() cronlib.Parser {
 	return cronlib.NewParser(cronlib.Second | cronlib.Minute | cronlib.Hour | cronlib.Dom | cronlib.Month | cronlib.Dow)
 }
 
+// ValidateCronString check whether it is a valid cron string and whether the 1st field (indicating Seconds of time) of the cron string is a fixed value of 0 or not
+func ValidateCronString(cron string) error {
+	if len(cron) == 0 {
+		return fmt.Errorf("empty cron string is invalid")
+	}
+	_, err := CronParser().Parse(cron)
+	if err != nil {
+		return err
+	}
+	cronParts := strings.Split(cron, " ")
+	if len(cronParts) == 6 && cronParts[0] != "0" {
+		return fmt.Errorf("the 1st field (indicating Seconds of time) of the cron setting must be 0")
+	}
+	return nil
+}
+
 // MostMatchSorter is a sorter for the most match, usually invoked in sort Less function
 // usage:
 //
