@@ -18,10 +18,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -188,7 +190,21 @@ func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{
 		if item.Scope == metadata.SystemScope {
 			return fmt.Errorf("system config items cannot be updated, item: %v", key)
 		}
+
 		strVal := utils.GetStrValueOfAnyType(value)
+
+		// check storage per project before setting it
+		if key == common.StoragePerProject {
+			storagePerProject, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse string value(%v) to int64", strVal)
+			}
+
+			if err := lib.ValidateQuotaLimit(storagePerProject); err != nil {
+				return err
+			}
+		}
+
 		_, err := metadata.NewCfgValue(key, strVal)
 		if err != nil {
 			return errors.Wrap(err, "item name "+key)
