@@ -118,6 +118,18 @@ type Trigger struct {
 	} `json:"trigger_setting,omitempty"`
 }
 
+// ValidatePreheatPolicy validate preheat policy
+func (s *Schema) ValidatePreheatPolicy() error {
+	// currently only validate cron string of preheat policy
+	if s.Trigger != nil && s.Trigger.Type == TriggerTypeScheduled && len(s.Trigger.Settings.Cron) > 0 {
+		if err := utils.ValidateCronString(s.Trigger.Settings.Cron); err != nil {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
+		}
+	}
+	return nil
+}
+
 // Valid the policy
 func (s *Schema) Valid(v *validation.Validation) {
 	if len(s.Name) == 0 {

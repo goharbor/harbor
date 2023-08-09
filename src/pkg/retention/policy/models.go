@@ -17,6 +17,8 @@ package policy
 import (
 	"github.com/beego/beego/v2/core/validation"
 
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
@@ -56,6 +58,23 @@ type Metadata struct {
 
 	// Which scope the policy will be applied to
 	Scope *Scope `json:"scope" valid:"Required"`
+}
+
+// ValidateRetentionPolicy validate the retention policy
+func (m *Metadata) ValidateRetentionPolicy() error {
+	// currently only validate the cron string of retention policy
+	if m.Trigger != nil {
+		if m.Trigger.Kind == TriggerKindSchedule && m.Trigger.Settings != nil {
+			cronItem, ok := m.Trigger.Settings[TriggerSettingsCron]
+			if ok && len(cronItem.(string)) > 0 {
+				if err := utils.ValidateCronString(cronItem.(string)); err != nil {
+					return errors.New(nil).WithCode(errors.BadRequestCode).
+						WithMessage("invalid cron string for scheduled tag retention: %s, error: %v", cronItem.(string), err)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 // Valid Valid
