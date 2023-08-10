@@ -58,6 +58,10 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 		// convert internal or Timeout error to be ErrNotFound
 		// so that the caller can continue working without breaking
 		// return cache.ErrNotFound
+		if err == redis.Nil {
+			return cache.ErrNotFound
+		}
+
 		return fmt.Errorf("%w:%v", cache.ErrNotFound, err)
 	}
 
