@@ -17,6 +17,7 @@ package db
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory" // use memory cache in config
 	libCfg "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config"
@@ -32,10 +33,14 @@ func init() {
 func NewDBCfgManager() *config.CfgManager {
 	cfgDriver := (store.Driver)(&Database{cfgDAO: dao.New()})
 
-	if cache.Default() != nil {
-		log.Debug("create DB config manager with cache enabled")
-		cfgDriver = NewCacheDriver(cache.Default(), cfgDriver)
+	// Because config is ubiquitous, cache it in memory to improve performance and reduce traffic to redis
+	memCache, err := cache.New(cache.Memory)
+	if err != nil {
+		log.Errorf("failed to initialize memory cache, err: %v", err)
+		return nil
 	}
+	log.Debug("create DB config manager with cache enabled")
+	cfgDriver = NewCacheDriver(memCache, cfgDriver)
 
 	manager := &config.CfgManager{Store: store.NewConfigStore(cfgDriver)}
 	// load default value
@@ -43,13 +48,4 @@ func NewDBCfgManager() *config.CfgManager {
 	// load system config from env
 	manager.LoadSystemConfigFromEnv()
 	return manager
-}
-
-// EnableConfigCache ...
-func EnableConfigCache() {
-	if cache.Default() == nil {
-		log.Error("failed to enable config cache, cache is not ready.")
-		return
-	}
-	libCfg.Register(common.DBCfgManager, NewDBCfgManager())
 }
