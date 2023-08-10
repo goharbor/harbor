@@ -62,7 +62,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
 	"github.com/goharbor/harbor/src/pkg/audit"
-	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
@@ -144,9 +143,6 @@ func main() {
 		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
 			log.Fatalf("failed to initialize cache: %v", err)
 		}
-		// when config/db init function is called, the cache is not ready,
-		// enable config cache explicitly when the cache is ready
-		dbCfg.EnableConfigCache()
 	}
 	web.AddTemplateExt("htm")
 
