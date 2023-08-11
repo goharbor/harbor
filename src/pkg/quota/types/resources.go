@@ -25,6 +25,10 @@ const (
 	// UNLIMITED unlimited resource value
 	UNLIMITED = -1
 
+	// MaxLimitedValue the max capacity of limited storage, in Bytes
+	// 1125899906842624 Bytes = 1024 TB
+	MaxLimitedValue = uint64(1125899906842624)
+
 	// ResourceStorage storage size, in bytes
 	ResourceStorage ResourceName = "storage"
 )
