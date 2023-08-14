@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -105,19 +106,25 @@ func (c *controller) OnboardOIDCUser(ctx context.Context, u *commonmodels.User) 
 	if u.OIDCUserMeta == nil {
 		return errors.BadRequestError(nil).WithMessage("OIDC meta of the user model is empty")
 	}
-	uid, err := c.mgr.Create(ctx, u)
-	if err != nil {
-		return errors.Wrap(err, "failed to create user record")
-	}
-	u.UserID = uid
-	u.OIDCUserMeta.UserID = uid
 
-	mid, err2 := c.oidcMetaMgr.Create(ctx, u.OIDCUserMeta)
-	if err2 != nil {
-		return errors.Wrap(err2, "failed to create OIDC metadata record")
+	// place creating harbor_user/oidc_user in a transaction
+	h := func(ctx context.Context) (err error) {
+		uid, err := c.mgr.Create(ctx, u)
+		if err != nil {
+			return errors.Wrap(err, "failed to create user record")
+		}
+		u.UserID = uid
+		u.OIDCUserMeta.UserID = uid
+
+		mid, err2 := c.oidcMetaMgr.Create(ctx, u.OIDCUserMeta)
+		if err2 != nil {
+			return errors.Wrap(err2, "failed to create OIDC metadata record")
+		}
+		u.OIDCUserMeta.ID = int64(mid)
+		return nil
 	}
-	u.OIDCUserMeta.ID = int64(mid)
-	return nil
+
+	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-onboard-oidc-user"))
 }
 
 func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*commonmodels.User, error) {
