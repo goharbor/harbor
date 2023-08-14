@@ -1,0 +1,346 @@
+name: Harbor Test Workflow
+
+on:
+    pull_request:
+      types: [opened,reopened,synchronize,closed]
+
+permissions:
+    contents: read
+    pull-requests: write
+    id-token: write
+
+jobs:
+  # Job to build-push harbor-core image
+    # build-harbor-core:
+    #   name: Build and Push `harbor-core` Image
+    #   runs-on: ubuntu-latest
+    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #   outputs:
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #   steps:
+    #     - name: Checkout git repo
+    #       uses: actions/checkout@v3
+    #       with:
+    #         repository: goharbor/harbor
+    #     - name: Make versions dir
+    #       run: |
+    #         make compile
+    #     - name: Make harbor_core
+    #       run: |
+    #         make compile_core
+    #     - name: Generate UUID image name
+    #       id: uuid
+    #       run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+    #     - name: Docker metadata
+    #       id: meta
+    #       uses: docker/metadata-action@v4
+    #       with:
+    #       # An anonymous, emphemeral registry built on ttl.sh
+    #         images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+    #         tags: type=raw,value=24h
+    #     - name: Build and Push Image to Uffizzi Ephemeral Registry
+    #       uses: docker/build-push-action@v3
+    #       with:
+    #         no-cache: true
+    #         push: true
+    #         tags: ${{ steps.meta.outputs.tags }}
+    #         labels: ${{ steps.meta.outputs.labels }}
+    #         file: ./make/photon/core/Dockerfile
+    #         context: .
+    #         build-args: |
+    #           harbor_base_image_version=dev
+    #           harbor_base_namespace=goharbor
+    #           npm_registry=https://registry.npmjs.org
+
+  # Job to build-push harbor-portal image
+    build-harbor-portal:
+      name: Build and Push `harbor-portal` Image
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+      outputs:
+        tags: ${{ steps.meta.outputs.tags }}
+      steps:
+        - name: Checkout git repo
+          uses: actions/checkout@v3
+        - name: Generate UUID image name
+          id: uuid
+          run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+        - name: Docker metadata
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+          # An anonymous, emphemeral registry built on ttl.sh
+            images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+            tags: type=raw,value=24h
+        - name: Build and Push Image to Uffizzi Ephemeral Registry
+          uses: docker/build-push-action@v3
+          with:
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
+            file: ./make/photon/portal/Dockerfile
+            context: .
+            build-args: |
+              harbor_base_image_version=dev
+              harbor_base_namespace=goharbor
+              npm_registry=https://registry.npmjs.org
+        - name: Echo image
+          run: echo ${{ steps.meta.outputs.images }}
+
+    # Job to build-push harbor-log image
+    # build-harbor-log:
+    #   name: Build and Push `harbor-log` Image
+    #   runs-on: ubuntu-latest
+    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #   outputs:
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #   steps:
+    #     - name: Checkout git repo
+    #       uses: actions/checkout@v3
+    #       with:
+    #         repository: goharbor/harbor
+    #     - name: Generate UUID image name
+    #       id: uuid
+    #       run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+    #     - name: Docker metadata
+    #       id: meta
+    #       uses: docker/metadata-action@v4
+    #       with:
+    #       # An anonymous, emphemeral registry built on ttl.sh
+    #         images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+    #         tags: type=raw,value=24h
+    #     - name: Build and Push Image to Uffizzi Ephemeral Registry
+    #       uses: docker/build-push-action@v3
+    #       with:
+    #         push: true
+    #         tags: ${{ steps.meta.outputs.tags }}
+    #         labels: ${{ steps.meta.outputs.labels }}
+    #         file: ./make/photon/log/Dockerfile
+    #         context: .
+    #         build-args: |
+    #           harbor_base_image_version=dev
+    #           harbor_base_namespace=goharbor
+    #           npm_registry=https://registry.npmjs.org
+
+    # # Job to build-push harbor-jobservice image
+    # build-harbor-jobservice:
+    #   name: Build and Push `harbor-jobservice` Image
+    #   runs-on: ubuntu-latest
+    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #   outputs:
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #   steps:
+    #     - name: Checkout git repo
+    #       uses: actions/checkout@v3
+    #       with:
+    #         repository: goharbor/harbor
+    #     - name: Make harbor_jobservice file
+    #       run: |
+    #         make compile
+    #     - name: Generate UUID image name
+    #       id: uuid
+    #       run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+    #     - name: Docker metadata
+    #       id: meta
+    #       uses: docker/metadata-action@v4
+    #       with:
+    #       # An anonymous, emphemeral registry built on ttl.sh
+    #         images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+    #         tags: type=raw,value=24h
+    #     - name: Build and Push Image to Uffizzi Ephemeral Registry
+    #       uses: docker/build-push-action@v3
+    #       with:
+    #         push: true
+    #         tags: ${{ steps.meta.outputs.tags }}
+    #         labels: ${{ steps.meta.outputs.labels }}
+    #         file: ./make/photon/jobservice/Dockerfile
+    #         context: .
+    #         build-args: |
+    #           harbor_base_image_version=dev
+    #           harbor_base_namespace=goharbor
+    #           npm_registry=https://registry.npmjs.org
+
+    # # Job to build-push harbor-registry image
+    # build-harbor-registry:
+    #   name: Build and Push `harbor-registry` Image
+    #   runs-on: ubuntu-latest
+    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #   outputs:
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #   steps:
+    #     - name: Checkout git repo
+    #       uses: actions/checkout@v3
+    #       with:
+    #         repository: goharbor/harbor
+    #     - name: Make registry file
+    #       run: |
+    #           make build -e BUILDTARGET="_build_registry"
+    #     - name: Generate UUID image name
+    #       id: uuid
+    #       run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+    #     - name: Docker metadata
+    #       id: meta
+    #       uses: docker/metadata-action@v4
+    #       with:
+    #       # An anonymous, emphemeral registry built on ttl.sh
+    #         images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+    #         tags: type=raw,value=24h
+    #     - name: Build and Push Image to Uffizzi Ephemeral Registry
+    #       uses: docker/build-push-action@v3
+    #       with:
+    #         push: true
+    #         tags: ${{ steps.meta.outputs.tags }}
+    #         labels: ${{ steps.meta.outputs.labels }}
+    #         file: ./make/photon/registry/Dockerfile
+    #         context: .
+    #         build-args: |
+    #           harbor_base_image_version=dev
+    #           harbor_base_namespace=goharbor
+    #           npm_registry=https://registry.npmjs.org
+
+    # # Job to build-push harbor-registryctl image
+    # build-harbor-registryctl:
+    #   name: Build and Push `harbor-registryctl` Image
+    #   runs-on: ubuntu-latest
+    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #   outputs:
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #   steps:
+    #     - name: Checkout git repo
+    #       uses: actions/checkout@v3
+    #       with:
+    #         repository: goharbor/harbor
+    #     - name: Make registry file
+    #       run: |
+    #           make build -e BUILDTARGET="_build_registry"
+    #     - name: Compile registryctl file
+    #       run: |
+    #           make compile_registryctl
+    #     - name: Generate UUID image name
+    #       id: uuid
+    #       run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+    #     - name: Docker metadata
+    #       id: meta
+    #       uses: docker/metadata-action@v4
+    #       with:
+    #       # An anonymous, emphemeral registry built on ttl.sh
+    #         images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+    #         tags: type=raw,value=24h
+    #     - name: Build and Push Image to Uffizzi Ephemeral Registry
+    #       uses: docker/build-push-action@v3
+    #       with:
+    #         push: true
+    #         tags: ${{ steps.meta.outputs.tags }}
+    #         labels: ${{ steps.meta.outputs.labels }}
+    #         file: ./make/photon/registryctl/Dockerfile
+    #         context: .
+    #         build-args: |
+    #           harbor_base_image_version=dev
+    #           harbor_base_namespace=goharbor
+    #           npm_registry=https://registry.npmjs.org
+
+    # uffizzi-cluster:
+    #     name: Deploy to Uffizzi uCluster
+    #     needs:
+    #     # - build-harbor-core
+    #     - build-harbor-portal
+    #     # - build-harbor-log
+    #     # - build-harbor-jobservice
+    #     # - build-harbor-registry
+    #     # - build-harbor-registryctl
+    #     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #     - name: Checkout
+    #       uses: actions/checkout@v3
+        
+    #     # Identify comment to be updated
+    #     - name: Find comment for Ephemeral Environment
+    #       uses: peter-evans/find-comment@v2
+    #       id: find-comment
+    #       with:
+    #         issue-number: ${{ github.event.pull_request.number }}
+    #         comment-author: "github-actions[bot]"
+    #         body-includes: pr-${{ github.event.pull_request.number }}
+    #         direction: last
+
+    #     # Create/Update comment with action deployment status
+    #     - name: Create or Update Comment with Deployment Notification
+    #       uses: peter-evans/create-or-update-comment@v2
+    #       id: notification
+    #       with:
+    #         comment-id: ${{ steps.find-comment.outputs.comment-id }}
+    #         issue-number: ${{ github.event.pull_request.number }}
+    #         body: |
+    #             ## Uffizzi Ephemeral Environment - Virtual Cluster
+
+    #             :cloud: deploying ...
+
+    #             :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+    #                 Download the Uffizzi CLI to interact with the upcoming virtual cluster
+    #             https://docs.uffizzi.com/install
+    #         edit-mode: replace
+    
+    #     # Create/Connect to Uffizzi Virtual Cluster
+    #     - name: Connect to Virtual Cluster
+    #       uses: UffizziCloud/cluster-action@main
+    #       with:
+    #         cluster-name: pr-${{ github.event.pull_request.number }}
+
+    #     # Create/Update comment with action deployment status
+    #     - name: Create or Update Comment with Deployment URL
+    #       uses: peter-evans/create-or-update-comment@v2
+    #       with:
+    #         comment-id: ${{ steps.notification.outputs.comment-id }}
+    #         issue-number: ${{ github.event.pull_request.number }}
+    #         body: |
+    #             ## Uffizzi Ephemeral Environment - Virtual Cluster
+        
+    #             Your cluster `pr-${{ github.event.pull_request.number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/virtual-clusters)
+    #             To connect to this cluster, follow these steps:
+        
+    #             1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
+    #             2. Login to Uffizzi: `uffizzi login`
+    #             3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }}`. This command will update your local `~/.kube/config`.
+    #             If you want to provide an alternate location follow the optional step (the next step) instead.
+        
+    #                 Optional: Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[KUBECONFIG]`, replacing `[KUBECONFIG]` with the path to your kubeconfig file.
+    #             After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [KUBECONFIG]`
+        
+    #         edit-mode: replace
+        
+    #     # Apply Harbor Helm Chart
+    #     - name: Apply Helm Chart
+    #       id: helm
+    #       run: |
+    #         echo "REPO=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")" >> GITHUB_ENV
+    #         yq -e '.portal.image.repository = ${{ env.REPO }}' values.yaml -i
+    #         yq -e '.portal.image.tag = 24h' values.yaml -i
+    #         export KUBECONFIG="`pwd`/kubeconfig"
+    #         helm repo add harbor https://helm.goharbor.io
+    #         helm install my-release harbor/harbor --values=values.yaml
+
+    #     # - name: Run tests
+    #     #   uses: cypress-io/github-action@v5
+
+    #     - name: Update Comment with Harbor URL
+    #       uses: peter-evans/create-or-update-comment@v2
+    #       with:
+    #         comment-id: ${{ steps.notification.outputs.comment-id }}
+    #         issue-number: ${{ github.event.pull_request.number }}
+    #         body: |
+    #             ---
+    #             Please wait for several minutes for Harbor deployment to complete.
+    #             Then you should be able to visit the Harbor portal at https://harbor-test.uclusters.app.uffizzi.com
+    #             For more details, please visit https://github.com/goharbor/harbor
+            
+    #         edit-mode: append
+
+    #     # Create ingress
+    #     - name: Create ingress
+    #       id: ingress
+    #       run: |
+    #         kubectl delete ingress my-release-harbor-ingress --kubeconfig="`pwd`/kubeconfig"
+    #         kubectl create ingress my-release-harbor-ingress --kubeconfig="`pwd`/kubeconfig" \
+    #             --class=nginx \
+    #             --rule="harbor-test.uclusters.app.uffizzi.com/*=my-release-harbor-portal:80,tls"
