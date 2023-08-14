@@ -105,7 +105,7 @@ export const FilterType = {
     LABEL: 'label',
     RESOURCE: 'resource',
     TAG_REGEX: 'tagRegex',
-    LABEL_REGEX: 'labelRegex'
+    LABEL_REGEX: 'labelRegex',
 };
 
 export const enum ConfirmationButtons {

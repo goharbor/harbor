@@ -376,7 +376,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.stringForLabelFilter = '';
             this.copyStringForLabelFilter = '';
             rule.filters.forEach(item => {
-                if (item.type === FilterType.LABEL || item.type === FilterType.LABEL_REGEX) {
+                if (
+                    item.type === FilterType.LABEL ||
+                    item.type === FilterType.LABEL_REGEX
+                ) {
                     this.stringForLabelFilter = (item.value as string[]).join(
                         ','
                     );
@@ -469,7 +472,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
 
     initFilter(name: string) {
-        if (name === FilterType.LABEL || name === FilterType.LABEL_REGEX ) {
+        if (name === FilterType.LABEL || name === FilterType.LABEL_REGEX) {
             const labelArray = this.fb.array([]);
             const labelControl = this.fb.group({
                 type: name,
@@ -523,27 +526,25 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         return !isEmptyObject(this.hasChanges());
     }
 
-    
-    enableRegexFilterMode(): void{
+    enableRegexFilterMode(): void {
         this.regexFilterModeEnabled = true;
     }
 
-    disableRegexFilterMode(): void{
-        this.regexFilterModeEnabled = false;   
+    disableRegexFilterMode(): void {
+        this.regexFilterModeEnabled = false;
     }
 
     isValidRegexPattern(pattern: string): boolean {
-        if(pattern[0] === '/' || pattern[pattern.length-1] === '/'){
-            return false
+        if (pattern[0] === '/' || pattern[pattern.length - 1] === '/') {
+            return false;
         }
         try {
-          new RegExp(pattern);
-          return true;
+            new RegExp(pattern);
+            return true;
         } catch (error) {
-          return false;
+            return false;
         }
-      }
-      
+    }
 
     onSubmit() {
         if (this.ruleForm.value.trigger.type !== 'scheduled') {
@@ -571,29 +572,32 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             copyRuleForm.dest_registry = null;
         }
         let filters: any = copyRuleForm.filters;
-        
+
         // check if the filter mode is regex
         // if it is, validate the pattern and set the filter type
-        if(this.regexFilterModeEnabled === true){
-            filters.forEach((filter)=>{
-                if(!this.isValidRegexPattern(filter.value)){
-                    alert("Enter a valid regex pattern")
-                    return
+        if (this.regexFilterModeEnabled === true) {
+            filters.forEach(filter => {
+                if (!this.isValidRegexPattern(filter.value)) {
+                    alert('Enter a valid regex pattern');
+                    return;
                 }
-                if(filter.type === "tag"){
-                    filter.type = "tagRegex"
+                if (filter.type === 'tag') {
+                    filter.type = 'tagRegex';
                 }
-                if(filter.type === "label"){
-                    filter.type = "labelRegex"
+                if (filter.type === 'label') {
+                    filter.type = 'labelRegex';
                 }
-            })
+            });
         }
 
         // set label filter
         if (this.stringForLabelFilter) {
             // set stringForLabelFilter
             copyRuleForm.filters.forEach(item => {
-                if (item.type === FilterType.LABEL || item.type === FilterType.LABEL_REGEX ) {
+                if (
+                    item.type === FilterType.LABEL ||
+                    item.type === FilterType.LABEL_REGEX
+                ) {
                     item.value = this.stringForLabelFilter
                         .split(',')
                         .filter(item => item);
@@ -766,7 +770,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             }
 
             if (!findTag) {
-                if (this.supportedFilters[i].type === FilterType.LABEL || this.supportedFilters[i].type === FilterType.LABEL_REGEX) {
+                if (
+                    this.supportedFilters[i].type === FilterType.LABEL ||
+                    this.supportedFilters[i].type === FilterType.LABEL_REGEX
+                ) {
                     filtersArray.push({
                         type: this.supportedFilters[i].type,
                         value: [],
