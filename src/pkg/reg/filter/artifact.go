@@ -39,9 +39,9 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 	for _, filter := range filters {
 		var f ArtifactFilter
 
-		//Following block builds ArtifactFilters based on the type of filter
-		//Filter types are the ones shown on UI, like Tag, Label
-		//It builds for filters using double star and regex
+		// following block builds ArtifactFilters based on the type of filter
+		// filter types are the ones shown on UI, like Tag, Label
+		// it builds for filters using double star and regex
 		switch filter.Type {
 		case model.FilterTypeLabel:
 			f = &artifactLabelFilter{
@@ -280,16 +280,7 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 		// untagged artifact
 		if len(tagsForMatching) == 0 {
 
-			//The following comment block is filtering using double star
-			//Its kept for self reference
-			//TODO: Remove the following comment block
-
-			// match, err := util.Match(a.pattern, "")
-			// if err != nil {
-			// 	return nil, err
-			// }
-
-			//Filter matching using regex
+			// filter matching using regex
 			match := filterRegexPattern.MatchString("")
 
 			if a.decoration == model.Excludes {
@@ -308,27 +299,8 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 		var tags []string
 		for _, tag := range tagsForMatching {
 
-			//The following comment block is filtering using double star
-			//Its kept for self reference
-			//TODO: Remove the following comment block
-
-			// match, err := util.Match(a.pattern, tag)
-			// if err != nil {
-			// 	return nil, err
-			// }
-
-			//The print statements are for debugging
-			//TODO: Remove following print statements
-
-			fmt.Println("PATTERN: ", a.pattern)
-			fmt.Println("TAG: ", tag)
-
-			//Filter matching using regex
+			// filter matching using regex
 			match := filterRegexPattern.MatchString(tag)
-
-			fmt.Print("MATCH: ")
-			fmt.Println(match)
-			fmt.Println("")
 
 			if a.decoration == model.Excludes {
 				if !match {
@@ -376,17 +348,9 @@ func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model
 	}
 	var result []*model.Artifact
 	for _, artifact := range artifacts {
-		// labels := map[string]struct{}{}
-		// for _, label := range artifact.Labels {
-		// 	labels[label] = struct{}{}
-		// }
 		match := true
 	outer:
 		for _, label := range a.labels {
-			// if _, exist := labels[label]; !exist {
-			// 	match = false
-			// 	break
-			// }
 
 			filterRegexPattern, err := regexp.Compile(label)
 			if err != nil {
@@ -395,19 +359,7 @@ func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model
 
 			for i, lbl := range artifact.Labels {
 
-				fmt.Println("ARTIFACT LABEL")
-				fmt.Println(lbl)
-				fmt.Println("FILTER LABEL")
-				fmt.Println(label)
-				fmt.Print("\n")
-
 				exists := filterRegexPattern.MatchString(lbl)
-
-				fmt.Println("DIGEST")
-				fmt.Println(artifacts[i].Digest)
-				fmt.Println("MATCHES")
-				fmt.Println(exists)
-				fmt.Print("\n")
 
 				if !exists {
 					match = false
