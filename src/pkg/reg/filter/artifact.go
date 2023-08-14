@@ -15,7 +15,6 @@
 package filter
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -249,7 +248,7 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 }
 
 type artifactTagFilterRegex struct {
-	//regex pattern
+	// regex pattern
 	pattern string
 	// "matches", "excludes"
 	decoration string
@@ -260,7 +259,7 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 		return artifacts, nil
 	}
 
-	//Compiling regex & checking if its valid
+	// Compiling regex & checking if its valid
 	filterRegexPattern, err := regexp.Compile(a.pattern)
 	if err != nil {
 		return nil, err
@@ -357,7 +356,7 @@ func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model
 				return nil, err
 			}
 
-			for i, lbl := range artifact.Labels {
+			for _, lbl := range artifact.Labels {
 
 				exists := filterRegexPattern.MatchString(lbl)
 

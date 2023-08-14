@@ -9,7 +9,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
-
 func TestArtifactTagRegexFilters(t *testing.T) {
 	var artifacts = []*model.Artifact{
 		{
@@ -46,20 +45,14 @@ func TestArtifactTagRegexFilters(t *testing.T) {
 
 	var filters = []*model.Filter{
 
-		//The following pattern is from doublestar testing
-		//It works but number of filtered artifacts is mismatched
-		//So the test validating below will fail
-		//TODO: Remove following comment block
-		// {
-		// 	Type:  model.FilterTypeTagRegex,
-		// 	Value: "test.*",
-		// },
+		// the following pattern is from doublestar testing
+		// it works but number of filtered artifacts is mismatched
+		// so the test validating below will fail
 
 		{
 			Type:  model.FilterTypeTagRegex,
 			Value: `^((\d\d?).(\d\d?).(\d\d?(-stable)?))$`,
 		},
-
 	}
 
 	artFilters, err := BuildArtifactFilters(filters)
