@@ -129,25 +129,35 @@ func main() {
 	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 	web.BConfig.MaxMemory = 1 << 35     // (32GB)
 	web.BConfig.MaxUploadSize = 1 << 35 // (32GB)
-
-	redisURL := os.Getenv("_REDIS_URL_CORE")
-	if len(redisURL) > 0 {
-		u, err := url.Parse(redisURL)
+	// the core db used for beego session
+	redisCoreURL := os.Getenv("_REDIS_URL_CORE")
+	if len(redisCoreURL) > 0 {
+		_, err := url.Parse(redisCoreURL)
 		if err != nil {
-			panic("bad _REDIS_URL")
+			panic("bad _REDIS_URL_CORE")
 		}
-
+		// configure the beego session redis
 		web.BConfig.WebConfig.Session.SessionProvider = session.HarborProviderName
-		web.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
-
-		log.Info("initializing cache ...")
-		if err := cache.Initialize(u.Scheme, redisURL); err != nil {
-			log.Fatalf("failed to initialize cache: %v", err)
-		}
-		// when config/db init function is called, the cache is not ready,
-		// enable config cache explicitly when the cache is ready
-		dbCfg.EnableConfigCache()
+		web.BConfig.WebConfig.Session.SessionProviderConfig = redisCoreURL
 	}
+
+	log.Info("initializing cache ...")
+	// the harbor db used for harbor business, use core db if not specified
+	redisHarborURL := os.Getenv("_REDIS_URL_HARBOR")
+	if redisHarborURL == "" {
+		redisHarborURL = redisCoreURL
+	}
+	u, err := url.Parse(redisHarborURL)
+	if err != nil {
+		panic("bad _REDIS_URL_HARBOR")
+	}
+	if err := cache.Initialize(u.Scheme, redisHarborURL); err != nil {
+		log.Fatalf("failed to initialize cache: %v", err)
+	}
+	// when config/db init function is called, the cache is not ready,
+	// enable config cache explicitly when the cache is ready
+	dbCfg.EnableConfigCache()
+
 	web.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
