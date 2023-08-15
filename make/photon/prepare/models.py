@@ -165,7 +165,7 @@ class OtelExporter:
         self.url_path = config.get('url_path')
         self.compression = config.get('compression') or False
         self.insecure = config.get('insecure') or False
-        self.timeout = config.get('timeout') or '10s'
+        self.timeout = config.get('timeout') or '10'
 
     def validate(self):
         if not self.endpoint:
