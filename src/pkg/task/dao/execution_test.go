@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/cache"
-	_ "github.com/goharbor/harbor/src/lib/cache/memory"
+	_ "github.com/goharbor/harbor/src/lib/cache/redis"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -45,7 +45,7 @@ func (e *executionDAOTestSuite) SetupSuite() {
 		taskDAO: e.taskDao,
 	}
 	// initializes cache for testing
-	err := cache.Initialize(cache.Memory, "")
+	err := cache.Initialize(cache.Redis, "redis://localhost:6379/0")
 	e.NoError(err)
 }
 
