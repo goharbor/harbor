@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 
@@ -136,4 +137,38 @@ func Initialize(typ, addr string) error {
 // Default returns the default cache
 func Default() Cache {
 	return cache
+}
+
+var (
+	// cacheLayer is the global cache layer cache instance.
+	cacheLayer Cache
+	// cacheLayerOnce is the once condition for initializing instance.
+	cacheLayerOnce sync.Once
+)
+
+// LayerCache is the global cache instance for cache layer.
+func LayerCache() Cache {
+	// parse the redis url for cache layer, use the default cache if not specify
+	redisCacheURL := os.Getenv("_REDIS_URL_CACHE_LAYER")
+	if redisCacheURL == "" {
+		if cache != nil {
+			return cache
+		}
+		// use the core url if cache layer url not found
+		redisCacheURL = os.Getenv("_REDIS_URL_CORE")
+	}
+
+	u, err := url.Parse(redisCacheURL)
+	if err != nil {
+		log.Fatal("failed to parse the redis url for cache layer, bad _REDIS_URL_CACHE_LAYER")
+	}
+
+	cacheLayerOnce.Do(func() {
+		cacheLayer, err = New(u.Scheme, Address(redisCacheURL), Prefix("cache:"))
+		if err != nil {
+			log.Fatalf("failed to initialize cache for cache layer, err: %v", err)
+		}
+	})
+
+	return cacheLayer
 }
