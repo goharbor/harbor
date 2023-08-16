@@ -64,7 +64,6 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 				labels:     filter.Value.([]string),
 				decoration: filter.Decoration,
 			}
-
 		}
 		if f != nil {
 			fs = append(fs, f)
@@ -278,7 +277,6 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 
 		// untagged artifact
 		if len(tagsForMatching) == 0 {
-
 			// filter matching using regex
 			match := filterRegexPattern.MatchString("")
 
@@ -297,7 +295,6 @@ func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.A
 		// tagged artifact
 		var tags []string
 		for _, tag := range tagsForMatching {
-
 			// filter matching using regex
 			match := filterRegexPattern.MatchString(tag)
 
@@ -341,7 +338,6 @@ type artifactLabelFilterRegex struct {
 }
 
 func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
-
 	if len(a.labels) == 0 {
 		return artifacts, nil
 	}
