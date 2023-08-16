@@ -48,15 +48,20 @@ where a.digest = s.digest
 order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
-	// sql to query the total artifact count, exclude the artifact accessory, and child artifact in image index
+	// sql to query the total artifact count,
+	// 1. exclude the artifact accessory,
+	// 2. exclude child artifact without tag
+	// 3. include top level artifact in image index
+	// The totalArtifactCountSQL and scannedArtifactCountSQL should use the same criteria to filter the artifact
 	totalArtifactCountSQL = `SELECT COUNT(1)
-FROM artifact A
+FROM artifact a
 WHERE NOT EXISTS (select 1 from artifact_accessory acc WHERE acc.artifact_id = a.id)
   AND (EXISTS (SELECT 1 FROM tag WHERE tag.artifact_id = a.id)
     OR NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id))`
 
-	// sql to query the scanned artifact count, exclude the artifact accessory, and child artifact in image index,
-	// and include the image index artifact which at least one child artifact is scanned
+	// sql to query the scanned artifact count,
+	// exclude the artifact accessory, and child artifact in image index (without tag),
+	// include the image index artifact which at least one child artifact is scanned
 	scannedArtifactCountSQL = `SELECT COUNT(1)
 FROM artifact a
 WHERE EXISTS (SELECT 1
@@ -65,13 +70,10 @@ WHERE EXISTS (SELECT 1
                 AND s.registration_uuid = ?)
     -- exclude artifact accessory
     AND NOT EXISTS (SELECT 1 FROM artifact_accessory acc WHERE acc.artifact_id = a.id)
-    -- exclude artifact without tag and part of the image index
-    AND EXISTS (SELECT 1
-                FROM tag
-                WHERE tag.artifact_id = id
-                   OR (NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id)))
-   -- include image index which is scanned
-   OR EXISTS (SELECT 1
+    -- not a child without tag
+    AND NOT EXISTS (SELECT 1 FROM artifact_reference WHERE child_id = a.id AND NOT EXISTS (SELECT 1 FROM tag WHERE artifact_id = a.id))
+    -- include image index which is scanned
+    OR EXISTS (SELECT 1
               FROM scan_report s,
                    artifact_reference ref
               WHERE s.digest = ref.child_digest
