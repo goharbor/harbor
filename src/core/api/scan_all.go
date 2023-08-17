@@ -49,18 +49,21 @@ func (sc *ScanAllAPI) Prepare() {
 
 // Post according to the request, it creates a cron schedule or a manual trigger for scan all.
 // create a daily schedule for scan all
-// 	{
-//  "schedule": {
-//    "type": "Daily",
-//    "cron": "0 0 0 * * *"
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "Daily",
+//	   "cron": "0 0 0 * * *"
+//	 }
+//		}
+//
 // create a manual trigger for scan all
-// 	{
-//  "schedule": {
-//    "type": "Manual"
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "Manual"
+//	 }
+//		}
 func (sc *ScanAllAPI) Post() {
 	ajr := models.AdminJobReq{}
 	isValid, err := sc.DecodeJSONReqAndValidate(&ajr)
@@ -75,12 +78,13 @@ func (sc *ScanAllAPI) Post() {
 
 // Put handles scan all cron schedule update/delete.
 // Request: delete the schedule of scan all
-// 	{
-//  "schedule": {
-//    "type": "None",
-//    "cron": ""
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "None",
+//	   "cron": ""
+//	 }
+//		}
 func (sc *ScanAllAPI) Put() {
 	ajr := models.AdminJobReq{}
 	isValid, err := sc.DecodeJSONReqAndValidate(&ajr)

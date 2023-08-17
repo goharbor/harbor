@@ -44,18 +44,21 @@ func (gc *GCAPI) Prepare() {
 
 // Post according to the request, it creates a cron schedule or a manual trigger for GC.
 // create a daily schedule for GC
-// 	{
-//  "schedule": {
-//    "type": "Daily",
-//    "cron": "0 0 0 * * *"
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "Daily",
+//	   "cron": "0 0 0 * * *"
+//	 }
+//		}
+//
 // create a manual trigger for GC
-// 	{
-//  "schedule": {
-//    "type": "Manual"
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "Manual"
+//	 }
+//		}
 func (gc *GCAPI) Post() {
 	ajr := models.AdminJobReq{}
 	isValid, err := gc.DecodeJSONReqAndValidate(&ajr)
@@ -73,12 +76,13 @@ func (gc *GCAPI) Post() {
 
 // Put handles GC cron schedule update/delete.
 // Request: delete the schedule of GC
-// 	{
-//  "schedule": {
-//    "type": "None",
-//    "cron": ""
-//  }
-//	}
+//
+//		{
+//	 "schedule": {
+//	   "type": "None",
+//	   "cron": ""
+//	 }
+//		}
 func (gc *GCAPI) Put() {
 	ajr := models.AdminJobReq{}
 	isValid, err := gc.DecodeJSONReqAndValidate(&ajr)

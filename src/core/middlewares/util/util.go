@@ -333,7 +333,8 @@ func CopyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 
 // PolicyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
 // TODO: The policy check related things should be moved to pkg package later
-//  and refactored to include the `check` capabilities, not just property getters.
+//
+//	and refactored to include the `check` capabilities, not just property getters.
 type PolicyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	ContentTrustEnabled(name string) bool
