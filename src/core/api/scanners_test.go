@@ -217,7 +217,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIUpdate() {
 	assert.Equal(suite.T(), updated.UUID, rr.UUID)
 }
 
-//
 func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 	r := &scanner.Registration{
 		ID:          1003,

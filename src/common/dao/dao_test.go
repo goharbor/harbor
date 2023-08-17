@@ -539,24 +539,24 @@ func TestCountPull(t *testing.T) {
 }
 
 /*
-func TestProjectExists(t *testing.T) {
-	var exists bool
-	var err error
-	exists, err = ProjectExists(currentProject.ProjectID)
-	if err != nil {
-		t.Errorf("Error occurred in ProjectExists: %v", err)
+	func TestProjectExists(t *testing.T) {
+		var exists bool
+		var err error
+		exists, err = ProjectExists(currentProject.ProjectID)
+		if err != nil {
+			t.Errorf("Error occurred in ProjectExists: %v", err)
+		}
+		if !exists {
+			t.Errorf("The project with id: %d, does not exist", currentProject.ProjectID)
+		}
+		exists, err = ProjectExists(currentProject.Name)
+		if err != nil {
+			t.Errorf("Error occurred in ProjectExists: %v", err)
+		}
+		if !exists {
+			t.Errorf("The project with name: %s, does not exist", currentProject.Name)
+		}
 	}
-	if !exists {
-		t.Errorf("The project with id: %d, does not exist", currentProject.ProjectID)
-	}
-	exists, err = ProjectExists(currentProject.Name)
-	if err != nil {
-		t.Errorf("Error occurred in ProjectExists: %v", err)
-	}
-	if !exists {
-		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
-	}
-}
 */
 func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID

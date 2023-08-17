@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.17.9
+#							golang:1.20.7
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -137,14 +137,16 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.17.9
+GOVERSION=1.20.7
+GOBUILDIMAGE=goharbor/golang:$(GOVERSION)
+PUSHGOIMAGE=false
 GOBUILDPATH=/harbor
 
 # go build
 PKG_PATH=github.com/goharbor/harbor/src/pkg
 GITCOMMIT := $(shell git rev-parse --short=8 HEAD)
 RELEASEVERSION := $(shell cat VERSION)
-GOFLAGS=
+GOFLAGS="-buildvcs=false"
 GOTAGS=$(if $(GOBUILDTAGS),-tags "$(GOBUILDTAGS)",)
 GOLDFLAGS=$(if $(GOBUILDLDFLAGS),--ldflags "-w -s $(GOBUILDLDFLAGS)",)
 CORE_LDFLAGS=-X $(PKG_PATH)/version.GitCommit=$(GITCOMMIT) -X $(PKG_PATH)/version.ReleaseVersion=$(RELEASEVERSION)
@@ -383,6 +385,15 @@ package_offline: update_prepare_version compile build
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
+
+build_golang:
+	@echo "build goharbor/golang image"
+	$(DOCKERBUILD) --build-arg GOVERSION=$(GOVERSION) -f $(MAKEPATH)/photon/golang/Dockerfile -t $(GOBUILDIMAGE) .
+	@if [ "$(PUSHGOIMAGE)" = "true" ] ; then \
+	echo "push goharbor/golang image"; \
+	docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+	docker push $(GOBUILDIMAGE); \
+	fi; \
 
 gosec:
 	#go get github.com/securego/gosec/cmd/gosec

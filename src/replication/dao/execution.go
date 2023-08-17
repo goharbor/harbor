@@ -319,9 +319,11 @@ func UpdateTask(task *models.Task, props ...string) (int64, error) {
 // UpdateTaskStatus updates the status of task.
 // The implementation uses raw sql rather than QuerySetter.Filter... as QuerySetter
 // will generate sql like:
-//   `UPDATE "replication_task" SET "end_time" = $1, "status" = $2
-//     WHERE "id" IN ( SELECT T0."id" FROM "replication_task" T0 WHERE T0."id" = $3
-//     AND T0."status" IN ($4, $5, $6))]`
+//
+//	`UPDATE "replication_task" SET "end_time" = $1, "status" = $2
+//	  WHERE "id" IN ( SELECT T0."id" FROM "replication_task" T0 WHERE T0."id" = $3
+//	  AND T0."status" IN ($4, $5, $6))]`
+//
 // which is not a "single" sql statement, this will cause issues when running in concurrency
 func UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) (int64, error) {
 	params := []interface{}{}

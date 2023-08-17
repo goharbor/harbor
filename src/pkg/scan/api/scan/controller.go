@@ -24,7 +24,8 @@ import (
 
 // Controller provides the related operations for triggering scan.
 // TODO: Here the artifact object is reused the v1 one which is sent to the adapter,
-//  it should be pointed to the general artifact object in future once it's ready.
+//
+//	it should be pointed to the general artifact object in future once it's ready.
 type Controller interface {
 	// Scan the given artifact
 	//
