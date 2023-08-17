@@ -541,7 +541,7 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 			Keywords: map[string]interface{}{
 				"Tags": "nil",
 			},
-		}, nil)
+		}, &artifact.Option{WithAccessory: true})
 		if err != nil {
 			return artMap, err
 		}
@@ -549,14 +549,23 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 		for _, untagged := range untaggedArts {
 			// for dryRun, just simulate the artifact deletion, move the artifact to artifact trash
 			if gc.dryRun {
-				simulateDeletion := model.ArtifactTrash{
-					MediaType:         untagged.MediaType,
-					ManifestMediaType: untagged.ManifestMediaType,
-					RepositoryName:    untagged.RepositoryName,
-					Digest:            untagged.Digest,
-					CreationTime:      time.Now(),
+				var simulateDeletions []model.ArtifactTrash
+				err = gc.artCtl.Walk(ctx.SystemContext(), untagged, func(a *artifact.Artifact) error {
+					simulateDeletion := model.ArtifactTrash{
+						MediaType:         a.MediaType,
+						ManifestMediaType: a.ManifestMediaType,
+						RepositoryName:    a.RepositoryName,
+						Digest:            a.Digest,
+						CreationTime:      time.Now(),
+					}
+					simulateDeletions = append(simulateDeletions, simulateDeletion)
+					return nil
+				}, &artifact.Option{WithAccessory: true})
+				if err != nil {
+					gc.logger.Errorf("walk the artifact %s failed, error: %v", untagged.Digest, err)
+					continue
 				}
-				allTrashedArts = append(allTrashedArts, simulateDeletion)
+				allTrashedArts = append(allTrashedArts, simulateDeletions...)
 			} else {
 				if gc.shouldStop(ctx) {
 					return nil, errGcStop
