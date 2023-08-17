@@ -44,6 +44,7 @@ from artifact a,
      scan_report s
 where a.digest = s.digest
   and s.registration_uuid = ?
+  and s.critical_cnt+s.high_cnt+s.medium_cnt+s.low_cnt > 0
 order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
