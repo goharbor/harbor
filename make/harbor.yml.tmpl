@@ -167,6 +167,28 @@ _version: 2.9.0
 #     max_idle_conns: 2
 #     max_open_conns: 0
 
+# Uncomment redis if need to customize redis db
+# redis:
+#   # db_index 0 is for core, it's unchangeable
+#   # registry_db_index: 1
+#   # jobservice_db_index: 2
+#   # trivy_db_index: 5
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_db_index: 7
+
+# Uncomment redis if need to customize redis db
+# redis:
+#   # db_index 0 is for core, it's unchangeable
+#   # registry_db_index: 1
+#   # jobservice_db_index: 2
+#   # trivy_db_index: 5
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
+
 # Uncomment external_redis if using external Redis server
 # external_redis:
 #   # support redis, redis+sentinel
@@ -186,6 +208,10 @@ _version: 2.9.0
 #   jobservice_db_index: 2
 #   trivy_db_index: 5
 #   idle_timeout_seconds: 30
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
 
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
 # uaa:

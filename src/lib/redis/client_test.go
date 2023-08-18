@@ -41,22 +41,22 @@ func TestGetRegistryClient(t *testing.T) {
 	}
 }
 
-func TestGetCoreClient(t *testing.T) {
+func TestGetHarborClient(t *testing.T) {
 	// failure case with invalid address
-	t.Setenv("_REDIS_URL_CORE", "invalid-address")
-	client, err := GetCoreClient()
+	t.Setenv("_REDIS_URL_HARBOR", "invalid-address")
+	client, err := GetHarborClient()
 	assert.Error(t, err)
 	assert.Nil(t, client)
 
 	// normal case with valid address
-	t.Setenv("_REDIS_URL_CORE", "redis://localhost:6379/0")
-	client, err = GetCoreClient()
+	t.Setenv("_REDIS_URL_HARBOR", "redis://localhost:6379/0")
+	client, err = GetHarborClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 
 	// multiple calls should return the same client
 	for i := 0; i < 10; i++ {
-		newClient, err := GetCoreClient()
+		newClient, err := GetHarborClient()
 		assert.NoError(t, err)
 		assert.Equal(t, client, newClient)
 	}

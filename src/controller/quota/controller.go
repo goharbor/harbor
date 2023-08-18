@@ -262,7 +262,7 @@ func (c *controller) updateUsageByRedis(ctx context.Context, reference, referenc
 		return retry.Abort(ctx.Err())
 	}
 
-	client, err := libredis.GetCoreClient()
+	client, err := libredis.GetHarborClient()
 	if err != nil {
 		return retry.Abort(err)
 	}
