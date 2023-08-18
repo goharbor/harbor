@@ -31,9 +31,9 @@ var (
 	registry     *redis.Client
 	registryOnce = &sync.Once{}
 
-	// core is a global redis client for core db
-	core     *redis.Client
-	coreOnce = &sync.Once{}
+	// harbor is a global redis client for harbor db
+	harbor     *redis.Client
+	harborOnce = &sync.Once{}
 )
 
 // GetRegistryClient returns the registry redis client.
@@ -60,26 +60,30 @@ func GetRegistryClient() (*redis.Client, error) {
 	return registry, nil
 }
 
-// GetCoreClient returns the core redis client.
-func GetCoreClient() (*redis.Client, error) {
-	coreOnce.Do(func() {
-		url := os.Getenv("_REDIS_URL_CORE")
+// GetHarborClient returns the harbor redis client.
+func GetHarborClient() (*redis.Client, error) {
+	harborOnce.Do(func() {
+		// parse redis url for harbor business, use core url by default
+		url := os.Getenv("_REDIS_URL_HARBOR")
+		if url == "" {
+			url = os.Getenv("_REDIS_URL_CORE")
+		}
 		c, err := libredis.New(cache.Options{Address: url})
 		if err != nil {
-			log.Errorf("failed to initialize redis client for core, error: %v", err)
+			log.Errorf("failed to initialize redis client for harbor, error: %v", err)
 			// reset the once to support retry if error occurred
-			coreOnce = &sync.Once{}
+			harborOnce = &sync.Once{}
 			return
 		}
 
 		if c != nil {
-			core = c.(*libredis.Cache).Client
+			harbor = c.(*libredis.Cache).Client
 		}
 	})
 
-	if core == nil {
-		return nil, errors.New("no core redis client initialized")
+	if harbor == nil {
+		return nil, errors.New("no harbor redis client initialized")
 	}
 
-	return core, nil
+	return harbor, nil
 }

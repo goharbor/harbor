@@ -24,27 +24,27 @@ import (
 )
 
 // innerCache is the default cache client,
-// actually it is a wrapper for cache.Default().
+// actually it is a wrapper for cache.LayerCache().
 var innerCache cache.Cache = &cacheClient{}
 
-// cacheClient is a interceptor for cache.Default, in order to implement specific
+// cacheClient is a interceptor for cache.CacheLayer, in order to implement specific
 // case for cache layer.
 type cacheClient struct{}
 
 func (*cacheClient) Contains(ctx context.Context, key string) bool {
-	return cache.Default().Contains(ctx, key)
+	return cache.LayerCache().Contains(ctx, key)
 }
 
 func (*cacheClient) Delete(ctx context.Context, key string) error {
-	return cache.Default().Delete(ctx, key)
+	return cache.LayerCache().Delete(ctx, key)
 }
 
 func (*cacheClient) Fetch(ctx context.Context, key string, value interface{}) error {
-	return cache.Default().Fetch(ctx, key, value)
+	return cache.LayerCache().Fetch(ctx, key, value)
 }
 
 func (*cacheClient) Ping(ctx context.Context) error {
-	return cache.Default().Ping(ctx)
+	return cache.LayerCache().Ping(ctx)
 }
 
 func (*cacheClient) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
@@ -57,11 +57,11 @@ func (*cacheClient) Save(ctx context.Context, key string, value interface{}, exp
 		return nil
 	}
 
-	return cache.Default().Save(ctx, key, value, expiration...)
+	return cache.LayerCache().Save(ctx, key, value, expiration...)
 }
 
 func (*cacheClient) Scan(ctx context.Context, match string) (cache.Iterator, error) {
-	return cache.Default().Scan(ctx, match)
+	return cache.LayerCache().Scan(ctx, match)
 }
 
 var _ Manager = &BaseManager{}

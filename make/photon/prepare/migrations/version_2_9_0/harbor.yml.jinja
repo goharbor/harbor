@@ -378,6 +378,49 @@ external_database:
 #     max_open_conns: 0
 {% endif %}
 
+{% if redis is defined %}
+redis:
+#   # db_index 0 is for core, it's unchangeable
+{% if redis.registry_db_index is defined %}
+  registry_db_index: {{ redis.registry_db_index }}
+{% else %}
+#   # registry_db_index: 1
+{% endif %}
+{% if redis.jobservice_db_index is defined %}
+  jobservice_db_index: {{ redis.jobservice_db_index }}
+{% else %}
+#   # jobservice_db_index: 2
+{% endif %}
+{% if redis.trivy_db_index is defined %}
+  trivy_db_index: {{ redis.trivy_db_index }}
+{% else %}
+#   # trivy_db_index: 5
+{% endif %}
+{% if redis.harbor_db_index is defined %}
+  harbor_db_index: {{ redis.harbor_db_index }}
+{% else %}
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+{% endif %}
+{% if redis.cache_layer_db_index is defined %}
+  cache_layer_db_index: {{ redis.cache_layer_db_index }}
+{% else %}
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
+{% endif %}
+{% else %}
+# Uncomment redis if need to customize redis db
+# redis:
+#   # db_index 0 is for core, it's unchangeable
+#   # registry_db_index: 1
+#   # jobservice_db_index: 2
+#   # trivy_db_index: 5
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
+{% endif %}
+
 {% if external_redis is defined %}
 external_redis:
   # support redis, redis+sentinel
@@ -399,6 +442,18 @@ external_redis:
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
   trivy_db_index: 5
   idle_timeout_seconds: 30
+  {% if external_redis.harbor_db_index is defined %}
+  harbor_db_index: {{ redis.harbor_db_index }}
+  {% else %}
+# # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+# # harbor_db_index: 6
+  {% endif %}
+  {% if external_redis.cache_layer_db_index is defined %}
+  cache_layer_db_index: {{ redis.cache_layer_db_index }}
+  {% else %}
+# # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+# # cache_layer_db_index: 7
+  {% endif %}
 {% else %}
 # Umcomments external_redis if using external Redis server
 # external_redis:
@@ -417,6 +472,10 @@ external_redis:
 #   jobservice_db_index: 2
 #   trivy_db_index: 5
 #   idle_timeout_seconds: 30
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
 {% endif %}
 
 {% if uaa is defined %}
