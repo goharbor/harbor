@@ -346,14 +346,12 @@ func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model
 		match := true
 	outer:
 		for _, label := range a.labels {
-
 			filterRegexPattern, err := regexp.Compile(label)
 			if err != nil {
 				return nil, err
 			}
 
 			for _, lbl := range artifact.Labels {
-
 				exists := filterRegexPattern.MatchString(lbl)
 
 				if !exists {
@@ -361,7 +359,6 @@ func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model
 					break outer
 				}
 			}
-
 		}
 		// add the artifact to the result list if it contains all labels defined for the filter
 		if a.decoration == model.Excludes {
