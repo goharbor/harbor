@@ -179,7 +179,7 @@ func (o *listReferrersOK) WithPayload(payload interface{}) *listReferrersOK {
 
 // WriteResponse to the client
 func (o *listReferrersOK) WriteResponse(rw http.ResponseWriter) {
-	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
+	rw.Header().Set("Content-Type", "application/vnd.oci.image.index.v1+json")
 
 	link := o.Link
 	if link != "" {
