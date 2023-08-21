@@ -22,7 +22,6 @@ import { PasswordSettingComponent } from './password-setting/password-setting.co
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { ForgotPasswordComponent } from './password-setting/forgot-password/forgot-password.component';
 import { GlobalConfirmationDialogComponent } from './global-confirmation-dialog/global-confirmation-dialog.component';
-import { AppLevelAlertsComponent } from './harbor-shell/app-level-alerts/app-level-alerts.component';
 
 const routes: Routes = [
     {
@@ -173,7 +172,6 @@ const routes: Routes = [
         AccountSettingsModalComponent,
         ForgotPasswordComponent,
         GlobalConfirmationDialogComponent,
-        AppLevelAlertsComponent,
     ],
 })
 export class BaseModule {}

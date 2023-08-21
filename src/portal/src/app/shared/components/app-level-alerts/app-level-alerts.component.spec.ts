@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppLevelAlertsComponent } from './app-level-alerts.component';
-import { SharedTestingModule } from '../../../shared/shared.module';
+import { SharedTestingModule } from '../../shared.module';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
+import { Scanner } from '../../../base/left-side-nav/interrogation-services/scanner/scanner';
 import { ScannerService } from 'ng-swagger-gen/services/scanner.service';
 import { SessionService } from 'src/app/shared/services/session.service';
 import { AppConfigService } from '../../../services/app-config.service';

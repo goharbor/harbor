@@ -240,7 +240,7 @@ func (s *preheatSuite) TestCreatePolicy() {
 	policy := &policy.Schema{
 		Name:       "test",
 		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
-		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */1"}}`, policy.TriggerTypeScheduled),
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"0 * * * * */1"}}`, policy.TriggerTypeScheduled),
 	}
 	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakePolicyMgr.On("Create", s.ctx, policy).Return(int64(1), nil)
@@ -269,7 +269,7 @@ func (s *preheatSuite) TestGetPolicyByName() {
 
 func (s *preheatSuite) TestUpdatePolicy() {
 	var p0 = &policy.Schema{Name: "test", Trigger: &policy.Trigger{Type: policy.TriggerTypeScheduled}}
-	p0.Trigger.Settings.Cron = "* * * * */1"
+	p0.Trigger.Settings.Cron = "0 * * * * */1"
 	p0.Filters = []*policy.Filter{
 		{
 			Type:  policy.FilterTypeRepository,
@@ -281,6 +281,8 @@ func (s *preheatSuite) TestUpdatePolicy() {
 		},
 	}
 	s.fakePolicyMgr.On("Get", s.ctx, int64(1)).Return(p0, nil)
+	s.fakeScheduler.On("UnScheduleByVendor", s.ctx, mock.Anything, mock.Anything).Return(nil)
+	s.fakeScheduler.On("Schedule", s.ctx, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
 	// need change to schedule
 	p1 := &policy.Schema{
@@ -299,7 +301,7 @@ func (s *preheatSuite) TestUpdatePolicy() {
 		ID:         1,
 		Name:       "test",
 		FiltersStr: `[{"type":"repository","value":"harbor*"},{"type":"tag","value":"2*"}]`,
-		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"* * * * */2"}}`, policy.TriggerTypeScheduled),
+		TriggerStr: fmt.Sprintf(`{"type":"%s", "trigger_setting":{"cron":"0 * * * * */2"}}`, policy.TriggerTypeScheduled),
 	}
 	s.fakePolicyMgr.On("Update", s.ctx, p2, mock.Anything).Return(nil)
 	err = s.controller.UpdatePolicy(s.ctx, p2, "")

@@ -18,8 +18,6 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/pkg"
-	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/goharbor/harbor/src/pkg/securityhub"
 	secHubModel "github.com/goharbor/harbor/src/pkg/securityhub/model"
@@ -71,19 +69,17 @@ type Controller interface {
 }
 
 type controller struct {
-	artifactMgr artifact.Manager
-	scannerMgr  scanner.Manager
-	secHubMgr   securityhub.Manager
-	tagMgr      tag.Manager
+	scannerMgr scanner.Manager
+	secHubMgr  securityhub.Manager
+	tagMgr     tag.Manager
 }
 
 // NewController ...
 func NewController() Controller {
 	return &controller{
-		artifactMgr: pkg.ArtifactMgr,
-		scannerMgr:  scanner.Mgr,
-		secHubMgr:   securityhub.Mgr,
-		tagMgr:      tag.Mgr,
+		scannerMgr: scanner.Mgr,
+		secHubMgr:  securityhub.Mgr,
+		tagMgr:     tag.Mgr,
 	}
 }
 
@@ -129,10 +125,7 @@ func (c *controller) scannedArtifactCount(ctx context.Context, projectID int64) 
 }
 
 func (c *controller) totalArtifactCount(ctx context.Context, projectID int64) (int64, error) {
-	if projectID == 0 {
-		return c.artifactMgr.Count(ctx, nil)
-	}
-	return c.artifactMgr.Count(ctx, q.New(q.KeyWords{"project_id": projectID}))
+	return c.secHubMgr.TotalArtifactsCount(ctx, projectID)
 }
 
 func (c *controller) ListVuls(ctx context.Context, scannerUUID string, projectID int64, withTag bool, query *q.Query) ([]*secHubModel.VulnerabilityItem, error) {

@@ -16,13 +16,12 @@ package session
 
 import (
 	"context"
+	"errors"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/beego/beego/v2/server/web/session"
-	goredis "github.com/go-redis/redis/v8"
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/redis"
@@ -131,7 +130,7 @@ func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store,
 		ctx = context.TODO()
 	}
 	err := rp.c.Fetch(ctx, sid, &kv)
-	if err != nil && !strings.Contains(err.Error(), goredis.Nil.Error()) {
+	if err != nil && !errors.Is(err, cache.ErrNotFound) {
 		return nil, err
 	}
 
@@ -166,7 +165,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 		} else {
 			kv := make(map[interface{}]interface{})
 			err := rp.c.Fetch(ctx, sid, &kv)
-			if err != nil && !strings.Contains(err.Error(), goredis.Nil.Error()) {
+			if err != nil && !errors.Is(err, cache.ErrNotFound) {
 				return nil, err
 			}
 

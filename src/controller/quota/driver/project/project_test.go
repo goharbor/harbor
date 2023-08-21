@@ -44,6 +44,54 @@ func (suite *DriverTestSuite) SetupTest() {
 	}
 }
 
+func (suite *DriverTestSuite) TestValidate() {
+	testCases := []struct {
+		description string
+		input       types.ResourceList
+		hasErr      bool
+	}{
+		{
+			description: "quota limit is 0",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: 0},
+			hasErr:      true,
+		},
+		{
+			description: "quota limit is -1",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: -1},
+			hasErr:      false,
+		},
+		{
+			description: "quota limit is -2",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: -2},
+			hasErr:      true,
+		},
+		{
+			description: "quota limit is types.MaxLimitedValue",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: int64(types.MaxLimitedValue)},
+			hasErr:      false,
+		},
+		{
+			description: "quota limit is types.MaxLimitedValue + 1",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: int64(types.MaxLimitedValue + 1)},
+			hasErr:      true,
+		},
+		{
+			description: "quota limit is 12345",
+			input:       map[types.ResourceName]int64{types.ResourceStorage: int64(12345)},
+			hasErr:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		gotErr := suite.d.Validate(tc.input)
+		if tc.hasErr {
+			suite.Errorf(gotErr, "test case: %s", tc.description)
+		} else {
+			suite.NoErrorf(gotErr, "test case: %s", tc.description)
+		}
+	}
+}
+
 func (suite *DriverTestSuite) TestCalculateUsage() {
 
 	{

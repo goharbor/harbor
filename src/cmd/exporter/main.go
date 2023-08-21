@@ -36,16 +36,7 @@ func main() {
 	viper.SetEnvPrefix("harbor")
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	connMaxLifetime, err := time.ParseDuration(viper.GetString("database.conn_max_lifetime"))
-	if err != nil {
-		log.Errorf("Failed to parse database.conn_max_lifetime: %v", err)
-		connMaxLifetime = 5 * time.Minute
-	}
-	connMaxIdleTime, err := time.ParseDuration(viper.GetString("database.conn_max_idle_time"))
-	if err != nil {
-		log.Errorf("Failed to parse database.conn_max_idle_time: %v", err)
-		connMaxIdleTime = 0
-	}
+
 	dbCfg := &models.Database{
 		Type: "postgresql",
 		PostGreSQL: &models.PostGreSQL{
@@ -57,8 +48,8 @@ func main() {
 			SSLMode:         viper.GetString("database.sslmode"),
 			MaxIdleConns:    viper.GetInt("database.max_idle_conns"),
 			MaxOpenConns:    viper.GetInt("database.max_open_conns"),
-			ConnMaxLifetime: connMaxLifetime,
-			ConnMaxIdleTime: connMaxIdleTime,
+			ConnMaxLifetime: getConnMaxLifetime(viper.GetString("database.conn_max_lifetime")),
+			ConnMaxIdleTime: getConnMaxIdleTime(viper.GetString("database.conn_max_idle_time")),
 		},
 	}
 	if err := dao.InitDatabase(dbCfg); err != nil {
@@ -108,4 +99,34 @@ func main() {
 		log.Errorf("Error starting Harbor expoter %s", err)
 		os.Exit(1)
 	}
+}
+
+func getConnMaxLifetime(duration string) time.Duration {
+	// set conn max life time, 5m by default
+	connMaxLifetime := 5 * time.Minute
+	if duration != "" {
+		maxLifetime, err := time.ParseDuration(duration)
+		if err == nil {
+			connMaxLifetime = maxLifetime
+		} else {
+			log.Warningf("Failed to parse database.conn_max_lifetime, use default value: %s, err: %v", connMaxLifetime, err)
+		}
+	}
+
+	return connMaxLifetime
+}
+
+func getConnMaxIdleTime(duration string) time.Duration {
+	// set conn max idle time, 0 by default
+	connMaxIdleTime := time.Duration(0)
+	if duration != "" {
+		maxIdleTime, err := time.ParseDuration(duration)
+		if err == nil {
+			connMaxIdleTime = maxIdleTime
+		} else {
+			log.Warningf("Failed to parse database.conn_max_idle_time, use default value: %s, err: %v", connMaxIdleTime, err)
+		}
+	}
+
+	return connMaxIdleTime
 }

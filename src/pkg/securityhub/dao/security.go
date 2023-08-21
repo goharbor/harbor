@@ -44,21 +44,65 @@ from artifact a,
      scan_report s
 where a.digest = s.digest
   and s.registration_uuid = ?
+  and s.critical_cnt+s.high_cnt+s.medium_cnt+s.low_cnt > 0
 order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
-	// sql to query the scanned artifact count
-	scannedArtifactCountSQL = `select count(1)
-from artifact
-where exists (select 1 from scan_report s where artifact.digest = s.digest and s.registration_uuid = ?) `
+	// sql to query the total artifact count,
+	// 1. exclude the artifact accessory,
+	// 2. exclude child artifact without tag
+	// 3. include top level artifact in image index
+	// The totalArtifactCountSQL and scannedArtifactCountSQL should use the same criteria to filter the artifact
+	totalArtifactCountSQL = `SELECT COUNT(1)
+FROM artifact a
+WHERE NOT EXISTS (select 1 from artifact_accessory acc WHERE acc.artifact_id = a.id)
+  AND (EXISTS (SELECT 1 FROM tag WHERE tag.artifact_id = a.id)
+    OR NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id))`
+
+	// sql to query the scanned artifact count,
+	// exclude the artifact accessory, and child artifact in image index (without tag),
+	// include the image index artifact which at least one child artifact is scanned
+	scannedArtifactCountSQL = `SELECT COUNT(1)
+FROM artifact a
+WHERE EXISTS (SELECT 1
+              FROM scan_report s
+              WHERE a.digest = s.digest
+                AND s.registration_uuid = ?)
+    -- exclude artifact accessory
+    AND NOT EXISTS (SELECT 1 FROM artifact_accessory acc WHERE acc.artifact_id = a.id)
+    -- not a child without tag
+    AND NOT EXISTS (SELECT 1 FROM artifact_reference WHERE child_id = a.id AND NOT EXISTS (SELECT 1 FROM tag WHERE artifact_id = a.id))
+    -- include image index which is scanned
+    OR EXISTS (SELECT 1
+              FROM scan_report s,
+                   artifact_reference ref
+              WHERE s.digest = ref.child_digest
+                AND ref.parent_id = a.id AND s.registration_uuid = ?  AND NOT EXISTS (SELECT 1
+                                                                                      FROM scan_report s
+                                                                                      WHERE s.digest = a.digest and s.registration_uuid = ?))`
 
 	// sql to query the dangerous CVEs
-	dangerousCVESQL = `select vr.*
-from vulnerability_record vr
-where vr.cvss_score_v3 is not null
-and vr.registration_uuid = ?
-order by vr.cvss_score_v3 desc
-limit 5`
+	// sort the CVEs by CVSS score and severity level, make sure it is referred by a report
+	dangerousCVESQL = `SELECT vr.id,
+       vr.cve_id,
+       vr.package,
+       vr.cvss_score_v3,
+       vr.description,
+       vr.fixed_version,
+       vr.severity,
+       CASE vr.severity
+           WHEN 'Critical' THEN 5
+           WHEN 'High' THEN 4
+           WHEN 'Medium' THEN 3
+           WHEN 'Low' THEN 2
+           WHEN 'None' THEN 1
+           WHEN 'Unknown' THEN 0 END AS severity_level
+FROM vulnerability_record vr
+WHERE EXISTS (SELECT 1 FROM report_vulnerability_record WHERE vuln_record_id = vr.id)
+  AND vr.cvss_score_v3 IS NOT NULL
+  AND vr.registration_uuid = ?
+ORDER BY vr.cvss_score_v3 DESC, severity_level DESC
+LIMIT 5`
 
 	// sql to query vulnerabilities
 	vulnerabilitySQL = `select  vr.cve_id, vr.cvss_score_v3, vr.package, a.repository_name, a.id artifact_id, a.digest, vr.package, vr.package_version, vr.severity, vr.fixed_version, vr.description, vr.urls, a.project_id
@@ -78,18 +122,24 @@ where a.digest = s.digest
 )
 
 type filterMetaData struct {
-	DataType   string
+	// DataType is the data type of the filter, it could be stringType, rangeType
+	DataType string
+	// ColumnName is the column name in the database, if it is empty, the key will be used as the column name
+	ColumnName string
+	// FilterFunc is the function to generate the filter sql, default is exactMatchFilter
 	FilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
 }
 
+// filterMap define the query condition
 var filterMap = map[string]*filterMetaData{
-	"cve_id":          &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"severity":        &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
+	"cve_id":          &filterMetaData{DataType: stringType},
+	"severity":        &filterMetaData{DataType: stringType},
 	"cvss_score_v3":   &filterMetaData{DataType: rangeType, FilterFunc: rangeFilter},
-	"project_id":      &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"repository_name": &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
-	"package":         &filterMetaData{DataType: stringType, FilterFunc: exactMatchFilter},
+	"project_id":      &filterMetaData{DataType: stringType},
+	"repository_name": &filterMetaData{DataType: stringType},
+	"package":         &filterMetaData{DataType: stringType},
 	"tag":             &filterMetaData{DataType: stringType, FilterFunc: tagFilter},
+	"digest":          &filterMetaData{DataType: stringType, ColumnName: "a.digest"},
 }
 
 var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
@@ -99,7 +149,11 @@ func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr s
 		return
 	}
 	if val, ok := query.Keywords[key]; ok {
-		sqlStr = fmt.Sprintf(" and %v = ?", key)
+		col := key
+		if len(filterMap[key].ColumnName) > 0 {
+			col = filterMap[key].ColumnName
+		}
+		sqlStr = fmt.Sprintf(" and %v = ?", col)
 		params = append(params, val)
 		return
 	}
@@ -143,6 +197,8 @@ type SecurityHubDao interface {
 	DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error)
 	// DangerousArtifacts returns top 5 dangerous artifact for the given scanner. return top 5 result
 	DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.DangerousArtifact, error)
+	// TotalArtifactsCount return the count of total artifacts.
+	TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error)
 	// ScannedArtifactsCount return the count of scanned artifacts.
 	ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error)
 	// ListVulnerabilities search vulnerability record by cveID
@@ -157,6 +213,19 @@ func New() SecurityHubDao {
 }
 
 type dao struct {
+}
+
+func (d *dao) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, error) {
+	if projectID != 0 {
+		return 0, nil
+	}
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	var count int64
+	err = o.Raw(totalArtifactCountSQL).QueryRow(&count)
+	return count, err
 }
 
 func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error) {
@@ -199,7 +268,7 @@ func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, pro
 	if err != nil {
 		return cnt, err
 	}
-	err = o.Raw(scannedArtifactCountSQL, scannerUUID).QueryRow(&cnt)
+	err = o.Raw(scannedArtifactCountSQL, scannerUUID, scannerUUID, scannerUUID).QueryRow(&cnt)
 	return cnt, err
 }
 func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
@@ -284,6 +353,9 @@ func applyVulFilter(ctx context.Context, sqlStr string, query *q.Query, params [
 	queryStr = sqlStr
 	newParam = params
 	for k, m := range filterMap {
+		if m.FilterFunc == nil {
+			m.FilterFunc = exactMatchFilter // default filter function is exactMatchFilter
+		}
 		s, p := m.FilterFunc(ctx, k, query)
 		queryStr = queryStr + s
 		newParam = append(newParam, p...)
