@@ -49,19 +49,73 @@ func (suite *SecurityDaoTestSuite) SetupTest() {
 		`delete from artifact_accessory`,
 		`delete from artifact`,
 		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('uuid', 'digest1001', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 50, 50, 50, 0, 0, 20)`,
+
+		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('cnabreport1010', 'digest1010', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 0, 0, 0, 0, 0, 20)`,
+		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('cnabreport1011', 'digest1011', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 0, 0, 0, 0, 0, 20)`,
+		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('cnabreport1013', 'digest1013', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 0, 0, 0, 0, 0, 20)`,
+		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('cnabreport1014', 'digest1014', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 0, 0, 0, 0, 0, 20)`,
+		`insert into scan_report(uuid, digest, registration_uuid, mime_type, critical_cnt, high_cnt, medium_cnt, low_cnt, unknown_cnt, fixable_cnt) values('notag001', 'digest1017', 'ruuid', 'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0', 0, 0, 0, 0, 0, 0)`,
+
+		// image index
 		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
-values  (1001, 1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.docker.distribution.manifest.v2+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+values  (1001, 1, 'library/hello-world', 'digest1001', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.docker.distribution.manifest.v2+json', 4452, '', null, '');`,
 		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
-values (1002, 1, 'library/hello-world', 'digest1002', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+values (1002, 1, 'library/hello-world', 'digest1002', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
 		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
-values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '{"architecture":"amd64","author":"","config":{"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/hello"]},"created":"2023-05-04T17:37:03.872958712Z","os":"linux"}', null, '');`,
+values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		// construct a cnab artifact
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1010, 1, 'library/cnab_example', 'digest1010', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1011, 1, 'library/cnab_example', 'digest1011', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1012, 1, 'library/cnab_example', 'digest1012', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1013, 1, 'library/cnab_example', 'digest1013', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1014, 1, 'library/cnab_example', 'digest1014', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1015, 1, 'library/cnab_example', 'digest1015', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1016, 1, 'library/cnab_example', 'digest1016', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
+		// notag for this artifact
+		`insert into artifact (id, project_id, repository_name, digest, type, pull_time, push_time, repository_id, media_type, manifest_media_type, size, extra_attrs, annotations, icon)
+values (1017, 1, 'library/notag', 'digest1017', 'IMAGE', '2023-06-02 09:16:47.838778', '2023-06-02 01:45:55.050785', 1742, 'application/vnd.docker.container.image.v1+json', 'application/vnd.oci.image.config.v1+json', 4452, '', null, '');`,
+
 		`insert into tag (id, repository_id, artifact_id, name, push_time, pull_time) values (1001, 1742, 1001, 'latest', '2023-06-02 01:45:55.050785', '2023-06-02 09:16:47.838778')`,
+
 		`INSERT INTO artifact_accessory (id, artifact_id, subject_artifact_id, type, size, digest, creation_time, subject_artifact_digest, subject_artifact_repo) VALUES (1001, 1002, 1, 'signature.cosign', 2109, 'sha256:08c64c0de2667abcf3974b4b75b82903f294680b81584318adc4826d0dcb7a9c', '2023-08-03 04:54:32.102928', 'sha256:a97a153152fcd6410bdf4fb64f5622ecf97a753f07dcc89dab14509d059736cf', 'library/nuxeo')`,
+
 		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1001, 1001, 1003, 'sha256:d2b2f2980e9ccc570e5726b56b54580f23a018b7b7314c9eaff7e5e479c78657', '{"architecture":"amd64","os":"linux"}', '', null)`,
+
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1002, 1012, 1010, 'digest1010', '{"architecture":"amd64","os":"linux"}', '', null)`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1003, 1012, 1011, 'digest1011', '{"architecture":"amd64","os":"linux"}', '', null)`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1004, 1015, 1013, 'digest1013', '{"architecture":"amd64","os":"linux"}', '', null)`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1005, 1015, 1014, 'digest1014', '{"architecture":"amd64","os":"linux"}', '', null)`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1006, 1016, 1012, 'digest1012', '{"architecture":"amd64","os":"linux"}', '', null)`,
+		`INSERT INTO artifact_reference (id, parent_id, child_id, child_digest, platform, urls, annotations) VALUES (1007, 1016, 1015, 'digest1015', '{"architecture":"amd64","os":"linux"}', '', null)`,
+
 		`insert into scanner_registration (name, url, uuid, auth) values('trivy', 'https://www.vmware.com', 'ruuid', 'empty')`,
 		`insert into vulnerability_record (id, cve_id, registration_uuid, cvss_score_v3) values (1, '2023-4567-12345', 'ruuid', 9.8)`,
 		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('uuid', 1)`,
+		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('cnabreport1010', 1)`,
+		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('cnabreport1011', 1)`,
+		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('cnabreport1013', 1)`,
+		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('cnabreport1014', 1)`,
+		`insert into report_vulnerability_record (report_uuid, vuln_record_id) VALUES ('notag001', 1)`,
+
 		`INSERT INTO tag (repository_id, artifact_id, name) VALUES (1, (select id from artifact where repository_name = 'library/hello-world' limit 1), 'tag_test')`,
+
+		// tag a cnab child, it should be considered as standalone artifact
+		`INSERT INTO tag (repository_id, artifact_id, name) VALUES (2, 1014, 'tag_test')`,
 	})
 
 	testDao.ExecuteBatchSQL([]string{
@@ -78,17 +132,13 @@ values (1003, 1, 'library/hello-world', 'digest1003', 'IMAGE', '2023-06-02 09:16
 func (suite *SecurityDaoTestSuite) TearDownTest() {
 	testDao.ExecuteBatchSQL([]string{
 		`delete from scan_report where uuid = 'uuid'`,
-		`delete from tag where id = 1001`,
-		`delete from artifact where digest = 'digest1001'`,
-		`delete from artifact_accessory where id = 1001`,
-		`delete from artifact_reference where id = 1001`,
-		`delete from scanner_registration where uuid='ruuid'`,
-		`delete from scanner_registration where uuid='uuid2'`,
-		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
-		`delete from report_vulnerability_record where report_uuid='ruuid'`,
-		`delete from report_vulnerability_record where report_uuid='uuid'`,
-		`delete from vulnerability_record where registration_uuid ='uuid2'`,
-		`delete from tag where name='tag_test'`,
+		`delete from tag`,
+		`delete from artifact_accessory`,
+		`delete from artifact_reference`,
+		`delete from artifact`,
+		`delete from scanner_registration`,
+		`delete from vulnerability_record`,
+		`delete from report_vulnerability_record`,
 	})
 }
 
@@ -98,7 +148,7 @@ func (suite *SecurityDaoTestSuite) TestGetSummary() {
 	suite.Equal(int64(50), s.CriticalCnt)
 	suite.Equal(int64(50), s.HighCnt)
 	suite.Equal(int64(50), s.MediumCnt)
-	suite.Equal(int64(20), s.FixableCnt)
+	suite.Equal(int64(100), s.FixableCnt)
 }
 func (suite *SecurityDaoTestSuite) TestGetMostDangerousArtifact() {
 	aList, err := suite.dao.DangerousArtifacts(orm.Context(), "ruuid", 0, nil)
@@ -113,7 +163,7 @@ func (suite *SecurityDaoTestSuite) TestGetMostDangerousArtifact() {
 func (suite *SecurityDaoTestSuite) TestGetScannedArtifactCount() {
 	count, err := suite.dao.ScannedArtifactsCount(orm.Context(), "ruuid", 0, nil)
 	suite.Require().NoError(err)
-	suite.Equal(int64(1), count)
+	suite.Equal(int64(4), count)
 }
 
 func (suite *SecurityDaoTestSuite) TestGetDangerousCVEs() {
@@ -197,20 +247,25 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 }
 
 func (suite *SecurityDaoTestSuite) TestCountArtifact() {
+	// hello-world  +1
+	// cnab +1
+	// cnab child with tag +1
+	// top level artifact notag +1
+	// = 4
 	count, err := suite.dao.TotalArtifactsCount(suite.Context(), 0)
 	suite.NoError(err)
-	suite.Equal(int64(1), count)
+	suite.Equal(int64(4), count)
 }
 func (suite *SecurityDaoTestSuite) TestCountVul() {
 	count, err := suite.dao.CountVulnerabilities(suite.Context(), "ruuid", 0, true, nil)
 	suite.NoError(err)
-	suite.Equal(int64(1), count)
+	suite.Equal(int64(6), count)
 }
 
 func (suite *SecurityDaoTestSuite) TestListVul() {
 	vuls, err := suite.dao.ListVulnerabilities(suite.Context(), "ruuid", 0, nil)
 	suite.NoError(err)
-	suite.Equal(1, len(vuls))
+	suite.Equal(6, len(vuls))
 }
 
 func (suite *SecurityDaoTestSuite) TestTagFilter() {
@@ -222,15 +277,15 @@ func (suite *SecurityDaoTestSuite) TestTagFilter() {
 	tests := []struct {
 		name       string
 		args       args
-		wantSqlStr string
+		wantSQLStr string
 		wantParams []interface{}
 	}{
 		{"normal", args{suite.Context(), "tag", q.New(q.KeyWords{"tag": "tag_test"})}, " and a.id IN", nil},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			gotSqlStr, gotParams := tagFilter(tt.args.ctx, tt.args.key, tt.args.query)
-			suite.True(strings.Contains(gotSqlStr, tt.wantSqlStr), "tagFilter() gotSqlStr = %v, want %v", gotSqlStr, tt.wantSqlStr)
+			gotSQLStr, gotParams := tagFilter(tt.args.ctx, tt.args.key, tt.args.query)
+			suite.True(strings.Contains(gotSQLStr, tt.wantSQLStr), "tagFilter() gotSqlStr = %v, want %v", gotSQLStr, tt.wantSQLStr)
 			suite.Equal(gotParams, tt.wantParams, "tagFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
 		})
 	}
@@ -246,15 +301,15 @@ func (suite *SecurityDaoTestSuite) TestApplyVulFilter() {
 	tests := []struct {
 		name       string
 		args       args
-		wantSqlStr string
+		wantSQLStr string
 		wantParams []interface{}
 	}{
 		{"normal", args{suite.Context(), "select * from vulnerability_record", q.New(q.KeyWords{"tag": "tag_test"}), nil}, " and a.id IN", nil},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			gotSqlStr, gotParams := applyVulFilter(tt.args.ctx, tt.args.sqlStr, tt.args.query, tt.args.params)
-			suite.True(strings.Contains(gotSqlStr, tt.wantSqlStr), "applyVulFilter() gotSqlStr = %v, want %v", gotSqlStr, tt.wantSqlStr)
+			gotSQLStr, gotParams := applyVulFilter(tt.args.ctx, tt.args.sqlStr, tt.args.query, tt.args.params)
+			suite.True(strings.Contains(gotSQLStr, tt.wantSQLStr), "applyVulFilter() gotSqlStr = %v, want %v", gotSQLStr, tt.wantSQLStr)
 			suite.Equal(gotParams, tt.wantParams, "applyVulFilter() gotParams = %v, want %v", gotParams, tt.wantParams)
 		})
 	}

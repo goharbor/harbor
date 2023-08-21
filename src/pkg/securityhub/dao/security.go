@@ -72,14 +72,18 @@ WHERE EXISTS (SELECT 1
     AND NOT EXISTS (SELECT 1 FROM artifact_accessory acc WHERE acc.artifact_id = a.id)
     -- not a child without tag
     AND NOT EXISTS (SELECT 1 FROM artifact_reference WHERE child_id = a.id AND NOT EXISTS (SELECT 1 FROM tag WHERE artifact_id = a.id))
-    -- include image index which is scanned
-    OR EXISTS (SELECT 1
-              FROM scan_report s,
-                   artifact_reference ref
-              WHERE s.digest = ref.child_digest
-                AND ref.parent_id = a.id AND s.registration_uuid = ?  AND NOT EXISTS (SELECT 1
-                                                                                      FROM scan_report s
-                                                                                      WHERE s.digest = a.digest and s.registration_uuid = ?))`
+    -- include top level image index, cnab which has a child artifact is scanned
+    OR EXISTS (
+        WITH RECURSIVE subordinates AS (
+        SELECT  parent_id, child_id, child_digest
+        FROM artifact_reference
+        WHERE parent_id = a.id
+        UNION ALL
+        SELECT ar.parent_id, ar.child_id, ar.child_digest
+        FROM artifact_reference ar
+        JOIN subordinates s ON ar.parent_id = s.child_id
+    ) SELECT 1 FROM subordinates sub, scan_report rpt WHERE sub.child_digest = rpt.digest AND rpt.registration_uuid = ?
+                                                         AND NOT EXISTS(SELECT 1 FROM artifact_reference ar WHERE ar.child_id = a.id))`
 
 	// sql to query the dangerous CVEs
 	// sort the CVEs by CVSS score and severity level, make sure it is referred by a report
@@ -268,7 +272,7 @@ func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, pro
 	if err != nil {
 		return cnt, err
 	}
-	err = o.Raw(scannedArtifactCountSQL, scannerUUID, scannerUUID, scannerUUID).QueryRow(&cnt)
+	err = o.Raw(scannedArtifactCountSQL, scannerUUID, scannerUUID).QueryRow(&cnt)
 	return cnt, err
 }
 func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
