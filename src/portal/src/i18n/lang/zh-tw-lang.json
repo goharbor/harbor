@@ -1887,6 +1887,7 @@
     "REPO_NAME": "儲存庫名稱",
     "TOOLTIP": "除了 CVSS3 之外，所有的篩選條件都只支援完全符合",
     "NO_VUL": "我們找不到任何弱點",
-    "INVALID_VALUE": "無效的範圍"
+    "INVALID_VALUE": "The CVSS3 score should range between 0 and 10",
+    "PAGE_TITLE_TOOLTIP": "The comprehensive artifact count comprises the cumulative total of individual artifacts, including artifact accessories, as well as child artifacts associated with the image index and CNAB artifacts"
   }
 }
