@@ -1889,6 +1889,7 @@
         "REPO_NAME": "Repository Name",
         "TOOLTIP": "All filters except CVSS3 only support exact matches",
         "NO_VUL": "We could not find any vulnerability",
-        "INVALID_VALUE": "Invalid range"
+        "INVALID_VALUE": "The CVSS3 score should range between 0 and 10",
+        "PAGE_TITLE_TOOLTIP": "The comprehensive artifact count comprises the cumulative total of individual artifacts, including artifact accessories, as well as child artifacts associated with the image index and CNAB artifacts"
     }
 }
