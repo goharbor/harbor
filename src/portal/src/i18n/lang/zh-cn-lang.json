@@ -1889,6 +1889,7 @@
         "REPO_NAME": "仓库名称",
         "TOOLTIP": "CVSS3 除外的所有过滤项只支持精确匹配",
         "NO_VUL": "未找到任何漏洞",
-        "INVALID_VALUE": "无效范围"
+        "INVALID_VALUE": "CVSS3 分数的范围为0到10",
+        "PAGE_TITLE_TOOLTIP": "Artifact 总数是指所有单个 Artifact 的总数， 它包含了 Artifact 的附件数量、镜像索引中的子 Artifact 数量和 CNAB 中的子 Artifact 数量"
     }
 }
