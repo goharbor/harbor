@@ -195,6 +195,81 @@ jobs:
               harbor_base_image_version=dev
               harbor_base_namespace=goharbor
               npm_registry=https://registry.npmjs.org
+    build-harbor-db:
+      name: Build and Push `harbor-db` Image
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+      outputs:
+        tags: ${{ steps.meta.outputs.tags }}
+      steps:
+        - name: Checkout git repo
+          uses: actions/checkout@v3
+          with:
+            repository: goharbor/harbor
+        - name: Build DB
+          run: |
+            make build -e BUILDTARGET="_build_db"
+        - name: Generate UUID image name
+          id: uuid
+          run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+        - name: Docker metadata
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+          # An anonymous, emphemeral registry built on ttl.sh
+            images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+            tags: type=raw,value=24h
+        - name: Build and Push Image to Uffizzi Ephemeral Registry
+          uses: docker/build-push-action@v3
+          with:
+            no-cache: true
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
+            file: ./make/photon/db/Dockerfile
+            context: .
+            build-args: |
+              harbor_base_image_version=dev
+              harbor_base_namespace=goharbor
+              npm_registry=https://registry.npmjs.org
+
+    build-harbor-redis:
+      name: Build and Push `harbor-redis` Image
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+      outputs:
+        tags: ${{ steps.meta.outputs.tags }}
+      steps:
+        - name: Checkout git repo
+          uses: actions/checkout@v3
+          with:
+            repository: goharbor/harbor
+        - name: Build DB
+          run: |
+            make build -e BUILDTARGET="_build_redis"
+        - name: Generate UUID image name
+          id: uuid
+          run: echo "UUID_VOTE=$(uuidgen)" >> $GITHUB_ENV
+        - name: Docker metadata
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+          # An anonymous, emphemeral registry built on ttl.sh
+            images: registry.uffizzi.com/${{ env.UUID_VOTE }}
+            tags: type=raw,value=24h
+        - name: Build and Push Image to Uffizzi Ephemeral Registry
+          uses: docker/build-push-action@v3
+          with:
+            no-cache: true
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
+            file: ./make/photon/redis/Dockerfile
+            context: .
+            build-args: |
+              harbor_base_image_version=dev
+              harbor_base_namespace=goharbor
+              npm_registry=https://registry.npmjs.org
 
     uffizzi-cluster:
         name: Deploy to Uffizzi uCluster
@@ -206,6 +281,8 @@ jobs:
         - build-harbor-jobservice
         - build-harbor-registry
         - build-harbor-registryctl
+        - build-harbor-db
+        - build-harbor-redis
         if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
         runs-on: ubuntu-latest
         steps:
@@ -276,6 +353,8 @@ jobs:
             export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
             export REPO_registry=$(echo ${{ needs.build-harbor-registry.outputs.tags }} | cut -f1 -d":")
             export REPO_registryctl=$(echo ${{ needs.build-harbor-registryctl.outputs.tags }} | cut -f1 -d":")
+            export REPO_db=$(echo ${{ needs.build-harbor-db.outputs.tags }} | cut -f1 -d":")
+            export REPO_redis=$(echo ${{ needs.build-harbor-redis.outputs.tags }} | cut -f1 -d":")
 
             export KUBECONFIG="`pwd`/kubeconfig"
             helm repo add harbor https://helm.goharbor.io
@@ -292,6 +371,10 @@ jobs:
                 --set registry.registry.image.tag=24h \
                 --set registry.controller.image.repository=${REPO_registryctl} \
                 --set registry.controller.image.tag=24h \
+                --set database.internal.image.repository=${REPO_db} \
+                --set database.internal.image.tag=24h \
+                --set redis.internal.image.repository=${REPO_redis} \
+                --set redis.internal.image.tag=24h \
                 harbor/harbor --values=values.yaml
             else
               helm install my-release \
@@ -305,6 +388,10 @@ jobs:
                 --set registry.registry.image.tag=24h \
                 --set registry.controller.image.repository=${REPO_registryctl} \
                 --set registry.controller.image.tag=24h \
+                --set database.internal.image.repository=${REPO_db} \
+                --set database.internal.image.tag=24h \
+                --set redis.internal.image.repository=${REPO_redis} \
+                --set redis.internal.image.tag=24h \
                 harbor/harbor --values=values.yaml
             fi
 
