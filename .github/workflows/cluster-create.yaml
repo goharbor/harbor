@@ -337,11 +337,11 @@ jobs:
             name: kubeconfig
             path: kubeconfig
 
-        - name: Update Harbor URL for Cypress
-          env:
-            HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
-          run: |
-              sed -i "s#harbor_url#https://${{ steps.ingress.outputs.HARBOR_HOST }}#g" cypress/cypress.config.js
+        # - name: Update Harbor URL for Cypress
+        #   env:
+        #     HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
+        #   run: |
+        #       sed -i "s#harbor_url#https://${{ steps.ingress.outputs.HARBOR_HOST }}#g" cypress/cypress.config.js
 
     # testkube:
     #   name: Run test on Harbor
