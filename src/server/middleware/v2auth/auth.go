@@ -90,17 +90,13 @@ func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error)
 }
 
 func getChallenge(req *http.Request, accessList []access) string {
-	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
 	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
-	ep, err := tokenSvcEndpoint(req)
-	if err != nil {
-		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
-	}
+	ep := tokenSvcEndpoint(req)
 	tokenSvc := fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
 	scope := ""
 	for _, a := range accessList {
@@ -116,10 +112,10 @@ func getChallenge(req *http.Request, accessList []access) string {
 	return challenge
 }
 
-func tokenSvcEndpoint(req *http.Request) (string, error) {
+func tokenSvcEndpoint(req *http.Request) string {
 	rawCoreURL := config.InternalCoreURL()
 	if match(req.Context(), req.Host, rawCoreURL) {
-		return rawCoreURL, nil
+		return rawCoreURL
 	}
 	return config.ExtEndpoint()
 }

@@ -65,6 +65,7 @@ const (
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
+	PortalURL                        = "PORTAL_URL"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
 	LDAPSearchPwd                    = "ldap_search_password"
@@ -122,19 +123,18 @@ const (
 	NewHarborAdminName                = "admin@harbor.local"
 	RegistryStorageProviderName       = "registry_storage_provider_name"
 	RegistryControllerURL             = "registry_controller_url"
+	RegistryCredentialUsername        = "REGISTRY_CREDENTIAL_USERNAME"
+	RegistryCredentialPassword        = "REGISTRY_CREDENTIAL_PASSWORD"
 	UserMember                        = "u"
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
 	TrivyAdapterURL                   = "trivy_adapter_url"
-	DefaultCoreEndpoint               = "http://core:8080"
 	LDAPGroupType                     = 1
 	HTTPGroupType                     = 2
 	OIDCGroupType                     = 3
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
-	DefaultPortalURL                  = "http://portal:8080"
-	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
 	// System admin defined the robot name prefix.
@@ -159,7 +159,7 @@ const (
 	StoragePerProject     = "storage_per_project"
 
 	// DefaultGCTimeWindowHours is the reserve blob time window used by GC, default is 2 hours
-	DefaultGCTimeWindowHours = int64(2)
+	GCTimeWindowHours = "GC_TIME_WINDOW_HOURS"
 
 	// Metric setting items
 	MetricEnable = "metric_enable"

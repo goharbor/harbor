@@ -98,8 +98,8 @@ func TestConfig(t *testing.T) {
 	tkExp := RobotTokenDuration(ctx)
 	assert.Equal(tkExp, 30)
 
-	if _, err := ExtEndpoint(); err != nil {
-		t.Fatalf("failed to get domain name: %v", err)
+	if len(ExtEndpoint()) == 0 {
+		t.Fatalf("failed to get ExtEndpoint name: %v", err)
 	}
 
 	if _, err := SecretKey(); err != nil {
@@ -110,8 +110,8 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get self registration: %v", err)
 	}
 
-	if _, err := RegistryURL(); err != nil {
-		t.Fatalf("failed to get registry URL: %v", err)
+	if len(RegistryURL()) == 0 {
+		t.Error("the internal registry url is null")
 	}
 
 	if len(InternalJobServiceURL()) == 0 {
@@ -122,7 +122,7 @@ func TestConfig(t *testing.T) {
 		t.Error("the internal token service endpoint is null")
 	}
 
-	if _, err := InitialAdminPassword(); err != nil {
+	if len(InitialAdminPassword()) == 0 {
 		t.Fatalf("failed to get initial admin password: %v", err)
 	}
 
@@ -144,10 +144,7 @@ func TestConfig(t *testing.T) {
 		t.Errorf("ReadOnly should be false")
 	}
 
-	extURL, err := ExtURL()
-	if err != nil {
-		t.Errorf("Unexpected error getting external URL: %v", err)
-	}
+	extURL := ExtURL()
 	if extURL != "host01.com" {
 		t.Errorf(`extURL should be "host01.com".`)
 	}

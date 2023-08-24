@@ -136,12 +136,7 @@ func (a *Handler) constructArtifactPayload(ctx context.Context, event *event.Art
 	} else {
 		reference = event.Tags[0]
 	}
-	resURL, err := util.BuildImageResourceURL(repoName, reference)
-	if err != nil {
-		log.Errorf("get resource URL failed: %v", err)
-		return nil, err
-	}
-
+	resURL := util.BuildImageResourceURL(repoName, reference)
 	resource := &notifyModel.Resource{
 		Tag:         reference,
 		Digest:      event.Artifact.Digest,

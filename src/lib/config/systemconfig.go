@@ -17,7 +17,6 @@ package config
 import (
 	"context"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -47,22 +46,18 @@ func TokenPrivateKeyPath() string {
 }
 
 // RegistryURL ...
-func RegistryURL() (string, error) {
-	url := os.Getenv("REGISTRY_URL")
-	if len(url) == 0 {
-		url = "http://registry:5000"
-	}
-	return url, nil
+func RegistryURL() string {
+	return DefaultMgr().Get(backgroundCtx, common.RegistryURL).GetString()
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return os.Getenv("JOBSERVICE_URL")
+	return DefaultMgr().Get(backgroundCtx, common.JobServiceURL).GetString()
 }
 
 // GetCoreURL returns the url of core from env
 func GetCoreURL() string {
-	return os.Getenv("CORE_URL")
+	return DefaultMgr().Get(backgroundCtx, common.CoreURL).GetString()
 }
 
 // CoreSecret returns a secret to mark harbor-core when communicate with
@@ -73,7 +68,7 @@ func CoreSecret() string {
 
 // RegistryCredential returns the username and password the core uses to access registry
 func RegistryCredential() (string, string) {
-	return os.Getenv("REGISTRY_CREDENTIAL_USERNAME"), os.Getenv("REGISTRY_CREDENTIAL_PASSWORD")
+	return DefaultMgr().Get(backgroundCtx, common.RegistryCredentialUsername).GetString(), DefaultMgr().Get(backgroundCtx, common.RegistryCredentialPassword).GetString()
 }
 
 // JobserviceSecret returns a secret to mark Jobservice when communicate with
@@ -85,20 +80,12 @@ func JobserviceSecret() string {
 
 // GetPortalURL returns the URL of portal
 func GetPortalURL() string {
-	url := os.Getenv("PORTAL_URL")
-	if len(url) == 0 {
-		return common.DefaultPortalURL
-	}
-	return url
+	return DefaultMgr().Get(backgroundCtx, common.PortalURL).GetString()
 }
 
 // GetRegistryCtlURL returns the URL of registryctl
 func GetRegistryCtlURL() string {
-	url := os.Getenv("REGISTRY_CONTROLLER_URL")
-	if len(url) == 0 {
-		return common.DefaultRegistryCtlURL
-	}
-	return url
+	return DefaultMgr().Get(backgroundCtx, common.RegistryControllerURL).GetString()
 }
 
 // GetPermittedRegistryTypesForProxyCache returns the permitted registry types for proxy cache
@@ -111,15 +98,9 @@ func GetPermittedRegistryTypesForProxyCache() []string {
 }
 
 // GetGCTimeWindow returns the reserve time window of blob.
+// the env is for testing/debugging. For production, Do NOT set it.
 func GetGCTimeWindow() int64 {
-	// the env is for testing/debugging. For production, Do NOT set it.
-	if env, exist := os.LookupEnv("GC_TIME_WINDOW_HOURS"); exist {
-		timeWindow, err := strconv.ParseInt(env, 10, 64)
-		if err == nil {
-			return timeWindow
-		}
-	}
-	return common.DefaultGCTimeWindowHours
+	return DefaultMgr().Get(backgroundCtx, common.GCTimeWindowHours).GetInt64()
 }
 
 // GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
@@ -138,21 +119,18 @@ func WithTrivy() bool {
 }
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
-func ExtEndpoint() (string, error) {
-	return DefaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
+func ExtEndpoint() string {
+	return DefaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString()
 }
 
 // ExtURL returns the external URL: host:port
-func ExtURL() (string, error) {
-	endpoint, err := ExtEndpoint()
-	if err != nil {
-		log.Errorf("failed to load config, error %v", err)
-	}
+func ExtURL() string {
+	endpoint := ExtEndpoint()
 	l := strings.Split(endpoint, "://")
 	if len(l) > 1 {
-		return l[1], nil
+		return l[1]
 	}
-	return endpoint, nil
+	return endpoint
 }
 
 // SecretKey returns the secret key to encrypt the password of target
@@ -177,7 +155,7 @@ func initSecretStore() {
 
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
-	return strings.TrimSuffix(DefaultMgr().Get(backgroundCtx, common.CoreURL).GetString(), "/")
+	return strings.TrimSuffix(GetCoreURL(), "/")
 }
 
 // LocalCoreURL returns the local harbor core url
@@ -205,40 +183,23 @@ func Metric() *models.Metric {
 }
 
 // InitialAdminPassword returns the initial password for administrator
-func InitialAdminPassword() (string, error) {
-	return DefaultMgr().Get(backgroundCtx, common.AdminInitialPassword).GetString(), nil
+func InitialAdminPassword() string {
+	return DefaultMgr().Get(backgroundCtx, common.AdminInitialPassword).GetString()
 }
 
 // CacheEnabled returns whether enable cache layer.
 func CacheEnabled() bool {
-	if DefaultMgr() != nil {
-		return DefaultMgr().Get(backgroundCtx, common.CacheEnabled).GetBool()
-	}
-	// backoff read from env.
-	return os.Getenv("CACHE_ENABLED") == "true"
+	return DefaultMgr().Get(backgroundCtx, common.CacheEnabled).GetBool()
 }
 
 // CacheExpireHours returns the cache expire hours for cache layer.
 func CacheExpireHours() int {
-	if DefaultMgr() != nil {
-		return DefaultMgr().Get(backgroundCtx, common.CacheExpireHours).GetInt()
-	}
-	// backoff read from env.
-	hours, err := strconv.Atoi(os.Getenv("CACHE_EXPIRE_HOURS"))
-	if err != nil {
-		// use default if parse error.
-		hours = common.DefaultCacheExpireHours
-	}
-
-	return hours
+	return DefaultMgr().Get(backgroundCtx, common.CacheExpireHours).GetInt()
 }
 
 // ScannerRobotPrefix returns the scanner of robot account prefix.
 func ScannerRobotPrefix(ctx context.Context) string {
-	if DefaultMgr() != nil {
-		return DefaultMgr().Get(ctx, common.RobotScannerNamePrefix).GetString()
-	}
-	return os.Getenv("ROBOT_SCANNER_NAME_PREFIX")
+	return DefaultMgr().Get(ctx, common.RobotScannerNamePrefix).GetString()
 }
 
 // Database returns database settings
@@ -258,6 +219,5 @@ func Database() (*models.Database, error) {
 		ConnMaxIdleTime: DefaultMgr().Get(backgroundCtx, common.PostGreSQLConnMaxIdleTime).GetDuration(),
 	}
 	database.PostGreSQL = postgresql
-
 	return database, nil
 }

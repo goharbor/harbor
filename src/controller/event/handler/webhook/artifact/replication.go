@@ -125,10 +125,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 	srcNamespace, srcNameAndTag := getMetadataFromResource(task.SourceResource)
 	destNamespace, destNameAndTag := getMetadataFromResource(task.DestinationResource)
 
-	extURL, err := config.ExtURL()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint URL: %v", err)
-	}
+	extURL := config.ExtURL()
 	hostname := strings.Split(extURL, ":")[0]
 
 	remoteRes := &ctlModel.ReplicationResource{
@@ -138,10 +135,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 		Namespace:    srcNamespace,
 	}
 
-	ext, err := config.ExtEndpoint()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint: %v", err)
-	}
+	ext := config.ExtEndpoint()
 	localRes := &ctlModel.ReplicationResource{
 		RegistryType: string(rpModel.RegistryTypeHarbor),
 		Endpoint:     ext,

@@ -75,16 +75,12 @@ func (cc *CommonController) Login() {
 	principal := cc.GetString("principal")
 	password := cc.GetString("password")
 	if redirectForOIDC(cc.Ctx.Request.Context(), principal) {
-		ep, err := config.ExtEndpoint()
-		if err != nil {
-			log.Errorf("Failed to get the external endpoint, error: %v", err)
-			cc.CustomAbort(http.StatusUnauthorized, "")
-		}
+		ep := config.ExtEndpoint()
 		url := strings.TrimSuffix(ep, "/") + common.OIDCLoginPath
 		log.Debugf("Redirect user %s to login page of OIDC provider", principal)
 		// Return a json to UI with status code 403, as it cannot handle status 302
 		cc.Ctx.Output.Status = http.StatusForbidden
-		err = cc.Ctx.Output.JSON(struct {
+		err := cc.Ctx.Output.JSON(struct {
 			Location string `json:"redirect_location"`
 		}{url}, false, false)
 		if err != nil {

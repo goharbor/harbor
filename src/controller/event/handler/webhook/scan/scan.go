@@ -113,11 +113,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 		reference = event.Artifact.Digest
 	}
 
-	resURL, err := util.BuildImageResourceURL(event.Artifact.Repository, reference)
-	if err != nil {
-		return nil, errors.Wrap(err, "construct scan payload")
-	}
-
+	resURL := util.BuildImageResourceURL(event.Artifact.Repository, reference)
 	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest, nil)
 	if err != nil {
 		return nil, err

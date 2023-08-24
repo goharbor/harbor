@@ -204,10 +204,7 @@ func main() {
 	if err := configCtl.Ctl.OverwriteConfig(ctx); err != nil {
 		log.Fatalf("failed to init config from CONFIG_OVERWRITE_JSON, error %v", err)
 	}
-	password, err := config.InitialAdminPassword()
-	if err != nil {
-		log.Fatalf("failed to get admin's initial password: %v", err)
-	}
+	password := config.InitialAdminPassword()
 	if err := updateInitPassword(ctx, adminUserID, password); err != nil {
 		log.Error(err)
 	}

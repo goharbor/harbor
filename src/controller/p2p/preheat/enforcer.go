@@ -147,11 +147,7 @@ func NewEnforcer() Enforcer {
 		proCtl:       project.NewController(),
 		instMgr:      instance.Mgr,
 		fullURLGetter: func(c *selector.Candidate) (s string, e error) {
-			edp, err := config.ExtEndpoint()
-			if err != nil {
-				return "", err
-			}
-
+			edp := config.ExtEndpoint()
 			r := fmt.Sprintf("%s/%s", c.Namespace, c.Repository)
 			return fmt.Sprintf(manifestAPIPattern, edp, r, c.Tags[0]), nil
 		},

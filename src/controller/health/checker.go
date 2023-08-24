@@ -189,12 +189,7 @@ func RegisterHealthCheckers() {
 }
 
 func getRegistryURL() string {
-	endpoint, err := config.RegistryURL()
-	if err != nil {
-		log.Errorf("failed to get the URL of registry: %v", err)
-		return ""
-	}
-	url, err := utils.ParseEndpoint(endpoint)
+	url, err := utils.ParseEndpoint(config.RegistryURL())
 	if err != nil {
 		log.Errorf("failed to parse the URL of registry: %v", err)
 		return ""

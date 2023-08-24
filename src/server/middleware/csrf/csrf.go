@@ -95,10 +95,6 @@ func csrfSkipper(req *http.Request) bool {
 }
 
 func secureCookie() bool {
-	ep, err := config.ExtEndpoint()
-	if err != nil {
-		log.Warningf("Failed to get external endpoint: %v, set cookie secure flag to true", err)
-		return true
-	}
+	ep := config.ExtEndpoint()
 	return !strings.HasPrefix(strings.ToLower(ep), "http://")
 }

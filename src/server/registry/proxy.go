@@ -27,8 +27,7 @@ import (
 var proxy = newProxy()
 
 func newProxy() http.Handler {
-	regURL, _ := config.RegistryURL()
-	url, err := url.Parse(regURL)
+	url, err := url.Parse(config.RegistryURL())
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse the URL of registry: %v", err))
 	}

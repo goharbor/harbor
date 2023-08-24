@@ -47,9 +47,8 @@ import (
 var (
 	// Cli is the global registry client instance, it targets to the backend docker registry
 	Cli = func() Client {
-		url, _ := config.RegistryURL()
 		username, password := config.RegistryCredential()
-		return NewClient(url, username, password, false, readonly.NewInterceptor())
+		return NewClient(config.RegistryURL(), username, password, false, readonly.NewInterceptor())
 	}()
 
 	accepts = []string{

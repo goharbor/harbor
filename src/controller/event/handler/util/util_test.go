@@ -47,11 +47,7 @@ func TestBuildImageResourceURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BuildImageResourceURL(tt.args.repoName, tt.args.reference)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BuildImageResourceURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := BuildImageResourceURL(tt.args.repoName, tt.args.reference)
 			if got != tt.want {
 				t.Errorf("BuildImageResourceURL() = %v, want %v", got, tt.want)
 			}

@@ -55,7 +55,7 @@ type Manager interface {
 	GetDatabaseCfg() *comModels.Database
 }
 
-// Register  register the config manager
+// Register registers the config manager
 func Register(name string, mgr Manager) {
 	managersMU.Lock()
 	defer managersMU.Unlock()
@@ -78,7 +78,7 @@ func GetManager(name string) (Manager, error) {
 func DefaultMgr() Manager {
 	manager, err := GetManager(DefaultCfgManager)
 	if err != nil {
-		log.Error("failed to get config manager")
+		panic("failed to get config manager")
 	}
 	return manager
 }

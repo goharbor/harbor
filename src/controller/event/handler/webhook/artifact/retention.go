@@ -121,10 +121,7 @@ func (r *RetentionHandler) constructRetentionPayload(ctx context.Context, event 
 		return nil, false, 0, fmt.Errorf("policy %d not found with tag retention event", execution.PolicyID)
 	}
 
-	extURL, err := config.ExtURL()
-	if err != nil {
-		log.Errorf("Error while reading external endpoint URL: %v", err)
-	}
+	extURL := config.ExtURL()
 	hostname := strings.Split(extURL, ":")[0]
 
 	payload := &model.Payload{

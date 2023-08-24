@@ -74,15 +74,12 @@ func GetNameFromImgRepoFullName(repo string) string {
 }
 
 // BuildImageResourceURL ...
-func BuildImageResourceURL(repoName, reference string) (string, error) {
-	extURL, err := config.ExtURL()
-	if err != nil {
-		return "", fmt.Errorf("get external endpoint failed: %v", err)
-	}
+func BuildImageResourceURL(repoName, reference string) string {
+	extURL := config.ExtURL()
 
 	if distribution.IsDigest(reference) {
-		return fmt.Sprintf("%s/%s@%s", extURL, repoName, reference), nil
+		return fmt.Sprintf("%s/%s@%s", extURL, repoName, reference)
 	}
 
-	return fmt.Sprintf("%s/%s:%s", extURL, repoName, reference), nil
+	return fmt.Sprintf("%s/%s:%s", extURL, repoName, reference)
 }

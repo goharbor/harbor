@@ -151,7 +151,7 @@ func NewController() Controller {
 		config: func(cfg string) (string, error) {
 			switch cfg {
 			case configRegistryEndpoint:
-				return config.ExtEndpoint()
+				return config.ExtEndpoint(), nil
 			case configCoreInternalAddr:
 				return config.InternalCoreURL(), nil
 			default:
