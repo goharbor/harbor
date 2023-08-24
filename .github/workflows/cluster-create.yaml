@@ -449,16 +449,15 @@ jobs:
           steps:
             - name: Checkout
               uses: actions/checkout@v3
-              with:
-                path: 'cypress/'
+              # with:
+              #   path: 'cypress/'
 
             - name: Cypress run
               id: cypress
               uses: gopuman/cypress-github-action@feat/add-test-reults-output
               with:
-                working-directory: cypress/cypress
-                config-file: cypress.config.js
-                build: npx cypress info
+                working-directory: src/portal
+                config-file: cypress.config.ts
                 config: baseUrl=https://${{ needs.uffizzi-cluster.outputs.HARBOR_HOST }}
             
             - name: Cypress output
