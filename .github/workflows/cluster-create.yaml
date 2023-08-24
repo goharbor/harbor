@@ -244,7 +244,6 @@ jobs:
           uses: UffizziCloud/cluster-action@main
           with:
             cluster-name: pr-${{ github.event.pull_request.number }}
-            # server: https://app.qa-gke.uffizzi.com/
 
         # Create/Update comment with action deployment status
         - name: Create or Update Comment with Deployment URL
@@ -337,110 +336,6 @@ jobs:
             name: kubeconfig
             path: kubeconfig
 
-        # - name: Update Harbor URL for Cypress
-        #   env:
-        #     HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
-        #   run: |
-        #       sed -i "s#harbor_url#https://${{ steps.ingress.outputs.HARBOR_HOST }}#g" cypress/cypress.config.js
-
-    # testkube:
-    #   name: Run test on Harbor
-    #   needs:
-    #   - uffizzi-cluster
-    #   if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
-    #   runs-on: ubuntu-latest
-    #   steps:
-    #     - name: Checkout
-    #       uses: actions/checkout@v2
-    #     - name: Download kubeconfig
-    #       uses: actions/download-artifact@v3
-    #       with:
-    #        name: kubeconfig
-    #     - name: Install Testkube helm chart
-    #       run: |
-    #         export KUBECONFIG="`pwd`/kubeconfig"  
-
-    #         helm repo add kubeshop https://kubeshop.github.io/helm-charts
-
-    #         if $(helm ls | grep -q my-testkube); then
-    #           helm upgrade --install my-testkube kubeshop/testkube
-    #         else
-    #           helm install my-testkube kubeshop/testkube
-    #         fi
-
-    #         sleep 10
-    #     - name: Create Ingress for Testkube
-    #       id: test
-    #       run: |
-    #         if $(kubectl get ingress my-testkube-ingress --kubeconfig="`pwd`/kubeconfig" | grep -q "my-testkube-ingress"); then
-    #           kubectl delete ingress my-testkube-ingress --kubeconfig="`pwd`/kubeconfig"
-    #         fi
-    #         kubectl create ingress my-testkube-ingress --kubeconfig="`pwd`/kubeconfig" \
-    #             --rule="testkube.uclusters.app.uffizzi.com/*=testkube-dashboard:8080,tls"
-
-    #         if $(kubectl get ingress my-testkube-api-server --kubeconfig="`pwd`/kubeconfig" | grep -q "my-testkube-api-server"); then
-    #           kubectl delete ingress my-testkube-api-server --kubeconfig="`pwd`/kubeconfig"
-    #         fi
-    #         kubectl create ingress my-testkube-api-server --kubeconfig="`pwd`/kubeconfig" \
-    #             --rule="testkube-api-server.uclusters.app.uffizzi.com/*=testkube-api-server:8088,tls"
-
-    #         sleep 20
-
-    #         echo "API_SERVER=$(kubectl get ingress my-testkube-api-server --kubeconfig="`pwd`/kubeconfig" -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
-    #         echo "TK_DASHBOARD=$(kubectl get ingress my-testkube-ingress  --kubeconfig="`pwd`/kubeconfig" -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
-            
-    #     - shell: bash
-    #       env:
-    #         API_SERVER: ${{ steps.test.outputs.API_SERVER }}
-    #       run: |
-    #         export KUBECONFIG=`pwd`/kubeconfig
-    #         helm upgrade my-testkube kubeshop/testkube --set testkube-dashboard.apiServerEndpoint=${{ steps.test.outputs.API_SERVER }}
-
-    #     - name: Get test with Testkube
-    #       id: get_test
-    #       uses: kubeshop/testkube-docker-action@v1
-    #       with:
-    #         command: get
-    #         resource: test
-    #         api-uri: https://${{ steps.test.outputs.API_SERVER }}
-    #         parameters: "cypress-test"
-
-    #     - name: Create test with Testkube
-    #       id: create_test
-    #       if: always() && (steps.get_test.outcome == 'failure')
-    #       uses: kubeshop/testkube-docker-action@v1
-    #       env:
-    #         KUBECONFIG: kubeconfig
-    #         KUBERNETES_MASTER: kubeconfig
-    #         API_SERVER: ${{ steps.test.outputs.API_SERVER }}
-    #       with:
-    #         command: create
-    #         resource: test
-    #         api-uri: https://${{ steps.test.outputs.API_SERVER }}
-    #         parameters: "--name cypress-test --type cypress/project --test-content-type git-dir --git-uri https://github.com/UffizziCloud/harbor-test/ --git-branch testkube --git-path cypress/ --variable CYPRESS_BASE_URL=https://${{ needs.uffizzi-cluster.outputs.HARBOR_HOST }} --job-template job.yaml"
-
-    #     - name: Run test with Testkube
-    #       id: run_test
-    #       if: always()
-    #       uses: kubeshop/testkube-docker-action@v1
-    #       with:
-    #         command: run
-    #         resource: test
-    #         api-uri: https://${{ steps.test.outputs.API_SERVER }}
-    #         parameters: "cypress-test"
-
-    #     - name: Update comment with Testkube
-    #       if: always()
-    #       uses: peter-evans/create-or-update-comment@v2
-    #       with:
-    #         comment-id: ${{ needs.uffizzi-cluster.harbor_notify.outputs.comment-id }}
-    #         issue-number: ${{ github.event.pull_request.number }}
-    #         body: |
-    #             ---
-    #               Check out Testkube at -- https://${{ steps.test.outputs.TK_DASHBOARD }}
-            
-    #         edit-mode: append
-  
     cypress-run:
           needs:
             - uffizzi-cluster
@@ -448,9 +343,7 @@ jobs:
           runs-on: ubuntu-22.04
           steps:
             - name: Checkout
-              uses: actions/checkout@v3
-              # with:
-              #   path: 'cypress/'
+              uses: actions/checkout@v3 
 
             - name: Cypress run
               id: cypress
