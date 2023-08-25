@@ -456,10 +456,10 @@ func requireValidSecret(in string) error {
 	hasLower := regexp.MustCompile(`[a-z]`)
 	hasUpper := regexp.MustCompile(`[A-Z]`)
 	hasNumber := regexp.MustCompile(`[0-9]`)
-	if len(in) >= 8 && hasLower.MatchString(in) && hasUpper.MatchString(in) && hasNumber.MatchString(in) {
+	if len(in) >= 8 && len(in) <= 128 && hasLower.MatchString(in) && hasUpper.MatchString(in) && hasNumber.MatchString(in) {
 		return nil
 	}
-	return errors.BadRequestError(nil).WithMessage("the password or secret must be longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number")
+	return errors.BadRequestError(nil).WithMessage("the password or secret must be 8-128, inclusively, characters long with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
 func getRandomSecret() (string, error) {

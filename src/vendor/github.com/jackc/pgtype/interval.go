@@ -174,7 +174,7 @@ func (dst *Interval) DecodeBinary(ci *ConnInfo, src []byte) error {
 	}
 
 	if len(src) != 16 {
-		return fmt.Errorf("Received an invalid size for a interval: %d", len(src))
+		return fmt.Errorf("Received an invalid size for an interval: %d", len(src))
 	}
 
 	microseconds := int64(binary.BigEndian.Uint64(src))

@@ -75,4 +75,5 @@ const (
 	ResourcePurgeAuditLog      = Resource("purge-audit")
 	ResourceExportCVE          = Resource("export-cve")
 	ResourceJobServiceMonitor  = Resource("jobservice-monitor")
+	ResourceSecurityHub        = Resource("security-hub")
 )

@@ -27,4 +27,5 @@ const (
 type Event struct {
 	Type     string
 	Resource *model.Resource
+	Operator string
 }

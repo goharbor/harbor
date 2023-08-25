@@ -151,7 +151,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 	payload := &model.Payload{
 		Type:     event.EventType,
 		OccurAt:  event.OccurAt.Unix(),
-		Operator: string(execution.Trigger),
+		Operator: execution.Operator,
 		EventData: &model.EventData{
 			Replication: &ctlModel.Replication{
 				HarborHostname:     hostname,

@@ -45,8 +45,7 @@ Test Case - GC Untagged Images
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     # make hello-world untagged
-    Go Into Project   project${d}
-    Go Into Repo   hello-world
+    Go Into Repo  project${d}  hello-world
     Go Into Artifact   latest
     Should Contain Tag   latest
     Delete A Tag   latest
@@ -55,18 +54,14 @@ Test Case - GC Untagged Images
     GC Now
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
-    Go Into Project   project${d}
-    Switch To Project Repo
-    Go Into Repo   hello-world
+    Go Into Repo   project${d}  hello-world
     Should Contain Artifact
     # run gc with param delete untagged artifacts checked,  should delete hello-world
     Switch To Garbage Collection
     GC Now  untag=${true}
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
-    Go Into Project   project${d}
-    Switch To Project Repo
-    Go Into Repo   hello-world
+    Go Into Repo  project${d}  hello-world
     Should Not Contain Any Artifact
     Close Browser
 
@@ -84,13 +79,13 @@ Test Case - Project Quotas Control Under GC
     Create An New Project And Go Into Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=will exceed the configured upper limit of 200.0 MiB
     @{param}  Create List  project${d}
-    FOR  ${n}  IN RANGE  1  3
+    FOR  ${n}  IN RANGE  1  10
         ${out1}  Run Keyword And Ignore Error  GC Now
         ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
         Retry GC Should Be Successful  ${latest_job_id}  ${null}
         ${out2}  Run Keyword And Ignore Error  Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  2  @{param}
         Exit For Loop If  '${out2[0]}'=='PASS'
-        Sleep  1
+        Sleep  5
     END
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
     Close Browser

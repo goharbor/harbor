@@ -53,20 +53,6 @@
                 </li>
             </ul>
         </div>
-        <div class="pt-05 flex" *ngIf="withHelmChart">
-            <h4 class="mt-0 title-width">
-                {{ 'SUMMARY.PROJECT_HELM_CHART' | translate }}
-            </h4>
-            <ul class="list-unstyled">
-                <li>
-                    {{
-                        summaryInformation?.chart_count
-                            ? summaryInformation?.chart_count
-                            : 0
-                    }}
-                </li>
-            </ul>
-        </div>
         <div *ngIf="showProjectMemberInfo" class="pt-05 flex">
             <h4 class="mt-0 title-width">
                 {{ 'SUMMARY.PROJECT_MEMBER' | translate }}

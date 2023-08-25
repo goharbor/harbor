@@ -58,7 +58,7 @@ class TestProxyCache(unittest.TestCase):
 
         image_for_docker = dict(image = "for_proxy", tag = "1.0")
         image_for_ctr = dict(image = "redis", tag = "latest")
-        index_for_docker = dict(image = "index081597864867", tag = "index_tag081597864867")
+        index_for_docker = dict(image = "index", tag = "index_tag")
         access_key = ""
         access_secret = ""
 
@@ -75,7 +75,7 @@ class TestProxyCache(unittest.TestCase):
             registry = "https://cicd.harbor.vmwarecna.net"
             index_for_ctr = dict(image = "busybox", tag = "1.32.0")
 
-        registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=False, **ADMIN_CLIENT)
+        registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=True, **ADMIN_CLIENT)
 
         print("registry_id:", registry_id)
 

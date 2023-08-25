@@ -309,7 +309,7 @@ CopyFrom can be faster than an insert with as few as 5 rows.
 Listen and Notify
 
 pgx can listen to the PostgreSQL notification system with the `Conn.WaitForNotification` method. It blocks until a
-context is received or the context is canceled.
+notification is received or the context is canceled.
 
     _, err := conn.Exec(context.Background(), "listen channelname")
     if err != nil {

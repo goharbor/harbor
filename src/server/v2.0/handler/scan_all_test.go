@@ -136,8 +136,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 			// system admin required
 			suite.Security.On("IsAuthenticated").Return(true).Once()
 			suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Once()
-			suite.Security.On("GetUsername").Return("username").Once()
-
+			suite.Security.On("GetUsername").Return("username")
 			res, err := suite.DoReq(req.method, req.url, newBody(req.body))
 			suite.NoError(err)
 			suite.Equal(403, res.StatusCode)

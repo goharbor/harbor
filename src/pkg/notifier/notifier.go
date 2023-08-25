@@ -217,7 +217,7 @@ func (nw *NotificationWatcher) Notify(ctx context.Context, notification Notifica
 					// Currently, we just log the error
 					log.Errorf("Error occurred when triggering handler %s of topic %s: %s\n", reflect.TypeOf(hd).String(), notification.Topic, err.Error())
 				} else {
-					log.Infof("Handle notification with Handler '%s' on topic '%s': %+v\n", hd.Name(), notification.Topic, notification.Value)
+					log.Debugf("Handle notification with Handler '%s' on topic '%s': %+v\n", hd.Name(), notification.Topic, notification.Value)
 				}
 			}()
 		}(h, handlerChan)

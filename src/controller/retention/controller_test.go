@@ -160,7 +160,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
 			Settings: map[string]interface{}{
-				"cron": "* 22 11 * * *",
+				"cron": "0 22 11 * * *",
 			},
 		},
 		Scope: &policy.Scope{
@@ -271,7 +271,7 @@ func (s *ControllerTestSuite) TestExecution() {
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
 			Settings: map[string]interface{}{
-				"cron": "* 22 11 * * *",
+				"cron": "0 22 11 * * *",
 			},
 		},
 		Scope: &policy.Scope{

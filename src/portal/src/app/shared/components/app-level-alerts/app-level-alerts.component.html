@@ -1,0 +1,93 @@
+<clr-alerts>
+    <clr-alert
+        *ngIf="hasValidBannerMessage()"
+        [clrAlertType]="getBannerMessageType()"
+        [clrAlertAppLevel]="true"
+        [(clrAlertClosed)]="bannerMessageClosed"
+        [clrAlertClosable]="getBannerMessageClosable()">
+        <clr-alert-item>
+            <span class="alert-text banner-message">{{
+                getBannerMessage()
+            }}</span>
+        </clr-alert-item>
+    </clr-alert>
+    <clr-alert
+        *ngIf="showReadOnly && isLogin()"
+        [clrAlertType]="'warning'"
+        [clrAlertAppLevel]="true"
+        [clrAlertClosable]="false">
+        <clr-alert-item>
+            <span class="alert-text">{{ 'REPO_READ_ONLY' | translate }}</span>
+        </clr-alert-item>
+    </clr-alert>
+    <clr-alert
+        *ngIf="showLogin"
+        [clrAlertType]="message?.type"
+        [clrAlertAppLevel]="true">
+        <clr-alert-item>
+            <span class="alert-text">{{ message?.message | translate }}</span>
+            <div class="alert-actions">
+                <button
+                    class="btn alert-action no-underline"
+                    (click)="signIn()">
+                    {{ 'BUTTON.LOG_IN' | translate }}
+                </button>
+            </div>
+        </clr-alert-item>
+    </clr-alert>
+    <clr-alert
+        (clrAlertClosedChange)="closeHealthWarning()"
+        *ngIf="showJobServiceDashboardHealthCheck() && isLogin()"
+        [clrAlertType]="'warning'"
+        [clrAlertAppLevel]="true">
+        <clr-alert-item>
+            <span class="alert-text">
+                {{ 'JOB_SERVICE_DASHBOARD.WAITING_TOO_LONG_1' | translate }}
+                <a
+                    class="alert-action"
+                    href="#"
+                    routerLink="/harbor/job-service-dashboard/pending-jobs">
+                    {{ 'JOB_SERVICE_DASHBOARD.WAITING_TOO_LONG_2' | translate }}
+                </a>
+            </span>
+            <div class="alert-actions">
+                {{ 'JOB_SERVICE_DASHBOARD.WAITING_TOO_LONG_3' | translate }}
+                <a
+                    class="alert-action"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    href="https://github.com/goharbor/harbor/wiki/Reduce-job-queue-latency(wait-time)"
+                    >{{
+                        'JOB_SERVICE_DASHBOARD.WAITING_TOO_LONG_4' | translate
+                    }}</a
+                >
+            </div>
+        </clr-alert-item>
+    </clr-alert>
+    <clr-alert
+        [clrAlertType]="'info'"
+        [clrAlertAppLevel]="true"
+        (clrAlertClosedChange)="closeInfo()"
+        *ngIf="shouldShowScannerInfo() && isLogin()">
+        <clr-alert-item>
+            <span class="alert-text">
+                {{ 'SCANNER.HELP_INFO_1' | translate }}
+                <a
+                    class="alert-action"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    href="{{ scannerDocUrl }}"
+                    >{{ 'SCANNER.HELP_INFO_2' | translate }}</a
+                ></span
+            >
+            <div class="alert-actions last">
+                <a
+                    class="alert-action"
+                    href="#"
+                    routerLink="/harbor/interrogation-services/scanners"
+                    >{{ 'SCANNER.ALL_SCANNERS' | translate }}</a
+                >
+            </div>
+        </clr-alert-item>
+    </clr-alert>
+</clr-alerts>

@@ -24,7 +24,7 @@ jobs:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v1
         with:
-          version: '285.0.0'
+          version: '430.0.0'
       - name: Prepare Assets
         run: |
           if [ ! ${{ env.BUILD_NO }} -o ${{ env.BUILD_NO }} = "null" ]

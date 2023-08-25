@@ -730,6 +730,16 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.ruleForm?.get('trigger')?.get('trigger_settings')?.get('cron')
                 ?.dirty
         ) {
+            if (
+                !this.ruleForm
+                    ?.get('trigger')
+                    ?.get('trigger_settings')
+                    ?.get('cron')
+                    ?.value?.startsWith(PREFIX)
+            ) {
+                return true;
+            }
+
             return (
                 this.ruleForm
                     ?.get('trigger')

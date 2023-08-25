@@ -114,6 +114,11 @@ trivy:
 jobservice:
   # Maximum number of job workers in job service
   max_job_workers: 10
+  # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
+  job_loggers:
+    - STD_OUTPUT
+    - FILE
+    # - DB
   # The jobLogger sweeper duration (ignored if `jobLogger` is `stdout`)
   logger_sweeper_duration: 1 #days
 
@@ -148,7 +153,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.8.0
+_version: 2.9.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -162,6 +167,28 @@ _version: 2.8.0
 #     max_idle_conns: 2
 #     max_open_conns: 0
 
+# Uncomment redis if need to customize redis db
+# redis:
+#   # db_index 0 is for core, it's unchangeable
+#   # registry_db_index: 1
+#   # jobservice_db_index: 2
+#   # trivy_db_index: 5
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_db_index: 7
+
+# Uncomment redis if need to customize redis db
+# redis:
+#   # db_index 0 is for core, it's unchangeable
+#   # registry_db_index: 1
+#   # jobservice_db_index: 2
+#   # trivy_db_index: 5
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
+
 # Uncomment external_redis if using external Redis server
 # external_redis:
 #   # support redis, redis+sentinel
@@ -171,6 +198,8 @@ _version: 2.8.0
 #   host: redis:6379
 #   password: 
 #   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
+#   # there's a known issue when using external redis username ref:https://github.com/goharbor/harbor/issues/18892
+#   # if you care about the image pull/push performance, please refer to this https://github.com/goharbor/harbor/wiki/Harbor-FAQs#external-redis-username-password-usage
 #   # username:
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:
@@ -179,6 +208,10 @@ _version: 2.8.0
 #   jobservice_db_index: 2
 #   trivy_db_index: 5
 #   idle_timeout_seconds: 30
+#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
+#   # harbor_db_index: 6
+#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
+#   # cache_layer_db_index: 7
 
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
 # uaa:
@@ -233,7 +266,8 @@ proxy:
 #   #   url_path: /v1/traces
 #   #   compression: false
 #   #   insecure: true
-#   #   timeout: 10s
+#   #   # timeout is in seconds
+#   #   timeout: 10
 
 # Enable purge _upload directories
 upload_purging:
@@ -258,3 +292,15 @@ cache:
   enabled: false
   # keep cache for one day by default
   expire_hours: 24
+
+# Harbor core configurations
+# Uncomment to enable the following harbor core related configuration items.
+# core:
+#   # The provider for updating project quota(usage), there are 2 options, redis or db,
+#   # by default is implemented by db but you can switch the updation via redis which
+#   # can improve the performance of high concurrent pushing to the same project,
+#   # and reduce the database connections spike and occupies.
+#   # By redis will bring up some delay for quota usage updation for display, so only
+#   # suggest switch provider to redis if you were ran into the db connections spike aroud
+#   # the scenario of high concurrent pushing to same project, no improvment for other scenes.
+#   quota_update_provider: redis # Or db

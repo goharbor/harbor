@@ -2,7 +2,7 @@ package pgtype
 
 import "fmt"
 
-// EnumType represents a enum type. While it implements Value, this is only in service of its type conversion duties
+// EnumType represents an enum type. While it implements Value, this is only in service of its type conversion duties
 // when registered as a data type in a ConnType. It should not be used directly as a Value.
 type EnumType struct {
 	value  string
