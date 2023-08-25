@@ -1232,7 +1232,7 @@
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Triggered dry run successfully",
         "DELETE_DETAIL": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted, {{size}} space freed up",
-        "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) and {{manifest}} manifest(s) could be deleted, {{size}} space could be freed up",,
+        "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) and {{manifest}} manifest(s) could be deleted, {{size}} space could be freed up",
         "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
     },
     "RETAG": {
@@ -1889,6 +1889,7 @@
         "REPO_NAME": "Repository Name",
         "TOOLTIP": "All filters except CVSS3 only support exact matches",
         "NO_VUL": "We could not find any vulnerability",
-        "INVALID_VALUE": "Invalid range"
+        "INVALID_VALUE": "The CVSS3 score should range between 0 and 10",
+        "PAGE_TITLE_TOOLTIP": "The comprehensive artifact count comprises the cumulative total of individual artifacts, including artifact accessories, as well as child artifacts associated with the image index and CNAB artifacts"
     }
 }
