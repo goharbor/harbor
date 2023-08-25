@@ -111,8 +111,14 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	metadata := map[string]interface{}{}
 	// Some artifact may not have empty config layer.
 	if mani.Config.Size != 0 {
-		if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
-			return err
+		if mani.Config.MediaType == v1.MediaTypeImageConfig || mani.Config.MediaType == schema2.MediaTypeImageConfig {
+			if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
+				log.Errorf("failed to decode metadata, err=%v", err)
+				return err
+			}
+		} else {
+			log.Infof("do not decode mani.Config.Digest=[%s], because mani.Config.MediaType is not %s, or %s",
+				mani.Config.Digest.String(), v1.MediaTypeImageConfig, schema2.MediaTypeImageConfig)
 		}
 	}
 	// Populate all metadata into the ExtraAttrs first.

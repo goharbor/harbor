@@ -146,7 +146,9 @@ func Middleware() func(http.Handler) http.Handler {
 					return err
 				}
 			}
-			w.Header().Set("OCI-Subject", subjectArt.Digest)
+			// subjectArt could be nil
+			// w.Header().Set("OCI-Subject", subjectArt.Digest)
+			w.Header().Set("OCI-Subject", mf.Subject.Digest.String())
 		}
 
 		return nil
