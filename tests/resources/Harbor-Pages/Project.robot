@@ -26,7 +26,6 @@ Create An New Project And Go Into Project
         ${out}  Run Keyword And Ignore Error  Retry Button Click  xpath=${create_project_button_xpath}
         Log All  Return value is ${out[0]}
         Exit For Loop If  '${out[0]}'=='PASS'
-        Sleep  1
     END
     Log To Console  Project Name: ${projectname}
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
@@ -36,7 +35,6 @@ Create An New Project And Go Into Project
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Run Keyword If  '${proxy_cache}' == '${true}'  Run Keywords  Retry Element Click  ${project_proxy_cache_switcher_xpath}  AND  Retry Element Click  ${project_registry_select_id}  AND  Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
-    Sleep  2
     Go Into Project  ${projectname}  has_image=${false}
 
 Create An New Project With New User
@@ -45,44 +43,35 @@ Create An New Project With New User
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
     Create An New Project And Go Into Project  ${projectname}  ${public}
-    Sleep  1
 
 Artifact Exist
     [Arguments]  ${tag_name}
     Retry Wait Until Page Contains Element  //artifact-list-tab//clr-datagrid//clr-dg-row[contains(.,'sha256') and contains(.,'${tag_name}')]
-#It's the log of project.
+
 Go To Project Log
     #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_log_xpath}
-    Sleep  2
 
 Switch To Member
-    Sleep  3
     Retry Element Click  xpath=${project_member_xpath}
-    Sleep  1
 
 Switch To Replication
     Retry Element Click  xpath=${project_replication_xpath}
-    Sleep  1
 
 Switch To Project Configuration
     Retry Element Click  ${project_config_tabsheet}
-    Sleep  1
 
 Switch To Tag Retention
     #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_tag_strategy_xpath}
-    Sleep  1
 
 Switch To Tag Immutability
     #Switch To Project Tab Overflow
     Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_strategy_xpath}  Retry Wait Until Page Contains Element  ${project_tag_immutability_switch}
     Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_immutability_switch}  Retry Wait Until Page Contains  Immutability rules
-    Sleep  1
 
 Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_tab_overflow_btn}
-    Sleep  1
 
 Navigate To Projects
     Retry Element Click  xpath=${projects_xpath}
@@ -98,7 +87,6 @@ Project Should Not Display
 Search Private Projects
     Retry Element Click  xpath=//select
     Retry Element Click  xpath=//select/option[@value=1]
-    Sleep  1
 
 Make Project Private
     [Arguments]  ${projectname}
@@ -153,7 +141,6 @@ Delete Repo on CardView
     Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
     Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
     Retry Element Click  ${repo_delete_on_card_view_btn}
-    Sleep  2
 
 Delete Project
     [Arguments]  ${projectname}
@@ -162,7 +149,6 @@ Delete Project
     Retry Element Click  ${project_action_xpath}
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
-    Sleep  1
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}
@@ -202,9 +188,7 @@ Do Log Advanced Search
     Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Others')]
     Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor-jobservice
-    Sleep  1
-    ${rc} =  Get Element Count  //audit-log//clr-dg-row
-    Should Be Equal As Integers  ${rc}  1
+    Retry Wait Until Page Not Contains Element   //audit-log//clr-dg-row[2]
 
 Retry Click Repo Name
     [Arguments]  ${repo_name_element}
@@ -220,24 +204,43 @@ Retry Click Repo Name
     END
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
-Go Into Repo
-    [Arguments]  ${repoName}
-    Sleep  2
-    Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
-    ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
-    FOR  ${n}  IN RANGE  1  3
-        Retry Element Click  ${repo_search_icon}
-        Retry Clear Element Text  ${repo_search_input}
-        Retry Text Input  ${repo_search_input}  ${repoName}
-        ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
+Go Into Project
+    [Arguments]  ${project}  ${has_image}=${true}
+    FOR  ${n}  IN RANGE  1  4
+        ${out}  Run Keyword And Ignore Error  Retry Go Into Project  ${project}  ${has_image}
+        Run Keyword If  '${out[0]}'=='PASS'  Exit For Loop
+        Reload Page
         Sleep  2
-        Run Keyword If  '${out[0]}'=='FAIL'  Reload Page
-        Continue For Loop If  '${out[0]}'=='FAIL'
-        Retry Click Repo Name  ${repo_name_element}
-        Sleep  2
-        Exit For Loop
     END
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Go Into Project
+    [Arguments]  ${project}  ${has_image}
+    Retry Text Input  ${search_input}  ${project}
+    Wait Until Page Contains Element  //list-project-ro//a[contains(., '${project}')]
+    Retry Link Click  //list-project-ro//a[contains(., '${project}')]
+    Wait Until Page Contains Element  //project-detail//h1[contains(., '${project}')]
+    Run Keyword If  ${has_image}==${false}  Wait Until Element Is Visible And Enabled  //clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
+    ...  ELSE  Wait Until Element Is Visible And Enabled  //project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]
+
+Go Into Repo
+    [Arguments]  ${project_name}  ${repo_name}
+    FOR  ${n}  IN RANGE  1  4
+        ${out}  Run Keyword And Ignore Error  Retry Go Into Repo  ${project_name}  ${repo_name}
+        Run Keyword If  '${out[0]}'=='PASS'  Exit For Loop
+        Reload Page
+        Sleep  2
+    END
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Go Into Repo
+    [Arguments]  ${project_name}  ${repo_name}
+    Retry Text Input  ${search_input}  ${project_name}/${repo_name}
+    Wait Until Page Contains Element  //list-repository-ro//a[contains(., '${project_name}/${repo_name}')]
+    Retry Link Click  //list-repository-ro//a[contains(., '${project_name}/${repo_name}')]
+    Wait Until Page Contains Element  //artifact-list-page//h2[contains(., '${repo_name}')]
 
 Click Index Achieve
     [Arguments]  ${tag_name}
@@ -261,12 +264,10 @@ Go Into Index And Contain Artifacts
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
-    Sleep  5
 
 Expand Repo
     [Arguments]  ${projectname}
     Retry Element Click  //repository//clr-dg-row[contains(.,'${projectname}')]//button/clr-icon
-    Sleep  1
 
 Edit Repo Info
     Retry Element Click  //*[@id='repo-info']
@@ -285,11 +286,9 @@ Edit Repo Info
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
-    Sleep  1
 
 Switch To Project Repo
     Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
-    Sleep  1
 
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
@@ -312,14 +311,12 @@ Filter Labels In Tags
     Retry Element Click  xpath=//*[@id='search-btn']
     Retry Element Click  xpath=//*[@id='filterArea']//div//button[contains(.,'${labelName2}')]
     Retry Element Click  xpath=//app-artifact-filter//clr-icon[contains(@shape,'search')]
-    Sleep  2
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${labelName2}')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'${labelName1}')]
 
 Get Statics
     [Arguments]  ${locator}
     Reload Page
-    Sleep  5
     ${privaterepo}=  Get Text  ${locator}
     [Return]  ${privaterepo}
 

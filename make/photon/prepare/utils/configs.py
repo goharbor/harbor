@@ -3,7 +3,7 @@ import os
 import yaml
 from urllib.parse import urlencode, quote
 from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
-from models import InternalTLS, Metric, Trace, PurgeUpload, Cache
+from models import InternalTLS, Metric, Trace, PurgeUpload, Cache, Core
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -84,6 +84,9 @@ def validate(conf: dict, **kwargs):
 
     if conf.get('cache'):
         conf['cache'].validate()
+
+    if conf.get('core'):
+        conf['core'].validate()
 
 
 def parse_versions():
@@ -218,6 +221,7 @@ def parse_yaml_config(config_file_path, with_trivy):
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
+    config_dict['job_loggers'] = js_config["job_loggers"]
     config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
 
@@ -271,7 +275,7 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict['external_database'] = False
 
     # update redis configs
-    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_trivy))
+    config_dict.update(get_redis_configs(configs.get("redis", None), configs.get("external_redis", None), with_trivy))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
@@ -324,6 +328,10 @@ def parse_yaml_config(config_file_path, with_trivy):
     cache_config = configs.get('cache')
     config_dict['cache'] = Cache(cache_config or {})
 
+    # core configs
+    core_config = configs.get('core')
+    config_dict['core'] = Core(core_config or {})
+
     return config_dict
 
 
@@ -363,7 +371,7 @@ def get_redis_url_param(redis=None):
     return ""
 
 
-def get_redis_configs(external_redis=None, with_trivy=True):
+def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True):
     """Returns configs for redis
 
     >>> get_redis_configs()['external_redis']
@@ -396,6 +404,8 @@ def get_redis_configs(external_redis=None, with_trivy=True):
     >>> 'trivy_redis_url' not in get_redis_configs(with_trivy=False)
     True
     """
+
+    internal_redis = internal_redis or {}
     external_redis = external_redis or {}
 
     configs = dict(external_redis=bool(external_redis))
@@ -410,12 +420,21 @@ def get_redis_configs(external_redis=None, with_trivy=True):
         'idle_timeout_seconds': 30,
     }
 
-    # overwriting existing keys by external_redis
-    redis.update({key: value for (key, value) in external_redis.items() if value})
+    if len(internal_redis) > 0:
+        # overwriting existing keys by internal_redis
+        redis.update({key: value for (key, value) in internal_redis.items() if value})
+    else:
+        # overwriting existing keys by external_redis
+        redis.update({key: value for (key, value) in external_redis.items() if value})
 
     configs['redis_url_core'] = get_redis_url(0, redis)
     configs['redis_url_js'] = get_redis_url(redis['jobservice_db_index'], redis)
     configs['redis_url_reg'] = get_redis_url(redis['registry_db_index'], redis)
+
+    if redis.get('harbor_db_index'):
+        configs['redis_url_harbor'] = get_redis_url(redis['harbor_db_index'], redis)
+    if redis.get('cache_layer_db_index'):
+        configs['redis_url_cache_layer'] = get_redis_url(redis['cache_layer_db_index'], redis)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)

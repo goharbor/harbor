@@ -1,6 +1,12 @@
 [![](https://godoc.org/github.com/jackc/pgproto3?status.svg)](https://godoc.org/github.com/jackc/pgproto3)
 [![Build Status](https://travis-ci.org/jackc/pgproto3.svg)](https://travis-ci.org/jackc/pgproto3)
 
+---
+
+This version is used with pgx `v4`. In pgx `v5` it is part of the https://github.com/jackc/pgx repository.
+
+---
+
 # pgproto3
 
 Package pgproto3 is a encoder and decoder of the PostgreSQL wire protocol version 3.

@@ -50,7 +50,7 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
     messageFromDateCopy: Date;
     messageToDateCopy: Date;
     bannerRefreshSub: Subscription;
-
+    currentDate: Date = new Date();
     @ViewChild('systemConfigFrom') systemSettingsForm: NgForm;
 
     constructor(
@@ -294,5 +294,9 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
 
     translateMessageType(type: string): string {
         return BannerMessageI18nMap[type] || type;
+    }
+
+    minDateForEndDay(): Date {
+        return this.messageFromDate ? this.messageFromDate : this.currentDate;
     }
 }

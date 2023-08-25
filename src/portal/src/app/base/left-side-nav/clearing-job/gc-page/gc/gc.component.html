@@ -50,6 +50,37 @@
             [originCron]="originCron"
             (inputvalue)="saveGcSchedule($event)"></cron-selection>
     </div>
+    <div class="clr-row mb-1">
+        <div class="clr-col-2 flex-200 font-style">
+            {{ 'JOB_SERVICE_DASHBOARD.WORKERS' | translate
+            }}<clr-tooltip>
+                <clr-icon
+                    clrTooltipTrigger
+                    shape="info-circle"
+                    size="24"></clr-icon>
+                <clr-tooltip-content
+                    clrPosition="top-right"
+                    clrSize="lg"
+                    *clrIfOpen>
+                    <span>{{ 'GC.WORKERS_TOOLTIP' | translate }}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </div>
+        <div class="clr-col">
+            <div class="clr-select-wrapper">
+                <select
+                    id="workers"
+                    class="clr-select worker-select"
+                    [(ngModel)]="workerNum">
+                    <option
+                        *ngFor="let item of workerOptions"
+                        value="{{ item }}">
+                        {{ item }}
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
     <div class="clr-row">
         <div class="clr-col-2 flex-200"></div>
         <div class="clr-col">

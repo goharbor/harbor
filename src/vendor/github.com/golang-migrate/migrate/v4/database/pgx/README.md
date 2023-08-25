@@ -1,5 +1,7 @@
 # pgx
 
+This package is for [pgx/v4](https://pkg.go.dev/github.com/jackc/pgx/v4). A backend for the newer [pgx/v5](https://pkg.go.dev/github.com/jackc/pgx/v5) is [also available](v5).
+
 `pgx://user:password@host:port/dbname?query`
 
 | URL Query  | WithInstance Config | Description |

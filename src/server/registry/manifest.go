@@ -93,7 +93,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 				_, _ = buffer.Write(manifest)
 			}
 		} else {
-			log.Warningf("failed to get manifest from cache, error: %v", err)
+			log.Debugf("failed to get manifest from cache, will fallback to registry, error: %v", err)
 			// only write cache when request is GET because HEAD request resp
 			// body is empty.
 			if req.Method == http.MethodGet {

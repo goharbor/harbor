@@ -6,6 +6,10 @@ import { IconService } from '../../../../../../ng-swagger-gen/services/icon.serv
 import { share } from 'rxjs/operators';
 import { Icon } from 'ng-swagger-gen/models/icon';
 import { Accessory } from '../../../../../../ng-swagger-gen/models/accessory';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../../services/event-service/event.service';
 
 /**
  * Define the service methods to handle the repository tag related things.
@@ -28,7 +32,8 @@ export class ArtifactDefaultService extends ArtifactService {
     private _sharedIconObservableMap: { [key: string]: Observable<Icon> } = {};
     constructor(
         private iconService: IconService,
-        private domSanitizer: DomSanitizer
+        private domSanitizer: DomSanitizer,
+        private event: EventService
     ) {
         super();
     }
@@ -57,6 +62,7 @@ export class ArtifactDefaultService extends ArtifactService {
                                 `data:${res['content-type']};charset=utf-8;base64,${res.content}`
                             )
                         );
+                        this.event.publish(HarborEvent.RETRIEVED_ICON);
                     });
                 }
             });

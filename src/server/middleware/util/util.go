@@ -63,12 +63,14 @@ func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
 	secCtx, ok := security.FromContext(r.Context())
 
 	// 1, scanner pull access can bypass.
-	// 2, cosign pull can bypass, it needs to pull the manifest before pushing the signature.
-	// 3, pull cosign signature can bypass.
+	// 2, cosign/notation pull can bypass, it needs to pull the manifest before pushing the signature.
+	// 3, pull cosign/notation signature can bypass.
 	if ok && secCtx.Name() == "v2token" {
 		if secCtx.Can(r.Context(), rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) ||
 			(secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) &&
-				strings.Contains(r.UserAgent(), "cosign")) {
+				strings.Contains(r.UserAgent(), "cosign")) ||
+			(secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) &&
+				strings.Contains(r.UserAgent(), "notation")) {
 			return true, nil
 		}
 	}
@@ -77,7 +79,7 @@ func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if len(accs) > 0 && accs[0].GetData().Type == model.TypeCosignSignature {
+	if len(accs) > 0 && (accs[0].GetData().Type == model.TypeCosignSignature || accs[0].GetData().Type == model.TypeNotationSignature) {
 		return true, nil
 	}
 

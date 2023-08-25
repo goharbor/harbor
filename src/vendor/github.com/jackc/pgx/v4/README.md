@@ -1,6 +1,11 @@
 [![](https://godoc.org/github.com/jackc/pgx?status.svg)](https://pkg.go.dev/github.com/jackc/pgx/v4)
 [![Build Status](https://travis-ci.org/jackc/pgx.svg)](https://travis-ci.org/jackc/pgx)
 
+---
+
+This is the previous stable `v4` release. `v5` been released.
+
+---
 # pgx - PostgreSQL Driver and Toolkit
 
 pgx is a pure Go driver and toolkit for PostgreSQL.
@@ -73,7 +78,7 @@ pgx supports many features beyond what is available through `database/sql`:
 * Single-round trip query mode
 * Full TLS connection control
 * Binary format support for custom types (allows for much quicker encoding/decoding)
-* Copy protocol support for faster bulk data loads
+* COPY protocol support for faster bulk data loads
 * Extendable logging support including built-in support for `log15adapter`, [`logrus`](https://github.com/sirupsen/logrus), [`zap`](https://github.com/uber-go/zap), and [`zerolog`](https://github.com/rs/zerolog)
 * Connection pool with after-connect hook for arbitrary connection setup
 * Listen / notify
@@ -97,26 +102,6 @@ There are three areas in particular where pgx can provide a significant performa
    significant free improvement to code that does not explicitly use prepared statements. Under certain workloads, it can
    perform nearly 3x the number of queries per second.
 3. Batched queries - Multiple queries can be batched together to minimize network round trips.
-
-## Comparison with Alternatives
-
-* [pq](http://godoc.org/github.com/lib/pq)
-* [go-pg](https://github.com/go-pg/pg)
-
-For prepared queries with small sets of simple data types, all drivers will have have similar performance. However, if prepared statements aren't being explicitly used, pgx can have a significant performance advantage due to automatic statement preparation.
-pgx also can perform better when using PostgreSQL-specific data types or query batching. See
-[go_db_bench](https://github.com/jackc/go_db_bench) for some database driver benchmarks.
-
-### Compatibility with `database/sql`
-
-pq is exclusively used with `database/sql`. go-pg does not use `database/sql` at all. pgx supports `database/sql` as well as
-its own interface.
-
-### Level of access, ORM
-
-go-pg is a PostgreSQL client and ORM. It includes many features that traditionally sit above the database driver, such as ORM, struct mapping, soft deletes, schema migrations, and sharding support.
-
-pgx is "closer to the metal" and such abstractions are beyond the scope of the pgx project, which first and foremost, aims to be a performant driver and toolkit.
 
 ## Testing
 
@@ -149,7 +134,7 @@ In addition, there are tests specific for PgBouncer that will be executed if `PG
 
 ## Supported Go and PostgreSQL Versions
 
-pgx supports the same versions of Go and PostgreSQL that are supported by their respective teams. For [Go](https://golang.org/doc/devel/release.html#policy) that is the two most recent major releases and for [PostgreSQL](https://www.postgresql.org/support/versioning/) the major releases in the last 5 years. This means pgx supports Go 1.15 and higher and PostgreSQL 9.6 and higher. pgx also is tested against the latest version of [CockroachDB](https://www.cockroachlabs.com/product/).
+pgx supports the same versions of Go and PostgreSQL that are supported by their respective teams. For [Go](https://golang.org/doc/devel/release.html#policy) that is the two most recent major releases and for [PostgreSQL](https://www.postgresql.org/support/versioning/) the major releases in the last 5 years. This means pgx supports Go 1.16 and higher and PostgreSQL 10 and higher. pgx also is tested against the latest version of [CockroachDB](https://www.cockroachlabs.com/product/).
 
 ## Version Policy
 
@@ -201,3 +186,11 @@ pgerrcode contains constants for the PostgreSQL error codes.
 ### [github.com/georgysavva/scany](https://github.com/georgysavva/scany)
 
 Library for scanning data from a database into Go structs and more.
+
+### [https://github.com/otan/gopgkrb5](https://github.com/otan/gopgkrb5)
+
+Adds GSSAPI / Kerberos authentication support.
+
+### [https://github.com/vgarvardt/pgx-google-uuid](https://github.com/vgarvardt/pgx-google-uuid)
+
+Adds support for [`github.com/google/uuid`](https://github.com/google/uuid).

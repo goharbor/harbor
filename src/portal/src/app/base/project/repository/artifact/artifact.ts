@@ -9,7 +9,7 @@ export interface ArtifactFront extends Artifact {
     pullCommand?: string;
     annotationsArray?: Array<{ [key: string]: any }>;
     tagNumber?: number;
-    coSigned?: string;
+    signed?: string;
     accessoryNumber?: number;
 }
 
@@ -73,6 +73,7 @@ export const multipleFilter: Array<{
 
 export enum AccessoryType {
     COSIGN = 'signature.cosign',
+    NOTATION = 'signature.notation',
     NYDUS = 'accelerator.nydus',
 }
 

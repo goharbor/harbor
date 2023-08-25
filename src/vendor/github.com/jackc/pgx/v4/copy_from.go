@@ -153,13 +153,13 @@ func (ct *copyFrom) run(ctx context.Context) (int64, error) {
 	<-doneChan
 
 	rowsAffected := commandTag.RowsAffected()
+	endTime := time.Now()
 	if err == nil {
 		if ct.conn.shouldLog(LogLevelInfo) {
-			endTime := time.Now()
 			ct.conn.log(ctx, LogLevelInfo, "CopyFrom", map[string]interface{}{"tableName": ct.tableName, "columnNames": ct.columnNames, "time": endTime.Sub(startTime), "rowCount": rowsAffected})
 		}
 	} else if ct.conn.shouldLog(LogLevelError) {
-		ct.conn.log(ctx, LogLevelError, "CopyFrom", map[string]interface{}{"err": err, "tableName": ct.tableName, "columnNames": ct.columnNames})
+		ct.conn.log(ctx, LogLevelError, "CopyFrom", map[string]interface{}{"err": err, "tableName": ct.tableName, "columnNames": ct.columnNames, "time": endTime.Sub(startTime)})
 	}
 
 	return rowsAffected, err

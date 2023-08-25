@@ -75,6 +75,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
 import { RemainingTimeComponent } from './components/remaining-time/remaining-time.component';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
+import { ScrollSectionDirective } from './directives/scroll/scroll-section.directive';
+import { ScrollManagerService } from './directives/scroll/scroll-manager.service';
+import { ScrollAnchorDirective } from './directives/scroll/scroll-anchor.directive';
+import { AppLevelAlertsComponent } from './components/app-level-alerts/app-level-alerts.component';
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;
@@ -115,6 +119,8 @@ ClarityIcons.add({
         MaxLengthExtValidatorDirective,
         PortValidatorDirective,
         DateValidatorDirective,
+        ScrollSectionDirective,
+        ScrollAnchorDirective,
         InlineAlertComponent,
         NewUserFormComponent,
         MessageComponent,
@@ -142,6 +148,7 @@ ClarityIcons.add({
         HarborDatetimePipe,
         RemainingTimeComponent,
         LabelSelectorComponent,
+        AppLevelAlertsComponent,
     ],
     exports: [
         TranslateModule,
@@ -154,6 +161,8 @@ ClarityIcons.add({
         MaxLengthExtValidatorDirective,
         PortValidatorDirective,
         DateValidatorDirective,
+        ScrollSectionDirective,
+        ScrollAnchorDirective,
         InlineAlertComponent,
         NewUserFormComponent,
         MessageComponent,
@@ -181,6 +190,7 @@ ClarityIcons.add({
         HarborDatetimePipe,
         RemainingTimeComponent,
         LabelSelectorComponent,
+        AppLevelAlertsComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },
