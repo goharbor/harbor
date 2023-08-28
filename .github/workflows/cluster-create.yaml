@@ -345,6 +345,9 @@ jobs:
         - name: Apply Helm Chart
           id: helm
           run: |
+            
+            wget https://github.com/goharbor/harbor-helm/blob/master/values.yaml
+          
             export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
             export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
             export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
@@ -358,6 +361,7 @@ jobs:
 
             if $(helm ls | grep -q my-release); then
               helm upgrade --install my-release \
+                --set expose.tls.certSource=none \
                 --set portal.image.repository=${REPO_portal} \
                 --set portal.image.tag=24h \
                 --set core.image.repository=${REPO_core} \
@@ -375,6 +379,7 @@ jobs:
                 harbor/harbor --values=values.yaml
             else
               helm install my-release \
+                --set expose.tls.certSource=none \
                 --set portal.image.repository=${REPO_portal} \
                 --set portal.image.tag=24h \
                 --set core.image.repository=${REPO_core} \
