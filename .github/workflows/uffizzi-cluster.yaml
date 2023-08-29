@@ -417,11 +417,11 @@ jobs:
             
             edit-mode: append
 
-        - name: Upload kubeconfig file
-          uses: actions/upload-artifact@v3
-          with:
-            name: kubeconfig
-            path: kubeconfig
+        # - name: Upload kubeconfig file
+        #   uses: actions/upload-artifact@v3
+        #   with:
+        #     name: kubeconfig
+        #     path: kubeconfig
 
     cypress-run:
           needs:
