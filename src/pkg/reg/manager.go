@@ -22,6 +22,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/dao"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
@@ -51,8 +53,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
 	// register the TencentCloud TCR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
-	"github.com/goharbor/harbor/src/pkg/reg/dao"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
+	// register the VolcEngine CR Registry adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/volcenginecr"
 )
 
 var (
