@@ -25,7 +25,7 @@ The following table includes the current roadmap for Harbor. If you have any que
 |Deployment|Improve Kubernetes Operator for Harbor, enabling improved Day1 and Day2 operations including enterprise grade HA, faster deployments and upgrades, automate backups and restores, and sensible defaults|Future|
 ||Support Notary v2 to deliver persisting image signatures across image replications|Future|
 |Optimized Scalability & Performance|Introduce cache layer to improve performance|2022 H2|
-|Image acceleration|Leverage Nydus to support image acceleratiion|Futire|
+|Image acceleration|Leverage Nydus to support image acceleratiion|Future|
 |Regex Support|Add full Regex support to all modules within Harbor consistently including configuration of replication policies, retention policies, immutability policies and more|Future|
 |ARM Harbor|release an ARM deployment of Harbor|Future|
 |Backup & Restore|Leverage Project Velero to offer application-aware Harbor backup, including databases, Kubernetes objects and Persistent Volumes|2022 H2|
