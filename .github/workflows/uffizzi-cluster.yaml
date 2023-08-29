@@ -1,4 +1,4 @@
-name: Harbor Test Workflow
+name: Deploy and Test Harbor on Uffizzi Cluster
 
 on:
     pull_request:
@@ -328,16 +328,14 @@ jobs:
             body: |
                 ## Uffizzi Ephemeral Environment - Virtual Cluster
         
-                Your cluster `pr-${{ github.event.pull_request.number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/virtual-clusters)
+                Your cluster `pr-${{ github.event.pull_request.number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
                 To connect to this cluster, follow these steps:
         
                 1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
                 2. Login to Uffizzi: `uffizzi login`
-                3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }}`. This command will update your local `~/.kube/config`.
-                If you want to provide an alternate location follow the optional step (the next step) instead.
+                3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[PATH_TO_KUBECONFIG]`
         
-                    Optional: Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[KUBECONFIG]`, replacing `[KUBECONFIG]` with the path to your kubeconfig file.
-                After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [KUBECONFIG]`
+                After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
         
             edit-mode: replace
 
