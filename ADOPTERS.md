@@ -11,6 +11,7 @@ be added to this list as they transition to production deployments.
 
 <a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://pitsdatenrettung.de/" target="_blank" border="0"><img alt="PITS Globale Datenrettungsdienste" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/pits-globale-datenrettungsdienste.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
 <a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
