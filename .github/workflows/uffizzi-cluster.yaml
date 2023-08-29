@@ -357,7 +357,7 @@ jobs:
             helm repo add harbor https://helm.goharbor.io
 
             # if $(helm ls | grep -q my-release); then
-              helm upgrade --atomic --install my-release \
+              helm upgrade --install my-release \
                 --set expose.tls.certSource=none \
                 --set portal.image.repository=${REPO_portal} \
                 --set portal.image.tag=24h \
