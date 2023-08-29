@@ -83,11 +83,6 @@ func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
 
-// GetRedisOfRegURL returns the URL of Redis used by registry
-func GetRedisOfRegURL() string {
-	return os.Getenv("_REDIS_URL_REG")
-}
-
 // GetPortalURL returns the URL of portal
 func GetPortalURL() string {
 	url := os.Getenv("PORTAL_URL")
