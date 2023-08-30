@@ -373,25 +373,6 @@ jobs:
                 --set redis.internal.image.repository=${REPO_redis} \
                 --set redis.internal.image.tag=24h \
                 harbor/harbor --values=values.yaml
-            # else
-            #   helm install my-release \
-            #     --set expose.tls.certSource=none \
-            #     --set portal.image.repository=${REPO_portal} \
-            #     --set portal.image.tag=24h \
-            #     --set core.image.repository=${REPO_core} \
-            #     --set core.image.tag=24h \
-            #     --set jobservice.image.repository=${REPO_jobservice} \
-            #     --set jobservice.image.tag=24h \
-            #     --set registry.registry.image.repository=${REPO_registry} \
-            #     --set registry.registry.image.tag=24h \
-            #     --set registry.controller.image.repository=${REPO_registryctl} \
-            #     --set registry.controller.image.tag=24h \
-            #     --set database.internal.image.repository=${REPO_db} \
-            #     --set database.internal.image.tag=24h \
-            #     --set redis.internal.image.repository=${REPO_redis} \
-            #     --set redis.internal.image.tag=24h \
-            #     harbor/harbor --values=values.yaml
-            # fi
 
         # Create ingress
         - name: Create ingress
@@ -497,4 +478,3 @@ jobs:
             with:
               action: delete
               cluster-name: pr-${{ github.event.pull_request.number }}
-              # server: https://app.uffizzi.com/
