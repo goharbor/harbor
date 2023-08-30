@@ -333,7 +333,6 @@ jobs:
                 1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
                 2. Login to Uffizzi: `uffizzi login`
                 3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[PATH_TO_KUBECONFIG]`
-        
                 After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
         
             edit-mode: replace
@@ -409,7 +408,7 @@ jobs:
             issue-number: ${{ github.event.pull_request.number }}
             body: |
                 ---
-                Please wait for several minutes for Harbor deployment to complete.
+                Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ github.event.pull_request.number }}.
                 Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
                 Use credentials admin/Harbor12345 to login.
                 For more details, please visit https://github.com/goharbor/harbor
@@ -434,7 +433,7 @@ jobs:
                 config: baseUrl=https://${{ needs.uffizzi-cluster.outputs.HARBOR_HOST }}
             
             - name: Cypress output
-              uses: actions/github-script@v6.4.1
+              uses: actions/github-script@v6
               with:
                 script: |
                   if (${{ steps.cypress.outputs.testResultsObject }} == "") {
@@ -498,4 +497,4 @@ jobs:
             with:
               action: delete
               cluster-name: pr-${{ github.event.pull_request.number }}
-              server: https://app.uffizzi.com/
+              # server: https://app.uffizzi.com/
