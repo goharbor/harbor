@@ -305,21 +305,21 @@ jobs:
                 export REPO_redis=abc
 
                 touch values.yaml
-                yq -i 'expose.tls.certSource = none' values.yaml
-                yq -i 'core.image.repository = $REPO_core' values.yaml
-                yq -i 'core.image.tag = 24h' values.yaml
-                yq -i 'portal.image.repository = $REPO_portal' values.yaml
-                yq -i 'portal.image.tag = 24h' values.yaml
-                yq -i 'jobservice.image.repository = $REPO_jobservice' values.yaml
-                yq -i 'jobservice.image.tag = 24h' values.yaml
-                yq -i 'registry.registry.image.repository = $REPO_registry' values.yaml
-                yq -i 'registry.registry.image.tag = 24h' values.yaml
-                yq -i 'registry.controller.image.repository = $REPO_registryctl' values.yaml
-                yq -i 'registry.controller.image.tag = 24h' values.yaml
-                yq -i 'database.internal.image.repository = $REPO_db' values.yaml
-                yq -i 'database.internal.image.tag = 24h' values.yaml
-                yq -i 'redis.internal.image.repository = $REPO_redis' values.yaml
-                yq -i 'redis.internal.image.tag = 24h' values.yaml
+                yq -i '.expose.tls.certSource = "none"' values.yaml
+                yq -i '.core.image.repository = "$REPO_core"' values.yaml
+                yq -i '.core.image.tag = "24h"' values.yaml
+                yq -i '.portal.image.repository = "$REPO_portal"' values.yaml
+                yq -i '.portal.image.tag = "24h"' values.yaml
+                yq -i '.jobservice.image.repository = "$REPO_jobservice"' values.yaml
+                yq -i '.jobservice.image.tag = "24h"' values.yaml
+                yq -i '.registry.registry.image.repository = "$REPO_registry"' values.yaml
+                yq -i '.registry.registry.image.tag = "24h"' values.yaml
+                yq -i '.registry.controller.image.repository = "$REPO_registryctl"' values.yaml
+                yq -i '.registry.controller.image.tag = "24h"' values.yaml
+                yq -i '.database.internal.image.repository = "$REPO_db"' values.yaml
+                yq -i '.database.internal.image.tag = "24h"' values.yaml
+                yq -i '.redis.internal.image.repository = "$REPO_redis"' values.yaml
+                yq -i '.redis.internal.image.tag = "24h"' values.yaml
                 cat values.yaml
                 
                 
