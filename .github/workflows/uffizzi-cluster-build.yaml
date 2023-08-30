@@ -306,7 +306,7 @@ jobs:
 
                 touch values.yaml
                 yq -i '.expose.tls.certSource = "none"' values.yaml
-                yq -i '.core.image.repository = "$REPO_core"' values.yaml
+                yq -i '.core.image.repository = $REPO_core' values.yaml
                 yq -i '.core.image.tag = "24h"' values.yaml
                 yq -i '.portal.image.repository = "$REPO_portal"' values.yaml
                 yq -i '.portal.image.tag = "24h"' values.yaml
