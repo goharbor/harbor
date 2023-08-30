@@ -355,7 +355,7 @@ jobs:
             export KUBECONFIG="`pwd`/kubeconfig"
             helm repo add harbor https://helm.goharbor.io
 
-              helm upgrade --install my-release \
+              helm upgrade --install my-release harbor/harbor \
                 --set expose.tls.certSource=none \
                 --set portal.image.repository=${REPO_portal} \
                 --set portal.image.tag=24h \
@@ -372,7 +372,6 @@ jobs:
                 --set redis.internal.image.repository=${REPO_redis} \
                 --set redis.internal.image.tag=24h \
                 # harbor/harbor --values=values.yaml
-                harbor/harbor
 
         # Create ingress
         - name: Create ingress
