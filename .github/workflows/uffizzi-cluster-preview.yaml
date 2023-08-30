@@ -342,7 +342,7 @@ jobs:
           id: helm
           run: |
             
-            wget https://github.com/goharbor/harbor-helm/blob/master/values.yaml
+            # wget https://github.com/goharbor/harbor-helm/blob/master/values.yaml
           
             export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
             export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
@@ -355,7 +355,6 @@ jobs:
             export KUBECONFIG="`pwd`/kubeconfig"
             helm repo add harbor https://helm.goharbor.io
 
-            # if $(helm ls | grep -q my-release); then
               helm upgrade --install my-release \
                 --set expose.tls.certSource=none \
                 --set portal.image.repository=${REPO_portal} \
@@ -372,7 +371,8 @@ jobs:
                 --set database.internal.image.tag=24h \
                 --set redis.internal.image.repository=${REPO_redis} \
                 --set redis.internal.image.tag=24h \
-                harbor/harbor --values=values.yaml
+                # harbor/harbor --values=values.yaml
+                harbor/harbor
 
         # Create ingress
         - name: Create ingress
