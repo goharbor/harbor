@@ -20,9 +20,9 @@ jobs:
   #     steps:
   #       - name: Checkout git repo
   #         uses: actions/checkout@v3
-  #       - name: Make versions dir
-  #         run: |
-  #           make compile
+        # - name: Make versions dir
+        #   run: |
+        #     make compile
   #       - name: Make harbor_core
   #         run: |
   #           make compile_core
@@ -277,6 +277,9 @@ jobs:
       steps:
         - name: Checkout git repo
           uses: actions/checkout@v3
+        - name: Make versions dir
+          run: |
+            make compile
         - name: Build Trivy
           run: |
             make build -e TRIVYFLAG=true
