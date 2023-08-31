@@ -13,7 +13,6 @@ permissions:
   id-token: write
   actions: write
 
-
 jobs:
   uffizzi-cluster-create:
     name: Create Uffizzi Cluster
@@ -175,7 +174,9 @@ jobs:
           config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
       
       - name: Cypress output
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.4.1
+        env:
+          PR_NUMBER: ${{ needs.uffizzi-cluster-create.outputs.pr-number }}          
         with:
           script: |
             if (${{ steps.cypress.outputs.testResultsObject }} == "") {
@@ -216,7 +217,7 @@ jobs:
             const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
 
             github.rest.issues.createComment({
-              issue_number: ${{ env.PR_NUMBER }},
+              issue_number: ${PR_NUMBER},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body:`
