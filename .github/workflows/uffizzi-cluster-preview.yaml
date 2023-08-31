@@ -148,12 +148,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: values
-          path: values.yaml
-
       - name: Apply Helm Chart
         id: helm
         run: |
@@ -181,74 +175,74 @@ jobs:
               For more details, please visit      
 
   cypress-run:
-            needs:
-              - uffizzi-cluster-create
-            name: Cypress run
-            runs-on: ubuntu-22.04
-            steps:
-              - name: Checkout
-                uses: actions/checkout@v3 
+    name: Cypress run
+    runs-on: ubuntu-22.04
+    needs:
+      - uffizzi-cluster-create
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3 
 
-              - name: Cypress run
-                id: cypress
-                uses: gopuman/cypress-github-action@feat/add-test-reults-output
-                with:
-                  working-directory: src/portal
-                  config-file: cypress.config.ts
-                  config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
+      - name: Cypress run
+        id: cypress
+        uses: gopuman/cypress-github-action@feat/add-test-reults-output
+        with:
+          working-directory: src/portal
+          config-file: cypress.config.ts
+          config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
+      
+      - name: Cypress output
+        uses: actions/github-script@v6
+        with:
+          script: |
+            if (${{ steps.cypress.outputs.testResultsObject }} == "") {
+              console.log('No test results found')
+              return
+            }
+            const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
+            console.log("Success: " + testResults.success)
+            console.log("TotalPassed: " + testResults.totalPassed)
+            console.log("TotalFailed: " + testResults.totalFailed)
+            console.log("TotalPending: " + testResults.totalPending)
+            console.log("TotalSkipped: " + testResults.totalSkipped)
+            console.log("TotalDuration: " + testResults.totalDuration) 
+
+            const headers = [
+              { data: 'Result', header: true },
+              { data: 'Passed :white_check_mark:', header: true },
+              { data: 'Failed :x:', header: true },
+              { data: 'Pending :hand:', header: true },
+              { data: 'Skipped :leftwards_arrow_with_hook:', header: true },
+              { data: 'Duration :clock8:', header: true }
+            ]
+          
+            const status =
+              testResults.totalFailed === 0
+                ? 'Passing :white_check_mark:'
+                : 'Failing :red_circle:'
+          
+            const summaryRows = [
+              status,
+              `${testResults.totalPassed}`,
+              `${testResults.totalFailed}`,
+              `${testResults.totalPending}`,
+              `${testResults.totalSkipped}`,
+              `${testResults.totalDuration / 1000}s` || ''
+            ]                  
+
+            const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body:`
+              Here are the test results:
               
-              - name: Cypress output
-                uses: actions/github-script@v6
-                with:
-                  script: |
-                    if (${{ steps.cypress.outputs.testResultsObject }} == "") {
-                      console.log('No test results found')
-                      return
-                    }
-                    const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
-                    console.log("Success: " + testResults.success)
-                    console.log("TotalPassed: " + testResults.totalPassed)
-                    console.log("TotalFailed: " + testResults.totalFailed)
-                    console.log("TotalPending: " + testResults.totalPending)
-                    console.log("TotalSkipped: " + testResults.totalSkipped)
-                    console.log("TotalDuration: " + testResults.totalDuration) 
-
-                    const headers = [
-                      { data: 'Result', header: true },
-                      { data: 'Passed :white_check_mark:', header: true },
-                      { data: 'Failed :x:', header: true },
-                      { data: 'Pending :hand:', header: true },
-                      { data: 'Skipped :leftwards_arrow_with_hook:', header: true },
-                      { data: 'Duration :clock8:', header: true }
-                    ]
-                  
-                    const status =
-                      testResults.totalFailed === 0
-                        ? 'Passing :white_check_mark:'
-                        : 'Failing :red_circle:'
-                  
-                    const summaryRows = [
-                      status,
-                      `${testResults.totalPassed}`,
-                      `${testResults.totalFailed}`,
-                      `${testResults.totalPending}`,
-                      `${testResults.totalSkipped}`,
-                      `${testResults.totalDuration / 1000}s` || ''
-                    ]                  
-
-                    const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
-
-                    github.rest.issues.createComment({
-                      issue_number: context.issue.number,
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      body:`
-                      Here are the test results:
-                      
-                    
-                      | Result         | Passed ✅ | Failed ❌ | Pending ✋ | Skipped ↩️ | Duration 🕗 |
-                      | -------------- | --------- | --------- | --------- | ---------- | ------------------ |
-                      | ${status}      | ${testResults.totalPassed}        | ${testResults.totalFailed}        | ${testResults.totalPending}        | ${testResults.totalSkipped}        | ${testResults.totalDuration / 1000}s |
-                    
-                      `,
-                    })
+            
+              | Result         | Passed ✅ | Failed ❌ | Pending ✋ | Skipped ↩️ | Duration 🕗 |
+              | -------------- | --------- | --------- | --------- | ---------- | ------------------ |
+              | ${status}      | ${testResults.totalPassed}        | ${testResults.totalFailed}        | ${testResults.totalPending}        | ${testResults.totalSkipped}        | ${testResults.totalDuration / 1000}s |
+            
+              `,
+            })
