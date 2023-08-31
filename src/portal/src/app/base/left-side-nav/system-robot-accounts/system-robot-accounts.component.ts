@@ -21,15 +21,15 @@ import {
 } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import {
-    ACTION_RESOURCE_I18N_MAP,
     FrontRobot,
+    getSystemAccess,
     NAMESPACE_ALL_PROJECTS,
+    NEW_EMPTY_ROBOT,
     PermissionsKinds,
 } from './system-robot-util';
 import { ProjectsModalComponent } from './projects-modal/projects-modal.component';
 import { forkJoin, Observable, of, Subscription } from 'rxjs';
 import { FilterComponent } from '../../../shared/components/filter/filter.component';
-import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
     operateChanges,
@@ -37,7 +37,6 @@ import {
     OperationState,
 } from '../../../shared/components/operation/operate';
 import { OperationService } from '../../../shared/components/operation/operation.service';
-import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
@@ -50,8 +49,10 @@ import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
 import { RobotPermission } from '../../../../../ng-swagger-gen/models/robot-permission';
 import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
-
-const FIRST_PROJECTS_PAGE_SIZE: number = 100;
+import { Access } from '../../../../../ng-swagger-gen/models/access';
+import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
+import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
+import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
 
 @Component({
     selector: 'system-robot-accounts',
@@ -59,7 +60,6 @@ const FIRST_PROJECTS_PAGE_SIZE: number = 100;
     styleUrls: ['./system-robot-accounts.component.scss'],
 })
 export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
-    i18nMap = ACTION_RESOURCE_I18N_MAP;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.SYSTEM_ROBOT_COMPONENT
     );
@@ -82,19 +82,22 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
     searchKey: string;
     subscription: Subscription;
     deltaTime: number; // the different between server time and local time
+
+    robotMetadata: Permissions;
+    loadingMetadata: boolean = false;
     constructor(
         private robotService: RobotService,
-        private projectService: ProjectService,
         private msgHandler: MessageHandlerService,
         private operateDialogService: ConfirmationDialogService,
         private operationService: OperationService,
         private sanitizer: DomSanitizer,
         private translate: TranslateService,
-        private systemInfoService: SysteminfoService
+        private systemInfoService: SysteminfoService,
+        private permissionService: PermissionsService
     ) {}
     ngOnInit() {
+        this.getRobotPermissions();
         this.getCurrenTime();
-        this.loadDataFromBackend();
         if (!this.searchSub) {
             this.searchSub = this.filterComponent.filterTerms
                 .pipe(
@@ -169,6 +172,17 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
             this.subscription = null;
         }
     }
+
+    getRobotPermissions() {
+        this.loadingData = true;
+        this.permissionService
+            .getPermissions()
+            .pipe(finalize(() => (this.loadingData = false)))
+            .subscribe(res => {
+                this.robotMetadata = res;
+            });
+    }
+
     getCurrenTime() {
         this.systemInfoService.getSystemInfo().subscribe(res => {
             if (res?.current_time) {
@@ -178,89 +192,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
             }
         });
     }
-    loadDataFromBackend() {
-        this.loadingData = true;
-        this.addBtnState = ClrLoadingState.LOADING;
-        this.projectService
-            .listProjectsResponse({
-                withDetail: false,
-                page: 1,
-                pageSize: FIRST_PROJECTS_PAGE_SIZE,
-            })
-            .subscribe(
-                result => {
-                    // Get total count
-                    if (result.headers) {
-                        const xHeader: string =
-                            result.headers.get('X-Total-Count');
-                        const totalCount = parseInt(xHeader, 0);
-                        let arr = result.body || [];
-                        if (totalCount <= FIRST_PROJECTS_PAGE_SIZE) {
-                            // already gotten all projects
-                            if (
-                                this.newRobotComponent &&
-                                this.newRobotComponent.listAllProjectsComponent
-                            ) {
-                                this.newRobotComponent.listAllProjectsComponent.cachedAllProjects =
-                                    result.body;
-                            }
-                            if (this.projectsModalComponent) {
-                                this.projectsModalComponent.cachedAllProjects =
-                                    result.body;
-                            }
-                            this.loadingData = false;
-                            this.addBtnState = ClrLoadingState.ERROR;
-                        } else {
-                            // get all the projects in specified times
-                            const times: number = Math.ceil(
-                                totalCount / FIRST_PROJECTS_PAGE_SIZE
-                            );
-                            const observableList: Observable<Project[]>[] = [];
-                            for (let i = 2; i <= times; i++) {
-                                observableList.push(
-                                    this.projectService.listProjects({
-                                        withDetail: false,
-                                        page: i,
-                                        pageSize: FIRST_PROJECTS_PAGE_SIZE,
-                                    })
-                                );
-                            }
-                            forkJoin(observableList)
-                                .pipe(
-                                    finalize(() => {
-                                        this.loadingData = false;
-                                        this.addBtnState =
-                                            ClrLoadingState.ERROR;
-                                    })
-                                )
-                                .subscribe(res => {
-                                    if (res && res.length) {
-                                        res.forEach(item => {
-                                            arr = arr.concat(item);
-                                        });
-                                        if (
-                                            this.newRobotComponent &&
-                                            this.newRobotComponent
-                                                .listAllProjectsComponent
-                                        ) {
-                                            this.newRobotComponent.listAllProjectsComponent.cachedAllProjects =
-                                                arr;
-                                        }
-                                        if (this.projectsModalComponent) {
-                                            this.projectsModalComponent.cachedAllProjects =
-                                                arr;
-                                        }
-                                    }
-                                });
-                        }
-                    }
-                },
-                error => {
-                    this.loadingData = false;
-                    this.addBtnState = ClrLoadingState.ERROR;
-                }
-            );
-    }
+
     clrLoad(state?: ClrDatagridStateInterface) {
         if (state && state.page && state.page.size) {
             this.pageSize = state.page.size;
@@ -337,7 +269,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
             }
         }
     }
-    getProjects(r: FrontRobot): RobotPermission[] {
+    getProjects(r: Robot): RobotPermission[] {
         const arr = [];
         if (r && r.permissions && r.permissions.length) {
             for (let i = 0; i < r.permissions.length; i++) {
@@ -352,6 +284,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
         this.projectsModalComponent.projectsModalOpened = true;
         this.projectsModalComponent.robotName = robotName;
         this.projectsModalComponent.permissions = permissions;
+        this.projectsModalComponent.clrDgRefresh();
     }
     refresh() {
         this.currentPage = 1;
@@ -492,4 +425,11 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
         }
         this.refresh();
     }
+
+    getSystemAccess(r: Robot): Access[] {
+        return getSystemAccess(r);
+    }
+
+    protected readonly NEW_EMPTY_ROBOT = NEW_EMPTY_ROBOT;
+    protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
 }
