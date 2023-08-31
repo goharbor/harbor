@@ -295,21 +295,21 @@ jobs:
                 export REPO_redis=$(echo ${{ needs.build-harbor-redis.outputs.tags }} | cut -f1 -d":")
 
                 touch values.yaml
-                yq eval ".expose.tls.certSource = \"none\"" values.yaml
-                yq eval ".core.image.repository = \"$REPO_core\"" values.yaml
-                yq eval ".core.image.tag = \"24h\"" values.yaml
-                yq eval ".portal.image.repository = \"$REPO_portal\"" values.yaml
-                yq eval ".portal.image.tag = \"24h\"" values.yaml
-                yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" values.yaml
-                yq eval ".jobservice.image.tag = \"24h\"" values.yaml
-                yq eval ".registry.registry.image.repository = \"$REPO_registry\"" values.yaml
-                yq eval ".registry.registry.image.tag = \"24h\"" values.yaml
-                yq eval ".registry.controller.image.repository = \"$REPO_registryctl\"" values.yaml
-                yq eval ".registry.controller.image.tag = \"24h\"" values.yaml
-                yq eval ".database.internal.image.repository = \"$REPO_db\"" values.yaml
-                yq eval ".database.internal.image.tag = \"24h\"" values.yaml
-                yq eval ".redis.internal.image.repository = \"$REPO_redis\"" values.yaml
-                yq eval ".redis.internal.image.tag = \"24h\"" values.yaml
+                yq eval ".expose.tls.certSource = \"none\"" -i values.yaml
+                yq eval ".core.image.repository = \"$REPO_core\"" -i values.yaml
+                yq eval ".core.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".portal.image.repository = \"$REPO_portal\"" -i values.yaml
+                yq eval ".portal.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" -i values.yaml
+                yq eval ".jobservice.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".registry.registry.image.repository = \"$REPO_registry\"" -i values.yaml
+                yq eval ".registry.registry.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".registry.controller.image.repository |= \"$REPO_registryctl\"" -i values.yaml
+                yq eval ".registry.controller.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".database.internal.image.repository = \"$REPO_db\"" -i values.yaml
+                yq eval ".database.internal.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".redis.internal.image.repository = \"$REPO_redis\"" -i values.yaml
+                yq eval ".redis.internal.image.tag |= \"24h\"" -i values.yaml
                 cat values.yaml
                 
           - name: Upload values as artifact
