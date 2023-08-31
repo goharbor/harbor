@@ -270,8 +270,8 @@ jobs:
     #           harbor_base_namespace=goharbor
     #           npm_registry=https://registry.npmjs.org
 
-    # # Render values file
-    # render-values:
+    # Render values file
+    render-values:
     #     name: Render values file
     #     needs:
     #     - build-harbor-core
@@ -281,8 +281,8 @@ jobs:
     #     - build-harbor-registryctl
     #     - build-harbor-db
     #     - build-harbor-redis
-    #     runs-on: ubuntu-latest
-    #     steps:
+        runs-on: ubuntu-latest
+        steps:
     #       - name: Export values from needs
     #         id: yq
     #         run: |
@@ -312,19 +312,19 @@ jobs:
     #             yq eval ".redis.internal.image.tag |= \"24h\"" -i values.yaml
     #             cat values.yaml
                 
-    #       - name: Upload values as artifact
-    #         uses: actions/upload-artifact@v3
-    #         with:
-    #             name: preview-spec
-    #             path: values.yaml
-    #             retention-days: 2
+          - name: Upload values as artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: preview-spec
+                path: values.yaml
+                retention-days: 2
 
-    #       - name: Upload PR Event as Artifact
-    #         uses: actions/upload-artifact@v3
-    #         with:
-    #             name: preview-spec
-    #             path: ${{ github.event_path }}
-    #             retention-days: 2
+          - name: Upload PR Event as Artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: preview-spec
+                path: ${{ github.event_path }}
+                retention-days: 2
 
     # uffizzi-cluster-delete:
     #     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
