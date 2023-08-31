@@ -170,7 +170,7 @@ jobs:
         with:
           working-directory: src/portal
           config-file: cypress.config.ts
-          config: baseUrl=https://${{ needs.uffizzi-cluster-create.steps.ingress.outputs.HARBOR_HOST }}
+          config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
       
       - name: Cypress output
         uses: actions/github-script@v6
