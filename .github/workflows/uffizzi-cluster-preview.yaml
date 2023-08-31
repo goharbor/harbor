@@ -87,7 +87,7 @@ jobs:
         body-includes: ${{ env.PR_NUMBER }}
         direction: last
 
-      # Create/Update comment with action deployment status
+    # Create/Update comment with action deployment status
     - name: Create or Update Comment with Deployment Notification
       uses: peter-evans/create-or-update-comment@v2
       id: notification
