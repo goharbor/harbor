@@ -7,27 +7,66 @@ on:
     types:
       - completed
 
-env:
-  PR_NUMBER: ${{ github.event.number }}
-
 jobs:
   uffizzi-cluster-create:
     name: Deploy Uffizzi Cluster
     outputs:
       HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
+      pr-number: ${{ env.PR_NUMBER }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     
+    - name: 'Download artifacts'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+          });
+          let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+            return artifact.name == "preview-spec"
+          })[0];
+          if (matchArtifact === undefined) {
+            throw TypeError('Build Artifact not found!');
+          }
+          let download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+          });
+          let fs = require('fs');
+          fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/preview-spec.zip`, Buffer.from(download.data));      
+
+    - name: 'Unzip artifact'
+      run: unzip preview-spec.zip
+
+    - name: Read Event into ENV
+      run: |
+        echo 'EVENT_JSON<<EOF' >> $GITHUB_ENV
+        cat event.json >> $GITHUB_ENV
+        echo -e '\nEOF' >> $GITHUB_ENV
+
+    - name: Read PR Number From Event Object
+      id: pr
+      run: echo "PR_NUMBER=${{ fromJSON(env.EVENT_JSON).number }}" >> $GITHUB_ENV
+
+    - name: Read Event Type from Event Object
+      id: action
+      run: echo "ACTION=${{ fromJSON(env.EVENT_JSON).action }}" >> $GITHUB_ENV
+
     # Identify comment to be updated
     - name: Find comment for Ephemeral Environment
       uses: peter-evans/find-comment@v2
       id: find-comment
       with:
-        issue-number: $PR_NUMBER
+        issue-number: ${{ env.PR_NUMBER }}
         comment-author: "github-actions[bot]"
-        body-includes: pr-$PR_NUMBER
+        body-includes: ${{ env.PR_NUMBER }}
         direction: last
 
     # Create/Update comment with action deployment status
@@ -36,11 +75,11 @@ jobs:
       id: notification
       with:
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ env.PR_NUMBER }}
         body: |
             ## Uffizzi Ephemeral Environment - Virtual Cluster
 
-            :cloud: deploying cluster pr-${{ github.event.pull_request.number }}...
+            :cloud: deploying cluster pr-${{ env.PR_NUMBER }}...
 
             :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
                 Download the Uffizzi CLI to interact with the upcoming virtual cluster
@@ -51,23 +90,23 @@ jobs:
     - name: Connect to Virtual Cluster
       uses: UffizziCloud/cluster-action@main
       with:
-        cluster-name: pr-${{ github.event.pull_request.number }}
+        cluster-name: pr-${{ env.PR_NUMBER }}
 
     # Create/Update comment with action deployment status
     - name: Create or Update Comment with Deployment URL
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.notification.outputs.comment-id }}
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: ${{ env.PR_NUMBER }}
         body: |
             ## Uffizzi Ephemeral Environment - Virtual Cluster
     
-            Your cluster `pr-${{ github.event.pull_request.number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
+            Your cluster `pr-${{ env.PR_NUMBER }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
             To connect to this cluster, follow these steps:
     
             1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
             2. Login to Uffizzi: `uffizzi login`
-            3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[PATH_TO_KUBECONFIG]`
+            3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
             After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
     
         edit-mode: replace
@@ -104,10 +143,10 @@ jobs:
         uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ needs.uffizzi-cluster-create.notification.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           body: |
               ---
-              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ github.event.pull_request.number }}.
+              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ env.PR_NUMBER }}.
               Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
               Use credentials admin/Harbor12345 to login.
               For more details, please visit      
@@ -184,17 +223,6 @@ jobs:
                     
                       `,
                     })
-
-  uffizzi-cluster-delete:
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-        runs-on: ubuntu-latest
-        steps:
-        - name: Delete Virtual Cluster
-          uses: UffizziCloud/cluster-action@main
-          with:
-            action: delete
-            cluster-name: pr-${{ github.event.pull_request.number }}
-
         
 #         # Apply Harbor Helm Chart
 #         - name: Apply Helm Chart
