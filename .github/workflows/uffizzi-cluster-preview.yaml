@@ -3,7 +3,7 @@ name: Uffizzi Cluster Preview (deploy)
 on:
   workflow_run:
     workflows:
-      - 'Build Harbor on Uffizzi Cluster'
+      - 'Preview (build)'
     types:
       - completed
 
