@@ -184,6 +184,7 @@ jobs:
               return
             }
             const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
+            const pr = context.issue.number || issues.data[0].number || ${{ env.PR_NUMBER }}
             console.log("Success: " + testResults.success)
             console.log("TotalPassed: " + testResults.totalPassed)
             console.log("TotalFailed: " + testResults.totalFailed)
@@ -217,7 +218,7 @@ jobs:
             const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
 
             github.rest.issues.createComment({
-              issue_number: ${PR_NUMBER},
+              issue_number: pr,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body:`
