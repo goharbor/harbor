@@ -13,8 +13,8 @@ permissions:
   id-token: write      
 
 jobs:
-  get-info:
-    name: Get PR/Event info
+  uffizzi-cluster-create:
+    name: Create Uffizzi Cluster
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
@@ -75,97 +75,84 @@ jobs:
         echo "Manifests file hash: ${{ env.MANIFESTS_FILE_HASH }}"
         cat event.json
 
-  uffizzi-cluster-create:
-    name: Create Uffizzi Cluster
-    outputs:
-      HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
-      pr-number: ${{ needs.get-info.outputs.pr-number }}
-    needs: 
-      - get-info
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
     # Identify comment to be updated
-      - name: Find comment for Ephemeral Environment
-        uses: peter-evans/find-comment@v2
-        id: find-comment
-        with:
-          issue-number: ${{ needs.get-info.outputs.pr-number }}
-          comment-author: "github-actions[bot]"
-          body-includes: ${{ needs.get-info.outputs.pr-number }}
-          direction: last
+    - name: Find comment for Ephemeral Environment
+      uses: peter-evans/find-comment@v2
+      id: find-comment
+      with:
+        issue-number: ${{ env.PR_NUMBER }}
+        comment-author: "github-actions[bot]"
+        body-includes: ${{ env.PR_NUMBER }}
+        direction: last
 
       # Create/Update comment with action deployment status
-      - name: Create or Update Comment with Deployment Notification
-        uses: peter-evans/create-or-update-comment@v2
-        id: notification
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ needs.get-info.outputs.pr-number }}
-          body: |
-              ## Uffizzi Ephemeral Environment - Virtual Cluster
+    - name: Create or Update Comment with Deployment Notification
+      uses: peter-evans/create-or-update-comment@v2
+      id: notification
+      with:
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
 
-              :cloud: deploying cluster pr-${{ needs.get-info.outputs.pr-number }}...
+            :cloud: deploying cluster pr-${{ env.PR_NUMBER }}...
 
-              :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-                  Download the Uffizzi CLI to interact with the upcoming virtual cluster
-              https://docs.uffizzi.com/install
-          edit-mode: replace
+            :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+                Download the Uffizzi CLI to interact with the upcoming virtual cluster
+            https://docs.uffizzi.com/install
+        edit-mode: replace
 
-      # Create/Connect to Uffizzi Virtual Cluster
-      - name: Connect to Virtual Cluster
-        uses: UffizziCloud/cluster-action@main
-        with:
-          cluster-name: pr-${{ needs.get-info.outputs.pr-number }}
+    # Create/Connect to Uffizzi Virtual Cluster
+    - name: Connect to Virtual Cluster
+      uses: UffizziCloud/cluster-action@main
+      with:
+        cluster-name: pr-${{ env.PR_NUMBER }}
 
-      # Create/Update comment with action deployment status
-      - name: Create or Update Comment with Deployment URL
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          comment-id: ${{ steps.notification.outputs.comment-id }}
-          issue-number: ${{ needs.get-info.outputs.pr-number }}
-          body: |
-              ## Uffizzi Ephemeral Environment - Virtual Cluster
-      
-              Your cluster `pr-${{ needs.get-info.outputs.pr-number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
-              To connect to this cluster, follow these steps:
-      
-              1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
-              2. Login to Uffizzi: `uffizzi login`
-              3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ needs.get-info.outputs.pr-number }} --kubeconfig=[PATH_TO_KUBECONFIG]`
-              After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
-      
-          edit-mode: replace
+    # Create/Update comment with action deployment status
+    - name: Create or Update Comment with Deployment URL
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.notification.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
+    
+            Your cluster `pr-${{ env.PR_NUMBER }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
+            To connect to this cluster, follow these steps:
+    
+            1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
+            2. Login to Uffizzi: `uffizzi login`
+            3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
+            After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
+    
+        edit-mode: replace
 
-      - name: Apply Helm Chart
-        id: helm
-        run: |
-          export KUBECONFIG=kubeconfig
+    - name: Apply Helm Chart
+      id: helm
+      run: |
+        export KUBECONFIG=kubeconfig
 
-          helm repo add harbor https://helm.goharbor.io
-          helm upgrade --install my-release harbor/harbor -f values.yaml
+        helm repo add harbor https://helm.goharbor.io
+        helm upgrade --install my-release harbor/harbor -f values.yaml
 
-      - name: Create ingress
-        id: ingress
-        run: |
-          sleep 20
-          echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
+    - name: Create ingress
+      id: ingress
+      run: |
+        sleep 20
+        echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
 
-      - name: Update Comment with Harbor URL
-        id: harbor_notify
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          comment-id: ${{ steps.notification.outputs.comment-id }}
-          issue-number: ${{ needs.get-info.outputs.pr-number }}
-          body: |
-              ---
-              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ needs.get-info.outputs.pr-number }}.
-              Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
-              Use credentials admin/Harbor12345 to login.
-              For more details, please visit      
+    - name: Update Comment with Harbor URL
+      id: harbor_notify
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.notification.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ---
+            Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ env.PR_NUMBER }}.
+            Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
+            Use credentials admin/Harbor12345 to login.
+            For more details, please visit      
 
   cypress-run:
     name: Cypress run
