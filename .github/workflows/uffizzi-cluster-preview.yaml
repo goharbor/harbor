@@ -140,14 +140,6 @@ jobs:
       
           edit-mode: replace
 
-  harbor-helm:
-    name: Apply Helm Chart
-    runs-on: ubuntu-latest
-    needs: uffizzi-cluster-create
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Apply Helm Chart
         id: helm
         run: |
@@ -166,11 +158,11 @@ jobs:
         id: harbor_notify
         uses: peter-evans/create-or-update-comment@v2
         with:
-          comment-id: ${{ needs.uffizzi-cluster-create.steps.notification.outputs.comment-id }}
-          issue-number: ${{ needs.uffizzi-cluster-create.outputs.pr-number }}
+          comment-id: ${{ steps.notification.outputs.comment-id }}
+          issue-number: ${{ needs.get-info.outputs.pr-number }}
           body: |
               ---
-              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ env.PR_NUMBER }}.
+              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ needs.get-info.outputs.pr-number }}.
               Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
               Use credentials admin/Harbor12345 to login.
               For more details, please visit      
