@@ -10,7 +10,8 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write      
+  id-token: write 
+  actions: write     
 
 jobs:
   uffizzi-cluster-create:
