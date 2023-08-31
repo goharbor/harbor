@@ -7,6 +7,9 @@ on:
     types:
       - completed
 
+env:
+  PR_NUMBER: ${{ github.event.number }}
+
 jobs:
   uffizzi-cluster-create:
     name: Deploy Uffizzi Cluster
@@ -22,9 +25,9 @@ jobs:
       uses: peter-evans/find-comment@v2
       id: find-comment
       with:
-        issue-number: ${{ github.event.pull_request.number }}
+        issue-number: $PR_NUMBER
         comment-author: "github-actions[bot]"
-        body-includes: pr-${{ github.event.pull_request.number }}
+        body-includes: pr-$PR_NUMBER
         direction: last
 
     # Create/Update comment with action deployment status
