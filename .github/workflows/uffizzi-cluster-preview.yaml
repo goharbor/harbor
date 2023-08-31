@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   get-info:
-    name: Deploy Uffizzi Cluster
+    name: Get PR/Event info
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
@@ -151,6 +151,7 @@ jobs:
       - name: Apply Helm Chart
         id: helm
         run: |
+          export KUBECONFIG=kubeconfig
 
           helm repo add harbor https://helm.goharbor.io
           helm upgrade --install my-release harbor/harbor -f values.yaml
