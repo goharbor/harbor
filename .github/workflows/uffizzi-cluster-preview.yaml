@@ -1,0 +1,331 @@
+name: Uffizzi Cluster Preview (deploy)
+
+on:
+  workflow_run:
+    workflows:
+      - 'Preview (build)'
+    types:
+      - completed
+
+jobs:
+  uffizzi-cluster-create:
+    name: Deploy Uffizzi Cluster
+    outputs:
+      HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    # Identify comment to be updated
+    - name: Find comment for Ephemeral Environment
+      uses: peter-evans/find-comment@v2
+      id: find-comment
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: "github-actions[bot]"
+        body-includes: pr-${{ github.event.pull_request.number }}
+        direction: last
+
+    # Create/Update comment with action deployment status
+    - name: Create or Update Comment with Deployment Notification
+      uses: peter-evans/create-or-update-comment@v2
+      id: notification
+      with:
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
+
+            :cloud: deploying cluster pr-${{ github.event.pull_request.number }}...
+
+            :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+                Download the Uffizzi CLI to interact with the upcoming virtual cluster
+            https://docs.uffizzi.com/install
+        edit-mode: replace
+
+    # Create/Connect to Uffizzi Virtual Cluster
+    - name: Connect to Virtual Cluster
+      uses: UffizziCloud/cluster-action@main
+      with:
+        cluster-name: pr-${{ github.event.pull_request.number }}
+
+    # Create/Update comment with action deployment status
+    - name: Create or Update Comment with Deployment URL
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.notification.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
+    
+            Your cluster `pr-${{ github.event.pull_request.number }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
+            To connect to this cluster, follow these steps:
+    
+            1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
+            2. Login to Uffizzi: `uffizzi login`
+            3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ github.event.pull_request.number }} --kubeconfig=[PATH_TO_KUBECONFIG]`
+            After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
+    
+        edit-mode: replace
+
+  harbor-helm:
+    name: Apply Helm Chart
+    runs-on: ubuntu-latest
+    needs: uffizzi-cluster-create
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: values
+          path: values.yaml
+
+      - name: Apply Helm Chart
+        id: helm
+        run: |
+
+          helm repo add harbor https://helm.goharbor.io
+          helm upgrade --install my-release harbor/harbor -f values.yaml
+
+      - name: Create ingress
+        id: ingress
+        run: |
+          sleep 20
+          echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
+
+      - name: Update Comment with Harbor URL
+        id: harbor_notify
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ needs.uffizzi-cluster-create.notification.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+              ---
+              Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ github.event.pull_request.number }}.
+              Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
+              Use credentials admin/Harbor12345 to login.
+              For more details, please visit      
+
+  cypress-run:
+            needs:
+              - uffizzi-cluster-create
+            name: Cypress run
+            runs-on: ubuntu-22.04
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v3 
+
+              - name: Cypress run
+                id: cypress
+                uses: gopuman/cypress-github-action@feat/add-test-reults-output
+                with:
+                  working-directory: src/portal
+                  config-file: cypress.config.ts
+                  config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
+              
+              - name: Cypress output
+                uses: actions/github-script@v6
+                with:
+                  script: |
+                    if (${{ steps.cypress.outputs.testResultsObject }} == "") {
+                      console.log('No test results found')
+                      return
+                    }
+                    const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
+                    console.log("Success: " + testResults.success)
+                    console.log("TotalPassed: " + testResults.totalPassed)
+                    console.log("TotalFailed: " + testResults.totalFailed)
+                    console.log("TotalPending: " + testResults.totalPending)
+                    console.log("TotalSkipped: " + testResults.totalSkipped)
+                    console.log("TotalDuration: " + testResults.totalDuration) 
+
+                    const headers = [
+                      { data: 'Result', header: true },
+                      { data: 'Passed :white_check_mark:', header: true },
+                      { data: 'Failed :x:', header: true },
+                      { data: 'Pending :hand:', header: true },
+                      { data: 'Skipped :leftwards_arrow_with_hook:', header: true },
+                      { data: 'Duration :clock8:', header: true }
+                    ]
+                  
+                    const status =
+                      testResults.totalFailed === 0
+                        ? 'Passing :white_check_mark:'
+                        : 'Failing :red_circle:'
+                  
+                    const summaryRows = [
+                      status,
+                      `${testResults.totalPassed}`,
+                      `${testResults.totalFailed}`,
+                      `${testResults.totalPending}`,
+                      `${testResults.totalSkipped}`,
+                      `${testResults.totalDuration / 1000}s` || ''
+                    ]                  
+
+                    const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
+
+                    github.rest.issues.createComment({
+                      issue_number: context.issue.number,
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      body:`
+                      Here are the test results:
+                      
+                    
+                      | Result         | Passed ✅ | Failed ❌ | Pending ✋ | Skipped ↩️ | Duration 🕗 |
+                      | -------------- | --------- | --------- | --------- | ---------- | ------------------ |
+                      | ${status}      | ${testResults.totalPassed}        | ${testResults.totalFailed}        | ${testResults.totalPending}        | ${testResults.totalSkipped}        | ${testResults.totalDuration / 1000}s |
+                    
+                      `,
+                    })
+
+  uffizzi-cluster-delete:
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        runs-on: ubuntu-latest
+        steps:
+        - name: Delete Virtual Cluster
+          uses: UffizziCloud/cluster-action@main
+          with:
+            action: delete
+            cluster-name: pr-${{ github.event.pull_request.number }}
+
+        
+#         # Apply Harbor Helm Chart
+#         - name: Apply Helm Chart
+#           id: helm
+#           run: |                
+#             export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
+#             export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
+#             export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
+#             export REPO_registry=$(echo ${{ needs.build-harbor-registry.outputs.tags }} | cut -f1 -d":")
+#             export REPO_registryctl=$(echo ${{ needs.build-harbor-registryctl.outputs.tags }} | cut -f1 -d":")
+#             export REPO_db=$(echo ${{ needs.build-harbor-db.outputs.tags }} | cut -f1 -d":")
+#             export REPO_redis=$(echo ${{ needs.build-harbor-redis.outputs.tags }} | cut -f1 -d":")
+
+#             export KUBECONFIG="`pwd`/kubeconfig"
+#             helm repo add harbor https://helm.goharbor.io
+
+#               helm upgrade --install my-release harbor/harbor \
+#                 --set expose.tls.certSource=none \
+#                 --set portal.image.repository=${REPO_portal} \
+#                 --set portal.image.tag=24h \
+#                 --set core.image.repository=${REPO_core} \
+#                 --set core.image.tag=24h \
+#                 --set jobservice.image.repository=${REPO_jobservice} \
+#                 --set jobservice.image.tag=24h \
+#                 --set registry.registry.image.repository=${REPO_registry} \
+#                 --set registry.registry.image.tag=24h \
+#                 --set registry.controller.image.repository=${REPO_registryctl} \
+#                 --set registry.controller.image.tag=24h \
+#                 --set database.internal.image.repository=${REPO_db} \
+#                 --set database.internal.image.tag=24h \
+#                 --set redis.internal.image.repository=${REPO_redis} \
+#                 --set redis.internal.image.tag=24h \
+
+#         # Create ingress
+#         - name: Create ingress
+#           id: ingress
+#           run: |
+#             sleep 20
+#             echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
+          
+#         - name: Update Comment with Harbor URL
+#           id: harbor_notify
+#           uses: peter-evans/create-or-update-comment@v2
+#           with:
+#             comment-id: ${{ steps.notification.outputs.comment-id }}
+#             issue-number: ${{ github.event.pull_request.number }}
+#             body: |
+#                 ---
+#                 Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ github.event.pull_request.number }}.
+#                 Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
+#                 Use credentials admin/Harbor12345 to login.
+#                 For more details, please visit https://github.com/goharbor/harbor
+            
+#             edit-mode: append
+
+    # cypress-run:
+    #       needs:
+    #         - uffizzi-cluster
+    #       name: Cypress run
+    #       runs-on: ubuntu-22.04
+    #       steps:
+    #         - name: Checkout
+    #           uses: actions/checkout@v3 
+
+    #         - name: Cypress run
+    #           id: cypress
+    #           uses: gopuman/cypress-github-action@feat/add-test-reults-output
+    #           with:
+    #             working-directory: src/portal
+    #             config-file: cypress.config.ts
+    #             config: baseUrl=https://${{ needs.uffizzi-cluster.outputs.HARBOR_HOST }}
+            
+    #         - name: Cypress output
+    #           uses: actions/github-script@v6
+    #           with:
+    #             script: |
+    #               if (${{ steps.cypress.outputs.testResultsObject }} == "") {
+    #                 console.log('No test results found')
+    #                 return
+    #               }
+    #               const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
+    #               console.log("Success: " + testResults.success)
+    #               console.log("TotalPassed: " + testResults.totalPassed)
+    #               console.log("TotalFailed: " + testResults.totalFailed)
+    #               console.log("TotalPending: " + testResults.totalPending)
+    #               console.log("TotalSkipped: " + testResults.totalSkipped)
+    #               console.log("TotalDuration: " + testResults.totalDuration) 
+
+    #               const headers = [
+    #                 { data: 'Result', header: true },
+    #                 { data: 'Passed :white_check_mark:', header: true },
+    #                 { data: 'Failed :x:', header: true },
+    #                 { data: 'Pending :hand:', header: true },
+    #                 { data: 'Skipped :leftwards_arrow_with_hook:', header: true },
+    #                 { data: 'Duration :clock8:', header: true }
+    #               ]
+                
+    #               const status =
+    #                 testResults.totalFailed === 0
+    #                   ? 'Passing :white_check_mark:'
+    #                   : 'Failing :red_circle:'
+                
+    #               const summaryRows = [
+    #                 status,
+    #                 `${testResults.totalPassed}`,
+    #                 `${testResults.totalFailed}`,
+    #                 `${testResults.totalPending}`,
+    #                 `${testResults.totalSkipped}`,
+    #                 `${testResults.totalDuration / 1000}s` || ''
+    #               ]                  
+
+    #               const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
+
+    #               github.rest.issues.createComment({
+    #                 issue_number: context.issue.number,
+    #                 owner: context.repo.owner,
+    #                 repo: context.repo.repo,
+    #                 body:`
+    #                 Here are the test results:
+                    
+                   
+    #                 | Result         | Passed ✅ | Failed ❌ | Pending ✋ | Skipped ↩️ | Duration 🕗 |
+    #                 | -------------- | --------- | --------- | --------- | ---------- | ------------------ |
+    #                 | ${status}      | ${testResults.totalPassed}        | ${testResults.totalFailed}        | ${testResults.totalPending}        | ${testResults.totalSkipped}        | ${testResults.totalDuration / 1000}s |
+                   
+    #                 `,
+    #               })
+
+    # uffizzi-cluster-delete:
+    #       if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+    #       runs-on: ubuntu-latest
+    #       steps:
+    #       - name: Delete Virtual Cluster
+    #         uses: UffizziCloud/cluster-action@main
+    #         with:
+    #           action: delete
+    #           cluster-name: pr-${{ github.event.pull_request.number }}
