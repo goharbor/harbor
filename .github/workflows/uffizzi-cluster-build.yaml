@@ -315,6 +315,23 @@ jobs:
           - name: Upload values as artifact
             uses: actions/upload-artifact@v3
             with:
-                name: values
+                name: preview-spec
                 path: values.yaml
                 retention-days: 2
+
+          - name: Upload PR Event as Artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: preview-spec
+                path: ${{ github.event_path }}
+                retention-days: 2
+
+    uffizzi-cluster-delete:
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        runs-on: ubuntu-latest
+        steps:
+          - name: Delete Virtual Cluster
+            uses: UffizziCloud/cluster-action@main
+            with:
+                action: delete
+                cluster-name: pr-${{ github.event.pull_request.number }}
