@@ -151,10 +151,15 @@ jobs:
         issue-number: ${{ env.PR_NUMBER }}
         body: |
             ---
-            Please wait for several minutes for Harbor deployment to complete on cluster pr-${{ env.PR_NUMBER }}.
-            Then you should be able to visit the Harbor portal at https://${{ steps.ingress.outputs.HARBOR_HOST }}
-            Use credentials admin/Harbor12345 to login.
-            For more details, please visit      
+            
+            ### Harbor Portal
+
+            Visit https://${{ steps.ingress.outputs.HARBOR_HOST }}
+            (It may take several minutes for the cluster pr-${{ env.PR_NUMBER }} to be ready.)
+
+            #### To login, use the default credentials:
+            Username: admin
+            Password: Harbor12345
 
   cypress-run:
     name: Cypress run
