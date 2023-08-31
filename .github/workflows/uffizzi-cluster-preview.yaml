@@ -10,8 +10,9 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write 
-  actions: write     
+  id-token: write
+  actions: write
+
 
 jobs:
   uffizzi-cluster-create:
@@ -215,7 +216,7 @@ jobs:
             const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
 
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: ${{ env.PR_NUMBER }},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body:`
