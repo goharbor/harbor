@@ -21,6 +21,7 @@ jobs:
       git-ref: ${{ env.GIT_REF }}
       pr-number: ${{ env.PR_NUMBER }}
       action: ${{ env.ACTION }}
+      HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
     steps:   
     - name: 'Download artifacts'
       uses: actions/github-script@v6
@@ -169,7 +170,7 @@ jobs:
         with:
           working-directory: src/portal
           config-file: cypress.config.ts
-          config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
+          config: baseUrl=https://${{ needs.uffizzi-cluster-create.steps.ingress.outputs.HARBOR_HOST }}
       
       - name: Cypress output
         uses: actions/github-script@v6
