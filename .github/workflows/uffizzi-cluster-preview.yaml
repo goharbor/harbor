@@ -127,7 +127,7 @@ jobs:
             To connect to this cluster, follow these steps:
     
             1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
-            2. Login to Uffizzi, then select the `harbor` account and project
+            2. Login to Uffizzi, then select the `harbor` account and project:
             ```
             uffizzi login
             ```
