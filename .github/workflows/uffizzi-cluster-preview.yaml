@@ -137,7 +137,7 @@ jobs:
               ‣ harbor
                 jdoe
             
-              Select a project or create a new project: 
+            Select a project or create a new project: 
               ‣ harbor-6783521
             ```
             3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
