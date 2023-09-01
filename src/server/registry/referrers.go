@@ -54,7 +54,7 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	at := req.URL.Query().Get("artifactType")
 	var filter string
 	if at != "" {
-		filter = at
+		filter = "artifactType"
 	}
 
 	// Check if the reference is a valid digest

@@ -101,7 +101,20 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	if err := json.Unmarshal(manifest, mani); err != nil {
 		return err
 	}
-	// get config layer
+
+	// parse annotation
+	annotationParser := annotation.NewParser()
+	err := annotationParser.Parse(ctx, artifact, manifest)
+	if err != nil {
+		log.Errorf("the annotation parser parse annotation for artifact error: %v", err)
+	}
+
+	// if manifest.Config.Mediatype not comply with stanard config json regex (unkown type)
+	// this regex will filter either not json format config or empty config layer
+	// skip abstract pullblob and artifact.ExtraAttrs
+	if d.GetArtifactType(ctx, artifact) == ArtifactTypeUnknown {
+		return nil
+	}
 	_, blob, err := d.regCli.PullBlob(artifact.RepositoryName, mani.Config.Digest.String())
 	if err != nil {
 		return err
@@ -109,26 +122,11 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	defer blob.Close()
 	// parse metadata from config layer
 	metadata := map[string]interface{}{}
-	// Some artifact may not have empty config layer.
-	if mani.Config.Size != 0 {
-		if mani.Config.MediaType == v1.MediaTypeImageConfig || mani.Config.MediaType == schema2.MediaTypeImageConfig {
-			if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
-				log.Errorf("failed to decode metadata, err=%v", err)
-				return err
-			}
-		} else {
-			log.Infof("do not decode mani.Config.Digest=[%s], because mani.Config.MediaType is not %s, or %s",
-				mani.Config.Digest.String(), v1.MediaTypeImageConfig, schema2.MediaTypeImageConfig)
-		}
+	if json.NewDecoder(blob).Decode(&metadata); err != nil {
+		return err
 	}
 	// Populate all metadata into the ExtraAttrs first.
 	artifact.ExtraAttrs = metadata
-	annotationParser := annotation.NewParser()
-	err = annotationParser.Parse(ctx, artifact, manifest)
-	if err != nil {
-		log.Errorf("the annotation parser parse annotation for artifact error: %v", err)
-	}
-
 	return nil
 }
 

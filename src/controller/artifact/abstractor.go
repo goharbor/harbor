@@ -72,6 +72,7 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 		if err := a.abstractManifestV1Metadata(ctx, artifact, content); err != nil {
 			return err
 		}
+	// v1.MediaTypeImageManifest="application/vnd.oci.image.manifest.v1+json"
 	case v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
 		if err = a.abstractManifestV2Metadata(artifact, content); err != nil {
 			return err
@@ -127,6 +128,12 @@ func (a *abstractor) abstractManifestV2Metadata(artifact *artifact.Artifact, con
 	}
 	// use the "manifest.config.mediatype" as the media type of the artifact
 	artifact.MediaType = manifest.Config.MediaType
+	// https://github.com/opencontainers/image-spec/blob/v1.1.0-rc4/specs-go/v1/mediatype.go
+	// if config descriptor is empty JSON{}, using manifest.ArtifactType as artifact.MediaType
+	// artifacts have historically been created without an artifactType field, and tooling to work with artifacts should fallback to the config.mediaType value.
+	if manifest.Config.MediaType == "application/vnd.oci.empty.v1+json" && manifest.ArtifactType != "" {
+		artifact.MediaType = manifest.ArtifactType
+	}
 
 	if manifest.Annotations[wasm.AnnotationVariantKey] == wasm.AnnotationVariantValue || manifest.Annotations[wasm.AnnotationHandlerKey] == wasm.AnnotationHandlerValue {
 		artifact.MediaType = wasm.MediaType
