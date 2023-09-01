@@ -134,11 +134,11 @@ jobs:
 
             ```
             Select an account: 
-              ‣ harbor
+              ‣ ${{ github.event.repository.name }}
                 jdoe
             
             Select a project or create a new project: 
-              ‣ harbor-6783521
+              ‣ ${{ github.event.repository.name }}-6783521
             ```
             3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
             After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
