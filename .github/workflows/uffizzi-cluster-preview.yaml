@@ -129,7 +129,7 @@ jobs:
             1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
             2. Login to Uffizzi, then select the `harbor` account and project
             ```
-            uff`izzi login
+            uffizzi login
             ```
 
             ```

@@ -40,7 +40,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
-            no-cache: true
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -74,6 +75,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -112,6 +115,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -148,6 +153,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -187,6 +194,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -223,7 +232,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
-            no-cache: true
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
@@ -260,7 +270,8 @@ jobs:
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
-            no-cache: true
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
