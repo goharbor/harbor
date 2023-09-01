@@ -36,7 +36,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_CORE }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -70,7 +70,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_PORTAL }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -108,7 +108,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_JS }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -144,7 +144,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_REG }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -183,7 +183,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_REGCTL }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -219,7 +219,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_DB }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -256,7 +256,7 @@ jobs:
           with:
           # An anonymous, emphemeral registry built on ttl.sh
             images: registry.uffizzi.com/${{ env.UUID_RDS }}
-            tags: type=raw,value=24h
+            tags: type=raw,value=60d
         - name: Build and Push Image to Uffizzi Ephemeral Registry
           uses: docker/build-push-action@v3
           with:
@@ -298,19 +298,19 @@ jobs:
                 touch values.yaml
                 # yq eval ".expose.tls.certSource = \"none\"" -i values.yaml
                 # yq eval ".core.image.repository = \"$REPO_core\"" -i values.yaml
-                # yq eval ".core.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".core.image.tag |= \"60d\"" -i values.yaml
                 # yq eval ".portal.image.repository = \"$REPO_portal\"" -i values.yaml
-                # yq eval ".portal.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".portal.image.tag |= \"60d\"" -i values.yaml
                 # yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" -i values.yaml
-                # yq eval ".jobservice.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".jobservice.image.tag |= \"60d\"" -i values.yaml
                 # yq eval ".registry.registry.image.repository = \"$REPO_registry\"" -i values.yaml
-                # yq eval ".registry.registry.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".registry.registry.image.tag |= \"60d\"" -i values.yaml
                 # yq eval ".registry.controller.image.repository |= \"$REPO_registryctl\"" -i values.yaml
-                # yq eval ".registry.controller.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".registry.controller.image.tag |= \"60d\"" -i values.yaml
                 # yq eval ".database.internal.image.repository = \"$REPO_db\"" -i values.yaml
-                # yq eval ".database.internal.image.tag |= \"24h\"" -i values.yaml
+                # yq eval ".database.internal.image.tag |= \"60d\"" -i values.yaml
                 yq eval ".redis.internal.image.repository = \"$REPO_redis\"" -i values.yaml
-                yq eval ".redis.internal.image.tag |= \"24h\"" -i values.yaml
+                yq eval ".redis.internal.image.tag |= \"60d\"" -i values.yaml
                 
           - name: Upload values as artifact
             uses: actions/upload-artifact@v3
