@@ -335,3 +335,9 @@ jobs:
             with:
                 action: delete
                 cluster-name: pr-${{ github.event.pull_request.number }}
+          - name: Upload PR Event as Artifact
+            uses: actions/upload-artifact@v3
+            with:
+                name: preview-spec
+                path: ${{ github.event_path }}
+                retention-days: 2

@@ -79,6 +79,7 @@ jobs:
 
     # Identify comment to be updated
     - name: Find comment for Ephemeral Environment
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       uses: peter-evans/find-comment@v2
       id: find-comment
       with:
@@ -89,6 +90,7 @@ jobs:
 
     # Create/Update comment with action deployment status
     - name: Create or Update Comment with Deployment Notification
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       uses: peter-evans/create-or-update-comment@v2
       id: notification
       with:
@@ -106,12 +108,14 @@ jobs:
 
     # Create/Connect to Uffizzi Virtual Cluster
     - name: Connect to Virtual Cluster
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       uses: UffizziCloud/cluster-action@main
       with:
         cluster-name: pr-${{ env.PR_NUMBER }}
 
     # Create/Update comment with action deployment status
     - name: Create or Update Comment with Deployment URL
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.notification.outputs.comment-id }}
@@ -130,6 +134,7 @@ jobs:
         edit-mode: replace
 
     - name: Apply Helm Chart
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       id: helm
       run: |
         export KUBECONFIG=kubeconfig
@@ -138,12 +143,14 @@ jobs:
         helm upgrade --install my-release harbor/harbor -f values.yaml
 
     - name: Create ingress
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       id: ingress
       run: |
         sleep 20
         echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
 
     - name: Update Comment with Harbor URL
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
       id: harbor_notify
       uses: peter-evans/create-or-update-comment@v2
       with:
@@ -162,6 +169,7 @@ jobs:
             Password: Harbor12345
 
   cypress-run:
+    if: ${{ needs.uffizzi-cluster-create.outputs.action != 'closed' }}
     name: Cypress run
     runs-on: ubuntu-22.04
     needs:
