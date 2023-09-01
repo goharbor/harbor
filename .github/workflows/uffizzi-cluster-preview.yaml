@@ -127,7 +127,19 @@ jobs:
             To connect to this cluster, follow these steps:
     
             1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
-            2. Login to Uffizzi: `uffizzi login`
+            2. Login to Uffizzi, then select the `harbor` account and project
+            ```
+            uff`izzi login
+            ```
+
+            ```
+            Select an account: 
+              ‣ harbor
+                jdoe
+            
+              Select a project or create a new project: 
+              ‣ harbor-6783521
+            ```
             3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
             After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
     
