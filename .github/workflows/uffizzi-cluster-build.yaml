@@ -312,28 +312,28 @@ jobs:
           - name: Export values from needs
             id: yq
             run: |
-                # export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
-                # export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
-                # export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
-                # export REPO_registry=$(echo ${{ needs.build-harbor-registry.outputs.tags }} | cut -f1 -d":")
-                # export REPO_registryctl=$(echo ${{ needs.build-harbor-registryctl.outputs.tags }} | cut -f1 -d":")
-                # export REPO_db=$(echo ${{ needs.build-harbor-db.outputs.tags }} | cut -f1 -d":")
+                export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
+                export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
+                export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
+                export REPO_registry=$(echo ${{ needs.build-harbor-registry.outputs.tags }} | cut -f1 -d":")
+                export REPO_registryctl=$(echo ${{ needs.build-harbor-registryctl.outputs.tags }} | cut -f1 -d":")
+                export REPO_db=$(echo ${{ needs.build-harbor-db.outputs.tags }} | cut -f1 -d":")
                 export REPO_redis=$(echo ${{ needs.build-harbor-redis.outputs.tags }} | cut -f1 -d":")
 
                 touch values.yaml
-                # yq eval ".expose.tls.certSource = \"none\"" -i values.yaml
-                # yq eval ".core.image.repository = \"$REPO_core\"" -i values.yaml
-                # yq eval ".core.image.tag |= \"60d\"" -i values.yaml
-                # yq eval ".portal.image.repository = \"$REPO_portal\"" -i values.yaml
-                # yq eval ".portal.image.tag |= \"60d\"" -i values.yaml
-                # yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" -i values.yaml
-                # yq eval ".jobservice.image.tag |= \"60d\"" -i values.yaml
-                # yq eval ".registry.registry.image.repository = \"$REPO_registry\"" -i values.yaml
-                # yq eval ".registry.registry.image.tag |= \"60d\"" -i values.yaml
-                # yq eval ".registry.controller.image.repository |= \"$REPO_registryctl\"" -i values.yaml
-                # yq eval ".registry.controller.image.tag |= \"60d\"" -i values.yaml
-                # yq eval ".database.internal.image.repository = \"$REPO_db\"" -i values.yaml
-                # yq eval ".database.internal.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".expose.tls.certSource = \"none\"" -i values.yaml
+                yq eval ".core.image.repository = \"$REPO_core\"" -i values.yaml
+                yq eval ".core.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".portal.image.repository = \"$REPO_portal\"" -i values.yaml
+                yq eval ".portal.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" -i values.yaml
+                yq eval ".jobservice.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".registry.registry.image.repository = \"$REPO_registry\"" -i values.yaml
+                yq eval ".registry.registry.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".registry.controller.image.repository |= \"$REPO_registryctl\"" -i values.yaml
+                yq eval ".registry.controller.image.tag |= \"60d\"" -i values.yaml
+                yq eval ".database.internal.image.repository = \"$REPO_db\"" -i values.yaml
+                yq eval ".database.internal.image.tag |= \"60d\"" -i values.yaml
                 yq eval ".redis.internal.image.repository = \"$REPO_redis\"" -i values.yaml
                 yq eval ".redis.internal.image.tag |= \"60d\"" -i values.yaml
                 
