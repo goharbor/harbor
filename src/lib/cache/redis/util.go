@@ -44,6 +44,7 @@ func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 	o := &redis.FailoverOptions{}
 
 	o.Username, o.Password = getUserPassword(u)
+	o.SentinelUsername, o.SentinelPassword = getUserPassword(u)
 	o.SentinelAddrs = strings.Split(u.Host, ",")
 
 	f := strings.FieldsFunc(u.Path, func(r rune) bool {
