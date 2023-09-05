@@ -15,7 +15,7 @@ jobs:
     runs-on:
       - ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
@@ -33,13 +33,13 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
