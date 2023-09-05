@@ -225,6 +225,8 @@ func clientCtx(ctx context.Context, verifyCert bool) context.Context {
 	} else {
 		client = &http.Client{}
 	}
+	client.Timeout = 10 * time.Second
+
 	return gooidc.ClientContext(ctx, client)
 }
 
