@@ -245,7 +245,7 @@ Create New Labels
 
 Update A Label
     [Arguments]  ${labelname}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Edit')]
     Sleep  1
@@ -256,7 +256,7 @@ Update A Label
 
 Delete A Label
     [Arguments]  ${labelname}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
@@ -312,7 +312,7 @@ Set User Name Claim And Save
 
 Select Distribution
     [Arguments]    ${name}
-    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]/label
+    Retry Element Click    //clr-dg-row[contains(.,'${name}')]//div[contains(@class,'clr-checkbox-wrapper')]/label[contains(@class,'clr-control-label')]
 
 Distribution Exist
     [Arguments]  ${name}  ${endpoint}
@@ -349,7 +349,7 @@ Delete A Distribution
     ${is_exsit}    evaluate    not ${deletable}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
-    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
@@ -359,7 +359,7 @@ Edit A Distribution
     [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
-    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label  times=9
+    Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]  times=9
     Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_edit_btn_id}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_name_input_id}
     Retry Text Input  ${distribution_endpoint_id}  ${new_endpoint}

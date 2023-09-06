@@ -142,7 +142,7 @@ Test Case - OIDC Group Filter
     Retry Wait Until Page Contains Element  //clr-dg-pagination//div[contains(@class, 'pagination-description')]
     ${total}=  Get Text  //clr-dg-pagination//div[contains(@class, 'pagination-description')]
     # Delete all groups
-    Run Keyword If  '${total}' != '0 items'  Run Keywords  Retry Element Click  //div[@class='clr-checkbox-wrapper']//label  AND  Retry Button Click  //button[contains(.,'Delete')]  AND  Retry Button Click  //button[contains(.,'DELETE')]
+    Run Keyword If  '${total}' != '0 items'  Run Keywords  Retry Element Click  //div[@class='clr-checkbox-wrapper']//label[contains(@class,'clr-control-label')]  AND  Retry Button Click  //button[contains(.,'Delete')]  AND  Retry Button Click  //button[contains(.,'DELETE')]
     # Set OIDCGroupFilter to .*users
     Switch To Configuration Authentication
     Retry Text Input  //*[@id='OIDCGroupFilter']  .*users
