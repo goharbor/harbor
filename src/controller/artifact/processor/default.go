@@ -111,15 +111,15 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	metadata := map[string]interface{}{}
 	// Some artifact may not have empty config layer.
 	if mani.Config.Size != 0 {
-		if mani.Config.MediaType == v1.MediaTypeImageConfig || mani.Config.MediaType == schema2.MediaTypeImageConfig {
-			if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
-				log.Errorf("failed to decode metadata, err=%v", err)
-				return err
-			}
-		} else {
-			log.Infof("do not decode mani.Config.Digest=[%s], because mani.Config.MediaType is not %s, or %s",
-				mani.Config.Digest.String(), v1.MediaTypeImageConfig, schema2.MediaTypeImageConfig)
-		}
+		// mani.Config.MediaType is not in this group:
+		// - "application/vnd.oci.image.config.v1+json" OR "application/vnd.docker.container.image.v1+json": this will call the AbstractMetadata() in image/manifest_v2.go
+		// - "application/vnd.wasm.config.v1+json": this will call the AbstractMetadata() in wasm/wasm.go
+		// - "application/vnd.cnab.manifest.v1": this will call the AbstractMetadata() in cnab/cnab.go
+		// - "application/vnd.cncf.helm.config.v1+json": this will call AbstractMetadata() in base/manifest.go
+		// Also within this spec: https://github.com/opencontainers/image-spec/blob/main/manifest.md, it states:
+		// "Implementations MUST NOT attempt to parse the referenced content if this media type is unknown".
+		log.Infof("do not decode mani.Config.Digest=[%s], because mani.Config.MediaType is not %s, or %s",
+			mani.Config.Digest.String(), v1.MediaTypeImageConfig, schema2.MediaTypeImageConfig)
 	}
 	// Populate all metadata into the ExtraAttrs first.
 	artifact.ExtraAttrs = metadata
