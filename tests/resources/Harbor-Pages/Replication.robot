@@ -165,7 +165,7 @@ Trigger Replication Manual
     [Arguments]  ${rule}
     Retry Element Click  ${rule_filter_search}
     Retry Text Input   ${rule_filter_input}  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${action_bar_replicate}
     Retry Wait Until Page Contains Element  ${dialog_replicate}
     #change from click to mouse down and up
@@ -177,7 +177,7 @@ Rename Rule
     [Arguments]  ${rule}  ${newname}
     Retry Element Click  ${rule_filter_search}
     Retry Text Input  ${rule_filter_input}  ${rule}
-    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${rule}')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${replication_rule_action}
     Retry Element Click  ${replication_rule_action_bar_edit}
     Retry Text Input  ${rule_name}  ${newname}
