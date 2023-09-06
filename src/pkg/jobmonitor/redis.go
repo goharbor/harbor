@@ -23,6 +23,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	libRedis "github.com/goharbor/harbor/src/lib/redis"
@@ -93,6 +94,10 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 	if err != nil {
 		return []string{}, err
 	}
+	go func() {
+		// the amount of jobIDs maybe large, so use goroutine to remove the job status tracking info
+		r.removeJobStatusInRedis(ctx, jobIDs)
+	}()
 	if ret < 1 {
 		// no job in queue removed
 		return []string{}, fmt.Errorf("no job in the queue removed")
@@ -100,6 +105,27 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 	log.Infof("deleted %d keys in waiting queue for %s", ret, jobType)
 	log.Debugf("job id to be deleted %v", jobIDs)
 	return jobIDs, nil
+}
+
+// removeJobStatusInRedis remove job status track information from redis, to avoid performance impact when the jobIDs is too large, use batch to remove
+func (r *redisClientImpl) removeJobStatusInRedis(ctx context.Context, jobIDs []string) {
+	conn := r.redisPool.Get()
+	defer conn.Close()
+	for _, id := range jobIDs {
+		namespace := fmt.Sprintf("{%s}", r.namespace)
+		redisKeyStatus := rds.KeyJobStats(namespace, id)
+		log.Debugf("delete job status info for job id:%v, key:%v", id, redisKeyStatus)
+		_, err := conn.Do("DEL", redisKeyStatus)
+		if err != nil {
+			log.Warningf("failed to delete the job status info for job %v, %v, continue", id, err)
+		}
+		redisKeyInProgress := rds.KeyJobTrackInProgress(namespace)
+		log.Debugf("delete inprogress info for key:%v, job id:%v", id, redisKeyInProgress)
+		_, err = conn.Do("HDEL", redisKeyInProgress, id)
+		if err != nil {
+			log.Warningf("failed to delete the job info in %v for job %v, %v, continue", rds.KeyJobTrackInProgress(namespace), id, err)
+		}
+	}
 }
 
 func (r *redisClientImpl) AllJobTypes(ctx context.Context) ([]string, error) {
