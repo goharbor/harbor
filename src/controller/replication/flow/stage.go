@@ -159,10 +159,6 @@ func getResourceName(res *model.Resource) string {
 // repository:a/b/c/image namespace:n replaceCount: 3 -> n/image
 // repository:a/b/c/image namespace:n replaceCount: 4 -> error
 func replaceNamespace(repository string, namespace string, replaceCount int8, dstRepoComponentPathType string) (string, error) {
-	if len(namespace) == 0 {
-		return repository, nil
-	}
-
 	srcRepoPathComponents := strings.Split(repository, "/")
 	srcLength := len(srcRepoPathComponents)
 
@@ -174,6 +170,8 @@ func replaceNamespace(repository string, namespace string, replaceCount int8, ds
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("the source repository %q contains only %d path components %v excepting the last one, but the destination namespace flattening level is %d",
 				repository, srcLength-1, srcRepoPathComponents[:srcLength-1], replaceCount)
+	case len(namespace) == 0:
+		dstRepoPrefix = strings.Join(srcRepoPathComponents[replaceCount:srcLength-1], "/")
 	default:
 		dstRepoPrefix = namespace + "/" + strings.Join(srcRepoPathComponents[replaceCount:srcLength-1], "/")
 	}
