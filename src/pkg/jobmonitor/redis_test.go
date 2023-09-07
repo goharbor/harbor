@@ -17,9 +17,9 @@ package jobmonitor
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/suite"
 
@@ -32,14 +32,10 @@ type RedisClientTestSuite struct {
 	suite.Suite
 	redisClient redisClientImpl
 	redisURL    string
+	redisSvc    *miniredis.Miniredis
 }
 
 func (suite *RedisClientTestSuite) SetupSuite() {
-	redisHost := os.Getenv("REDIS_HOST")
-	if redisHost == "" {
-		suite.FailNow("REDIS_HOST is not specified")
-	}
-	suite.redisURL = fmt.Sprintf("redis://%s:6379", redisHost)
 	pool, err := redisPool(&config.RedisPoolConfig{RedisURL: suite.redisURL, Namespace: "{jobservice_namespace}", IdleTimeoutSecond: 30})
 	suite.redisClient = redisClientImpl{
 		redisPool: pool,
@@ -82,5 +78,6 @@ func (suite *RedisClientTestSuite) TestUntrackJobStatusInBatch() {
 }
 
 func TestRedisClientTestSuite(t *testing.T) {
-	suite.Run(t, &RedisClientTestSuite{})
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &RedisClientTestSuite{redisURL: fmt.Sprintf("redis://%s", redisSvc.Addr()), redisSvc: redisSvc})
 }

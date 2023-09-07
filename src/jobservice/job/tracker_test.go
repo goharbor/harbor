@@ -16,9 +16,11 @@ package job
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,17 +37,19 @@ type TrackerTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 }
 
 // TestTrackerTestSuite is entry of go test
 func TestTrackerTestSuite(t *testing.T) {
-	suite.Run(t, new(TrackerTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &TrackerTestSuite{redisSvc: redisSvc})
 }
 
 // SetupSuite prepares test suite
 func (suite *TrackerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 }
 
 // TearDownSuite prepares test suites

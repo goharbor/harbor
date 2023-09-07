@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
@@ -41,7 +42,7 @@ type BasicSchedulerTestSuite struct {
 	cancel    context.CancelFunc
 	namespace string
 	pool      *redis.Pool
-
+	redisSvc  *miniredis.Miniredis
 	lcmCtl    lcm.Controller
 	scheduler Scheduler
 }
@@ -52,7 +53,7 @@ func (suite *BasicSchedulerTestSuite) SetupSuite() {
 	suite.cancel = cancel
 
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	envCtx := &env.Context{
 		SystemContext: ctx,
@@ -86,7 +87,9 @@ func (suite *BasicSchedulerTestSuite) TearDownSuite() {
 
 // TestSchedulerTestSuite is entry of go test
 func TestSchedulerTestSuite(t *testing.T) {
-	suite.Run(t, new(BasicSchedulerTestSuite))
+	redisSvc, err := miniredis.Run()
+	assert.NoError(t, err, "init redis is error: %+v", err)
+	suite.Run(t, &BasicSchedulerTestSuite{redisSvc: redisSvc})
 }
 
 // TestScheduler tests scheduling and un-scheduling

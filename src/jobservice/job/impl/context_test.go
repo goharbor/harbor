@@ -16,9 +16,11 @@ package impl
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -43,13 +45,15 @@ type ContextImplTestSuite struct {
 	tracker   job.Tracker
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	jobID     string
 }
 
 // TestContextImplTestSuite is entry of go test
 func TestContextImplTestSuite(t *testing.T) {
 	common_dao.PrepareTestForPostgresSQL()
-	suite.Run(t, new(ContextImplTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &ContextImplTestSuite{redisSvc: redisSvc})
 }
 
 // SetupSuite prepares test suite
@@ -75,7 +79,7 @@ func (suite *ContextImplTestSuite) SetupSuite() {
 	}
 
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	suite.jobID = utils.MakeIdentifier()
 	mockStats := &job.Stats{

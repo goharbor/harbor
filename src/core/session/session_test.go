@@ -16,8 +16,10 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/beego/beego/v2/server/web/session"
 	"github.com/stretchr/testify/suite"
 
@@ -30,6 +32,8 @@ type sessionTestSuite struct {
 	suite.Suite
 
 	provider session.Provider
+
+	redSvc *miniredis.Miniredis
 }
 
 func (s *sessionTestSuite) SetupSuite() {
@@ -40,7 +44,7 @@ func (s *sessionTestSuite) SetupSuite() {
 	s.NoError(err, "should get harbor provider")
 	s.NotNil(s.provider, "provider should not nil")
 
-	err = s.provider.SessionInit(context.Background(), 3600, "redis://127.0.0.1:6379/0")
+	err = s.provider.SessionInit(context.Background(), 3600, fmt.Sprintf("redis://%s/10?idle_timeout_seconds=30", s.redSvc.Addr()))
 	s.NoError(err, "session init should not error")
 }
 
@@ -121,5 +125,7 @@ func (s *sessionTestSuite) TestSessionAll() {
 }
 
 func TestSession(t *testing.T) {
-	suite.Run(t, &sessionTestSuite{})
+	redisSvc := miniredis.RunT(t)
+	t.Setenv("_REDIS_URL_REG", fmt.Sprintf("redis://%s/10?idle_timeout_seconds=5", redisSvc.Addr()))
+	suite.Run(t, &sessionTestSuite{redSvc: redisSvc})
 }

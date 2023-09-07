@@ -16,9 +16,11 @@ package mgt
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
@@ -37,14 +39,14 @@ type BasicManagerTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
-
-	manager Manager
+	redisSvc  *miniredis.Miniredis
+	manager   Manager
 }
 
 // SetupSuite prepares the test suite
 func (suite *BasicManagerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 	suite.manager = NewManager(context.TODO(), suite.namespace, suite.pool)
 
 	// Mock data
@@ -91,7 +93,8 @@ func (suite *BasicManagerTestSuite) TearDownSuite() {
 
 // TestBasicManagerTestSuite is entry of go test
 func TestBasicManagerTestSuite(t *testing.T) {
-	suite.Run(t, new(BasicManagerTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &BasicManagerTestSuite{redisSvc: redisSvc})
 }
 
 // TestBasicManagerGetJobs tests get jobs

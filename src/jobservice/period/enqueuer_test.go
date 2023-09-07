@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -41,18 +42,21 @@ type EnqueuerTestSuite struct {
 	enqueuer  *enqueuer
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	cancel    context.CancelFunc
 }
 
 // TestEnqueuerTestSuite is entry of go test
 func TestEnqueuerTestSuite(t *testing.T) {
-	suite.Run(t, new(EnqueuerTestSuite))
+	redisSvc, err := miniredis.Run()
+	assert.NoError(t, err, "init redis is error: %+v", err)
+	suite.Run(t, &EnqueuerTestSuite{redisSvc: redisSvc})
 }
 
 // SetupSuite prepares the test suite
 func (suite *EnqueuerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), utils.NodeID, "fake_node_ID"))
 	suite.cancel = cancel

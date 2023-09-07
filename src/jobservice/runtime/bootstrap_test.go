@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -69,7 +70,9 @@ func (suite *BootStrapTestSuite) SetupSuite() {
 
 // TearDownSuite clears the test suite
 func (suite *BootStrapTestSuite) TearDownSuite() {
-	pool := tests.GiveMeRedisPool()
+	redisSvc := miniredis.RunT(suite.T())
+	defer redisSvc.Close()
+	pool := tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", redisSvc.Addr()))
 	conn := pool.Get()
 	defer func() {
 		_ = conn.Close()

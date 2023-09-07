@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -35,6 +36,7 @@ import (
 
 type ControllerTestSuite struct {
 	htesting.Suite
+	redSvc *miniredis.Miniredis
 }
 
 func (suite *ControllerTestSuite) SetupSuite() {
@@ -294,13 +296,14 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 		suite.Nil(err)
 		suite.Equal(int64(0), size)
 
+		suite.redSvc.SetTime(time.Now())
 		suite.Nil(ctl.SetAcceptedBlobSize(ctx, sessionID, 100))
 
 		size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
 		suite.Equal(int64(100), size)
 
-		time.Sleep(time.Second * 10)
+		suite.redSvc.FastForward(time.Second * 10)
 
 		size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
 		suite.Nil(err)
@@ -383,5 +386,7 @@ func (suite *ControllerTestSuite) TestDelete() {
 }
 
 func TestControllerTestSuite(t *testing.T) {
-	suite.Run(t, &ControllerTestSuite{})
+	serv := miniredis.RunT(t)
+	t.Setenv("_REDIS_URL_REG", fmt.Sprintf("redis://%s/10?idle_timeout_seconds=5", serv.Addr()))
+	suite.Run(t, &ControllerTestSuite{redSvc: serv})
 }

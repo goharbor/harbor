@@ -15,8 +15,10 @@
 package rds
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,11 +33,12 @@ type RdsUtilsTestSuite struct {
 	pool      *redis.Pool
 	namespace string
 	conn      redis.Conn
+	redisSvc  *miniredis.Miniredis
 }
 
 // SetupSuite prepares test suite
 func (suite *RdsUtilsTestSuite) SetupSuite() {
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 	suite.namespace = tests.GiveMeTestNamespace()
 }
 
@@ -102,5 +105,6 @@ func (suite *RdsUtilsTestSuite) TestGetZsetByScore() {
 
 // TestRdsUtilsTestSuite is suite entry for 'go test'
 func TestRdsUtilsTestSuite(t *testing.T) {
-	suite.Run(t, new(RdsUtilsTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &RdsUtilsTestSuite{redisSvc: redisSvc})
 }

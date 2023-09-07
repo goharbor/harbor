@@ -16,8 +16,12 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/alicebob/miniredis/v2"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -26,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/stretchr/testify/suite"
 )
 
 type executionDAOTestSuite struct {
@@ -35,6 +38,7 @@ type executionDAOTestSuite struct {
 	executionDAO *executionDAO
 	taskDao      *taskDAO
 	executionID  int64
+	redisSvc     *miniredis.Miniredis
 }
 
 func (e *executionDAOTestSuite) SetupSuite() {
@@ -45,7 +49,7 @@ func (e *executionDAOTestSuite) SetupSuite() {
 		taskDAO: e.taskDao,
 	}
 	// initializes cache for testing
-	err := cache.Initialize(cache.Redis, "redis://localhost:6379/0")
+	err := cache.Initialize(cache.Redis, fmt.Sprintf("redis://%s/0", e.redisSvc.Addr()))
 	e.NoError(err)
 }
 
@@ -391,7 +395,7 @@ func (e *executionDAOTestSuite) TestScanAndRefreshOutdateStatus() {
 }
 
 func TestExecutionDAOSuite(t *testing.T) {
-	suite.Run(t, &executionDAOTestSuite{})
+	suite.Run(t, &executionDAOTestSuite{redisSvc: miniredis.RunT(t)})
 }
 
 func Test_buildInClauseSQLForExtraAttrs(t *testing.T) {

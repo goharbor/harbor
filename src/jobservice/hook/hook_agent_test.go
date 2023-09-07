@@ -16,9 +16,11 @@ package hook
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -37,6 +39,7 @@ type HookAgentTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	agent     *basicAgent
 
 	event *Event
@@ -45,12 +48,13 @@ type HookAgentTestSuite struct {
 
 // TestHookAgentTestSuite is entry of go test
 func TestHookAgentTestSuite(t *testing.T) {
-	suite.Run(t, new(HookAgentTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &HookAgentTestSuite{redisSvc: redisSvc})
 }
 
 // SetupSuite prepares test suites
 func (suite *HookAgentTestSuite) SetupSuite() {
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 	suite.namespace = tests.GiveMeTestNamespace()
 
 	suite.agent = &basicAgent{

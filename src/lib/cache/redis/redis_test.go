@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -27,13 +28,15 @@ import (
 
 type CacheTestSuite struct {
 	suite.Suite
-	cache cache.Cache
-	ctx   context.Context
+	cache    cache.Cache
+	ctx      context.Context
+	redisSvc *miniredis.Miniredis
 }
 
 func (suite *CacheTestSuite) SetupSuite() {
-	suite.cache, _ = cache.New("redis", cache.Expiration(time.Second*5))
+	suite.cache, _ = cache.New("redis", cache.Expiration(time.Second*5), cache.Address(fmt.Sprintf("redis://%s/10?idle_timeout_seconds=30", suite.redisSvc.Addr())))
 	suite.ctx = context.TODO()
+	suite.redisSvc.SetTime(time.Now())
 }
 
 func (suite *CacheTestSuite) TestContains() {
@@ -49,7 +52,7 @@ func (suite *CacheTestSuite) TestContains() {
 	suite.cache.Save(suite.ctx, key, "value", time.Second*5)
 	suite.True(suite.cache.Contains(suite.ctx, key))
 
-	time.Sleep(time.Second * 8)
+	suite.redisSvc.FastForward(time.Second * 8)
 	suite.False(suite.cache.Contains(suite.ctx, key))
 }
 
@@ -88,7 +91,7 @@ func (suite *CacheTestSuite) TestSave() {
 		suite.cache.Fetch(suite.ctx, key, &value)
 		suite.Equal("hello, save", value)
 
-		time.Sleep(time.Second * 8)
+		suite.redisSvc.FastForward(time.Second * 8)
 
 		value = ""
 		suite.Error(suite.cache.Fetch(suite.ctx, key, &value))
@@ -98,7 +101,7 @@ func (suite *CacheTestSuite) TestSave() {
 	{
 		suite.cache.Save(suite.ctx, key, "hello, save", time.Second)
 
-		time.Sleep(time.Second * 2)
+		suite.redisSvc.FastForward(time.Second * 2)
 
 		var value string
 		suite.Error(suite.cache.Fetch(suite.ctx, key, &value))
@@ -161,7 +164,8 @@ func (suite *CacheTestSuite) TestScan() {
 }
 
 func TestCacheTestSuite(t *testing.T) {
-	suite.Run(t, new(CacheTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &CacheTestSuite{redisSvc: redisSvc})
 }
 
 func BenchmarkCacheFetchParallel(b *testing.B) {

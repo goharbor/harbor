@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,15 +46,15 @@ type CWorkerTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
-
-	cancel  context.CancelFunc
-	context *env.Context
+	redisSvc  *miniredis.Miniredis
+	cancel    context.CancelFunc
+	context   *env.Context
 }
 
 // SetupSuite prepares test suite
 func (suite *CWorkerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 	common_dao.PrepareTestForPostgresSQL()
 
 	// Append node ID
@@ -102,7 +103,9 @@ func (suite *CWorkerTestSuite) TearDownSuite() {
 
 // TestCWorkerTestSuite is entry fo go test
 func TestCWorkerTestSuite(t *testing.T) {
-	suite.Run(t, new(CWorkerTestSuite))
+	redisSvc, err := miniredis.Run()
+	assert.NoError(t, err, "miniredis start error %+v", err)
+	suite.Run(t, &CWorkerTestSuite{redisSvc: redisSvc})
 }
 
 // TestRegisterJobs ...

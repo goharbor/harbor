@@ -39,8 +39,12 @@ const (
 )
 
 // GiveMeRedisPool ...
-func GiveMeRedisPool() *redis.Pool {
-	pool, _ := redislib.GetRedisPool("test", GetRedisURL(), &redislib.PoolParam{
+func GiveMeRedisPool(redisUrl string) *redis.Pool {
+	if len(redisUrl) == 0 {
+		redisUrl = GetRedisURL()
+	}
+
+	pool, _ := redislib.GetRedisPool("test", redisUrl, &redislib.PoolParam{
 		PoolMaxIdle:           poolMaxIdle,
 		PoolMaxActive:         PoolMaxActive,
 		DialConnectionTimeout: dialConnectionTimeout,

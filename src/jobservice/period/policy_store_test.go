@@ -14,9 +14,11 @@
 package period
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -32,17 +34,20 @@ type PolicyStoreTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 }
 
 // TestPolicyStoreTestSuite is entry of go test
 func TestPolicyStoreTestSuite(t *testing.T) {
-	suite.Run(t, new(PolicyStoreTestSuite))
+	redisSvc, err := miniredis.Run()
+	assert.NoError(t, err, "init redis is error: %+v", err)
+	suite.Run(t, &PolicyStoreTestSuite{redisSvc: redisSvc})
 }
 
 // SetupSuite prepares test suite
 func (suite *PolicyStoreTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 }
 
 // TearDownSuite clears the test suite

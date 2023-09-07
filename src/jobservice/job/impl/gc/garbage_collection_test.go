@@ -15,8 +15,10 @@
 package gc
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/stretchr/testify/suite"
 
@@ -41,12 +43,12 @@ import (
 
 type gcTestSuite struct {
 	htesting.Suite
-	artifactCtl       *artifacttesting.Controller
-	artrashMgr        *trashtesting.FakeManager
-	registryCtlClient *registryctl.Mockclient
-	projectCtl        *projecttesting.Controller
-	blobMgr           *blob.Manager
-
+	artifactCtl        *artifacttesting.Controller
+	artrashMgr         *trashtesting.FakeManager
+	registryCtlClient  *registryctl.Mockclient
+	projectCtl         *projecttesting.Controller
+	blobMgr            *blob.Manager
+	redisSvc           *miniredis.Miniredis
 	originalProjectCtl project.Controller
 
 	regCtlInit func()
@@ -394,5 +396,7 @@ func (suite *gcTestSuite) TestSaveRes() {
 
 func TestGCTestSuite(t *testing.T) {
 	t.Setenv("UTTEST", "true")
-	suite.Run(t, &gcTestSuite{})
+	redisSvc := miniredis.RunT(t)
+	t.Setenv("REDIS_HOST", fmt.Sprintf("redis://%s", redisSvc.Addr()))
+	suite.Run(t, &gcTestSuite{redisSvc: redisSvc})
 }

@@ -1,8 +1,10 @@
 package cworker
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -27,7 +29,8 @@ func (suite *DeDuplicatorTestSuite) TestDeDuplicator() {
 		"image": "ubuntu:latest",
 	}
 
-	rdd := NewDeDuplicator(tests.GiveMeTestNamespace(), tests.GiveMeRedisPool())
+	redisSvc := miniredis.RunT(suite.T())
+	rdd := NewDeDuplicator(tests.GiveMeTestNamespace(), tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", redisSvc.Addr())))
 
 	err := rdd.MustUnique(jobName, jobParams)
 	require.NoError(suite.T(), err, "must unique 1st time: nil error expected but got %s", err)

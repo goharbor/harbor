@@ -19,8 +19,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
@@ -59,4 +61,11 @@ func (suite *PatchBlobUploadMiddlewareTestSuite) TestMiddleware() {
 
 func TestPatchBlobUploadMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &PatchBlobUploadMiddlewareTestSuite{})
+}
+
+func TestMain(m *testing.M) {
+	redisSvc, _ := miniredis.Run()
+	os.Setenv("_REDIS_URL_REG", fmt.Sprintf("redis://%s/10?idle_timeout_seconds=5", redisSvc.Addr()))
+	defer os.Unsetenv("_REDIS_URL_REG")
+	os.Exit(m.Run())
 }

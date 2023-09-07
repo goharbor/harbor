@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,6 +38,7 @@ type ManagerTestSuite struct {
 	suite.Suite
 
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	namespace string
 
 	manager Manager
@@ -47,12 +49,13 @@ type ManagerTestSuite struct {
 
 // TestManagerTestSuite is entry of executing ManagerTestSuite
 func TestManagerTestSuite(t *testing.T) {
-	suite.Run(t, new(ManagerTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &ManagerTestSuite{redisSvc: redisSvc})
 }
 
 // SetupAllSuite sets up env for test suite
 func (suite *ManagerTestSuite) SetupSuite() {
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 	suite.namespace = tests.GiveMeTestNamespace()
 
 	suite.manager = New(suite.pool, suite.namespace)

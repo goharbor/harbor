@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alicebob/miniredis/v2"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIgnoreNotFound(t *testing.T) {
@@ -54,7 +56,8 @@ func TestDivide(t *testing.T) {
 
 func TestDelKeys(t *testing.T) {
 	// get redis client
-	c, err := cache.New("redis", cache.Address("redis://127.0.0.1:6379"))
+	redisSvc := miniredis.RunT(t)
+	c, err := cache.New("redis", cache.Address(fmt.Sprintf("redis://%s", redisSvc.Addr())))
 	assert.NoError(t, err)
 	// helper function
 	// mock the data in the redis

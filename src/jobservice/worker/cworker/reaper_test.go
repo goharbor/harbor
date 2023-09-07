@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -38,6 +39,7 @@ type ReaperTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	r         *reaper
 	ctl       *mockLcmCtl
 	jid       string
@@ -45,13 +47,13 @@ type ReaperTestSuite struct {
 
 // TestReaper is the entry func of the ReaperTestSuite
 func TestReaper(t *testing.T) {
-	suite.Run(t, &ReaperTestSuite{})
+	suite.Run(t, &ReaperTestSuite{redisSvc: miniredis.RunT(t)})
 }
 
 // SetupSuite prepares the test suite environment
 func (suite *ReaperTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	ctx := context.TODO()
 	suite.ctl = &mockLcmCtl{}

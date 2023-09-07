@@ -15,11 +15,13 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
@@ -47,12 +49,13 @@ type RedisRunnerTestSuite struct {
 	cancel    context.CancelFunc
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 }
 
 // TestRedisRunnerTestSuite is entry of go test
 func TestRedisRunnerTestSuite(t *testing.T) {
 	common_dao.PrepareTestForPostgresSQL()
-	suite.Run(t, new(RedisRunnerTestSuite))
+	suite.Run(t, &RedisRunnerTestSuite{redisSvc: miniredis.RunT(t)})
 }
 
 // SetupSuite prepares test suite
@@ -68,7 +71,7 @@ func (suite *RedisRunnerTestSuite) SetupSuite() {
 	}
 
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	suite.lcmCtl = lcm.NewController(
 		suite.envContext,

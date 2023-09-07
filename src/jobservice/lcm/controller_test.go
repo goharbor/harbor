@@ -16,10 +16,12 @@ package lcm
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,6 +39,7 @@ type LcmControllerTestSuite struct {
 
 	namespace string
 	pool      *redis.Pool
+	redisSvc  *miniredis.Miniredis
 	ctl       Controller
 	cancel    context.CancelFunc
 }
@@ -44,7 +47,7 @@ type LcmControllerTestSuite struct {
 // SetupSuite prepares test suite
 func (suite *LcmControllerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
-	suite.pool = tests.GiveMeRedisPool()
+	suite.pool = tests.GiveMeRedisPool(fmt.Sprintf("redis://%s", suite.redisSvc.Addr()))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	suite.cancel = cancel
@@ -62,7 +65,8 @@ func (suite *LcmControllerTestSuite) TearDownSuite() {
 
 // TestLcmControllerTestSuite is entry of go test
 func TestLcmControllerTestSuite(t *testing.T) {
-	suite.Run(t, new(LcmControllerTestSuite))
+	redisSvc := miniredis.RunT(t)
+	suite.Run(t, &LcmControllerTestSuite{redisSvc: redisSvc})
 }
 
 // TestController tests lcm controller
