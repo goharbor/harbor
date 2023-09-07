@@ -118,9 +118,9 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 func (s *stageTestSuite) TestReplaceNamespace() {
 	// replace count <0, repository contains no "/"
 	var (
-		repository = "c"
-		namespace = "n"
-		replaceCount = -1
+		repository   string = "c"
+		namespace    string = "n"
+		replaceCount int8   = -1
 	)
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().Nil(err)
