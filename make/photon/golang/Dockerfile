@@ -11,9 +11,10 @@ ENV PATH /usr/local/go/bin:$PATH
 ENV GOLANG_VERSION ${GOVERSION}
 
 # need to change sha256,  for every specific golang version from https://github.com/docker-library/golang
+# or get checksum from https://go.dev/dl/ directly
 RUN set eux; \
     url="https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz"; \
-    sha256="48e4fcfb6abfdaa01aaf1429e43bdd49cea5e4687bd5f5b96df1e193fcfd3e7e"; \
+    sha256="4643d4c29c55f53fa0349367d7f1bb5ca554ea6ef528c146825b0f8464e2e668"; \
     wget -O go.tgz.asc "$url.asc"; \
     wget -O go.tgz "$url"; \
     echo "$sha256 *go.tgz" | sha256sum -c -; \
