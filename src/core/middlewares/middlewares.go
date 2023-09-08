@@ -39,8 +39,9 @@ import (
 )
 
 var (
-	match         = regexp.MustCompile
-	numericRegexp = match(`[0-9]+`)
+	match             = regexp.MustCompile
+	numericRegexp     = match(`[0-9]+`)
+	ProjectRepoRegexp = match(`^/api/v2.0/projects/(?P<project>[a-z0-9-]+)/repositories/(?P<repo>[a-z0-9-]+)$`)
 
 	// The ping endpoint will be blocked when DB conns reach the max open conns of the sql.DB
 	// which will make ping request timeout, so skip the middlewares which will require DB conn.
@@ -54,6 +55,7 @@ var (
 	dbTxSkippers = []middleware.Skipper{
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+		middleware.MethodAndPathSkipper(http.MethodDelete, ProjectRepoRegexp),
 		func(r *http.Request) bool { // skip tx for GET, HEAD and Options requests
 			m := r.Method
 			return m == http.MethodGet || m == http.MethodHead || m == http.MethodOptions
