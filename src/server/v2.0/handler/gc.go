@@ -24,6 +24,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/gc"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -99,6 +100,17 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if workers, ok := parameters["workers"].(json.Number); ok {
+			wInt, err := workers.Int64()
+			if err != nil {
+				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+			}
+			if !validateWorkers(int(wInt)) {
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+			}
+			policy.Workers = int(wInt)
+		}
+
 		id, err = g.gcCtr.Start(ctx, policy, task.ExecutionTriggerManual)
 	case ScheduleNone:
 		err = g.gcCtr.DeleteSchedule(ctx)
@@ -112,16 +124,22 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if workers, ok := parameters["workers"].(json.Number); ok {
+			wInt, err := workers.Int64()
+			if err != nil {
+				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+			}
+			if !validateWorkers(int(wInt)) {
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+			}
+			policy.Workers = int(wInt)
+		}
 		err = g.updateSchedule(ctx, scheType, cron, policy)
 	}
 	return id, err
 }
 
 func (g *gcAPI) createSchedule(ctx context.Context, cronType, cron string, policy gc.Policy) error {
-	if cron == "" {
-		return errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("empty cron string for gc schedule")
-	}
 	_, err := g.gcCtr.CreateSchedule(ctx, cronType, cron, policy)
 	if err != nil {
 		return err
@@ -130,6 +148,10 @@ func (g *gcAPI) createSchedule(ctx context.Context, cronType, cron string, polic
 }
 
 func (g *gcAPI) updateSchedule(ctx context.Context, cronType, cron string, policy gc.Policy) error {
+	if err := utils.ValidateCronString(cron); err != nil {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("invalid cron string for scheduled gc: %s, error: %v", cron, err)
+	}
 	if err := g.gcCtr.DeleteSchedule(ctx); err != nil {
 		return err
 	}
@@ -259,4 +281,11 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 	}
 
 	return operation.NewStopGCOK()
+}
+
+func validateWorkers(workers int) bool {
+	if workers <= 0 || workers > 5 {
+		return false
+	}
+	return true
 }

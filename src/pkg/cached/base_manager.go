@@ -24,27 +24,27 @@ import (
 )
 
 // innerCache is the default cache client,
-// actually it is a wrapper for cache.Default().
+// actually it is a wrapper for cache.LayerCache().
 var innerCache cache.Cache = &cacheClient{}
 
-// cacheClient is a interceptor for cache.Default, in order to implement specific
+// cacheClient is a interceptor for cache.CacheLayer, in order to implement specific
 // case for cache layer.
 type cacheClient struct{}
 
 func (*cacheClient) Contains(ctx context.Context, key string) bool {
-	return cache.Default().Contains(ctx, key)
+	return cache.LayerCache().Contains(ctx, key)
 }
 
 func (*cacheClient) Delete(ctx context.Context, key string) error {
-	return cache.Default().Delete(ctx, key)
+	return cache.LayerCache().Delete(ctx, key)
 }
 
 func (*cacheClient) Fetch(ctx context.Context, key string, value interface{}) error {
-	return cache.Default().Fetch(ctx, key, value)
+	return cache.LayerCache().Fetch(ctx, key, value)
 }
 
 func (*cacheClient) Ping(ctx context.Context) error {
-	return cache.Default().Ping(ctx)
+	return cache.LayerCache().Ping(ctx)
 }
 
 func (*cacheClient) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
@@ -57,11 +57,11 @@ func (*cacheClient) Save(ctx context.Context, key string, value interface{}, exp
 		return nil
 	}
 
-	return cache.Default().Save(ctx, key, value, expiration...)
+	return cache.LayerCache().Save(ctx, key, value, expiration...)
 }
 
-func (*cacheClient) Keys(ctx context.Context, prefixes ...string) ([]string, error) {
-	return cache.Default().Keys(ctx, prefixes...)
+func (*cacheClient) Scan(ctx context.Context, match string) (cache.Iterator, error) {
+	return cache.LayerCache().Scan(ctx, match)
 }
 
 var _ Manager = &BaseManager{}
@@ -98,13 +98,18 @@ func (bm *BaseManager) ResourceType(ctx context.Context) string {
 
 // CountCache returns current this resource occupied cache count.
 func (bm *BaseManager) CountCache(ctx context.Context) (int64, error) {
+	var count int64
 	// prefix is resource type
-	keys, err := bm.CacheClient(ctx).Keys(ctx, bm.ResourceType(ctx))
+	iter, err := bm.CacheClient(ctx).Scan(ctx, bm.ResourceType(ctx))
 	if err != nil {
 		return 0, err
 	}
 
-	return int64(len(keys)), nil
+	for iter.Next(ctx) {
+		count++
+	}
+
+	return count, nil
 }
 
 // DeleteCache deletes specific cache by key.
@@ -115,14 +120,14 @@ func (bm *BaseManager) DeleteCache(ctx context.Context, key string) error {
 // FlushAll flush this resource's all cache.
 func (bm *BaseManager) FlushAll(ctx context.Context) error {
 	// prefix is resource type
-	keys, err := bm.CacheClient(ctx).Keys(ctx, bm.ResourceType(ctx))
+	iter, err := bm.CacheClient(ctx).Scan(ctx, bm.ResourceType(ctx))
 	if err != nil {
 		return err
 	}
 
 	var errs errors.Errors
-	for _, key := range keys {
-		if err = bm.CacheClient(ctx).Delete(ctx, key); err != nil {
+	for iter.Next(ctx) {
+		if err = bm.CacheClient(ctx).Delete(ctx, iter.Val()); err != nil {
 			errs = append(errs, err)
 		}
 	}

@@ -16,4 +16,5 @@ package lib
 
 //go:generate mockery --case snake --dir ../../lib/orm --name Creator --output ./orm --outpkg orm
 //go:generate mockery --case snake --dir ../../lib/cache --name Cache --output ./cache --outpkg cache
+//go:generate mockery --case snake --dir ../../lib/cache --name Iterator --output ./cache --outpkg cache
 //go:generate mockery --case snake --dir ../../lib/config --name Manager --output ./config --outpkg config

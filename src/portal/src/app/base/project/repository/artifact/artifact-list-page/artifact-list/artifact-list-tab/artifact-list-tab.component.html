@@ -126,6 +126,12 @@
                     </clr-dropdown>
                 </div>
                 <div class="right-pos">
+                    <app-pull-command
+                        [registryUrl]="registryUrl"
+                        [projectName]="projectName"
+                        [repoName]="repoName"
+                        [selectedRow]="selectedRow"
+                        class="mr-1"></app-pull-command>
                     <app-artifact-filter
                         [withDivider]="true"
                         (filterEvent)="filterEvent($event)"
@@ -142,54 +148,48 @@
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column class="pull-command-column">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
-                    {{ 'REPOSITORY.PULL_COMMAND' | translate }}
-                </ng-template>
-            </clr-dg-column>
             <clr-dg-column *ngIf="depth">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
                     {{ 'REPOSITORY.PLATFORM' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[3] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
                     {{ 'REPOSITORY.TAGS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="co-signed-column">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
-                    {{ 'ACCESSORY.CO_SIGNED' | translate }}
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[3] }">
+                    {{ 'REPOSITORY.SIGNED' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="'size'">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[5] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
                     {{ 'REPOSITORY.SIZE' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="vul-column">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[5] }">
                     {{ 'REPOSITORY.VULNERABILITY' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column class="annotations-column">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
                     {{ 'ARTIFACT.ANNOTATION' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
                     {{ 'REPOSITORY.LABELS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
                     {{ 'REPOSITORY.PUSH_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">
-                <ng-template
-                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
                     {{ 'REPOSITORY.PULL_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
@@ -243,15 +243,6 @@
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
-                </clr-dg-cell>
-                <clr-dg-cell>
-                    <hbr-copy-input
-                        [title]="getPullCommand(artifact)"
-                        *ngIf="getPullCommand(artifact)"
-                        [iconMode]="true"
-                        [defaultValue]="
-                            getPullCommand(artifact)
-                        "></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
                     <div class="cell">
@@ -352,16 +343,16 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <span
-                        *ngIf="artifact.coSigned === 'checking'"
+                        *ngIf="artifact.signed === 'checking'"
                         class="spinner spinner-inline ml-2"></span>
                     <clr-icon
                         shape="check-circle"
-                        *ngIf="artifact.coSigned === 'true'"
+                        *ngIf="artifact.signed === 'true'"
                         size="20"
                         class="signed"></clr-icon>
                     <clr-icon
                         shape="times-circle"
-                        *ngIf="artifact.coSigned === 'false'"
+                        *ngIf="artifact.signed === 'false'"
                         size="16"
                         class="color-red"></clr-icon>
                 </clr-dg-cell>

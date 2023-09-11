@@ -16,8 +16,10 @@ package replication
 
 import (
 	"context"
-	"strconv"
+	"encoding/json"
 
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -31,10 +33,20 @@ const callbackFuncName = "REPLICATION_CALLBACK"
 
 func init() {
 	callbackFunc := func(ctx context.Context, param string) error {
-		policyID, err := strconv.ParseInt(param, 10, 64)
-		if err != nil {
+		params := make(map[string]interface{})
+		if err := json.Unmarshal([]byte(param), &params); err != nil {
 			return err
 		}
+
+		var policyID int64
+		if id, ok := params["policy_id"].(float64); ok {
+			policyID = int64(id)
+		}
+
+		if op, ok := params["operator"].(string); ok {
+			ctx = context.WithValue(ctx, operator.ContextKey{}, op)
+		}
+
 		policy, err := Ctl.GetPolicy(ctx, policyID)
 		if err != nil {
 			return err
@@ -121,8 +133,13 @@ func (c *controller) CreatePolicy(ctx context.Context, policy *model.Policy) (in
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
+		cbParams := map[string]interface{}{
+			"policy_id": id,
+			// the operator of schedule job is harbor-jobservice
+			"operator": secret.JobserviceUser,
+		}
 		if _, err = c.scheduler.Schedule(ctx, job.ReplicationVendorType, id, "", policy.Trigger.Settings.Cron,
-			callbackFuncName, id, map[string]interface{}{}); err != nil {
+			callbackFuncName, cbParams, map[string]interface{}{}); err != nil {
 			return 0, err
 		}
 	}
@@ -148,8 +165,13 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy, pro
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
+		cbParams := map[string]interface{}{
+			"policy_id": policy.ID,
+			// the operator of schedule job is harbor-jobservice
+			"operator": secret.JobserviceUser,
+		}
 		if _, err := c.scheduler.Schedule(ctx, job.ReplicationVendorType, policy.ID, "", policy.Trigger.Settings.Cron,
-			callbackFuncName, policy.ID, map[string]interface{}{}); err != nil {
+			callbackFuncName, cbParams, map[string]interface{}{}); err != nil {
 			return err
 		}
 	}

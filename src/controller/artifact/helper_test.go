@@ -24,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/pkg/accessory"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
 	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 )
@@ -33,7 +32,7 @@ type IteratorTestSuite struct {
 	suite.Suite
 
 	artMgr *artifacttesting.Manager
-	accMgr *accessory.Manager
+	accMgr *accessorytesting.Manager
 
 	ctl         *controller
 	originalCtl Controller

@@ -35,7 +35,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	scannerCtlMock "github.com/goharbor/harbor/src/testing/controller/scanner"
+	"github.com/goharbor/harbor/src/testing/mock"
+	artMock "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	projectMock "github.com/goharbor/harbor/src/testing/pkg/project"
+	reportMock "github.com/goharbor/harbor/src/testing/pkg/scan/report"
+	taskMock "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 // ArtifactHandlerTestSuite is test suite for artifact handler.
@@ -46,6 +50,9 @@ type ArtifactHandlerTestSuite struct {
 	handler        *Handler
 	projectManager project.Manager
 	scannerCtl     scanner.Controller
+	reportMgr      *reportMock.Manager
+	execMgr        *taskMock.ExecutionManager
+	artMgr         *artMock.Manager
 }
 
 // TestArtifactHandler tests ArtifactHandler.
@@ -57,10 +64,13 @@ func TestArtifactHandler(t *testing.T) {
 func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	common_dao.PrepareTestForPostgresSQL()
 	config.Init()
-	suite.handler = &Handler{}
 	suite.ctx = orm.NewContext(context.TODO(), beegoorm.NewOrm())
 	suite.projectManager = &projectMock.Manager{}
 	suite.scannerCtl = &scannerCtlMock.Controller{}
+	suite.execMgr = &taskMock.ExecutionManager{}
+	suite.reportMgr = &reportMock.Manager{}
+	suite.artMgr = &artMock.Manager{}
+	suite.handler = &Handler{execMgr: suite.execMgr, reportMgr: suite.reportMgr, artMgr: suite.artMgr}
 
 	// mock artifact
 	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})
@@ -150,6 +160,17 @@ func (suite *ArtifactHandlerTestSuite) TestOnPull() {
 		suite.Nil(err)
 		return int64(2) == repository.PullCount
 	}, 3*asyncFlushDuration, asyncFlushDuration/2, "wait for pull_count async update")
+}
+
+func (suite *ArtifactHandlerTestSuite) TestOnDelete() {
+	evt := &event.ArtifactEvent{Artifact: &artifact.Artifact{ID: 1, RepositoryID: 1, Digest: "mock-digest", References: []*artifact.Reference{{ChildDigest: "ref-1", ChildID: 2}, {ChildDigest: "ref-2", ChildID: 3}}}}
+	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(1)).Return(nil).Times(1)
+	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(2)).Return(nil).Times(1)
+	suite.execMgr.On("DeleteByVendor", suite.ctx, "IMAGE_SCAN", int64(3)).Return(nil).Times(1)
+	suite.artMgr.On("Count", suite.ctx, mock.Anything).Return(int64(0), nil).Times(3)
+	suite.reportMgr.On("DeleteByDigests", suite.ctx, "mock-digest", "ref-1", "ref-2").Return(nil).Times(1)
+	err := suite.handler.onDelete(suite.ctx, evt)
+	suite.Nil(err, "onDelete should return nil")
 }
 
 func (suite *ArtifactHandlerTestSuite) TestIsScannerUser() {

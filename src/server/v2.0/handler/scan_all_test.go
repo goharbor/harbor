@@ -136,8 +136,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 			// system admin required
 			suite.Security.On("IsAuthenticated").Return(true).Once()
 			suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Once()
-			suite.Security.On("GetUsername").Return("username").Once()
-
+			suite.Security.On("GetUsername").Return("username")
 			res, err := suite.DoReq(req.method, req.url, newBody(req.body))
 			suite.NoError(err)
 			suite.Equal(403, res.StatusCode)
@@ -247,6 +246,7 @@ func (suite *ScanAllTestSuite) TestStopScanAll() {
 	times := 3
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
+	mock.OnAnything(suite.scanCtl, "StopScanAll").Return(nil).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
 
 	{

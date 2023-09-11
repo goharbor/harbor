@@ -84,9 +84,9 @@ Test Case - Push Index By Docker Manifest
     [Tags]  push_index
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
 
-Test Case - Push Chart By Helm3.7 Chart CLI
-    [Tags]  push_chart_by_Helm3.7
-    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3.7_chart_cli.py
+Test Case - Push Chart By Helm Chart CLI
+    [Tags]  push_chart_by_helm
+    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm_chart_cli.py
 
 Test Case - Push Cnab Bundle
     [Tags]  push_cnab
@@ -182,3 +182,11 @@ Test Case - Job Service Dashboard
 Test Case - Retain Image Last Pull Time
     [Tags]  retain_image_last_pull_time
     Harbor API Test  ./tests/apitests/python/test_retain_image_last_pull_time.py
+
+Test Case - Referrers API
+    [Tags]  referrers
+    Harbor API Test  ./tests/apitests/python/test_referrers_api.py
+
+Test Case - Podman Pull And Push To Harbor
+    [Tags]  podman_pull_push
+    Harbor API Test  ./tests/apitests/python/test_podman_pull_push.py

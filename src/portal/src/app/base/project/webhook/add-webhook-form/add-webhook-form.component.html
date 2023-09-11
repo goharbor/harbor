@@ -83,24 +83,40 @@
                 </div>
             </div>
             <!-- notify type -->
-            <clr-select-container>
-                <label class="required">{{
+            <div class="clr-form-control">
+                <label class="required clr-control-label">{{
                     'WEBHOOK.NOTIFY_TYPE' | translate
                 }}</label>
-                <select
-                    class="width-238"
-                    clrSelect
-                    name="notifyType"
-                    id="notify_type"
-                    [(ngModel)]="webhook.targets[0].type"
-                    [disabled]="checking">
-                    <option
-                        *ngFor="let type of metadata?.notify_type"
-                        value="{{ type }}">
-                        {{ type }}
-                    </option>
-                </select>
-            </clr-select-container>
+                <div class="clr-control-container">
+                    <div class="clr-select-wrapper">
+                        <select
+                            class="width-238 clr-select"
+                            name="notifyType"
+                            id="notify_type"
+                            [(ngModel)]="webhook.targets[0].type"
+                            [disabled]="checking">
+                            <option
+                                *ngFor="let type of metadata?.notify_type"
+                                value="{{ type }}">
+                                {{ type }}
+                            </option>
+                        </select>
+                    </div>
+                    <clr-tooltip [hidden]="webhook.targets[0].type !== 'slack'">
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            {{ 'WEBHOOK.SLACK_RATE_LIMIT' | translate }}
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
+
             <!-- payload format -->
             <clr-select-container *ngIf="webhook.targets[0].type === 'http'">
                 <label>{{ 'WEBHOOK.PAYLOAD_FORMAT' | translate }}</label>

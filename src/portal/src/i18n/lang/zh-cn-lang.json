@@ -129,13 +129,13 @@
         "ADMIN_RENAME_BUTTON": "更改用户名",
         "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 您确定更改吗?",
         "CLI_PASSWORD": "CLI密码",
-        "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
+        "CLI_PASSWORD_TIP": "CLI 密码可用作访问 Docker 或 Helm 客户端的密码。 启用 OIDC 授权模式后，我们强烈建议您使用机器人帐户来访问Docker 或 Helm 客户端，因为 CLI 密码的有效性取决于用户的 ID 令牌，这意味着您需要定期登录 UI 来刷新令牌。",
         "COPY_SUCCESS": "复制成功",
         "COPY_ERROR": "复制失败",
         "ADMIN_CLI_SECRET_BUTTON": "生成新的CLI密码",
         "ADMIN_CLI_SECRET_RESET_BUTTON": "输入您自己的CLI密码",
         "NEW_SECRET": "密码",
-        "CONFIRM_SECRET": "重复出入密码",
+        "CONFIRM_SECRET": "重复输入密码",
         "GENERATE_SUCCESS": "成功设置新的CLI密码",
         "GENERATE_ERROR": "设置新的CLI密码失败",
         "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
@@ -430,7 +430,8 @@
         "EVENT_TYPE_REQUIRED": "请至少选择一种事件类型",
         "PAYLOAD_FORMAT": "载荷形式",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "载荷数据"
+        "PAYLOAD_DATA": "载荷数据",
+        "SLACK_RATE_LIMIT": "请注意 Slack 的速率限制"
     },
     "GROUP": {
         "GROUP": "组",
@@ -659,10 +660,11 @@
         "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
         "UNLIMITED": "无限制",
         "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}",
-        "CRON_ERROR_TIP": "此项必填且\"分钟\"项不能为\"*\"",
+        "CRON_ERROR_TIP": "Cron 字符串的第一项必须为0且第二项不能为\"*\"",
         "COPY_BY_CHUNK": "分块复制",
         "COPY_BY_CHUNK_TIP": "请指定是否开启分块复制。开启此项可能导致相应的 API 请求数量增加。",
-        "TRIGGER_STOP_SUCCESS": "成功触发停止执行"
+        "TRIGGER_STOP_SUCCESS": "成功触发停止执行",
+        "CRON_STR": "Cron"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -1033,6 +1035,7 @@
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "在项目中打包 chart",
@@ -1041,7 +1044,8 @@
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。",
+        "COPY_PULL_COMMAND": "复制拉取命令"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1226,7 +1230,10 @@
         "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
         "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
         "EXPLAIN_TIME_WINDOW": "在最近的两小时（默认窗口期）内被推送的 Artifacts 不会被当做垃圾回收的目标",
-        "DRY_RUN_SUCCESS": "触发模拟运行成功"
+        "DRY_RUN_SUCCESS": "触发模拟运行成功",
+        "DELETE_DETAIL": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 已删除，{{size}}的空间已清理",
+        "DELETE_DETAIL_DRY_RUN": "{{blob}}个 blob(s) 和 {{manifest}}个 manifest(s) 将被删除，{{size}}的空间将被清理",
+        "WORKERS_TOOLTIP": "设置可并行执行垃圾回收任务的工作者数量，默认值为1。"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",
@@ -1582,7 +1589,7 @@
         "PREHEAT_EXPLAIN": "预热功能可加载镜像至 P2P 网络",
         "CRITERIA_EXPLAIN": "由项目设置下的'部署安全'项所指定",
         "SKIP_CERT_VERIFY": "当远端服务使用自签或不可信证书时可勾选此项以跳过证书认证。",
-        "NAME_TOOLTIP": "策略名称由小写字符、数字和._-/组成且至少2个字符并以字符或者数字开头。",
+        "NAME_TOOLTIP": "策略名称是一组或者多组由大小写字母或数字组成的字符串，多组字符串则由单个英文输入法下的点，下划线或者减号分隔开。",
         "NEED_HELP": "请先让您的系统管理员添加提供商"
     },
     "PAGINATION": {
@@ -1677,7 +1684,7 @@
         "ACCESSORIES": "附件",
         "SUBJECT_ARTIFACT": "主体 Artifact",
         "CO_SIGN": "Cosign",
-        "NOTARY": "Notary",
+        "NOTARY": "Notation",
         "PLACEHOLDER": "未发现任何附件！"
     },
     "CLEARANCES": {
@@ -1850,5 +1857,39 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "选择月, 当前月是 {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "选择年, 当前年是 {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "已选择 - {FULL_DATE}"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "横幅消息",
+        "MESSAGE_TYPE": "消息类型",
+        "CLOSABLE": "可关闭",
+        "FROM": "从",
+        "TO": "至",
+        "SUCCESS": "成功",
+        "INFO": "信息",
+        "WARNING": "警告",
+        "DANGER": "危险",
+        "ENTER_MESSAGE": "请输入消息内容"
+    },
+    "SECURITY_HUB": {
+        "SECURITY_HUB": "安全中心",
+        "ARTIFACTS": "Artifact(s)",
+        "SCANNED": "已扫描",
+        "NOT_SCANNED": "未扫描",
+        "TOTAL_VUL": "漏洞总览",
+        "TOTAL_AND_FIXABLE": "{{totalNum}} 个漏洞中 {{fixableNum}} 可修复",
+        "TOP_5_ARTIFACT": "最危险的5个 Artifacts",
+        "TOP_5_CVE": "最危险的5个 CVEs",
+        "CVE_ID": "CVE ID",
+        "VUL": "漏洞",
+        "CVE": "CVEs",
+        "FILTER_BY": "过滤条件",
+        "OPTION_ALL": "全部",
+        "OPTION_PROJECT_ID_NAME": "项目名称",
+        "SEARCH": "搜索",
+        "REPO_NAME": "仓库名称",
+        "TOOLTIP": "CVSS3 除外的所有过滤项只支持精确匹配",
+        "NO_VUL": "未找到任何漏洞",
+        "INVALID_VALUE": "CVSS3 分数的范围为0到10",
+        "PAGE_TITLE_TOOLTIP": "Artifact 总数是指所有单个 Artifact 的总数， 它包含了 Artifact 的附件数量、镜像索引中的子 Artifact 数量和 CNAB 中的子 Artifact 数量"
     }
 }

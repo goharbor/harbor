@@ -28,6 +28,10 @@ func TestRequireValidSecret(t *testing.T) {
 		{"Sh0rt", true},
 		{"Passw0rd", false},
 		{"Thisis1Valid_password", false},
+		// secret of length 128 characters long should be ok, no error returned
+		{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcd", false},
+		// secret of length larger than 128 characters long, such as 129 characters long, should return error
+		{"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcde", true},
 	}
 	for _, c := range cases {
 		e := requireValidSecret(c.in)
@@ -44,8 +48,8 @@ type UserTestSuite struct {
 
 func (uts *UserTestSuite) SetupSuite() {
 	uts.user = &commonmodels.User{
-		UserID:          1,
-		Username:        "admin",
+		UserID:   1,
+		Username: "admin",
 	}
 
 	uts.uCtl = &usertesting.Controller{}

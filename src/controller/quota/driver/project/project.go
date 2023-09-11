@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/blob"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/config/db"
@@ -91,8 +92,8 @@ func (d *driver) Validate(hardLimits types.ResourceList) error {
 			return fmt.Errorf("resource %s not support", resource)
 		}
 
-		if value <= 0 && value != types.UNLIMITED {
-			return fmt.Errorf("invalid value for resource %s", resource)
+		if err := lib.ValidateQuotaLimit(value); err != nil {
+			return err
 		}
 	}
 

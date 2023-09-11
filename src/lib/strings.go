@@ -21,7 +21,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-// TrimsLineBreaks trims line breaks in string.
+// TrimLineBreaks trims line breaks in string.
 func TrimLineBreaks(s string) string {
 	escaped := strings.ReplaceAll(s, "\n", "")
 	escaped = strings.ReplaceAll(escaped, "\r", "")

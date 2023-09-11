@@ -26,6 +26,10 @@ import {
     ScanApiDefaultRepository,
     ScanApiRepository,
 } from './vulnerability/scanAll.api.repository';
+import { VulnerabilitySummaryComponent } from './vulnerability-database/vulnerability-summary/vulnerability-summary.component';
+import { VulnerabilityFilterComponent } from './vulnerability-database/vulnerability-filter/vulnerability-filter.component';
+import { SecurityHubComponent } from './vulnerability-database/security-hub.component';
+import { SingleBarComponent } from './vulnerability-database/single-bar/single-bar.component';
 
 const routes: Routes = [
     {
@@ -39,6 +43,10 @@ const routes: Routes = [
             {
                 path: 'vulnerability',
                 component: VulnerabilityConfigComponent,
+            },
+            {
+                path: 'security-hub',
+                component: SecurityHubComponent,
             },
             {
                 path: '',
@@ -57,6 +65,10 @@ const routes: Routes = [
         ConfigurationScannerComponent,
         InterrogationServicesComponent,
         VulnerabilityConfigComponent,
+        VulnerabilityFilterComponent,
+        VulnerabilitySummaryComponent,
+        SecurityHubComponent,
+        SingleBarComponent,
     ],
     providers: [
         ScanAllRepoService,

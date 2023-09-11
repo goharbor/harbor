@@ -130,7 +130,7 @@
         "RENAME_SUCCESS": "Yeniden adlandırma başarılı!",
         "RENAME_CONFIRM_INFO": "Uyarı, ismi admin@harbor.local olarak değiştirmek geri alınamaz.",
         "CLI_PASSWORD": "CLI şifresi",
-        "CLI_PASSWORD_TIP": "Harbour'a erişmek için docker / helm cli kullanırken bu cli sırrını şifre olarak kullanabilirsiniz.",
+        "CLI_PASSWORD_TIP": "The CLI secret can be used as a password, for Docker or Helm client. With the OIDC auth mode enabled, we strongly recommend using robot accounts, as CLI secrets depend on the validity of the ID token and require the user to regularly log in to the UI to refresh the token.",
         "COPY_SUCCESS": "kopyalama başarılı",
         "COPY_ERROR": "kopyalama başarısız",
         "ADMIN_CLI_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
@@ -431,7 +431,8 @@
         "EVENT_TYPE_REQUIRED": "Require at least one event type",
         "PAYLOAD_FORMAT": "Payload Format",
         "CLOUD_EVENT": "CloudEvents",
-        "PAYLOAD_DATA": "Payload Data"
+        "PAYLOAD_DATA": "Payload Data",
+        "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
     },
     "GROUP": {
         "GROUP": "Grup",
@@ -659,10 +660,11 @@
         "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
         "UNLIMITED": "Unlimited",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
-        "CRON_ERROR_TIP": "Field is required and \"*\" is not allowed for the \"Minutes\" field",
+        "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
-        "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully"
+        "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
+        "CRON_STR": "Cron String"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",
@@ -1034,6 +1036,7 @@
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
         "DOCKER": "Docker",
+        "PODMAN": "Podman",
         "HELM": "Helm",
         "CNAB": "CNAB",
         "TAG_COMMAND_CHART": "Package a chart for this project:",
@@ -1042,7 +1045,8 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
-        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
+        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1229,7 +1233,10 @@
         "DELETE_UNTAGGED": "Allow garbage collection on untagged artifacts",
         "EXPLAIN": "GC is a compute intensive operation that may impact registry performance",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
-        "DRY_RUN_SUCCESS": "Triggered dry run successfully"
+        "DRY_RUN_SUCCESS": "Triggered dry run successfully",
+        "DELETE_DETAIL": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted, {{size}} space freed up",
+        "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) and {{manifest}} manifest(s) could be deleted, {{size}} space could be freed up",
+        "WORKERS_TOOLTIP": "Set the number of workers that can execute GC tasks in parallel, the default value is 1."
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
@@ -1585,7 +1592,7 @@
         "PREHEAT_EXPLAIN": "Preheat will migrate the image to the p2p network",
         "CRITERIA_EXPLAIN": "As specified in 'Deployment security' section under Configuration tab",
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote provider uses a self-signed or untrusted certificate.",
-        "NAME_TOOLTIP": "Policy name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAME_TOOLTIP": "Policy name consists of one or more groups of uppercase letter, lowercase letter or number; and groups are separated by a dot, underscore, or hyphen.",
         "NEED_HELP": "Please ask your system admin to add a provider first"
     },
     "PAGINATION": {
@@ -1680,7 +1687,7 @@
         "ACCESSORIES": "Accessories",
         "SUBJECT_ARTIFACT": "Subject Artifact",
         "CO_SIGN": "Cosign",
-        "NOTARY": "Notary",
+        "NOTARY": "Notation",
         "PLACEHOLDER": "We couldn't find any accessories!"
     },
     "CLEARANCES": {
@@ -1853,5 +1860,39 @@
         "DATE_PICKER_SELECT_MONTH_TEXT": "Select month, the current month is {CALENDAR_MONTH}",
         "DATE_PICKER_SELECT_YEAR_TEXT": "Select year, the current year is {CALENDAR_YEAR}",
         "DATE_PICKER_SELECTED_LABEL": "{FULL_DATE} - Selected"
+    },
+    "BANNER_MESSAGE": {
+        "BANNER_MESSAGE": "Banner Message",
+        "MESSAGE_TYPE": "Message type",
+        "CLOSABLE": "Closable",
+        "FROM": "From",
+        "TO": "To",
+        "SUCCESS": "Success",
+        "INFO": "Info",
+        "WARNING": "Warning",
+        "DANGER": "Danger",
+        "ENTER_MESSAGE": "Enter your message here"
+    },
+    "SECURITY_HUB": {
+        "SECURITY_HUB": "Security Hub",
+        "ARTIFACTS": "artifact(s)",
+        "SCANNED": "scanned",
+        "NOT_SCANNED": "not scanned",
+        "TOTAL_VUL": "Total Vulnerabilities",
+        "TOTAL_AND_FIXABLE": "{{totalNum}} total with {{fixableNum}} fixable",
+        "TOP_5_ARTIFACT": "Top 5 Most Dangerous Artifacts",
+        "TOP_5_CVE": "Top 5 Most Dangerous CVEs",
+        "CVE_ID": "CVE ID",
+        "VUL": "Vulnerabilities",
+        "CVE": "CVEs",
+        "FILTER_BY": "Filter by",
+        "OPTION_ALL": "All",
+        "OPTION_PROJECT_ID_NAME": "Project Name",
+        "SEARCH": "SEARCH",
+        "REPO_NAME": "Repository Name",
+        "TOOLTIP": "All filters except CVSS3 only support exact matches",
+        "NO_VUL": "We could not find any vulnerability",
+        "INVALID_VALUE": "The CVSS3 score should range between 0 and 10",
+        "PAGE_TITLE_TOOLTIP": "The comprehensive artifact count comprises the cumulative total of individual artifacts, including artifact accessories, as well as child artifacts associated with the image index and CNAB artifacts"
     }
 }

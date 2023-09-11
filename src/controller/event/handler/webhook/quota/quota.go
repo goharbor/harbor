@@ -107,6 +107,7 @@ func constructQuotaPayload(event *event.QuotaEvent) (*notifyModel.Payload, error
 			},
 			Custom: quotaCustom,
 		},
+		Operator: event.Operator,
 	}
 
 	if event.Resource != nil {

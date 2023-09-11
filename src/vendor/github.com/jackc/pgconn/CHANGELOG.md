@@ -1,3 +1,46 @@
+# 1.14.0 (February 11, 2023)
+
+* Fix: each connection attempt to new node gets own timeout (Nathan Giardina)
+* Set SNI for SSL connections (Stas Kelvich)
+* Fix: CopyFrom I/O race (Tommy Reilly)
+* Minor dependency upgrades
+
+# 1.13.0 (August 6, 2022)
+
+* Add sslpassword support (Eric McCormack and yun.xu)
+* Add prefer-standby target_session_attrs support (sergey.bashilov)
+* Fix GSS ErrorResponse handling (Oliver Tan)
+
+# 1.12.1 (May 7, 2022)
+
+* Fix: setting krbspn and krbsrvname in connection string (sireax)
+* Add support for Unix sockets on Windows (Eno Compton)
+* Stop ignoring ErrorResponse during SCRAM auth (Rafi Shamim)
+
+# 1.12.0 (April 21, 2022)
+
+* Add pluggable GSSAPI support (Oliver Tan)
+* Fix: Consider any "0A000" error a possible cached plan changed error due to locale
+* Better match psql fallback behavior with multiple hosts
+
+# 1.11.0 (February 7, 2022)
+
+* Support port in ip from LookupFunc to override config (James Hartig)
+* Fix TLS connection timeout (Blake Embrey)
+* Add support for read-only, primary, standby, prefer-standby target_session_attributes (Oscar)
+* Fix connect when receiving NoticeResponse
+
+# 1.10.1 (November 20, 2021)
+
+* Close without waiting for response (Kei Kamikawa)
+* Save waiting for network round-trip in CopyFrom (Rueian)
+* Fix concurrency issue with ContextWatcher
+* LRU.Get always checks context for cancellation / expiration (Georges Varouchas)
+
+# 1.10.0 (July 24, 2021)
+
+* net.Timeout errors are no longer returned when a query is canceled via context. A wrapped context error is returned.
+
 # 1.9.0 (July 10, 2021)
 
 * pgconn.Timeout only is true for errors originating in pgconn (Michael Darr)

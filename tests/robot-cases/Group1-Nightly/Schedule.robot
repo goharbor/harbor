@@ -48,14 +48,13 @@ Test Case - Proxy Cache
     Pull Image  ${ip}  ${test_user}  ${test_pwd}  project${d}  ${user_namespace}/${manifest_index}  tag=${manifest_tag}
     Log To Console  Start to Sleep 3 minitues......
     Sleep  180
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/${user_namespace}/${image}
+    Go Into Repo  project${d}  ${user_namespace}/${image}
 
     FOR  ${idx}  IN RANGE  0  15
         Log All  Checking manifest ${idx} round......
         Sleep  60
         Go Into Project  project${d}
-        ${repo_out}=  Run Keyword And Ignore Error  Go Into Repo  project${d}/${user_namespace}/${manifest_index}
+        ${repo_out}=  Run Keyword And Ignore Error  Go Into Repo  project${d}  ${user_namespace}/${manifest_index}
         Continue For Loop If  '${repo_out[0]}'=='FAIL'
         ${artifact_out}=  Run Keyword And Ignore Error  Go Into Index And Contain Artifacts  ${manifest_tag}  total_artifact_count=1
         Exit For Loop If  '${artifact_out[0]}'=='PASS'
@@ -78,7 +77,7 @@ Test Case - GC Schedule Job
     Create An New Project And Go Into Project  ${project_name}
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  sha256=${sha256}
     Sleep  50
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Switch To Garbage Collection
     Set GC Schedule  custom  value=0 */2 * * * *
     Sleep  480
@@ -118,7 +117,7 @@ Test Case - Scan Schedule Job
     Create An New Project And Go Into Project  ${project_name}
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  sha256=${sha256}
     Sleep  50
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Retry Wait Until Page Contains Element  ${not_scanned_icon}
     Switch To Vulnerability Page
     ${flag}=  Set Variable  ${false}
@@ -134,14 +133,12 @@ Test Case - Scan Schedule Job
     # After scan custom schedule is set, image should stay in unscanned status.
     Log To Console  Sleep for 300 seconds......
     Sleep  180
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Retry Wait Until Page Contains Element  ${not_scanned_icon}
 
     Log To Console  Sleep for 500 seconds......
     Sleep  500
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image}
+    Go Into Repo  ${project_name}  ${image}
     Scan Result Should Display In List Row  ${sha256}
     View Repo Scan Details  Critical  High
     Close Browser
@@ -175,11 +172,10 @@ Test Case - Replication Schedule Job
     # After replication schedule is set, project should contain 2 images.
     Log To Console  Sleep for 720 seconds......
     Sleep  720
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image_a}
+    Go Into Repo  ${project_name}  ${image_a}
     Artifact Exist  ${tag_a}
     Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image_b}
+    Go Into Repo  ${project_name}  ${image_b}
     Artifact Exist  ${tag_b}
 
     # Delete repository
@@ -190,11 +186,10 @@ Test Case - Replication Schedule Job
     # After replication schedule is set, project should contain 2 images.
     Log To Console  Sleep for 600 seconds......
     Sleep  600
-    Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image_a}
+    Go Into Repo  ${project_name}  ${image_a}
     Artifact Exist  ${tag_a}
     Go Into Project  ${project_name}
-    Go Into Repo  ${project_name}/${image_b}
+    Go Into Repo  ${project_name}  ${image_b}
     Artifact Exist  ${tag_b}
     Close Browser
 

@@ -21,11 +21,14 @@
         </span>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'id'">{{
-        'GC.JOB_ID' | translate
+        'REPLICATION.TASK_ID' | translate
     }}</clr-dg-column>
     <clr-dg-column>{{ 'GC.TRIGGER_TYPE' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'TAG_RETENTION.DRY_RUN' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'STATUS' | translate }}</clr-dg-column>
+    <clr-dg-column class="detail">{{
+        'TAG_RETENTION.DETAILS' | translate
+    }}</clr-dg-column>
     <clr-dg-column>{{ 'CREATION_TIME' | translate }}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="'update_time'">{{
         'UPDATE_TIME' | translate
@@ -48,6 +51,28 @@
         <clr-dg-cell>{{
             job.job_status.toUpperCase() | translate
         }}</clr-dg-cell>
+        <clr-dg-cell>
+            <ng-container *ngIf="shouldShowDetails(job?.job_status)">
+                <span *ngIf="isDryRun(job?.job_parameters) === NO">{{
+                    'GC.DELETE_DETAIL'
+                        | translate
+                            : {
+                                  blob: getBlobs(job?.job_parameters),
+                                  manifest: getManifest(job?.job_parameters),
+                                  size: getSize(job?.job_parameters)
+                              }
+                }}</span>
+                <span *ngIf="isDryRun(job?.job_parameters) === YES">{{
+                    'GC.DELETE_DETAIL_DRY_RUN'
+                        | translate
+                            : {
+                                  blob: getBlobs(job?.job_parameters),
+                                  manifest: getManifest(job?.job_parameters),
+                                  size: getSize(job?.job_parameters)
+                              }
+                }}</span>
+            </ng-container>
+        </clr-dg-cell>
         <clr-dg-cell>{{
             job.creation_time | harborDatetime : 'medium'
         }}</clr-dg-cell>

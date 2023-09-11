@@ -25,7 +25,7 @@ import { ClrLoadingState } from '@clr/angular';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { ArtifactModule } from '../../../artifact.module';
 
-describe('ArtifactListTabComponent (inline template)', () => {
+describe('ArtifactListTabComponent', () => {
     let comp: ArtifactListTabComponent;
     let fixture: ComponentFixture<ArtifactListTabComponent>;
     const mockActivatedRoute = {
@@ -352,6 +352,13 @@ describe('ArtifactListTabComponent (inline template)', () => {
         expect(
             fixture.nativeElement.querySelector('.confirmation-title')
         ).toBeTruthy();
+    });
+    it('the length of hide array should equal to the number of column', async () => {
+        comp.loading = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const cols = fixture.nativeElement.querySelectorAll('.datagrid-column');
+        expect(cols.length).toEqual(comp.hiddenArray.length);
     });
 });
 

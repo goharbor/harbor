@@ -24,11 +24,12 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -74,12 +75,10 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, params operation.StopScanA
 	if execution == nil {
 		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("no scan all job is found currently"))
 	}
-	go func(ctx context.Context, eid int64) {
-		err := s.execMgr.Stop(ctx, eid)
-		if err != nil {
-			log.Errorf("failed to stop the execution of executionID=%+v", execution.ID)
-		}
-	}(s.makeCtx(), execution.ID)
+
+	if err = s.scanCtl.StopScanAll(s.makeCtx(), execution.ID, true); err != nil {
+		return s.SendError(ctx, err)
+	}
 
 	return operation.NewStopScanAllAccepted()
 }
@@ -196,6 +195,10 @@ func (s *scanAllAPI) GetLatestScheduledScanAllMetrics(ctx context.Context, param
 }
 
 func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType, cron string, previous *scheduler.Schedule) (int64, error) {
+	if err := utils.ValidateCronString(cron); err != nil {
+		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage("invalid cron string for scheduled scan all: %s, error: %v", cron, err)
+	}
 	if previous != nil {
 		if cronType == previous.CRONType && cron == previous.CRON {
 			return previous.ID, nil
@@ -206,7 +209,11 @@ func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType
 		}
 	}
 
-	return s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, cronType, cron, scan.ScanAllCallback, nil, nil)
+	cbParams := map[string]interface{}{
+		// the operator of schedule job is harbor-jobservice
+		"operator": secret.JobserviceUser,
+	}
+	return s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, cronType, cron, scan.ScanAllCallback, cbParams, nil)
 }
 
 func (s *scanAllAPI) getScanAllSchedule(ctx context.Context) (*scheduler.Schedule, error) {

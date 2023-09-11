@@ -83,11 +83,6 @@ func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
 
-// GetRedisOfRegURL returns the URL of Redis used by registry
-func GetRedisOfRegURL() string {
-	return os.Getenv("_REDIS_URL_REG")
-}
-
 // GetPortalURL returns the URL of portal
 func GetPortalURL() string {
 	url := os.Getenv("PORTAL_URL")
@@ -130,6 +125,11 @@ func GetGCTimeWindow() int64 {
 // GetExecutionStatusRefreshIntervalSeconds returns the interval seconds for the refresh of execution status.
 func GetExecutionStatusRefreshIntervalSeconds() int64 {
 	return DefaultMgr().Get(backgroundCtx, common.ExecutionStatusRefreshIntervalSeconds).GetInt64()
+}
+
+// GetQuotaUpdateProvider returns the provider for updating quota.
+func GetQuotaUpdateProvider() string {
+	return DefaultMgr().Get(backgroundCtx, common.QuotaUpdateProvider).GetString()
 }
 
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.

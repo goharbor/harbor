@@ -2,6 +2,7 @@ package pgproto3
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -21,6 +22,7 @@ type Backend struct {
 	describe       Describe
 	execute        Execute
 	flush          Flush
+	functionCall   FunctionCall
 	gssEncRequest  GSSEncRequest
 	parse          Parse
 	query          Query
@@ -113,6 +115,9 @@ func (b *Backend) Receive() (FrontendMessage, error) {
 		b.msgType = header[0]
 		b.bodyLen = int(binary.BigEndian.Uint32(header[1:])) - 4
 		b.partialMsg = true
+		if b.bodyLen < 0 {
+			return nil, errors.New("invalid message with negative body length received")
+		}
 	}
 
 	var msg FrontendMessage
@@ -125,6 +130,8 @@ func (b *Backend) Receive() (FrontendMessage, error) {
 		msg = &b.describe
 	case 'E':
 		msg = &b.execute
+	case 'F':
+		msg = &b.functionCall
 	case 'f':
 		msg = &b.copyFail
 	case 'd':
@@ -143,6 +150,8 @@ func (b *Backend) Receive() (FrontendMessage, error) {
 			msg = &SASLResponse{}
 		case AuthTypeSASLFinal:
 			msg = &SASLResponse{}
+		case AuthTypeGSS, AuthTypeGSSCont:
+			msg = &GSSResponse{}
 		case AuthTypeCleartextPassword, AuthTypeMD5Password:
 			fallthrough
 		default:

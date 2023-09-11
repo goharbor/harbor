@@ -215,6 +215,10 @@ export class AddRuleComponent {
     }
 
     add() {
+        // convert string "0" to number 0
+        if (this.rule.params[this.template] === '0') {
+            this.rule.params[this.template] = 0;
+        }
         // remove whitespaces
         this.rule.scope_selectors.repository[0].pattern =
             this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, '');

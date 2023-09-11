@@ -58,8 +58,8 @@ class TestRobotAccount(unittest.TestCase):
 			1. Create user(UA);
 			2. Create private project(PA), private project(PB) and public project(PC) by user(UA);
 			3. Push image(ImagePA) to project(PA), image(ImagePB) to project(PB) and image(ImagePC) to project(PC) by user(UA);
-			4. Create a new robot account(RA) with pull and push privilige in project(PA) by user(UA);
-			5. Check robot account info, it should has both pull and push priviliges;
+			4. Create a new robot account(RA) with pull and push privilege in project(PA) by user(UA);
+			5. Check robot account info, it should has both pull and push privileges;
 			6. Pull image(ImagePA) from project(PA) by robot account(RA), it must be successful;
 			7. Push image(ImageRA) to project(PA) by robot account(RA), it must be successful;
 			8. Push image(ImageRA) to project(PB) by robot account(RA), it must be not successful;

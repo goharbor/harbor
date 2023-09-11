@@ -35,3 +35,4 @@ package controller
 //go:generate mockery --case snake --dir ../../controller/task --name Controller --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../controller/task --name ExecutionController --output ./task --outpkg task
 //go:generate mockery --case snake --dir ../../controller/webhook --name Controller --output ./webhook --outpkg webhook
+//go:generate mockery --case snake --dir ../../controller/securityhub --name Controller --output ./securityhub --outpkg securityhub

@@ -57,9 +57,6 @@ import {
     ArtifactFilterEvent,
     ArtifactFront as Artifact,
     ArtifactFront,
-    ArtifactType,
-    getPullCommandByDigest,
-    getPullCommandByTag,
 } from '../../../artifact';
 import { Project } from '../../../../../project';
 import { ArtifactService as NewArtifactService } from '../../../../../../../../../ng-swagger-gen/services/artifact.service';
@@ -165,19 +162,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
-        [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            true,
-            false,
-            false,
-            false,
-        ]
+        [false, false, false, false, false, false, true, false, false, false]
     );
     deleteAccessorySub: Subscription;
     copyDigestSub: Subscription;
@@ -456,32 +441,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             st.page.to = this.pageSize - 1;
         }
         this.clrLoad(st);
-    }
-
-    getPullCommand(artifact: Artifact): string {
-        let pullCommand: string = '';
-        if (
-            artifact.type === ArtifactType.CHART &&
-            artifact.tags &&
-            artifact.tags[0]
-        ) {
-            pullCommand = getPullCommandByTag(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.tags[0]?.name
-            );
-        } else {
-            pullCommand = getPullCommandByDigest(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.digest
-            );
-        }
-        return pullCommand;
     }
 
     canAddLabel(): boolean {
@@ -922,8 +881,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                     projectName: this.projectName,
                     repositoryName: dbEncodeURIComponent(this.repoName),
                     reference: item.digest,
-                    withSignature: true,
-                    withImmutableStatus: true,
                     page: 1,
                     pageSize: 8,
                 };
@@ -973,33 +930,35 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
     checkCosignAsync(artifacts: ArtifactFront[]) {
-        if (artifacts && artifacts.length) {
-            artifacts.forEach(item => {
-                item.coSigned = CHECKING;
-                const listTagParams: NewArtifactService.ListAccessoriesParams =
-                    {
-                        projectName: this.projectName,
-                        repositoryName: dbEncodeURIComponent(this.repoName),
-                        reference: item.digest,
-                        q: encodeURIComponent(`type=${AccessoryType.COSIGN}`),
-                        page: 1,
-                        pageSize: ACCESSORY_PAGE_SIZE,
-                    };
-                this.newArtifactService
-                    .listAccessories(listTagParams)
-                    .subscribe(
-                        res => {
-                            if (res?.length) {
-                                item.coSigned = TRUE;
-                            } else {
-                                item.coSigned = FALSE;
-                            }
-                        },
-                        err => {
-                            item.coSigned = FALSE;
-                        }
-                    );
-            });
+        if (artifacts) {
+            if (artifacts.length) {
+                artifacts.forEach(item => {
+                    item.signed = CHECKING;
+                    this.newArtifactService
+                        .listAccessories({
+                            projectName: this.projectName,
+                            repositoryName: dbEncodeURIComponent(this.repoName),
+                            reference: item.digest,
+                            page: 1,
+                            pageSize: ACCESSORY_PAGE_SIZE,
+                            q: encodeURIComponent(
+                                `type={${AccessoryType.COSIGN} ${AccessoryType.NOTATION}}`
+                            ),
+                        })
+                        .subscribe({
+                            next: res => {
+                                if (res?.length) {
+                                    item.signed = TRUE;
+                                } else {
+                                    item.signed = FALSE;
+                                }
+                            },
+                            error: err => {
+                                item.signed = FALSE;
+                            },
+                        });
+                });
+            }
         }
     }
     // return true if all selected rows are in "running" state

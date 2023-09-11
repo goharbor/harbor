@@ -25,12 +25,18 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/controller/tag"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
+	pkgArt "github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 const (
@@ -62,6 +68,13 @@ func init() {
 
 // Handler preprocess artifact event data
 type Handler struct {
+	// execMgr for managing executions
+	execMgr task.ExecutionManager
+	// reportMgr for managing scan reports
+	reportMgr report.Manager
+	// artMgr for managing artifacts
+	artMgr pkgArt.Manager
+
 	once sync.Once
 	// pullCountStore caches the pull count group by repository
 	// map[repositoryID]counts
@@ -87,6 +100,8 @@ func (a *Handler) Handle(ctx context.Context, value interface{}) error {
 		return a.onPull(ctx, v.ArtifactEvent)
 	case *event.PushArtifactEvent:
 		return a.onPush(ctx, v.ArtifactEvent)
+	case *event.DeleteArtifactEvent:
+		return a.onDelete(ctx, v.ArtifactEvent)
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}
@@ -236,10 +251,68 @@ func (a *Handler) asyncFlushPullCount(ctx context.Context) {
 
 func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
 	go func() {
+		if event.Operator != "" {
+			ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
+		}
+
 		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}
 	}()
+
+	return nil
+}
+
+func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) error {
+	execMgr := task.ExecMgr
+	reportMgr := report.Mgr
+	artMgr := pkg.ArtifactMgr
+	// for UT mock
+	if a.execMgr != nil {
+		execMgr = a.execMgr
+	}
+	if a.reportMgr != nil {
+		reportMgr = a.reportMgr
+	}
+	if a.artMgr != nil {
+		artMgr = a.artMgr
+	}
+
+	ids := []int64{event.Artifact.ID}
+	digests := []string{event.Artifact.Digest}
+	if len(event.Artifact.References) > 0 {
+		for _, ref := range event.Artifact.References {
+			ids = append(ids, ref.ChildID)
+			digests = append(digests, ref.ChildDigest)
+		}
+	}
+	// check if the digest also referenced by other artifacts, should exclude it to delete the scan report if still referenced by others.
+	unrefDigests := []string{}
+	for _, digest := range digests {
+		// with the base=* to query all artifacts includes untagged and references
+		count, err := artMgr.Count(ctx, q.New(q.KeyWords{"digest": digest, "base": "*"}))
+		if err != nil {
+			log.Errorf("failed to count the artifact with the digest %s, error: %v", digest, err)
+			continue
+		}
+
+		if count == 0 {
+			unrefDigests = append(unrefDigests, digest)
+		}
+	}
+	// clean up the scan executions of this artifact and it's references by id
+	log.Debugf("delete the associated scan executions of artifacts %v as the artifacts have been deleted", ids)
+	for _, id := range ids {
+		if err := execMgr.DeleteByVendor(ctx, job.ImageScanJobVendorType, id); err != nil {
+			log.Errorf("failed to delete scan executions of artifact %d, error: %v", id, err)
+		}
+	}
+
+	// clean up the scan reports of this artifact and it's references by digest
+	log.Debugf("delete the associated scan reports of artifacts %v as the artifacts have been deleted", unrefDigests)
+	if err := reportMgr.DeleteByDigests(ctx, unrefDigests...); err != nil {
+		log.Errorf("failed to delete scan reports of artifact %v, error: %v", unrefDigests, err)
+	}
 
 	return nil
 }

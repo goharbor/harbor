@@ -33,7 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-// Manager defies the related operations to handle the management of job stats.
+// Manager defines the related operations to handle the management of job stats.
 type Manager interface {
 	// Get the stats data of all kinds of jobs.
 	// Data returned by pagination.

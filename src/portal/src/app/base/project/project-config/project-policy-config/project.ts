@@ -14,6 +14,7 @@ export class Project {
     role_name?: string;
     metadata?: {
         public: string | boolean;
+        enable_content_trust?: string | boolean;
         enable_content_trust_cosign?: string | boolean;
         prevent_vul: string | boolean;
         severity: string;

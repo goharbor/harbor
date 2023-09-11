@@ -33,7 +33,6 @@ Retry Add A Tag Immutability Rule
 Add A Tag Immutability Rule
     [Arguments]  ${scope}  ${tag}
     Reload Page
-    Sleep  3
     Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_retention_add_rule_xpath}  Retry Wait Until Page Contains Element  xpath=${project_tag_immutability_save_add_button_xpath}
     Retry Clear Element Text  ${project_tag_immutability_scope_input_xpath}
     Retry Text Input  ${project_tag_immutability_scope_input_xpath}  ${scope}
@@ -97,9 +96,7 @@ Execute Result Should Be
     FOR  ${idx}  IN RANGE  0  20
         ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  //app-tag-retention-tasks//clr-datagrid//clr-dg-row[contains(., '${image}') and contains(., '${result}')]
         Exit For Loop If  '${out[0]}'=='PASS'
-        Sleep  1
         Retry Element Click  ${project_tag_retention_refresh_xpath}
-        Sleep  5
         Retry Wait Until Page Contains Element  xpath=${project_tag_retention_record_yes_xpath}
         Retry Element Click  ${project_tag_retention_list_expand_icon_xpath}
     END

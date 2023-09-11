@@ -436,3 +436,53 @@ func Test_sortMostMatch(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateCronString(t *testing.T) {
+	testCases := []struct {
+		description string
+		input       string
+		hasErr      bool
+	}{
+		// empty cron string
+		{
+			description: "test case 1",
+			input:       "",
+			hasErr:      true,
+		},
+
+		// invalid cron format
+		{
+			description: "test case 2",
+			input:       "0 2 3",
+			hasErr:      true,
+		},
+
+		// the 1st field (indicating Seconds of time) of the cron setting must be 0
+		{
+			description: "test case 3",
+			input:       "1 0 0 1 1 0",
+			hasErr:      true,
+		},
+
+		// valid cron string
+		{
+			description: "test case 4",
+			input:       "0 1 2 1 1 *",
+			hasErr:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		err := ValidateCronString(tc.input)
+		if tc.hasErr {
+			if err == nil {
+				t.Errorf("%s, expect having error, while actual error returned is nil", tc.description)
+			}
+		} else {
+			// tc.hasErr == false
+			if err != nil {
+				t.Errorf("%s, expect having no error, while actual error returned is not nil, err=%v", tc.description, err)
+			}
+		}
+	}
+}

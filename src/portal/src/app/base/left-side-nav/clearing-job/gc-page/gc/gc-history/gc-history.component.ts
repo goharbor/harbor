@@ -9,6 +9,7 @@ import {
 import { GcService } from '../../../../../../../../ng-swagger-gen/services/gc.service';
 import {
     CURRENT_BASE_HREF,
+    formatSize,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
@@ -45,6 +46,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     selectedRow: GCHistory[] = [];
     isStopOnGoing: boolean = false;
     subscription: Subscription;
+    protected readonly NO = NO;
+    protected readonly YES = YES;
     constructor(
         private gcService: GcService,
         private errorHandler: ErrorHandler,
@@ -153,6 +156,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                                             item2.job_status = item.job_status;
                                             item2.update_time =
                                                 item.update_time;
+                                            item2.job_parameters =
+                                                item.job_parameters;
                                         }
                                     });
                                 });
@@ -202,6 +207,35 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
         }
         return NO;
     }
+    getBlobs(param: string): number {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.purged_blobs) {
+                return paramObj.purged_blobs;
+            }
+        }
+        return 0;
+    }
+
+    getManifest(param: string): number {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.purged_manifests) {
+                return paramObj.purged_manifests;
+            }
+        }
+        return 0;
+    }
+
+    getSize(param: string): string {
+        if (param) {
+            const paramObj: any = JSON.parse(param);
+            if (paramObj && paramObj.freed_space) {
+                return formatSize(paramObj.freed_space);
+            }
+        }
+        return '0';
+    }
 
     getLogLink(id): string {
         return `${CURRENT_BASE_HREF}/system/gc/${id}/log`;
@@ -234,5 +268,9 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
             ConfirmationButtons.CONFIRM_CANCEL
         );
         this.confirmationDialogService.openComfirmDialog(StopExecutionsMessage);
+    }
+
+    shouldShowDetails(status: string): boolean {
+        return status !== JOB_STATUS.PENDING && status !== JOB_STATUS.RUNNING;
     }
 }

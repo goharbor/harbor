@@ -15,6 +15,7 @@
 package postprocessors
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -294,6 +295,7 @@ type TestReportConverterSuite struct {
 	vulnerabilityRecordDao scan.VulnerabilityRecordDao
 	reportDao              scan.DAO
 	registrationID         string
+	nc                     *nativeToRelationalSchemaConverter
 }
 
 // SetupTest prepares env for test cases.
@@ -318,6 +320,7 @@ func TestReportConverterTests(t *testing.T) {
 
 // SetupSuite sets up the report converter suite test cases
 func (suite *TestReportConverterSuite) SetupSuite() {
+	suite.nc = &nativeToRelationalSchemaConverter{dao: scan.NewVulnerabilityRecordDao()}
 	suite.rc = NewNativeToRelationalSchemaConverter()
 	suite.Suite.SetupSuite()
 	suite.vulnerabilityRecordDao = scan.NewVulnerabilityRecordDao()
@@ -509,4 +512,77 @@ func (suite *TestReportConverterSuite) validateReportSummary(summary string, raw
 	data, err := json.Marshal(expectedReport)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), string(data), summary)
+}
+
+func (suite *TestReportConverterSuite) TestUpdateReport() {
+	ctx := suite.Context()
+	vuls := []*vuln.VulnerabilityItem{
+		{
+			Severity: "Critical", FixVersion: "2.9.1",
+		},
+		{
+			Severity: "Critical",
+		},
+		{
+			Severity: "High",
+		},
+		{
+			Severity: "Medium",
+		},
+		{
+			Severity: "Low",
+		},
+		{
+			Severity: "None",
+		},
+		{
+			Severity: "Unknown",
+		},
+	}
+	rp := &scan.Report{
+		Digest:           "d1001",
+		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeGenericVulnerabilityReport,
+		Report:           sampleReportWithMixedSeverity,
+		StartTime:        time.Now(),
+		EndTime:          time.Now().Add(1000),
+		UUID:             "reportUUID3",
+	}
+	id, err := suite.reportDao.Create(ctx, rp)
+	suite.NoError(err)
+	suite.True(id > 0)
+	err = suite.nc.updateReport(ctx, vuls, rp.UUID)
+	suite.NoError(err)
+	rpts, err := suite.reportDao.List(ctx, q.New(q.KeyWords{"UUID": rp.UUID}))
+	suite.NoError(err)
+	suite.Equal(1, len(rpts))
+	suite.Equal(int64(2), rpts[0].CriticalCnt)
+	suite.Equal(int64(1), rpts[0].HighCnt)
+	suite.Equal(int64(1), rpts[0].MediumCnt)
+	suite.Equal(int64(1), rpts[0].LowCnt)
+	suite.Equal(int64(1), rpts[0].NoneCnt)
+	suite.Equal(int64(1), rpts[0].UnknownCnt)
+	suite.Equal(int64(1), rpts[0].FixableCnt)
+}
+
+func Test_parseScoreFromVendorAttribute(t *testing.T) {
+	type args struct {
+		vendorAttribute string
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantNvdV3Score float64
+	}{
+		{"normal", args{`{"CVSS":{"nvd":{"V2Score":4.3,"V2Vector":"AV:N/AC:M/Au:N/C:N/I:N/A:P","V3Score":6.5,"V3Vector":"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"}}}`}, 6.5},
+		{"both", args{`{"CVSS":{"nvd":{"V3Score":5.5,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"},"redhat":{"V3Score":6.2,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}}`}, 5.5},
+		{"both2", args{`{"CVSS":{"nvd":{"V2Score":7.2,"V2Vector":"AV:L/AC:L/Au:N/C:C/I:C/A:C","V3Score":7.8,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"},"redhat":{"V3Score":7.8,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 7.8},
+		{"none", args{`{"CVSS":{"nvd":{"V2Score":7.2,"V2Vector":"AV:L/AC:L/Au:N/C:C/I:C/A:C","V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"},"redhat":{"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotNvdV3Score := parseScoreFromVendorAttribute(context.Background(), tt.args.vendorAttribute)
+			assert.Equalf(t, tt.wantNvdV3Score, gotNvdV3Score, "parseScoreFromVendorAttribute(%v)", tt.args.vendorAttribute)
+		})
+	}
 }

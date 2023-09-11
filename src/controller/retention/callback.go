@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 )
@@ -34,6 +35,10 @@ func retentionCallback(ctx context.Context, p string) error {
 	param := &TriggerParam{}
 	if err := json.Unmarshal([]byte(p), param); err != nil {
 		return fmt.Errorf("failed to unmarshal the param: %v", err)
+	}
+
+	if param.Operator != "" {
+		ctx = context.WithValue(ctx, operator.ContextKey{}, param.Operator)
 	}
 	_, err := Ctl.TriggerRetentionExec(ctx, param.PolicyID, param.Trigger, false)
 	return err
