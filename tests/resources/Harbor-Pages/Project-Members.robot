@@ -56,13 +56,13 @@ Change Member Role
 
 User Can Change Role
      [arguments]  ${username}
-     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label[contains(@class,'clr-control-label')]
      Retry Element Click  xpath=//*[@id='member-action']
      Retry Wait Until Page Not Contains Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
-     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label[contains(@class,'clr-control-label')]
      Retry Element Click  xpath=//*[@id='member-action']
      Retry Wait Until Page Contains Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
@@ -85,7 +85,7 @@ Add Guest Member To Project
 
 Delete Project Member
     [arguments]  ${member}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label[contains(@class,'clr-control-label')]
     Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
     Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${repo_delete_on_card_view_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_on_card_view_btn}  Retry Wait Element  xpath=${project_member_xpath}
