@@ -128,7 +128,7 @@ Filter Repo
 
 Delete Repo
     [Arguments]  ${pro_name}  ${repo_name}
-    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Filter Repo  ${pro_name}  ${repo_name}
     Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
@@ -145,7 +145,7 @@ Delete Repo on CardView
 Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${project_action_xpath}
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
@@ -292,7 +292,7 @@ Switch To Project Repo
 
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
     Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
@@ -317,6 +317,7 @@ Filter Labels In Tags
 Get Statics
     [Arguments]  ${locator}
     Reload Page
+    Wait Until Element Is Visible And Enabled  ${locator}
     ${privaterepo}=  Get Text  ${locator}
     [Return]  ${privaterepo}
 
@@ -393,7 +394,7 @@ Should be Accessory deleted
 Export CVEs
     [Arguments]  ${project}  ${repositories}  ${tags}  ${labels}  ${cve_ids}
     Filter Project  ${project}
-    Retry Element Click  //clr-dg-row[contains(.,'${project}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${project}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${project_action_xpath}
     Retry Button Click  ${export_cve_btn}
     Retry Text Input  ${export_cve_filter_repo_input}  ${repositories}
