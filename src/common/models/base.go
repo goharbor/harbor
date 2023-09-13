@@ -21,7 +21,6 @@ import (
 func init() {
 	orm.RegisterModel(
 		new(Role),
-		new(ResourceLabel),
 		new(OIDCUser),
 	)
 }
