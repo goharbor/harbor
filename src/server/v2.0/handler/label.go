@@ -22,7 +22,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -181,10 +180,6 @@ func (lAPI *labelAPI) DeleteLabel(ctx context.Context, params operation.DeleteLa
 		return lAPI.SendError(ctx, err)
 	}
 	id := label.ID
-	// TODO remove this step once chart-museum is removed.
-	if err := dao.DeleteResourceLabelByLabel(id); err != nil {
-		return lAPI.SendError(ctx, err)
-	}
 	if err := lAPI.labelMgr.RemoveFromAllArtifacts(ctx, id); err != nil {
 		return lAPI.SendError(ctx, err)
 	}

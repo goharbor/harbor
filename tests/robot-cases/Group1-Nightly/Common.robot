@@ -328,7 +328,7 @@ Test Case - Delete Multi Project
     Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     @{project_list}  Create List  projecta  projectb
     FOR  ${project}  IN  @{project_list}
-        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label
+        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label[contains(@class,'clr-control-label')]
     END
     Retry Element Click  ${project_action_xpath}
     Retry Element Click  ${project_delete_btn}
@@ -928,8 +928,8 @@ Test Case - Export CVE
     Add Labels To Tag  ${images['redis']}  ${labels}[1]
     Navigate To Projects
     Should Not Be Export CVEs
-    Retry Element Click  //clr-dg-row[1]//label
-    Retry Element Click  //clr-dg-row[2]//label
+    Retry Element Click  //clr-dg-row[1]//label[contains(@class,'clr-control-label')]
+    Retry Element Click  //clr-dg-row[2]//label[contains(@class,'clr-control-label')]
     Should Not Be Export CVEs
     Export CVEs  project${d}  photon,postgres,nginx,redis  ${images['photon']},${images['nginx']},${images['redis']}  ${labels}  ${cve_ids}[0],${cve_ids}[1],${cve_ids}[2]
     ${csv_file_path}=  Download Latest CVE CSV File
@@ -968,7 +968,7 @@ Test Case - Job Service Dashboard Job Queues
     ${retention_execution2}=  Execute Run  photon  0/0
     # Triggers three IMAGE_SCAN jobs
     Go Into Repo  project${d}  photon
-    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Element Click  //clr-datagrid//label[contains(@class,'clr-control-label') and contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Triggers a GARBAGE_COLLECTION job
     ${gc_execution1}=  GC Now  dry_run=${true}
@@ -1004,7 +1004,7 @@ Test Case - Job Service Dashboard Job Queues
     Purge Now  1  Days  Running
     # Triggers three IMAGE_SCAN jobs
     Go Into Repo  project${d}  photon
-    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Element Click  //clr-datagrid//label[contains(@class,'clr-control-label') and contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Check job queues
     Switch To Job Queues
