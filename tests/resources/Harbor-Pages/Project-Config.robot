@@ -8,7 +8,7 @@ Resource  ../../resources/Util.robot
 
 Goto Project Config
     Retry Element Click  //project-detail//ul/li[contains(.,'Summary')]
-    Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(.,'Prevent vulnerable images from running.')]
+    Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(@class,'clr-control-label') and contains(.,'Prevent vulnerable images from running.')]
 
 Click Project Public
     Mouse Down  //hbr-project-policy-config//input[@name='public']
