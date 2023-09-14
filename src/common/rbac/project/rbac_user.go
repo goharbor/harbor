@@ -17,6 +17,7 @@ package project
 import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
+	"strings"
 )
 
 type rbacUser struct {
@@ -28,7 +29,7 @@ type rbacUser struct {
 
 // GetUserName returns username of the visitor
 func (pru *rbacUser) GetUserName() string {
-	return pru.username
+	return strings.ReplaceAll(pru.username, ",", "_")
 }
 
 // GetPolicies returns policies of the visitor
