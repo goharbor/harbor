@@ -116,6 +116,28 @@ var (
         }
     ]
 }`
+	v2ManifestWithEmptyConfig = `{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "artifactType": "application/vnd.example+type",
+    "config": {
+      "mediaType": "application/vnd.oci.empty.v1+json",
+      "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "size": 2
+    },
+    "layers": [
+      {
+        "mediaType": "application/vnd.example+type",
+        "digest": "sha256:e258d248fda94c63753607f7c4494ee0fcbe92f1a76bfdac795c9d84101eb317",
+        "size": 1234
+      }
+    ],
+    "annotations": {
+      "oci.opencontainers.image.created": "2023-01-02T03:04:05Z",
+      "com.example.data": "payload"
+    }
+ }`
+	emptyConfig = `{}`
 )
 
 type defaultProcessorTestSuite struct {
@@ -182,6 +204,19 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadata() {
 	d.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), configBlob, nil)
 	d.parser.On("Parse", context.TODO(), mock.AnythingOfType("*artifact.Artifact"), mock.AnythingOfType("[]byte")).Return(nil)
 	err = d.processor.AbstractMetadata(nil, art, content)
+	d.Require().Nil(err)
+}
+
+func (d *defaultProcessorTestSuite) TestAbstractMetadataWithEmptyConfig() {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(v2ManifestWithEmptyConfig))
+	d.Require().Nil(err)
+	manifestMediaType, content, err := manifest.Payload()
+	d.Require().Nil(err)
+
+	art := &artifact.Artifact{ManifestMediaType: manifestMediaType}
+	err = d.processor.AbstractMetadata(nil, art, content)
+	d.Assert().Equal(0, len(art.ExtraAttrs))
+	d.Assert().Equal(2, len(emptyConfig))
 	d.Require().Nil(err)
 }
 
