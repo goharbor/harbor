@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -43,8 +42,6 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/user"
 )
-
-var userResource = system.NewNamespace().Resource(rbac.ResourceUser)
 
 type usersAPI struct {
 	BaseAPI
@@ -108,7 +105,7 @@ func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserPa
 }
 
 func (u *usersAPI) ListUsers(ctx context.Context, params operation.ListUsersParams) middleware.Responder {
-	if err := u.RequireSystemAccess(ctx, rbac.ActionList, userResource); err != nil {
+	if err := u.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceUser); err != nil {
 		return u.SendError(ctx, err)
 	}
 	query, err := u.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
@@ -365,7 +362,7 @@ func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
 	if !ok || !sctx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
-	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionUpdate, userResource) {
+	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) {
 		return errors.ForbiddenError(nil).WithMessage("Not authorized to update the CLI secret for user: %d", id)
 	}
 	return nil
@@ -400,7 +397,7 @@ func (u *usersAPI) requireReadable(ctx context.Context, id int) error {
 	if !ok || !sctx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
-	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionRead, userResource) {
+	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionRead, rbac.ResourceUser) {
 		return errors.ForbiddenError(nil).WithMessage("Not authorized to read user: %d", id)
 	}
 	return nil
@@ -411,7 +408,7 @@ func (u *usersAPI) requireDeletable(ctx context.Context, id int) error {
 	if !ok || !sctx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
-	if !sctx.Can(ctx, rbac.ActionDelete, userResource) {
+	if !sctx.Can(ctx, rbac.ActionDelete, rbac.ResourceUser) {
 		return errors.ForbiddenError(nil).WithMessage("Not authorized to delete users")
 	}
 	if matchUserID(sctx, id) || id == 1 {
@@ -439,10 +436,10 @@ func modifiable(ctx context.Context, authMode string, id int) bool {
 	sctx, _ := security.FromContext(ctx)
 	if authMode == common.DBAuth {
 		// In db auth, admin can update anyone's info, and regular user can update his own
-		return sctx.Can(ctx, rbac.ActionUpdate, userResource) || matchUserID(sctx, id)
+		return sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) || matchUserID(sctx, id)
 	}
 	// In none db auth, only the local admin's password can be updated.
-	return id == 1 && sctx.Can(ctx, rbac.ActionUpdate, userResource)
+	return id == 1 && sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser)
 }
 
 func matchUserID(sctx security.Context, id int) bool {
