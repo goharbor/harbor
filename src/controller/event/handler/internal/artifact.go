@@ -66,8 +66,8 @@ func init() {
 	}
 }
 
-// Handler preprocess artifact event data
-type Handler struct {
+// ArtifactEventHandler preprocess artifact event data
+type ArtifactEventHandler struct {
 	// execMgr for managing executions
 	execMgr task.ExecutionManager
 	// reportMgr for managing scan reports
@@ -89,12 +89,12 @@ type Handler struct {
 }
 
 // Name ...
-func (a *Handler) Name() string {
+func (a *ArtifactEventHandler) Name() string {
 	return "InternalArtifact"
 }
 
 // Handle ...
-func (a *Handler) Handle(ctx context.Context, value interface{}) error {
+func (a *ArtifactEventHandler) Handle(ctx context.Context, value interface{}) error {
 	switch v := value.(type) {
 	case *event.PullArtifactEvent:
 		return a.onPull(ctx, v.ArtifactEvent)
@@ -109,11 +109,11 @@ func (a *Handler) Handle(ctx context.Context, value interface{}) error {
 }
 
 // IsStateful ...
-func (a *Handler) IsStateful() bool {
+func (a *ArtifactEventHandler) IsStateful() bool {
 	return false
 }
 
-func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error {
+func (a *ArtifactEventHandler) onPull(ctx context.Context, event *event.ArtifactEvent) error {
 	if config.ScannerSkipUpdatePullTime(ctx) && isScannerUser(ctx, event) {
 		return nil
 	}
@@ -159,7 +159,7 @@ func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) updatePullTimeInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *ArtifactEventHandler) updatePullTimeInCache(ctx context.Context, event *event.ArtifactEvent) {
 	var tagName string
 	if len(event.Tags) != 0 {
 		tagName = event.Tags[0]
@@ -173,14 +173,14 @@ func (a *Handler) updatePullTimeInCache(ctx context.Context, event *event.Artifa
 	a.pullTimeStore[key] = time.Now()
 }
 
-func (a *Handler) addPullCountInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *ArtifactEventHandler) addPullCountInCache(ctx context.Context, event *event.ArtifactEvent) {
 	a.pullCountLock.Lock()
 	defer a.pullCountLock.Unlock()
 
 	a.pullCountStore[event.Artifact.RepositoryID] = a.pullCountStore[event.Artifact.RepositoryID] + 1
 }
 
-func (a *Handler) syncFlushPullTime(ctx context.Context, artifactID int64, tagName string, time time.Time) {
+func (a *ArtifactEventHandler) syncFlushPullTime(ctx context.Context, artifactID int64, tagName string, time time.Time) {
 	var tagID int64
 
 	if tagName != "" {
@@ -203,13 +203,13 @@ func (a *Handler) syncFlushPullTime(ctx context.Context, artifactID int64, tagNa
 	}
 }
 
-func (a *Handler) syncFlushPullCount(ctx context.Context, repositoryID int64, count uint64) {
+func (a *ArtifactEventHandler) syncFlushPullCount(ctx context.Context, repositoryID int64, count uint64) {
 	if err := repository.Ctl.AddPullCount(ctx, repositoryID, count); err != nil {
 		log.Warningf("failed to add pull count repository %d, %v", repositoryID, err)
 	}
 }
 
-func (a *Handler) asyncFlushPullTime(ctx context.Context) {
+func (a *ArtifactEventHandler) asyncFlushPullTime(ctx context.Context) {
 	for {
 		<-time.After(asyncFlushDuration)
 		a.pullTimeLock.Lock()
@@ -235,7 +235,7 @@ func (a *Handler) asyncFlushPullTime(ctx context.Context) {
 	}
 }
 
-func (a *Handler) asyncFlushPullCount(ctx context.Context) {
+func (a *ArtifactEventHandler) asyncFlushPullCount(ctx context.Context) {
 	for {
 		<-time.After(asyncFlushDuration)
 		a.pullCountLock.Lock()
@@ -249,7 +249,7 @@ func (a *Handler) asyncFlushPullCount(ctx context.Context) {
 	}
 }
 
-func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
+func (a *ArtifactEventHandler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
 	go func() {
 		if event.Operator != "" {
 			ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
@@ -263,7 +263,7 @@ func (a *Handler) onPush(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) onDelete(ctx context.Context, event *event.ArtifactEvent) error {
+func (a *ArtifactEventHandler) onDelete(ctx context.Context, event *event.ArtifactEvent) error {
 	execMgr := task.ExecMgr
 	reportMgr := report.Mgr
 	artMgr := pkg.ArtifactMgr
