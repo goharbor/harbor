@@ -169,6 +169,19 @@ func (d *daoTestSuite) TestCreate() {
 	d.True(errors.IsErr(err, errors.ConflictCode))
 }
 
+func (d *daoTestSuite) TestUpdate() {
+	acc := &Accessory{
+		ID:                d.accID,
+		SubjectArtifactID: 333,
+	}
+	err := d.dao.Update(d.ctx, acc)
+	d.Require().Nil(err)
+
+	accAfter, err := d.dao.Get(d.ctx, d.accID)
+	d.Require().Nil(err)
+	d.Require().Equal(int64(333), accAfter.SubjectArtifactID)
+}
+
 func (d *daoTestSuite) TestDelete() {
 	// happy pass is covered in TearDown
 

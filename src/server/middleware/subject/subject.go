@@ -21,6 +21,7 @@ import (
 	"net/http"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -28,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -147,6 +149,34 @@ func Middleware() func(http.Handler) http.Handler {
 				}
 			}
 			w.Header().Set("OCI-Subject", subjectArt.Digest)
+		} else {
+			// In certain cases, the OCI client may push the subject artifact and accessory in either order.
+			// Therefore, it is necessary to handle situations where the client pushes the accessory ahead of the subject artifact.
+			digest := digest.FromBytes(body)
+			accs, err := accessory.Mgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": digest}))
+			if err != nil {
+				logger.Errorf("failed to list accessory artifact: %s, error: %v", digest, err)
+				return err
+			}
+			if len(accs) <= 0 {
+				return nil
+			}
+			art, err := artifact.Ctl.GetByReference(ctx, info.Repository, digest.String(), nil)
+			if err != nil {
+				logger.Errorf("failed to list artifact: %s, error: %v", digest, err)
+				return err
+			}
+			if art != nil {
+				for _, acc := range accs {
+					accData := model.AccessoryData{
+						ID:            acc.GetData().ID,
+						SubArtifactID: art.ID,
+					}
+					if err := accessory.Mgr.Update(ctx, accData); err != nil {
+						return err
+					}
+				}
+			}
 		}
 
 		return nil

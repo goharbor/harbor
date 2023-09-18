@@ -37,7 +37,7 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 func (suite *MiddlewareTestSuite) TearDownTest() {
 }
 
-func (suite *MiddlewareTestSuite) prepare(name, subject string) (distribution.Manifest, distribution.Descriptor, *http.Request) {
+func (suite *MiddlewareTestSuite) prepare(name, digset string, withoutSub ...bool) (distribution.Manifest, distribution.Descriptor, *http.Request) {
 	body := fmt.Sprintf(`
 	{
    "schemaVersion":2,
@@ -61,7 +61,29 @@ func (suite *MiddlewareTestSuite) prepare(name, subject string) (distribution.Ma
       "mediaType":"application/vnd.oci.image.manifest.v1+json",
       "size":419,
       "digest":"%s"
-   }}`, subject)
+   }}`, digset)
+
+	if len(withoutSub) > 0 && withoutSub[0] {
+		body = fmt.Sprintf(`
+	{
+   "schemaVersion":2,
+   "mediaType":"application/vnd.oci.image.manifest.v1+json",
+   "config":{
+      "mediaType":"application/vnd.example.sbom",
+      "size":2,
+      "digest":"%s"
+   },
+   "layers":[
+      {
+         "mediaType":"application/vnd.example.sbom.text",
+         "size":37,
+         "digest":"sha256:45592a729ef6884ea3297e9510d79104f27aeef5f4919b3a921e3abb7f469709"
+      }
+   ],
+   "annotations":{
+      "org.example.sbom.format":"text"
+   }}`, digset)
+	}
 
 	manifest, descriptor, err := distribution.UnmarshalManifest("application/vnd.oci.image.manifest.v1+json", []byte(body))
 	suite.Nil(err)
@@ -94,19 +116,21 @@ func (suite *MiddlewareTestSuite) addArt(pid, repositoryID int64, repositoryName
 	return afid
 }
 
-func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryName, dgt, accdgt string) int64 {
-	subaf := &artifact.Artifact{
-		Type:           "Docker-Image",
-		ProjectID:      pid,
-		RepositoryID:   repositoryID,
-		RepositoryName: repositoryName,
-		Digest:         dgt,
-		Size:           1024,
-		PushTime:       time.Now(),
-		PullTime:       time.Now(),
+func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryName, dgt, accdgt string, createSub ...bool) int64 {
+	if len(createSub) > 0 && createSub[0] {
+		subaf := &artifact.Artifact{
+			Type:           "Docker-Image",
+			ProjectID:      pid,
+			RepositoryID:   repositoryID,
+			RepositoryName: repositoryName,
+			Digest:         dgt,
+			Size:           1024,
+			PushTime:       time.Now(),
+			PullTime:       time.Now(),
+		}
+		_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
+		suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 	}
-	_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
-	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	af := &artifact.Artifact{
 		Type:           "Subject",
@@ -124,7 +148,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 	accid, err := accessory.Mgr.Create(suite.Context(), accessorymodel.AccessoryData{
 		ID:                1,
 		ArtifactID:        afid,
-		SubArtifactDigest: subaf.Digest,
+		SubArtifactDigest: dgt,
 		Digest:            accdgt,
 		Type:              accessorymodel.TypeSubject,
 	})
@@ -165,6 +189,39 @@ func (suite *MiddlewareTestSuite) TestSubject() {
 	})
 }
 
+func (suite *MiddlewareTestSuite) TestSubjectAfterAcc() {
+	// add acc, with subject digest
+	// add subject
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/hello-world", projectName)
+		_, repoId, err := repository.Ctl.Ensure(suite.Context(), name)
+
+		_, descriptor, req := suite.prepare(name, suite.DigestString(), true)
+		suite.Nil(err)
+
+		subArtDigest := descriptor.Digest.String()
+		accArtDigest := suite.DigestString()
+
+		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, accArtDigest)
+		subArtID := suite.addArt(projectID, repoId, name, subArtDigest)
+
+		res := httptest.NewRecorder()
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": subArtDigest})
+		Middleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusCreated, res.Code)
+
+		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
+			Keywords: map[string]interface{}{
+				"SubjectArtifactDigest": subArtDigest,
+			},
+		})
+		suite.Equal(1, len(accs))
+		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
+		suite.Equal(subArtID, accs[0].GetData().SubArtifactID)
+		suite.Equal(accID, accs[0].GetData().ID)
+	})
+}
+
 func (suite *MiddlewareTestSuite) TestSubjectDup() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/hello-world", projectName)
@@ -174,7 +231,7 @@ func (suite *MiddlewareTestSuite) TestSubjectDup() {
 		_, descriptor, req := suite.prepare(name, subArtDigest)
 		suite.Nil(err)
 
-		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, descriptor.Digest.String())
+		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, descriptor.Digest.String(), true)
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
