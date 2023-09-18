@@ -87,6 +87,16 @@ func (m *managerTestSuite) TestCreate() {
 	m.dao.AssertExpectations(m.T())
 }
 
+func (m *managerTestSuite) TestUpdate() {
+	mock.OnAnything(m.dao, "Update").Return(nil)
+	err := m.mgr.Update(nil, model.AccessoryData{
+		ID:            1,
+		SubArtifactID: 2,
+	})
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
 func (m *managerTestSuite) TestDelete() {
 	mock.OnAnything(m.dao, "Delete").Return(nil)
 	err := m.mgr.Delete(nil, 1)
