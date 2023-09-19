@@ -101,7 +101,12 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	if err := json.Unmarshal(manifest, mani); err != nil {
 		return err
 	}
-	// get config layer
+	// if manifest.Config.Mediatype not comply with stanard config json regex (unknown type),
+	// regex will filter either none-json format config or empty config
+	if d.GetArtifactType(ctx, artifact) == ArtifactTypeUnknown {
+		return nil
+	}
+	// else get config layer
 	_, blob, err := d.regCli.PullBlob(artifact.RepositoryName, mani.Config.Digest.String())
 	if err != nil {
 		return err
@@ -109,11 +114,8 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	defer blob.Close()
 	// parse metadata from config layer
 	metadata := map[string]interface{}{}
-	// Some artifact may not have empty config layer.
-	if mani.Config.Size != 0 {
-		if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
-			return err
-		}
+	if err = json.NewDecoder(blob).Decode(&metadata); err != nil {
+		return err
 	}
 	// Populate all metadata into the ExtraAttrs first.
 	artifact.ExtraAttrs = metadata

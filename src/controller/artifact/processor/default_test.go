@@ -116,6 +116,31 @@ var (
         }
     ]
 }`
+	v2ManifestWithUnknownConfig = `{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "config": {
+        "mediaType": "application/vnd.nhl.peanut.butter.bagel",
+        "digest": "sha256:ee29d2e91da0e5dbf6536f5b369148a83ef59b0ce96e49da65dd6c25eb1fa44f",
+        "size": 33,
+        "newUnspecifiedField": null
+    },
+    "layers": [
+        {
+            "mediaType": "application/vnd.oci.empty.v1+json",
+            "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "size": 2,
+            "newUnspecifiedField": "null"
+        }
+    ],
+    "subject": {
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "digest": "sha256:5a01bbc4ce6f52541cbc7e6af4b22bb107991a4bdd433103ff65aeb00756e906",
+        "size": 714,
+        "newUnspecifiedField": null
+    }
+ }`
+	unknownConfig = `{NHL Peanut Butter on my NHL bagel}`
 )
 
 type defaultProcessorTestSuite struct {
@@ -141,6 +166,18 @@ func (d *defaultProcessorTestSuite) TestGetArtifactType() {
 	d.Equal(ArtifactTypeUnknown, typee)
 
 	mediaType = "unknown"
+	art = &artifact.Artifact{MediaType: mediaType}
+	processor = &defaultProcessor{}
+	typee = processor.GetArtifactType(nil, art)
+	d.Equal(ArtifactTypeUnknown, typee)
+
+	mediaType = "application/vnd.oci.empty.v1+json"
+	art = &artifact.Artifact{MediaType: mediaType}
+	processor = &defaultProcessor{}
+	typee = processor.GetArtifactType(nil, art)
+	d.Equal(ArtifactTypeUnknown, typee)
+
+	mediaType = "application/vnd.nhl.peanut.butter.bagel"
 	art = &artifact.Artifact{MediaType: mediaType}
 	processor = &defaultProcessor{}
 	typee = processor.GetArtifactType(nil, art)
@@ -183,6 +220,19 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadata() {
 	d.parser.On("Parse", context.TODO(), mock.AnythingOfType("*artifact.Artifact"), mock.AnythingOfType("[]byte")).Return(nil)
 	err = d.processor.AbstractMetadata(nil, art, content)
 	d.Require().Nil(err)
+}
+
+func (d *defaultProcessorTestSuite) TestAbstractMetadataWithUnknownConfig() {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(v2ManifestWithUnknownConfig))
+	d.Require().Nil(err)
+	manifestMediaType, content, err := manifest.Payload()
+	d.Require().Nil(err)
+
+	art := &artifact.Artifact{ManifestMediaType: manifestMediaType}
+	err = d.processor.AbstractMetadata(nil, art, content)
+	d.Require().Nil(err)
+	d.Assert().Equal(35, len(unknownConfig))
+	d.Assert().Equal(0, len(art.ExtraAttrs))
 }
 
 func TestDefaultProcessorTestSuite(t *testing.T) {
