@@ -146,7 +146,9 @@ func Middleware() func(http.Handler) http.Handler {
 					return err
 				}
 			}
-			w.Header().Set("OCI-Subject", subjectArt.Digest)
+			// when subject artifact is pushed after accessory artifact, current subject artifact do not exist.
+			// so we use reference manifest subject digest instead of subjectArt.Digest
+			w.Header().Set("OCI-Subject", mf.Subject.Digest.String())
 		}
 
 		return nil
