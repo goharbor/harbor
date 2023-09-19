@@ -73,6 +73,7 @@ def _create_client(server, credential, debug, api_type):
         "system_info": v2_swagger_client.SysteminfoApi(v2_swagger_client.ApiClient(cfg)),
         "jobservice": v2_swagger_client.JobserviceApi(v2_swagger_client.ApiClient(cfg)),
         "schedule": v2_swagger_client.ScheduleApi(v2_swagger_client.ApiClient(cfg)),
+        "securityhub": v2_swagger_client.SecurityhubApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code, err_msg = r"HTTPS status code s not as we expected. Expected {}, while actual HTTPS status code is {}."):
