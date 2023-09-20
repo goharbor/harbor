@@ -190,3 +190,7 @@ Test Case - Referrers API
 Test Case - Podman Pull And Push To Harbor
     [Tags]  podman_pull_push
     Harbor API Test  ./tests/apitests/python/test_podman_pull_push.py
+
+Test Case - Security Hub
+    [Tags]  security_hub
+    Harbor API Test  ./tests/apitests/python/test_security_hub.py
