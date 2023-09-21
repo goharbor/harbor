@@ -148,7 +148,10 @@ func Middleware() func(http.Handler) http.Handler {
 					return err
 				}
 			}
-			w.Header().Set("OCI-Subject", subjectArt.Digest)
+
+			// when subject artifact is pushed after accessory artifact, current subject artifact do not exist.
+			// so we use reference manifest subject digest instead of subjectArt.Digest
+			w.Header().Set("OCI-Subject", mf.Subject.Digest.String())
 		} else {
 			// In certain cases, the OCI client may push the subject artifact and accessory in either order.
 			// Therefore, it is necessary to handle situations where the client pushes the accessory ahead of the subject artifact.
