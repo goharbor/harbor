@@ -154,6 +154,20 @@ func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*dao.Accessory, erro
 	return r0, r1
 }
 
+// Update provides a mock function with given fields: ctx, accessory
+func (_m *DAO) Update(ctx context.Context, accessory *dao.Accessory) error {
+	ret := _m.Called(ctx, accessory)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dao.Accessory) error); ok {
+		r0 = rf(ctx, accessory)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewDAO interface {
 	mock.TestingT
 	Cleanup(func())
