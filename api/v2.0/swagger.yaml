@@ -425,6 +425,12 @@ paths:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/isResourceName'
         - $ref: '#/parameters/projectNameOrId'
+        - name: force
+          in: query
+          type: boolean
+          required: false
+          default: false
+          description: Force the project deletion even if it contains repositories.
       responses:
         '200':
           $ref: '#/responses/200'

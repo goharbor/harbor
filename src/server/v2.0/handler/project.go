@@ -254,6 +254,23 @@ func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteP
 		return a.SendError(ctx, err)
 	}
 
+	if lib.BoolValue(params.Force) {
+		repositories, err := a.repositoryCtl.List(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"ProjectID": projectNameOrID,
+			},
+		})
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+
+		for _, repository := range repositories {
+			if err := a.repositoryCtl.Delete(ctx, repository.RepositoryID); err != nil {
+				return a.SendError(ctx, err)
+			}
+		}
+	}
+
 	p, result, err := a.deletable(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
