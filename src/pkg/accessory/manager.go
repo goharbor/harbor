@@ -48,6 +48,8 @@ type Manager interface {
 	List(ctx context.Context, query *q.Query) (accs []model.Accessory, err error)
 	// Create the accessory and returns the ID
 	Create(ctx context.Context, accessory model.AccessoryData) (id int64, err error)
+	// Update the accessory
+	Update(ctx context.Context, accessory model.AccessoryData) error
 	// Delete the accessory specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// DeleteAccessories deletes accessories according to the query
@@ -148,6 +150,14 @@ func (m *manager) Create(ctx context.Context, accessory model.AccessoryData) (in
 		Type:                  accessory.Type,
 	}
 	return m.dao.Create(ctx, acc)
+}
+
+func (m *manager) Update(ctx context.Context, accessory model.AccessoryData) error {
+	acc := &dao.Accessory{
+		ID:                accessory.ID,
+		SubjectArtifactID: accessory.SubArtifactID,
+	}
+	return m.dao.Update(ctx, acc)
 }
 
 func (m *manager) Delete(ctx context.Context, id int64) error {

@@ -29,7 +29,7 @@ Select Distribution For P2P Preheat
 
 Select P2P Preheat Policy
     [Arguments]  ${name}
-    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-radio-wrapper/label
+    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-radio-wrapper/label[contains(@class,'clr-control-label')]
 
 P2P Preheat Policy Exist
     [Arguments]  ${name}  ${repo}=${null}

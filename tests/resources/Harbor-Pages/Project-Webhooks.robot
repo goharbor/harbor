@@ -25,12 +25,12 @@ Select Payload Format
 
 Select Event Type
     [Arguments]  @{event_type}
-    ${elements}=  Get WebElements  //form//div[contains(@class,'clr-control-inline')]//label
+    ${elements}=  Get WebElements  //form//div[contains(@class,'clr-control-inline')]//label[contains(@class,'clr-control-label')]
     FOR  ${element}  IN  @{elements}
         Retry Element Click  ${element}
     END
     FOR  ${element}  IN  @{event_type}
-        Retry Element Click  //form//div[contains(@class,'clr-control-inline')]//label[contains(.,'${element}')]
+        Retry Element Click  //form//div[contains(@class,'clr-control-inline')]//label[contains(@class,'clr-control-label') and contains(.,'${element}')]
     END
 
 Update A Webhook
