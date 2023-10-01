@@ -148,6 +148,12 @@ services:
     cap_add:
       - SETGID
       - SETUID
+    {% if core.extra_hosts %}
+    extra_hosts:
+      {% for extra_host in core.extra_hosts %}
+      - {{extra_host}}
+      {% endfor %}
+    {% endif %}
     volumes:
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
       - {{data_volume}}/:/data/:z
