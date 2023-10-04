@@ -77,6 +77,28 @@ func ComposeDecodeHookFunc(fs ...DecodeHookFunc) DecodeHookFunc {
 	}
 }
 
+// OrComposeDecodeHookFunc executes all input hook functions until one of them returns no error. In that case its value is returned.
+// If all hooks return an error, OrComposeDecodeHookFunc returns an error concatenating all error messages.
+func OrComposeDecodeHookFunc(ff ...DecodeHookFunc) DecodeHookFunc {
+	return func(a, b reflect.Value) (interface{}, error) {
+		var allErrs string
+		var out interface{}
+		var err error
+
+		for _, f := range ff {
+			out, err = DecodeHookExec(f, a, b)
+			if err != nil {
+				allErrs += err.Error() + "\n"
+				continue
+			}
+
+			return out, nil
+		}
+
+		return nil, errors.New(allErrs)
+	}
+}
+
 // StringToSliceHookFunc returns a DecodeHookFunc that converts
 // string to []string by splitting on the given sep.
 func StringToSliceHookFunc(sep string) DecodeHookFunc {

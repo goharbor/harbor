@@ -20,6 +20,10 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/beego/beego/v2/client/orm/internal/utils"
+
+	"github.com/beego/beego/v2/client/orm/internal/models"
+
 	"github.com/pkg/errors"
 )
 
@@ -71,7 +75,7 @@ type rawSet struct {
 
 var _ RawSeter = new(rawSet)
 
-// set args for every query
+// Set args for every query
 func (o rawSet) SetArgs(args ...interface{}) RawSeter {
 	o.args = args
 	return &o
@@ -86,7 +90,7 @@ func (o *rawSet) Exec() (sql.Result, error) {
 	return o.orm.db.Exec(query, args...)
 }
 
-// set field value to row container
+// Set field value to row container
 func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 	switch ind.Kind() {
 	case reflect.Bool:
@@ -95,7 +99,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 		} else if v, ok := value.(bool); ok {
 			ind.SetBool(v)
 		} else {
-			v, _ := StrTo(ToStr(value)).Bool()
+			v, _ := utils.StrTo(utils.ToStr(value)).Bool()
 			ind.SetBool(v)
 		}
 
@@ -103,7 +107,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 		if value == nil {
 			ind.SetString("")
 		} else {
-			ind.SetString(ToStr(value))
+			ind.SetString(utils.ToStr(value))
 		}
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -117,7 +121,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				ind.SetInt(int64(val.Uint()))
 			default:
-				v, _ := StrTo(ToStr(value)).Int64()
+				v, _ := utils.StrTo(utils.ToStr(value)).Int64()
 				ind.SetInt(v)
 			}
 		}
@@ -132,7 +136,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				ind.SetUint(val.Uint())
 			default:
-				v, _ := StrTo(ToStr(value)).Uint64()
+				v, _ := utils.StrTo(utils.ToStr(value)).Uint64()
 				ind.SetUint(v)
 			}
 		}
@@ -145,7 +149,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 			case reflect.Float64:
 				ind.SetFloat(val.Float())
 			default:
-				v, _ := StrTo(ToStr(value)).Float64()
+				v, _ := utils.StrTo(utils.ToStr(value)).Float64()
 				ind.SetFloat(v)
 			}
 		}
@@ -170,20 +174,20 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 			if str != "" {
 				if len(str) >= 19 {
 					str = str[:19]
-					t, err := time.ParseInLocation(formatDateTime, str, o.orm.alias.TZ)
+					t, err := time.ParseInLocation(utils.FormatDateTime, str, o.orm.alias.TZ)
 					if err == nil {
 						t = t.In(DefaultTimeLoc)
 						ind.Set(reflect.ValueOf(t))
 					}
 				} else if len(str) >= 10 {
 					str = str[:10]
-					t, err := time.ParseInLocation(formatDate, str, DefaultTimeLoc)
+					t, err := time.ParseInLocation(utils.FormatDate, str, DefaultTimeLoc)
 					if err == nil {
 						ind.Set(reflect.ValueOf(t))
 					}
 				} else if len(str) >= 8 {
 					str = str[:8]
-					t, err := time.ParseInLocation(formatTime, str, DefaultTimeLoc)
+					t, err := time.ParseInLocation(utils.FormatTime, str, DefaultTimeLoc)
 					if err == nil {
 						ind.Set(reflect.ValueOf(t))
 					}
@@ -211,7 +215,7 @@ func (o *rawSet) setFieldValue(ind reflect.Value, value interface{}) {
 	}
 }
 
-// set field value in loop for slice container
+// Set field value in loop for slice container
 func (o *rawSet) loopSetRefs(refs []interface{}, sInds []reflect.Value, nIndsPtr *[]reflect.Value, eTyps []reflect.Type, init bool) {
 	nInds := *nIndsPtr
 
@@ -287,7 +291,7 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 		refs  = make([]interface{}, 0, len(containers))
 		sInds []reflect.Value
 		eTyps []reflect.Type
-		sMi   *modelInfo
+		sMi   *models.ModelInfo
 	)
 	structMode := false
 	for _, container := range containers {
@@ -295,7 +299,7 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 		ind := reflect.Indirect(val)
 
 		if val.Kind() != reflect.Ptr {
-			panic(fmt.Errorf("<RawSeter.QueryRow> all args must be use ptr"))
+			panic(fmt.Errorf("<RawSeter.QueryRow> All args must be use ptr"))
 		}
 
 		etyp := ind.Type()
@@ -313,8 +317,8 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 			}
 
 			structMode = true
-			fn := getFullName(typ)
-			if mi, ok := defaultModelCache.getByFullName(fn); ok {
+			fn := models.GetFullName(typ)
+			if mi, ok := defaultModelCache.GetByFullName(fn); ok {
 				sMi = mi
 			}
 		} else {
@@ -370,19 +374,19 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 
 			if sMi != nil {
 				for _, col := range columns {
-					if fi := sMi.fields.GetByColumn(col); fi != nil {
+					if fi := sMi.Fields.GetByColumn(col); fi != nil {
 						value := reflect.ValueOf(columnsMp[col]).Elem().Interface()
-						field := ind.FieldByIndex(fi.fieldIndex)
-						if fi.fieldType&IsRelField > 0 {
-							mf := reflect.New(fi.relModelInfo.addrField.Elem().Type())
+						field := ind.FieldByIndex(fi.FieldIndex)
+						if fi.FieldType&IsRelField > 0 {
+							mf := reflect.New(fi.RelModelInfo.AddrField.Elem().Type())
 							field.Set(mf)
-							field = mf.Elem().FieldByIndex(fi.relModelInfo.fields.pk.fieldIndex)
+							field = mf.Elem().FieldByIndex(fi.RelModelInfo.Fields.Pk.FieldIndex)
 						}
-						if fi.isFielder {
-							fd := field.Addr().Interface().(Fielder)
+						if fi.IsFielder {
+							fd := field.Addr().Interface().(models.Fielder)
 							err := fd.SetRaw(value)
 							if err != nil {
-								return errors.Errorf("set raw error:%s", err)
+								return errors.Errorf("Set raw error:%s", err)
 							}
 						} else {
 							o.setFieldValue(field, value)
@@ -406,12 +410,12 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 						// thanks @Gazeboxu.
 						tags := structTagMap[fe.Tag]
 						if tags == nil {
-							_, tags = parseStructTag(fe.Tag.Get(defaultStructTagName))
+							_, tags = models.ParseStructTag(fe.Tag.Get(models.DefaultStructTagName))
 							structTagMap[fe.Tag] = tags
 						}
 						var col string
 						if col = tags["column"]; col == "" {
-							col = nameStrategyMap[nameStrategy](fe.Name)
+							col = models.NameStrategyMap[models.NameStrategy](fe.Name)
 						}
 						if v, ok := columnsMp[col]; ok {
 							value := reflect.ValueOf(v).Elem().Interface()
@@ -443,20 +447,20 @@ func (o *rawSet) QueryRow(containers ...interface{}) error {
 	return nil
 }
 
-// query data rows and map to container
+// QueryRows query data rows and map to container
 func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 	var (
 		refs  = make([]interface{}, 0, len(containers))
 		sInds []reflect.Value
 		eTyps []reflect.Type
-		sMi   *modelInfo
+		sMi   *models.ModelInfo
 	)
 	structMode := false
 	for _, container := range containers {
 		val := reflect.ValueOf(container)
 		sInd := reflect.Indirect(val)
 		if val.Kind() != reflect.Ptr || sInd.Kind() != reflect.Slice {
-			panic(fmt.Errorf("<RawSeter.QueryRows> all args must be use ptr slice"))
+			panic(fmt.Errorf("<RawSeter.QueryRows> All args must be use ptr slice"))
 		}
 
 		etyp := sInd.Type().Elem()
@@ -474,8 +478,8 @@ func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 			}
 
 			structMode = true
-			fn := getFullName(typ)
-			if mi, ok := defaultModelCache.getByFullName(fn); ok {
+			fn := models.GetFullName(typ)
+			if mi, ok := defaultModelCache.GetByFullName(fn); ok {
 				sMi = mi
 			}
 		} else {
@@ -500,7 +504,6 @@ func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 	sInd := sInds[0]
 
 	for rows.Next() {
-
 		if structMode {
 			columns, err := rows.Columns()
 			if err != nil {
@@ -537,19 +540,19 @@ func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 
 			if sMi != nil {
 				for _, col := range columns {
-					if fi := sMi.fields.GetByColumn(col); fi != nil {
+					if fi := sMi.Fields.GetByColumn(col); fi != nil {
 						value := reflect.ValueOf(columnsMp[col]).Elem().Interface()
-						field := ind.FieldByIndex(fi.fieldIndex)
-						if fi.fieldType&IsRelField > 0 {
-							mf := reflect.New(fi.relModelInfo.addrField.Elem().Type())
+						field := ind.FieldByIndex(fi.FieldIndex)
+						if fi.FieldType&IsRelField > 0 {
+							mf := reflect.New(fi.RelModelInfo.AddrField.Elem().Type())
 							field.Set(mf)
-							field = mf.Elem().FieldByIndex(fi.relModelInfo.fields.pk.fieldIndex)
+							field = mf.Elem().FieldByIndex(fi.RelModelInfo.Fields.Pk.FieldIndex)
 						}
-						if fi.isFielder {
-							fd := field.Addr().Interface().(Fielder)
+						if fi.IsFielder {
+							fd := field.Addr().Interface().(models.Fielder)
 							err := fd.SetRaw(value)
 							if err != nil {
-								return 0, errors.Errorf("set raw error:%s", err)
+								return 0, errors.Errorf("Set raw error:%s", err)
 							}
 						} else {
 							o.setFieldValue(field, value)
@@ -570,10 +573,10 @@ func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 							recursiveSetField(f)
 						}
 
-						_, tags := parseStructTag(fe.Tag.Get(defaultStructTagName))
+						_, tags := models.ParseStructTag(fe.Tag.Get(models.DefaultStructTagName))
 						var col string
 						if col = tags["column"]; col == "" {
-							col = nameStrategyMap[nameStrategy](fe.Name)
+							col = models.NameStrategyMap[models.NameStrategy](fe.Name)
 						}
 						if v, ok := columnsMp[col]; ok {
 							value := reflect.ValueOf(v).Elem().Interface()
@@ -593,14 +596,16 @@ func (o *rawSet) QueryRows(containers ...interface{}) (int64, error) {
 			sInd = reflect.Append(sInd, ind)
 
 		} else {
-			if err := rows.Scan(refs...); err != nil {
+			if err = rows.Scan(refs...); err != nil {
 				return 0, err
 			}
-
 			o.loopSetRefs(refs, sInds, &nInds, eTyps, cnt == 0)
 		}
-
 		cnt++
+	}
+
+	if err = rows.Err(); err != nil {
+		return 0, err
 	}
 
 	if cnt > 0 {
@@ -730,6 +735,10 @@ func (o *rawSet) readValues(container interface{}, needCols []string) (int64, er
 		cnt++
 	}
 
+	if err = rs.Err(); err != nil {
+		return 0, err
+	}
+
 	switch v := container.(type) {
 	case *[]Params:
 		*v = maps
@@ -837,7 +846,7 @@ func (o *rawSet) queryRowsTo(container interface{}, keyCol, valueCol string) (in
 			}
 
 		default:
-			if id := ind.FieldByName(camelString(key)); id.IsValid() {
+			if id := ind.FieldByName(models.CamelString(key)); id.IsValid() {
 				o.setFieldValue(id, reflect.ValueOf(refs[valueIndex]).Elem().Interface())
 			}
 		}
@@ -845,6 +854,9 @@ func (o *rawSet) queryRowsTo(container interface{}, keyCol, valueCol string) (in
 		cnt++
 	}
 
+	if err = rs.Err(); err != nil {
+		return 0, err
+	}
 	if typ == 1 {
 		v, _ := container.(*Params)
 		*v = maps
@@ -868,30 +880,32 @@ func (o *rawSet) ValuesFlat(container *ParamsList, cols ...string) (int64, error
 	return o.readValues(container, cols)
 }
 
-// query all rows into map[string]interface with specify key and value column name.
+// query All rows into map[string]interface with specify key and value column name.
 // keyCol = "name", valueCol = "value"
 // table data
 // name  | value
 // total | 100
 // found | 200
-// to map[string]interface{}{
-// 	"total": 100,
-// 	"found": 200,
-// }
+//
+//	to map[string]interface{}{
+//		"total": 100,
+//		"found": 200,
+//	}
 func (o *rawSet) RowsToMap(result *Params, keyCol, valueCol string) (int64, error) {
 	return o.queryRowsTo(result, keyCol, valueCol)
 }
 
-// query all rows into struct with specify key and value column name.
+// query All rows into struct with specify key and value column name.
 // keyCol = "name", valueCol = "value"
 // table data
 // name  | value
 // total | 100
 // found | 200
-// to struct {
-// 	Total int
-// 	Found int
-// }
+//
+//	to struct {
+//		Total int
+//		Found int
+//	}
 func (o *rawSet) RowsToStruct(ptrStruct interface{}, keyCol, valueCol string) (int64, error) {
 	return o.queryRowsTo(ptrStruct, keyCol, valueCol)
 }

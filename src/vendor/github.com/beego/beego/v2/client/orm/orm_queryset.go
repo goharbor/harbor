@@ -18,6 +18,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/beego/beego/v2/client/orm/internal/utils"
+
+	"github.com/beego/beego/v2/client/orm/internal/models"
+
 	"github.com/beego/beego/v2/client/orm/clauses/order_clause"
 	"github.com/beego/beego/v2/client/orm/hints"
 )
@@ -43,9 +47,10 @@ const (
 )
 
 // ColValue do the field raw changes. e.g Nums = Nums + 10. usage:
-// 	Params{
-// 		"Nums": ColValue(Col_Add, 10),
-// 	}
+//
+//	Params{
+//		"Nums": ColValue(Col_Add, 10),
+//	}
 func ColValue(opt operator, value interface{}) interface{} {
 	switch opt {
 	case ColAdd, ColMinus, ColMultiply, ColExcept, ColBitAnd, ColBitRShift,
@@ -53,7 +58,7 @@ func ColValue(opt operator, value interface{}) interface{} {
 	default:
 		panic(fmt.Errorf("orm.ColValue wrong operator"))
 	}
-	v, err := StrTo(ToStr(value)).Int64()
+	v, err := utils.StrTo(utils.ToStr(value)).Int64()
 	if err != nil {
 		panic(fmt.Errorf("orm.ColValue doesn't support non string/numeric type, %s", err))
 	}
@@ -65,7 +70,7 @@ func ColValue(opt operator, value interface{}) interface{} {
 
 // real query struct
 type querySet struct {
-	mi        *modelInfo
+	mi        *models.ModelInfo
 	cond      *Condition
 	related   []string
 	relDepth  int
@@ -110,15 +115,15 @@ func (o querySet) Exclude(expr string, args ...interface{}) QuerySeter {
 	return &o
 }
 
-// set offset number
+// Set offset number
 func (o *querySet) setOffset(num interface{}) {
-	o.offset = ToInt64(num)
+	o.offset = utils.ToInt64(num)
 }
 
 // add LIMIT value.
 // args[0] means offset, e.g. LIMIT num,offset.
 func (o querySet) Limit(limit interface{}, args ...interface{}) QuerySeter {
-	o.limit = ToInt64(limit)
+	o.limit = utils.ToInt64(limit)
 	if len(args) > 0 {
 		o.setOffset(args[0])
 	}
@@ -189,7 +194,7 @@ func (o querySet) IgnoreIndex(indexes ...string) QuerySeter {
 	return &o
 }
 
-// set relation model to query together.
+// Set relation model to query together.
 // it will query relation models and assign to parent model.
 func (o querySet) RelatedSel(params ...interface{}) QuerySeter {
 	if len(params) == 0 {
@@ -209,13 +214,13 @@ func (o querySet) RelatedSel(params ...interface{}) QuerySeter {
 	return &o
 }
 
-// set condition to QuerySeter.
+// Set condition to QuerySeter.
 func (o querySet) SetCond(cond *Condition) QuerySeter {
 	o.cond = cond
 	return &o
 }
 
-// get condition from QuerySeter
+// Get condition from QuerySeter
 func (o querySet) GetCond() *Condition {
 	return o.cond
 }
@@ -260,8 +265,9 @@ func (o *querySet) DeleteWithCtx(ctx context.Context) (int64, error) {
 // return an insert queryer.
 // it can be used in times.
 // example:
-// 	i,err := sq.PrepareInsert()
-// 	i.Add(&user1{},&user2{})
+//
+//	i,err := sq.PrepareInsert()
+//	i.Add(&user1{},&user2{})
 func (o *querySet) PrepareInsert() (Inserter, error) {
 	return o.PrepareInsertWithCtx(context.Background())
 }
@@ -270,8 +276,8 @@ func (o *querySet) PrepareInsertWithCtx(ctx context.Context) (Inserter, error) {
 	return newInsertSet(ctx, o.orm, o.mi)
 }
 
-// query all data and map to containers.
-// cols means the columns when querying.
+// query All data and map to containers.
+// cols means the Columns when querying.
 func (o *querySet) All(container interface{}, cols ...string) (int64, error) {
 	return o.AllWithCtx(context.Background(), container, cols...)
 }
@@ -281,7 +287,7 @@ func (o *querySet) AllWithCtx(ctx context.Context, container interface{}, cols .
 }
 
 // query one row data and map to containers.
-// cols means the columns when querying.
+// cols means the Columns when querying.
 func (o *querySet) One(container interface{}, cols ...string) error {
 	return o.OneWithCtx(context.Background(), container, cols...)
 }
@@ -302,7 +308,7 @@ func (o *querySet) OneWithCtx(ctx context.Context, container interface{}, cols .
 	return nil
 }
 
-// query all data and map to []map[string]interface.
+// query All data and map to []map[string]interface.
 // expres means condition expression.
 // it converts data to []map[column]value.
 func (o *querySet) Values(results *[]Params, exprs ...string) (int64, error) {
@@ -313,7 +319,7 @@ func (o *querySet) ValuesWithCtx(ctx context.Context, results *[]Params, exprs .
 	return o.orm.alias.DbBaser.ReadValues(ctx, o.orm.db, o, o.mi, o.cond, exprs, results, o.orm.alias.TZ)
 }
 
-// query all data and map to [][]interface
+// query All data and map to [][]interface
 // it converts data to [][column_index]value
 func (o *querySet) ValuesList(results *[]ParamsList, exprs ...string) (int64, error) {
 	return o.ValuesListWithCtx(context.Background(), results, exprs...)
@@ -323,8 +329,8 @@ func (o *querySet) ValuesListWithCtx(ctx context.Context, results *[]ParamsList,
 	return o.orm.alias.DbBaser.ReadValues(ctx, o.orm.db, o, o.mi, o.cond, exprs, results, o.orm.alias.TZ)
 }
 
-// query all data and map to []interface.
-// it's designed for one row record set, auto change to []value, not [][column]value.
+// query All data and map to []interface.
+// it's designed for one row record Set, auto change to []value, not [][column]value.
 func (o *querySet) ValuesFlat(result *ParamsList, expr string) (int64, error) {
 	return o.ValuesFlatWithCtx(context.Background(), result, expr)
 }
@@ -333,36 +339,38 @@ func (o *querySet) ValuesFlatWithCtx(ctx context.Context, result *ParamsList, ex
 	return o.orm.alias.DbBaser.ReadValues(ctx, o.orm.db, o, o.mi, o.cond, []string{expr}, result, o.orm.alias.TZ)
 }
 
-// query all rows into map[string]interface with specify key and value column name.
+// query All rows into map[string]interface with specify key and value column name.
 // keyCol = "name", valueCol = "value"
 // table data
 // name  | value
 // total | 100
 // found | 200
-// to map[string]interface{}{
-// 	"total": 100,
-// 	"found": 200,
-// }
+//
+//	to map[string]interface{}{
+//		"total": 100,
+//		"found": 200,
+//	}
 func (o *querySet) RowsToMap(result *Params, keyCol, valueCol string) (int64, error) {
 	panic(ErrNotImplement)
 }
 
-// query all rows into struct with specify key and value column name.
+// query All rows into struct with specify key and value column name.
 // keyCol = "name", valueCol = "value"
 // table data
 // name  | value
 // total | 100
 // found | 200
-// to struct {
-// 	Total int
-// 	Found int
-// }
+//
+//	to struct {
+//		Total int
+//		Found int
+//	}
 func (o *querySet) RowsToStruct(ptrStruct interface{}, keyCol, valueCol string) (int64, error) {
 	panic(ErrNotImplement)
 }
 
 // create new QuerySeter.
-func newQuerySet(orm *ormBase, mi *modelInfo) QuerySeter {
+func newQuerySet(orm *ormBase, mi *models.ModelInfo) QuerySeter {
 	o := new(querySet)
 	o.mi = mi
 	o.orm = orm

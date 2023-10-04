@@ -15,14 +15,15 @@ Beego is composed of four parts:
 
 **Please use RELEASE version, or master branch which contains the latest bug fix**
 
+**We will remove the adapter package in v2.2.0 which will be released in Aug 2023**
+
 ## Quick Start
 
-[Official website](http://beego.vip)
-[中文新版文档网站](https://beego.gocn.vip)
-
+[Old Doc - github](https://github.com/beego/beedoc)
+[New Doc Website](https://beego.gocn.vip)
 [Example](https://github.com/beego/beego-example)
 
-> If you could not open official website, go to [beedoc](https://github.com/beego/beedoc)
+> Kindly remind that sometimes the HTTPS certificate is expired, you may get some NOT SECURE warning
 
 ### Web Application
 
@@ -88,7 +89,6 @@ Congratulations! You've just built your first **beego** app.
 
 ## Community
 
-* [http://beego.vip/community](http://beego.vip/community)
 * Welcome to join us in Slack: [https://beego.slack.com invite](https://join.slack.com/t/beego/shared_invite/zt-fqlfjaxs-_CRmiITCSbEqQG9NeBqXKA),
 * QQ Group ID:523992905
 * [Contribution Guide](https://github.com/beego/beedoc/blob/master/en-US/intro/contributing.md).

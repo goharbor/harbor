@@ -42,8 +42,6 @@
 //			log.Println(v.Error.Key, v.Error.Message)
 //		}
 //	}
-//
-// more info: http://beego.vip/docs/mvc/controller/validation.md
 package validation
 
 import (

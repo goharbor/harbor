@@ -1,4 +1,16 @@
 # Changelog
+All notable changes to this project will be documented in this file.
+
+This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## 1.19.1 (8 Sep 2021)
+
+### Fixed
+* [#1001][]: JSON: Fix complex number encoding with negative imaginary part. Thanks to @hemantjadon.
+* [#1003][]: JSON: Fix inaccurate precision when encoding float32.
+
+[#1001]: https://github.com/uber-go/zap/pull/1001
+[#1003]: https://github.com/uber-go/zap/pull/1003
 
 ## 1.19.0 (9 Aug 2021)
 

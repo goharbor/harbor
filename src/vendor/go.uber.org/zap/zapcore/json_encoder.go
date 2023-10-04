@@ -128,6 +128,11 @@ func (enc *jsonEncoder) AddFloat64(key string, val float64) {
 	enc.AppendFloat64(val)
 }
 
+func (enc *jsonEncoder) AddFloat32(key string, val float32) {
+	enc.addKey(key)
+	enc.AppendFloat32(val)
+}
+
 func (enc *jsonEncoder) AddInt64(key string, val int64) {
 	enc.addKey(key)
 	enc.AppendInt64(val)
@@ -228,7 +233,11 @@ func (enc *jsonEncoder) AppendComplex128(val complex128) {
 	// Because we're always in a quoted string, we can use strconv without
 	// special-casing NaN and +/-Inf.
 	enc.buf.AppendFloat(r, 64)
-	enc.buf.AppendByte('+')
+	// If imaginary part is less than 0, minus (-) sign is added by default
+	// by AppendFloat.
+	if i >= 0 {
+		enc.buf.AppendByte('+')
+	}
 	enc.buf.AppendFloat(i, 64)
 	enc.buf.AppendByte('i')
 	enc.buf.AppendByte('"')
@@ -293,7 +302,6 @@ func (enc *jsonEncoder) AppendUint64(val uint64) {
 }
 
 func (enc *jsonEncoder) AddComplex64(k string, v complex64) { enc.AddComplex128(k, complex128(v)) }
-func (enc *jsonEncoder) AddFloat32(k string, v float32)     { enc.AddFloat64(k, float64(v)) }
 func (enc *jsonEncoder) AddInt(k string, v int)             { enc.AddInt64(k, int64(v)) }
 func (enc *jsonEncoder) AddInt32(k string, v int32)         { enc.AddInt64(k, int64(v)) }
 func (enc *jsonEncoder) AddInt16(k string, v int16)         { enc.AddInt64(k, int64(v)) }
