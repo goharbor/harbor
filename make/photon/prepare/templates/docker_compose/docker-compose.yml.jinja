@@ -244,6 +244,12 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+    {% if jobservice.extra_hosts %}
+    extra_hosts:
+      {% for extra_host in jobservice.extra_hosts %}
+      - {{extra_host}}
+      {% endfor %}
+    {% endif %}
     volumes:
       - {{data_volume}}/job_logs:/var/log/jobs:z
       - type: bind
