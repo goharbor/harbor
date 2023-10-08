@@ -43,6 +43,8 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
+### Build Project
+
 To build the project, please refer the [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
 ### Repository Structure

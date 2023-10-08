@@ -397,8 +397,8 @@ Verify System Setting
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Page Should Contain  ${authtype}[0]
-    Run Keyword If  ${selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
-    Run Keyword If  ${selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Run Keyword If  ${selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label[contains(@class,'clr-control-label')]
+    Run Keyword If  ${selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label[contains(@class,'clr-control-label')]
     Switch To System Settings
     ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
     Should Be Equal As Strings  ${ret}  ${creation}[0]

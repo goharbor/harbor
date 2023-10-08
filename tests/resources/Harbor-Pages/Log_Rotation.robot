@@ -32,7 +32,7 @@ Purge Now
 Click Exclude Operation
     [Arguments]  @{exclude_operations}
     FOR  ${element}  IN  @{exclude_operations}
-        Retry Element Click  //form//div//label[contains(.,'${element}')]
+        Retry Element Click  //form//div//label[contains(@class,'clr-control-label') and contains(.,'${element}')]
     END
 
 Verify Last completed Time
