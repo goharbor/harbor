@@ -149,6 +149,7 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 		ID:                1,
 		ArtifactID:        afid,
 		SubArtifactDigest: dgt,
+		SubArtifactRepo:   repositoryName,
 		Digest:            accdgt,
 		Type:              accessorymodel.TypeSubject,
 	})
@@ -213,6 +214,7 @@ func (suite *MiddlewareTestSuite) TestSubjectAfterAcc() {
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
 			Keywords: map[string]interface{}{
 				"SubjectArtifactDigest": subArtDigest,
+				"SubjectArtifactRepo":   name,
 			},
 		})
 		suite.Equal(1, len(accs))
