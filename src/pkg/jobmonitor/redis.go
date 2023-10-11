@@ -32,6 +32,9 @@ import (
 // JobServicePool job service pool name
 const JobServicePool = "JobService"
 
+// batchSize the batch size to list the job in queue
+const batchSize = 1000
+
 // RedisClient defines the job service operations related to redis
 type RedisClient interface {
 	// AllJobTypes returns all the job types registered in the job service
@@ -74,21 +77,36 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 	var jobInfo struct {
 		ID string `json:"id"`
 	}
-	jobs, err := redis.Strings(conn.Do("LRANGE", redisKeyJobQueue, 0, -1))
+	size, err := redis.Int64(conn.Do("LLEN", redisKeyJobQueue))
 	if err != nil {
+		log.Infof("fail to get the size of the queue")
 		return []string{}, err
 	}
-	if len(jobs) == 0 {
-		log.Infof("no pending job for job type %v", jobType)
+	if size == 0 {
 		return []string{}, nil
 	}
-	for _, j := range jobs {
-		if err := json.Unmarshal([]byte(j), &jobInfo); err != nil {
-			log.Errorf("failed to parse the job info %v, %v", j, err)
-			continue
+
+	// use batch to list the job in queue, because the too many object load from a list might cause the redis crash
+	for startIndex := int64(0); startIndex < int64(size); startIndex += batchSize {
+		endIndex := startIndex + batchSize
+		if endIndex > int64(size) {
+			endIndex = int64(size)
 		}
-		jobIDs = append(jobIDs, jobInfo.ID)
+		jobs, err := redis.Strings(conn.Do("LRANGE", redisKeyJobQueue, startIndex, endIndex))
+		if err != nil {
+			return []string{}, err
+		}
+		for _, j := range jobs {
+			if err := json.Unmarshal([]byte(j), &jobInfo); err != nil {
+				log.Errorf("failed to parse the job info %v, %v", j, err)
+				continue
+			}
+			if len(jobInfo.ID) > 0 {
+				jobIDs = append(jobIDs, jobInfo.ID)
+			}
+		}
 	}
+
 	log.Infof("updated %d tasks in pending status to stop", len(jobIDs))
 	ret, err := redis.Int64(conn.Do("DEL", redisKeyJobQueue))
 	if err != nil {
