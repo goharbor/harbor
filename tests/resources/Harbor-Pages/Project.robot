@@ -120,7 +120,10 @@ Repo Not Exist
 
 Filter Repo
     [Arguments]  ${pro_name}  ${repo_name}  ${exsit}=${true}
-    Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    ${filter_dist_input_visible}=  Run Keyword and Return Status  Element Should Not Be Visible  ${filter_dist_input}
+    IF  ${filter_dist_input_visible}
+        Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    END
     Retry Clear Element Text  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${pro_name}/${repo_name}
     Run Keyword If  ${exsit}==${true}    Repo Exist  ${pro_name}  ${repo_name}

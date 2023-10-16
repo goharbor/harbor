@@ -71,6 +71,8 @@ Resource  Harbor-Pages/Log_Rotation.robot
 Resource  Harbor-Pages/Log_Rotation_Elements.robot
 Resource  Harbor-Pages/Job_Service_Dashboard.robot
 Resource  Harbor-Pages/Job_Service_Dashboard_Elements.robot
+Resource  Harbor-Pages/SecurityHub.robot
+Resource  Harbor-Pages/SecurityHub_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot
@@ -178,6 +180,17 @@ Retry Wait Until Page Not Contains Element
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
+
+Retry Wait Element Count
+    [Arguments]  ${element_xpath}  ${expected_count}  ${times}=11
+    ${expected_count}=  Convert To Integer  ${expected_count}
+    FOR  ${n}  IN RANGE  1  ${times}
+        ${actual_count}=  Get Element Count  ${element_xpath}
+        ${result}=  Set Variable If  ${expected_count} == ${actual_count}  True  False
+        Exit For Loop If  ${result}
+        Sleep  2
+    END
+    Should Be True  ${result}
 
 Retry Select Object
     [Arguments]  ${obj_name}
