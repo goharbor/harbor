@@ -43,6 +43,8 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
+### Build Project
+
 To build the project, please refer the [build](https://goharbor.io/docs/edge/build-customize-contribute/compile-guide/) guideline.
 
 ### Repository Structure
@@ -166,7 +168,7 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.6    |    1.18.6     |
 |   2.7    |    1.19.4     |
 |   2.8    |    1.20.6     |
-|   2.9    |    1.20.7     |
+|   2.9    |    1.20.10    |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
