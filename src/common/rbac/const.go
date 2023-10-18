@@ -14,6 +14,8 @@
 
 package rbac
 
+import "github.com/goharbor/harbor/src/pkg/permission/types"
+
 // const action variables
 const (
 	ActionAll = Action("*") // action match any other actions
@@ -76,4 +78,151 @@ const (
 	ResourceExportCVE          = Resource("export-cve")
 	ResourceJobServiceMonitor  = Resource("jobservice-monitor")
 	ResourceSecurityHub        = Resource("security-hub")
+)
+
+var (
+	PoliciesMap = map[string][]*types.Policy{
+		"System": {
+			{Resource: ResourceAuditLog, Action: ActionList},
+
+			{Resource: ResourcePreatPolicy, Action: ActionRead},
+			{Resource: ResourcePreatPolicy, Action: ActionCreate},
+			{Resource: ResourcePreatPolicy, Action: ActionDelete},
+			{Resource: ResourcePreatPolicy, Action: ActionList},
+			{Resource: ResourcePreatPolicy, Action: ActionUpdate},
+
+			{Resource: ResourceProject, Action: ActionList},
+			{Resource: ResourceProject, Action: ActionCreate},
+
+			{Resource: ResourceReplicationPolicy, Action: ActionRead},
+			{Resource: ResourceReplicationPolicy, Action: ActionCreate},
+			{Resource: ResourceReplicationPolicy, Action: ActionDelete},
+			{Resource: ResourceReplicationPolicy, Action: ActionList},
+			{Resource: ResourceReplicationPolicy, Action: ActionUpdate},
+
+			{Resource: ResourceReplication, Action: ActionRead},
+			{Resource: ResourceReplication, Action: ActionCreate},
+			{Resource: ResourceReplication, Action: ActionDelete},
+			{Resource: ResourceReplication, Action: ActionList},
+			{Resource: ResourceReplication, Action: ActionUpdate},
+
+			{Resource: ResourceReplicationAdapter, Action: ActionList},
+
+			{Resource: ResourceRegistry, Action: ActionRead},
+			{Resource: ResourceRegistry, Action: ActionCreate},
+			{Resource: ResourceRegistry, Action: ActionDelete},
+			{Resource: ResourceRegistry, Action: ActionList},
+			{Resource: ResourceRegistry, Action: ActionUpdate},
+
+			{Resource: ResourceScanAll, Action: ActionRead},
+			{Resource: ResourceScanAll, Action: ActionUpdate},
+			{Resource: ResourceScanAll, Action: ActionStop},
+			{Resource: ResourceScanAll, Action: ActionCreate},
+
+			{Resource: ResourceSystemVolumes, Action: ActionRead},
+
+			{Resource: ResourceGarbageCollection, Action: ActionRead},
+			{Resource: ResourceGarbageCollection, Action: ActionCreate},
+			{Resource: ResourceGarbageCollection, Action: ActionDelete},
+			{Resource: ResourceGarbageCollection, Action: ActionList},
+			{Resource: ResourceGarbageCollection, Action: ActionUpdate},
+			{Resource: ResourceGarbageCollection, Action: ActionStop},
+
+			{Resource: ResourcePurgeAuditLog, Action: ActionRead},
+			{Resource: ResourcePurgeAuditLog, Action: ActionCreate},
+			{Resource: ResourcePurgeAuditLog, Action: ActionDelete},
+			{Resource: ResourcePurgeAuditLog, Action: ActionList},
+			{Resource: ResourcePurgeAuditLog, Action: ActionUpdate},
+			{Resource: ResourcePurgeAuditLog, Action: ActionStop},
+
+			{Resource: ResourceJobServiceMonitor, Action: ActionList},
+			{Resource: ResourceJobServiceMonitor, Action: ActionStop},
+
+			{Resource: ResourceTagRetention, Action: ActionRead},
+			{Resource: ResourceTagRetention, Action: ActionCreate},
+			{Resource: ResourceTagRetention, Action: ActionDelete},
+			{Resource: ResourceTagRetention, Action: ActionList},
+			{Resource: ResourceTagRetention, Action: ActionUpdate},
+
+			{Resource: ResourceScanner, Action: ActionRead},
+			{Resource: ResourceScanner, Action: ActionCreate},
+			{Resource: ResourceScanner, Action: ActionDelete},
+			{Resource: ResourceScanner, Action: ActionList},
+			{Resource: ResourceScanner, Action: ActionUpdate},
+
+			{Resource: ResourceLabel, Action: ActionRead},
+			{Resource: ResourceLabel, Action: ActionCreate},
+			{Resource: ResourceLabel, Action: ActionDelete},
+			{Resource: ResourceLabel, Action: ActionList},
+			{Resource: ResourceLabel, Action: ActionUpdate},
+
+			{Resource: ResourceExportCVE, Action: ActionRead},
+			{Resource: ResourceExportCVE, Action: ActionCreate},
+
+			{Resource: ResourceSecurityHub, Action: ActionRead},
+			{Resource: ResourceSecurityHub, Action: ActionList},
+
+			{Resource: ResourceCatalog, Action: ActionRead},
+		},
+		"Project": {
+			{Resource: ResourceLog, Action: ActionList},
+
+			{Resource: ResourceProject, Action: ActionRead},
+			{Resource: ResourceProject, Action: ActionDelete},
+			{Resource: ResourceProject, Action: ActionUpdate},
+
+			{Resource: ResourceMetadata, Action: ActionRead},
+			{Resource: ResourceMetadata, Action: ActionCreate},
+			{Resource: ResourceMetadata, Action: ActionDelete},
+			{Resource: ResourceMetadata, Action: ActionList},
+			{Resource: ResourceMetadata, Action: ActionUpdate},
+
+			{Resource: ResourceRepository, Action: ActionRead},
+			{Resource: ResourceRepository, Action: ActionCreate},
+			{Resource: ResourceRepository, Action: ActionList},
+			{Resource: ResourceRepository, Action: ActionUpdate},
+
+			{Resource: ResourceArtifact, Action: ActionRead},
+			{Resource: ResourceArtifact, Action: ActionCreate},
+			{Resource: ResourceArtifact, Action: ActionList},
+			{Resource: ResourceArtifact, Action: ActionDelete},
+
+			{Resource: ResourceScan, Action: ActionCreate},
+			{Resource: ResourceScan, Action: ActionRead},
+			{Resource: ResourceScan, Action: ActionStop},
+
+			{Resource: ResourceTag, Action: ActionCreate},
+			{Resource: ResourceTag, Action: ActionList},
+			{Resource: ResourceTag, Action: ActionDelete},
+
+			{Resource: ResourceAccessory, Action: ActionList},
+
+			{Resource: ResourceArtifactAddition, Action: ActionCreate},
+
+			{Resource: ResourceArtifactLabel, Action: ActionCreate},
+			{Resource: ResourceArtifactLabel, Action: ActionDelete},
+
+			{Resource: ResourceScanner, Action: ActionCreate},
+			{Resource: ResourceScanner, Action: ActionRead},
+
+			{Resource: ResourcePreatPolicy, Action: ActionRead},
+			{Resource: ResourcePreatPolicy, Action: ActionCreate},
+			{Resource: ResourcePreatPolicy, Action: ActionDelete},
+			{Resource: ResourcePreatPolicy, Action: ActionList},
+			{Resource: ResourcePreatPolicy, Action: ActionUpdate},
+
+			{Resource: ResourceImmutableTag, Action: ActionCreate},
+			{Resource: ResourceImmutableTag, Action: ActionDelete},
+			{Resource: ResourceImmutableTag, Action: ActionList},
+			{Resource: ResourceImmutableTag, Action: ActionUpdate},
+
+			{Resource: ResourceNotificationPolicy, Action: ActionRead},
+			{Resource: ResourceNotificationPolicy, Action: ActionCreate},
+			{Resource: ResourceNotificationPolicy, Action: ActionDelete},
+			{Resource: ResourceNotificationPolicy, Action: ActionList},
+			{Resource: ResourceNotificationPolicy, Action: ActionUpdate},
+
+			{Resource: ResourceRegistry, Action: ActionPush},
+		},
+	}
 )

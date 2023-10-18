@@ -6140,7 +6140,31 @@ paths:
         '401':
           $ref: '#/responses/401'
         '500':
-          $ref: '#/responses/500'          
+          $ref: '#/responses/500'
+
+  /permissions:
+    get:
+      summary: Get system or project level permissions info.
+      operationId: getPermissions
+      description: |
+        This endpoint is for retrieving resource and action info that only provides for admin user(system admin and project admin).
+      tags:
+        - permissions
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get permissions successfully.
+          schema:
+            $ref: '#/definitions/Permissions'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 
 parameters:
   query:
@@ -9397,6 +9421,19 @@ definitions:
       action:
         type: string
         description: The permission action
+  Permissions:
+    type: object
+    properties:
+      system:
+        type: array
+        description: The system level permissions
+        items:
+          $ref: '#/definitions/Permission'
+      project:
+        type: array
+        description: The project level permissions
+        items:
+          $ref: '#/definitions/Permission'
   OIDCCliSecretReq:
     type: object
     properties:
