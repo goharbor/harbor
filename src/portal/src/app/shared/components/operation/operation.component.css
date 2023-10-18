@@ -1,6 +1,5 @@
 /* side form */
 .side-form {
-    position: absolute;
     width: 325px;
     height: 100%;
     left:28px;
@@ -22,7 +21,7 @@
     position: fixed;
     top: 60px;
     z-index: 600;
-    width: 350px;
+    width: 325px;
     bottom: 0
 }
 
@@ -41,6 +40,7 @@
     cursor: pointer;
     text-align: left;
     text-decoration: none;
+    left: -25px;
 }
 .freshIcon{float: right;     margin-right: 20px;  margin-top: -10px;cursor: pointer;}
 
