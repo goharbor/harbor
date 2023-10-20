@@ -55,3 +55,11 @@ Get The Specific Artifact
     ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "${HARBOR_URL}/api/v2.0/projects/${project_name}/repositories/${repo_name}/artifacts/${reference}?page=1&page_size=10&with_tag=true&with_label=true&with_scan_overview=true&with_accessory=true&with_signature=true&with_immutable_status=true"
     ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
     [Return]  ${output}
+
+Refresh Artifacts
+    Retry Element Click  ${artifact_list_refresh_btn}
+
+Delete Accessory By Aeecssory XPath
+    [Arguments]  ${aeecssory_action_xpath}
+    Retry Double Keywords When Error  Retry Button Click  ${aeecssory_action_xpath}  Retry Button Click  ${delete_accessory_btn}
+    Retry Button Click  //button[text()=' DELETE ']

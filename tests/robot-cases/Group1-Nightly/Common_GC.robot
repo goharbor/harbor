@@ -25,7 +25,7 @@ ${HARBOR_ADMIN}  admin
 *** Test Cases ***
 Test Case - Garbage Collection
     Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
+    ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     GC Now
     Create An New Project And Go Into Project  project${d}
@@ -39,22 +39,22 @@ Test Case - Garbage Collection
 
 Test Case - GC Untagged Images
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
+    ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     GC Now
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     # make hello-world untagged
     Go Into Repo  project${d}  hello-world
-    Go Into Artifact   latest
-    Should Contain Tag   latest
-    Delete A Tag   latest
-    Should Not Contain Tag   latest
+    Go Into Artifact  latest
+    Should Contain Tag  latest
+    Delete A Tag  latest
+    Should Not Contain Tag  latest
     # run gc without param delete untagged artifacts checked,  should not delete hello-world:latest
     GC Now
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
-    Go Into Repo   project${d}  hello-world
+    Go Into Repo  project${d}  hello-world
     Should Contain Artifact
     # run gc with param delete untagged artifacts checked,  should delete hello-world
     Switch To Garbage Collection
@@ -72,7 +72,7 @@ Test Case - Project Quotas Control Under GC
     ${storage_quota}=  Set Variable  200
     ${storage_quota_unit}=  Set Variable  MiB
     ${image_a}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    321.03MiB
+    ${image_a_size}=  Set Variable  321.03MiB
     ${image_a_ver}=  Set Variable  6.8.3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     GC Now
@@ -88,4 +88,70 @@ Test Case - Project Quotas Control Under GC
         Sleep  5
     END
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
+    Close Browser
+
+Test Case - Garbage Collection Accessory
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    ${deleted_prefix}=  Set Variable  delete blob from storage:
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    GC Now
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}
+
+    ${sbom_digest}  ${signature_digest}  ${signature_of_sbom_digest}  ${signature_of_signature_digest}=  Prepare Accessory  project${d}  ${image}  ${tag}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # Delete the Signature of Signature
+    Delete Accessory By Aeecssory XPath  ${artifact_cosign_cosign_accessory_action_btn}
+    ${gc_job_id}=  GC Now
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${log_containing}=  Create List  ${deleted_prefix} ${signature_of_signature_digest}
+    ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
+    ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    ...  ${deleted_prefix} ${signature_digest}
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
+    Go Into Repo  project${d}  ${image}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    # Delete the Signature
+    Delete Accessory By Aeecssory XPath  ${artifact_cosign_accessory_action_btn}
+    ${gc_job_id}=  GC Now
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${log_containing}=  Create List  ${deleted_prefix} ${signature_digest}
+    ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
+    ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
+    Go Into Repo  project${d}  ${image}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    # Delete the SBOM
+    Delete Accessory By Aeecssory XPath  ${artifact_sbom_accessory_action_btn}
+    ${gc_job_id}=  GC Now
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${log_containing}=  Create List  ${deleted_prefix} ${sbom_digest}
+    ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    ${log_excluding}=  Create List
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
+
+    ${sbom_digest}  ${signature_digest}  ${signature_of_sbom_digest}  ${signature_of_signature_digest}=  Prepare Accessory  project${d}  ${image}  ${tag}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    # Delete image tags
+    Go Into Repo  project${d}  ${image}
+    Go Into Artifact  ${tag}
+    Should Contain Tag  ${tag}
+    Delete A Tag  ${tag}
+    ${gc_job_id}=  GC Now
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${log_containing}=  Create List
+    ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
+    ...  ${deleted_prefix} ${signature_digest}
+    ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    ...  ${deleted_prefix} ${signature_of_signature_digest}
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
+    ${gc_job_id}=  GC Now  untag=${true}
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${log_containing}=  Create List  ${deleted_prefix} ${sbom_digest}
+    ...  ${deleted_prefix} ${signature_digest}
+    ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    ...  ${deleted_prefix} ${signature_of_signature_digest}
+    ${log_excluding}=  Create List
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
     Close Browser
