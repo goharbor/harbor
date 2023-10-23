@@ -5,7 +5,8 @@
         [ngStyle]="{
             'background-color': labelColor?.color,
             color: labelColor?.textColor,
-            border: labelColor?.color === '#FFFFFF' ? '1px solid #A1A1A1' : 'none'
+            border:
+                labelColor?.color === '#FFFFFF' ? '1px solid #A1A1A1' : 'none'
         }"
         [style.max-width.px]="labelWidth">
         <span>
@@ -20,8 +21,7 @@
     </label>
     <clr-tooltip-content
         [clrPosition]="'right'"
-        *ngIf="withTooltip && label.description && label.description !== ''"
-        >
+        *ngIf="withTooltip && label.description">
         <span>{{ label.description }}</span>
     </clr-tooltip-content>
 </clr-tooltip>
