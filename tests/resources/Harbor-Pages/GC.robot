@@ -58,3 +58,19 @@ Set GC Schedule
     Run Keyword If  '${type}'=='custom'  Run Keywords  Retry Element Click  ${vulnerability_dropdown_list_item_custom}  AND  Retry Text Input  ${targetCron_id}  ${value}
     ...  ELSE  Retry Element Click  ${vulnerability_dropdown_list_item_none}
     Retry Double Keywords When Error  Retry Element Click  ${GC_schedule_save_btn}  Retry Wait Until Page Not Contains Element  ${gc_schedule_save_btn}
+
+Go To GC Log
+    [Arguments]  ${gc_job_id}
+    Retry Link Click  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//a
+    Switch Window  locator=NEW
+
+Check GC Log
+    [Arguments]  ${gc_job_id}  ${log_containing}  ${log_excluding}
+    Go To GC Log  ${gc_job_id}
+    FOR  ${log}  IN  @{log_containing}
+        Wait Until Page Contains  ${log}
+    END
+    FOR  ${log}  IN  @{log_excluding}
+        Wait Until Page Does Not Contain  ${log}
+    END
+    Switch Window  locator=MAIN
