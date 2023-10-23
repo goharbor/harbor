@@ -140,6 +140,7 @@ class TestProjects(unittest.TestCase):
         """
         url = ADMIN_CLIENT["endpoint"]
         user_password = "Aa123456"
+        deleted_prefix =  "delete blob from storage: "
         # 1. Create user(UA)
         _, user_name = self.user.create_user(user_password = user_password, **ADMIN_CLIENT)
         user_client = dict(endpoint = url, username = user_name, password = user_password, with_accessory = True)
@@ -188,7 +189,7 @@ class TestProjects(unittest.TestCase):
 
         # 10. Get the GC log and check that the image(IA) Signature of signature is deleted
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
-        self.assertIn(signature_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + signature_signature_digest, gc_log)
 
         # 11. Delete image(IA) Signature by user(UA)
         self.artifact.delete_artifact(project_name, self.image, image_signature_digest, **user_client)
@@ -199,7 +200,7 @@ class TestProjects(unittest.TestCase):
 
         # 13. Get the GC log and check that the image(IA) Signature is deleted
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
-        self.assertIn(image_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + image_signature_digest, gc_log)
 
         # 14. Delete image(IA) SBOM by user(UA)
         self.artifact.delete_artifact(project_name, self.image, sbom_digest, **user_client)
@@ -210,8 +211,8 @@ class TestProjects(unittest.TestCase):
 
         # 16. Get the GC log and check that the image(IA) SBOM and Signature of SBOM is deleted
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
-        self.assertIn(sbom_digest, gc_log)
-        self.assertIn(sbom_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + sbom_digest, gc_log)
+        self.assertIn(deleted_prefix + sbom_signature_digest, gc_log)
 
         # 17. Push image(IA) SBOM to project(PA) by user(UA)
         self.sbom_path = files_directory + "sbom_test.json"
@@ -246,10 +247,10 @@ class TestProjects(unittest.TestCase):
 
         # 22. Get the GC log and check that it is not deleted
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
-        self.assertNotIn(sbom_digest, gc_log)
-        self.assertNotIn(sbom_signature_digest, gc_log)
-        self.assertNotIn(image_signature_digest, gc_log)
-        self.assertNotIn(signature_signature_digest, gc_log)
+        self.assertNotIn(deleted_prefix + sbom_digest, gc_log)
+        self.assertNotIn(deleted_prefix + sbom_signature_digest, gc_log)
+        self.assertNotIn(deleted_prefix + image_signature_digest, gc_log)
+        self.assertNotIn(deleted_prefix + signature_signature_digest, gc_log)
 
         # 23. Delete tag of image(IA) by user(UA)
         self.artifact.delete_tag(project_name, self.image, self.tag, self.tag, **user_client)
@@ -261,10 +262,10 @@ class TestProjects(unittest.TestCase):
         # 25. Get the GC log and check that the image(IA) and all aeecssory is deleted
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
         self.assertIn(self.image, gc_log)
-        self.assertIn(sbom_digest, gc_log)
-        self.assertIn(sbom_signature_digest, gc_log)
-        self.assertIn(image_signature_digest, gc_log)
-        self.assertIn(signature_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + sbom_digest, gc_log)
+        self.assertIn(deleted_prefix + sbom_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + image_signature_digest, gc_log)
+        self.assertIn(deleted_prefix + signature_signature_digest, gc_log)
 
 
 if __name__ == '__main__':
