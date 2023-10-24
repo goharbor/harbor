@@ -56,6 +56,20 @@ func (_m *Controller) DeleteRetention(ctx context.Context, id int64) error {
 	return r0
 }
 
+// DeleteRetentionByProject provides a mock function with given fields: ctx, projectID
+func (_m *Controller) DeleteRetentionByProject(ctx context.Context, projectID int64) error {
+	ret := _m.Called(ctx, projectID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetRetention provides a mock function with given fields: ctx, id
 func (_m *Controller) GetRetention(ctx context.Context, id int64) (*policy.Metadata, error) {
 	ret := _m.Called(ctx, id)
