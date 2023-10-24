@@ -53,7 +53,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
 	github.com/vmihailenco/msgpack/v5 v5.0.0-rc.2
-	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.22.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.45.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
 	go.opentelemetry.io/otel v1.19.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.0
@@ -153,7 +153,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	go.mongodb.org/mongo-driver v1.7.5 // indirect
-	go.opentelemetry.io/contrib v0.22.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.3.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.3.0 // indirect
 	go.opentelemetry.io/otel/metric v1.19.0 // indirect
