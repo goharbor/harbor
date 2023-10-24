@@ -581,12 +581,10 @@ go.mongodb.org/mongo-driver/bson/bsonrw
 go.mongodb.org/mongo-driver/bson/bsontype
 go.mongodb.org/mongo-driver/bson/primitive
 go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-# go.opentelemetry.io/contrib v0.22.0
-## explicit; go 1.15
-go.opentelemetry.io/contrib
-# go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.22.0
-## explicit; go 1.15
+# go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.45.0
+## explicit; go 1.19
 go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux
+go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux/internal/semconvutil
 # go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
 ## explicit; go 1.19
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
