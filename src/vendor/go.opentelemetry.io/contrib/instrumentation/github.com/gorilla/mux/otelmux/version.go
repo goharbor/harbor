@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This package provides all of its functionality through its
-// submodules. The submodules in the exporters directory provide
-// implementations for trace and metric exporters for third-party
-// collectors, and submodules in the instrumentation directory provide the
-// instrumentation for the popular go libraries.
-package contrib
+package otelmux // import "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+
+// Version is the current release version of the gorilla/mux instrumentation.
+func Version() string {
+	return "0.45.0"
+	// This string is updated by the pre_release.sh script during release
+}
+
+// SemVersion is the semantic version to be supplied to tracer/meter creation.
+//
+// Deprecated: Use [Version] instead.
+func SemVersion() string {
+	return Version()
+}
