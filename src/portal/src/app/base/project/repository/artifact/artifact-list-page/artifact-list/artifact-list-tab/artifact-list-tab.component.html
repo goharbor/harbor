@@ -430,7 +430,8 @@
                         <hbr-label-piece
                             *ngIf="artifact.labels?.length"
                             [label]="artifact.labels[0]"
-                            [labelWidth]="90">
+                            [labelWidth]="90"
+                            [withTooltip]="true">
                         </hbr-label-piece>
                         <div
                             class="signpost-item"
@@ -447,7 +448,8 @@
                                         class="margin-5px">
                                         <hbr-label-piece
                                             [labelWidth]="130"
-                                            [label]="label">
+                                            [label]="label"
+                                            [withTooltip]="true">
                                         </hbr-label-piece>
                                     </div>
                                 </clr-signpost-content>
