@@ -43,6 +43,7 @@ type Task struct {
 	ResourceType        string
 	SourceResource      string
 	DestinationResource string
+	References          string
 	Operation           string
 	JobID               string
 	CreationTime        time.Time

@@ -62,6 +62,8 @@ type Controller interface {
 	GetRetentionExecTaskLog(ctx context.Context, taskID int64) ([]byte, error)
 
 	GetRetentionExecTask(ctx context.Context, taskID int64) (*retention.Task, error)
+	// DeleteRetentionByProject delete retetion rule by project id
+	DeleteRetentionByProject(ctx context.Context, projectID int64) error
 }
 
 var (
@@ -403,6 +405,21 @@ func (r *defaultController) UpdateTaskInfo(ctx context.Context, taskID int64, to
 	t.ExtraAttrs["retained"] = retained
 
 	return r.taskMgr.UpdateExtraAttrs(ctx, taskID, t.ExtraAttrs)
+}
+
+func (r *defaultController) DeleteRetentionByProject(ctx context.Context, projectID int64) error {
+	policyIDs, err := r.manager.ListPolicyIDs(ctx,
+		q.New(q.KeyWords{"scope_level": "project",
+			"scope_reference": fmt.Sprintf("%d", projectID)}))
+	if err != nil {
+		return err
+	}
+	for _, policyID := range policyIDs {
+		if err := r.DeleteRetention(ctx, policyID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // NewController ...

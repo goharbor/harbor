@@ -152,6 +152,37 @@ func getResourceName(res *model.Resource) string {
 	return fmt.Sprintf("%s [%d item(s) in total]", meta.Repository.Name, n)
 }
 
+// getResourceReferences gets the string lists of the resource reference, use tag name first or digest if no tag
+// e.g v1,v2,dev,sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+func getResourceReferences(res *model.Resource) string {
+	if res == nil {
+		return ""
+	}
+	meta := res.Metadata
+	if meta == nil {
+		return ""
+	}
+
+	references := make([]string, 0)
+	if len(meta.Artifacts) > 0 {
+		for _, artifact := range meta.Artifacts {
+			// contains tags
+			if len(artifact.Tags) > 0 {
+				references = append(references, artifact.Tags...)
+				continue
+			}
+			// contains no tag, use digest
+			if len(artifact.Digest) > 0 {
+				references = append(references, artifact.Digest)
+			}
+		}
+	} else {
+		references = append(references, meta.Vtags...)
+	}
+
+	return strings.Join(references, ",")
+}
+
 // repository:a/b/c/image namespace:n replaceCount: -1 -> n/image
 // repository:a/b/c/image namespace:n replaceCount: 0 -> n/a/b/c/image
 // repository:a/b/c/image namespace:n replaceCount: 1 -> n/b/c/image
