@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import unittest
-import time
+import json
 
 from testutils import ADMIN_CLIENT, suppress_urllib3_warning, files_directory
 from testutils import TEARDOWN
@@ -39,14 +39,19 @@ class TestProjects(unittest.TestCase):
             2. Create project(PA) and project(PB) by user(UA);
             3. Push a image in project(PA) and then delete repository by admin;
             4. Get repository by user(UA), it should get nothing;
-            5. Tigger garbage collection operation;
-            6. Check garbage collection job was finished;
-            7. Get garbage collection log, check there is a number of files was deleted;
-            8. Push a image in project(PB) by admin and delete the only tag;
-            9. Tigger garbage collection operation;
-            10. Check garbage collection job was finished;
-            11. Repository with untag image should be still there;
-            12. But no any artifact in repository anymore.
+            5. Push a image in project(PB) by admin and delete the only tag;
+            6. Tigger garbage collection operation;
+            7. Check garbage collection job was finished;
+            8. Get garbage collection log, check there is a number of files was deleted;
+            9. Check garbage collection details;
+            10. Check the log for garbage collection workers;
+            11. Tigger garbage collection operation;
+            12. Check garbage collection job was finished;
+            13. Get garbage collection log, check there is a number of files was deleted;
+            14. Repository with untag image should be still there;
+            15. But no any artifact in repository anymore;
+            16. Check garbage collection details;
+            17. Check the log for garbage collection workers;
         """
         url = ADMIN_CLIENT["endpoint"]
         admin_name = ADMIN_CLIENT["username"]
@@ -70,41 +75,55 @@ class TestProjects(unittest.TestCase):
         repo_data = self.repo.list_repositories(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(repo_data), 0)
 
-        #8. Push a image in project(PB) by admin and delete the only tag;
+        #5. Push a image in project(PB) by admin and delete the only tag;
         push_special_image_to_project(TestProjects.project_gc_untag_name, harbor_server, admin_name, admin_password, self.repo_name_untag, [self.tag])
         self.artifact.delete_tag(TestProjects.project_gc_untag_name, self.repo_name_untag, self.tag, self.tag, **ADMIN_CLIENT)
 
-        #5. Tigger garbage collection operation;
+        #6. Tigger garbage collection operation;
         gc_id = self.gc.gc_now(**ADMIN_CLIENT)
 
-        #6. Check garbage collection job was finished;
+        #7. Check garbage collection job was finished;
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        #7. Get garbage collection log, check there is a number of files was deleted;
+        #8. Get garbage collection log, check there is a number of files was deleted;
         self.gc.validate_deletion_success(gc_id, **ADMIN_CLIENT)
-
         artifacts = self.artifact.list_artifacts(TestProjects.project_gc_untag_name, self.repo_name_untag, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(artifacts), 1)
 
-        time.sleep(5)
+        #9. Check garbage collection details;
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], False, False, 1000000, 1100000, 2, 1, 1)
 
-        #9. Tigger garbage collection operation;
-        gc_id = self.gc.gc_now(is_delete_untagged=True, **ADMIN_CLIENT)
+        #10. Check the log for garbage collection workers;
+        gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: 1", gc_log)
 
-        #10. Check garbage collection job was finished;
+        #11. Tigger garbage collection operation;
+        workers = 2
+        gc_id = self.gc.gc_now(is_delete_untagged=True, workers=2, **ADMIN_CLIENT)
+
+        #12. Check garbage collection job was finished;
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        #7. Get garbage collection log, check there is a number of files was deleted;
+        #13. Get garbage collection log, check there is a number of files was deleted;
         self.gc.validate_deletion_success(gc_id, **ADMIN_CLIENT)
 
-        #11. Repository with untag image should be still there;
+        #14. Repository with untag image should be still there;
         repo_data_untag = self.repo.list_repositories(TestProjects.project_gc_untag_name, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(repo_data_untag), 1)
         self.assertEqual(TestProjects.project_gc_untag_name + "/" + self.repo_name_untag , repo_data_untag[0].name)
 
-        #12. But no any artifact in repository anymore.
+        #15. But no any artifact in repository anymore.
         artifacts = self.artifact.list_artifacts(TestProjects.project_gc_untag_name, self.repo_name_untag, **TestProjects.USER_GC_CLIENT)
         self.assertEqual(artifacts,[])
+
+        #16. Check garbage collection details;
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], True, False, 1500000, 2000000, 3, 1, workers)
+
+        #17. Check the log for garbage collection workers;
+        gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
 
 
     def testGarbageCollectionAccessory(self):
@@ -121,22 +140,32 @@ class TestProjects(unittest.TestCase):
             7. Sign image(IA) Signature with cosign;
             8. Delete image(IA) Signature of signature by user(UA);
             9. Trigger GC and wait for GC to succeed;
-            10. Get the GC log and check that the image(IA) Signature of signature is deleted;
-            11. Delete image(IA) Signature by user(UA);
-            12. Trigger GC and wait for GC to succeed;
-            13. Get the GC log and check that the image(IA) Signature is deleted;
-            14. Delete image(IA) SBOM by user(UA);
-            15. Trigger GC and wait for GC to succeed;
-            16. Get the GC log and check that the image(IA) SBOM and Signature of SBOM is deleted;
-            17. Push image(IA) SBOM to project(PA) by user(UA);
-            18. Sign image(IA) with cosign;
-            19. Sign image(IA) SBOM with cosign;
-            20. Sign image(IA) Signature with cosign;
-            21. Trigger GC and wait for GC to succeed;
-            22. Get the GC log and check that it is not deleted;
-            23. Delete tag of image(IA) by user(UA);
-            24. Trigger GC and wait for GC to succeed;
-            25. Get the GC log and check that the image(IA) and all aeecssory is deleted;
+            10. Check garbage collection details;
+            11. Check the log for garbage collection workers;
+            12. Get the GC log and check that the image(IA) Signature of signature is deleted;
+            13. Delete image(IA) Signature by user(UA);
+            14. Trigger GC and wait for GC to succeed;
+            15. Check garbage collection details;
+            16. Check the log for garbage collection workers;
+            17. Get the GC log and check that the image(IA) Signature is deleted;
+            18. Delete image(IA) SBOM by user(UA);
+            19. Trigger GC and wait for GC to succeed;
+            20. Check garbage collection details;
+            21. Check the log for garbage collection workers;
+            22. Get the GC log and check that the image(IA) SBOM and Signature of SBOM is deleted;
+            23. Push image(IA) SBOM to project(PA) by user(UA);
+            24. Sign image(IA) with cosign;
+            25. Sign image(IA) SBOM with cosign;
+            26. Sign image(IA) Signature with cosign;
+            27. Trigger GC and wait for GC to succeed;
+            28. Check garbage collection details;
+            29. Check the log for garbage collection workers;
+            30. Get the GC log and check that it is not deleted;
+            31. Delete tag of image(IA) by user(UA);
+            32. Trigger GC and wait for GC to succeed;
+            33. Check garbage collection details;
+            34. Check the log for garbage collection workers;
+            35. Get the GC log and check that the image(IA) and all aeecssory is deleted;
         """
         url = ADMIN_CLIENT["endpoint"]
         user_password = "Aa123456"
@@ -184,44 +213,68 @@ class TestProjects(unittest.TestCase):
         self.artifact.delete_artifact(project_name, self.image, signature_signature_digest, **user_client)
 
         # 9. Trigger GC and wait for GC to succeed
-        gc_id = self.gc.gc_now(**ADMIN_CLIENT)
+        workers = 3
+        gc_id = self.gc.gc_now(workers=3,**ADMIN_CLIENT)
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        # 10. Get the GC log and check that the image(IA) Signature of signature is deleted
+        # 10. Check garbage collection details
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], False, False, 1500, 3000, 2, 1, workers)
+
+        # 11. Check the log for garbage collection workers
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
+
+        # 12. Get the GC log and check that the image(IA) Signature of signature is deleted
         self.assertIn(deleted_prefix + signature_signature_digest, gc_log)
 
-        # 11. Delete image(IA) Signature by user(UA)
+        # 13. Delete image(IA) Signature by user(UA)
         self.artifact.delete_artifact(project_name, self.image, image_signature_digest, **user_client)
 
-        # 12. Trigger GC and wait for GC to succeed
-        gc_id = self.gc.gc_now(**ADMIN_CLIENT)
+        # 14. Trigger GC and wait for GC to succeed
+        workers = 4
+        gc_id = self.gc.gc_now(workers=workers, **ADMIN_CLIENT)
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        # 13. Get the GC log and check that the image(IA) Signature is deleted
+        # 15. Check garbage collection details
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], False, False, 1500, 3000, 2, 1, workers)
+
+        # 16. Check the log for garbage collection workers
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
+
+        # 17. Get the GC log and check that the image(IA) Signature is deleted
         self.assertIn(deleted_prefix + image_signature_digest, gc_log)
 
-        # 14. Delete image(IA) SBOM by user(UA)
+        # 18. Delete image(IA) SBOM by user(UA)
         self.artifact.delete_artifact(project_name, self.image, sbom_digest, **user_client)
 
-        # 15. Trigger GC and wait for GC to succeed
-        gc_id = self.gc.gc_now(**ADMIN_CLIENT)
+        # 19. Trigger GC and wait for GC to succeed
+        workers = 5
+        gc_id = self.gc.gc_now(workers=workers, **ADMIN_CLIENT)
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        # 16. Get the GC log and check that the image(IA) SBOM and Signature of SBOM is deleted
+        # 20. Check garbage collection details
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], False, False, 4000, 5000, 4, 2, workers)
+
+        # 21. Check the log for garbage collection workers
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
+
+        # 22. Get the GC log and check that the image(IA) SBOM and Signature of SBOM is deleted
         self.assertIn(deleted_prefix + sbom_digest, gc_log)
         self.assertIn(deleted_prefix + sbom_signature_digest, gc_log)
 
-        # 17. Push image(IA) SBOM to project(PA) by user(UA)
+        # 23. Push image(IA) SBOM to project(PA) by user(UA)
         self.sbom_path = files_directory + "sbom_test.json"
         docker_api.docker_login_cmd(harbor_server, user_name, user_password, enable_manifest = False)
         cosign.push_artifact_sbom("{}/{}/{}:{}".format(harbor_server, project_name, self.image, self.tag), self.sbom_path)
         artifact_info = self.artifact.get_reference_info(project_name, self.image, self.tag, **user_client)
         sbom_digest = artifact_info.accessories[0].digest
 
-        # 18. Sign image(IA) with cosign
+        # 24. Sign image(IA) with cosign
         cosign.sign_artifact("{}/{}/{}:{}".format(harbor_server, project_name, self.image, self.tag))
         artifact_info = self.artifact.get_reference_info(project_name, self.image, self.tag, **user_client)
         self.assertEqual(len(artifact_info.accessories), 2)
@@ -231,41 +284,72 @@ class TestProjects(unittest.TestCase):
                 image_signature_digest = accessory.digest
                 break
 
-        # 19. Sign image(IA) SBOM cosign
+        # 25. Sign image(IA) SBOM cosign
         cosign.sign_artifact("{}/{}/{}@{}".format(harbor_server, project_name, self.image, sbom_digest))
         sbom_info = self.artifact.get_reference_info(project_name, self.image, sbom_digest, **user_client)
         sbom_signature_digest = sbom_info.accessories[0].digest
 
-        # 20. Sign image(IA) Signature with cosign
+        # 26. Sign image(IA) Signature with cosign
         cosign.sign_artifact("{}/{}/{}@{}".format(harbor_server, project_name, self.image, image_signature_digest))
         signature_info = self.artifact.get_reference_info(project_name, self.image, image_signature_digest, **user_client)
         signature_signature_digest = signature_info.accessories[0].digest
 
-        # 21. Trigger GC and wait for GC to succeed
+        # 27. Trigger GC and wait for GC to succeed
+        workers = 1
         gc_id = self.gc.gc_now(**ADMIN_CLIENT)
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        # 22. Get the GC log and check that it is not deleted
+        # 28. Check garbage collection details
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], False, False, 0, 0, 0, 0, workers)
+
+        # 29. Check the log for garbage collection workers
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
+
+        # 30. Get the GC log and check that it is not deleted
         self.assertNotIn(deleted_prefix + sbom_digest, gc_log)
         self.assertNotIn(deleted_prefix + sbom_signature_digest, gc_log)
         self.assertNotIn(deleted_prefix + image_signature_digest, gc_log)
         self.assertNotIn(deleted_prefix + signature_signature_digest, gc_log)
 
-        # 23. Delete tag of image(IA) by user(UA)
+        # 31. Delete tag of image(IA) by user(UA)
         self.artifact.delete_tag(project_name, self.image, self.tag, self.tag, **user_client)
 
-        # 24. Trigger GC and wait for GC to succeed
-        gc_id = self.gc.gc_now(is_delete_untagged=True, **ADMIN_CLIENT)
+        # 32. Trigger GC and wait for GC to succeed
+        workers = 2
+        gc_id = self.gc.gc_now(workers=workers, is_delete_untagged=True, **ADMIN_CLIENT)
         self.gc.validate_gc_job_status(gc_id, self.gc_success_status, **ADMIN_CLIENT)
 
-        # 25. Get the GC log and check that the image(IA) and all aeecssory is deleted
+        # 33. Check garbage collection details
+        gc_history = self.gc.get_gc_history(**ADMIN_CLIENT)
+        self.checkGarbageCollectionDetails(gc_history[0], True, False, 2500000, 3000000, 11, 5, workers)
+
+        # 34. Check the log for garbage collection workers
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
+        self.assertIn("workers: {}".format(workers), gc_log)
+
+        # 35. Get the GC log and check that the image(IA) and all aeecssory is deleted
         self.assertIn(self.image, gc_log)
         self.assertIn(deleted_prefix + sbom_digest, gc_log)
         self.assertIn(deleted_prefix + sbom_signature_digest, gc_log)
         self.assertIn(deleted_prefix + image_signature_digest, gc_log)
         self.assertIn(deleted_prefix + signature_signature_digest, gc_log)
+
+
+    def checkGarbageCollectionDetails(self, gc, delete_untagged, dry_run,
+                                      freed_space_range_start, freed_space_range_end,
+                                      purged_blobs, purged_manifests, workers):
+        self.assertEqual(gc.job_kind, "MANUAL")
+        self.assertEqual(gc.job_name, "GARBAGE_COLLECTION")
+        parameters = json.loads(gc.job_parameters)
+        self.assertEqual(parameters["delete_untagged"], delete_untagged)
+        self.assertEqual(parameters["dry_run"], dry_run)
+        self.assertTrue(parameters["freed_space"] >= freed_space_range_start)
+        self.assertTrue(parameters["freed_space"] <= freed_space_range_end)
+        self.assertEqual(parameters["purged_blobs"], purged_blobs)
+        self.assertEqual(parameters["purged_manifests"], purged_manifests)
+        self.assertEqual(parameters["workers"], workers)
 
 
 if __name__ == '__main__':
