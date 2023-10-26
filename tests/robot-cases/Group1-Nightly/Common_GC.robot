@@ -31,7 +31,7 @@ Test Case - Garbage Collection
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  redis  sha256=e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
     Delete Repo  project${d}  redis
-    GC Now
+    GC Now  workers=5
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  7 blobs and 1 manifests eligible for deletion
     Retry GC Should Be Successful  ${latest_job_id}  The GC job actual frees up 34 MB space
@@ -41,7 +41,7 @@ Test Case - GC Untagged Images
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    GC Now
+    GC Now  workers=4
     Create An New Project And Go Into Project  project${d}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
     # make hello-world untagged
@@ -51,14 +51,14 @@ Test Case - GC Untagged Images
     Delete A Tag  latest
     Should Not Contain Tag  latest
     # run gc without param delete untagged artifacts checked,  should not delete hello-world:latest
-    GC Now
+    GC Now  workers=3
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
     Go Into Repo  project${d}  hello-world
     Should Contain Artifact
     # run gc with param delete untagged artifacts checked,  should delete hello-world
     Switch To Garbage Collection
-    GC Now  untag=${true}
+    GC Now  untag=${true}  workers=2
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  ${null}
     Go Into Repo  project${d}  hello-world
@@ -95,18 +95,28 @@ Test Case - Garbage Collection Accessory
     ${d}=  Get Current Date  result_format=%m%s
     ${image}=  Set Variable  hello-world
     ${tag}=  Set Variable  latest
+    ${workers}=  Set Variable  1
     ${deleted_prefix}=  Set Variable  delete blob from storage:
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    GC Now
+    ${gc_job_id}=  GC Now
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  0 blob(s) and 0 manifest(s) deleted, 0 space freed up
+    ${log_containing}=  Create List  workers: ${workers}
+    ${log_excluding}=  Create List
+    Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
+
     Create An New Project And Go Into Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}
 
     ${sbom_digest}  ${signature_digest}  ${signature_of_sbom_digest}  ${signature_of_signature_digest}=  Prepare Accessory  project${d}  ${image}  ${tag}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     # Delete the Signature of Signature
     Delete Accessory By Aeecssory XPath  ${artifact_cosign_cosign_accessory_action_btn}
-    ${gc_job_id}=  GC Now
-    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${workers}=  Set Variable  2
+    ${gc_job_id}=  GC Now  workers=${workers}
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  2 blob(s) and 1 manifest(s) deleted
     ${log_containing}=  Create List  ${deleted_prefix} ${signature_of_signature_digest}
+    ...  workers: ${workers}
     ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
     ...  ${deleted_prefix} ${signature_of_sbom_digest}
     ...  ${deleted_prefix} ${signature_digest}
@@ -115,9 +125,12 @@ Test Case - Garbage Collection Accessory
     Retry Button Click  ${artifact_list_accessory_btn}
     # Delete the Signature
     Delete Accessory By Aeecssory XPath  ${artifact_cosign_accessory_action_btn}
-    ${gc_job_id}=  GC Now
-    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${workers}=  Set Variable  3
+    ${gc_job_id}=  GC Now  workers=${workers}
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  2 blob(s) and 1 manifest(s) deleted
     ${log_containing}=  Create List  ${deleted_prefix} ${signature_digest}
+    ...  workers: ${workers}
     ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
     ...  ${deleted_prefix} ${signature_of_sbom_digest}
     Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
@@ -125,10 +138,13 @@ Test Case - Garbage Collection Accessory
     Retry Button Click  ${artifact_list_accessory_btn}
     # Delete the SBOM
     Delete Accessory By Aeecssory XPath  ${artifact_sbom_accessory_action_btn}
-    ${gc_job_id}=  GC Now
-    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${workers}=  Set Variable  4
+    ${gc_job_id}=  GC Now  workers=${workers}
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  4 blob(s) and 2 manifest(s) deleted
     ${log_containing}=  Create List  ${deleted_prefix} ${sbom_digest}
     ...  ${deleted_prefix} ${signature_of_sbom_digest}
+    ...  workers: ${workers}
     ${log_excluding}=  Create List
     Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
 
@@ -138,20 +154,25 @@ Test Case - Garbage Collection Accessory
     Go Into Artifact  ${tag}
     Should Contain Tag  ${tag}
     Delete A Tag  ${tag}
-    ${gc_job_id}=  GC Now
-    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
-    ${log_containing}=  Create List
+    ${workers}=  Set Variable  5
+    ${gc_job_id}=  GC Now  workers=${workers}
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  0 blob(s) and 0 manifest(s) deleted, 0 space freed up
+    ${log_containing}=  Create List  workers: ${workers}
     ${log_excluding}=  Create List  ${deleted_prefix} ${sbom_digest}
     ...  ${deleted_prefix} ${signature_digest}
     ...  ${deleted_prefix} ${signature_of_sbom_digest}
     ...  ${deleted_prefix} ${signature_of_signature_digest}
     Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
-    ${gc_job_id}=  GC Now  untag=${true}
-    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='SUCCESS']
+    ${workers}=  Set Variable  5
+    ${gc_job_id}=  GC Now  workers=${workers}  untag=${true}
+    Wait Until GC Complete  ${gc_job_id}
+    Check GC History  ${gc_job_id}  10 blob(s) and 5 manifest(s) deleted
     ${log_containing}=  Create List  ${deleted_prefix} ${sbom_digest}
     ...  ${deleted_prefix} ${signature_digest}
     ...  ${deleted_prefix} ${signature_of_sbom_digest}
     ...  ${deleted_prefix} ${signature_of_signature_digest}
+    ...  workers: ${workers}
     ${log_excluding}=  Create List
     Check GC Log  ${gc_job_id}  ${log_containing}  ${log_excluding}
     Close Browser
