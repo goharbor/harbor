@@ -25,10 +25,10 @@ jobs:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v1
       - run: gcloud info
-      - name: Set up Go 1.20
+      - name: Set up Go 1.21
         uses: actions/setup-go@v1
         with:
-          go-version: 1.20.10
+          go-version: 1.21.3
         id: go
       - uses: actions/checkout@v3
         with:
