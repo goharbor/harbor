@@ -1,4 +1,4 @@
-FROM golang:1.20.10
+FROM golang:1.21.3
 
 ADD .   /go/src/github.com/aquasecurity/harbor-scanner-trivy/
 WORKDIR /go/src/github.com/aquasecurity/harbor-scanner-trivy/
