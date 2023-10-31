@@ -492,6 +492,7 @@
         "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
+        "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Yes",
         "SECONDS": "Seconds",
         "MINUTES": "Minutes",
