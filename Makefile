@@ -156,7 +156,7 @@ ifneq ($(GOBUILDLDFLAGS),)
 endif
 
 # go build command
-GOIMAGEBUILDCMD=/usr/local/go/bin/go build -mod vendor
+GOIMAGEBUILDCMD=/usr/local/go/bin/go build
 GOIMAGEBUILD_COMMON=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} ${GOLDFLAGS}
 GOIMAGEBUILD_CORE=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} --ldflags "-w -s $(CORE_LDFLAGS)"
 
@@ -312,7 +312,7 @@ gen_apis: lint_apis
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.22.1
+MOCKERY_VERSION=v2.35.4
 MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
@@ -466,7 +466,7 @@ go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
-	@res=$$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
+	@res=$$(find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
 	if [ -n "$${res}" ]; then \
 		echo checking comment format fail.. ; \
 		echo missing whitespace between // and comment body;\
@@ -476,7 +476,7 @@ commentfmt:
 
 misspell:
 	@echo checking misspell...
-	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
+	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
