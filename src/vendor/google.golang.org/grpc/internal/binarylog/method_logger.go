@@ -19,6 +19,7 @@
 package binarylog
 
 import (
+	"context"
 	"net"
 	"strings"
 	"sync/atomic"
@@ -48,8 +49,11 @@ func (g *callIDGenerator) reset() {
 var idGen callIDGenerator
 
 // MethodLogger is the sub-logger for each method.
+//
+// This is used in the 1.0 release of gcp/observability, and thus must not be
+// deleted or changed.
 type MethodLogger interface {
-	Log(LogEntryConfig)
+	Log(context.Context, LogEntryConfig)
 }
 
 // TruncatingMethodLogger is a method logger that truncates headers and messages
@@ -64,6 +68,9 @@ type TruncatingMethodLogger struct {
 }
 
 // NewTruncatingMethodLogger returns a new truncating method logger.
+//
+// This is used in the 1.0 release of gcp/observability, and thus must not be
+// deleted or changed.
 func NewTruncatingMethodLogger(h, m uint64) *TruncatingMethodLogger {
 	return &TruncatingMethodLogger{
 		headerMaxLen:  h,
@@ -98,7 +105,7 @@ func (ml *TruncatingMethodLogger) Build(c LogEntryConfig) *binlogpb.GrpcLogEntry
 }
 
 // Log creates a proto binary log entry, and logs it to the sink.
-func (ml *TruncatingMethodLogger) Log(c LogEntryConfig) {
+func (ml *TruncatingMethodLogger) Log(ctx context.Context, c LogEntryConfig) {
 	ml.sink.Write(ml.Build(c))
 }
 
@@ -144,6 +151,9 @@ func (ml *TruncatingMethodLogger) truncateMessage(msgPb *binlogpb.Message) (trun
 }
 
 // LogEntryConfig represents the configuration for binary log entry.
+//
+// This is used in the 1.0 release of gcp/observability, and thus must not be
+// deleted or changed.
 type LogEntryConfig interface {
 	toProto() *binlogpb.GrpcLogEntry
 }
@@ -220,7 +230,7 @@ type ClientMessage struct {
 	OnClientSide bool
 	// Message can be a proto.Message or []byte. Other messages formats are not
 	// supported.
-	Message interface{}
+	Message any
 }
 
 func (c *ClientMessage) toProto() *binlogpb.GrpcLogEntry {
@@ -260,7 +270,7 @@ type ServerMessage struct {
 	OnClientSide bool
 	// Message can be a proto.Message or []byte. Other messages formats are not
 	// supported.
-	Message interface{}
+	Message any
 }
 
 func (c *ServerMessage) toProto() *binlogpb.GrpcLogEntry {

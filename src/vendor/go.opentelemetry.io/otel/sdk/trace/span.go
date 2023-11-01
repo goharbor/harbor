@@ -20,15 +20,17 @@ import (
 	"reflect"
 	"runtime"
 	rt "runtime/trace"
+	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/internal"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -187,15 +189,18 @@ func (s *recordingSpan) SetStatus(code codes.Code, description string) {
 	if !s.IsRecording() {
 		return
 	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.status.Code > code {
+		return
+	}
 
 	status := Status{Code: code}
 	if code == codes.Error {
 		status.Description = description
 	}
 
-	s.mu.Lock()
 	s.status = status
-	s.mu.Unlock()
 }
 
 // SetAttributes sets attributes of this span.
@@ -294,10 +299,10 @@ func (s *recordingSpan) addOverCapAttrs(limit int, attrs []attribute.KeyValue) {
 
 // truncateAttr returns a truncated version of attr. Only string and string
 // slice attribute values are truncated. String values are truncated to at
-// most a length of limit. Each string slice value is truncated in this fasion
+// most a length of limit. Each string slice value is truncated in this fashion
 // (the slice length itself is unaffected).
 //
-// No truncation is perfromed for a negative limit.
+// No truncation is performed for a negative limit.
 func truncateAttr(limit int, attr attribute.KeyValue) attribute.KeyValue {
 	if limit < 0 {
 		return attr
@@ -305,31 +310,46 @@ func truncateAttr(limit int, attr attribute.KeyValue) attribute.KeyValue {
 	switch attr.Value.Type() {
 	case attribute.STRING:
 		if v := attr.Value.AsString(); len(v) > limit {
-			return attr.Key.String(v[:limit])
+			return attr.Key.String(safeTruncate(v, limit))
 		}
 	case attribute.STRINGSLICE:
-		// Do no mutate the original, make a copy.
-		trucated := attr.Key.StringSlice(attr.Value.AsStringSlice())
-		// Do not do this.
-		//
-		//   v := trucated.Value.AsStringSlice()
-		//   cp := make([]string, len(v))
-		//   /* Copy and truncate values to cp ... */
-		//   trucated.Value = attribute.StringSliceValue(cp)
-		//
-		// Copying the []string and then assigning it back as a new value with
-		// attribute.StringSliceValue will copy the data twice. Instead, we
-		// already made a copy above that only this function owns, update the
-		// underlying slice data of our copy.
-		v := trucated.Value.AsStringSlice()
+		v := attr.Value.AsStringSlice()
 		for i := range v {
 			if len(v[i]) > limit {
-				v[i] = v[i][:limit]
+				v[i] = safeTruncate(v[i], limit)
 			}
 		}
-		return trucated
+		return attr.Key.StringSlice(v)
 	}
 	return attr
+}
+
+// safeTruncate truncates the string and guarantees valid UTF-8 is returned.
+func safeTruncate(input string, limit int) string {
+	if trunc, ok := safeTruncateValidUTF8(input, limit); ok {
+		return trunc
+	}
+	trunc, _ := safeTruncateValidUTF8(strings.ToValidUTF8(input, ""), limit)
+	return trunc
+}
+
+// safeTruncateValidUTF8 returns a copy of the input string safely truncated to
+// limit. The truncation is ensured to occur at the bounds of complete UTF-8
+// characters. If invalid encoding of UTF-8 is encountered, input is returned
+// with false, otherwise, the truncated input will be returned with true.
+func safeTruncateValidUTF8(input string, limit int) (string, bool) {
+	for cnt := 0; cnt <= limit; {
+		r, size := utf8.DecodeRuneInString(input[cnt:])
+		if r == utf8.RuneError {
+			return input, false
+		}
+
+		if cnt+size > limit {
+			return input[:cnt], true
+		}
+		cnt += size
+	}
+	return input, true
 }
 
 // End ends the span. This method does nothing if the span is already ended or
@@ -363,14 +383,14 @@ func (s *recordingSpan) End(options ...trace.SpanEndOption) {
 		defer panic(recovered)
 		opts := []trace.EventOption{
 			trace.WithAttributes(
-				semconv.ExceptionTypeKey.String(typeStr(recovered)),
-				semconv.ExceptionMessageKey.String(fmt.Sprint(recovered)),
+				semconv.ExceptionType(typeStr(recovered)),
+				semconv.ExceptionMessage(fmt.Sprint(recovered)),
 			),
 		}
 
 		if config.StackTrace() {
 			opts = append(opts, trace.WithAttributes(
-				semconv.ExceptionStacktraceKey.String(recordStackTrace()),
+				semconv.ExceptionStacktrace(recordStackTrace()),
 			))
 		}
 
@@ -390,14 +410,13 @@ func (s *recordingSpan) End(options ...trace.SpanEndOption) {
 	}
 	s.mu.Unlock()
 
-	if sps, ok := s.tracer.provider.spanProcessors.Load().(spanProcessorStates); ok {
-		if len(sps) == 0 {
-			return
-		}
-		snap := s.snapshot()
-		for _, sp := range sps {
-			sp.sp.OnEnd(snap)
-		}
+	sps := s.tracer.provider.getSpanProcessors()
+	if len(sps) == 0 {
+		return
+	}
+	snap := s.snapshot()
+	for _, sp := range sps {
+		sp.sp.OnEnd(snap)
 	}
 }
 
@@ -411,14 +430,14 @@ func (s *recordingSpan) RecordError(err error, opts ...trace.EventOption) {
 	}
 
 	opts = append(opts, trace.WithAttributes(
-		semconv.ExceptionTypeKey.String(typeStr(err)),
-		semconv.ExceptionMessageKey.String(err.Error()),
+		semconv.ExceptionType(typeStr(err)),
+		semconv.ExceptionMessage(err.Error()),
 	))
 
 	c := trace.NewEventConfig(opts...)
 	if c.StackTrace() {
 		opts = append(opts, trace.WithAttributes(
-			semconv.ExceptionStacktraceKey.String(recordStackTrace()),
+			semconv.ExceptionStacktrace(recordStackTrace()),
 		))
 	}
 
