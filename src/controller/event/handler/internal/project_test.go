@@ -21,7 +21,9 @@ import (
 	beegoorm "github.com/beego/beego/v2/client/orm"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -29,11 +31,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	immutableModel "github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/pkg/member"
+	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	"github.com/goharbor/harbor/src/pkg/user"
 )
 
 // ProjectHandlerTestSuite is test suite for artifact handler.
@@ -81,6 +86,18 @@ func (suite *ProjectHandlerTestSuite) TestOnProjectDelete() {
 	projID, err := project.New().Create(suite.ctx, &models.Project{Name: "test-project", OwnerID: 1})
 	suite.Nil(err)
 
+	userID, err := user.Mgr.Create(suite.ctx, &commonmodels.User{Username: "test-user-event", Email: "test-user-event@example.com"})
+	defer user.Mgr.Delete(suite.ctx, userID)
+
+	// create project member
+	_, err = member.Mgr.AddProjectMember(suite.ctx, memberModels.Member{ProjectID: projID, EntityType: common.UserMember, EntityID: userID, Role: 1})
+	suite.Nil(err)
+
+	// verify project member
+	members, err := member.Mgr.SearchMemberByName(suite.ctx, projID, "test-user-event")
+	suite.Nil(err)
+	suite.Equal(1, len(members))
+
 	defer project.New().Delete(suite.ctx, projID)
 	immutableRule := &immutableModel.Metadata{
 		ProjectID: projID,
@@ -116,6 +133,11 @@ func (suite *ProjectHandlerTestSuite) TestOnProjectDelete() {
 	// check if immutable rule is deleted
 	_, err = immutable.Ctr.GetImmutableRule(suite.ctx, immutableID)
 	suite.NotNil(err)
+
+	// check if project member is deleted
+	mbs, err := member.Mgr.SearchMemberByName(suite.ctx, projID, "test-user-event")
+	suite.Nil(err)
+	suite.Equal(0, len(mbs))
 }
 
 // TestArtifactHandler tests ArtifactHandler.

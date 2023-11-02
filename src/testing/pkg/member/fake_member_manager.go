@@ -55,6 +55,20 @@ func (_m *Manager) Delete(ctx context.Context, projectID int64, memberID int) er
 	return r0
 }
 
+// DeleteMemberByProjectID provides a mock function with given fields: ctx, projectID
+func (_m *Manager) DeleteMemberByProjectID(ctx context.Context, projectID int64) error {
+	ret := _m.Called(ctx, projectID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteMemberByUserID provides a mock function with given fields: ctx, uid
 func (_m *Manager) DeleteMemberByUserID(ctx context.Context, uid int) error {
 	ret := _m.Called(ctx, uid)
