@@ -165,6 +165,10 @@ func (m *manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error
 
 func (m *manager) Create(ctx context.Context, user *commonmodels.User) (int, error) {
 	injectPasswd(user, user.Password)
+	// replace comma in username with underscore to avoid #19356
+	// if the username conflict with existing username,
+	// it will return error and have to update to a new username manually with sql
+	user.Username = strings.Replace(user.Username, ",", "_", -1)
 	return m.dao.Create(ctx, user)
 }
 

@@ -228,4 +228,6 @@ const (
 	ExecutionStatusRefreshIntervalSeconds = "execution_status_refresh_interval_seconds"
 	// QuotaUpdateProvider is the provider for updating quota, currently support Redis and DB
 	QuotaUpdateProvider = "quota_update_provider"
+	// IllegalCharsInUsername is the illegal chars in username
+	IllegalCharsInUsername = `,"~#%$`
 )
