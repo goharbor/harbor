@@ -146,7 +146,7 @@ def run_command(command, expected_error_message = None):
             if str(e.output).lower().find(expected_error_message.lower()) < 0:
                 raise Exception(r"Error message is not as expected {}".format(expected_error_message))
         else:
-            raise Exception('Error: Exited with error code: %s.'% (e.returncode))
+            raise Exception('Error: Exited with error code: %s, error message: %s' % (e.returncode, e.output))
     else:
         return output
 
