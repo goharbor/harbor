@@ -1096,3 +1096,51 @@ Test Case - Retain Image Last Pull Time
     ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
     Should Not Be Empty  ${last_pull_time}
     Close Browser
+
+Test Case - Banner Message
+    [Tags]  banner_message
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${message}=  Set Variable  This is a test message.
+    ${message_type}=  Set Variable  success
+    ${in_duration}=  Set Variable  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Switch To Configuration System Setting
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${message_type}=  Set Variable  info
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  warning
+    Set Banner Message  ${message}  ${message_type}  ${false}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  danger
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${in_duration}=  Set Variable  ${false}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    ${in_duration}=  Set Variable  ${true}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Set Banner Message  ${null}
+    Check Banner Message  ${null}
+    Reload Page
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Check Banner Message on other pages  ${message}  ${message_type}  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Go Into Project  library
+    Check Banner Message  ${null}
+    Switch To Logs
+    Check Banner Message  ${null}
+    Switch To Configuration System Setting
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    Check Banner Message  ${null}
+    Close Browser

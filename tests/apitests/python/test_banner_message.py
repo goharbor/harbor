@@ -9,7 +9,7 @@ from library.configurations import Configurations
 from library.system_info import System_info
 
 
-class TestReferrersApi(unittest.TestCase):
+class TestBannerMessage(unittest.TestCase):
 
 
     @suppress_urllib3_warning
@@ -20,7 +20,7 @@ class TestReferrersApi(unittest.TestCase):
         self.message_type = "info"
         self.closable = True
         self.from_date = "10/27/2023"
-        self.to_date_str = "10/31/2030"
+        self.to_date = "10/31/2030"
 
 
     def testBannerMessage(self):
@@ -40,7 +40,7 @@ class TestReferrersApi(unittest.TestCase):
             10. Check banner message by system info api;
         """
         # 1. Setup banner message
-        self.configurations.set_configurations_of_banner_message(message=self.message, message_type=self.message_type, closable=self.closable, from_date=self.from_date, to_date=self.to_date_str)
+        self.configurations.set_configurations_of_banner_message(message=self.message, message_type=self.message_type, closable=self.closable, from_date=self.from_date, to_date=self.to_date)
 
         # 2. Get banner message by configurations api
         configurations = self.configurations.get_configurations()
@@ -85,7 +85,7 @@ class TestReferrersApi(unittest.TestCase):
             self.assertEqual(banner_mseeage["type"], self.message_type)
             self.assertEqual(banner_mseeage["closable"], self.closable)
             self.assertEqual(banner_mseeage["fromDate"], self.from_date)
-            self.assertEqual(banner_mseeage["toDate"], self.to_date_str)
+            self.assertEqual(banner_mseeage["toDate"], self.to_date)
 
 
 if __name__ == '__main__':
