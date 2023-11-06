@@ -495,8 +495,16 @@ func validateUserProfile(user *commonmodels.User) error {
 		return errors.BadRequestError(nil).WithMessage("realname with illegal length")
 	}
 
-	if utils.IsContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
+	if strings.ContainsAny(user.Realname, common.IllegalCharsInUsername) {
 		return errors.BadRequestError(nil).WithMessage("realname contains illegal characters")
+	}
+
+	if utils.IsIllegalLength(user.Username, 1, 255) {
+		return errors.BadRequestError(nil).WithMessage("usernamae with illegal length")
+	}
+
+	if strings.ContainsAny(user.Username, common.IllegalCharsInUsername) {
+		return errors.BadRequestError(nil).WithMessage("username contains illegal characters")
 	}
 
 	if utils.IsIllegalLength(user.Comment, -1, 30) {
