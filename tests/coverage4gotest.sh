@@ -1,7 +1,10 @@
 #!/bin/bash
 set -x
 set -e
-echo "mode: set" >>profile.cov
+profile_path=$(pwd)/profile.cov
+echo "profile.cov path: $profile_path"
+
+echo "mode: set" >>"$profile_path"
 
 deps=""
 cd $(dirname $(find . -name go.mod))
@@ -33,7 +36,7 @@ do
 	go test -race -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 	if [ -f profile.tmp ]	
 	then
-		cat profile.tmp | tail -n +2 >> profile.cov
+		cat profile.tmp | tail -n +2 >> "$profile_path"
 		rm profile.tmp
 	fi	
 done
