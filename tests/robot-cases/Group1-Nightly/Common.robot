@@ -474,19 +474,28 @@ Test Case - Copy A Image And Accessory
     Create An New Project And Go Into Project  ${source_project}
 
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
-    Cosign Generate Key Pair
     Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Generate Key Pair
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
-    Docker Logout  ${ip}
+    Notation Generate Cert
+    Notation Sign  ${ip}/${source_project}/${image}:${tag}
+
     Go Into Repo  ${source_project}  ${image}
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
     Go Into Repo  ${target_project}  ${image}
     Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
+    Docker Logout  ${ip}
     Close Browser
 
 Test Case - Create An New Project With Quotas Set
@@ -772,14 +781,14 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
     Go Into Project  project${d}
     Go Into Repo  project${d}  ${image}
-    Should Not Be Signed By Cosign  ${tag}
+    Should Not Be Signed  ${tag}
     Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed by cosign.
     Cosign Generate Key Pair
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
 
     Cosign Sign  ${ip}/project${d}/${image}:${tag}
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${true}
-    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed  ${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
 
     Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
