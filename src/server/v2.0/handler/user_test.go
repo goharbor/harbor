@@ -118,26 +118,28 @@ func TestUserTestSuite(t *testing.T) {
 func Test_validateUserProfile(t *testing.T) {
 	tooLongUsername := "mike012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789mike012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789mike012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
 	type args struct {
-		user *commonmodels.User
+		user   *commonmodels.User
+		create bool
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"normal_test", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike@example.com"}}, assert.NoError},
-		{"illegall_username_,", args{&commonmodels.User{Username: "mike,mike", Realname: "mike", Email: "mike@example.com"}}, assert.Error},
-		{"illegall_username_$", args{&commonmodels.User{Username: "mike$mike", Realname: "mike", Email: "mike@example.com"}}, assert.Error},
-		{"illegall_username_%", args{&commonmodels.User{Username: "mike%mike", Realname: "mike", Email: "mike@example.com"}}, assert.Error},
-		{"illegall_username_#", args{&commonmodels.User{Username: "mike#mike", Realname: "mike", Email: "mike@example.com"}}, assert.Error},
-		{"illegall_realname", args{&commonmodels.User{Username: "mike", Realname: "mike,mike", Email: "mike@example.com"}}, assert.Error},
-		{"username_too_long", args{&commonmodels.User{Username: tooLongUsername, Realname: "mike", Email: "mike@example.com"}}, assert.Error},
-		{"invalid_email", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike#example.com"}}, assert.Error},
-		{"invalid_comment", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike@example.com", Comment: tooLongUsername}}, assert.Error},
+		{"normal_test", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike@example.com"}, true}, assert.NoError},
+		{"illegall_username_,", args{&commonmodels.User{Username: "mike,mike", Realname: "mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"illegall_username_$", args{&commonmodels.User{Username: "mike$mike", Realname: "mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"illegall_username_%", args{&commonmodels.User{Username: "mike%mike", Realname: "mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"illegall_username_#", args{&commonmodels.User{Username: "mike#mike", Realname: "mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"illegall_realname", args{&commonmodels.User{Username: "mike", Realname: "mike,mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"update_profile", args{&commonmodels.User{Username: "", Realname: "mike", Email: "mike@example.com"}, false}, assert.NoError},
+		{"username_too_long", args{&commonmodels.User{Username: tooLongUsername, Realname: "mike", Email: "mike@example.com"}, true}, assert.Error},
+		{"invalid_email", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike#example.com"}, true}, assert.Error},
+		{"invalid_comment", args{&commonmodels.User{Username: "mike", Realname: "mike", Email: "mike@example.com", Comment: tooLongUsername}, true}, assert.Error},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, validateUserProfile(tt.args.user), fmt.Sprintf("validateUserProfile(%v)", tt.args.user))
+			tt.wantErr(t, validateUserProfile(tt.args.user, tt.args.create), fmt.Sprintf("validateUserProfile(%v)", tt.args.user))
 		})
 	}
 }

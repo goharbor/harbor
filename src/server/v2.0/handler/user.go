@@ -92,7 +92,7 @@ func (u *usersAPI) CreateUser(ctx context.Context, params operation.CreateUserPa
 		Comment:  params.UserReq.Comment,
 		Password: params.UserReq.Password,
 	}
-	if err := validateUserProfile(m); err != nil {
+	if err := validateUserProfile(m, true); err != nil {
 		return u.SendError(ctx, err)
 	}
 	uid, err := u.ctl.Create(ctx, m)
@@ -253,7 +253,7 @@ func (u *usersAPI) UpdateUserProfile(ctx context.Context, params operation.Updat
 		Email:    params.Profile.Email,
 		Comment:  params.Profile.Comment,
 	}
-	if err := validateUserProfile(m); err != nil {
+	if err := validateUserProfile(m, false); err != nil {
 		return u.SendError(ctx, err)
 	}
 	if err := u.ctl.UpdateProfile(ctx, m); err != nil {
@@ -482,7 +482,7 @@ func getRandomSecret() (string, error) {
 	return cliSecret, nil
 }
 
-func validateUserProfile(user *commonmodels.User) error {
+func validateUserProfile(user *commonmodels.User, create bool) error {
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
 			return errors.BadRequestError(nil).WithMessage("email with illegal format")
@@ -499,16 +499,21 @@ func validateUserProfile(user *commonmodels.User) error {
 		return errors.BadRequestError(nil).WithMessage("realname contains illegal characters")
 	}
 
+	if utils.IsIllegalLength(user.Comment, -1, 30) {
+		return errors.BadRequestError(nil).WithMessage("comment with illegal length")
+	}
+
+	// skip to validate username for update because username is empty in the request
+	if !create {
+		return nil
+	}
+
 	if utils.IsIllegalLength(user.Username, 1, 255) {
-		return errors.BadRequestError(nil).WithMessage("usernamae with illegal length")
+		return errors.BadRequestError(nil).WithMessage("username with illegal length")
 	}
 
 	if strings.ContainsAny(user.Username, common.IllegalCharsInUsername) {
 		return errors.BadRequestError(nil).WithMessage("username contains illegal characters")
-	}
-
-	if utils.IsIllegalLength(user.Comment, -1, 30) {
-		return errors.BadRequestError(nil).WithMessage("comment with illegal length")
 	}
 
 	return nil
