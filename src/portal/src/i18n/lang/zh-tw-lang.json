@@ -491,6 +491,7 @@
     "RESOURCE_TYPE": "資源類型"
   },
   "REPLICATION": {
+    "PUSH_BASED_ONLY": "Only for the push-based replication",
     "YES": "是",
     "SECONDS": "秒",
     "MINUTES": "分鐘",

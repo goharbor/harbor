@@ -247,16 +247,6 @@ func IsIllegalLength(s string, min int, max int) bool {
 	return (len(s) < min || len(s) > max)
 }
 
-// IsContainIllegalChar ...
-func IsContainIllegalChar(s string, illegalChar []string) bool {
-	for _, c := range illegalChar {
-		if strings.Contains(s, c) {
-			return true
-		}
-	}
-	return false
-}
-
 // ParseJSONInt ...
 func ParseJSONInt(value interface{}) (int, bool) {
 	switch v := value.(type) {

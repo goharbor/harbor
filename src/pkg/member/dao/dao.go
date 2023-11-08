@@ -44,6 +44,8 @@ type DAO interface {
 	DeleteProjectMemberByID(ctx context.Context, projectID int64, pmid int) error
 	// DeleteProjectMemberByUserID -- Delete project member by user id
 	DeleteProjectMemberByUserID(ctx context.Context, uid int) error
+	// DeleteProjectMemberByProjectID -- Delete project member by project id
+	DeleteProjectMemberByProjectID(ctx context.Context, projectID int64) error
 	// SearchMemberByName search members of the project by entity_name
 	SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error)
 	// ListRoles lists the roles of user for the specific project
@@ -260,4 +262,16 @@ func (d *dao) ListRoles(ctx context.Context, user *models.User, projectID int64)
 		return nil, err
 	}
 	return roles, nil
+}
+
+func (d *dao) DeleteProjectMemberByProjectID(ctx context.Context, projectID int64) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	sql := "delete from project_member where project_id = ?"
+	if _, err := o.Raw(sql, projectID).Exec(); err != nil {
+		return err
+	}
+	return nil
 }

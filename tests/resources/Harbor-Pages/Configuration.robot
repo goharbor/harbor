@@ -384,3 +384,56 @@ Set Up Retain Image Last Pull Time
     Run Keyword If  '${action}'=='enable'  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Be Selected  ${retain_image_last_pull_time_checkbox}
     ...  ELSE  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Not Be Selected  ${retain_image_last_pull_time_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
+
+Set Banner Message
+    [Arguments]  ${message}  ${message_type}=${null}  ${closable}=${null}  ${in_duration}=${null}
+    IF  '${message}' != '${null}'
+        Retry Text Input  ${banner_message_input_id}  ${message}
+        Select From List By Value  ${banner_message_type_select_id}  ${message_type}
+        Run Keyword If  '${closable}' == '${true}'  Retry Element Click  ${banner_message_closable_checkbox}
+        IF  '${in_duration}' == '${true}'
+            Retry Element Click  ${banner_message_from_date}
+            Retry Element Click  //td[.//button[contains(@class,'is-today')]]
+            Retry Element Click  ${banner_message_to_date}
+            Retry Element Click  ${banner_message_date_next_month}
+            Retry Element Click  (//td[.//button[text()=' 1 ']])[1]
+        ELSE IF  '${in_duration}' == '${false}'
+            Retry Element Click  ${banner_message_from_date}
+            Retry Element Click  ${banner_message_date_next_month}
+            Retry Element Click  (//td[.//button[text()=' 1 ']])[1]
+            Retry Element Click  ${banner_message_to_date}
+            Retry Element Click  ${banner_message_date_next_month}
+            Retry Element Click  (//td[.//button[text()=' 1 ']])[1]
+        END
+    ELSE
+        Clear Field Of Characters  ${banner_message_input_id}  23
+    END
+    Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
+
+Check Banner Message
+    [Arguments]  ${message}  ${message_type}=${null}  ${closable}=${null}
+    IF  '${message}' == '${null}'
+        Retry Wait Element Not Visible  ${banner_message_alert}
+    ELSE
+        Retry Wait Element  //span[text()='${message}']
+        ${message_type_class}=  Create Dictionary  success=alert-success  info=alert-info  warning=alert-warning  danger=alert-danger
+        Retry Wait Element  //app-app-level-alerts//clr-alerts[contains(@class,'${message_type_class}[${message_type}]')]
+        Run Keyword If  '${closable}' == '${true}'  Retry Wait Element  ${banner_message_close_alert}
+    END
+
+Check Banner Message on other pages
+    [Arguments]  ${message}  ${message_type}=${null}  ${closable}=${null}
+    @{pages}=	 Create List  harbor/projects  harbor/logs  harbor/users  harbor/robot-accounts  harbor/Registries
+    ...  harbor/replications  harbor/distribution/instances  harbor/labels  harbor/project-quotas  harbor/interrogation-services/scanners
+    ...  harbor/interrogation-services/vulnerability  harbor/interrogation-services/security-hub  harbor/clearing-job/gc
+    ...  harbor/clearing-job/audit-log-purge  harbor/job-service-dashboard/pending-jobs  harbor/job-service-dashboard/schedules
+    ...  harbor/job-service-dashboard/workers  harbor/configs/auth  harbor/configs/security  harbor/configs/setting
+    ...  harbor/projects/1/repositories  harbor/projects/1/members  harbor/projects/1/labels  harbor/projects/1/scanner
+    ...  harbor/projects/1/p2p-provider/policies  harbor/projects/1/tag-strategy/tag-retention  harbor/projects/1/tag-strategy/immutable-tag
+    ...  harbor/projects/1/robot-account  harbor/projects/1/webhook  harbor/projects/1/logs  harbor/projects/1/configs
+    FOR  ${page}  IN  @{pages}
+        Go To  ${HARBOR_URL}/${page}
+        Check Banner Message  ${message}  ${message_type}  ${closable}
+    END
+    Logout Harbor
+    Check Banner Message  ${message}  ${message_type}  ${closable}

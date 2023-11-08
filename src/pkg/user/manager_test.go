@@ -143,3 +143,27 @@ func TestInjectPasswd(t *testing.T) {
 	assert.Equal(t, "sha256", u.PasswordVersion)
 	assert.Equal(t, utils.Encrypt(p, u.Salt, "sha256"), u.Password)
 }
+
+func (m *mgrTestSuite) TestCreate() {
+	m.dao.On("Create", mock.Anything, testifymock.Anything).Return(3, nil)
+	u := &models.User{
+		Username: "test",
+		Email:    "test@example.com",
+		Realname: "test",
+	}
+	id, err := m.mgr.Create(context.Background(), u)
+	m.Nil(err)
+	m.Equal(3, id)
+	m.Equal(u.Username, "test")
+
+	u2 := &models.User{
+		Username: "test,test",
+		Email:    "test@example.com",
+		Realname: "test",
+	}
+
+	id, err = m.mgr.Create(context.Background(), u2)
+	m.Nil(err)
+	m.Equal(3, id)
+	m.Equal(u2.Username, "test_test", "username should be sanitized")
+}
