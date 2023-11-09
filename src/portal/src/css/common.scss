@@ -374,3 +374,12 @@ job-service-dashboard {
 .alerts.alert-info {
   background-color: $alert-info-bg-color;
 }
+
+.label:hover {
+  max-width: 100% !important;
+  position: relative;
+}
+
+app-label-selector > div {
+  width: auto !important;
+}
