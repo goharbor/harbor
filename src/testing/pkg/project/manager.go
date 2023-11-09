@@ -130,6 +130,32 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Project,
 	return r0, r1
 }
 
+// ListAdminRolesOfUser provides a mock function with given fields: ctx, userID
+func (_m *Manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
+	ret := _m.Called(ctx, userID)
+
+	var r0 []models.Member
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) ([]models.Member, error)); ok {
+		return rf(ctx, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.Member); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.Member)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListRoles provides a mock function with given fields: ctx, projectID, userID, groupIDs
 func (_m *Manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
 	_va := make([]interface{}, len(groupIDs))
