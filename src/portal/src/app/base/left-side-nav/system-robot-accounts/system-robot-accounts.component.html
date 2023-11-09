@@ -19,7 +19,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-dg-action-bar>
             <button
-                [disabled]="loadingData"
+                [disabled]="loadingData || loadingMetadata"
                 [clrLoading]="addBtnState"
                 class="btn btn-secondary"
                 (click)="openNewRobotModal(false)">
@@ -136,6 +136,7 @@
             <clr-dg-column>{{
                 'ROBOT_ACCOUNT.ENABLED_STATE' | translate
             }}</clr-dg-column>
+            <clr-dg-column>System Permissions</clr-dg-column>
             <clr-dg-column>{{
                 'SYSTEM_ROBOT.PROJECTS' | translate
             }}</clr-dg-column>
@@ -166,35 +167,45 @@
                         class="color-red red-position"></clr-icon>
                 </clr-dg-cell>
                 <clr-dg-cell>
+                    <span *ngIf="!getSystemAccess(r)?.length">
+                        {{ 'SCHEDULE.NONE' | translate }}
+                    </span>
+                    <robot-permissions-panel
+                        *ngIf="getSystemAccess(r)?.length"
+                        [mode]="PermissionSelectPanelModes.MODAL"
+                        [permissionsModel]="getSystemAccess(r)"
+                        [candidatePermissions]="getSystemAccess(r)">
+                        <button class="btn btn-link btn-sm m-0 p-0" modal>
+                            {{ getSystemAccess(r)?.length }}
+                            {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                            <clr-icon
+                                class="icon"
+                                size="12"
+                                shape="caret down"></clr-icon>
+                        </button>
+                    </robot-permissions-panel>
+                </clr-dg-cell>
+                <clr-dg-cell>
                     <div
                         class="all-projects"
                         *ngIf="r.permissionScope?.coverAll">
                         <span>{{
                             'SYSTEM_ROBOT.ALL_PROJECTS' | translate
                         }}</span>
-                        <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                            <button class="btn btn-link" clrDropdownTrigger>
+
+                        <robot-permissions-panel
+                            [mode]="PermissionSelectPanelModes.MODAL"
+                            [permissionsModel]="r.permissionScope?.access"
+                            [candidatePermissions]="r.permissionScope?.access">
+                            <button class="btn btn-link btn-sm m-0" modal>
                                 {{ r.permissionScope?.access?.length }}
                                 {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
+                                <clr-icon
+                                    class="icon"
+                                    size="12"
+                                    shape="caret down"></clr-icon>
                             </button>
-                            <clr-dropdown-menu
-                                clrPosition="bottom-left"
-                                *clrIfOpen>
-                                <div
-                                    clrDropdownItem
-                                    *ngFor="
-                                        let item of r.permissionScope?.access
-                                    ">
-                                    <span
-                                        >{{ i18nMap[item.action] | translate }}
-                                        {{
-                                            i18nMap[item.resource] | translate
-                                        }}</span
-                                    >
-                                </div>
-                            </clr-dropdown-menu>
-                        </clr-dropdown>
+                        </robot-permissions-panel>
                     </div>
                     <span
                         *ngIf="
@@ -208,7 +219,7 @@
                             {{ 'SYSTEM_ROBOT.COVERED_PROJECTS' | translate }}
                         </a>
                         <span *ngIf="!getProjects(r)?.length">
-                            0 {{ 'SYSTEM_ROBOT.COVERED_PROJECTS' | translate }}
+                            {{ 'SCHEDULE.NONE' | translate }}
                         </span>
                     </span>
                 </clr-dg-cell>
@@ -243,6 +254,8 @@
         </clr-datagrid>
     </div>
 </div>
-<new-robot (addSuccess)="addSuccess($event)"></new-robot>
+<new-robot
+    (addSuccess)="addSuccess($event)"
+    [robotMetadata]="robotMetadata"></new-robot>
 <view-token (refreshSuccess)="refresh()"></view-token>
 <app-projects-modal></app-projects-modal>

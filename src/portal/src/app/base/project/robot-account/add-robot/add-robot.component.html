@@ -1,25 +1,45 @@
-<clr-modal
-    clrModalSize="md"
-    [(clrModalOpen)]="addRobotOpened"
-    [clrModalStaticBackdrop]="true"
-    [clrModalClosable]="true">
-    <h3 *ngIf="!isEditMode" class="modal-title">
-        {{ 'SYSTEM_ROBOT.CREATE_PROJECT_ROBOT' | translate }}
-    </h3>
-    <h3 *ngIf="isEditMode" class="modal-title">
-        {{ 'SYSTEM_ROBOT.EDIT_PROJECT_ROBOT' | translate }}
-    </h3>
-    <div class="modal-body">
-        <inline-alert class="modal-title"></inline-alert>
+<clr-wizard
+    #wizard
+    [(clrWizardOpen)]="addRobotOpened"
+    [clrWizardSize]="'lg'"
+    (clrWizardOnCancel)="cancel()">
+    <clr-wizard-title
+        ><h3 *ngIf="!isEditMode" class="modal-title">
+            {{ 'SYSTEM_ROBOT.CREATE_PROJECT_ROBOT' | translate }}
+        </h3>
+        <h3 *ngIf="isEditMode" class="modal-title">
+            {{ 'SYSTEM_ROBOT.EDIT_PROJECT_ROBOT' | translate }}
+        </h3>
         <p *ngIf="!isEditMode" class="mt-0">
             {{ 'SYSTEM_ROBOT.CREATE_PROJECT_ROBOT_SUMMARY' | translate }}
         </p>
         <p *ngIf="isEditMode" class="mt-0">
             {{ 'SYSTEM_ROBOT.EDIT_PROJECT_ROBOT_SUMMARY' | translate }}
-        </p>
-        <form #robotForm="ngForm" class="clr-form clr-form-horizontal mt-1">
+        </p></clr-wizard-title
+    >
+    <clr-wizard-button [type]="'cancel'">{{
+        'BUTTON.CANCEL' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [type]="'previous'">{{
+        'ROBOT_ACCOUNT.BACK' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [type]="'next'">{{
+        'ROBOT_ACCOUNT.NEXT' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [clrLoading]="saveBtnState" [type]="'finish'">{{
+        'ROBOT_ACCOUNT.FINISH' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-page
+        [clrWizardPageNextDisabled]="
+            !robotBasicForm.valid || checkNameOnGoing || isNameExisting
+        ">
+        <ng-template clrPageTitle>{{
+            'ROBOT_ACCOUNT.BASIC_INFO' | translate
+        }}</ng-template>
+        <form
+            #robotBasicForm="ngForm"
+            class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
-                <!-- name -->
                 <div class="clr-form-control">
                     <label for="name" class="clr-control-label required"
                         >{{ 'P2P_PROVIDER.NAME' | translate }}
@@ -47,11 +67,11 @@
                         ">
                         <div class="clr-input-wrapper">
                             <input
-                                class="clr-input"
+                                class="clr-input input-width"
                                 [disabled]="loading || isEditMode"
                                 type="text"
                                 id="name"
-                                [(ngModel)]="systemRobot.name"
+                                [(ngModel)]="robot.name"
                                 required
                                 pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
                                 maxLengthExt="255"
@@ -95,8 +115,17 @@
                         </clr-control-error>
                     </div>
                 </div>
-                <!-- expiration -->
-                <div class="clr-form-control">
+                <clr-textarea-container class="mt-2">
+                    <label>{{ 'DISTRIBUTION.DESCRIPTION' | translate }}</label>
+                    <textarea
+                        class="input-width"
+                        clrTextarea
+                        type="text"
+                        id="description"
+                        name="description"
+                        [(ngModel)]="robot.description"></textarea>
+                </clr-textarea-container>
+                <div class="clr-form-control mt-2">
                     <label class="clr-control-label required"
                         >{{ 'SYSTEM_ROBOT.EXPIRATION_TIME' | translate }}
                         <clr-tooltip>
@@ -144,15 +173,15 @@
                                     </option>
                                 </select>
                             </div>
-                            <div class="clr-input-wrapper">
+                            <div class="clr-input-wrapper expiration">
                                 <input
                                     (input)="inputExpiration()"
-                                    class="clr-input expiration-width"
+                                    class="clr-input"
                                     name="expiration"
                                     type="text"
                                     #expiration="ngModel"
                                     autocomplete="off"
-                                    [(ngModel)]="systemRobot.duration"
+                                    [(ngModel)]="robot.duration"
                                     required
                                     pattern="^[\-1-9]{1}[0-9]*$"
                                     id="robotTokenExpiration"
@@ -165,7 +194,7 @@
                         <clr-control-helper
                             *ngIf="
                                 (isEditMode &&
-                                    systemRobot?.duration > 0 &&
+                                    robot?.duration > 0 &&
                                     !(
                                         (expiration.dirty ||
                                             expiration.touched) &&
@@ -201,104 +230,26 @@
                         </clr-control-error>
                     </div>
                 </div>
-                <!-- 3. description -->
-                <clr-textarea-container>
-                    <label>{{ 'DISTRIBUTION.DESCRIPTION' | translate }}</label>
-                    <textarea
-                        class="mt-description"
-                        clrTextarea
-                        type="text"
-                        id="description"
-                        name="description"
-                        [(ngModel)]="systemRobot.description"></textarea>
-                </clr-textarea-container>
-                <div class="clr-form-control">
-                    <label class="clr-control-label mt-8px">{{
-                        'SYSTEM_ROBOT.PERMISSION_COLUMN' | translate
-                    }}</label>
-                    <div class="clr-control-container">
-                        <clr-dropdown
-                            class="dropdown-per"
-                            [clrCloseMenuOnItemClick]="false">
-                            <button class="btn btn-link" clrDropdownTrigger>
-                                {{ getPermissions() }}
-                                {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
-                            </button>
-                            <clr-dropdown-menu
-                                class="overflow-y-scroll"
-                                [style.height.px]="230"
-                                clrPosition="bottom-left"
-                                *clrIfOpen>
-                                <div>
-                                    <button
-                                        class="btn btn-link btn-sm select-all-for-dropdown ml-20px"
-                                        (click)="
-                                            selectAllOrUnselectAll(
-                                                defaultAccesses
-                                            )
-                                        ">
-                                        <span
-                                            *ngIf="isSelectAll(defaultAccesses)"
-                                            >{{
-                                                'SYSTEM_ROBOT.SELECT_ALL'
-                                                    | translate
-                                            }}</span
-                                        >
-                                        <span
-                                            *ngIf="
-                                                !isSelectAll(defaultAccesses)
-                                            "
-                                            >{{
-                                                'SYSTEM_ROBOT.UNSELECT_ALL'
-                                                    | translate
-                                            }}</span
-                                        >
-                                    </button>
-                                </div>
-                                <div
-                                    clrDropdownItem
-                                    *ngFor="let item of defaultAccesses"
-                                    (click)="chooseAccess(item)">
-                                    <clr-icon
-                                        class="check"
-                                        shape="check"
-                                        [style.visibility]="
-                                            item.checked ? 'visible' : 'hidden'
-                                        "></clr-icon>
-                                    <span
-                                        >{{ i18nMap[item.action] | translate }}
-                                        {{
-                                            i18nMap[item.resource] | translate
-                                        }}</span
-                                    >
-                                </div>
-                            </clr-dropdown-menu>
-                        </clr-dropdown>
-                    </div>
-                </div>
             </section>
         </form>
-    </div>
-    <div class="modal-footer">
-        <span>
-            <button
-                (click)="cancel()"
-                id="system-robot-cancel"
-                type="button"
-                class="btn btn-outline">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                [disabled]="disabled() || checkNameOnGoing || isNameExisting"
-                [clrLoading]="saveBtnState"
-                (click)="save()"
-                id="system-robot-save"
-                type="button"
-                class="btn btn-primary">
-                <span *ngIf="isEditMode">{{ 'BUTTON.SAVE' | translate }}</span>
-                <span *ngIf="!isEditMode">{{ 'BUTTON.ADD' | translate }}</span>
-            </button>
-        </span>
-    </div>
-</clr-modal>
+    </clr-wizard-page>
+
+    <clr-wizard-page
+        (clrWizardPageOnCommit)="save()"
+        [clrWizardPagePreventDefaultNext]="true"
+        [clrWizardPageNextDisabled]="disabled()">
+        <ng-template clrPageTitle>{{
+            'ROBOT_ACCOUNT.SELECT_PERMISSIONS' | translate
+        }}</ng-template>
+        <inline-alert class="modal-title"></inline-alert>
+        <form class="clr-form clr-form-horizontal mt-1">
+            <section class="form-block">
+                <robot-permissions-panel
+                    [mode]="PermissionSelectPanelModes.NORMAL"
+                    [(permissionsModel)]="robot.permissions[0].access"
+                    [candidatePermissions]="robotMetadata?.project">
+                </robot-permissions-panel>
+            </section>
+        </form>
+    </clr-wizard-page>
+</clr-wizard>

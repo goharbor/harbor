@@ -1,53 +1,22 @@
-<clr-datagrid [clrDgPreserveSelection]="true" [(clrDgSelected)]="selectedRow">
-    <clr-dg-action-bar>
-        <clr-dropdown [clrCloseMenuOnItemClick]="false">
-            <button
-                [disabled]="coverAll"
-                class="btn btn-secondary btn-sm"
-                clrDropdownTrigger>
+<clr-datagrid
+    [clrDgPreserveSelection]="true"
+    [(clrDgSelected)]="selectedRow"
+    [clrDgLoading]="loadingData"
+    class="datagrid-compact">
+    <clr-dg-action-bar class="action-bar">
+        <robot-permissions-panel
+            [mode]="PermissionSelectPanelModes.DROPDOWN"
+            [(permissionsModel)]="initialAccess"
+            (permissionsModelChange)="resetAccess(initialAccess)"
+            [candidatePermissions]="robotMetadata?.project">
+            <button class="btn btn-secondary btn-sm m-0">
                 {{ 'SYSTEM_ROBOT.RESET_PERMISSION' | translate }}
-                <clr-icon shape="caret down"></clr-icon>
+                <clr-icon size="12" shape="caret down"></clr-icon>
             </button>
-            <clr-dropdown-menu
-                [style.height.px]="230"
-                clrPosition="bottom-left"
-                *clrIfOpen>
-                <div>
-                    <button
-                        class="btn btn-link btn-sm select-all-for-dropdown ml-20px"
-                        (click)="
-                            selectAllPermissionOrUnselectAll(defaultAccesses);
-                            resetAccess(defaultAccesses)
-                        ">
-                        <span *ngIf="isSelectAll(defaultAccesses)">{{
-                            'SYSTEM_ROBOT.SELECT_ALL' | translate
-                        }}</span>
-                        <span *ngIf="!isSelectAll(defaultAccesses)">{{
-                            'SYSTEM_ROBOT.UNSELECT_ALL' | translate
-                        }}</span>
-                    </button>
-                </div>
-                <div
-                    clrDropdownItem
-                    *ngFor="let item of defaultAccesses"
-                    (click)="chooseDefaultAccess(item)">
-                    <clr-icon
-                        class="check"
-                        shape="check"
-                        [style.visibility]="
-                            item.checked ? 'visible' : 'hidden'
-                        "></clr-icon>
-                    <span
-                        >{{ i18nMap[item.action] | translate }}
-                        {{ i18nMap[item.resource] | translate }}</span
-                    >
-                </div>
-            </clr-dropdown-menu>
-        </clr-dropdown>
+        </robot-permissions-panel>
         <button
             (click)="selectAllOrUnselectAll()"
-            [disabled]="coverAll"
-            class="btn btn-secondary btn-sm ml-1">
+            class="btn btn-secondary btn-sm m-0 ml-1">
             <span *ngIf="showSelectAll">{{
                 'SYSTEM_ROBOT.SELECT_ALL' | translate
             }}</span>
@@ -67,9 +36,7 @@
     <clr-dg-column>{{
         'SYSTEM_ROBOT.PERMISSION_COLUMN' | translate
     }}</clr-dg-column>
-    <clr-dg-row
-        *clrDgItems="let p of projects; let projectIndex = index"
-        [clrDgItem]="p">
+    <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p">
         <clr-dg-cell>
             <a href="javascript:void(0)" [routerLink]="getLink(p.project_id)">{{
                 p.name
@@ -79,62 +46,17 @@
             p.creation_time | harborDatetime : 'short'
         }}</clr-dg-cell>
         <clr-dg-cell>
-            <div class="permissions">
-                <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                    <button
-                        [disabled]="coverAll"
-                        class="btn btn-link"
-                        clrDropdownTrigger>
-                        {{ getPermissions(p.permissions[0].access) }}
-                        {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                        <clr-icon shape="caret down"></clr-icon>
-                    </button>
-                    <clr-dropdown-menu
-                        [style.height.px]="140"
-                        clrPosition="bottom-left"
-                        *clrIfOpen>
-                        <div>
-                            <button
-                                class="btn btn-link btn-sm select-all-for-dropdown ml-20px"
-                                (click)="
-                                    selectAllPermissionOrUnselectAll(
-                                        p.permissions[0].access
-                                    )
-                                ">
-                                <span
-                                    *ngIf="isSelectAll(p.permissions[0].access)"
-                                    >{{
-                                        'SYSTEM_ROBOT.SELECT_ALL' | translate
-                                    }}</span
-                                >
-                                <span
-                                    *ngIf="
-                                        !isSelectAll(p.permissions[0].access)
-                                    "
-                                    >{{
-                                        'SYSTEM_ROBOT.UNSELECT_ALL' | translate
-                                    }}</span
-                                >
-                            </button>
-                        </div>
-                        <div
-                            clrDropdownItem
-                            *ngFor="let item of p.permissions[0].access"
-                            (click)="chooseAccess(item)">
-                            <clr-icon
-                                class="check"
-                                shape="check"
-                                [style.visibility]="
-                                    item.checked ? 'visible' : 'hidden'
-                                "></clr-icon>
-                            <span
-                                >{{ i18nMap[item.action] | translate }}
-                                {{ i18nMap[item.resource] | translate }}</span
-                            >
-                        </div>
-                    </clr-dropdown-menu>
-                </clr-dropdown>
-            </div>
+            <robot-permissions-panel
+                [usedInDatagrid]="true"
+                [mode]="PermissionSelectPanelModes.DROPDOWN"
+                [(permissionsModel)]="selectedProjectPermissionMap[p.name]"
+                [candidatePermissions]="robotMetadata?.project">
+                <button class="btn btn-link btn-sm m-0 p-0">
+                    {{ selectedProjectPermissionMap[p.name]?.length || 0 }}
+                    {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                    <clr-icon shape="caret down"></clr-icon>
+                </button>
+            </robot-permissions-panel>
         </clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
@@ -142,7 +64,7 @@
             #pagination
             [(clrDgPage)]="currentPage"
             [clrDgPageSize]="pageSize">
-            <clr-dg-page-size [clrPageSizeOptions]="[5, 15, 25]">{{
+            <clr-dg-page-size [clrPageSizeOptions]="[5, 10]">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
             <span
