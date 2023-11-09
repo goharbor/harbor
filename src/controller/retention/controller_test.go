@@ -25,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -238,6 +239,7 @@ func (s *ControllerTestSuite) TestExecution() {
 		projectManager: projectMgr,
 		repositoryMgr:  repositoryMgr,
 		scheduler:      retentionScheduler,
+		wp:             lib.NewWorkerPool(10),
 	}
 
 	p1 := &policy.Metadata{
