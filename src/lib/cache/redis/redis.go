@@ -186,10 +186,15 @@ func New(opts cache.Options) (cache.Cache, error) {
 			return nil, err
 		}
 
-		if u.Scheme == "rediss" {
-			rdbOpts.TLSConfig = &tls.Config{
-				MinVersion: tls.VersionTLS12,
-			}
+		client = redis.NewClient(rdbOpts)
+	case cache.RedisTLS:
+		rdbOpts, err := redis.ParseURL(u.String())
+		if err != nil {
+			return nil, err
+		}
+
+		rdbOpts.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS13,
 		}
 		client = redis.NewClient(rdbOpts)
 	case cache.RedisSentinel:
@@ -198,10 +203,15 @@ func New(opts cache.Options) (cache.Cache, error) {
 			return nil, err
 		}
 
-		if u.Scheme == "rediss" {
-			failoverOpts.TLSConfig = &tls.Config{
-				MinVersion: tls.VersionTLS12,
-			}
+		client = redis.NewFailoverClient(failoverOpts)
+	case cache.RedisSentinelTLS:
+		failoverOpts, err := ParseSentinelURL(u.String())
+		if err != nil {
+			return nil, err
+		}
+
+		failoverOpts.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS13,
 		}
 		client = redis.NewFailoverClient(failoverOpts)
 	default:
