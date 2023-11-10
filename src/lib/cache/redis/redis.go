@@ -16,6 +16,7 @@ package redis
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
@@ -185,6 +186,11 @@ func New(opts cache.Options) (cache.Cache, error) {
 			return nil, err
 		}
 
+		if u.Scheme == "rediss" {
+			rdbOpts.TLSConfig = &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			}
+		}
 		client = redis.NewClient(rdbOpts)
 	case cache.RedisSentinel:
 		failoverOpts, err := ParseSentinelURL(u.String())
@@ -192,6 +198,11 @@ func New(opts cache.Options) (cache.Cache, error) {
 			return nil, err
 		}
 
+		if u.Scheme == "rediss" {
+			failoverOpts.TLSConfig = &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			}
+		}
 		client = redis.NewFailoverClient(failoverOpts)
 	default:
 		return nil, errors.Errorf("redis: invalid URL scheme: %s", u.Scheme)
