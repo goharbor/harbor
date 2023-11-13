@@ -6175,7 +6175,7 @@ parameters:
     required: false
   sort:
     name: sort
-    description: Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2"
+    description: Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2"
     in: query
     type: string
     required: false
