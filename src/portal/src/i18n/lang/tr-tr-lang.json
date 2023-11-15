@@ -28,6 +28,7 @@
         "DELETE": "SİL",
         "LOG_IN": "OTURUM AÇ",
         "LOG_IN_OIDC": "OIDC sağlayıcı üzerinden giriş yapın",
+        "LOG_IN_OIDC_WITH_PROVIDER_NAME": "LOGIN WITH {{providerName}}",
         "SIGN_UP_LINK": "Bir hesap için kayıt olun",
         "SIGN_UP": "KAYIT OL",
         "CONFIRM": "ONAYLA",

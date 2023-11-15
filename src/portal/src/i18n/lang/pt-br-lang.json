@@ -28,6 +28,7 @@
         "DELETE": "REMOVER",
         "LOG_IN": "ENTRAR",
         "LOG_IN_OIDC": "Entrar com provedor OIDC",
+        "LOG_IN_OIDC_WITH_PROVIDER_NAME": "LOGIN WITH {{providerName}}",
         "SIGN_UP_LINK": "Criar uma nova conta",
         "SIGN_UP": "CADASTRO",
         "CONFIRM": "CONFIRMAR",

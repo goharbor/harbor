@@ -28,6 +28,7 @@
         "DELETE": "LÖSCHEN",
         "LOG_IN": "EINLOGGEN",
         "LOG_IN_OIDC": "Über OIDC Provider einloggen",
+        "LOG_IN_OIDC_WITH_PROVIDER_NAME": "LOGIN WITH {{providerName}}",
         "SIGN_UP_LINK": "Neuen Account registrieren",
         "SIGN_UP": "Registrieren",
         "CONFIRM": "BESTÄTIGEN",

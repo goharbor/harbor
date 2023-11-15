@@ -28,6 +28,7 @@
     "DELETE": "刪除",
     "LOG_IN": "登入",
     "LOG_IN_OIDC": "透過 OIDC 提供者登入",
+    "LOG_IN_OIDC_WITH_PROVIDER_NAME": "LOGIN WITH {{providerName}}",
     "SIGN_UP_LINK": "註冊帳號",
     "SIGN_UP": "註冊",
     "CONFIRM": "確認",
