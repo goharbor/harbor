@@ -28,6 +28,7 @@
         "DELETE": "删除",
         "LOG_IN": "登录",
         "LOG_IN_OIDC": "通过OIDC提供商登录",
+        "LOG_IN_OIDC_WITH_PROVIDER_NAME": "通过 {{providerName}} 登录",
         "SIGN_UP_LINK": "注册账号",
         "SIGN_UP": "注册",
         "CONFIRM": "确定",
