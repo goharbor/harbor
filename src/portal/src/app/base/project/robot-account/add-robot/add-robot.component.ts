@@ -16,30 +16,30 @@ import {
 } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import {
-    ACTION_RESOURCE_I18N_MAP,
     ExpirationType,
-    FrontAccess,
-    INITIAL_ACCESSES,
+    NEW_EMPTY_ROBOT,
     onlyHasPushPermission,
     PermissionsKinds,
 } from '../../../left-side-nav/system-robot-accounts/system-robot-util';
 import { Robot } from '../../../../../../ng-swagger-gen/models/robot';
 import { NgForm } from '@angular/forms';
-import { ClrLoadingState } from '@clr/angular';
+import { ClrLoadingState, ClrWizard } from '@clr/angular';
 import { Subject, Subscription } from 'rxjs';
 import { RobotService } from '../../../../../../ng-swagger-gen/services/robot.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
-import { clone } from '../../../../shared/units/utils';
+import { clone, isSameArrayValue } from '../../../../shared/units/utils';
 import {
     operateChanges,
     OperateInfo,
     OperationState,
 } from '../../../../shared/components/operation/operate';
-import { Access } from '../../../../../../ng-swagger-gen/models/access';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { errorHandler } from '../../../../shared/units/shared.utils';
+import { PermissionSelectPanelModes } from '../../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
+import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
 
 const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
+
 @Component({
     selector: 'add-robot',
     templateUrl: './add-robot.component.html',
@@ -48,25 +48,27 @@ const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 export class AddRobotComponent implements OnInit, OnDestroy {
     @Input() projectId: number;
     @Input() projectName: string;
-    i18nMap = ACTION_RESOURCE_I18N_MAP;
     isEditMode: boolean = false;
     originalRobotForEdit: Robot;
     @Output()
     addSuccess: EventEmitter<Robot> = new EventEmitter<Robot>();
     addRobotOpened: boolean = false;
-    systemRobot: Robot = {};
+    robot: Robot = clone(NEW_EMPTY_ROBOT);
     expirationType: string = ExpirationType.DAYS;
     isNameExisting: boolean = false;
     loading: boolean = false;
     checkNameOnGoing: boolean = false;
-    defaultAccesses: FrontAccess[] = [];
-    defaultAccessesForEdit: FrontAccess[] = [];
     @ViewChild(InlineAlertComponent)
     inlineAlertComponent: InlineAlertComponent;
-    @ViewChild('robotForm', { static: true }) robotForm: NgForm;
+    @ViewChild('robotBasicForm', { static: true }) robotBasicForm: NgForm;
     saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     private _nameSubject: Subject<string> = new Subject<string>();
     private _nameSubscription: Subscription;
+
+    @Input()
+    robotMetadata: Permissions;
+
+    @ViewChild('wizard') wizard: ClrWizard;
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -119,10 +121,10 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         }
     }
     isExpirationInvalid(): boolean {
-        return this.systemRobot.duration < -1;
+        return this.robot.duration < -1;
     }
     inputExpiration() {
-        if (+this.systemRobot.duration === -1) {
+        if (+this.robot.duration === -1) {
             this.expirationType = ExpirationType.NEVER;
         } else {
             this.expirationType = ExpirationType.DAYS;
@@ -130,60 +132,38 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     }
     changeExpirationType() {
         if (this.expirationType === ExpirationType.DAYS) {
-            this.systemRobot.duration = null;
+            this.robot.duration = null;
         }
         if (this.expirationType === ExpirationType.NEVER) {
-            this.systemRobot.duration = -1;
+            this.robot.duration = -1;
         }
     }
     inputName() {
-        this._nameSubject.next(this.systemRobot.name);
+        this._nameSubject.next(this.robot.name);
     }
+
     cancel() {
+        this.wizard.reset();
+        this.reset();
         this.addRobotOpened = false;
     }
-    getPermissions(): number {
-        let count: number = 0;
-        this.defaultAccesses.forEach(item => {
-            if (item.checked) {
-                count++;
-            }
-        });
-        return count;
-    }
-    chooseAccess(access: FrontAccess) {
-        access.checked = !access.checked;
-    }
+
     reset() {
         this.open(false);
-        this.defaultAccesses = clone(INITIAL_ACCESSES);
-        this.systemRobot = {};
-        this.robotForm.reset();
+        this.robot = clone(NEW_EMPTY_ROBOT);
+        this.robotBasicForm.reset();
         this.expirationType = ExpirationType.DAYS;
     }
     resetForEdit(robot: Robot) {
         this.open(true);
-        this.defaultAccesses = clone(INITIAL_ACCESSES);
-        this.defaultAccesses.forEach(item => (item.checked = false));
         this.originalRobotForEdit = clone(robot);
-        this.systemRobot = robot;
+        this.robot = clone(robot);
         this.expirationType =
             robot.duration === -1 ? ExpirationType.NEVER : ExpirationType.DAYS;
-        this.defaultAccesses.forEach(item => {
-            this.systemRobot.permissions[0].access.forEach(item2 => {
-                if (
-                    item.resource === item2.resource &&
-                    item.action === item2.action
-                ) {
-                    item.checked = true;
-                }
-            });
-        });
-        this.defaultAccessesForEdit = clone(this.defaultAccesses);
-        this.robotForm.reset({
-            name: this.systemRobot.name,
-            expiration: this.systemRobot.duration,
-            description: this.systemRobot.description,
+        this.robotBasicForm.reset({
+            name: this.robot.name,
+            expiration: this.robot.duration,
+            description: this.robot.description,
         });
     }
     open(isEditMode: boolean) {
@@ -200,75 +180,37 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         return !this.canEdit();
     }
     canAdd(): boolean {
-        let flag = false;
-        this.defaultAccesses.forEach(item => {
-            if (item.checked) {
-                flag = true;
-            }
-        });
-        if (!flag) {
-            return false;
-        }
-        return !this.robotForm.invalid;
+        return (
+            this.robot?.permissions[0]?.access?.length > 0 &&
+            !this.robotBasicForm.invalid
+        );
     }
     canEdit() {
         if (!this.canAdd()) {
             return false;
         }
         // eslint-disable-next-line eqeqeq
-        if (this.systemRobot.duration != this.originalRobotForEdit.duration) {
+        if (this.robot.duration != this.originalRobotForEdit.duration) {
             return true;
         }
         // eslint-disable-next-line eqeqeq
-        if (
-            this.systemRobot.description !=
-            this.originalRobotForEdit.description
-        ) {
+        if (this.robot.description != this.originalRobotForEdit.description) {
             return true;
         }
-        if (
-            this.getAccessNum(this.defaultAccesses) !==
-            this.getAccessNum(this.defaultAccessesForEdit)
-        ) {
-            return true;
-        }
-        let flag = true;
-        this.defaultAccessesForEdit.forEach(item => {
-            this.defaultAccesses.forEach(item2 => {
-                if (
-                    item.resource === item2.resource &&
-                    item.action === item2.action &&
-                    item.checked !== item2.checked
-                ) {
-                    flag = false;
-                }
-            });
-        });
-        return !flag;
+        return !isSameArrayValue(
+            this.robot.permissions[0].access,
+            this.originalRobotForEdit.permissions[0].access
+        );
     }
     save() {
-        const robot: Robot = clone(this.systemRobot);
+        const robot: Robot = clone(this.robot);
         robot.disable = false;
         robot.level = PermissionsKinds.PROJECT;
-        robot.duration = +this.systemRobot.duration;
-        const access: Access[] = [];
-        this.defaultAccesses.forEach(item => {
-            if (item.checked) {
-                access.push({
-                    resource: item.resource,
-                    action: item.action,
-                });
-            }
-        });
-        robot.permissions = [
-            {
-                namespace: this.projectName,
-                kind: PermissionsKinds.PROJECT,
-                access: access,
-            },
-        ];
+        robot.duration = +this.robot.duration;
+        robot.permissions[0].kind = PermissionsKinds.PROJECT;
+        robot.permissions[0].namespace = this.projectName;
         // Push permission must work with pull permission
-        if (onlyHasPushPermission(access)) {
+        if (onlyHasPushPermission(robot.permissions[0].access)) {
             this.inlineAlertComponent.showInlineError(
                 'SYSTEM_ROBOT.PUSH_PERMISSION_TOOLTIP'
             );
@@ -276,7 +218,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         }
         this.saveBtnState = ClrLoadingState.LOADING;
         if (this.isEditMode) {
-            robot.disable = this.systemRobot.disable;
+            robot.disable = this.robot.disable;
             const opeMessage = new OperateInfo();
             opeMessage.name = 'SYSTEM_ROBOT.UPDATE_ROBOT';
             opeMessage.data.id = robot.id;
@@ -292,7 +234,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                     res => {
                         this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.addSuccess.emit(null);
-                        this.addRobotOpened = false;
+                        this.cancel();
                         operateChanges(opeMessage, OperationState.success);
                         this.msgHandler.showSuccess(
                             'SYSTEM_ROBOT.UPDATE_ROBOT_SUCCESSFULLY'
@@ -324,7 +266,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                         this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.addSuccess.emit(res);
-                        this.addRobotOpened = false;
+                        this.cancel();
                         operateChanges(opeMessage, OperationState.success);
                     },
                     error => {
@@ -339,24 +281,12 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                 );
         }
     }
-    getAccessNum(access: FrontAccess[]): number {
-        let count: number = 0;
-        access.forEach(item => {
-            if (item.checked) {
-                count++;
-            }
-        });
-        return count;
-    }
+
     calculateExpiresAt(): Date {
-        if (
-            this.systemRobot &&
-            this.systemRobot.creation_time &&
-            this.systemRobot.duration > 0
-        ) {
+        if (this.robot && this.robot.creation_time && this.robot.duration > 0) {
             return new Date(
-                new Date(this.systemRobot.creation_time).getTime() +
-                    this.systemRobot.duration * MINI_SECONDS_ONE_DAY
+                new Date(this.robot.creation_time).getTime() +
+                    this.robot.duration * MINI_SECONDS_ONE_DAY
             );
         }
         return null;
@@ -364,26 +294,6 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     shouldShowWarning(): boolean {
         return new Date() >= this.calculateExpiresAt();
     }
-    isSelectAll(permissions: FrontAccess[]): boolean {
-        if (permissions?.length) {
-            return (
-                permissions.filter(item => item.checked).length <
-                permissions.length / 2
-            );
-        }
-        return false;
-    }
-    selectAllOrUnselectAll(permissions: FrontAccess[]) {
-        if (permissions?.length) {
-            if (this.isSelectAll(permissions)) {
-                permissions.forEach(item => {
-                    item.checked = true;
-                });
-            } else {
-                permissions.forEach(item => {
-                    item.checked = false;
-                });
-            }
-        }
-    }
+
+    protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
 }

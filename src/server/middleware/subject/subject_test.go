@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema2"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
@@ -253,76 +254,81 @@ func (suite *MiddlewareTestSuite) TestSubjectDup() {
 }
 
 func (suite *MiddlewareTestSuite) TestIsNydusImage() {
-	mf := `{
-  "schemaVersion": 2,
-  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-  "config": {
-    "mediaType": "application/vnd.docker.container.image.v1+json",
-    "digest": "sha256:e314d79415361272a5ff6919ce70eb1d82ae55641ff60dcd8286b731cae2b5e7",
-    "size": 3322
-  },
-  "layers": [
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:bce0a563197a6aae0044f2063bf95f43bb956640b374fbdf0886cbc6926e2b7c",
-      "size": 3440759,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:7dedc3aaf7177a1d6792efcf1eae1305033fbac8dc48eb0caf49373b5d21475f",
-      "size": 337049,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:f6bf79efcfc89f657b9705ef9ed77659e413e355efac8c6d3eea49d908c9218a",
-      "size": 5810244,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:35c290e1471c2f546ba7ca8eb47b334c0234e6a2d2b274c54fe96e016c1913c7",
-      "size": 7936,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:1f168a347d1c654776644b331e631c3a1208699e2f608e29d8e3fd74e5fd99e8",
-      "size": 7728,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
-      "digest": "sha256:86211e9295fabea433b7186ddfa6fd31af048a2f6fe3cf8d747b6f7ea39c0ea6",
-      "size": 35092,
-      "annotations": {
-        "containerd.io/snapshot/nydus-bootstrap": "true",
-        "containerd.io/snapshot/nydus-fs-version": "6"
-      }
-    }
-  ],
-  "subject": {
-    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-    "digest": "sha256:f4d532d482a050a3bb02886be6d6deda9c22cf8df44b1465f04c8648ee573a70",
-    "size": 1363
-  }
-}`
+	makeManifest := func(configType string) string {
+		return fmt.Sprintf(`{
+			"schemaVersion": 2,
+			"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+			"config": {
+				"mediaType": "%s",
+				"digest": "sha256:e314d79415361272a5ff6919ce70eb1d82ae55641ff60dcd8286b731cae2b5e7",
+				"size": 3322
+			},
+			"layers": [
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:bce0a563197a6aae0044f2063bf95f43bb956640b374fbdf0886cbc6926e2b7c",
+					"size": 3440759,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:7dedc3aaf7177a1d6792efcf1eae1305033fbac8dc48eb0caf49373b5d21475f",
+					"size": 337049,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:f6bf79efcfc89f657b9705ef9ed77659e413e355efac8c6d3eea49d908c9218a",
+					"size": 5810244,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:35c290e1471c2f546ba7ca8eb47b334c0234e6a2d2b274c54fe96e016c1913c7",
+					"size": 7936,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:1f168a347d1c654776644b331e631c3a1208699e2f608e29d8e3fd74e5fd99e8",
+					"size": 7728,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+					"digest": "sha256:86211e9295fabea433b7186ddfa6fd31af048a2f6fe3cf8d747b6f7ea39c0ea6",
+					"size": 35092,
+					"annotations": {
+						"containerd.io/snapshot/nydus-bootstrap": "true",
+						"containerd.io/snapshot/nydus-fs-version": "6"
+					}
+				}
+			],
+			"subject": {
+				"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+				"digest": "sha256:f4d532d482a050a3bb02886be6d6deda9c22cf8df44b1465f04c8648ee573a70",
+				"size": 1363
+			}
+		}`, configType)
+	}
 	manifest := &ocispec.Manifest{}
-	err := json.Unmarshal([]byte(mf), manifest)
+	err := json.Unmarshal([]byte(makeManifest(ocispec.MediaTypeImageConfig)), manifest)
 	suite.Nil(err)
 	suite.True(isNydusImage(manifest))
 
+	err = json.Unmarshal([]byte(makeManifest(schema2.MediaTypeImageConfig)), manifest)
+	suite.Nil(err)
+	suite.True(isNydusImage(manifest))
 }
 
 func TestMiddlewareTestSuite(t *testing.T) {

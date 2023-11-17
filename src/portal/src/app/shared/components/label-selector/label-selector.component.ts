@@ -32,6 +32,8 @@ const PAGE_SIZE: number = 50;
 })
 export class LabelSelectorComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
+    usedInDropdown: boolean = false;
+    @Input()
     ownedLabels: Label[] = [];
     @Input()
     width: number = 180; // unit px

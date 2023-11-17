@@ -91,6 +91,7 @@ import {
 } from 'echarts/components';
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
+import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
 
 // register necessary components
 echarts.use([
@@ -175,6 +176,7 @@ ClarityIcons.add({
         RemainingTimeComponent,
         LabelSelectorComponent,
         AppLevelAlertsComponent,
+        RobotPermissionsPanelComponent,
     ],
     exports: [
         TranslateModule,
@@ -217,6 +219,7 @@ ClarityIcons.add({
         RemainingTimeComponent,
         LabelSelectorComponent,
         AppLevelAlertsComponent,
+        RobotPermissionsPanelComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },

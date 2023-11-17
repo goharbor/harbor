@@ -129,7 +129,7 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 			accData.Type = model.TypeSubject
 			switch mf.Config.MediaType {
-			case schema2.MediaTypeImageConfig:
+			case ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig:
 				if isNydusImage(mf) {
 					accData.Type = model.TypeNydusAccelerator
 				}

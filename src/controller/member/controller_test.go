@@ -15,6 +15,7 @@
 package member
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -93,6 +94,13 @@ func (suite *MemberControllerTestSuite) TestAddProjectMemberWithUserGroup() {
 	mock.OnAnything(suite.memberManager, "AddProjectMember").Return(0, nil)
 	_, err = suite.controller.Create(nil, 1, Request{MemberGroup: UserGroup{ID: 2}, Role: 1})
 	suite.NoError(err)
+}
+
+func (suite *MemberControllerTestSuite) TestIsProjectAdmin() {
+	mock.OnAnything(suite.projectMgr, "ListAdminRolesOfUser").Return([]models.Member{models.Member{ID: 2, ProjectID: 2}}, nil)
+	ok, err := suite.controller.IsProjectAdmin(context.Background(), 2)
+	suite.NoError(err)
+	suite.True(ok)
 }
 
 func TestMemberControllerTestSuite(t *testing.T) {
