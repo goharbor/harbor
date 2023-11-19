@@ -40,7 +40,7 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Purge delete the audit log with retention hours
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
-	//UpdateUsername Replace all log records username with its hash
+	// UpdateUsername Replace all log records username with its hash
 	UpdateUsername(ctx context.Context, username string, replaceWith string) error
 }
 
