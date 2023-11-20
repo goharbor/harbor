@@ -186,6 +186,7 @@ func GDPRSetting(ctx context.Context) (*cfgModels.GDPRSetting, error) {
 	}
 	return &cfgModels.GDPRSetting{
 		DeleteUser: DefaultMgr().Get(ctx, common.GDPRDeleteUser).GetBool(),
+		AuditLogs:  DefaultMgr().Get(ctx, common.GDPRAuditLogs).GetBool(),
 	}, nil
 }
 

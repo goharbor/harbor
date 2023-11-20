@@ -102,6 +102,20 @@ func (_m *Manager) DeleteGDPR(ctx context.Context, id int) error {
 	return r0
 }
 
+// GenerateCheckSum provides a mock function with given fields: in
+func (_m *Manager) GenerateCheckSum(in string) string {
+	ret := _m.Called(in)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(in)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, id
 func (_m *Manager) Get(ctx context.Context, id int) (*commonmodels.User, error) {
 	ret := _m.Called(ctx, id)
