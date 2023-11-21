@@ -226,4 +226,14 @@ const (
 	UIMaxLengthLimitedOfNumber = 10
 	// ExecutionStatusRefreshIntervalSeconds is the interval seconds for refreshing execution status
 	ExecutionStatusRefreshIntervalSeconds = "execution_status_refresh_interval_seconds"
+
+	// Beego web config
+	// BeegoMaxMemoryBytes is the max memory(bytes) of the beego web config
+	BeegoMaxMemoryBytes = "beego_max_memory_bytes"
+	// DefaultBeegoMaxMemoryBytes sets default max memory to 128GB
+	DefaultBeegoMaxMemoryBytes = 1 << 37
+	// BeegoMaxUploadSizeBytes is the max upload size(bytes) of the beego web config
+	BeegoMaxUploadSizeBytes = "beego_max_upload_size_bytes"
+	// DefaultBeegoMaxUploadSizeBytes sets default max upload size to 128GB
+	DefaultBeegoMaxUploadSizeBytes = 1 << 37
 )

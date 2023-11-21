@@ -151,6 +151,16 @@ func WithNotary() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithNotary).GetBool()
 }
 
+// GetBeegoMaxMemoryBytes returns the max memory bytes of beego config
+func GetBeegoMaxMemoryBytes() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.BeegoMaxMemoryBytes).GetInt64()
+}
+
+// GetBeegoMaxUploadSizeBytes returns the max upload size bytes of beego config
+func GetBeegoMaxUploadSizeBytes() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.BeegoMaxUploadSizeBytes).GetInt64()
+}
+
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
 func WithTrivy() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
