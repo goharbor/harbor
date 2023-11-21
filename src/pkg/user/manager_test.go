@@ -65,9 +65,9 @@ func (m *mgrTestSuite) TestUserDeleteGDPR() {
 	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
 		func(u *models.User) bool {
 			return u.UserID == 123 &&
-				u.Email == fmt.Sprintf("%s#%d", checkSum("existing@mytest.com"), existingUser.UserID) &&
-				u.Username == fmt.Sprintf("%s#%d", checkSum("existing"), existingUser.UserID) &&
-				u.Realname == fmt.Sprintf("%s#%d", checkSum("RealName"), existingUser.UserID) &&
+				u.Email == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("existing@mytest.com"), existingUser.UserID) &&
+				u.Username == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("existing"), existingUser.UserID) &&
+				u.Realname == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("RealName"), existingUser.UserID) &&
 				u.Deleted == true
 		}),
 		"username",

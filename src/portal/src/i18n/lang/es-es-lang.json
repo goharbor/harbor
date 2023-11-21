@@ -28,6 +28,7 @@
         "DELETE": "ELIMINAR",
         "LOG_IN": "IDENTIFICARSE",
         "LOG_IN_OIDC": "Login Via OIDC proveedor",
+        "LOG_IN_OIDC_WITH_PROVIDER_NAME": "LOGIN WITH {{providerName}}",
         "SIGN_UP_LINK": "Registrar una cuenta",
         "SIGN_UP": "REGISTRARSE",
         "CONFIRM": "CONFIRMAR",
