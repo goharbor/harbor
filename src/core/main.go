@@ -127,8 +127,6 @@ func main() {
 
 	web.BConfig.WebConfig.Session.SessionOn = true
 	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
-	web.BConfig.MaxMemory = 1 << 35     // (32GB)
-	web.BConfig.MaxUploadSize = 1 << 35 // (32GB)
 	// the core db used for beego session
 	redisCoreURL := os.Getenv("_REDIS_URL_CORE")
 	if len(redisCoreURL) > 0 {
@@ -163,6 +161,12 @@ func main() {
 	log.Info("initializing configurations...")
 	config.Init()
 	log.Info("configurations initialization completed")
+
+	// default beego max memory and max upload size is 128GB, consider from some AI related image would be large,
+	// also support customize it from the environment variables if the default value cannot satisfy some scenarios.
+	web.BConfig.MaxMemory = config.GetBeegoMaxMemoryBytes()
+	web.BConfig.MaxUploadSize = config.GetBeegoMaxUploadSizeBytes()
+
 	metricCfg := config.Metric()
 	if metricCfg.Enabled {
 		metric.RegisterCollectors()
