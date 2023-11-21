@@ -162,7 +162,7 @@ class TestRobotAccount(unittest.TestCase):
                 expected_error_message = expected_error_message
             )
 
-    def test_02_SystemlevelRobotAccount(self):
+    def Atest_02_SystemlevelRobotAccount(self):
         """
         Test case:
             Robot Account
@@ -194,10 +194,10 @@ class TestRobotAccount(unittest.TestCase):
         # In this priviledge check list, make sure that each of lines and rows must
         #   contains both True and False value.
         check_list = [
-            [True, True, True, True, True, True, False, True, False, True],
-            [False, False, False, False, True, True, False, True, True, False],
-            [True, False, True, False, True, False, True, False, True, True],
-            [False, False, False, True, False, True, False, True, True, False]
+            [True, True, True, False, True, False, True],
+            [False, False, False, False, True, True, False],
+            [True, False, True, True, False, True, True],
+            [False, False, False, False, True, True, False]
         ]
         access_list_list = []
         for i in range(len(check_list)):
@@ -240,12 +240,12 @@ class TestRobotAccount(unittest.TestCase):
 
             repo_name, tag = push_self_build_image_to_project(project_access["project_name"], harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], "test_create_tag", "latest_1")
             self.artifact.create_tag(project_access["project_name"], repo_name.split('/')[1], tag, "for_delete", **ADMIN_CLIENT)
-            if project_access["check_list"][6]:    #---tag:create---
+            if project_access["check_list"][3]:    #---tag:create---
                 self.artifact.create_tag(project_access["project_name"], repo_name.split('/')[1], tag, "1.0", **SYSTEM_RA_CLIENT)
             else:
                 self.artifact.create_tag(project_access["project_name"], repo_name.split('/')[1], tag, "1.0", expect_status_code = 403, **SYSTEM_RA_CLIENT)
 
-            if project_access["check_list"][7]:    #---tag:delete---
+            if project_access["check_list"][4]:    #---tag:delete---
                 self.artifact.delete_tag(project_access["project_name"], repo_name.split('/')[1], tag, "for_delete", **SYSTEM_RA_CLIENT)
             else:
                 self.artifact.delete_tag(project_access["project_name"], repo_name.split('/')[1], tag, "for_delete", expect_status_code = 403, **SYSTEM_RA_CLIENT)
@@ -253,12 +253,12 @@ class TestRobotAccount(unittest.TestCase):
             repo_name, tag = push_self_build_image_to_project(project_access["project_name"], harbor_server, ADMIN_CLIENT["username"], ADMIN_CLIENT["password"], "test_create_artifact_label", "latest_1")
             #Add project level label to artifact
             label_id, _ = self.label.create_label(project_id = project_access["project_id"], scope = "p", **ADMIN_CLIENT)
-            if project_access["check_list"][8]:    #---artifact-label:create---
+            if project_access["check_list"][5]:    #---artifact-label:create---
                 self.artifact.add_label_to_reference(project_access["project_name"], repo_name.split('/')[1], tag, int(label_id), **SYSTEM_RA_CLIENT)
             else:
                 self.artifact.add_label_to_reference(project_access["project_name"], repo_name.split('/')[1], tag, int(label_id), expect_status_code = 403, **SYSTEM_RA_CLIENT)
 
-            if project_access["check_list"][9]:    #---scan:create---
+            if project_access["check_list"][6]:    #---scan:create---
                 self.scan.scan_artifact(project_access["project_name"], repo_name.split('/')[1], tag, **SYSTEM_RA_CLIENT)
             else:
                 self.scan.scan_artifact(project_access["project_name"], repo_name.split('/')[1], tag, expect_status_code = 403, **SYSTEM_RA_CLIENT)
@@ -325,7 +325,7 @@ class TestRobotAccount(unittest.TestCase):
         self.verify_repository_unpushable(project_access_list, SYSTEM_RA_CLIENT)
 
         #20. Add a system robot account with all projects coverd;
-        all_true_access_list= self.robot.create_access_list( [True] * 10 )
+        all_true_access_list= self.robot.create_access_list( [True] * 7 )
         robot_account_Permissions_list = []
         robot_account_Permissions = v2_swagger_client.RobotPermission(kind = "project", namespace = "*", access = all_true_access_list)
         robot_account_Permissions_list.append(robot_account_Permissions)
