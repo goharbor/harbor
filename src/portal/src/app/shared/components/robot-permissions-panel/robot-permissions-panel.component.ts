@@ -88,6 +88,8 @@ export class RobotPermissionsPanelComponent
                 this.candidateActions.push(item?.action);
             }
         });
+        this.candidateActions.sort();
+        this.candidateResources.sort();
     }
 
     isCandidate(resource: string, action: string): boolean {
