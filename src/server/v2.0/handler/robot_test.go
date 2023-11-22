@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"math"
 	"testing"
 )
@@ -125,6 +127,82 @@ func TestValidateName(t *testing.T) {
 			err := validateName(tt.rname)
 			if err != nil && tt.expected {
 				t.Errorf("name: %s, validateName() = %#v, want %#v", tt.name, tt.rname, tt.expected)
+			}
+		})
+	}
+}
+
+func TestContainsAccess(t *testing.T) {
+	system := rbac.PoliciesMap["System"]
+	systests := []struct {
+		name     string
+		acc      *models.Access
+		expected bool
+	}{
+		{"System ResourceRegistry push",
+			&models.Access{
+				Resource: rbac.ResourceRegistry.String(),
+				Action:   rbac.ActionPush.String(),
+			},
+			false,
+		},
+		{"System ResourceProject delete",
+			&models.Access{
+				Resource: rbac.ResourceProject.String(),
+				Action:   rbac.ActionDelete.String(),
+			},
+			false,
+		},
+		{"System ResourceReplicationPolicy delete",
+			&models.Access{
+				Resource: rbac.ResourceReplicationPolicy.String(),
+				Action:   rbac.ActionDelete.String(),
+			},
+			true,
+		},
+	}
+	for _, tt := range systests {
+		t.Run(tt.name, func(t *testing.T) {
+			ok := containsAccess(system, tt.acc)
+			if ok != tt.expected {
+				t.Errorf("name: %s, containsAccess() = %#v, want %#v", tt.name, tt.acc, tt.expected)
+			}
+		})
+	}
+
+	project := rbac.PoliciesMap["Project"]
+	protests := []struct {
+		name     string
+		acc      *models.Access
+		expected bool
+	}{
+		{"Project ResourceLog delete",
+			&models.Access{
+				Resource: rbac.ResourceLog.String(),
+				Action:   rbac.ActionDelete.String(),
+			},
+			false,
+		},
+		{"Project ResourceMetadata read",
+			&models.Access{
+				Resource: rbac.ResourceMetadata.String(),
+				Action:   rbac.ActionRead.String(),
+			},
+			true,
+		},
+		{"Project ResourceRobot create",
+			&models.Access{
+				Resource: rbac.ResourceRobot.String(),
+				Action:   rbac.ActionCreate.String(),
+			},
+			false,
+		},
+	}
+	for _, tt := range protests {
+		t.Run(tt.name, func(t *testing.T) {
+			ok := containsAccess(project, tt.acc)
+			if ok != tt.expected {
+				t.Errorf("name: %s, containsAccess() = %#v, want %#v", tt.name, tt.acc, tt.expected)
 			}
 		})
 	}
