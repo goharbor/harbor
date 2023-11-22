@@ -73,6 +73,10 @@ const (
 	tagged = `=id AND EXISTS (
 		SELECT 1 FROM tag WHERE tag.artifact_id = T0.id
 	)`
+	// accessory filter: filter out the accessory
+	notacc = `=id AND NOT EXISTS (
+		SELECT 1 FROM artifact_accessory aa WHERE aa.artifact_id = T0.id
+	)`
 )
 
 // New returns an instance of the default DAO
@@ -416,6 +420,7 @@ func setAccessoryQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySe
 	if query == nil {
 		return qs, nil
 	}
-	qs = qs.FilterRaw("id", "not in (select artifact_id from artifact_accessory)")
+
+	qs = qs.FilterRaw("id", notacc)
 	return qs, nil
 }
