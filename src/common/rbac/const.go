@@ -102,9 +102,7 @@ var (
 
 			{Resource: ResourceReplication, Action: ActionRead},
 			{Resource: ResourceReplication, Action: ActionCreate},
-			{Resource: ResourceReplication, Action: ActionDelete},
 			{Resource: ResourceReplication, Action: ActionList},
-			{Resource: ResourceReplication, Action: ActionUpdate},
 
 			{Resource: ResourceReplicationAdapter, Action: ActionList},
 
@@ -145,7 +143,6 @@ var (
 			{Resource: ResourceLabel, Action: ActionRead},
 			{Resource: ResourceLabel, Action: ActionCreate},
 			{Resource: ResourceLabel, Action: ActionDelete},
-			{Resource: ResourceLabel, Action: ActionList},
 			{Resource: ResourceLabel, Action: ActionUpdate},
 
 			{Resource: ResourceSecurityHub, Action: ActionRead},
@@ -154,11 +151,7 @@ var (
 			{Resource: ResourceCatalog, Action: ActionRead},
 		},
 		"Project": {
-			{Resource: ResourceLabel, Action: ActionRead},
-			{Resource: ResourceLabel, Action: ActionCreate},
-			{Resource: ResourceLabel, Action: ActionDelete},
-			{Resource: ResourceLabel, Action: ActionList},
-			{Resource: ResourceLabel, Action: ActionUpdate},
+			{Resource: ResourceLog, Action: ActionList},
 
 			{Resource: ResourceProject, Action: ActionRead},
 			{Resource: ResourceProject, Action: ActionDelete},
@@ -192,7 +185,7 @@ var (
 
 			{Resource: ResourceAccessory, Action: ActionList},
 
-			{Resource: ResourceArtifactAddition, Action: ActionCreate},
+			{Resource: ResourceArtifactAddition, Action: ActionRead},
 
 			{Resource: ResourceArtifactLabel, Action: ActionCreate},
 			{Resource: ResourceArtifactLabel, Action: ActionDelete},
@@ -211,19 +204,23 @@ var (
 			{Resource: ResourceImmutableTag, Action: ActionList},
 			{Resource: ResourceImmutableTag, Action: ActionUpdate},
 
+			{Resource: ResourceNotificationPolicy, Action: ActionRead},
+			{Resource: ResourceNotificationPolicy, Action: ActionCreate},
+			{Resource: ResourceNotificationPolicy, Action: ActionDelete},
+			{Resource: ResourceNotificationPolicy, Action: ActionList},
+			{Resource: ResourceNotificationPolicy, Action: ActionUpdate},
+
 			{Resource: ResourceTagRetention, Action: ActionRead},
 			{Resource: ResourceTagRetention, Action: ActionCreate},
 			{Resource: ResourceTagRetention, Action: ActionDelete},
 			{Resource: ResourceTagRetention, Action: ActionList},
 			{Resource: ResourceTagRetention, Action: ActionUpdate},
 
-			{Resource: ResourceLog, Action: ActionList},
-
-			{Resource: ResourceNotificationPolicy, Action: ActionRead},
-			{Resource: ResourceNotificationPolicy, Action: ActionCreate},
-			{Resource: ResourceNotificationPolicy, Action: ActionDelete},
-			{Resource: ResourceNotificationPolicy, Action: ActionList},
-			{Resource: ResourceNotificationPolicy, Action: ActionUpdate},
+			{Resource: ResourceLabel, Action: ActionRead},
+			{Resource: ResourceLabel, Action: ActionCreate},
+			{Resource: ResourceLabel, Action: ActionDelete},
+			{Resource: ResourceLabel, Action: ActionList},
+			{Resource: ResourceLabel, Action: ActionUpdate},
 		},
 	}
 )
