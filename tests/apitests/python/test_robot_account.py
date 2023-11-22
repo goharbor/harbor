@@ -162,7 +162,7 @@ class TestRobotAccount(unittest.TestCase):
                 expected_error_message = expected_error_message
             )
 
-    def Atest_02_SystemlevelRobotAccount(self):
+    def test_02_SystemlevelRobotAccount(self):
         """
         Test case:
             Robot Account
