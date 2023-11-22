@@ -15,6 +15,7 @@ resource = os.environ.get("RESOURCE")
 ID_PLACEHOLDER = "(id)"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class Permission:
 
 
@@ -37,6 +38,7 @@ class Permission:
             self.payload[self.payload_id_field] = int(json.loads(response.text)[self.res_id_field])
         elif self.res_id_field and self.payload_id_field and self.id_from_header == True:
             self.payload[self.payload_id_field] = int(response.headers["Location"].split("/")[-1])
+
 
 resource_permissions = {}
 # audit logs permissions start
@@ -167,9 +169,9 @@ resource_permissions["replication-policy"] = replication_and_policy
 # replication permissions start
 replication_policy_id = None
 replication_policy_name = "replication-policy-{}".format(random.randint(1000, 9999))
+result = urlsplit(harbor_base_url)
+endpoint_URL = "{}://{}".format(result.scheme, result.netloc)
 if resource == "replication":
-    result = urlsplit(harbor_base_url)
-    endpoint_URL = "{}://{}".format(result.scheme, result.netloc)
     replication_registry_payload = {
         "credential": {
             "access_key": admin_user_name,
@@ -225,6 +227,94 @@ replication = [ create_replication_execution, list_replication_execution, read_r
 resource_permissions["replication"] = replication
 # replication permissions end
 
+# scan all permissions start
+scan_all_weekly_schedule_payload = {
+    "schedule": {
+        "type": "Weekly",
+        "cron": "0 0 0 * * 0"
+    }
+}
+scan_all_reset_schedule_payload = {
+    "schedule": {
+        "type": "None",
+        "cron": ""
+    }
+}
+create_scan_all_schedule = Permission("{}/system/scanAll/schedule".format(harbor_base_url), "POST", 201, scan_all_weekly_schedule_payload)
+update_scan_all_schedule = Permission("{}/system/scanAll/schedule".format(harbor_base_url), "PUT", 200, scan_all_reset_schedule_payload)
+stop_scan_all = Permission("{}/system/scanAll/stop".format(harbor_base_url), "POST", 202)
+scan_all_metrics = Permission("{}/scans/all/metrics".format(harbor_base_url), "GET", 200)
+scan_all_schedule_metrics = Permission("{}/scans/schedule/metrics".format(harbor_base_url), "GET", 200)
+scan_all = [ create_scan_all_schedule, update_scan_all_schedule, stop_scan_all, scan_all_metrics, scan_all_schedule_metrics ]
+resource_permissions["scan-all"] = scan_all
+# scan all permissions end
+
+# system volumes permissions start
+read_system_volumes = Permission("{}/systeminfo/volumes".format(harbor_base_url), "GET", 200)
+system_volumes = [ read_system_volumes ]
+resource_permissions["system-volumes"] = system_volumes
+# system volumes permissions end
+
+# jobservice monitor permissions start
+list_jobservice_pool = Permission("{}/jobservice/pools".format(harbor_base_url), "GET", 200)
+list_jobservice_pool_worker = Permission("{}/jobservice/pools/{}/workers".format(harbor_base_url, "88888888"), "GET", 200)
+stop_jobservice_job = Permission("{}/jobservice/jobs/{}".format(harbor_base_url, "88888888"), "PUT", 200)
+get_jobservice_job_log = Permission("{}/jobservice/jobs/{}/log".format(harbor_base_url, "88888888"), "GET", 500)
+list_jobservice_queue = Permission("{}/jobservice/queues".format(harbor_base_url), "GET", 200)
+stop_jobservice = Permission("{}/jobservice/queues/{}".format(harbor_base_url, "88888888"), "PUT", 200, payload={ "action": "stop" })
+jobservice_monitor = [ list_jobservice_pool, list_jobservice_pool_worker, stop_jobservice_job, get_jobservice_job_log, list_jobservice_queue, stop_jobservice ]
+resource_permissions["jobservice-monitor"] = jobservice_monitor
+# jobservice monitor permissions end
+
+# scanner permissions start
+scanner_payload = {
+    "name": "scanner-{}".format(random.randint(1000, 9999)),
+    "url": "https://{}".format(random.randint(1000, 9999)),
+    "description": None,
+    "auth": "",
+    "skip_certVerify": False,
+    "use_internal_addr": False
+}
+list_scanner = Permission("{}/scanners".format(harbor_base_url), "GET", 200)
+create_scanner = Permission("{}/scanners".format(harbor_base_url), "POST", 500, payload=scanner_payload)
+ping_scanner = Permission("{}/scanners/ping".format(harbor_base_url), "POST", 500, payload=scanner_payload)
+read_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "GET", 404)
+update_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "PUT", 404, payload=scanner_payload)
+delete_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "DELETE", 404)
+set_default_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "PATCH", 404, payload={ "is_default": True })
+get_scanner_metadata = Permission("{}/scanners/{}/metadata".format(harbor_base_url, "88888888"), "GET", 404)
+scanner = [ list_scanner, create_scanner, ping_scanner, read_scanner, update_scanner, delete_scanner, set_default_scanner, get_scanner_metadata ]
+resource_permissions["scanner"] = scanner
+# scanner permissions end
+
+# system label permissions start
+label_payload = {
+    "name": "label-{}".format(random.randint(1000, 9999)),
+    "description": "",
+    "color": "",
+    "scope": "g",
+    "project_id": 0
+}
+create_label = Permission("{}/labels".format(harbor_base_url), "POST", 201, label_payload, "id", id_from_header=True)
+read_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=label_payload, payload_id_field="id")
+update_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=label_payload, payload_id_field="id")
+delete_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "DELETE", 200, payload=label_payload, payload_id_field="id")
+label = [ create_label, read_label, update_label, delete_label ]
+resource_permissions["label"] = label
+# system label permissions end
+
+# security hub permissions start
+read_summary = Permission("{}/security/summary".format(harbor_base_url), "GET", 200)
+list_vul = Permission("{}/security/vul".format(harbor_base_url), "GET", 200)
+security_hub = [ read_summary, list_vul ]
+resource_permissions["security-hub"] = security_hub
+# security hub permissions end
+
+# catalog permissions start
+read_catalog = Permission("{}/v2/_catalog".format(endpoint_URL), "GET", 200)
+catalog = [ read_catalog ]
+resource_permissions["catalog"] = catalog
+# catalog permissions end
 
 
 def main():
