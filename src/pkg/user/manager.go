@@ -63,6 +63,8 @@ type Manager interface {
 	// put the id in the pointer of user model, if it does exist, return the user's profile.
 	// This is used for ldap and uaa authentication, such the user can have an ID in Harbor.
 	Onboard(ctx context.Context, user *commonmodels.User) error
+	// GenerateCheckSum generates truncated crc32 checksum from a given string
+	GenerateCheckSum(in string) string
 }
 
 // New returns a default implementation of Manager
@@ -111,9 +113,9 @@ func (m *manager) DeleteGDPR(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	u.Username = fmt.Sprintf("%s#%d", checkSum(u.Username), u.UserID)
-	u.Email = fmt.Sprintf("%s#%d", checkSum(u.Email), u.UserID)
-	u.Realname = fmt.Sprintf("%s#%d", checkSum(u.Realname), u.UserID)
+	u.Username = fmt.Sprintf("%s#%d", m.GenerateCheckSum(u.Username), u.UserID)
+	u.Email = fmt.Sprintf("%s#%d", m.GenerateCheckSum(u.Email), u.UserID)
+	u.Realname = fmt.Sprintf("%s#%d", m.GenerateCheckSum(u.Realname), u.UserID)
 	u.Deleted = true
 	return m.dao.Update(ctx, u, "username", "email", "realname", "deleted")
 }
@@ -231,13 +233,14 @@ func excludeDefaultAdmin(query *q.Query) (qu *q.Query) {
 	return query
 }
 
+// GenerateCheckSum generates checksum for a given string
+func (m *manager) GenerateCheckSum(str string) string {
+	return fmt.Sprintf("%08x", crc32.Checksum([]byte(str), crc32.IEEETable))
+}
+
 func injectPasswd(u *commonmodels.User, password string) {
 	salt := utils.GenerateRandomString()
 	u.Password = utils.Encrypt(password, salt, utils.SHA256)
 	u.Salt = salt
 	u.PasswordVersion = utils.SHA256
-}
-
-func checkSum(str string) string {
-	return fmt.Sprintf("%08x", crc32.Checksum([]byte(str), crc32.IEEETable))
 }

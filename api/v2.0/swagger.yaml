@@ -7867,6 +7867,11 @@ definitions:
         x-nullable: true
         x-omitempty: true
         $ref: '#/definitions/AuthproxySetting'
+      oidc_provider_name:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The OIDC provider name, empty if current auth is not OIDC_auth or OIDC provider is not configured.
   AuthproxySetting:
     type: object
     properties:

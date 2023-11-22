@@ -87,6 +87,7 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		SelfRegistration: &d.SelfRegistration,
 		HarborVersion:    &d.HarborVersion,
 		BannerMessage:    &d.BannerMessage,
+		OIDCProviderName: &d.OIDCProviderName,
 	}
 	if d.AuthProxySettings != nil {
 		res.AuthproxySettings = &models.AuthproxySetting{

@@ -21,12 +21,15 @@ import (
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/gdpr"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/oidc"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/user/models"
 )
@@ -76,6 +79,8 @@ func NewController() Controller {
 		mgr:         user.New(),
 		oidcMetaMgr: oidc.NewMetaMgr(),
 		memberMgr:   member.Mgr,
+		taskMgr:     task.NewManager(),
+		exeMgr:      task.NewExecutionManager(),
 	}
 }
 
@@ -88,6 +93,8 @@ type controller struct {
 	mgr         user.Manager
 	oidcMetaMgr oidc.MetaManager
 	memberMgr   member.Manager
+	taskMgr     task.Manager
+	exeMgr      task.ExecutionManager
 }
 
 func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error {
@@ -183,10 +190,36 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 	if err != nil {
 		return errors.UnknownError(err).WithMessage("failed to load GDPR setting: %v", err)
 	}
-	if gdprSetting.DeleteUser {
-		return c.mgr.DeleteGDPR(ctx, id)
+
+	if gdprSetting.AuditLogs {
+		userDb, err := c.mgr.Get(ctx, id)
+		if err != nil {
+			return errors.Wrap(err, "unable to get user information")
+		}
+		params := map[string]interface{}{
+			gdpr.UserNameParam: userDb.Username,
+		}
+		execID, err := c.exeMgr.Create(ctx, job.AuditLogsGDPRCompliantVendorType, -1, task.ExecutionTriggerEvent, params)
+		if err != nil {
+			return err
+		}
+		_, err = c.taskMgr.Create(ctx, execID, &task.Job{
+			Name: job.AuditLogsGDPRCompliantVendorType,
+			Metadata: &job.Metadata{
+				JobKind: job.KindGeneric,
+			},
+			Parameters: params,
+		})
+		if err != nil {
+			return err
+		}
 	}
-	return c.mgr.Delete(ctx, id)
+	if gdprSetting.DeleteUser {
+		err = c.mgr.DeleteGDPR(ctx, id)
+	} else {
+		err = c.mgr.Delete(ctx, id)
+	}
+	return err
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query, options ...models.Option) ([]*commonmodels.User, error) {

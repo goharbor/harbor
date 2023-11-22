@@ -184,6 +184,7 @@ const (
 	TraceOtelTimeout     = "trace_otel_timeout"
 
 	GDPRDeleteUser = "gdpr_delete_user"
+	GDPRAuditLogs  = "gdpr_audit_logs"
 
 	//  These variables are temporary solution for issue: https://github.com/goharbor/harbor/issues/16039
 	//  When user disable the pull count/time/audit log, it will decrease the database access, especially in large concurrency pull scenarios.
@@ -230,4 +231,14 @@ const (
 	QuotaUpdateProvider = "quota_update_provider"
 	// IllegalCharsInUsername is the illegal chars in username
 	IllegalCharsInUsername = `,"~#%$`
+
+	// Beego web config
+	// BeegoMaxMemoryBytes is the max memory(bytes) of the beego web config
+	BeegoMaxMemoryBytes = "beego_max_memory_bytes"
+	// DefaultBeegoMaxMemoryBytes sets default max memory to 128GB
+	DefaultBeegoMaxMemoryBytes = 1 << 37
+	// BeegoMaxUploadSizeBytes is the max upload size(bytes) of the beego web config
+	BeegoMaxUploadSizeBytes = "beego_max_upload_size_bytes"
+	// DefaultBeegoMaxUploadSizeBytes sets default max upload size to 128GB
+	DefaultBeegoMaxUploadSizeBytes = 1 << 37
 )
