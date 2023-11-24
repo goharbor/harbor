@@ -14,7 +14,7 @@ ENV GOLANG_VERSION ${GOVERSION}
 # or get checksum from https://go.dev/dl/ directly
 RUN set eux; \
     url="https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz"; \
-    sha256="4643d4c29c55f53fa0349367d7f1bb5ca554ea6ef528c146825b0f8464e2e668"; \
+    sha256="73cac0215254d0c7d1241fa40837851f3b9a8a742d0b54714cbdfb3feaf8f0af"; \
     wget -O go.tgz.asc "$url.asc"; \
     wget -O go.tgz "$url"; \
     echo "$sha256 *go.tgz" | sha256sum -c -; \
