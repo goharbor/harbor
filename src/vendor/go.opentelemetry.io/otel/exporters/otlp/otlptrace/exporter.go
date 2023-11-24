@@ -17,16 +17,14 @@ package otlptrace // import "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
-	"go.opentelemetry.io/otel/exporters/otlp/internal"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
-var (
-	errAlreadyStarted = errors.New("already started")
-)
+var errAlreadyStarted = errors.New("already started")
 
 // Exporter exports trace data in the OTLP wire format.
 type Exporter struct {
@@ -48,14 +46,14 @@ func (e *Exporter) ExportSpans(ctx context.Context, ss []tracesdk.ReadOnlySpan) 
 
 	err := e.client.UploadTraces(ctx, protoSpans)
 	if err != nil {
-		return internal.WrapTracesError(err)
+		return fmt.Errorf("traces export: %w", err)
 	}
 	return nil
 }
 
 // Start establishes a connection to the receiving endpoint.
 func (e *Exporter) Start(ctx context.Context) error {
-	var err = errAlreadyStarted
+	err := errAlreadyStarted
 	e.startOnce.Do(func() {
 		e.mu.Lock()
 		e.started = true
