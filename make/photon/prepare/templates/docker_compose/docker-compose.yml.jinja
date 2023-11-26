@@ -25,7 +25,7 @@ services:
       - harbor
   registry:
     image: goharbor/registry-photon:{{reg_version}}
-    container_name: registry
+    container_name: harbor-registry
     restart: always
     cap_drop:
       - ALL
@@ -69,7 +69,7 @@ services:
         tag: "registry"
   registryctl:
     image: goharbor/harbor-registryctl:{{version}}
-    container_name: registryctl
+    container_name: harbor-registryctl
     env_file:
       - ./common/config/registryctl/env
     restart: always
@@ -266,7 +266,7 @@ services:
 {% if external_redis == False %}
   redis:
     image: goharbor/redis-photon:{{redis_version}}
-    container_name: redis
+    container_name: harbor-redis
     restart: always
     cap_drop:
       - ALL
@@ -288,7 +288,7 @@ services:
 {% endif %}
   proxy:
     image: goharbor/nginx-photon:{{version}}
-    container_name: nginx
+    container_name: harbor-nginx
     restart: always
     cap_drop:
       - ALL
