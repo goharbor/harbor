@@ -69,6 +69,8 @@ Test Case - Push CNAB Bundle and Display
     Wait Until Page Contains  test${d}/cnab${d}
     Go Into Repo  test${d}  cnab${d}
     Go Into Index And Contain Artifacts  cnab_tag${d}  total_artifact_count=3  archive_count=2
+    Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[1]//clr-dg-cell[1]//clr-icon
+    Retry Wait Element Count  //artifact-list-tab//clr-datagrid//clr-dg-row  2
     Close Browser
 
 Test Case - Create An New Project
