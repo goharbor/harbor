@@ -111,7 +111,8 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			}
 			if len(sysPolicies) != 0 {
 				evaluators = evaluators.Add(system.NewEvaluator(s.GetUsername(), sysPolicies))
-			} else if len(proPolicies) != 0 {
+			}
+			if len(proPolicies) != 0 {
 				evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), proPolicies)))
 			}
 			s.evaluator = evaluators
@@ -119,7 +120,6 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, filterRobotPolicies))
 		}
 	})
-
 	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
 }
 
