@@ -134,12 +134,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── registry
 │   ├── router
 │   ├── v2.0
-├── testing             # Some utilities to handle testing.
-└── vendor              # Go code dependencies
-    ├── github.com
-    ├── golang.org
-    ├── google.golang.org
-    └── gopkg.in
+└── testing             # Some utilities to handle testing.
 ```
 
 ### Setup Development Environment
@@ -168,11 +163,11 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.6    |    1.18.6     |
 |   2.7    |    1.19.4     |
 |   2.8    |    1.20.6     |
-|   2.9    |    1.20.10    |
+|   2.9    |    1.21.3     |
+|   2.10    |   1.21.4     |
+
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
-
-**Dependency Management:** Harbor uses [Go modules](https://github.com/golang/go/wiki/Modules) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit a PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with the maintainers in advance.
 
 #### Web
 
@@ -258,7 +253,7 @@ go install github.com/GeertJohan/fgt@latest
 
 #In the #working_dir/harbor, run
 
-go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
+go list ./... | grep -v -E 'tests' | xargs -L1 fgt golint
 
 ```
 

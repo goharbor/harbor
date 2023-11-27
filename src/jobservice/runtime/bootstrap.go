@@ -24,6 +24,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job/impl/gdpr"
+
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/goharbor/harbor/src/jobservice/api"
@@ -327,11 +329,12 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
 			// the scheduler mechanism, the following three jobs are kept for the legacy jobs
 			// and they can be removed after several releases
-			"IMAGE_REPLICATE":                   (*legacy.ReplicationScheduler)(nil),
-			"IMAGE_GC":                          (*legacy.GarbageCollectionScheduler)(nil),
-			"IMAGE_SCAN_ALL":                    (*legacy.ScanAllScheduler)(nil),
-			job.SystemArtifactCleanupVendorType: (*systemartifact.Cleanup)(nil),
-			job.ExecSweepVendorType:             (*task.SweepJob)(nil),
+			"IMAGE_REPLICATE":                    (*legacy.ReplicationScheduler)(nil),
+			"IMAGE_GC":                           (*legacy.GarbageCollectionScheduler)(nil),
+			"IMAGE_SCAN_ALL":                     (*legacy.ScanAllScheduler)(nil),
+			job.SystemArtifactCleanupVendorType:  (*systemartifact.Cleanup)(nil),
+			job.ExecSweepVendorType:              (*task.SweepJob)(nil),
+			job.AuditLogsGDPRCompliantVendorType: (*gdpr.AuditLogsDataMasking)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

@@ -31,6 +31,7 @@ export class AppConfig {
     show_popular_repo: boolean;
     banner_message: string;
     current_time: string;
+    oidc_provider_name: string;
 
     constructor() {
         // Set default value
@@ -52,5 +53,6 @@ export class AppConfig {
         this.read_only = false;
         this.show_popular_repo = false;
         this.banner_message = '';
+        this.oidc_provider_name = '';
     }
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/controller/retention"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/member"
 )
 
 // ProjectEventHandler process project event data
@@ -39,15 +40,14 @@ func (a *ProjectEventHandler) IsStateful() bool {
 
 func (a *ProjectEventHandler) onProjectDelete(ctx context.Context, event *event.DeleteProjectEvent) error {
 	log.Infof("delete project id: %d", event.ProjectID)
-	// delete tag immutable
-	err := immutable.Ctr.DeleteImmutableRuleByProject(ctx, event.ProjectID)
-	if err != nil {
+	if err := immutable.Ctr.DeleteImmutableRuleByProject(ctx, event.ProjectID); err != nil {
 		log.Errorf("failed to delete immutable rule, error %v", err)
 	}
-	// delete tag retention
-	err = retention.Ctl.DeleteRetentionByProject(ctx, event.ProjectID)
-	if err != nil {
+	if err := retention.Ctl.DeleteRetentionByProject(ctx, event.ProjectID); err != nil {
 		log.Errorf("failed to delete retention rule, error %v", err)
+	}
+	if err := member.Mgr.DeleteMemberByProjectID(ctx, event.ProjectID); err != nil {
+		log.Errorf("failed to delete project member, error %v", err)
 	}
 	return nil
 }

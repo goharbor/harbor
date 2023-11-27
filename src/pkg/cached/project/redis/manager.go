@@ -75,6 +75,10 @@ func (m *Manager) ListRoles(ctx context.Context, projectID int64, userID int, gr
 	return m.delegator.ListRoles(ctx, projectID, userID, groupIDs...)
 }
 
+func (m *Manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
+	return m.delegator.ListAdminRolesOfUser(ctx, userID)
+}
+
 func (m *Manager) Delete(ctx context.Context, id int64) error {
 	p, err := m.Get(ctx, id)
 	if err != nil {

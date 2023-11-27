@@ -18,7 +18,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-dg-action-bar>
             <button
-                [disabled]="!hasRobotCreatePermission"
+                [disabled]="!hasRobotCreatePermission || loadingMetadata"
                 [clrLoading]="addBtnState"
                 class="btn btn-secondary"
                 (click)="openNewRobotModal(false)">
@@ -178,33 +178,19 @@
                         class="color-red red-position"></clr-icon>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div class="permissions">
-                        <clr-dropdown
-                            [clrCloseMenuOnItemClick]="false"
-                            *ngIf="r.permissions[0]?.access?.length">
-                            <button class="btn btn-link" clrDropdownTrigger>
-                                {{ r.permissions[0]?.access?.length }}
-                                {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
-                            </button>
-                            <clr-dropdown-menu
-                                clrPosition="bottom-left"
-                                *clrIfOpen>
-                                <div
-                                    clrDropdownItem
-                                    *ngFor="
-                                        let item of r.permissions[0]?.access
-                                    ">
-                                    <span
-                                        >{{ i18nMap[item.action] | translate }}
-                                        {{
-                                            i18nMap[item.resource] | translate
-                                        }}</span
-                                    >
-                                </div>
-                            </clr-dropdown-menu>
-                        </clr-dropdown>
-                    </div>
+                    <robot-permissions-panel
+                        [mode]="PermissionSelectPanelModes.MODAL"
+                        [permissionsModel]="r.permissions[0].access"
+                        [candidatePermissions]="r.permissions[0].access">
+                        <button class="btn btn-link btn-sm m-0 p-0" modal>
+                            {{ r.permissions[0]?.access?.length }}
+                            {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                            <clr-icon
+                                class="icon"
+                                size="12"
+                                shape="caret down"></clr-icon>
+                        </button>
+                    </robot-permissions-panel>
                 </clr-dg-cell>
                 <clr-dg-cell>{{
                     r.creation_time | harborDatetime : 'short'
@@ -238,6 +224,7 @@
     </div>
 </div>
 <add-robot
+    [robotMetadata]="robotMetadata"
     [projectId]="projectId"
     [projectName]="projectName"
     (addSuccess)="addSuccess($event)"></add-robot>
