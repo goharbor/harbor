@@ -389,16 +389,16 @@ Test Case - Robot Account Do Replication
     Logout Harbor
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     # pull mode
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -409,16 +409,16 @@ Test Case - Robot Account Do Replication
     Check Latest Replication Job Status  Succeeded
     Check Latest Replication Enabled Copy By Chunk
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     Close Browser
 
 Test Case - Replication Triggered By Events
@@ -468,28 +468,28 @@ Test Case - Replication Triggered By Events
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Repo  project${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project${d}  ${image2}
-    Should Not Be Signed By Cosign  ${tag2}
+    Should Not Be Signed  ${tag2}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Repo  project_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${image2}
-    Should Not Be Signed By Cosign  ${tag2}
+    Should Not Be Signed  ${tag2}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     Logout Harbor
     # delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -498,13 +498,13 @@ Test Case - Replication Triggered By Events
     Repo Not Exist  project${d}  ${image2}
     Go Into Repo  project${d}  ${image1}
     Retry Double Keywords When Error  Delete Accessory  ${tag1}  Should be Accessory deleted  ${tag1}
-    Should Not Be Signed By Cosign  ${tag1}
+    Should Not Be Signed  ${tag1}
     Go Into Repo  project${d}  ${index}
     Retry Double Keywords When Error  Delete Accessory  ${index_tag}  Should be Accessory deleted  ${index_tag}
-    Should Not Be Signed By Cosign  ${index_tag}
+    Should Not Be Signed  ${index_tag}
     Click Index Achieve  ${index_tag}
     Retry Double Keywords When Error  Delete Accessory  ${image1_short_sha256}  Should be Accessory deleted  ${image1_short_sha256}
-    Should Not Be Signed By Cosign  ${image1_short_sha256}
+    Should Not Be Signed  ${image1_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -512,12 +512,12 @@ Test Case - Replication Triggered By Events
     Wait Until Page Contains  We couldn't find any artifacts!
     Go Into Repo  project_dest${d}  ${image1}
     Should be Accessory deleted  ${tag1}
-    Should Not Be Signed By Cosign  ${tag1}
+    Should Not Be Signed  ${tag1}
     Go Into Repo  project_dest${d}  ${index}
     Should be Accessory deleted  ${index_tag}
-    Should Not Be Signed By Cosign  ${index_tag}
+    Should Not Be Signed  ${index_tag}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should be Accessory deleted  ${image1_short_sha256}
-    Should Not Be Signed By Cosign  ${image1_short_sha256}
+    Should Not Be Signed  ${image1_short_sha256}
     Close Browser
 
 Test Case - Enable Replication Of Cosign Deployment Security Policy
@@ -595,15 +595,15 @@ Test Case - Enable Replication Of Cosign Deployment Security Policy
     Repo Exist  project_pull_dest${d}  ${image2}
     Repo Exist  project_pull_dest${d}  ${index}
     Go Into Repo  project_pull_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_pull_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
     # check project_push_dest
     Go Into Project  project_push_dest${d}
     Switch To Project Repo
@@ -611,15 +611,15 @@ Test Case - Enable Replication Of Cosign Deployment Security Policy
     Repo Exist  project_push_dest${d}  ${image2}
     Repo Exist  project_push_dest${d}  ${index}
     Go Into Repo  project_push_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_push_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
     Go Into Repo  project_push_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_push_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_push_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
     Close Browser
 
 Test Case - Carvel Imgpkg Copy To Harbor
