@@ -51,9 +51,17 @@ class User(base.Base, object):
             base._assert_status_code(expect_status_code, status_code)
             return data
 
-    def get_user_by_id(self, user_id, **kwargs):
-        data, status_code, _ = self._get_client(**kwargs).get_user_with_http_info(user_id)
-        base._assert_status_code(200, status_code)
+    def get_user_by_id(self, user_id, expect_status_code=200, expect_response_body=None,  **kwargs):
+        data = None
+        status_code = None
+        try:
+            data, status_code, _ = self._get_client(**kwargs).get_user_with_http_info(user_id)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        base._assert_status_code(expect_status_code, status_code)
         return data
 
     def get_user_by_name(self, name, expect_status_code=200, **kwargs):
@@ -92,3 +100,29 @@ class User(base.Base, object):
         _, status_code, _ = self._get_client(**kwargs).set_user_sys_admin_with_http_info(user_id, sysadmin_flag)
         base._assert_status_code(200, status_code)
         return user_id
+
+    def search_user_by_username(self, user_name, expect_status_code=200, expect_response_body=None, **kwargs):
+        return_data = None
+        status_code = None
+        try:
+            return_data, status_code, _ = self._get_client(**kwargs).search_users_with_http_info(user_name)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        base._assert_status_code(expect_status_code, status_code)
+        return return_data
+
+    def get_current_user_permissions(self, scope, relative, expect_status_code=200, expect_response_body=None, **kwargs):
+        return_data = None
+        status_code = None
+        try:
+            return_data, status_code, _ = self._get_client(**kwargs).get_current_user_permissions_with_http_info(scope=scope, relative=relative)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        base._assert_status_code(expect_status_code, status_code)
+        return return_data
