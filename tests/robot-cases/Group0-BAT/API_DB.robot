@@ -202,3 +202,7 @@ Test Case - Security Hub
 Test Case - Banner Message
     [Tags]  banner_message
     Harbor API Test  ./tests/apitests/python/test_banner_message.py
+
+Test Case - User CRUD
+    [Tags]  user_crud
+    Harbor API Test  ./tests/apitests/python/test_user_crud.py
