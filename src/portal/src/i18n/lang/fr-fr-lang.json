@@ -1641,9 +1641,9 @@
         "PROJECTS_MODAL_TITLE": "Projets pour le compte robot",
         "PROJECTS_MODAL_SUMMARY": "Voici les projets couverts par ce compte robot.",
         "CREATE_ROBOT": "Créer un compte robot Système",
-        "CREATE_ROBOT_SUMMARY": "Créez un compte robot système qui couvrira des projets spécifiques. Choisissez \"Couvrir tous les projets\" pour appliquer à tous les projets existants et futurs",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EDIT_ROBOT": "Éditer un compte robot Système",
-        "EDIT_ROBOT_SUMMARY": "Éditer un compte robot système. Choisissez \"Couvrir tous les projets\" pour appliquer à tous les projets existants et futurs",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EXPIRATION_TIME": "Date/Heure d'Expiration",
         "EXPIRATION_TIME_EXPLAIN": "L'heure d'expiration (en jours, le point de départ est l'heure de création) du jeton du compte robot. Pour ne jamais expirer, entrer \"-1\".",
         "EXPIRATION_DEFAULT": "jours (défaut)",
@@ -1653,7 +1653,7 @@
         "COVER_ALL": "Couvrir tous les projets",
         "COVER_ALL_EXPLAIN": "Cocher pour appliquer à tous les projets existants et futurs",
         "COVER_ALL_SUMMARY": "\"Tous les projets existants et futurs\" sélectionné.",
-        "RESET_PERMISSION": "Réinitialiser les permissions",
+        "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
         "PERMISSION_COLUMN": "Permissions",
         "EXPIRES_AT": "Expire à",
         "VIEW_SECRET": "Actualiser le secret",
@@ -1685,7 +1685,9 @@
         "LIST": "Lister",
         "REPOSITORY": "Dépôt",
         "EXPIRES_IN": "Expire dans",
-        "EXPIRED": "Expiré"
+        "EXPIRED": "Expiré",
+        "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirmer la suppression de l'accessoire",

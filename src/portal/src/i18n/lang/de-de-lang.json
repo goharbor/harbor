@@ -1669,9 +1669,9 @@
         "PROJECTS_MODAL_TITLE": "Projekte des Robot-Zugangs",
         "PROJECTS_MODAL_SUMMARY": "Diese Projekte können mit dem Robot-Zugang verwaltet werden",
         "CREATE_ROBOT": "Systemweiten Robot-Zugang anlegen",
-        "CREATE_ROBOT_SUMMARY": "Erstelle einen systemweiten Robot-Zugang, der bestimmte Projekte abdeckt. Wähle \"Alle Projekte\", um den Robot-Zugang für alle existierenden und zukünftigen Projekte zuzulassen",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EDIT_ROBOT": "Systemweiten Robot-Zugang bearbeiten",
-        "EDIT_ROBOT_SUMMARY": "Bearbeite einen systemweiten Robot-Zugang. Wähle \"Alle Projekte\", um den Robot-Zugang für alle existierenden und zukünftigen Projekte zuzulassen",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EXPIRATION_TIME": "Ablaufzeit",
         "EXPIRATION_TIME_EXPLAIN": "Die Ablaufzeit (in Tagen, ab Erstellung) des Robot-Zugang-Tokens. Um die Ablaufzeit zu deaktiveren \"-1\" eingeben.",
         "EXPIRATION_DEFAULT": "Tage(default)",
@@ -1681,7 +1681,7 @@
         "COVER_ALL": "Alle Projekte",
         "COVER_ALL_EXPLAIN": "Aktivieren, um den Robot-Zugang für alle existierenden und zukünftigen Projekte zuzulassen",
         "COVER_ALL_SUMMARY": "Alle aktuellen und zukünftigen Projekte sind ausgewählt.",
-        "RESET_PERMISSION": "BERECHTIGUNGEN SETZEN",
+        "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
         "PERMISSION_COLUMN": "Berechtigungen",
         "EXPIRES_AT": "Läuft ab am",
         "VIEW_SECRET": "SECRET AKTUALISIEREN",
@@ -1713,7 +1713,9 @@
         "LIST": "Auflisten",
         "REPOSITORY": "Repository",
         "EXPIRES_IN": "Läuft ab in",
-        "EXPIRED": "Abgelaufen"
+        "EXPIRED": "Abgelaufen",
+        "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Bestätige die Löschung des Anhangs",

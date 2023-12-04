@@ -1666,9 +1666,9 @@
         "PROJECTS_MODAL_TITLE": "Projetos para contas de automação",
         "PROJECTS_MODAL_SUMMARY": "Alguns projetos são usados por esta conta de automação.",
         "CREATE_ROBOT": "Criar Conta de Automação",
-        "CREATE_ROBOT_SUMMARY": "Criando uma conta de sistema para automação de tarefas com permissões específicas. Ao selecionar \"Acesso Completo\", a conta terá acesso a todos os projetos atuais e também a projetos criados futuramente.",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EDIT_ROBOT": "Editar Conta de Automação",
-        "EDIT_ROBOT_SUMMARY": "Editando conta de sistema para automação de tarefas com permissões específicas. Ao selecionar \"Acesso Completo\", a conta terá acesso a todos os projetos atuais e também a projetos criados futuramente.",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EXPIRATION_TIME": "Validade",
         "EXPIRATION_TIME_EXPLAIN": "Prazo de validade do acesso desta conta. Para não expirar, informe \"-1\".",
         "EXPIRATION_DEFAULT": "dias(default)",
@@ -1678,7 +1678,7 @@
         "COVER_ALL": "Acesso Completo",
         "COVER_ALL_EXPLAIN": "Marque para conceder acesso a todos os projetos, atuais e futuros.",
         "COVER_ALL_SUMMARY": "Todos os projetos, atuais e futuros poderão ser acessados.",
-        "RESET_PERMISSION": "REDEFINIR PERMISSÕES",
+        "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
         "PERMISSION_COLUMN": "Permissões",
         "EXPIRES_AT": "Expira em",
         "VIEW_SECRET": "REDEFINIR SEGREDO",
@@ -1710,7 +1710,9 @@
         "LIST": "Listar",
         "REPOSITORY": "Repositório",
         "EXPIRES_IN": "Expires in",
-        "EXPIRED": "Expired"
+        "EXPIRED": "Expired",
+        "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
