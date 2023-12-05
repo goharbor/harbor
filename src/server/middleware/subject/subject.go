@@ -156,7 +156,7 @@ func Middleware() func(http.Handler) http.Handler {
 			// In certain cases, the OCI client may push the subject artifact and accessory in either order.
 			// Therefore, it is necessary to handle situations where the client pushes the accessory ahead of the subject artifact.
 			digest := digest.FromBytes(body)
-			accs, err := accessory.Mgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": digest, "SubArtifactRepo": info.Repository}))
+			accs, err := accessory.Mgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": digest, "SubjectArtifactRepo": info.Repository}))
 			if err != nil {
 				logger.Errorf("failed to list accessory artifact: %s, error: %v", digest, err)
 				return err
