@@ -1,19 +1,19 @@
 diff --git a/configuration/configuration.go b/configuration/configuration.go
-index dd315485..a3e0818e 100644
+index 7076df85d4..3e74330321 100644
 --- a/configuration/configuration.go
 +++ b/configuration/configuration.go
 @@ -168,6 +168,9 @@ type Configuration struct {
  		// Addr specifies the the redis instance available to the application.
  		Addr string `yaml:"addr,omitempty"`
-
+ 
 +		// SentinelMasterSet specifies the the redis sentinel master set name.
 +		SentinelMasterSet string `yaml:"sentinelMasterSet,omitempty"`
 +
  		// Password string to use when making a connection.
  		Password string `yaml:"password,omitempty"`
-
+ 
 diff --git a/registry/handlers/app.go b/registry/handlers/app.go
-index 8a30bd4d..4e9cec34 100644
+index bf56cea22a..4a7cee9a2e 100644
 --- a/registry/handlers/app.go
 +++ b/registry/handlers/app.go
 @@ -3,6 +3,7 @@ package handlers
@@ -24,19 +24,18 @@ index 8a30bd4d..4e9cec34 100644
  	"expvar"
  	"fmt"
  	"math"
-@@ -16,6 +17,8 @@ import (
+@@ -16,6 +17,7 @@ import (
  	"strings"
  	"time"
-
+ 
 +	"github.com/FZambia/sentinel"
-+
+ 	"github.com/distribution/reference"
  	"github.com/docker/distribution"
  	"github.com/docker/distribution/configuration"
- 	dcontext "github.com/docker/distribution/context"
-@@ -499,6 +502,44 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
+@@ -499,6 +501,45 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  		return
  	}
-
+ 
 +	var getRedisAddr func() (string, error)
 +	var testOnBorrow func(c redis.Conn, t time.Time) error
 +	if configuration.Redis.SentinelMasterSet != "" {
@@ -75,13 +74,14 @@ index 8a30bd4d..4e9cec34 100644
 +			return err
 +		}
 +	}
++
  	pool := &redis.Pool{
  		Dial: func() (redis.Conn, error) {
  			// TODO(stevvooe): Yet another use case for contextual timing.
 @@ -514,8 +555,11 @@ func (app *App) configureRedis(configuration *configuration.Configuration) {
  				}
  			}
-
+ 
 -			conn, err := redis.DialTimeout("tcp",
 -				configuration.Redis.Addr,
 +			redisAddr, err := getRedisAddr()
@@ -112,10 +112,10 @@ index 8a30bd4d..4e9cec34 100644
 +		TestOnBorrow: testOnBorrow,
 +		Wait:         false, // if a connection is not available, proceed without cache.
  	}
-
+ 
  	app.redis = pool
 diff --git a/registry/handlers/app_test.go b/registry/handlers/app_test.go
-index 60a57e6c..8a644d83 100644
+index 60a57e6c15..8a644d83d8 100644
 --- a/registry/handlers/app_test.go
 +++ b/registry/handlers/app_test.go
 @@ -140,7 +140,29 @@ func TestAppDispatcher(t *testing.T) {
@@ -157,7 +157,7 @@ index 60a57e6c..8a644d83 100644
 +	config.Redis.DB = 0
 +	runAppWithConfig(t, config)
 +}
-
+ 
 +// TestNewApp covers the creation of an application via NewApp with a
 +// configuration(with redis sentinel cluster).
 +func TestNewAppWithRedisSentinelCluster(t *testing.T) {
@@ -189,18 +189,17 @@ index 60a57e6c..8a644d83 100644
  	// ensuring that NewApp doesn't panic. We might want to tweak this
  	// behavior.
 diff --git a/vendor.conf b/vendor.conf
-index bd1b4bff..a45ac137 100644
+index 33fe616b76..a8d8f58bc6 100644
 --- a/vendor.conf
 +++ b/vendor.conf
-@@ -49,3 +49,4 @@ gopkg.in/yaml.v2 v2.2.1
+@@ -51,3 +51,4 @@ gopkg.in/yaml.v2 v2.2.1
  rsc.io/letsencrypt e770c10b0f1a64775ae91d240407ce00d1a5bdeb https://github.com/dmcgowan/letsencrypt.git
- github.com/opencontainers/go-digest a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
+ github.com/opencontainers/go-digest ea51bea511f75cfa3ef6098cc253c5c3609b037a # v1.0.0
  github.com/opencontainers/image-spec 67d2d5658fe0476ab9bf414cec164077ebff3920 # v1.0.2
 +github.com/FZambia/sentinel 5585739eb4b6478aa30161866ccf9ce0ef5847c7 https://github.com/jeremyxu2010/sentinel.git
-\ No newline at end of file
 diff --git a/vendor/github.com/FZambia/sentinel/LICENSE b/vendor/github.com/FZambia/sentinel/LICENSE
 new file mode 100644
-index 00000000..9c8f3ea0
+index 0000000000..8dada3edaf
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/LICENSE
 @@ -0,0 +1,201 @@
@@ -405,10 +404,9 @@ index 00000000..9c8f3ea0
 +   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 +   See the License for the specific language governing permissions and
 +   limitations under the License.
-\ No newline at end of file
 diff --git a/vendor/github.com/FZambia/sentinel/README.md b/vendor/github.com/FZambia/sentinel/README.md
 new file mode 100644
-index 00000000..fc810435
+index 0000000000..f544c54ef6
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/README.md
 @@ -0,0 +1,39 @@
@@ -450,11 +448,10 @@ index 00000000..fc810435
 +License
 +-------
 +
-+Library is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
-\ No newline at end of file
++Library is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html). 
 diff --git a/vendor/github.com/FZambia/sentinel/sentinel.go b/vendor/github.com/FZambia/sentinel/sentinel.go
 new file mode 100644
-index 00000000..98dea26d
+index 0000000000..79209e9f0d
 --- /dev/null
 +++ b/vendor/github.com/FZambia/sentinel/sentinel.go
 @@ -0,0 +1,426 @@
