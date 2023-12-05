@@ -12,6 +12,7 @@ import {
     distinctUntilChanged,
     filter,
     finalize,
+    map,
     switchMap,
 } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
@@ -87,7 +88,6 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         if (!this._nameSubscription) {
             this._nameSubscription = this._nameSubject
                 .pipe(
-                    debounceTime(500),
                     distinctUntilChanged(),
                     filter(name => {
                         if (
@@ -99,6 +99,11 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                         }
                         return name?.length > 0;
                     }),
+                    map(name => {
+                        this.checkNameOnGoing = !!name;
+                        return name;
+                    }),
+                    debounceTime(500),
                     switchMap(name => {
                         this.isNameExisting = false;
                         this.checkNameOnGoing = true;
@@ -293,6 +298,10 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     }
     shouldShowWarning(): boolean {
         return new Date() >= this.calculateExpiresAt();
+    }
+
+    clrWizardPageOnLoad() {
+        this.inlineAlertComponent.close();
     }
 
     protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
