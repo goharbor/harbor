@@ -21,12 +21,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.1
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.19.6
-	github.com/go-openapi/loads v0.19.5
+	github.com/go-openapi/loads v0.19.5 // indirect
 	github.com/go-openapi/runtime v0.19.20
-	github.com/go-openapi/spec v0.19.8
+	github.com/go-openapi/spec v0.19.8 // indirect
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.14
-	github.com/go-openapi/validate v0.19.10
+	github.com/go-openapi/validate v0.19.10 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
@@ -35,7 +35,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/csrf v1.6.2
-	github.com/gorilla/handlers v1.5.1
+	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/jackc/pgconn v1.14.0
