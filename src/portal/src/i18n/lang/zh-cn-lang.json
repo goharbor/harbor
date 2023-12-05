@@ -1666,9 +1666,9 @@
         "PROJECTS_MODAL_TITLE": "当前机器人账户覆盖的项目",
         "PROJECTS_MODAL_SUMMARY": "以下为当前机器人账户覆盖的项目列表",
         "CREATE_ROBOT": "创建系统级机器人账户",
-        "CREATE_ROBOT_SUMMARY": "创建机器人账户。您可以选中\"覆盖全部项目\"项来覆盖当前所有项目以及未来新增的项目",
+        "CREATE_ROBOT_SUMMARY": "创建一个包含系统级权限和覆盖指定项目的机器人账户",
         "EDIT_ROBOT": "编辑系统级机器人账户",
-        "EDIT_ROBOT_SUMMARY": "编辑机器人账户。您可以选中\"覆盖全部项目\"项来覆盖当前所有项目以及未来新增的项目",
+        "EDIT_ROBOT_SUMMARY": "编辑一个包含系统级权限和覆盖指定项目的机器人账户",
         "EXPIRATION_TIME": "过期时间",
         "EXPIRATION_TIME_EXPLAIN": "当前机器人账户的令牌有效时间(单位为天且起始点为创建时间)。如想设置为永不过期, 请输入\"-1\"。",
         "EXPIRATION_DEFAULT": "天(默认)",
@@ -1678,7 +1678,7 @@
         "COVER_ALL": "覆盖全部项目",
         "COVER_ALL_EXPLAIN": "选中此项来覆盖当前所有项目以及未来新增的项目",
         "COVER_ALL_SUMMARY": "已选中当前所有项目以及未来新增的项目",
-        "RESET_PERMISSION": "重置初始权限",
+        "RESET_PERMISSION": "重置所有项目初始权限",
         "PERMISSION_COLUMN": "权限",
         "EXPIRES_AT": "有效期至",
         "VIEW_SECRET": "刷新令牌",
@@ -1710,7 +1710,9 @@
         "LIST": "查询",
         "REPOSITORY": "仓库",
         "EXPIRES_IN": "有效期剩余",
-        "EXPIRED": "已过期"
+        "EXPIRED": "已过期",
+        "SELECT_ALL_PROJECT": "选择全部项目",
+        "UNSELECT_ALL_PROJECT": "取消选择全部项目"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "删除附件确认",

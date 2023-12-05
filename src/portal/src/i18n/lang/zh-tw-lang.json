@@ -1664,9 +1664,9 @@
     "PROJECTS_MODAL_TITLE": "機器人帳號的專案",
     "PROJECTS_MODAL_SUMMARY": "這些是此機器人帳號涵蓋的專案。",
     "CREATE_ROBOT": "建立系統機器人帳號",
-    "CREATE_ROBOT_SUMMARY": "建立一個涵蓋特定專案的系統機器人帳號。選擇「涵蓋所有專案」將套用到所有現有和未來的專案",
+    "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
     "EDIT_ROBOT": "編輯系統機器人帳號",
-    "EDIT_ROBOT_SUMMARY": "編輯一個系統機器人帳號。選擇「涵蓋所有專案」將套用到所有現有和未來的專案",
+    "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
     "EXPIRATION_TIME": "到期時間",
     "EXPIRATION_TIME_EXPLAIN": "機器人帳號的權杖到期時間（以建立時間為起點的天數）。要使其永不過期，請輸入「-1」。",
     "EXPIRATION_DEFAULT": "天（預設）",
@@ -1676,7 +1676,7 @@
     "COVER_ALL": "涵蓋所有專案",
     "COVER_ALL_EXPLAIN": "選擇以套用到所有現有和未來的專案",
     "COVER_ALL_SUMMARY": "選擇了所有現有和未來的專案。",
-    "RESET_PERMISSION": "重設權限",
+    "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
     "PERMISSION_COLUMN": "權限",
     "EXPIRES_AT": "到期於",
     "VIEW_SECRET": "更新密鑰",
@@ -1708,7 +1708,9 @@
     "LIST": "列表",
     "REPOSITORY": "儲存庫",
     "EXPIRES_IN": "到期於",
-    "EXPIRED": "已過期"
+    "EXPIRED": "已過期",
+    "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+    "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
   },
   "ACCESSORY": {
     "DELETION_TITLE_ACCESSORY": "確認刪除附件",

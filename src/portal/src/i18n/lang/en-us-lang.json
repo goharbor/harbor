@@ -1670,9 +1670,9 @@
         "PROJECTS_MODAL_TITLE": "Projects for Robot Account",
         "PROJECTS_MODAL_SUMMARY": "There are the projects covered by this robot account.",
         "CREATE_ROBOT": "Create System Robot Account",
-        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover specific projects. Choose \"Cover all projects\" to be applied to all existing and future projects",
+        "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EDIT_ROBOT": "Edit System Robot Account",
-        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account. Choose \"Cover all projects\" to be applied to all exiting and future projects",
+        "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
         "EXPIRATION_TIME": "Expiration time",
         "EXPIRATION_TIME_EXPLAIN": "The expiration time(in days and the starting point is creation time) of the token of the robot account. For being never expired, please enter \"-1\".",
         "EXPIRATION_DEFAULT": "days(default)",
@@ -1682,7 +1682,7 @@
         "COVER_ALL": "Cover all projects",
         "COVER_ALL_EXPLAIN": "Check to be applied to all existing and future projects",
         "COVER_ALL_SUMMARY": "All current and future projects selected.",
-        "RESET_PERMISSION": "RESET PERMISSIONS",
+        "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
         "PERMISSION_COLUMN": "Permissions",
         "EXPIRES_AT": "Expires at",
         "VIEW_SECRET": "REFRESH SECRET",
@@ -1714,7 +1714,9 @@
         "LIST": "List",
         "REPOSITORY": "Repository",
         "EXPIRES_IN": "Expires in",
-        "EXPIRED": "Expired"
+        "EXPIRED": "Expired",
+        "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",
