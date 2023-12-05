@@ -16,6 +16,7 @@ import {
     distinctUntilChanged,
     filter,
     finalize,
+    map,
     switchMap,
 } from 'rxjs/operators';
 import {
@@ -119,7 +120,6 @@ export class NewRobotComponent implements OnInit, OnDestroy {
         if (!this._nameSubscription) {
             this._nameSubscription = this._nameSubject
                 .pipe(
-                    debounceTime(500),
                     distinctUntilChanged(),
                     filter(name => {
                         if (
@@ -131,6 +131,11 @@ export class NewRobotComponent implements OnInit, OnDestroy {
                         }
                         return name?.length > 0;
                     }),
+                    map(name => {
+                        this.checkNameOnGoing = !!name;
+                        return name;
+                    }),
+                    debounceTime(500),
                     switchMap(name => {
                         this.isNameExisting = false;
                         this.checkNameOnGoing = true;
@@ -490,6 +495,7 @@ export class NewRobotComponent implements OnInit, OnDestroy {
     }
 
     clrWizardPageOnLoad() {
+        this.inlineAlertComponent.close();
         this.showPage3 = true;
     }
 
