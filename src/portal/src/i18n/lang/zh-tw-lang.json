@@ -416,7 +416,8 @@
    "BASIC_INFO": "Basic Information",
    "SELECT_PERMISSIONS": "Select Permissions",
    "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
-   "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions"
+   "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
+   "SYSTEM_PERMISSIONS": "System Permissions"
   },
   "WEBHOOK": {
     "EDIT_BUTTON": "編輯",
