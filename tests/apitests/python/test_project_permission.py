@@ -5,7 +5,7 @@ import requests
 import urllib3
 import os
 
-admin_name = os.environ.get("ADMIN_NAME")
+admin_name = os.environ.get("ADMIN_USER_NAME")
 admin_password = os.environ.get("ADMIN_PASSWORD")
 user_name = os.environ.get("USER_NAME")
 password = os.environ.get("PASSWORD")
@@ -256,46 +256,44 @@ tag_retention_rule_payload = {
     }
 }
 
-
-def get_retention_id() -> str:
-    # create retention rule fist
+retention_id = None
+if resource == "tag-retention":
+    # create retention rule first
     # this request can be failed(retention rule existed) or succeeded, but we can finally get the retention id
     requests.request("POST", "{}/retentions".format(harbor_base_url),
-                                data=json.dumps(tag_retention_rule_payload), verify=False,
-                                auth=(admin_name, admin_password), headers={"Content-Type": "application/json"})
-    response1 = requests.request("GET", "{}/projects/{}/metadatas/retention_id".format(harbor_base_url, project_id),
-                                 data=None, verify=False,
-                                 auth=(admin_name, admin_password), headers={"Content-Type": "application/json"})
-    retention_id = project_id
-    if "retention_id" in json.loads(response1.text):
-        retention_id = json.loads(response1.text)["retention_id"]
-    return retention_id
-
-
-# because get_retention_id() has been called,  so the expected status code is 400
-create_tag_retention_rule = Permission("{}/retentions".format(harbor_base_url), "POST",
+                     data=json.dumps(tag_retention_rule_payload), verify=False,
+                     auth=(admin_name, admin_password), headers={"Content-Type": "application/json"})
+    get_retention_response = requests.request("GET", "{}/projects/{}/metadatas/retention_id".format(harbor_base_url,project_id),
+                                              verify=False,
+                                              auth=(admin_name, admin_password))
+    if "retention_id" in json.loads(get_retention_response.text):
+        retention_id = json.loads(get_retention_response.text)["retention_id"]
+    # because the retention rule exists,  so the expected status code is 400
+create_tag_retention_rule = Permission("{}/retentions".format(harbor_base_url, retention_id), "POST",
                                        400,
                                        tag_retention_rule_payload)
 
 update_retention_payload = copy.deepcopy(tag_retention_rule_payload)
 update_retention_payload["rules"][0]["disabled"] = True
-read_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, get_retention_id()), "GET", 200)
-update_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, get_retention_id()), "PUT", 200,
+read_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, retention_id), "GET", 200)
+update_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, retention_id), "PUT", 200,
                                   update_retention_payload)
-delete_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, get_retention_id()), "DELETE", 200)
-execute_tag_retention = Permission("{}/retentions/{}/executions".format(harbor_base_url, get_retention_id()), "POST",
+delete_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, retention_id), "DELETE", 200)
+execute_tag_retention = Permission("{}/retentions/{}/executions".format(harbor_base_url, retention_id), "POST",
                                    201)
-list_tag_retention_execution = Permission("{}/retentions/{}/executions".format(harbor_base_url, get_retention_id()),
+list_tag_retention_execution = Permission("{}/retentions/{}/executions".format(harbor_base_url, retention_id),
                                           "GET",
                                           200)
-stop_tag_retention = Permission("{}/retentions/{}/executions/0".format(harbor_base_url, get_retention_id()), "PATCH",
+stop_tag_retention = Permission("{}/retentions/{}/executions/0".format(harbor_base_url, retention_id), "PATCH",
                                 404,
                                 {"action": "stop"})
-list_tag_retention_tasks = Permission("{}/retentions/{}/executions/0/tasks".format(harbor_base_url, get_retention_id()),
-                                      "GET", 404)
-read_tag_retention_tasks = Permission(
-    "{}/retentions/{}/executions/0/tasks/0".format(harbor_base_url, get_retention_id()),
+list_tag_retention_tasks = Permission(
+    "{}/retentions/{}/executions/0/tasks".format(harbor_base_url, retention_id),
     "GET", 404)
+read_tag_retention_tasks = Permission(
+    "{}/retentions/{}/executions/0/tasks/0".format(harbor_base_url, retention_id),
+    "GET", 404)
+
 
 # 15. Resource log   actions: ['list']
 list_log = Permission("{}/projects/{}/logs".format(harbor_base_url, project_name), "GET", 200)
