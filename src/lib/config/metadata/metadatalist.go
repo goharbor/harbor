@@ -14,7 +14,11 @@
 
 package metadata
 
-import "github.com/goharbor/harbor/src/common"
+import (
+	"fmt"
+
+	"github.com/goharbor/harbor/src/common"
+)
 
 // Item - Configure item include default value, type, env name
 type Item struct {
@@ -191,5 +195,8 @@ var (
 		{Name: common.SessionTimeout, Scope: UserScope, Group: BasicGroup, EnvKey: "SESSION_TIMEOUT", DefaultValue: "60", ItemType: &Int64Type{}, Editable: true, Description: `The session timeout in minutes`},
 
 		{Name: common.ExecutionStatusRefreshIntervalSeconds, Scope: SystemScope, Group: BasicGroup, EnvKey: "EXECUTION_STATUS_REFRESH_INTERVAL_SECONDS", DefaultValue: "30", ItemType: &Int64Type{}, Editable: false, Description: `The interval seconds to refresh the execution status`},
+
+		{Name: common.BeegoMaxMemoryBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_MEMORY_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxMemoryBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max memory, default is 128GB`},
+		{Name: common.BeegoMaxUploadSizeBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_UPLOAD_SIZE_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxUploadSizeBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max upload size, default it 128GB`},
 	}
 )
