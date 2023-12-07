@@ -42,8 +42,6 @@ func (ps *defaultSampler) For(job string) uint {
 	// As an example, sample job has the lowest priority
 	case SampleJob:
 		return 1
-	case SlackJobVendorType:
-		return 1
 		// add more cases here if specified job priority is required
 	// case XXX:
 	//	return 2000
