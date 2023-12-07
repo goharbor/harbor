@@ -293,6 +293,9 @@ Switch To Project Label
 Switch To Project Repo
     Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
 
+Switch To Project Scanner
+    Retry Element Click  xpath=//project-detail//a[contains(.,'Scanner')]
+
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
@@ -434,3 +437,11 @@ Download Latest CVE CSV File
     Retry Double Keywords When Error  Retry Element Click  ${latest_download_cve_csv_file_xpath}  Retry Wait Until Page Does Not Contains  ${csv_file_name}
     Retry File Should Exist  ${csv_file_path}
     [Return]  ${csv_file_path}
+
+Select Project Scanner
+    [Arguments]  ${scanner_name}  ${scanner_count}=${null}
+    Retry Element Click  //*[@id='edit-scanner']
+    Run Keyword If  '${scanner_count}'!='${null}'   Retry Wait Element Count  //clr-dg-row  ${scanner_count}
+    Retry Element Click  //clr-dg-row[.//clr-dg-cell[text()='${scanner_name}']]//label[contains(@class,'clr-control-label')]
+    Retry Element Click  //*[@id='save-scanner']
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='${scanner_name}']
