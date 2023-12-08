@@ -163,3 +163,123 @@ Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System
 Test Case - Stop Scan And Stop Scan All
     [Tags]  stop_scan_job
     Body Of Stop Scan And Stop Scan All
+
+Test Case - External Scanner CRUD
+    [Tags]  external_scanner_crud  need_scanner_endpoint
+    ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
+    Skip If  '${SCANNER_ENDPOINT_VALUE}' == '${EMPTY}'
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Scanners Page
+    # Add a new scanner
+    Add A New Scanner  scanner${d}  ${SCANNER_ENDPOINT}  Basic  For testing  ${true}  ${true}  scanner_name  scanner_password
+    # Update this scanner
+    Update Scanner  scanner${d}  scanner${d}-edit1  ${SCANNER_ENDPOINT}1  Bearer  For testing-edit1  ${true}  ${true}  token=scanner_token
+    Update Scanner  scanner${d}-edit1  scanner${d}-edit2  ${SCANNER_ENDPOINT}2  APIKey  For testing-edit2  ${true}  ${true}  api_key=scanner_api_key
+    Update Scanner  scanner${d}-edit2  scanner${d}  ${SCANNER_ENDPOINT}  None  For testing
+    # Filter this scanner
+    Filter Scanner By Name  scanner${d}
+    Filter Scanner By Endpoint  ${SCANNER_ENDPOINT}
+    Retry Wait Element Count  //clr-dg-row  1
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//span[text()='scanner${d}'] and .//clr-dg-cell[text()='${SCANNER_ENDPOINT}'] and .//span[text()='Healthy'] and .//clr-dg-cell[text()='None']]
+    # Delete this scanner
+    Delete Scanner  scanner${d}
+    Close Browser
+
+Test Case - Set External Scanner As Default And Scan
+    [Tags]  external_scanner_scan  need_scanner_endpoint
+    ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
+    Skip If  '${SCANNER_ENDPOINT_VALUE}' == '${EMPTY}'
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='Trivy']
+    Switch To Scanners Page
+    Retry Wait Element Visible  //clr-dg-row[.//span[text()='Trivy'] and .//span[text()='Default']]
+    # Add a new scanner
+    Add A New Scanner  scanner${d}  ${SCANNER_ENDPOINT}  None  For testing
+    # Set this scanner to default
+    Set Scanner As Default  scanner${d}
+    Go Into Project  project${d}  ${false}
+    Switch To Project Scanner
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='scanner${d}']
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}
+    Go Into Repo  project${d}  ${image}
+    Scan Repo  ${tag}  Succeed
+    Retry Wait Element Visible  //hbr-result-tip-histogram//span[1][text()='10']
+    Switch To Scanners Page
+    Set Scanner As Default  Trivy
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='Trivy']
+    Go into Repo  project${d}  ${image}
+    Scan Repo  ${tag}  Succeed
+    Retry Wait Element Visible  //hbr-result-tip-histogram//div[text()=' No vulnerability ']
+    Back Project Home  project${d}
+    Switch To Project Scanner
+    Select Project Scanner  scanner${d}  2
+    Go Into Repo  project${d}  ${image}
+    Retry Wait Element Visible  //hbr-result-tip-histogram//span[1][text()='10']
+    Scan Repo  ${tag}  Succeed
+    Retry Wait Element Visible  //hbr-result-tip-histogram//span[1][text()='10']
+    Back Project Home  project${d}
+    Switch To Project Scanner
+    Select Project Scanner  Trivy  2
+    Go Into Repo  project${d}  ${image}
+    Retry Wait Element Visible  //hbr-result-tip-histogram//div[text()=' No vulnerability ']
+    Scan Repo  ${tag}  Succeed
+    Retry Wait Element Visible  //hbr-result-tip-histogram//div[text()=' No vulnerability ']
+    Switch To Scanners Page
+    Delete Scanner  scanner${d}
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Element Click  //*[@id='edit-scanner']
+    Retry Wait Element Count  //clr-dg-row  1
+    Close Browser
+
+Test Case - Enable And Deactivate Scanner
+    [Tags]  enable_deactivate_scanner  need_scanner_endpoint
+    ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
+    Skip If  '${SCANNER_ENDPOINT_VALUE}' == '${EMPTY}'
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}
+    Switch To Scanners Page
+    Add A New Scanner  scanner${d}  ${SCANNER_ENDPOINT}  None  For testing
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Select Project Scanner  scanner${d}
+    Go into Repo  project${d}  ${image}
+    Scan Repo  ${tag}  Succeed
+    # Deactivate this scanner
+    Switch To Scanners Page
+    Enable Or Deactivate Scanner  scanner${d}  DEACTIVATE
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Wait Element Visible  //scanner//span[text()='Deactivated']
+    Go Into Repo  project${d}  ${image}
+    Retry Element Click  //clr-dg-row[contains(.,'${tag}')]//label[contains(@class,'clr-control-label')]
+    Retry Wait Element Should Be Disabled  //button[@id='scan-btn']
+    # Enable this scanner
+    Switch To Scanners Page
+    Enable Or Deactivate Scanner  scanner${d}  ENABLE
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Wait Element Not Visible  //scanner//span[text()='Deactivated']
+    Go Into Repo  project${d}  ${image}
+    Scan Repo  ${tag}  Succeed
+    Switch To Scanners Page
+    Delete Scanner  scanner${d}
+    Go Into Project  project${d}
+    Switch To Project Scanner
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='Trivy']
+    Close Browser
