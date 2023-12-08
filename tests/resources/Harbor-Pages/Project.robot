@@ -120,7 +120,10 @@ Repo Not Exist
 
 Filter Repo
     [Arguments]  ${pro_name}  ${repo_name}  ${exsit}=${true}
-    Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    ${filter_dist_input_visible}=  Run Keyword and Return Status  Element Should Not Be Visible  ${filter_dist_input}
+    IF  ${filter_dist_input_visible}
+        Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
+    END
     Retry Clear Element Text  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${pro_name}/${repo_name}
     Run Keyword If  ${exsit}==${true}    Repo Exist  ${pro_name}  ${repo_name}
@@ -128,7 +131,7 @@ Filter Repo
 
 Delete Repo
     [Arguments]  ${pro_name}  ${repo_name}
-    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${pro_name}/${repo_name}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Filter Repo  ${pro_name}  ${repo_name}
     Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
@@ -145,7 +148,7 @@ Delete Repo on CardView
 Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${project_action_xpath}
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
@@ -290,9 +293,12 @@ Switch To Project Label
 Switch To Project Repo
     Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
 
+Switch To Project Scanner
+    Retry Element Click  xpath=//project-detail//a[contains(.,'Scanner')]
+
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
     Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
@@ -317,6 +323,7 @@ Filter Labels In Tags
 Get Statics
     [Arguments]  ${locator}
     Reload Page
+    Wait Until Element Is Visible And Enabled  ${locator}
     ${privaterepo}=  Get Text  ${locator}
     [Return]  ${privaterepo}
 
@@ -371,13 +378,29 @@ Back Project Home
     [Arguments]  ${project_name}
     Retry Link Click  //a[contains(.,'${project_name}')]
 
-Should Not Be Signed By Cosign
+Should Be Signed
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+
+Should Not Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
 
 Should Be Signed By Cosign
-    [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    END
+
+Should Be Signed By Notation
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    END
 
 Delete Accessory
     [Arguments]  ${tag}
@@ -393,7 +416,7 @@ Should be Accessory deleted
 Export CVEs
     [Arguments]  ${project}  ${repositories}  ${tags}  ${labels}  ${cve_ids}
     Filter Project  ${project}
-    Retry Element Click  //clr-dg-row[contains(.,'${project}')]//div[contains(@class,'clr-checkbox-wrapper')]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${project}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
     Retry Element Click  ${project_action_xpath}
     Retry Button Click  ${export_cve_btn}
     Retry Text Input  ${export_cve_filter_repo_input}  ${repositories}
@@ -414,3 +437,11 @@ Download Latest CVE CSV File
     Retry Double Keywords When Error  Retry Element Click  ${latest_download_cve_csv_file_xpath}  Retry Wait Until Page Does Not Contains  ${csv_file_name}
     Retry File Should Exist  ${csv_file_path}
     [Return]  ${csv_file_path}
+
+Select Project Scanner
+    [Arguments]  ${scanner_name}  ${scanner_count}=${null}
+    Retry Element Click  //*[@id='edit-scanner']
+    Run Keyword If  '${scanner_count}'!='${null}'   Retry Wait Element Count  //clr-dg-row  ${scanner_count}
+    Retry Element Click  //clr-dg-row[.//clr-dg-cell[text()='${scanner_name}']]//label[contains(@class,'clr-control-label')]
+    Retry Element Click  //*[@id='save-scanner']
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='${scanner_name}']

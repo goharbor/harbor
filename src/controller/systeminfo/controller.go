@@ -50,6 +50,7 @@ type Data struct {
 	BannerMessage     string
 	AuthProxySettings *models.HTTPAuthProxy
 	Protected         *protectedData
+	OIDCProviderName  string
 }
 
 type protectedData struct {
@@ -103,6 +104,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		SelfRegistration: utils.SafeCastBool(cfg[common.SelfRegistration]),
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 		BannerMessage:    utils.SafeCastString(mgr.Get(ctx, common.BannerMessage).GetString()),
+		OIDCProviderName: OIDCProviderName(cfg),
 	}
 	if res.AuthMode == common.HTTPAuth {
 		if s, err := config.HTTPAuthProxySetting(ctx); err == nil {
@@ -135,6 +137,14 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		NotificationEnable:          utils.SafeCastBool(cfg[common.NotificationEnable]),
 	}
 	return res, nil
+}
+
+func OIDCProviderName(cfg map[string]interface{}) string {
+	authMode := utils.SafeCastString(cfg[common.AUTHMode])
+	if authMode != common.OIDCAuth {
+		return ""
+	}
+	return utils.SafeCastString(cfg[common.OIDCName])
 }
 
 func (c *controller) GetCapacity(ctx context.Context) (*imagestorage.Capacity, error) {

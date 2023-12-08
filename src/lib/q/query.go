@@ -56,7 +56,6 @@ func MustClone(query *Query) *Query {
 	if query != nil {
 		q.PageNumber = query.PageNumber
 		q.PageSize = query.PageSize
-		q.Sorts = query.Sorts
 		for k, v := range query.Keywords {
 			q.Keywords[k] = v
 		}

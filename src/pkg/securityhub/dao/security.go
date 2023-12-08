@@ -66,7 +66,7 @@ WHERE EXISTS (SELECT 1
        vr.package,
        vr.cvss_score_v3,
        vr.description,
-       vr.fixed_version,
+       vr.package_version,
        vr.severity,
        CASE vr.severity
            WHEN 'Critical' THEN 5

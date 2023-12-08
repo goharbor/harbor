@@ -69,6 +69,8 @@ Test Case - Push CNAB Bundle and Display
     Wait Until Page Contains  test${d}/cnab${d}
     Go Into Repo  test${d}  cnab${d}
     Go Into Index And Contain Artifacts  cnab_tag${d}  total_artifact_count=3  archive_count=2
+    Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[1]//clr-dg-cell[1]//clr-icon
+    Retry Wait Element Count  //artifact-list-tab//clr-datagrid//clr-dg-row  2
     Close Browser
 
 Test Case - Create An New Project
@@ -328,7 +330,7 @@ Test Case - Delete Multi Project
     Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     @{project_list}  Create List  projecta  projectb
     FOR  ${project}  IN  @{project_list}
-        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label
+        Retry Element Click  //clr-dg-row[contains(.,'${project}')]//label[contains(@class,'clr-control-label')]
     END
     Retry Element Click  ${project_action_xpath}
     Retry Element Click  ${project_delete_btn}
@@ -474,19 +476,28 @@ Test Case - Copy A Image And Accessory
     Create An New Project And Go Into Project  ${source_project}
 
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
-    Cosign Generate Key Pair
     Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Generate Key Pair
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
-    Docker Logout  ${ip}
+    Notation Generate Cert
+    Notation Sign  ${ip}/${source_project}/${image}:${tag}
+
     Go Into Repo  ${source_project}  ${image}
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
     Go Into Repo  ${target_project}  ${image}
     Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
+    Docker Logout  ${ip}
     Close Browser
 
 Test Case - Create An New Project With Quotas Set
@@ -772,16 +783,45 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
     Go Into Project  project${d}
     Go Into Repo  project${d}  ${image}
-    Should Not Be Signed By Cosign  ${tag}
+    Should Not Be Signed  ${tag}
     Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed by cosign.
     Cosign Generate Key Pair
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
 
     Cosign Sign  ${ip}/project${d}/${image}:${tag}
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${true}
-    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed  ${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
 
+    Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
+    Close Browser
+
+Test Case - Notation And Notation Deployment Security Policy
+    [Tags]  notation
+    Init Chrome Driver
+    ${user}=  Set Variable  user007
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Click Notation Deployment Security
+    Save Project Config
+    Content Notation Deployment security Be Selected
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
+    Go Into Project  project${d}
+    Go Into Repo  project${d}  ${image}
+    Should Not Be Signed  ${tag}
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed by notation.
+
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image}:${tag}
+
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed  ${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
     Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
     Close Browser
 
@@ -928,8 +968,8 @@ Test Case - Export CVE
     Add Labels To Tag  ${images['redis']}  ${labels}[1]
     Navigate To Projects
     Should Not Be Export CVEs
-    Retry Element Click  //clr-dg-row[1]//label
-    Retry Element Click  //clr-dg-row[2]//label
+    Retry Element Click  //clr-dg-row[1]//label[contains(@class,'clr-control-label')]
+    Retry Element Click  //clr-dg-row[2]//label[contains(@class,'clr-control-label')]
     Should Not Be Export CVEs
     Export CVEs  project${d}  photon,postgres,nginx,redis  ${images['photon']},${images['nginx']},${images['redis']}  ${labels}  ${cve_ids}[0],${cve_ids}[1],${cve_ids}[2]
     ${csv_file_path}=  Download Latest CVE CSV File
@@ -968,7 +1008,7 @@ Test Case - Job Service Dashboard Job Queues
     ${retention_execution2}=  Execute Run  photon  0/0
     # Triggers three IMAGE_SCAN jobs
     Go Into Repo  project${d}  photon
-    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Element Click  //clr-datagrid//label[contains(@class,'clr-control-label') and contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Triggers a GARBAGE_COLLECTION job
     ${gc_execution1}=  GC Now  dry_run=${true}
@@ -1004,7 +1044,7 @@ Test Case - Job Service Dashboard Job Queues
     Purge Now  1  Days  Running
     # Triggers three IMAGE_SCAN jobs
     Go Into Repo  project${d}  photon
-    Retry Element Click  //clr-datagrid//label[contains(.,'Select All')]
+    Retry Element Click  //clr-datagrid//label[contains(@class,'clr-control-label') and contains(.,'Select All')]
     Retry Button Click  ${scan_artifact_btn}
     # Check job queues
     Switch To Job Queues
@@ -1095,4 +1135,52 @@ Test Case - Retain Image Last Pull Time
     Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
     ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
     Should Not Be Empty  ${last_pull_time}
+    Close Browser
+
+Test Case - Banner Message
+    [Tags]  banner_message
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${message}=  Set Variable  This is a test message.
+    ${message_type}=  Set Variable  success
+    ${in_duration}=  Set Variable  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Switch To Configuration System Setting
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${message_type}=  Set Variable  info
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  warning
+    Set Banner Message  ${message}  ${message_type}  ${false}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  danger
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${in_duration}=  Set Variable  ${false}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    ${in_duration}=  Set Variable  ${true}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Set Banner Message  ${null}
+    Check Banner Message  ${null}
+    Reload Page
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Check Banner Message on other pages  ${message}  ${message_type}  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Go Into Project  library
+    Check Banner Message  ${null}
+    Switch To Logs
+    Check Banner Message  ${null}
+    Switch To Configuration System Setting
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    Check Banner Message  ${null}
     Close Browser

@@ -26,7 +26,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	oteltrace "go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/version"
@@ -116,7 +116,7 @@ func (s ShutdownFunc) Shutdown() {
 // Init initializes the trace provider
 func InitGlobalTracer(ctx context.Context) ShutdownFunc {
 	if !Enabled() {
-		otel.SetTracerProvider(oteltrace.NewNoopTracerProvider())
+		otel.SetTracerProvider(noop.NewTracerProvider())
 		return func() {}
 	}
 	exp, err := initExporter(ctx)

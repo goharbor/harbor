@@ -31,7 +31,7 @@ View Scan Error Log
     Retry Element Click  xpath=${view_log_xpath}
 
 Scan Artifact
-    [Arguments]  ${project}  ${repo}  ${label_xpath}=//clr-dg-row//label[1]
+    [Arguments]  ${project}  ${repo}  ${label_xpath}=//clr-dg-row//label[contains(@class,'clr-control-label')][1]
     Go Into Repo  ${project}  ${repo}
     Retry Element Click  ${label_xpath}
     Retry Element Click  ${scan_artifact_btn}

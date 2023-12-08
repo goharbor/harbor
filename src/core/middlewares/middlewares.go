@@ -39,8 +39,9 @@ import (
 )
 
 var (
-	match         = regexp.MustCompile
-	numericRegexp = match(`[0-9]+`)
+	match              = regexp.MustCompile
+	numericRegexp      = match(`[0-9]+`)
+	serviceTokenRegexp = match(`^/service/token`)
 
 	// The ping endpoint will be blocked when DB conns reach the max open conns of the sql.DB
 	// which will make ping request timeout, so skip the middlewares which will require DB conn.
@@ -72,6 +73,10 @@ var (
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
+		// Harbor doesn't handle the POST request to /service/token. beego framework return 405 for the POST request
+		// some client, such as containerd, may send the POST request to /service/token and depends on 405/404/401/400 return code to determine continue or not
+		// the read only middleware returns 403 before the beego framework, so skip this request to make the client continue
+		middleware.MethodAndPathSkipper(http.MethodPost, serviceTokenRegexp),
 		pingSkipper,
 	}
 )

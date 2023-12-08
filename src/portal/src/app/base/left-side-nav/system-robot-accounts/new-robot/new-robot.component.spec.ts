@@ -5,12 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Robot } from '../../../../../../ng-swagger-gen/models/robot';
-import {
-    Action,
-    INITIAL_ACCESSES,
-    PermissionsKinds,
-    Resource,
-} from '../system-robot-util';
+import { Action, PermissionsKinds, Resource } from '../system-robot-util';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { RobotService } from '../../../../../../ng-swagger-gen/services/robot.service';
@@ -19,7 +14,6 @@ import { delay } from 'rxjs/operators';
 import { ConfigurationService } from '../../../../services/config.service';
 import { Configuration } from '../../config/config';
 import { FormsModule } from '@angular/forms';
-import { clone } from '../../../../shared/units/utils';
 
 describe('NewRobotComponent', () => {
     let component: NewRobotComponent;
@@ -103,7 +97,6 @@ describe('NewRobotComponent', () => {
         fixture.autoDetectChanges();
         component.isEditMode = false;
         component.addRobotOpened = true;
-        component.defaultAccesses = clone(INITIAL_ACCESSES);
         await fixture.whenStable();
         const nameInput = fixture.nativeElement.querySelector('#name');
         nameInput.value = '';
@@ -117,28 +110,9 @@ describe('NewRobotComponent', () => {
         fixture.autoDetectChanges();
         component.isEditMode = true;
         component.addRobotOpened = true;
-        component.defaultAccesses = clone(INITIAL_ACCESSES);
         component.systemRobot = robot1;
         await fixture.whenStable();
         const nameInput = fixture.nativeElement.querySelector('#name');
         expect(nameInput.value).toEqual('robot1');
-    });
-    it('should be valid', async () => {
-        fixture.autoDetectChanges();
-        component.isEditMode = false;
-        component.addRobotOpened = true;
-        component.defaultAccesses = clone(INITIAL_ACCESSES);
-        await fixture.whenStable();
-        const nameInput = fixture.nativeElement.querySelector('#name');
-        nameInput.value = 'test';
-        nameInput.dispatchEvent(new Event('input'));
-        const expiration = fixture.nativeElement.querySelector(
-            '#robotTokenExpiration'
-        );
-        expiration.value = 10;
-        expiration.dispatchEvent(new Event('input'));
-        component.coverAll = true;
-        await fixture.whenStable();
-        expect(component.disabled()).toBeFalsy();
     });
 });

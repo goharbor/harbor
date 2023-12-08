@@ -19,7 +19,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${project_member_tag_xpath}  //clr-main-container//project-detail/clr-tabs//a[contains(.,'Members')]
 ${project_member_add_button_xpath}  //project-detail//button[contains(.,'User')]
 ${project_member_add_username_xpath}  //*[@id='member_name']
-${project_member_add_admin_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div[1]/label
+${project_member_add_admin_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div[1]/label[contains(@class,'clr-control-label')]
 ${project_member_add_save_button_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
 ${project_member_search_button_xpath}  //project-detail//hbr-filter/span/clr-icon
 ${project_member_search_text_xpath}  //project-detail//hbr-filter/span/input
