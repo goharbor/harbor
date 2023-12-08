@@ -11,7 +11,7 @@ password = os.environ.get("PASSWORD")
 admin_user_name = os.environ.get("ADMIN_USER_NAME")
 admin_password = os.environ.get("ADMIN_PASSWORD")
 harbor_base_url = os.environ.get("HARBOR_BASE_URL")
-resource = os.environ.get("RESOURCE")
+resources = os.environ.get("RESOURCES")
 ID_PLACEHOLDER = "(id)"
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -38,13 +38,11 @@ class Permission:
             self.payload[self.payload_id_field] = int(json.loads(response.text)[self.res_id_field])
         elif self.res_id_field and self.payload_id_field and self.id_from_header == True:
             self.payload[self.payload_id_field] = int(response.headers["Location"].split("/")[-1])
+        return response
 
 
-resource_permissions = {}
 # audit logs permissions start
 list_audit_logs = Permission("{}/audit-logs".format(harbor_base_url), "GET", 200)
-audit_log = [ list_audit_logs ]
-resource_permissions["audit-log"] = audit_log
 # audit logs permissions end
 
 # preheat instance permissions start
@@ -62,8 +60,6 @@ read_preheat_instance = Permission("{}/p2p/preheat/instances/{}".format(harbor_b
 update_preheat_instance = Permission("{}/p2p/preheat/instances/{}".format(harbor_base_url, preheat_instance_payload["name"]), "PUT", 200, preheat_instance_payload)
 delete_preheat_instance = Permission("{}/p2p/preheat/instances/{}".format(harbor_base_url, preheat_instance_payload["name"]), "DELETE", 200, preheat_instance_payload)
 ping_preheat_instance = Permission("{}/p2p/preheat/instances/ping".format(harbor_base_url), "POST", 500, preheat_instance_payload)
-preheat_instances = [ create_preheat_instance, list_preheat_instance, read_preheat_instance, update_preheat_instance, delete_preheat_instance ]
-resource_permissions["preheat-instance"] = preheat_instances
 # preheat instance permissions end
 
 # project permissions start
@@ -76,8 +72,6 @@ project_payload = {
 }
 create_project = Permission("{}/projects".format(harbor_base_url), "POST", 201, project_payload)
 list_project = Permission("{}/projects".format(harbor_base_url), "GET", 200, project_payload)
-project = [ create_project, list_project ]
-resource_permissions["project"] = project
 # project permissions end
 
 # registry permissions start
@@ -100,21 +94,17 @@ registry_ping_payload = {
     "url": "https://hub.docker.com"
 }
 ping_registry = Permission("{}/registries/ping".format(harbor_base_url), "POST", 200, registry_ping_payload)
-registry = [ create_registry, list_registry, read_registry, info_registry, update_registry, delete_registry, ping_registry ]
-resource_permissions["registry"] = registry
 # registry permissions end
 
 # replication-adapter permissions start
 list_replication_adapters = Permission("{}/replication/adapters".format(harbor_base_url), "GET", 200)
 list_replication_adapterinfos = Permission("{}/replication/adapterinfos".format(harbor_base_url), "GET", 200)
-replication_adapter = [ list_replication_adapters, list_replication_adapterinfos ]
-resource_permissions["replication-adapter"] = replication_adapter
 # replication-adapter permissions end
 
 # replication policy  permissions start
 replication_registry_id = None
 replication_registry_name = "replication-registry-{}".format(random.randint(1000, 9999))
-if resource == "replication-policy":
+if "replication-policy" in resources or "all" == resources:
     result = urlsplit(harbor_base_url)
     endpoint_URL = "{}://{}".format(result.scheme, result.netloc)
     replication_registry_payload = {
@@ -162,8 +152,6 @@ list_replication_policy = Permission("{}/replication/policies".format(harbor_bas
 read_replication_policy = Permission("{}/replication/policies/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, replication_policy_payload, payload_id_field="id")
 update_replication_policy = Permission("{}/replication/policies/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, replication_policy_payload, payload_id_field="id")
 delete_replication_policy = Permission("{}/replication/policies/{}".format(harbor_base_url, ID_PLACEHOLDER), "DELETE", 200, replication_policy_payload, payload_id_field="id")
-replication_and_policy = [ create_replication_policy, list_replication_policy, read_replication_policy, update_replication_policy, delete_replication_policy ]
-resource_permissions["replication-policy"] = replication_and_policy
 # replication policy  permissions end
 
 # replication permissions start
@@ -171,7 +159,7 @@ replication_policy_id = None
 replication_policy_name = "replication-policy-{}".format(random.randint(1000, 9999))
 result = urlsplit(harbor_base_url)
 endpoint_URL = "{}://{}".format(result.scheme, result.netloc)
-if resource == "replication":
+if "replication" in resources or "all" == resources:
     replication_registry_payload = {
         "credential": {
             "access_key": admin_user_name,
@@ -223,8 +211,6 @@ read_replication_execution = Permission("{}/replication/executions/{}".format(ha
 stop_replication_execution = Permission("{}/replication/executions/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, replication_execution_payload, payload_id_field="id")
 list_replication_execution_tasks = Permission("{}/replication/executions/{}/tasks".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, replication_execution_payload, payload_id_field="id")
 read_replication_execution_task = Permission("{}/replication/executions/{}/tasks/{}".format(harbor_base_url, ID_PLACEHOLDER, 1), "GET", 404, replication_execution_payload, payload_id_field="id")
-replication = [ create_replication_execution, list_replication_execution, read_replication_execution, stop_replication_execution, list_replication_execution_tasks, read_replication_execution_task ]
-resource_permissions["replication"] = replication
 # replication permissions end
 
 # scan all permissions start
@@ -245,14 +231,10 @@ update_scan_all_schedule = Permission("{}/system/scanAll/schedule".format(harbor
 stop_scan_all = Permission("{}/system/scanAll/stop".format(harbor_base_url), "POST", 202)
 scan_all_metrics = Permission("{}/scans/all/metrics".format(harbor_base_url), "GET", 200)
 scan_all_schedule_metrics = Permission("{}/scans/schedule/metrics".format(harbor_base_url), "GET", 200)
-scan_all = [ create_scan_all_schedule, update_scan_all_schedule, stop_scan_all, scan_all_metrics, scan_all_schedule_metrics ]
-resource_permissions["scan-all"] = scan_all
 # scan all permissions end
 
 # system volumes permissions start
 read_system_volumes = Permission("{}/systeminfo/volumes".format(harbor_base_url), "GET", 200)
-system_volumes = [ read_system_volumes ]
-resource_permissions["system-volumes"] = system_volumes
 # system volumes permissions end
 
 # jobservice monitor permissions start
@@ -262,8 +244,6 @@ stop_jobservice_job = Permission("{}/jobservice/jobs/{}".format(harbor_base_url,
 get_jobservice_job_log = Permission("{}/jobservice/jobs/{}/log".format(harbor_base_url, "88888888"), "GET", 500)
 list_jobservice_queue = Permission("{}/jobservice/queues".format(harbor_base_url), "GET", 200)
 stop_jobservice = Permission("{}/jobservice/queues/{}".format(harbor_base_url, "88888888"), "PUT", 200, payload={ "action": "stop" })
-jobservice_monitor = [ list_jobservice_pool, list_jobservice_pool_worker, stop_jobservice_job, get_jobservice_job_log, list_jobservice_queue, stop_jobservice ]
-resource_permissions["jobservice-monitor"] = jobservice_monitor
 # jobservice monitor permissions end
 
 # scanner permissions start
@@ -283,8 +263,6 @@ update_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888")
 delete_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "DELETE", 404)
 set_default_scanner = Permission("{}/scanners/{}".format(harbor_base_url, "88888888"), "PATCH", 404, payload={ "is_default": True })
 get_scanner_metadata = Permission("{}/scanners/{}/metadata".format(harbor_base_url, "88888888"), "GET", 404)
-scanner = [ list_scanner, create_scanner, ping_scanner, read_scanner, update_scanner, delete_scanner, set_default_scanner, get_scanner_metadata ]
-resource_permissions["scanner"] = scanner
 # scanner permissions end
 
 # system label permissions start
@@ -299,31 +277,44 @@ create_label = Permission("{}/labels".format(harbor_base_url), "POST", 201, labe
 read_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=label_payload, payload_id_field="id")
 update_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=label_payload, payload_id_field="id")
 delete_label = Permission("{}/labels/{}".format(harbor_base_url, ID_PLACEHOLDER), "DELETE", 200, payload=label_payload, payload_id_field="id")
-label = [ create_label, read_label, update_label, delete_label ]
-resource_permissions["label"] = label
 # system label permissions end
 
 # security hub permissions start
 read_summary = Permission("{}/security/summary".format(harbor_base_url), "GET", 200)
 list_vul = Permission("{}/security/vul".format(harbor_base_url), "GET", 200)
-security_hub = [ read_summary, list_vul ]
-resource_permissions["security-hub"] = security_hub
 # security hub permissions end
 
 # catalog permissions start
 read_catalog = Permission("{}/v2/_catalog".format(endpoint_URL), "GET", 200)
-catalog = [ read_catalog ]
-resource_permissions["catalog"] = catalog
 # catalog permissions end
+
+resource_permissions = {
+    "audit-log": [list_audit_logs],
+    "preheat-instance": [create_preheat_instance, list_preheat_instance, read_preheat_instance, update_preheat_instance, delete_preheat_instance],
+    "project": [create_project, list_project],
+    "registry": [create_registry, list_registry, read_registry, info_registry, update_registry, delete_registry, ping_registry],
+    "replication-adapter": [list_replication_adapters, list_replication_adapterinfos],
+    "replication-policy": [create_replication_policy, list_replication_policy, read_replication_policy, update_replication_policy, delete_replication_policy],
+    "replication": [create_replication_execution, list_replication_execution, read_replication_execution, stop_replication_execution, list_replication_execution_tasks, read_replication_execution_task],
+    "scan-all": [create_scan_all_schedule, update_scan_all_schedule, stop_scan_all, scan_all_metrics, scan_all_schedule_metrics],
+    "system-volumes": [read_system_volumes],
+    "jobservice-monitor": [list_jobservice_pool, list_jobservice_pool_worker, stop_jobservice_job, get_jobservice_job_log, list_jobservice_queue, stop_jobservice],
+    "scanner": [list_scanner, create_scanner, ping_scanner, read_scanner, update_scanner, delete_scanner, set_default_scanner, get_scanner_metadata],
+    "label": [create_label, read_label, update_label, delete_label],
+    "security-hub": [read_summary, list_vul],
+    "catalog": [read_catalog]
+}
+resource_permissions["all"] = [item for sublist in resource_permissions.values() for item in sublist]
 
 
 def main():
-    for permission in resource_permissions[resource]:
-        print("=================================================")
-        print("call: {} {}".format(permission.method, permission.url))
-        print("payload: {}".format(json.dumps(permission.payload)))
-        print("=================================================\n")
-        permission.call()
+    for resource in resources.split(","):
+        for permission in resource_permissions[resource]:
+            print("=================================================")
+            print("call: {} {}".format(permission.method, permission.url))
+            print("payload: {}".format(json.dumps(permission.payload)))
+            print("response: {}".format(permission.call().text))
+            print("=================================================\n")
 
 
 if __name__ == "__main__":
