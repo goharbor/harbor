@@ -103,12 +103,12 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.8.2-patch-redis
+REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.47.0
 TRIVYADAPTERVERSION=v0.30.19
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.2
+REGISTRY_SRC_TAG=v2.8.3
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
