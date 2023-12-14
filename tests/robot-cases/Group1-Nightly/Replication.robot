@@ -363,7 +363,8 @@ Test Case - Robot Account Do Replication
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_dest${d}
     # create system Robot Account
-    ${robot_account_name}  ${robot_account_secret}=  Create A New System Robot Account  is_cover_all=${true}
+    Switch To Robot Account
+    ${robot_account_name}  ${robot_account_secret}=  Create A System Robot Account  replication${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
     # logout and login source
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}

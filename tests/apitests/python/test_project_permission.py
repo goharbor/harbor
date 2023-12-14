@@ -192,12 +192,12 @@ if "tag-retention" in resources or "all" == resources:
 create_tag_retention_rule = Permission("{}/retentions".format(harbor_base_url), "POST", 201, tag_retention_rule_payload, "id", id_from_header=True)
 read_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, tag_retention_rule_payload, payload_id_field="id")
 update_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, tag_retention_rule_payload, payload_id_field="id")
-execute_tag_retention = Permission("{}/retentions/888/executions".format(harbor_base_url), "POST", 400, tag_retention_rule_payload, payload_id_field="id")
+execute_tag_retention = Permission("{}/retentions/88888888/executions".format(harbor_base_url), "POST", 400, tag_retention_rule_payload, payload_id_field="id")
 list_tag_retention_execution = Permission("{}/retentions/{}/executions".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, tag_retention_rule_payload, payload_id_field="id")
 tag_retention_rule_payload["action"] = "stop"
-stop_tag_retention = Permission("{}/retentions/{}/executions/888".format(harbor_base_url, ID_PLACEHOLDER), "PATCH", 404, tag_retention_rule_payload, payload_id_field="id")
-list_tag_retention_tasks = Permission("{}/retentions/{}/executions/888/tasks".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
-read_tag_retention_tasks = Permission("{}/retentions/{}/executions/888/tasks/888".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
+stop_tag_retention = Permission("{}/retentions/{}/executions/88888888".format(harbor_base_url, ID_PLACEHOLDER), "PATCH", 404, tag_retention_rule_payload, payload_id_field="id")
+list_tag_retention_tasks = Permission("{}/retentions/{}/executions/88888888/tasks".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
+read_tag_retention_tasks = Permission("{}/retentions/{}/executions/88888888/tasks/88888888".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
 delete_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "DELETE", 200, tag_retention_rule_payload, payload_id_field="id")
 
 # 16. Resource log   actions: ['list']
@@ -226,8 +226,8 @@ list_webhook = Permission("{}/projects/{}/webhook/policies".format(harbor_base_u
 read_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 200, webhook_payload, payload_id_field="id")
 update_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "PUT", 200, webhook_payload, payload_id_field="id")
 list_webhook_executions = Permission("{}/projects/{}/webhook/policies/{}/executions".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 200, webhook_payload, payload_id_field="id")
-list_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/888/tasks".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
-read_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/888/tasks/888/log".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
+list_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/88888888/tasks".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
+read_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/88888888/tasks/88888888/log".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
 list_webhook_events = Permission("{}/projects/{}/webhook/events".format(harbor_base_url, project_id), "GET", 200)
 delete_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "DELETE", 200, webhook_payload, payload_id_field="id")
 
