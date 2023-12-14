@@ -288,6 +288,47 @@ list_vul = Permission("{}/security/vul".format(harbor_base_url), "GET", 200)
 read_catalog = Permission("{}/v2/_catalog".format(endpoint_URL), "GET", 200)
 # catalog permissions end
 
+# garbage-collection permissions start
+gc_payload = {
+    "parameters": {
+        "delete_untagged": True,
+        "workers": 1,
+        "dry_run": True
+    },
+    "schedule": {
+        "type": "Manual"
+    }
+}
+create_gc = Permission("{}/system/gc/schedule".format(harbor_base_url), "POST", 201, gc_payload, "id", id_from_header=True)
+list_gc = Permission("{}/system/gc".format(harbor_base_url), "GET", 200)
+read_gc = Permission("{}/system/gc/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=gc_payload, payload_id_field="id")
+stop_gc = Permission("{}/system/gc/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=gc_payload, payload_id_field="id")
+read_gc_log = Permission("{}/system/gc/{}/log".format(harbor_base_url, "88888888"), "GET", 404)
+read_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url), "GET", 200)
+update_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url), "PUT", 200, gc_payload)
+# garbage-collection permissions end
+
+# purge-audit permissions start
+purge_audit_payload = {
+    "parameters": {
+        "audit_retention_hour": 24,
+        "include_operations": "create,delete,pull",
+        "dry_run": True
+    },
+    "schedule": {
+        "type": "Manual"
+    }
+}
+create_purge_audit = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "POST", 201, purge_audit_payload, "id", id_from_header=True)
+list_purge_audit = Permission("{}/system/purgeaudit".format(harbor_base_url), "GET", 200)
+read_purge_audit = Permission("{}/system/purgeaudit/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=purge_audit_payload, payload_id_field="id")
+stop_purge_audit = Permission("{}/system/purgeaudit/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=purge_audit_payload, payload_id_field="id")
+read_purge_audit_log = Permission("{}/system/purgeaudit/{}/log".format(harbor_base_url, "88888888"), "GET", 404)
+read_purge_audit_schedule = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "GET", 200)
+update_purge_audit_schedule = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "PUT", 200, purge_audit_payload)
+# purge-audit permissions end
+
+
 resource_permissions = {
     "audit-log": [list_audit_logs],
     "preheat-instance": [create_preheat_instance, list_preheat_instance, read_preheat_instance, update_preheat_instance, delete_preheat_instance],
@@ -302,7 +343,9 @@ resource_permissions = {
     "scanner": [list_scanner, create_scanner, ping_scanner, read_scanner, update_scanner, delete_scanner, set_default_scanner, get_scanner_metadata],
     "label": [create_label, read_label, update_label, delete_label],
     "security-hub": [read_summary, list_vul],
-    "catalog": [read_catalog]
+    "catalog": [read_catalog],
+    "garbage-collection": [create_gc, list_gc, read_gc, stop_gc, read_gc_log, read_gc_schedule, update_gc_schedule],
+    "purge-audit": [create_purge_audit, list_purge_audit, read_purge_audit, stop_purge_audit, read_purge_audit_log, read_purge_audit_schedule, update_purge_audit_schedule]
 }
 resource_permissions["all"] = [item for sublist in resource_permissions.values() for item in sublist]
 
