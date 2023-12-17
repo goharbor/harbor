@@ -19,6 +19,8 @@ export class AppConfig {
     admiral_endpoint: string;
     auth_mode: string;
     primary_auth_mode: boolean;
+    audit_log_track_ip_address: boolean;
+    audit_log_track_user_agent: boolean;
     registry_url: string;
     project_creation_restriction: string;
     self_registration: boolean;

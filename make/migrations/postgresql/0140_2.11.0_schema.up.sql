@@ -1,3 +1,6 @@
+ALTER TABLE audit_log ADD user_agent VARCHAR(255);
+ALTER TABLE audit_log ADD client_ip inet;
+
 /*
 table artifact:
   id            SERIAL PRIMARY KEY NOT NULL,

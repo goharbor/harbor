@@ -82,12 +82,14 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		return nil
 	}
 	res := &models.GeneralInfo{
-		AuthMode:         &d.AuthMode,
-		PrimaryAuthMode:  &d.PrimaryAuthMode,
-		SelfRegistration: &d.SelfRegistration,
-		HarborVersion:    &d.HarborVersion,
-		BannerMessage:    &d.BannerMessage,
-		OIDCProviderName: &d.OIDCProviderName,
+		AuthMode:               &d.AuthMode,
+		PrimaryAuthMode:        &d.PrimaryAuthMode,
+		SelfRegistration:       &d.SelfRegistration,
+		HarborVersion:          &d.HarborVersion,
+		BannerMessage:          &d.BannerMessage,
+		OIDCProviderName:       &d.OIDCProviderName,
+		AuditLogTrackIPAddress: &d.AuditLogs.TrackIPAddress,
+		AuditLogTrackUserAgent: &d.AuditLogs.TrackUserAgent,
 	}
 	if d.AuthProxySettings != nil {
 		res.AuthproxySettings = &models.AuthproxySetting{

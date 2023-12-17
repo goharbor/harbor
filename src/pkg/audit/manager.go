@@ -77,9 +77,15 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.AuditLog, error) {
 // Create ...
 func (m *manager) Create(ctx context.Context, audit *model.AuditLog) (int64, error) {
 	if len(config.AuditLogForwardEndpoint(ctx)) > 0 {
-		LogMgr.DefaultLogger(ctx).WithField("operator", audit.Username).
-			WithField("time", audit.OpTime).WithField("resourceType", audit.ResourceType).
-			Infof("action:%s, resource:%s", audit.Operation, audit.Resource)
+		logger := LogMgr.DefaultLogger(ctx).WithField("operator", audit.Username).
+			WithField("time", audit.OpTime).WithField("resourceType", audit.ResourceType)
+		if config.AuditLogTrackIPAddress(ctx) && audit.ClientIP != nil {
+			logger.WithField("clientIP", *audit.ClientIP)
+		}
+		if config.AuditLogTrackUserAgent(ctx) && audit.UserAgent != nil {
+			logger.WithField("userAgent", *audit.UserAgent)
+		}
+		logger.Infof("action:%s, resource:%s", audit.Operation, audit.Resource)
 	}
 	if config.SkipAuditLogDatabase(ctx) {
 		return 0, nil

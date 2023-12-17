@@ -6833,6 +6833,12 @@ definitions:
         format: date-time
         example: '2006-01-02T15:04:05Z'
         description: The time when this operation is triggered.
+      client_ip:
+        type: string
+        description: Client IP address when this operation is triggered.
+      user_agent:
+        type: string
+        description: User agent during the operation.
   Metadata:
     type: object
     properties:
@@ -7871,6 +7877,16 @@ definitions:
         x-nullable: true
         x-omitempty: true
         $ref: '#/definitions/AuthproxySetting'
+      audit_log_track_ip_address:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether IP address tracking is on in audit logs.
+      audit_log_track_user_agent:
+        type: boolean
+        x-nullable: true
+        x-omitempty: true
+        description: The flag to indicate whether user agent tracking is on in audit logs.
       oidc_provider_name:
         type: string
         x-nullable: true
@@ -8931,6 +8947,12 @@ definitions:
       skip_audit_log_database:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether skip the audit log in database
+      audit_log_track_ip_address:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether client ip address tracking is enabled in audit logs
+      audit_log_track_user_agent:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether user agent tracking is enabled in audit logs
       scanner_skip_update_pulltime:
         $ref: '#/definitions/BoolConfigItem'
         description: Whether or not to skip update the pull time for scanner
@@ -9209,6 +9231,16 @@ definitions:
       skip_audit_log_database:
         type: boolean
         description: Skip audit log database
+        x-omitempty: true
+        x-isnullable: true
+      audit_log_track_ip_address:
+        type: boolean
+        description: Track IP addresses in audit logs
+        x-omitempty: true
+        x-isnullable: true
+      audit_log_track_user_agent:
+        type: boolean
+        description: Track user agent in audit logs
         x-omitempty: true
         x-isnullable: true
       session_timeout:

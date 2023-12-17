@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/controller/event"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -40,7 +41,6 @@ func (h *Handler) Name() string {
 
 // Handle ...
 func (h *Handler) Handle(ctx context.Context, value interface{}) error {
-	var auditLog *am.AuditLog
 	var addAuditLog bool
 	switch v := value.(type) {
 	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
@@ -60,9 +60,17 @@ func (h *Handler) Handle(ctx context.Context, value interface{}) error {
 			log.Errorf("failed to handler event %v", err)
 			return err
 		}
-		auditLog = al
-		if auditLog != nil {
-			_, err := audit.Mgr.Create(ctx, auditLog)
+
+		if al != nil {
+			ip := lib.GetClientIPAddress(ctx)
+			if ip != "" {
+				al.ClientIP = &ip
+			}
+			ua := lib.GetUserAgent(ctx)
+			if ua != "" {
+				al.UserAgent = &ua
+			}
+			_, err := audit.Mgr.Create(ctx, al)
 			if err != nil {
 				log.Debugf("add audit log err: %v", err)
 			}

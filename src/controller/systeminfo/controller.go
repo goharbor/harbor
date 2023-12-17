@@ -49,8 +49,14 @@ type Data struct {
 	HarborVersion     string
 	BannerMessage     string
 	AuthProxySettings *models.HTTPAuthProxy
+	AuditLogs         AuditLogSettings
 	Protected         *protectedData
 	OIDCProviderName  string
+}
+
+type AuditLogSettings struct {
+	TrackIPAddress bool
+	TrackUserAgent bool
 }
 
 type protectedData struct {
@@ -105,6 +111,10 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 		BannerMessage:    utils.SafeCastString(mgr.Get(ctx, common.BannerMessage).GetString()),
 		OIDCProviderName: OIDCProviderName(cfg),
+		AuditLogs: AuditLogSettings{
+			TrackIPAddress: utils.SafeCastBool(cfg[common.AuditLogTrackIPAddress]),
+			TrackUserAgent: utils.SafeCastBool(cfg[common.AuditLogTrackUserAgent]),
+		},
 	}
 	if res.AuthMode == common.HTTPAuth {
 		if s, err := config.HTTPAuthProxySetting(ctx); err == nil {

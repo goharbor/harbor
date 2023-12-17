@@ -315,14 +315,21 @@ func (a *projectAPI) GetLogs(ctx context.Context, params operation.GetLogsParams
 
 	var auditLogs []*models.AuditLog
 	for _, log := range logs {
-		auditLogs = append(auditLogs, &models.AuditLog{
+		al := &models.AuditLog{
 			ID:           log.ID,
 			Resource:     log.Resource,
 			ResourceType: log.ResourceType,
 			Username:     log.Username,
 			Operation:    log.Operation,
 			OpTime:       strfmt.DateTime(log.OpTime),
-		})
+		}
+		if log.UserAgent != nil {
+			al.UserAgent = *log.UserAgent
+		}
+		if log.ClientIP != nil {
+			al.ClientIP = *log.ClientIP
+		}
+		auditLogs = append(auditLogs, al)
 	}
 	return operation.NewGetLogsOK().
 		WithXTotalCount(total).

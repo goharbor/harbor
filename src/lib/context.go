@@ -27,6 +27,8 @@ const (
 	contextKeyAuthMode     contextKey = "authMode"
 	contextKeyCarrySession contextKey = "carrySession"
 	contextKeyRequestID    contextKey = "X-Request-ID"
+	contextClientIPAddress contextKey = "clientIPAddress"
+	contextUserAgent       contextKey = "userAgent"
 )
 
 // ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
@@ -127,4 +129,34 @@ func GetXRequestID(ctx context.Context) string {
 		id, _ = value.(string)
 	}
 	return id
+}
+
+// WithClientIPAddress returns a context with ipAddress set
+func WithClientIPAddress(ctx context.Context, ipAddress string) context.Context {
+	return setToContext(ctx, contextClientIPAddress, ipAddress)
+}
+
+// WithUserAgent returns a context with user agent set
+func WithUserAgent(ctx context.Context, userAgent string) context.Context {
+	return setToContext(ctx, contextUserAgent, userAgent)
+}
+
+// GetClientIPAddress gets the ip address from the context
+func GetClientIPAddress(ctx context.Context) string {
+	var result string
+	value := getFromContext(ctx, contextClientIPAddress)
+	if value != nil {
+		result, _ = value.(string)
+	}
+	return result
+}
+
+// GetUserAgent gets the user agent from the context
+func GetUserAgent(ctx context.Context) string {
+	var result string
+	value := getFromContext(ctx, contextUserAgent)
+	if value != nil {
+		result, _ = value.(string)
+	}
+	return result
 }

@@ -18,6 +18,8 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/goharbor/harbor/src/server/middleware/clientinfo"
+
 	"github.com/beego/beego/v2/server/web"
 
 	"github.com/goharbor/harbor/src/pkg/distribution"
@@ -94,6 +96,7 @@ func MiddleWares() []web.MiddleWare {
 		session.Middleware(),
 		csrf.Middleware(),
 		orm.Middleware(pingSkipper),
+		clientinfo.Middleware(pingSkipper),
 		notification.Middleware(pingSkipper), // notification must ahead of transaction ensure the DB transaction execution complete
 		transaction.Middleware(dbTxSkippers...),
 		artifactinfo.Middleware(),

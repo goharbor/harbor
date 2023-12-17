@@ -13,11 +13,15 @@ import { SharedTestingModule } from '../../../shared/shared.module';
 import { registerLocaleData } from '@angular/common';
 import locale_en from '@angular/common/locales/en';
 import { DatePickerComponent } from '../../../shared/components/datetime-picker/datetime-picker.component';
+import { AppConfigService } from '../../../services/app-config.service';
 
 describe('AuditLogComponent', () => {
     let component: AuditLogComponent;
     let fixture: ComponentFixture<AuditLogComponent>;
     const mockMessageHandlerService = {
+        handleError: () => {},
+    };
+    let fakeAppConfigService = {
         handleError: () => {},
     };
     const mockActivatedRoute = {
@@ -105,6 +109,7 @@ describe('AuditLogComponent', () => {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
                 },
+                { provide: AppConfigService, useValue: fakeAppConfigService },
             ],
         }).compileComponents();
     });

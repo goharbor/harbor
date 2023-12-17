@@ -210,6 +210,14 @@ describe('ProjectComponent', () => {
                     value: false,
                     editable: true,
                 },
+                audit_log_track_ip_address: {
+                    value: false,
+                    editable: true,
+                },
+                audit_log_track_user_agent: {
+                    value: false,
+                    editable: true,
+                },
             });
         },
     };

@@ -534,7 +534,13 @@
         "OF": "of",
         "NOT_FOUND": "We couldn't find any logs!",
         "RESOURCE": "Resource",
-        "RESOURCE_TYPE": "Resource Type"
+        "RESOURCE_TYPE": "Resource Type",
+        "IP_ADDRESS": "IP Address",
+        "USER_AGENT": "User Agent",
+        "TRACK_IP": "IP-Address in Audit Log",
+        "TRACK_IP_TOOLTIP": "Capture the client's IP addresses on each request and store them in the audit log.",
+        "TRACK_UA": "User-Agent in Audit Log",
+        "TRACK_UA_TOOLTIP": "Capture the client's User-Agent on each request and store it in the audit log."
     },
     "REPLICATION": {
         "PUSH_BASED_ONLY": "Only for the push-based replication",
