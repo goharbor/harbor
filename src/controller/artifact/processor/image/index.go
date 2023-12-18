@@ -44,6 +44,6 @@ type indexProcessor struct {
 	*base.IndexProcessor
 }
 
-func (i *indexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (i *indexProcessor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ArtifactTypeImage
 }

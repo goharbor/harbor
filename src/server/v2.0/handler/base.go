@@ -46,12 +46,12 @@ var (
 type BaseAPI struct{}
 
 // Prepare default prepare for operation
-func (*BaseAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (*BaseAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 
 // SendError returns response for the err
-func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
+func (*BaseAPI) SendError(_ context.Context, err error) middleware.Responder {
 	return NewErrResponder(err)
 }
 
@@ -157,7 +157,7 @@ func (b *BaseAPI) RequireSolutionUserAccess(ctx context.Context) error {
 }
 
 // BuildQuery builds the query model according to the query string
-func (b *BaseAPI) BuildQuery(ctx context.Context, query, sort *string, pageNumber, pageSize *int64) (*q.Query, error) {
+func (b *BaseAPI) BuildQuery(_ context.Context, query, sort *string, pageNumber, pageSize *int64) (*q.Query, error) {
 	var (
 		qs string
 		st string
@@ -180,7 +180,7 @@ func (b *BaseAPI) BuildQuery(ctx context.Context, query, sort *string, pageNumbe
 }
 
 // Links return Links based on the provided pagination information
-func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) lib.Links {
+func (b *BaseAPI) Links(_ context.Context, u *url.URL, total, pageNumber, pageSize int64) lib.Links {
 	var links lib.Links
 	if pageSize == 0 {
 		return links
@@ -235,7 +235,7 @@ type ErrResponder struct {
 }
 
 // WriteResponse ...
-func (r *ErrResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (r *ErrResponder) WriteResponse(rw http.ResponseWriter, _ runtime.Producer) {
 	lib_http.SendError(rw, r.err)
 }
 

@@ -73,7 +73,7 @@ func (r *Replication) ShouldRetry() bool {
 }
 
 // Validate does nothing
-func (r *Replication) Validate(params job.Parameters) error {
+func (r *Replication) Validate(_ job.Parameters) error {
 	return nil
 }
 

@@ -102,9 +102,9 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 		}
 		knownPool.Store(name, pool)
 		return pool, nil
-	} else {
-		return nil, fmt.Errorf("bad redis url: not support scheme %s", u.Scheme)
 	}
+
+	return nil, fmt.Errorf("bad redis url: not support scheme %s", u.Scheme)
 }
 
 func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, error) {

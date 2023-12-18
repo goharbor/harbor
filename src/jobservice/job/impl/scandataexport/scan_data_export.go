@@ -71,7 +71,7 @@ func (sde *ScanDataExport) ShouldRetry() bool {
 // Validate Indicate whether the parameters of job are valid.
 // Return:
 // error if parameters are not valid. NOTES: If no parameters needed, directly return nil.
-func (sde *ScanDataExport) Validate(params job.Parameters) error {
+func (sde *ScanDataExport) Validate(_ job.Parameters) error {
 	return nil
 }
 

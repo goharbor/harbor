@@ -101,7 +101,7 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
 	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
-	if errors.Is(err, cache.ErrNotFound) {
+	if errors.Is(err, cache.ErrNotFound) { // nolint:revive
 		// skip to update digest, continue
 	} else if err != nil {
 		// for other error, return
@@ -260,7 +260,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	return man, nil
 }
 
-func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
+func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
