@@ -30,6 +30,6 @@ func newPingAPI() *pingAPI {
 	return &pingAPI{}
 }
 
-func (p *pingAPI) GetPing(ctx context.Context, params ping.GetPingParams) middleware.Responder {
+func (p *pingAPI) GetPing(_ context.Context, _ ping.GetPingParams) middleware.Responder {
 	return ping.NewGetPingOK().WithPayload("Pong")
 }

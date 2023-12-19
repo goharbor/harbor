@@ -347,15 +347,16 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 // Get a redis connection pool
 func (bs *Bootstrap) getRedisPool(redisPoolConfig *config.RedisPoolConfig) *redis.Pool {
-	if pool, err := redislib.GetRedisPool("JobService", redisPoolConfig.RedisURL, &redislib.PoolParam{
+	pool, err := redislib.GetRedisPool("JobService", redisPoolConfig.RedisURL, &redislib.PoolParam{
 		PoolMaxIdle:           6,
 		PoolIdleTimeout:       time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
 		DialConnectionTimeout: dialConnectionTimeout,
 		DialReadTimeout:       dialReadTimeout,
 		DialWriteTimeout:      dialWriteTimeout,
-	}); err != nil {
+	})
+	if err != nil {
 		panic(err)
-	} else {
-		return pool
 	}
+	// else
+	return pool
 }

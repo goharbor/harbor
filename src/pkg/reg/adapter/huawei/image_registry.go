@@ -28,7 +28,7 @@ import (
 )
 
 // FetchArtifacts gets resources from Huawei SWR
-func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
+func (a *adapter) FetchArtifacts(_ []*model.Filter) ([]*model.Resource, error) {
 	resources := []*model.Resource{}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/repositories?filter=center::self", a.registry.URL)
@@ -111,9 +111,9 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 	}
 	contentType := resp.Header.Get("Content-Type")
 	contentLen := resp.Header.Get("Content-Length")
-	len, _ := strconv.Atoi(contentLen)
+	lenth, _ := strconv.Atoi(contentLen)
 
-	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(len)}, nil
+	return exist, &distribution.Descriptor{MediaType: contentType, Size: int64(lenth)}, nil
 }
 
 // DeleteManifest delete the manifest of Huawei SWR

@@ -146,7 +146,7 @@ func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespac
 }
 
 // ConvertResourceMetadata convert resource metadata for Huawei SWR
-func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
+func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetadata, _ *model.Namespace) (*model.ResourceMetadata, error) {
 	metadata := &model.ResourceMetadata{
 		Repository: resourceMetadata.Repository,
 		Vtags:      resourceMetadata.Vtags,

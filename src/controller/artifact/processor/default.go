@@ -48,7 +48,7 @@ type defaultProcessor struct {
 	regCli registry.Client
 }
 
-func (d *defaultProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (d *defaultProcessor) GetArtifactType(_ context.Context, artifact *artifact.Artifact) string {
 	// try to parse the type from the media type
 	strs := artifactTypeRegExp.FindStringSubmatch(artifact.MediaType)
 	if len(strs) == 2 {
@@ -57,7 +57,7 @@ func (d *defaultProcessor) GetArtifactType(ctx context.Context, artifact *artifa
 	// can not get the artifact type from the media type, return unknown
 	return ArtifactTypeUnknown
 }
-func (d *defaultProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (d *defaultProcessor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return nil
 }
 
@@ -127,7 +127,7 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	return nil
 }
 
-func (d *defaultProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*Addition, error) {
+func (d *defaultProcessor) AbstractAddition(_ context.Context, artifact *artifact.Artifact, _ string) (*Addition, error) {
 	// Addition not support for user-defined artifact yet.
 	// It will be support in the future.
 	// return error directly

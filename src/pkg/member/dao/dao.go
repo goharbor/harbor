@@ -111,7 +111,7 @@ func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, q
 	return members, err
 }
 
-func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error) {
+func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, _ *q.Query, roles ...int) (int, error) {
 	log.Debugf("Query condition %+v", projectID)
 	if projectID == 0 {
 		return 0, fmt.Errorf("failed to get total of project members, project id required %v", projectID)
