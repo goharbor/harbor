@@ -23,7 +23,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-      - uses: google-github-actions/setup-gcloud@v1
+      - uses: google-github-actions/setup-gcloud@v2
       - run: gcloud info
       - name: Set up Go 1.21
         uses: actions/setup-go@v5
