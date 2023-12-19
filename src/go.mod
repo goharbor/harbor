@@ -14,7 +14,7 @@ require (
 	github.com/casbin/casbin v1.9.1
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/cloudevents/sdk-go/v2 v2.13.0
-	github.com/coreos/go-oidc/v3 v3.7.0
+	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
