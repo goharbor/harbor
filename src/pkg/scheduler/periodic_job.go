@@ -43,11 +43,11 @@ func (pj *PeriodicJob) ShouldRetry() bool {
 }
 
 // Validate the parameters
-func (pj *PeriodicJob) Validate(params job.Parameters) error {
+func (pj *PeriodicJob) Validate(_ job.Parameters) error {
 	return nil
 }
 
 // Run the job
-func (pj *PeriodicJob) Run(ctx job.Context, params job.Parameters) error {
+func (pj *PeriodicJob) Run(ctx job.Context, _ job.Parameters) error {
 	return ctx.Checkin("checkin")
 }

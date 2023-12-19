@@ -47,7 +47,7 @@ func newGCAPI() *gcAPI {
 	}
 }
 
-func (g *gcAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (g *gcAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 
@@ -158,7 +158,7 @@ func (g *gcAPI) updateSchedule(ctx context.Context, cronType, cron string, polic
 	return g.createSchedule(ctx, cronType, cron, policy)
 }
 
-func (g *gcAPI) GetGCSchedule(ctx context.Context, params operation.GetGCScheduleParams) middleware.Responder {
+func (g *gcAPI) GetGCSchedule(ctx context.Context, _ operation.GetGCScheduleParams) middleware.Responder {
 	if err := g.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceGarbageCollection); err != nil {
 		return g.SendError(ctx, err)
 	}

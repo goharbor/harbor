@@ -281,8 +281,8 @@ func (c *client) ManifestExist(repository, reference string) (bool, *distributio
 	dig := resp.Header.Get("Docker-Content-Digest")
 	contentType := resp.Header.Get("Content-Type")
 	contentLen := resp.Header.Get("Content-Length")
-	len, _ := strconv.Atoi(contentLen)
-	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(len)}, nil
+	lenth, _ := strconv.Atoi(contentLen)
+	return true, &distribution.Descriptor{Digest: digest.Digest(dig), MediaType: contentType, Size: int64(lenth)}, nil
 }
 
 func (c *client) PullManifest(repository, reference string, acceptedMediaTypes ...string) (
@@ -399,7 +399,7 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 }
 
 // PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
-func (c *client) PullBlobChunk(repository, digest string, blobSize int64, start, end int64) (int64, io.ReadCloser, error) {
+func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end int64) (int64, io.ReadCloser, error) {
 	req, err := http.NewRequest(http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
 	if err != nil {
 		return 0, nil, err

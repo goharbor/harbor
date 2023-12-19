@@ -147,7 +147,7 @@ func OIDCProviderName(cfg map[string]interface{}) string {
 	return utils.SafeCastString(cfg[common.OIDCName])
 }
 
-func (c *controller) GetCapacity(ctx context.Context) (*imagestorage.Capacity, error) {
+func (c *controller) GetCapacity(_ context.Context) (*imagestorage.Capacity, error) {
 	systeminfo.Init()
 	return imagestorage.GlobalDriver.Cap()
 }
@@ -158,14 +158,15 @@ func (c *controller) GetCA(ctx context.Context) (io.ReadCloser, error) {
 	if len(testRootCertPath) > 0 {
 		path = testRootCertPath
 	}
-	if _, err := os.Stat(path); err == nil {
+	_, err := os.Stat(path)
+	if err == nil {
 		return os.Open(path)
 	} else if os.IsNotExist(err) {
 		return nil, errors.NotFoundError(fmt.Errorf("cert not found in path: %s", path))
-	} else {
-		logger.Errorf("Failed to stat the cert, path: %s, error: %v", path, err)
-		return nil, err
 	}
+	// else
+	logger.Errorf("Failed to stat the cert, path: %s, error: %v", path, err)
+	return nil, err
 }
 
 // NewController return an instance of controller
