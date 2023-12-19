@@ -148,7 +148,7 @@ func (p *Project) AutoScan() bool {
 }
 
 // FilterByPublic returns orm.QuerySeter with public filter
-func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
 	if isTrue(value) {
 		subQuery = fmt.Sprintf(subQuery, "true")
@@ -159,7 +159,7 @@ func (p *Project) FilterByPublic(ctx context.Context, qs orm.QuerySeter, key str
 }
 
 // FilterByOwner returns orm.QuerySeter with owner filter
-func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (p *Project) FilterByOwner(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	username, ok := value.(string)
 	if !ok {
 		return qs
@@ -169,7 +169,7 @@ func (p *Project) FilterByOwner(ctx context.Context, qs orm.QuerySeter, key stri
 }
 
 // FilterByMember returns orm.QuerySeter with member filter
-func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (p *Project) FilterByMember(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	query, ok := value.(*MemberQuery)
 	if !ok {
 		return qs
@@ -197,7 +197,7 @@ func (p *Project) FilterByMember(ctx context.Context, qs orm.QuerySeter, key str
 }
 
 // FilterByNames returns orm.QuerySeter with name filter
-func (p *Project) FilterByNames(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	query, ok := value.(*NamesQuery)
 	if !ok {
 		return qs

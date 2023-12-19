@@ -87,7 +87,7 @@ func New() http.Handler {
 }
 
 // function is called before the Prepare of the operation
-func beforePrepare(ctx context.Context, operation string, params interface{}) rmiddleware.Responder {
+func beforePrepare(ctx context.Context, operation string, _ interface{}) rmiddleware.Responder {
 	metric.SetMetricOpID(ctx, operation)
 	return nil
 }
@@ -96,6 +96,6 @@ func beforePrepare(ctx context.Context, operation string, params interface{}) rm
 // it will return directly when bind and validate failed.
 // The response format of the default ServeError implementation does not match the internal error response format.
 // So we needed to convert the format to the internal error response format.
-func serveError(rw http.ResponseWriter, r *http.Request, err error) {
+func serveError(rw http.ResponseWriter, _ *http.Request, err error) {
 	lib_http.SendError(rw, err)
 }
