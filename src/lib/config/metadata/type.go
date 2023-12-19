@@ -38,7 +38,7 @@ type Type interface {
 type StringType struct {
 }
 
-func (t *StringType) validate(str string) error {
+func (t *StringType) validate(_ string) error {
 	return nil
 }
 
@@ -177,7 +177,7 @@ func (t *BoolType) get(str string) (interface{}, error) {
 type PasswordType struct {
 }
 
-func (t *PasswordType) validate(str string) error {
+func (t *PasswordType) validate(_ string) error {
 	return nil
 }
 

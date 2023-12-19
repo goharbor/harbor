@@ -159,7 +159,7 @@ func (a *ArtifactEventHandler) onPull(ctx context.Context, event *event.Artifact
 	return nil
 }
 
-func (a *ArtifactEventHandler) updatePullTimeInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *ArtifactEventHandler) updatePullTimeInCache(_ context.Context, event *event.ArtifactEvent) {
 	var tagName string
 	if len(event.Tags) != 0 {
 		tagName = event.Tags[0]
@@ -173,7 +173,7 @@ func (a *ArtifactEventHandler) updatePullTimeInCache(ctx context.Context, event 
 	a.pullTimeStore[key] = time.Now()
 }
 
-func (a *ArtifactEventHandler) addPullCountInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *ArtifactEventHandler) addPullCountInCache(_ context.Context, event *event.ArtifactEvent) {
 	a.pullCountLock.Lock()
 	defer a.pullCountLock.Unlock()
 

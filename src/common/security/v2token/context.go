@@ -63,7 +63,7 @@ func (t *tokenSecurityCtx) GetMyProjects() ([]*models.Project, error) {
 	return []*models.Project{}, nil
 }
 
-func (t *tokenSecurityCtx) GetProjectRoles(projectIDOrName interface{}) []int {
+func (t *tokenSecurityCtx) GetProjectRoles(_ interface{}) []int {
 	return []int{}
 }
 

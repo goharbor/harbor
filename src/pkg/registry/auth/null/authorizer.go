@@ -27,7 +27,7 @@ func NewAuthorizer() lib.Authorizer {
 
 type authorizer struct{}
 
-func (a *authorizer) Modify(req *http.Request) error {
+func (a *authorizer) Modify(_ *http.Request) error {
 	// do nothing
 	return nil
 }
