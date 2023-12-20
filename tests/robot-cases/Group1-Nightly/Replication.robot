@@ -379,6 +379,22 @@ Test Case - Robot Account Do Replication
     Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
     Cosign Sign  ${ip}/project${d}/${index}:${index_tag}
     Cosign Sign  ${ip}/project${d}/${index}@${image1sha256}
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image1}:${tag1}
+    Notation Sign  ${ip}/project${d}/${image2}:${tag2}
+    Notation Sign  ${ip}/project${d}/${index}:${index_tag}
+    Notation Sign  ${ip}/project${d}/${index}@${image2sha256}
+    Cosign Push Sbom  ${ip}/project${d}/${image1}:${tag1}
+    # Get SBOM digest
+    Go Into Repo  project${d}  ${image1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_sbom_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
+    Wait Until Element Is Visible And Enabled  ${artifact_digest}
+    ${sbom_digest}=  Get Text  ${artifact_digest}
+    ${sbom_short_digest}=  Get Substring  ${sbom_digest}  0  15
+    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    Cosign Sign  ${ip}/project${d}/${image1}@${sbom_digest}
+    Notation Sign  ${ip}/project${d}/${image1}@${sbom_digest}
     Docker Logout  ${ip}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
@@ -391,15 +407,31 @@ Test Case - Robot Account Do Replication
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
     Should Be Signed  ${tag1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed  ${tag2}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
     Should Be Signed  ${index_tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed By Notation  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image1_short_sha256}')]]//button)[1]
+    Should Be Signed By Cosign  digest=${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image2_short_sha256}')]]//button)[1]
+    Should Be Signed By Notation  digest=${image2_short_sha256}
     # pull mode
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -411,15 +443,31 @@ Test Case - Robot Account Do Replication
     Check Latest Replication Enabled Copy By Chunk
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
     Should Be Signed  ${tag1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed  ${tag2}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
     Should Be Signed  ${index_tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed By Notation  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image1_short_sha256}')]]//button)[1]
+    Should Be Signed By Cosign  digest=${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image2_short_sha256}')]]//button)[1]
+    Should Be Signed By Notation  digest=${image2_short_sha256}
     Close Browser
 
 Test Case - Replication Triggered By Events
