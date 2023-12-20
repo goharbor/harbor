@@ -138,8 +138,8 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 	}
 
 	key, value := "", ""
-	// for key, value = range metas {
-	// }
+	for key, value = range metas { // nolint:revive
+	}
 
 	switch key {
 	case proModels.ProMetaPublic, proModels.ProMetaEnableContentTrust, proModels.ProMetaEnableContentTrustCosign,
