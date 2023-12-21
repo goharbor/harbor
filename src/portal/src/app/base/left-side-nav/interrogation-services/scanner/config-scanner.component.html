@@ -142,6 +142,9 @@
             <clr-dg-column>{{ 'SCANNER.HEALTH' | translate }}</clr-dg-column>
             <clr-dg-column>{{ 'SCANNER.ENABLED' | translate }}</clr-dg-column>
             <clr-dg-column>{{ 'SCANNER.AUTH' | translate }}</clr-dg-column>
+            <clr-dg-column>{{
+                'SCANNER.DESCRIPTION' | translate
+            }}</clr-dg-column>
             <clr-dg-placeholder>
                 {{ 'SCANNER.NO_SCANNER' | translate }}
             </clr-dg-placeholder>
@@ -195,6 +198,7 @@
                 <clr-dg-cell>{{
                     scanner.auth ? scanner.auth : 'None'
                 }}</clr-dg-cell>
+                <clr-dg-cell>{{ scanner.description }}</clr-dg-cell>
                 <scanner-metadata
                     *clrIfExpanded
                     [uid]="scanner.uuid"
