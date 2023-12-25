@@ -13,7 +13,7 @@ require (
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/casbin/casbin v1.9.1
 	github.com/cenkalti/backoff/v4 v4.2.1
-	github.com/cloudevents/sdk-go/v2 v2.13.0
+	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.2+incompatible
