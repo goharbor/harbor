@@ -403,6 +403,10 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 		}
 		res = append(res, s)
 	}
+	// if remote.Groups is not a []string, but local.Groups is, this will create a fallback
+	if len(res) == 0 {
+		return res, false
+	}
 	return res, true
 }
 
