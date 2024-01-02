@@ -5,7 +5,7 @@ package registry
 import (
 	http "net/http"
 
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution/v3"
 
 	io "io"
 

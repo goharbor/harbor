@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 	"github.com/opencontainers/go-digest"
 
 	"github.com/goharbor/harbor/src/controller/artifact"

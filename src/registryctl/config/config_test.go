@@ -17,7 +17,7 @@ package config
 import (
 	"testing"
 
-	_ "github.com/docker/distribution/registry/storage/driver/filesystem"
+	_ "github.com/distribution/distribution/v3/registry/storage/driver/filesystem"
 	"github.com/stretchr/testify/assert"
 )
 

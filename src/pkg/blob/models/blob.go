@@ -21,9 +21,8 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -117,7 +116,6 @@ func (b *Blob) IsForeignLayer() bool {
 // IsManifest returns true if the blob is manifest layer
 func (b *Blob) IsManifest() bool {
 	return b.ContentType == schema2.MediaTypeManifest ||
-		b.ContentType == schema1.MediaTypeManifest || b.ContentType == schema1.MediaTypeSignedManifest ||
 		b.ContentType == v1.MediaTypeImageManifest || b.ContentType == v1.MediaTypeImageIndex ||
 		b.ContentType == manifestlist.MediaTypeManifestList
 }
