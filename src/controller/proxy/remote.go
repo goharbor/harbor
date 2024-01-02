@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/reg"

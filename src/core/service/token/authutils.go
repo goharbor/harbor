@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/v3/registry/auth/token"
 	"github.com/docker/libtrust"
 	"github.com/golang-jwt/jwt/v5"
 
@@ -138,7 +138,7 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 		return nil, err
 	}
 	// Add kid to token header for compatibility with docker distribution's code
-	// see https://github.com/docker/distribution/blob/release/2.7/registry/auth/token/token.go#L197
+	// see https://github.com/distribution/distribution/v3/blob/release/2.7/registry/auth/token/token.go#L197
 	k, err := libtrust.UnmarshalPrivateKeyPEM(options.PrivateKey)
 	if err != nil {
 		return nil, err

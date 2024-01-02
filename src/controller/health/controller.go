@@ -19,7 +19,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/v3/health"
 )
 
 var (
