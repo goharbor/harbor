@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/v3/health"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
@@ -44,7 +44,7 @@ func TestHTTPStatusCodeHealthChecker(t *testing.T) {
 	handler := &test.RequestHandlerMapping{
 		Method:  http.MethodGet,
 		Pattern: "/health",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
+		Handler: func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
 	}

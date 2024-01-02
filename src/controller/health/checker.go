@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/v3/health"
 
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
