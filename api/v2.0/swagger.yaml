@@ -4850,7 +4850,6 @@ paths:
         '200':
           description: Get scheduler status successfully.
           schema:
-            type: object
             $ref: '#/definitions/SchedulerStatus'
         '401':
           $ref: '#/responses/401'
