@@ -66,6 +66,12 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		return nil, err
 	}
 	token, err := jwt.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
+		// Add some leeway to claims to account for clock skews on distributed environments
+		// https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
+		token.Claims.NotBefore = token.Claims.NotBefore - 10
+		token.Claims.ExpiresAt = token.Claims.ExpiresAt + 10
+		token.Claims.IssuedAt = token.Claims.IssuedAt + 10
+
 		if token.Method.Alg() != opt.SignMethod.Alg() {
 			return nil, errors.New("invalid signing method")
 		}
