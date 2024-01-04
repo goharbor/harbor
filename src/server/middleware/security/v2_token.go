@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 
@@ -62,6 +65,11 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	cl := &v2TokenClaims{}
+	// Add some leeway to claims to account for clock skews on distributed environments
+	// https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
+	cl.Claims.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(cl.Claims.RegisteredClaims.ExpiresAt.Time.Add(time.Second * 10))
+	cl.Claims.RegisteredClaims.NotBefore = jwt.NewNumericDate(cl.Claims.RegisteredClaims.NotBefore.Time.Add(-time.Second * 10))
+	cl.Claims.RegisteredClaims.IssuedAt = jwt.NewNumericDate(cl.Claims.RegisteredClaims.IssuedAt.Time.Add(-time.Second * 10))
 	t, err := token.Parse(defaultOpt, tokenStr, cl)
 	if err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
