@@ -62,7 +62,8 @@ data_volume: /data
 #   ca_bundle:
 
 #   # storage backend, default is filesystem, options include filesystem, azure, gcs, s3, swift and oss
-#   # for more info about this configuration please refer https://docs.docker.com/registry/configuration/
+#   # for more info about this configuration please refer https://distribution.github.io/distribution/about/configuration/
+#   # and https://distribution.github.io/distribution/storage-drivers/
 #   filesystem:
 #     maxthreads: 100
 #   # set disable to true when you want to disable registry redirect
@@ -166,17 +167,6 @@ _version: 2.10.0
 #     ssl_mode: disable
 #     max_idle_conns: 2
 #     max_open_conns: 0
-
-# Uncomment redis if need to customize redis db
-# redis:
-#   # db_index 0 is for core, it's unchangeable
-#   # registry_db_index: 1
-#   # jobservice_db_index: 2
-#   # trivy_db_index: 5
-#   # it's optional, the db for harbor business misc, by default is 0, uncomment it if you want to change it.
-#   # harbor_db_index: 6
-#   # it's optional, the db for harbor cache layer, by default is 0, uncomment it if you want to change it.
-#   # cache_db_index: 7
 
 # Uncomment redis if need to customize redis db
 # redis:
