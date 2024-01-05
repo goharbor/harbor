@@ -66,7 +66,7 @@ require (
 	golang.org/x/oauth2 v0.13.0
 	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.14.0
-	golang.org/x/time v0.4.0
+	golang.org/x/time v0.5.0
 	gopkg.in/h2non/gock.v1 v1.0.16
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.11.3
