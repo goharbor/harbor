@@ -15,9 +15,11 @@
 package security
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 
@@ -35,11 +37,9 @@ type v2TokenClaims struct {
 }
 
 func (vtc *v2TokenClaims) Valid() error {
-	if err := vtc.Claims.Valid(); err != nil {
+	var v = jwt.NewValidator(jwt.WithLeeway(10*time.Second), jwt.WithAudience(svc_token.Registry))
+	if err := v.Validate(vtc.Claims); err != nil {
 		return err
-	}
-	if !vtc.VerifyAudience(svc_token.Registry, true) {
-		return fmt.Errorf("invalid token audience: %s", vtc.Audience)
 	}
 	return nil
 }
@@ -67,7 +67,8 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
-	if err := t.Claims.Valid(); err != nil {
+	var v = jwt.NewValidator(jwt.WithLeeway(10*time.Second))
+	if err := v.Validate(t.Claims); err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
