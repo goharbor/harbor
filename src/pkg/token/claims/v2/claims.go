@@ -40,7 +40,7 @@ type Claims struct {
 
 // Valid checks if the issuer is harbor
 func (c *Claims) Valid() error {
-	var v = jwt.NewValidator(jwt.WithLeeway(10*time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(10 * time.Second))
 
 	if err := v.Validate(c.RegisteredClaims); err != nil {
 		return err
