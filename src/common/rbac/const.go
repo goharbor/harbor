@@ -149,6 +149,9 @@ var (
 			{Resource: ResourceSecurityHub, Action: ActionList},
 
 			{Resource: ResourceCatalog, Action: ActionRead},
+
+			{Resource: ResourceQuota, Action: ActionRead},
+			{Resource: ResourceQuota, Action: ActionList},
 		},
 		"Project": {
 			{Resource: ResourceLog, Action: ActionList},
@@ -221,6 +224,8 @@ var (
 			{Resource: ResourceLabel, Action: ActionDelete},
 			{Resource: ResourceLabel, Action: ActionList},
 			{Resource: ResourceLabel, Action: ActionUpdate},
+
+			{Resource: ResourceQuota, Action: ActionRead},
 		},
 	}
 )

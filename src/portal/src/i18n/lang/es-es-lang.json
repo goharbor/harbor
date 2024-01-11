@@ -412,6 +412,7 @@
         "IMMUTABLE_TAG": "Immutable Tag",
         "LOG": "Log",
         "NOTIFICATION_POLICY": "Notification Policy",
+        "QUOTA": "Quota",
         "BACK": "Back",
         "NEXT": "Next",
         "FINISH": "Finish",
