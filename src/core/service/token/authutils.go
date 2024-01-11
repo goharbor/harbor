@@ -121,14 +121,16 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 	}
 	now := time.Now().UTC()
 
+	// Add some leeway to claims to account for clock skews on distributed environments
+	// https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
 	claims := &v2.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    options.Issuer,
 			Subject:   username,
 			Audience:  jwt.ClaimStrings([]string{service}),
-			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(expiration) * time.Minute)),
-			NotBefore: jwt.NewNumericDate(now),
-			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(expiration) * time.Minute).Add(60 * time.Second)),
+			NotBefore: jwt.NewNumericDate(now.Add(-60 * time.Second)),
+			IssuedAt:  jwt.NewNumericDate(now.Add(-60 * time.Second)),
 			ID:        utils.GenerateRandomStringWithLen(16),
 		},
 		Access: access,
@@ -152,6 +154,6 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 	return &models.Token{
 		Token:     rawToken,
 		ExpiresIn: expiration * 60,
-		IssuedAt:  now.Format(time.RFC3339),
+		IssuedAt:  now.Add(-60 * time.Second).Format(time.RFC3339),
 	}, nil
 }
