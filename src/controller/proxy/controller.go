@@ -183,7 +183,10 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	if c.cache == nil {
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
-
+	// Pass digest to the cache key, digest is more stable than tag, because tag could be updated
+	if len(art.Digest) == 0 {
+		art.Digest = string(desc.Digest)
+	}
 	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
 	if err != nil {
 		if errors.Is(err, cache.ErrNotFound) {
@@ -318,8 +321,8 @@ func getRemoteRepo(art lib.ArtifactInfo) string {
 }
 
 func getReference(art lib.ArtifactInfo) string {
-	if len(art.Tag) > 0 {
-		return art.Tag
+	if len(art.Digest) > 0 {
+		return art.Digest
 	}
-	return art.Digest
+	return art.Tag
 }
