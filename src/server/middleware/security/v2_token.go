@@ -18,9 +18,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/golang-jwt/jwt/v4"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 
