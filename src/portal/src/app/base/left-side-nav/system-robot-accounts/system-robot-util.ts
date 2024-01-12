@@ -77,6 +77,7 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'immutable-tag': 'ROBOT_ACCOUNT.IMMUTABLE_TAG',
     log: 'ROBOT_ACCOUNT.LOG',
     'notification-policy': 'ROBOT_ACCOUNT.NOTIFICATION_POLICY',
+    quota: 'ROBOT_ACCOUNT.QUOTA',
 };
 
 export function convertKey(key: string) {

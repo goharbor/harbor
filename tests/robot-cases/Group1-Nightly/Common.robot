@@ -636,12 +636,12 @@ Test Case - Project Level Robot Account
     Push image  ${ip}  robot1${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
     Pull image  ${ip}  robot1${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
     Check Project Robot Account Permission  robot1${d}  ${permission_count}
-    Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  repository
-    Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  repository
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
     ${resources}=  Create List  all
     ${robot_account_name}  ${token}  ${permission_count}=  Create A Project Robot Account  robot2${d}  days  days=10  description=For testing  resources=${resources}
-    Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  all
-    Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  all
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
     Close Browser
 
 Test Case - Push Docker Manifest Index and Display
@@ -721,9 +721,9 @@ Test Case - System Robot Account Cover All Projects
     ${robot_account_name}  ${token}=  Create A System Robot Account  sys${d}  never  description=For testing  cover_all_system_resources=${true}  cover_all_project_resources=${true}
     Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
     Pull image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
-    Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
-    Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
-    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 51 PERMISSION(S) '] and .//span[contains(.,'Never Expires')] and .//clr-dg-cell[text()='For testing'] ]
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 53 PERMISSION(S) '] and .//span[contains(.,'Never Expires')] and .//clr-dg-cell[text()='For testing'] ]
     System Robot Account Exist  ${robot_account_name}  all
     Close Browser
 
@@ -739,15 +739,15 @@ Test Case - System Robot Account
     ${project_id}=  Set Variable  ${words}[-2]
     Switch To Robot Account
     ${robot_account_name}  ${token}=  Create A System Robot Account  sys1${d}  days  days=100  description=For testing  cover_all_system_resources=${true}
-    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 51 PERMISSION(S) '] and .//span[contains(.,'99d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
-    Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
-    Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all  1
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 53 PERMISSION(S) '] and .//span[contains(.,'99d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all  1
 
     ${robot_account_name}  ${token}=  Create A System Robot Account  sys2${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
     Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
-    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 55 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
-    Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
-    Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 56 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
     Close Browser
 
 Test Case - Go To Harbor Api Page
