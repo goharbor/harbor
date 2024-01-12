@@ -17,6 +17,7 @@ import { finalize } from 'rxjs/operators';
 import { AuditlogService } from '../../../../../ng-swagger-gen/services/auditlog.service';
 import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { AppConfigService } from '../../../services/app-config.service';
 import {
     getPageSizeFromLocalStorage,
     PageSizeMapKeys,
@@ -43,7 +44,8 @@ export class RecentLogComponent {
 
     constructor(
         private logService: AuditlogService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private appConfigService: AppConfigService
     ) {}
 
     public get inProgress(): boolean {
@@ -74,7 +76,18 @@ export class RecentLogComponent {
         this.defaultFilter = $event['target'].value;
         this.doFilter(this.currentTerm);
     }
-
+    isIPTracked(): boolean {
+        if (this.appConfigService?.configurations?.audit_log_track_ip_address) {
+            return true;
+        }
+        return false;
+    }
+    isUATracked(): boolean {
+        if (this.appConfigService?.configurations?.audit_log_track_user_agent) {
+            return true;
+        }
+        return false;
+    }
     load(state?: ClrDatagridStateInterface) {
         if (state && state.page) {
             this.pageSize = state.page.size;
