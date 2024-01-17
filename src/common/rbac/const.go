@@ -152,7 +152,6 @@ var (
 
 			{Resource: ResourceQuota, Action: ActionRead},
 			{Resource: ResourceQuota, Action: ActionList},
-			{Resource: ResourceQuota, Action: ActionUpdate},
 		},
 		"Project": {
 			{Resource: ResourceLog, Action: ActionList},
