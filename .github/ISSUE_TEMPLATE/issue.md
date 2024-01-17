@@ -56,7 +56,6 @@ reproduce the issue. -->
 ## Confirmation
 I confirm that I have looking in all the following place for answers but could not find anything related. 
 
-- [ ] https://stackoverflow.com/questions/tagged/harbor
 - [ ] https://github.com/search?q=org%3Agoharbor+YOUR-ISSUE&type=issues
 - [ ] https://cloud-native.slack.com/archives/CC1E09J6S)
 - [ ] https://goharbor.io/docs/latest/
