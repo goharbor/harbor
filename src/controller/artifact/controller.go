@@ -227,6 +227,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		if !errors.IsConflictErr(err) {
 			return false, nil, err
 		}
+		log.Debugf("failed to create artifact %s@%s: %v", repository, digest, err)
 		// if got conflict error, try to get the artifact again
 		artifact, err = c.artMgr.GetByDigest(ctx, repository, digest)
 		if err != nil {

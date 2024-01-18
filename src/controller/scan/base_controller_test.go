@@ -199,6 +199,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Name:        rname,
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
+			Duration:    -1,
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
@@ -229,6 +230,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Secret:      "robot-account",
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
+			Duration:    -1,
 		},
 		Level: "project",
 	}, nil)
@@ -336,7 +338,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
 		mock.OnAnything(suite.taskMgr, "Create").Return(int64(1), nil).Once()
 
-		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 
 		suite.Require().NoError(suite.c.Scan(ctx, suite.artifact))
 	}
