@@ -21,12 +21,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.1
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.20.4
-	github.com/go-openapi/loads v0.21.2 // indirect
+	github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime v0.26.2
-	github.com/go-openapi/spec v0.20.11 // indirect
+	github.com/go-openapi/spec v0.20.11
 	github.com/go-openapi/strfmt v0.21.8
 	github.com/go-openapi/swag v0.22.7
-	github.com/go-openapi/validate v0.22.3 // indirect
+	github.com/go-openapi/validate v0.22.3
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
@@ -53,6 +53,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.62
 	github.com/vmihailenco/msgpack/v5 v5.4.1
+	github.com/volcengine/volcengine-go-sdk v1.0.97
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.46.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
 	go.opentelemetry.io/otel v1.21.0
@@ -153,6 +154,7 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
