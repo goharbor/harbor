@@ -31,10 +31,10 @@ const (
 	// Memory the cache name of memory
 	Memory = "memory"
 	// Redis the cache name of redis
-	Redis = "redis"
+	Redis    = "redis"
 	RedisTLS = "rediss"
 	// RedisSentinel the cache name of redis sentinel
-	RedisSentinel = "redis+sentinel"
+	RedisSentinel    = "redis+sentinel"
 	RedisSentinelTLS = "rediss+sentinel"
 )
 
