@@ -29,6 +29,7 @@ export const ADAPTERS_MAP = {
     dtr: 'DTR',
     'tencent-tcr': 'Tencent TCR',
     'github-ghcr': 'Github GHCR',
+    'volcengine-cr': 'VolcEngine CR',
 };
 
 /**
