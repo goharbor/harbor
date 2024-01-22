@@ -37,7 +37,7 @@ type v2TokenClaims struct {
 }
 
 func (vtc *v2TokenClaims) Valid() error {
-	var v = jwt.NewValidator(jwt.WithLeeway(10*time.Second), jwt.WithAudience(svc_token.Registry))
+	var v = jwt.NewValidator(jwt.WithLeeway(60*time.Second), jwt.WithAudience(svc_token.Registry))
 	if err := v.Validate(vtc.Claims); err != nil {
 		return err
 	}

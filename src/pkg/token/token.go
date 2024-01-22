@@ -35,7 +35,7 @@ type Token struct {
 
 // New ...
 func New(opt *Options, claims jwt.Claims) (*Token, error) {
-	var v = jwt.NewValidator(jwt.WithLeeway(10 * time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
 	err := v.Validate(claims)
 	if err != nil {
 		return nil, err
