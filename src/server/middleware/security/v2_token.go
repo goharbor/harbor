@@ -67,7 +67,7 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
-	var v = jwt.NewValidator(jwt.WithLeeway(10 * time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
 	if err := v.Validate(t.Claims); err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil

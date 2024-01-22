@@ -46,7 +46,7 @@ func (rc Claim) Valid() error {
 	if rc.Access == nil {
 		return errors.New("the access info cannot be nil")
 	}
-	var v = jwt.NewValidator(jwt.WithLeeway(10*time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
 
 	if stdErr := v.Validate(rc.RegisteredClaims); stdErr != nil {
 		return stdErr
