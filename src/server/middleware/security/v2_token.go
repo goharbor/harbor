@@ -36,14 +36,6 @@ type v2TokenClaims struct {
 	Access []*registry_token.ResourceActions `json:"access"`
 }
 
-func (vtc *v2TokenClaims) Valid() error {
-	var v = jwt.NewValidator(jwt.WithLeeway(60*time.Second), jwt.WithAudience(svc_token.Registry))
-	if err := v.Validate(vtc.Claims); err != nil {
-		return err
-	}
-	return nil
-}
-
 type v2Token struct{}
 
 func (vt *v2Token) Generate(req *http.Request) security.Context {
@@ -67,7 +59,7 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
-	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second), jwt.WithAudience(svc_token.Registry))
 	if err := v.Validate(t.Claims); err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
