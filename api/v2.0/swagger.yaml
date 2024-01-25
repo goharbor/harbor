@@ -7164,6 +7164,10 @@ definitions:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
         x-nullable: true
+      auto_sbom_generation:
+        type: string
+        description: 'Whether generating SBOM automatically when pushing a subject artifact. The valid values are "true", "false".'
+        x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
         description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
