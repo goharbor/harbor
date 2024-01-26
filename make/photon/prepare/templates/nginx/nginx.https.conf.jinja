@@ -51,6 +51,7 @@ http {
 
   server {
     listen 8443 ssl;
+    listen [::]:8443 ssl;
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
