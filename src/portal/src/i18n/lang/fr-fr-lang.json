@@ -925,7 +925,7 @@
         },
         "UAA": {
             "ENDPOINT": "Endpoint UAA",
-            "CLIENT_ID": "ID client ID UAA",
+            "CLIENT_ID": "ID client UAA",
             "CLIENT_SECRET": "Secret client UAA",
             "VERIFY_CERT": "Verification certificat UAA"
         },
@@ -1211,7 +1211,7 @@
         "DELETE_REPLICATION": "Suppression de réplication",
         "DELETE_MEMBER": "Suppression de membre",
         "DELETE_GROUP": "Suppression de membre d'un groupe",
-        "DELETE_CHART_VERSION": "Supprimer chart version",
+        "DELETE_CHART_VERSION": "Supprimer version de chart",
         "DELETE_CHART": "Supprimer chart",
         "SWITCH_ROLE": "Changement de rôle",
         "ADD_GROUP": "Ajout de membre à un groupe",
