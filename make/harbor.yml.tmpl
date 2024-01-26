@@ -16,6 +16,8 @@ https:
   # The path of cert and key files for nginx
   certificate: /your/certificate/path
   private_key: /your/private/key/path
+  # enable strong ssl ciphers (default: false)
+  # strong_ssl_ciphers: false
 
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
@@ -23,8 +25,7 @@ https:
 #   enabled: true
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
-#   # enable strong ssl ciphers (default: false)
-#   strong_ssl_ciphers: false
+
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
