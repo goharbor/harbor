@@ -15,8 +15,6 @@
 package v2
 
 import (
-	"crypto/subtle"
-	"fmt"
 	"time"
 
 	"github.com/docker/distribution/registry/auth/token"
@@ -40,13 +38,10 @@ type Claims struct {
 
 // Valid checks if the issuer is harbor
 func (c *Claims) Valid() error {
-	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(60*time.Second), jwt.WithIssuer(Issuer))
 
 	if err := v.Validate(c.RegisteredClaims); err != nil {
 		return err
-	}
-	if subtle.ConstantTimeCompare([]byte(c.Issuer), []byte(Issuer)) == 0 {
-		return fmt.Errorf("invalid token issuer: %s", c.Issuer)
 	}
 	return nil
 }
