@@ -122,7 +122,7 @@ var filterMap = map[string]*filterMetaData{
 
 var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
 
-func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -138,7 +138,7 @@ func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr s
 	return
 }
 
-func rangeFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -151,7 +151,7 @@ func rangeFilter(ctx context.Context, key string, query *q.Query) (sqlStr string
 	return
 }
 
-func tagFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func tagFilter(ctx context.Context, _ string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -206,7 +206,7 @@ func (d *dao) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, 
 	return count, err
 }
 
-func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error) {
+func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) (*model.Summary, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -224,7 +224,7 @@ func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, 
 		&sum.FixableCnt)
 	return &sum, err
 }
-func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.DangerousArtifact, error) {
+func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) ([]*model.DangerousArtifact, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -237,7 +237,7 @@ func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projec
 	return artifacts, err
 }
 
-func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error) {
+func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) (int64, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return 0, nil
 	}
@@ -249,7 +249,7 @@ func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, pro
 	err = o.Raw(scannedArtifactCountSQL, scannerUUID).QueryRow(&cnt)
 	return cnt, err
 }
-func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
+func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) ([]*scan.VulnerabilityRecord, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -266,7 +266,7 @@ func countSQL(strSQL string) string {
 	return fmt.Sprintf(`select count(1) cnt from (%v) as t`, strSQL)
 }
 
-func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
+func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string, _ int64, tuneCount bool, query *q.Query) (int64, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -307,7 +307,7 @@ func (d *dao) countExceedLimit(ctx context.Context, sqlStr string, params []inte
 	return exceed, nil
 }
 
-func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, projectID int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
+func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, _ int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Subscription } from 'rxjs';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { RobotAccountComponent } from './robot-account.component';
 import { UserPermissionService } from '../../../shared/services';

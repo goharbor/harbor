@@ -128,10 +128,10 @@ func (m *Processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 	}, nil
 }
 
-func (m *Processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (m *Processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ArtifactTypeWASM
 }
 
-func (m *Processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (m *Processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return []string{AdditionTypeBuildHistory}
 }

@@ -220,7 +220,7 @@ func (suite *DaoTestSuite) TestList() {
 
 	{
 		// List quotas by sorting
-		quotas, err := suite.dao.List(ctx, &q.Query{Keywords: q.KeyWords{"reference": reference}, Sorting: "-hard.storage"})
+		quotas, err := suite.dao.List(ctx, &q.Query{Keywords: q.KeyWords{"reference": reference}, Sorts: q.ParseSorting("-hard.storage")})
 		suite.Nil(err)
 		suite.Equal(reference, quotas[0].Reference)
 		suite.Equal("1", quotas[0].ReferenceID)

@@ -88,18 +88,18 @@ func (a *adapter) LoadPolicy(model model.Model) error {
 	return nil
 }
 
-func (a *adapter) SavePolicy(model model.Model) error {
+func (a *adapter) SavePolicy(_ model.Model) error {
 	return errNotImplemented
 }
 
-func (a *adapter) AddPolicy(sec string, ptype string, rule []string) error {
+func (a *adapter) AddPolicy(_ string, _ string, _ []string) error {
 	return errNotImplemented
 }
 
-func (a *adapter) RemovePolicy(sec string, ptype string, rule []string) error {
+func (a *adapter) RemovePolicy(_ string, _ string, _ []string) error {
 	return errNotImplemented
 }
 
-func (a *adapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int, fieldValues ...string) error {
+func (a *adapter) RemoveFilteredPolicy(_ string, _ string, _ int, _ ...string) error {
 	return errNotImplemented
 }

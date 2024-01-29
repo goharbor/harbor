@@ -1,7 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ListAllProjectsComponent } from './list-all-projects.component';
-import { clone } from '../../../../shared/units/utils';
-import { INITIAL_ACCESSES } from '../system-robot-util';
 import { Project } from '../../../../../../ng-swagger-gen/models/project';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 
@@ -30,9 +28,6 @@ describe('ListAllProjectsComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(ListAllProjectsComponent);
         component = fixture.componentInstance;
-        component.defaultAccesses = clone(INITIAL_ACCESSES);
-        component.cachedAllProjects = [project1, project2, project3];
-        component.init(false);
         fixture.detectChanges();
     });
 
@@ -40,6 +35,7 @@ describe('ListAllProjectsComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should render list', async () => {
+        component.projects = [project1, project2, project3];
         fixture.detectChanges();
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');

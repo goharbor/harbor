@@ -3,42 +3,17 @@
 from v2_swagger_client.rest import ApiException
 
 import base
+import json
 
 
 def set_configurations(client, expect_status_code = 200, expect_response_body = None, **config):
-    conf = {}
-
-    if "project_creation_restriction" in config and config.get("project_creation_restriction") is not None:
-        conf["project_creation_restriction"] = config.get("project_creation_restriction")
-    if "token_expiration" in config and config.get("token_expiration") is not None:
-        conf["token_expiration"] = config.get("token_expiration")
-    if "ldap_filter" in config and config.get("ldap_filter") is not None:
-        conf["ldap_filter"] = config.get("ldap_filter")
-    if "ldap_group_attribute_name" in config and config.get("ldap_group_attribute_name") is not None:
-        conf["ldap_group_attribute_name"] = config.get("ldap_group_attribute_name")
-    if "ldap_group_base_dn" in config:
-        conf["ldap_group_base_dn"] = config.get("ldap_group_base_dn")
-    if "ldap_group_search_filter" in config and config.get("ldap_group_search_filter") is not None:
-        conf["ldap_group_search_filter"] = config.get("ldap_group_search_filter")
-    if "ldap_group_search_scope" in config and config.get("ldap_group_search_scope") is not None:
-        conf["ldap_group_search_scope"] = config.get("ldap_group_search_scope")
-    if "ldap_group_admin_dn" in config and config.get("ldap_group_admin_dn") is not None:
-        conf["ldap_group_admin_dn"] = config.get("ldap_group_admin_dn")
-    if "audit_log_forward_endpoint" in config and config.get("audit_log_forward_endpoint") is not None:
-        conf["audit_log_forward_endpoint"] = config.get("audit_log_forward_endpoint")
-    if "skip_audit_log_database" in config and config.get("skip_audit_log_database") is not None:
-        conf["skip_audit_log_database"] = config.get("skip_audit_log_database")
-    if "scanner_skip_update_pulltime" in config and config.get("scanner_skip_update_pulltime") is not None:
-        conf["scanner_skip_update_pulltime"] = config.get("scanner_skip_update_pulltime")
-
     try:
-        _, status_code, _ = client.update_configurations_with_http_info(conf)
+        _, status_code, _ = client.update_configurations_with_http_info(config)
     except ApiException as e:
         base._assert_status_code(expect_status_code, e.status)
         if expect_response_body is not None:
             base._assert_status_body(expect_response_body, e.body)
         return
-
     base._assert_status_code(expect_status_code, status_code)
 
 class Configurations(base.Base, object):
@@ -94,4 +69,21 @@ class Configurations(base.Base, object):
     def set_configurations_of_retain_image_last_pull_time(self, is_skip, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         config=dict(scanner_skip_update_pulltime=is_skip)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
+
+    def set_configurations_of_banner_message(self, message, message_type=None, closable=None, from_date=None, to_date=None, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        banner_message = None
+        if message == "":
+            banner_message = ""
+        else:
+            banner_message = {
+                "message": message,
+                "type": message_type,
+                "closable": closable,
+                "fromDate": from_date,
+                "toDate": to_date
+            }
+            banner_message = json.dumps(banner_message)
+        config=dict(banner_message=banner_message)
         set_configurations(client, expect_status_code = expect_status_code, **config)

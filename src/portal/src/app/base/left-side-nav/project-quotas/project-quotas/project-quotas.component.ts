@@ -20,6 +20,7 @@ import {
     getPageSizeFromLocalStorage,
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
+    getSortingString,
 } from '../../../../shared/units/utils';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import {
@@ -242,6 +243,7 @@ export class ProjectQuotasComponent implements OnChanges {
                 reference: QuotaType,
                 page: pageNumber,
                 pageSize: this.pageSize,
+                sort: getSortingString(state),
             })
             .pipe(
                 finalize(() => {

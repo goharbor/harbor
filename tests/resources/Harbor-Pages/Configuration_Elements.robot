@@ -65,3 +65,11 @@ ${skip_audit_log_database_checkbox}  //*[@id='skipAuditLogDatabase']
 ${skip_audit_log_database_label}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'skipAuditLogDatabase')]
 ${retain_image_last_pull_time_label}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'scannerSkipUpdatePullTime')]
 ${retain_image_last_pull_time_checkbox}  //*[@id='scannerSkipUpdatePullTime']
+${banner_message_input_id}  //*[@id='banner-message']
+${banner_message_type_select_id}  //*[@id='banner-message-type']
+${banner_message_closable_checkbox}  //div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
+${banner_message_from_date}  (//clr-date-container)[1]//button
+${banner_message_to_date}  (//clr-date-container)[2]//button
+${banner_message_date_next_month}  //button[@aria-label='Next month']
+${banner_message_close_alert}  //clr-alert//button[@aria-label='Close alert']
+${banner_message_alert}  //app-app-level-alerts

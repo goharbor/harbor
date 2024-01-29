@@ -28,20 +28,22 @@ import (
 
 // DAO is the data access object interface for project
 type DAO interface {
-	// Create create a project instance
+	// Create creates a project instance
 	Create(ctx context.Context, project *models.Project) (int64, error)
 	// Count returns the total count of projects according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
-	// Delete delete the project instance by id
+	// Delete deletes the project instance by id
 	Delete(ctx context.Context, id int64) error
-	// Get get project instance by id
+	// Get gets project instance by id
 	Get(ctx context.Context, id int64) (*models.Project, error)
 	// GetByName get project instance by name
 	GetByName(ctx context.Context, name string) (*models.Project, error)
-	// List list projects
+	// List lists projects
 	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
-	// Lists the roles of user for the specific project
+	// ListRoles the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
+	// ListAdminRolesOfUser returns the roles of user for the all projects
+	ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error)
 }
 
 // New returns an instance of the default DAO
@@ -51,7 +53,7 @@ func New() DAO {
 
 type dao struct{}
 
-// Create create a project instance
+// Create creates a project instance
 func (d *dao) Create(ctx context.Context, project *models.Project) (int64, error) {
 	var projectID int64
 
@@ -105,7 +107,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (total int64, err error
 	return qs.Count()
 }
 
-// Delete delete the project instance by id
+// Delete deletes the project instance by id
 func (d *dao) Delete(ctx context.Context, id int64) error {
 	project, err := d.Get(ctx, id)
 	if err != nil {
@@ -124,7 +126,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-// Get get project instance by id
+// Get gets project instance by id
 func (d *dao) Get(ctx context.Context, id int64) (*models.Project, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
@@ -198,4 +200,21 @@ func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupI
 	}
 
 	return roles, nil
+}
+
+func (d *dao) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql := `select b.* from project as a left join project_member as b on a.project_id = b.project_id where a.deleted = 'f' and b.entity_id = ? and b.entity_type = 'u' and b.role = 1;`
+
+	var members []models.Member
+	_, err = o.Raw(sql, userID).QueryRows(&members)
+	if err != nil {
+		return nil, err
+	}
+
+	return members, nil
 }

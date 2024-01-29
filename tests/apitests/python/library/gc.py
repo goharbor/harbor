@@ -66,8 +66,8 @@ class GC(base.Base, object):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def create_gc_schedule(self, schedule_type, is_delete_untagged, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
-        gc_parameters = {'delete_untagged':is_delete_untagged}
+    def create_gc_schedule(self, schedule_type, is_delete_untagged, workers=1, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
+        gc_parameters = {'delete_untagged':is_delete_untagged, 'workers':workers}
 
         gc_schedule = v2_swagger_client.ScheduleObj()
         gc_schedule.type = schedule_type
@@ -113,8 +113,8 @@ class GC(base.Base, object):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
 
-    def gc_now(self, is_delete_untagged=False, **kwargs):
-        gc_id = self.create_gc_schedule('Manual', is_delete_untagged, **kwargs)
+    def gc_now(self, is_delete_untagged=False, workers=1, **kwargs):
+        gc_id = self.create_gc_schedule('Manual', is_delete_untagged, workers, **kwargs)
         return gc_id
 
     def validate_gc_job_status(self, gc_id, expected_gc_status, **kwargs):

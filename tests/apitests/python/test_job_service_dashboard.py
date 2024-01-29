@@ -33,7 +33,7 @@ class TestJobServiceDashboard(unittest.TestCase, object):
         self.registry = Registry()
         self.scan_all = ScanAll()
         self.schedule = Schedule()
-        self.job_types = [ "GARBAGE_COLLECTION", "PURGE_AUDIT_LOG", "P2P_PREHEAT", "IMAGE_SCAN", "REPLICATION", "RETENTION", "SCAN_DATA_EXPORT", "SCHEDULER", "SLACK", "SYSTEM_ARTIFACT_CLEANUP", "WEBHOOK", "EXECUTION_SWEEP"]
+        self.job_types = [ "GARBAGE_COLLECTION", "PURGE_AUDIT_LOG", "P2P_PREHEAT", "IMAGE_SCAN", "REPLICATION", "RETENTION", "SCAN_DATA_EXPORT", "SCHEDULER", "SLACK", "SYSTEM_ARTIFACT_CLEANUP", "WEBHOOK", "EXECUTION_SWEEP", "AUDIT_LOGS_GDPR_COMPLIANT"]
         self.cron_type = "Custom"
         self.cron = "0 0 0 * * 0"
 

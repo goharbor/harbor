@@ -108,8 +108,8 @@ func (s *securityAPI) ListVulnerabilities(ctx context.Context, params securityMo
 		return s.SendError(ctx, err)
 	}
 	scannerUUID, err := scanner.Mgr.DefaultScannerUUID(ctx)
-	if err != nil {
-		return s.SendError(ctx, err)
+	if err != nil || len(scannerUUID) == 0 {
+		return securityModel.NewListVulnerabilitiesOK().WithPayload([]*models.VulnerabilityItem{}).WithXTotalCount(0)
 	}
 	cnt, err := s.controller.CountVuls(ctx, scannerUUID, 0, *params.TuneCount, query)
 	if err != nil {

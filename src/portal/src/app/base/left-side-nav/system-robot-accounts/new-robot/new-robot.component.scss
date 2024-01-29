@@ -14,11 +14,6 @@
   margin: 0;
 }
 
-.permission{
-  padding-top: 0.1rem;
-  color: #000;
-}
-
 .padding-left-120{
   padding-left: 126px;
 }
@@ -33,10 +28,6 @@
 
 .input-width-date {
   width: 265px;
-}
-
-.mt-description {
-  margin-top: 2.5rem;
 }
 
 .width-table {
@@ -74,33 +65,16 @@
   width: 194px;
 }
 
-.check {
-  margin-right: 5px;
-  color: green;
-}
 
-.dropdown-per {
-  margin-top: -1px;
-}
-
-.mt-8px {
-  margin-top: 8px !important;
-}
 /* stylelint-disable */
 .showWarning {
   color: #b3a000;
 }
 
-.dropdown-item {
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.dropdown-menu {
-  overflow-y: auto;
-}
-
 .ml-20px {
   margin-left: 20px;
+}
+
+:host::ng-deep.modal-dialog {
+  width: 48rem;
 }

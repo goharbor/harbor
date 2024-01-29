@@ -98,4 +98,5 @@ type GroupConf struct {
 
 type GDPRSetting struct {
 	DeleteUser bool `json:"user_delete,omitempty"`
+	AuditLogs  bool `json:"audit_logs"`
 }

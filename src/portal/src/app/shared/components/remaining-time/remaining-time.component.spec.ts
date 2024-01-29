@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RemainingTimeComponent } from './remaining-time.component';
 import { Component, ViewChild } from '@angular/core';
-import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { RobotTimeRemainColor } from '../../../base/left-side-nav/system-robot-accounts/system-robot-util';
 import { SharedTestingModule } from '../../shared.module';
 

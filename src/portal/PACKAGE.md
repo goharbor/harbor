@@ -1,7 +1,7 @@
 ```text
 {
   "name": "harbor",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {

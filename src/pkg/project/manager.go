@@ -28,13 +28,13 @@ import (
 
 // Manager is used for project management
 type Manager interface {
-	// Create create project instance
+	// Create creates project instance
 	Create(ctx context.Context, project *models.Project) (int64, error)
 
 	// Count returns the total count of projects according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 
-	// Delete delete the project instance by id
+	// Delete deletes the project instance by id
 	Delete(ctx context.Context, id int64) error
 
 	// Get the project specified by the ID or name
@@ -45,6 +45,9 @@ type Manager interface {
 
 	// ListRoles returns the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
+
+	// ListAdminRolesOfUser returns the roles of user for the all projects
+	ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error)
 }
 
 // New returns a default implementation of Manager
@@ -64,7 +67,7 @@ type manager struct {
 	dao dao.DAO
 }
 
-// Create create project instance
+// Create creates project instance
 func (m *manager) Create(ctx context.Context, project *models.Project) (int64, error) {
 	if project.OwnerID <= 0 {
 		return 0, errors.BadRequestError(nil).WithMessage("Owner is missing when creating project %s", project.Name)
@@ -115,7 +118,12 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.Project, 
 	return m.dao.List(ctx, query)
 }
 
-// Lists the roles of user for the specific project
+// ListRoles the roles of user for the specific project
 func (m *manager) ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error) {
 	return m.dao.ListRoles(ctx, projectID, userID, groupIDs...)
+}
+
+// ListAdminRolesOfUser returns the roles of user for the all projects
+func (m *manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
+	return m.dao.ListAdminRolesOfUser(ctx, userID)
 }

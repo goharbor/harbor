@@ -18,6 +18,10 @@ Click Cosign Deployment Security
     Mouse Down  //input[@id='content-trust-cosign']
     Mouse Up  //input[@id='content-trust-cosign']
 
+Click Notation Deployment Security
+    Mouse Down  //input[@id='content-trust']
+    Mouse Up  //input[@id='content-trust']
+
 Click Prevent Running
     Mouse Down  //hbr-project-policy-config//input[@name='prevent-vulnerability-image']
     Mouse Up  //hbr-project-policy-config//input[@name='prevent-vulnerability-image']
@@ -44,6 +48,9 @@ Project Should Be Public
 
 Content Cosign Deployment security Be Selected
     Checkbox Should Be Selected  //input[@id='content-trust-cosign']
+
+Content Notation Deployment security Be Selected
+    Checkbox Should Be Selected  //input[@id='content-trust']
 
 Prevent Running Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='prevent-vulnerability-image']

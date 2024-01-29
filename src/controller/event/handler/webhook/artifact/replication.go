@@ -191,6 +191,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 			Type:       task.ResourceType,
 			Status:     task.Status,
 			NameAndTag: nameAndTag,
+			References: strings.Split(task.References, ","),
 		}
 		payload.EventData.Replication.SuccessfulArtifact = []*ctlModel.ArtifactInfo{succeedArtifact}
 	}
@@ -199,6 +200,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 			Type:       task.ResourceType,
 			Status:     task.Status,
 			NameAndTag: nameAndTag,
+			References: strings.Split(task.References, ","),
 		}
 		payload.EventData.Replication.FailedArtifact = []*ctlModel.ArtifactInfo{failedArtifact}
 	}

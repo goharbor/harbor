@@ -21,8 +21,8 @@ class Robot(base.Base, object):
             base._assert_status_code(200, status_code)
             return body
 
-    def create_access_list(self, right_map = [True] * 10):
-        _assert_status_code(10, len(right_map), r"Please input full access list for system robot account. Expected {}, while actual input count is {}.")
+    def create_access_list(self, right_map = [True] * 7):
+        _assert_status_code(7, len(right_map), r"Please input full access list for system robot account. Expected {}, while actual input count is {}.")
         action_pull = "pull"
         action_push = "push"
         action_read = "read"
@@ -33,9 +33,6 @@ class Robot(base.Base, object):
             ("repository", action_pull),
             ("repository", action_push),
             ("artifact", action_del),
-            ("helm-chart", action_read),
-            ("helm-chart-version", action_create),
-            ("helm-chart-version", action_del),
             ("tag", action_create),
             ("tag", action_del),
             ("artifact-label", action_create),
@@ -50,8 +47,7 @@ class Robot(base.Base, object):
         return access_list
 
     def create_project_robot(self, project_name, duration, robot_name = None, robot_desc = None,
-            has_pull_right = True,  has_push_right = True, has_chart_read_right = True,
-            has_chart_create_right = True, expect_status_code = 201, expect_response_body = None,
+            has_pull_right = True, has_push_right = True, expect_status_code = 201, expect_response_body = None,
             **kwargs):
         if robot_name is None:
             robot_name = base._random_name("robot")
@@ -62,19 +58,11 @@ class Robot(base.Base, object):
         access_list = []
         action_pull = "pull"
         action_push = "push"
-        action_read = "read"
-        action_create = "create"
         if has_pull_right is True:
             robotAccountAccess = v2_swagger_client.Access(resource = "repository", action = action_pull)
             access_list.append(robotAccountAccess)
         if has_push_right is True:
             robotAccountAccess = v2_swagger_client.Access(resource = "repository", action = action_push)
-            access_list.append(robotAccountAccess)
-        if has_chart_read_right is True:
-            robotAccountAccess = v2_swagger_client.Access(resource = "helm-chart", action = action_read)
-            access_list.append(robotAccountAccess)
-        if has_chart_create_right is True:
-            robotAccountAccess = v2_swagger_client.Access(resource = "helm-chart-version", action = action_create)
             access_list.append(robotAccountAccess)
 
         robotaccountPermissions = v2_swagger_client.RobotPermission(kind = "project", namespace = project_name, access = access_list)

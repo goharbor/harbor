@@ -64,7 +64,7 @@ ${replication_mode_radio_pull}  //clr-main-container//hbr-create-edit-rule//labe
 ${filter_name_id}  //input[@id='filter_name']
 ${filter_tag_model_select}  //div[@class='filterSelect ng-star-inserted'][2]//select
 ${filter_tag_id}  //input[@id='filter_tag']
-${filter_label_xpath}  //form//clr-dropdown[contains(@class,'dropdown')]
+${filter_label_xpath}  //form//clr-dropdown[contains(@class,'dropdown')]//clr-icon
 ${filter_label_model_select}  //div[@class='filterSelect ng-star-inserted'][3]//select
 ${rule_resource_selector}  //*[@id='select_resource']
 ${trigger_mode_selector}  //*[@id='ruleTrigger']

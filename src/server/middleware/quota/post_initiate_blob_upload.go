@@ -34,7 +34,7 @@ func PostInitiateBlobUploadMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func postInitiateBlobUploadResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
+func postInitiateBlobUploadResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
 	query := r.URL.Query()
 	mount := query.Get("mount")
 	if mount == "" {

@@ -38,7 +38,7 @@ func init() {
 type manifestV1Processor struct {
 }
 
-func (m *manifestV1Processor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
+func (m *manifestV1Processor) AbstractMetadata(_ context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	mani := &schema1.Manifest{}
 	if err := json.Unmarshal(manifest, mani); err != nil {
 		return err
@@ -50,15 +50,15 @@ func (m *manifestV1Processor) AbstractMetadata(ctx context.Context, artifact *ar
 	return nil
 }
 
-func (m *manifestV1Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
+func (m *manifestV1Processor) AbstractAddition(_ context.Context, _ *artifact.Artifact, addition string) (*processor.Addition, error) {
 	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
 }
 
-func (m *manifestV1Processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (m *manifestV1Processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ArtifactTypeImage
 }
 
-func (m *manifestV1Processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (m *manifestV1Processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return nil
 }

@@ -13,10 +13,7 @@ import {
     UserPermissionService,
     USERSTATICPERMISSION,
 } from '../../../shared/services';
-import {
-    ACTION_RESOURCE_I18N_MAP,
-    PermissionsKinds,
-} from '../../left-side-nav/system-robot-accounts/system-robot-util';
+import { PermissionsKinds } from '../../left-side-nav/system-robot-accounts/system-robot-util';
 import {
     clone,
     getPageSizeFromLocalStorage,
@@ -50,6 +47,9 @@ import {
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
 import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
+import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
+import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
+import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
 
 @Component({
     selector: 'app-robot-account',
@@ -57,7 +57,6 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
     styleUrls: ['./robot-account.component.scss'],
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
-    i18nMap = ACTION_RESOURCE_I18N_MAP;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.PROJECT_ROBOT_COMPONENT
     );
@@ -83,6 +82,9 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     projectId: number;
     projectName: string;
     deltaTime: number; // the different between server time and local time
+
+    loadingMetadata: boolean = false;
+    robotMetadata: Permissions;
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -92,7 +94,8 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private translate: TranslateService,
         private sanitizer: DomSanitizer,
-        private systemInfoService: SysteminfoService
+        private systemInfoService: SysteminfoService,
+        private permissionService: PermissionsService
     ) {}
     ngOnInit() {
         this.getCurrenTime();
@@ -171,6 +174,17 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
                 );
         }
     }
+
+    getRobotPermissions() {
+        this.loadingMetadata = true;
+        this.permissionService
+            .getPermissions()
+            .pipe(finalize(() => (this.loadingMetadata = false)))
+            .subscribe(res => {
+                this.robotMetadata = res;
+            });
+    }
+
     getCurrenTime() {
         this.systemInfoService.getSystemInfo().subscribe(res => {
             if (res?.current_time) {
@@ -214,6 +228,9 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         forkJoin(...permissionsList).subscribe(
             Rules => {
                 this.hasRobotCreatePermission = Rules[0] as boolean;
+                if (this.hasRobotCreatePermission) {
+                    this.getRobotPermissions();
+                }
                 this.hasRobotUpdatePermission = Rules[1] as boolean;
                 this.hasRobotDeletePermission = Rules[2] as boolean;
                 this.hasRobotReadPermission = Rules[3] as boolean;
@@ -418,4 +435,5 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         }
         this.refresh();
     }
+    protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
 }

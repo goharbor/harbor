@@ -29,8 +29,8 @@ import (
 
 func Test_projectReferenceObject(t *testing.T) {
 	ctl := &project.Controller{}
-	ctl.On("GetByName", mock.AnythingOfType(""), "library").Return(&proModels.Project{ProjectID: 1}, nil)
-	ctl.On("GetByName", mock.AnythingOfType(""), "demo").Return(nil, fmt.Errorf("not found"))
+	ctl.On("GetByName", mock.AnythingOfType("context.todoCtx"), "library").Return(&proModels.Project{ProjectID: 1}, nil)
+	ctl.On("GetByName", mock.AnythingOfType("context.todoCtx"), "demo").Return(nil, fmt.Errorf("not found"))
 
 	originalProjectController := projectController
 	defer func() {

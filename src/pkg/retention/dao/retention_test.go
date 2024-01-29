@@ -11,6 +11,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -63,10 +64,11 @@ func TestPolicy(t *testing.T) {
 		},
 	}
 	p1 := &models.RetentionPolicy{
-		ScopeLevel:  p.Scope.Level,
-		TriggerKind: p.Trigger.Kind,
-		CreateTime:  time.Now(),
-		UpdateTime:  time.Now(),
+		ScopeLevel:     p.Scope.Level,
+		ScopeReference: 1,
+		TriggerKind:    p.Trigger.Kind,
+		CreateTime:     time.Now(),
+		UpdateTime:     time.Now(),
 	}
 	data, _ := json.Marshal(p)
 	p1.Data = string(data)
@@ -80,6 +82,10 @@ func TestPolicy(t *testing.T) {
 	assert.Nil(t, err)
 	assert.EqualValues(t, "project", p1.ScopeLevel)
 	assert.True(t, p1.ID > 0)
+
+	plcs, err := ListPolicies(ctx, q.New(q.KeyWords{"scope_level": "project", "scope_reference": "1"}))
+	assert.Nil(t, err)
+	assert.True(t, len(plcs) > 0)
 
 	p1.ScopeLevel = "test"
 	err = UpdatePolicy(ctx, p1)

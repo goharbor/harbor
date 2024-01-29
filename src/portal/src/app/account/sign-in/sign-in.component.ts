@@ -151,6 +151,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 CONFIG_AUTH_MODE.OIDC_AUTH
         );
     }
+    getOIDCProviderName(): string {
+        return this.appConfigService.getConfig()?.oidc_provider_name || null;
+    }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {
             this.rememberMe = $event.target.checked;

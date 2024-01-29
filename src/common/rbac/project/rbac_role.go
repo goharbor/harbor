@@ -284,6 +284,7 @@ var (
 			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},

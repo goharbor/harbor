@@ -209,7 +209,7 @@ func TestGetRef(t *testing.T) {
 		{
 			name: `normal`,
 			in:   lib.ArtifactInfo{Repository: "hello-world", Tag: "latest", Digest: "sha256:aabbcc"},
-			want: "latest",
+			want: "sha256:aabbcc",
 		},
 		{
 			name: `digest_only`,

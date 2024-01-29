@@ -30,3 +30,7 @@ Cosign Verify
     [Arguments]  ${artifact}  ${signed}
     Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub ${artifact}
     ...  ELSE  Command Should be Failed  cosign verify --key cosign.pub ${artifact}
+
+Cosign Push Sbom
+    [Arguments]  ${artifact}  ${sbom_path}=${files_directory}/sbom_test.json  ${type}=spdx
+    Wait Unitl Command Success  cosign attach sbom --allow-insecure-registry --registry-referrers-mode oci-1-1 --type ${type} --sbom ${sbom_path} ${artifact}

@@ -24,6 +24,7 @@ export class LabelPieceComponent implements OnChanges {
     @Input() label: Label;
     @Input() labelWidth: number;
     @Input() hasIcon: boolean = true;
+    @Input() withTooltip: boolean = false;
     labelColor: { [key: string]: string };
 
     ngOnChanges(): void {

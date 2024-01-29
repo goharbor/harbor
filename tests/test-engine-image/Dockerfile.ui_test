@@ -7,6 +7,8 @@ ENV HELM_EXPERIMENTAL_OCI=1
 ENV COSIGN_PASSWORD=Harbor12345
 ENV COSIGN_EXPERIMENTAL=1
 ENV COSIGN_OCI_EXPERIMENTAL=1
+ENV NOTATION_EXPERIMENTAL=1
+
 RUN apt-get update && apt-get install -y --no-install-recommends wget curl gnupg2
 RUN apt-get install libseccomp2
 RUN wget  --no-check-certificate -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -39,9 +41,9 @@ RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
     requests dbbot robotframework-seleniumlibrary robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \
     apt-get clean all
-# Upgrade chromedriver version to 113.0.5672.24
-RUN wget -N https://chromedriver.storage.googleapis.com/113.0.5672.24/chromedriver_linux64.zip && \
-    unzip chromedriver_linux64.zip && \
+# Upgrade chromedriver version to 119.0.6045.105
+RUN wget -N https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/119.0.6045.105/linux64/chromedriver-linux64.zip && \
+    unzip -j chromedriver-linux64.zip && \
     chmod +x chromedriver && \
     mv -f chromedriver /usr/local/share/chromedriver && \
     ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver && \

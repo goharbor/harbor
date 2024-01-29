@@ -159,7 +159,7 @@ func (m *manager) createTaskRecord(ctx context.Context, executionID int64, extra
 	})
 }
 
-func (m *manager) submitJob(ctx context.Context, id int64, jb *Job) (string, error) {
+func (m *manager) submitJob(_ context.Context, id int64, jb *Job) (string, error) {
 	jobData := &models.JobData{
 		Name:       jb.Name,
 		StatusHook: fmt.Sprintf("%s/service/notifications/tasks/%d", m.coreURL, id),
@@ -279,6 +279,6 @@ func (m *manager) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType,
 	return m.dao.ExecutionIDsByVendorAndStatus(ctx, vendorType, status)
 }
 
-func (m *manager) GetLogByJobID(ctx context.Context, jobID string) (log []byte, err error) {
+func (m *manager) GetLogByJobID(_ context.Context, jobID string) (log []byte, err error) {
 	return m.jsClient.GetJobLog(jobID)
 }

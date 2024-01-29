@@ -112,7 +112,7 @@ func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
 }
 
 // GetCfgManager return the current config manager
-func GetCfgManager(ctx context.Context) Manager {
+func GetCfgManager(_ context.Context) Manager {
 	return DefaultMgr()
 }
 

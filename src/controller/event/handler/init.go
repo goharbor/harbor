@@ -67,9 +67,10 @@ func init() {
 	_ = notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 
 	// internal
-	_ = notifier.Subscribe(event.TopicPullArtifact, &internal.Handler{})
-	_ = notifier.Subscribe(event.TopicPushArtifact, &internal.Handler{})
-	_ = notifier.Subscribe(event.TopicDeleteArtifact, &internal.Handler{})
+	_ = notifier.Subscribe(event.TopicPullArtifact, &internal.ArtifactEventHandler{})
+	_ = notifier.Subscribe(event.TopicPushArtifact, &internal.ArtifactEventHandler{})
+	_ = notifier.Subscribe(event.TopicDeleteArtifact, &internal.ArtifactEventHandler{})
+	_ = notifier.Subscribe(event.TopicDeleteProject, &internal.ProjectEventHandler{})
 
 	_ = task.RegisterTaskStatusChangePostFunc(job.ReplicationVendorType, func(ctx context.Context, taskID int64, status string) error {
 		notification.AddEvent(ctx, &metadata.ReplicationMetaData{

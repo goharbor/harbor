@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/lib/orm"
+	pq "github.com/goharbor/harbor/src/lib/q"
 	_ "github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -40,6 +41,9 @@ import (
 
 type fakeRetentionManager struct{}
 
+func (f *fakeRetentionManager) ListPolicyIDs(ctx context.Context, query *pq.Query) ([]int64, error) {
+	return nil, nil
+}
 func (f *fakeRetentionManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
 	return 0, nil
 }

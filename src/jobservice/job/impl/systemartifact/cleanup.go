@@ -35,11 +35,11 @@ func (c *Cleanup) ShouldRetry() bool {
 	return true
 }
 
-func (c *Cleanup) Validate(params job.Parameters) error {
+func (c *Cleanup) Validate(_ job.Parameters) error {
 	return nil
 }
 
-func (c *Cleanup) Run(ctx job.Context, params job.Parameters) error {
+func (c *Cleanup) Run(ctx job.Context, _ job.Parameters) error {
 	logger := ctx.GetLogger()
 	logger.Infof("Running system data artifact cleanup job...")
 	c.init()

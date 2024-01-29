@@ -363,7 +363,8 @@ Test Case - Robot Account Do Replication
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  project_dest${d}
     # create system Robot Account
-    ${robot_account_name}  ${robot_account_secret}=  Create A New System Robot Account  is_cover_all=${true}
+    Switch To Robot Account
+    ${robot_account_name}  ${robot_account_secret}=  Create A System Robot Account  replication${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
     # logout and login source
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -378,6 +379,22 @@ Test Case - Robot Account Do Replication
     Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
     Cosign Sign  ${ip}/project${d}/${index}:${index_tag}
     Cosign Sign  ${ip}/project${d}/${index}@${image1sha256}
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image1}:${tag1}
+    Notation Sign  ${ip}/project${d}/${image2}:${tag2}
+    Notation Sign  ${ip}/project${d}/${index}:${index_tag}
+    Notation Sign  ${ip}/project${d}/${index}@${image2sha256}
+    Cosign Push Sbom  ${ip}/project${d}/${image1}:${tag1}
+    # Get SBOM digest
+    Go Into Repo  project${d}  ${image1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_sbom_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
+    Wait Until Element Is Visible And Enabled  ${artifact_digest}
+    ${sbom_digest}=  Get Text  ${artifact_digest}
+    ${sbom_short_digest}=  Get Substring  ${sbom_digest}  0  15
+    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    Cosign Sign  ${ip}/project${d}/${image1}@${sbom_digest}
+    Notation Sign  ${ip}/project${d}/${image1}@${sbom_digest}
     Docker Logout  ${ip}
     Switch To Registries
     Create A New Endpoint  harbor  e${d}  https://${ip1}  ${robot_account_name}  ${robot_account_secret}
@@ -389,16 +406,32 @@ Test Case - Robot Account Do Replication
     Logout Harbor
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
+    Should Be Signed  ${tag1}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
+    Should Be Signed  ${index_tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed By Notation  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image1_short_sha256}')]]//button)[1]
+    Should Be Signed By Cosign  digest=${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image2_short_sha256}')]]//button)[1]
+    Should Be Signed By Notation  digest=${image2_short_sha256}
     # pull mode
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -409,16 +442,32 @@ Test Case - Robot Account Do Replication
     Check Latest Replication Job Status  Succeeded
     Check Latest Replication Enabled Copy By Chunk
     Image Should Be Replicated To Project  project_dest${d}  ${image1}
+    Should Be Signed  ${tag1}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
+    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
     Back Project Home  project_dest${d}
     Go Into Repo  project_dest${d}  ${index}
+    Should Be Signed  ${index_tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed By Notation  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image1_short_sha256}')]]//button)[1]
+    Should Be Signed By Cosign  digest=${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
+    Retry Button Click  (//clr-dg-row[.//a[contains(.,'${image2_short_sha256}')]]//button)[1]
+    Should Be Signed By Notation  digest=${image2_short_sha256}
     Close Browser
 
 Test Case - Replication Triggered By Events
@@ -468,28 +517,28 @@ Test Case - Replication Triggered By Events
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Repo  project${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project${d}  ${image2}
-    Should Not Be Signed By Cosign  ${tag2}
+    Should Not Be Signed  ${tag2}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Repo  project_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_dest${d}  ${image2}
-    Should Not Be Signed By Cosign  ${tag2}
+    Should Not Be Signed  ${tag2}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
     Logout Harbor
     # delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -498,13 +547,13 @@ Test Case - Replication Triggered By Events
     Repo Not Exist  project${d}  ${image2}
     Go Into Repo  project${d}  ${image1}
     Retry Double Keywords When Error  Delete Accessory  ${tag1}  Should be Accessory deleted  ${tag1}
-    Should Not Be Signed By Cosign  ${tag1}
+    Should Not Be Signed  ${tag1}
     Go Into Repo  project${d}  ${index}
     Retry Double Keywords When Error  Delete Accessory  ${index_tag}  Should be Accessory deleted  ${index_tag}
-    Should Not Be Signed By Cosign  ${index_tag}
+    Should Not Be Signed  ${index_tag}
     Click Index Achieve  ${index_tag}
     Retry Double Keywords When Error  Delete Accessory  ${image1_short_sha256}  Should be Accessory deleted  ${image1_short_sha256}
-    Should Not Be Signed By Cosign  ${image1_short_sha256}
+    Should Not Be Signed  ${image1_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -512,12 +561,12 @@ Test Case - Replication Triggered By Events
     Wait Until Page Contains  We couldn't find any artifacts!
     Go Into Repo  project_dest${d}  ${image1}
     Should be Accessory deleted  ${tag1}
-    Should Not Be Signed By Cosign  ${tag1}
+    Should Not Be Signed  ${tag1}
     Go Into Repo  project_dest${d}  ${index}
     Should be Accessory deleted  ${index_tag}
-    Should Not Be Signed By Cosign  ${index_tag}
+    Should Not Be Signed  ${index_tag}
     Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should be Accessory deleted  ${image1_short_sha256}
-    Should Not Be Signed By Cosign  ${image1_short_sha256}
+    Should Not Be Signed  ${image1_short_sha256}
     Close Browser
 
 Test Case - Enable Replication Of Cosign Deployment Security Policy
@@ -590,36 +639,232 @@ Test Case - Enable Replication Of Cosign Deployment Security Policy
     Check Latest Replication Job Status  Succeeded
     # check project_pull_dest
     Go Into Project  project_pull_dest${d}
-    Switch To Project Repo
     Repo Exist  project_pull_dest${d}  ${image1}
     Repo Exist  project_pull_dest${d}  ${image2}
     Repo Exist  project_pull_dest${d}  ${index}
     Go Into Repo  project_pull_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_pull_dest${d}  ${image2}
-    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed  ${tag2}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
+    Should Be Signed  ${index_tag}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
     Go Into Repo  project_pull_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
     # check project_push_dest
     Go Into Project  project_push_dest${d}
-    Switch To Project Repo
     Repo Exist  project_push_dest${d}  ${image1}
     Repo Exist  project_push_dest${d}  ${image2}
     Repo Exist  project_push_dest${d}  ${index}
     Go Into Repo  project_push_dest${d}  ${image1}
-    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed  ${tag1}
     Go Into Repo  project_push_dest${d}  ${image2}
+    Should Be Signed  ${tag2}
+    Go Into Repo  project_push_dest${d}  ${index}
+    Should Be Signed  ${index_tag}
+    Go Into Repo  project_push_dest${d}  ${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image1_short_sha256}
+    Go Into Repo  project_push_dest${d}  ${index}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed  ${image2_short_sha256}
+    Close Browser
+
+Test Case - Enable Replication Of Notation Deployment Security Policy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
+
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_push_dest${d}
+    Create An New Project And Go Into Project  project_pull_dest${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project${d}/*  image  e${d}  project_pull_dest${d}
+    Logout Harbor
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    # push images
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    # enable notation deployment security policy
+    Goto Project Config
+    Click Notation Deployment Security
+    Save Project Config
+    Content Notation Deployment security Be Selected
+    # push mode replication should fail
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_push_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # sign
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image1}:${tag1}
+    Notation Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # push mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Succeeded
+    # pull mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Succeeded
+    # check project_pull_dest
+    Go Into Project  project_pull_dest${d}
+    Repo Exist  project_pull_dest${d}  ${image1}
+    Repo Exist  project_pull_dest${d}  ${image2}
+    # check project_push_dest
+    Go Into Project  project_push_dest${d}
+    Repo Exist  project_push_dest${d}  ${image1}
+    Repo Exist  project_push_dest${d}  ${image2}
+    Close Browser
+
+Test Case - Enable Replication Of Cosign And Notation Deployment Security Policy
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image1}=  Set Variable  hello-world
+    ${tag1}=  Set Variable  latest
+    ${image2}=  Set Variable  busybox
+    ${tag2}=  Set Variable  latest
+
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project_push_dest${d}
+    Create An New Project And Go Into Project  project_pull_dest${d}
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_pull_${d}  pull  project${d}/*  image  e${d}  project_pull_dest${d}
+    Logout Harbor
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    # push images
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image1}:${tag1}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image2}:${tag2}
+    # enable cosign deployment security policy
+    Goto Project Config
+    Click Cosign Deployment Security
+    Save Project Config
+    Content Cosign Deployment security Be Selected
+    # enable notation deployment security policy
+    Goto Project Config
+    Click Notation Deployment Security
+    Save Project Config
+    Content Notation Deployment security Be Selected
+    # push mode replication should fail
+    Switch To Registries
+    Create A New Endpoint  harbor  e${d}  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule_push_${d}  push  project${d}/*  image  e${d}  project_push_dest${d}
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # cosign sign
+    Cosign Generate Key Pair
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # push mode replication should fail
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # notation sign
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image1}:${tag1}
+    Notation Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # delete cosign accessory
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  project${d}
+    Go Into Repo  project${d}  ${image1}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_list_accessory_btn}  Delete Accessory By Aeecssory XPath  ${artifact_cosign_accessory_action_btn}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_list_accessory_btn}  Retry Wait Element Not Visible  ${artifact_cosign_accessory_action_btn}
+    Go Into Repo  project${d}  ${image2}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_list_accessory_btn}  Delete Accessory By Aeecssory XPath  ${artifact_cosign_accessory_action_btn}
+    Retry Double Keywords When Error  Retry Button Click  ${artifact_list_accessory_btn}  Retry Wait Element Not Visible  ${artifact_cosign_accessory_action_btn}
+    # push mode replication should fail
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Failed
+    # pull mode replication should fail
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Failed
+    # cosign sign
+    Docker Login  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Cosign Sign  ${ip}/project${d}/${image1}:${tag1}
+    Cosign Sign  ${ip}/project${d}/${image2}:${tag2}
+    Docker Logout  ${ip}
+    # push mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_push_${d}
+    Check Latest Replication Job Status  Succeeded
+    # pull mode replication should success
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Select Rule And Replicate  rule_pull_${d}
+    Check Latest Replication Job Status  Succeeded
+    # check project_pull_dest
+    Go Into Project  project_pull_dest${d}
+    Repo Exist  project_pull_dest${d}  ${image1}
+    Repo Exist  project_pull_dest${d}  ${image2}
+    Go Into Repo  project_pull_dest${d}  ${image1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Go Into Repo  project_pull_dest${d}  ${image2}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag2}
-    Go Into Repo  project_push_dest${d}  ${index}
-    Should Be Signed By Cosign  ${index_tag}
-    Go Into Repo  project_push_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image1_short_sha256}
-    Go Into Repo  project_push_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Signed By Cosign  ${image2_short_sha256}
+    Should Be Signed By Notation  ${tag2}
+    # check project_push_dest
+    Go Into Project  project_push_dest${d}
+    Repo Exist  project_push_dest${d}  ${image1}
+    Repo Exist  project_push_dest${d}  ${image2}
+    Go Into Repo  project_push_dest${d}  ${image1}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag1}
+    Should Be Signed By Notation  ${tag1}
+    Go Into Repo  project_push_dest${d}  ${image2}
+    Retry Button Click  ${artifact_list_accessory_btn}
+    Should Be Signed By Cosign  ${tag2}
+    Should Be Signed By Notation  ${tag2}
     Close Browser
 
 Test Case - Carvel Imgpkg Copy To Harbor

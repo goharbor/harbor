@@ -80,7 +80,7 @@ class TestCosign(unittest.TestCase):
 
         # 5.1. Generate cosign key pair;
         cosign.generate_key_pair()
-        # 5.2. Generate cosign key pair;
+        # 5.2. Sign image(IA) with cosign;
         docker_api.docker_login_cmd(harbor_server, user_name, user_password, enable_manifest = False)
         cosign.sign_artifact("{}/{}/{}:{}".format(harbor_server, TestCosign.project_name, self.image, self.tag))
 

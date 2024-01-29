@@ -73,7 +73,7 @@ type artifactAPI struct {
 	labelMgr label.Manager
 }
 
-func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (a *artifactAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		a.SendError(ctx, err)
 	}

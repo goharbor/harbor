@@ -32,6 +32,8 @@ const PAGE_SIZE: number = 50;
 })
 export class LabelSelectorComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
+    usedInDropdown: boolean = false;
+    @Input()
     ownedLabels: Label[] = [];
     @Input()
     width: number = 180; // unit px
@@ -39,6 +41,8 @@ export class LabelSelectorComponent implements OnInit, OnChanges, OnDestroy {
     scope: string = GLOBAL; // 'g' for global and 'p' for project, default 'g'
     @Input()
     projectId: number; // if scope = 'p', projectId is required
+    @Input()
+    dropdownOpened: boolean; // parent component opened status
     candidateLabels: Label[] = [];
     searchValue: string;
     loading: boolean = false;
@@ -157,7 +161,7 @@ export class LabelSelectorComponent implements OnInit, OnChanges, OnDestroy {
     isSelect(label: Label): boolean {
         if (this.ownedLabels?.length) {
             return this.ownedLabels.some(item => {
-                return item.id === label.id;
+                return item.id === label.id && this.dropdownOpened;
             });
         }
         return false;

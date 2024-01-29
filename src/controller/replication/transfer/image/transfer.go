@@ -326,7 +326,7 @@ func (t *transfer) copyChunkWithRetry(srcRepo, dstRepo, digest string, sizeFromD
 }
 
 // tryMountBlob try to check existence and mount, return true if mounted.
-func (t *transfer) tryMountBlob(srcRepo, dstRepo, digest string) (bool, error) {
+func (t *transfer) tryMountBlob(_, dstRepo, digest string) (bool, error) {
 	if t.shouldStop() {
 		return false, errStopped
 	}

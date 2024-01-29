@@ -32,18 +32,20 @@ import (
 
 // Controller defines the operation related to project member
 type Controller interface {
-	// Get get the project member with ID
+	// Get gets the project member with ID
 	Get(ctx context.Context, projectNameOrID interface{}, memberID int) (*models.Member, error)
 	// Create add project member to project
 	Create(ctx context.Context, projectNameOrID interface{}, req Request) (int, error)
 	// Delete member from project
 	Delete(ctx context.Context, projectNameOrID interface{}, memberID int) error
-	// List list all project members with condition
+	// List lists all project members with condition
 	List(ctx context.Context, projectNameOrID interface{}, entityName string, query *q.Query) ([]*models.Member, error)
 	// UpdateRole update the project member role
 	UpdateRole(ctx context.Context, projectNameOrID interface{}, memberID int, role int) error
 	// Count get the total amount of project members
 	Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error)
+	// IsProjectAdmin judges if the user is a project admin of any project
+	IsProjectAdmin(ctx context.Context, memberID int) (bool, error)
 }
 
 // Request - Project Member Request
@@ -257,4 +259,13 @@ func (c *controller) Delete(ctx context.Context, projectNameOrID interface{}, me
 		return err
 	}
 	return c.mgr.Delete(ctx, p.ProjectID, memberID)
+}
+
+func (c *controller) IsProjectAdmin(ctx context.Context, memberID int) (bool, error) {
+	members, err := c.projectMgr.ListAdminRolesOfUser(ctx, memberID)
+	if err != nil {
+		return false, err
+	}
+
+	return len(members) > 0, nil
 }

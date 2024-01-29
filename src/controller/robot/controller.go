@@ -102,10 +102,6 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 	var expiresAt int64
 	if r.Duration == -1 {
 		expiresAt = -1
-	} else if r.Duration == 0 {
-		// system default robot duration
-		r.Duration = int64(config.RobotTokenDuration(ctx))
-		expiresAt = time.Now().AddDate(0, 0, config.RobotTokenDuration(ctx)).Unix()
 	} else {
 		durationStr := strconv.FormatInt(r.Duration, 10)
 		duration, err := strconv.Atoi(durationStr)

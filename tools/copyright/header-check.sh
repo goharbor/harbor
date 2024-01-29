@@ -48,8 +48,6 @@ all-files() {
         # Check .go files, Makefile, sh files, bash files, and robot files
         # grep -e "\.go$" -e "\.ts$" -e "\.css$" -e "Makefile$" -e "\.sh$" -e "\.bash$" -e "\.robot$" |\
         grep -e "\.sh$" |\
-            # Ignore vendor/
-        grep -v vendor |\
             # Ignore api test
         grep -v apitests
         # / |\

@@ -44,6 +44,8 @@ const (
 	ExecSweepVendorType = "EXECUTION_SWEEP"
 	// ScanAllVendorType: the name of the scan all job
 	ScanAllVendorType = "SCAN_ALL"
+	// AuditLogsGDPRCompliantVendorType : the name of the job which makes audit logs table GDPR-compliant
+	AuditLogsGDPRCompliantVendorType = "AUDIT_LOGS_GDPR_COMPLIANT"
 )
 
 var (

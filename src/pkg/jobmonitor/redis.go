@@ -126,7 +126,7 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 }
 
 // removeJobStatusInRedis remove job status track information from redis, to avoid performance impact when the jobIDs is too large, use batch to remove
-func (r *redisClientImpl) removeJobStatusInRedis(ctx context.Context, jobIDs []string) {
+func (r *redisClientImpl) removeJobStatusInRedis(_ context.Context, jobIDs []string) {
 	conn := r.redisPool.Get()
 	defer conn.Close()
 	for _, id := range jobIDs {
@@ -146,13 +146,13 @@ func (r *redisClientImpl) removeJobStatusInRedis(ctx context.Context, jobIDs []s
 	}
 }
 
-func (r *redisClientImpl) AllJobTypes(ctx context.Context) ([]string, error) {
+func (r *redisClientImpl) AllJobTypes(_ context.Context) ([]string, error) {
 	conn := r.redisPool.Get()
 	defer conn.Close()
 	return redis.Strings(conn.Do("SMEMBERS", fmt.Sprintf("{%s}:known_jobs", r.namespace)))
 }
 
-func (r *redisClientImpl) PauseJob(ctx context.Context, jobName string) error {
+func (r *redisClientImpl) PauseJob(_ context.Context, jobName string) error {
 	log.Infof("pause job type:%s", jobName)
 	redisKeyJobPaused := fmt.Sprintf("{%s}:jobs:%s:paused", r.namespace, jobName)
 	conn := r.redisPool.Get()
@@ -161,7 +161,7 @@ func (r *redisClientImpl) PauseJob(ctx context.Context, jobName string) error {
 	return err
 }
 
-func (r *redisClientImpl) UnpauseJob(ctx context.Context, jobName string) error {
+func (r *redisClientImpl) UnpauseJob(_ context.Context, jobName string) error {
 	log.Infof("unpause job %s", jobName)
 	redisKeyJobPaused := fmt.Sprintf("{%s}:jobs:%s:paused", r.namespace, jobName)
 	conn := r.redisPool.Get()

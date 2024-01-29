@@ -6,7 +6,6 @@ set -e
 export POSTGRESQL_HOST=$1
 export REGISTRY_URL=http://$1:5000
 export CHROME_BIN=chromium-browser
-export GO111MODULE=auto
 #export DISPLAY=:99.0
 #sh -e /etc/init.d/xvfb start
 

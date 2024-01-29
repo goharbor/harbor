@@ -27,12 +27,11 @@
   }
 }
 
-.permissions {
-  height: 16px;
-  display: flex;
-  align-items: center;
+
+.icon {
+  margin-top: 3px;
 }
 
-.datagrid-host {
-  position: inherit;
+.permission-col {
+  min-width: 8rem !important;
 }

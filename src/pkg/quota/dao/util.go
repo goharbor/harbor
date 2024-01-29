@@ -86,32 +86,45 @@ func castQuantity(field string) string {
 
 func listOrderBy(query *q.Query) string {
 	orderBy := "b.creation_time DESC"
+	if query == nil {
+		return orderBy
+	}
 
-	if query != nil && query.Sorting != "" {
-		if val, ok := quotaOrderMap[query.Sorting]; ok {
-			orderBy = val
-		} else {
-			sort := query.Sorting
+	var orderBySlice []string
+	for _, sortByItem := range query.Sorts {
+		sortKey := ""
+		if sortByItem.DESC {
+			sortKey = "-"
+		}
+		sortKey = sortKey + sortByItem.Key
 
-			order := "ASC"
-			if sort[0] == '-' {
-				order = "DESC"
-				sort = sort[1:]
-			}
+		// check if sortKey is in quotaOrderMap
+		if val, ok := quotaOrderMap[sortKey]; ok {
+			orderBySlice = append(orderBySlice, val)
+			continue
+		}
 
-			prefixes := []string{"hard.", "used."}
-			for _, prefix := range prefixes {
-				if strings.HasPrefix(sort, prefix) {
-					resource := strings.TrimPrefix(sort, prefix)
-					if types.IsValidResource(types.ResourceName(resource)) {
-						field := fmt.Sprintf("%s->>%s", strings.TrimSuffix(prefix, "."), orm.QuoteLiteral(resource))
-						orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
-						break
-					}
+		// now: check SortByItem against "hard.resource_name", "-hard.resource_name", "used.resource_name", "-used.resource_name"
+		order := "ASC"
+		if sortByItem.DESC {
+			order = "DESC"
+		}
+		prefixes := []string{"hard.", "used."}
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(sortByItem.Key, prefix) {
+				resource := strings.TrimPrefix(sortByItem.Key, prefix)
+				if types.IsValidResource(types.ResourceName(resource)) {
+					field := fmt.Sprintf("%s->>%s", strings.TrimSuffix(prefix, "."), orm.QuoteLiteral(resource))
+					orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
+					orderBySlice = append(orderBySlice, orderBy)
 				}
 			}
 		}
 	}
 
-	return orderBy
+	if len(orderBySlice) == 0 {
+		return orderBy
+	}
+
+	return strings.Join(orderBySlice, ", ")
 }

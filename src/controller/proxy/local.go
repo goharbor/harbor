@@ -81,7 +81,7 @@ func newLocalHelper() localInterface {
 	return l
 }
 
-func (l *localHelper) BlobExist(ctx context.Context, art lib.ArtifactInfo) (bool, error) {
+func (l *localHelper) BlobExist(_ context.Context, art lib.ArtifactInfo) (bool, error) {
 	return l.registry.BlobExist(art.Repository, art.Digest)
 }
 

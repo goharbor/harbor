@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 )
 
@@ -66,4 +67,17 @@ func GetPolicy(ctx context.Context, id int64) (*models.RetentionPolicy, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+// ListPolicies list retention policy by query
+func ListPolicies(ctx context.Context, query *q.Query) ([]*models.RetentionPolicy, error) {
+	plcs := []*models.RetentionPolicy{}
+	qs, err := orm.QuerySetter(ctx, &models.RetentionPolicy{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&plcs); err != nil {
+		return nil, err
+	}
+	return plcs, nil
 }

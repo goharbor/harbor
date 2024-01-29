@@ -95,11 +95,11 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 				<-time.After(time.Duration(b) * time.Millisecond)
 				span.AddEvent("retrying to get job stat")
 				continue
-			} else {
-				// Exit and never try.
-				// Directly return without retry again as we have no way to restore the stats again.
-				j.Fails = 10000000000 // never retry
 			}
+			// else
+			// Exit and never try.
+			// Directly return without retry again as we have no way to restore the stats again.
+			j.Fails = 10000000000 // never retry
 		}
 
 		// Log error and exit

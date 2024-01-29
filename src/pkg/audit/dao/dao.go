@@ -42,6 +42,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Purge the audit log
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
+	// UpdateUsername replaces username in matched records
+	UpdateUsername(ctx context.Context, username string, usernameReplace string) error
 }
 
 // New returns an instance of the default DAO
@@ -56,6 +58,15 @@ var allowedMaps = map[string]interface{}{
 }
 
 type dao struct{}
+
+func (d *dao) UpdateUsername(ctx context.Context, username string, usernameReplace string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Raw("UPDATE audit_log SET username = ? WHERE username = ?", usernameReplace, username).Exec()
+	return err
+}
 
 // Purge delete expired audit log
 func (*dao) Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error) {

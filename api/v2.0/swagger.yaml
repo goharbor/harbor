@@ -4719,7 +4719,7 @@ paths:
       summary: Get job log by job id
       description: Get job log by job id, it is only used by administrator
       produces:
-        - text/plain  
+        - text/plain
       tags:
         - jobservice
       parameters:
@@ -4850,7 +4850,6 @@ paths:
         '200':
           description: Get scheduler status successfully.
           schema:
-            type: object
             $ref: '#/definitions/SchedulerStatus'
         '401':
           $ref: '#/responses/401'
@@ -6072,7 +6071,7 @@ paths:
           description: Specify whether the dangerous Artifact are included inside summary information
           type: boolean
           required: false
-          default: false                  
+          default: false
       responses:
         '200':
           description: Success
@@ -6091,15 +6090,15 @@ paths:
     get:
       summary: Get the vulnerability list.
       description: |
-        Get the vulnerability list. use q to pass the query condition, 
+        Get the vulnerability list. use q to pass the query condition,
         supported conditions:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
-        repository_name(exact match) 
-        project_id(exact match) 
+        repository_name(exact match)
+        project_id(exact match)
         package(exact match)
-        tag(exact match) 
+        tag(exact match)
         digest(exact match)
       tags:
         - securityhub
@@ -6140,7 +6139,31 @@ paths:
         '401':
           $ref: '#/responses/401'
         '500':
-          $ref: '#/responses/500'          
+          $ref: '#/responses/500'
+
+  /permissions:
+    get:
+      summary: Get system or project level permissions info.
+      operationId: getPermissions
+      description: |
+        This endpoint is for retrieving resource and action info that only provides for admin user(system admin and project admin).
+      tags:
+        - permissions
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Get permissions successfully.
+          schema:
+            $ref: '#/definitions/Permissions'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 
 parameters:
   query:
@@ -6151,7 +6174,7 @@ parameters:
     required: false
   sort:
     name: sort
-    description: Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending orderr and field2 in descending order with "sort=field1,-field2"
+    description: Sort the resource list in ascending or descending order. e.g. sort by field1 in ascending order and field2 in descending order with "sort=field1,-field2"
     in: query
     type: string
     required: false
@@ -6216,7 +6239,7 @@ parameters:
   repositoryName:
     name: repository_name
     in: path
-    description: The name of the repository. If it contains slash, encode it with URL encoding. e.g. a/b -> a%252Fb
+    description: The name of the repository. If it contains slash, encode it twice over with URL encoding. e.g. a/b -> a%2Fb -> a%252Fb
     required: true
     type: string
   reference:
@@ -7141,6 +7164,10 @@ definitions:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
         x-nullable: true
+      auto_sbom_generation:
+        type: string
+        description: 'Whether generating SBOM automatically when pushing a subject artifact. The valid values are "true", "false".'
+        x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
         description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
@@ -7633,8 +7660,9 @@ definitions:
         description: The level of the robot, project or system
       duration:
         type: integer
+        x-nullable: true
         format: int64
-        description: The duration of the robot in days
+        description: The duration of the robot in days, duration must be either -1(Never) or a positive integer
       editable:
         type: boolean
         x-omitempty: false
@@ -7681,7 +7709,7 @@ definitions:
       duration:
         type: integer
         format: int64
-        description: The duration of the robot in days
+        description: The duration of the robot in days, duration must be either -1(Never) or a positive integer
       permissions:
         type: array
         items:
@@ -7843,6 +7871,11 @@ definitions:
         x-nullable: true
         x-omitempty: true
         $ref: '#/definitions/AuthproxySetting'
+      oidc_provider_name:
+        type: string
+        x-nullable: true
+        x-omitempty: true
+        description: The OIDC provider name, empty if current auth is not OIDC_auth or OIDC provider is not configured.
   AuthproxySetting:
     type: object
     properties:
@@ -7966,7 +7999,7 @@ definitions:
         type: string
         description: |
           The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual', 'None' and 'Schedule'.
-          'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and 
+          'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and
           'None' means to cancel the schedule.
         enum:
           - Hourly
@@ -9397,6 +9430,19 @@ definitions:
       action:
         type: string
         description: The permission action
+  Permissions:
+    type: object
+    properties:
+      system:
+        type: array
+        description: The system level permissions
+        items:
+          $ref: '#/definitions/Permission'
+      project:
+        type: array
+        description: The project level permissions
+        items:
+          $ref: '#/definitions/Permission'
   OIDCCliSecretReq:
     type: object
     properties:
@@ -9772,12 +9818,12 @@ definitions:
     type: object
     description: the dangerous CVE information
     properties:
-      cve_id: 
+      cve_id:
         type: string
         description: the cve id
       severity:
         type: string
-        description: the severity of the CVE        
+        description: the severity of the CVE
       cvss_score_v3:
         type: number
         format: float64
@@ -9787,7 +9833,7 @@ definitions:
         description: the description of the CVE
       package:
         type: string
-        description: the package of the CVE      
+        description: the package of the CVE
       version:
         type: string
         description: the version of the package
@@ -9795,14 +9841,14 @@ definitions:
     type: object
     description: the dangerous artifact information
     properties:
-      project_id: 
+      project_id:
         type: integer
         format: int64
         description: the project id of the artifact
       repository_name:
         type: string
         description: the repository name of the artifact
-      digest: 
+      digest:
         type: string
         description: the digest of the artifact
       critical_cnt:
@@ -9862,6 +9908,6 @@ definitions:
         description: The description of the vulnerability
       links:
         type: array
-        items: 
+        items:
           type: string
         description: Links of the vulnerability

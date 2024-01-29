@@ -39,7 +39,7 @@ type v1alpha1Parser struct {
 	regCli reg.Client
 }
 
-func (p *v1alpha1Parser) Parse(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
+func (p *v1alpha1Parser) Parse(_ context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	if artifact.ManifestMediaType != v1.MediaTypeImageManifest && artifact.ManifestMediaType != schema2.MediaTypeManifest {
 		return nil
 	}

@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -196,6 +197,57 @@ func TestHasPushPullPerm(t *testing.T) {
 	ctx.ctl = ctl
 	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
+}
+
+func TestSysAndProPerm(t *testing.T) {
+	robot := &robot.Robot{
+		Level: "system",
+		Robot: model.Robot{
+			Name:        "test_robot_4",
+			Description: "desc",
+		},
+		Permissions: []*robot.Permission{
+			{
+				Kind:      "system",
+				Namespace: "/",
+				Access: []*types.Policy{
+					{
+						Resource: rbac.Resource(fmt.Sprintf("system/%s", rbac.ResourceRepository)),
+						Action:   rbac.ActionList,
+					},
+					{
+						Resource: rbac.Resource(fmt.Sprintf("system/%s", rbac.ResourceGarbageCollection)),
+						Action:   rbac.ActionCreate,
+					},
+				},
+			},
+			{
+				Kind:      "project",
+				Namespace: "library",
+				Access: []*types.Policy{
+					{
+						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+						Action:   rbac.ActionPush,
+					},
+					{
+						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+						Action:   rbac.ActionPull,
+					},
+				},
+			},
+		},
+	}
+
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+
+	ctx := NewSecurityContext(robot)
+	ctx.ctl = ctl
+	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
+
+	resource = system.NewNamespace().Resource(rbac.ResourceGarbageCollection)
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionCreate, resource))
 }
 
 func Test_filterRobotPolicies(t *testing.T) {

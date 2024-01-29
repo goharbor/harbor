@@ -80,12 +80,13 @@
                                 </button>
                                 <clr-dropdown-menu
                                     [hidden]="!selectedRow.length">
-                                    <div class="filter-grid" clrDropdownItem>
+                                    <div class="filter-grid">
                                         <label class="dropdown-header">{{
                                             'REPOSITORY.ADD_LABEL_TO_IMAGE'
                                                 | translate
                                         }}</label>
                                         <app-label-selector
+                                            [usedInDropdown]="true"
                                             [width]="200"
                                             [ownedLabels]="
                                                 selectedRow[0]?.labels
@@ -430,7 +431,8 @@
                         <hbr-label-piece
                             *ngIf="artifact.labels?.length"
                             [label]="artifact.labels[0]"
-                            [labelWidth]="90">
+                            [labelWidth]="90"
+                            [withTooltip]="true">
                         </hbr-label-piece>
                         <div
                             class="signpost-item"
@@ -447,7 +449,8 @@
                                         class="margin-5px">
                                         <hbr-label-piece
                                             [labelWidth]="130"
-                                            [label]="label">
+                                            [label]="label"
+                                            [withTooltip]="true">
                                         </hbr-label-piece>
                                     </div>
                                 </clr-signpost-content>

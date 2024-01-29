@@ -35,10 +35,11 @@ type Replication struct {
 
 // ArtifactInfo describe info of artifact
 type ArtifactInfo struct {
-	Type       string `json:"type"`
-	Status     string `json:"status"`
-	NameAndTag string `json:"name_tag"`
-	FailReason string `json:"fail_reason,omitempty"`
+	Type       string   `json:"type"`
+	Status     string   `json:"status"`
+	NameAndTag string   `json:"name_tag"`
+	References []string `json:"references"`
+	FailReason string   `json:"fail_reason,omitempty"`
 }
 
 // ReplicationResource describes replication resource info

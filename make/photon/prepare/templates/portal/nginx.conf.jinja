@@ -17,6 +17,7 @@ http {
     server {
 {% if internal_tls.enabled %}
         listen 8443 ssl;
+        listen [::]:8443 ssl;
         # SSL
         ssl_certificate /etc/harbor/tls/portal.crt;
         ssl_certificate_key /etc/harbor/tls/portal.key;

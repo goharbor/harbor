@@ -14,7 +14,6 @@ import { BuildHistoryComponent } from './artifact-additions/build-history/build-
 import { ArtifactVulnerabilitiesComponent } from './artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component';
 import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { ArtifactDetailRoutingResolverService } from '../../../../services/routing-resolvers/artifact-detail-routing-resolver.service';
-import { ResultTipComponent } from './vulnerability-scanning/result-tip.component';
 import { ResultBarChartComponent } from './vulnerability-scanning/result-bar-chart.component';
 import { ResultTipHistogramComponent } from './vulnerability-scanning/result-tip-histogram/result-tip-histogram.component';
 import { HistogramChartComponent } from './vulnerability-scanning/histogram-chart/histogram-chart.component';
@@ -80,7 +79,6 @@ const routes: Routes = [
         DependenciesComponent,
         BuildHistoryComponent,
         ArtifactVulnerabilitiesComponent,
-        ResultTipComponent,
         ResultBarChartComponent,
         ResultTipHistogramComponent,
         HistogramChartComponent,

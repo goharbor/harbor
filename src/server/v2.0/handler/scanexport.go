@@ -58,7 +58,7 @@ type scanDataExportAPI struct {
 	userMgr           user.Manager
 }
 
-func (se *scanDataExportAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (se *scanDataExportAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 
@@ -90,8 +90,8 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 	}
 
 	if usr == nil {
-		error := &models.Error{Message: fmt.Sprintf("User : %s not found", secContext.GetUsername())}
-		errors := &models.Errors{Errors: []*models.Error{error}}
+		err := &models.Error{Message: fmt.Sprintf("User : %s not found", secContext.GetUsername())}
+		errors := &models.Errors{Errors: []*models.Error{err}}
 		return operation.NewExportScanDataForbidden().WithPayload(errors)
 	}
 
@@ -216,7 +216,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	})
 }
 
-func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context, params operation.GetScanDataExportExecutionListParams) middleware.Responder {
+func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context, _ operation.GetScanDataExportExecutionListParams) middleware.Responder {
 	if err := se.RequireAuthenticated(ctx); err != nil {
 		return se.SendError(ctx, err)
 	}

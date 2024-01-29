@@ -247,8 +247,8 @@ func (oc *OIDCController) Onboard() {
 		oc.SendBadRequestError(errors.New("username with illegal length"))
 		return
 	}
-	if utils.IsContainIllegalChar(username, []string{",", "~", "#", "$", "%"}) {
-		oc.SendBadRequestError(errors.New("username contains illegal characters"))
+	if strings.ContainsAny(username, common.IllegalCharsInUsername) {
+		oc.SendBadRequestError(errors.Errorf("username %v contains illegal characters: %v", username, common.IllegalCharsInUsername))
 		return
 	}
 

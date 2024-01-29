@@ -44,6 +44,8 @@ type Manager interface {
 	SearchMemberByName(ctx context.Context, projectID int64, entityName string) ([]*models.Member, error)
 	// DeleteMemberByUserID delete project member by user id
 	DeleteMemberByUserID(ctx context.Context, uid int) error
+	// DeleteMemberByProjectID delete project member by project id
+	DeleteMemberByProjectID(ctx context.Context, projectID int64) error
 	// GetTotalOfProjectMembers get the total amount of project members
 	GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error)
 	// ListRoles list project roles
@@ -100,6 +102,9 @@ func (m *manager) Delete(ctx context.Context, projectID int64, memberID int) err
 
 func (m *manager) DeleteMemberByUserID(ctx context.Context, uid int) error {
 	return m.dao.DeleteProjectMemberByUserID(ctx, uid)
+}
+func (m *manager) DeleteMemberByProjectID(ctx context.Context, projectID int64) error {
+	return m.dao.DeleteProjectMemberByProjectID(ctx, projectID)
 }
 
 // NewManager ...

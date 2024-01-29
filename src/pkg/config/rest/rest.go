@@ -41,7 +41,7 @@ type Value struct {
 }
 
 // Load - load config data from REST server
-func (h *Driver) Load(ctx context.Context) (map[string]interface{}, error) {
+func (h *Driver) Load(_ context.Context) (map[string]interface{}, error) {
 	cfgMap := map[string]interface{}{}
 	origMap := map[string]*Value{}
 	log.Infof("get configuration from url: %+v", h.configRESTURL)
@@ -59,6 +59,6 @@ func (h *Driver) Load(ctx context.Context) (map[string]interface{}, error) {
 }
 
 // Save - Save config data to REST server by PUT method
-func (h *Driver) Save(ctx context.Context, cfg map[string]interface{}) error {
+func (h *Driver) Save(_ context.Context, cfg map[string]interface{}) error {
 	return h.client.Put(h.configRESTURL, cfg)
 }

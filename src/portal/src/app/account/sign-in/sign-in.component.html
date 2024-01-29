@@ -26,8 +26,26 @@
                         <button
                             type="button"
                             id="log_oidc"
-                            class="btn btn-primary btn-block">
-                            <span>{{ 'BUTTON.LOG_IN_OIDC' | translate }}</span>
+                            class="btn btn-primary btn-block oidc-login-button">
+                            <span>
+                                <ng-container
+                                    *ngIf="
+                                        getOIDCProviderName();
+                                        else ProviderName
+                                    ">
+                                    {{
+                                        'BUTTON.LOG_IN_OIDC_WITH_PROVIDER_NAME'
+                                            | translate
+                                                : {
+                                                      providerName:
+                                                          getOIDCProviderName()
+                                                  }
+                                    }}
+                                </ng-container>
+                                <ng-template #ProviderName>
+                                    {{ 'BUTTON.LOG_IN_OIDC' | translate }}
+                                </ng-template>
+                            </span>
                         </button>
                     </a>
                     <div class="divider-container mt-1 mb-1">

@@ -49,11 +49,11 @@ func New() Manager {
 type manager struct {
 }
 
-func (m *manager) Ping(ctx context.Context, cfg cfgModels.LdapConf) (bool, error) {
+func (m *manager) Ping(_ context.Context, cfg cfgModels.LdapConf) (bool, error) {
 	return TestConfig(cfg)
 }
 
-func (m *manager) SearchUser(ctx context.Context, sess *Session, username string) ([]model.User, error) {
+func (m *manager) SearchUser(_ context.Context, sess *Session, username string) ([]model.User, error) {
 	users := make([]model.User, 0)
 	if err := sess.Open(); err != nil {
 		return users, err
@@ -133,7 +133,7 @@ func (m *manager) ImportUser(ctx context.Context, sess *Session, ldapImportUsers
 	return failedImportUser, nil
 }
 
-func (m *manager) SearchGroup(ctx context.Context, sess *Session, groupName, groupDN string) ([]model.Group, error) {
+func (m *manager) SearchGroup(_ context.Context, sess *Session, groupName, groupDN string) ([]model.Group, error) {
 	err := sess.Open()
 	if err != nil {
 		return nil, err

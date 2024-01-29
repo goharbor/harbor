@@ -23,7 +23,7 @@ import (
 func Test_listOrderBy(t *testing.T) {
 	query := func(sort string) *q.Query {
 		return &q.Query{
-			Sorting: sort,
+			Sorts: q.ParseSorting(sort),
 		}
 	}
 
@@ -36,11 +36,13 @@ func Test_listOrderBy(t *testing.T) {
 		want string
 	}{
 		{"no query", args{nil}, "b.creation_time DESC"},
+		{"empty query", args{query("")}, "b.creation_time DESC"},
 		{"order by unsupported field", args{query("unknown")}, "b.creation_time DESC"},
 		{"order by storage of hard", args{query("hard.storage")}, "(CAST( (CASE WHEN (hard->>'storage') IS NULL THEN '0' WHEN (hard->>'storage') = '-1' THEN '9223372036854775807' ELSE (hard->>'storage') END) AS BIGINT )) ASC"},
 		{"order by unsupported hard resource", args{query("hard.unknown")}, "b.creation_time DESC"},
 		{"order by storage of used", args{query("used.storage")}, "(CAST( (CASE WHEN (used->>'storage') IS NULL THEN '0' WHEN (used->>'storage') = '-1' THEN '9223372036854775807' ELSE (used->>'storage') END) AS BIGINT )) ASC"},
 		{"order by unsupported used resource", args{query("used.unknown")}, "b.creation_time DESC"},
+		{"order by multiple fields", args{query("-hard.storage,used.storage")}, "(CAST( (CASE WHEN (hard->>'storage') IS NULL THEN '0' WHEN (hard->>'storage') = '-1' THEN '9223372036854775807' ELSE (hard->>'storage') END) AS BIGINT )) DESC, (CAST( (CASE WHEN (used->>'storage') IS NULL THEN '0' WHEN (used->>'storage') = '-1' THEN '9223372036854775807' ELSE (used->>'storage') END) AS BIGINT )) ASC"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

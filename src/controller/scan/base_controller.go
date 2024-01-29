@@ -925,6 +925,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			Name:        fmt.Sprintf("%s-%s-%s", scannerPrefix, registration.Name, UUID),
 			Description: "for scan",
 			ProjectID:   projectID,
+			Duration:    -1,
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{

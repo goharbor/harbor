@@ -367,6 +367,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
         this.stringForLabelFilter = '';
+        this.copyStringForLabelFilter = '';
     }
 
     updateRuleFormAndCopyUpdateForm(rule: ReplicationPolicy): void {
@@ -532,7 +533,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         let filters: any = copyRuleForm.filters;
 
         // set label filter
-        if (this.stringForLabelFilter) {
+        if (this.stringForLabelFilter || this.copyStringForLabelFilter) {
             // set stringForLabelFilter
             copyRuleForm.filters.forEach(item => {
                 if (item.type === FilterType.LABEL) {

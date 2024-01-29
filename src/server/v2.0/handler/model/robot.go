@@ -44,7 +44,7 @@ func (r *Robot) ToSwagger() *models.Robot {
 		Name:         r.Name,
 		Description:  r.Description,
 		ExpiresAt:    r.ExpiresAt,
-		Duration:     r.Duration,
+		Duration:     &r.Duration,
 		Level:        r.Level,
 		Disable:      r.Disabled,
 		Editable:     r.Editable,
