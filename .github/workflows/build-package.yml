@@ -2,7 +2,11 @@ name: "Build Package Workflow"
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+      - release-*
 
 jobs:
   BUILD_PACKAGE:
@@ -12,29 +16,29 @@ jobs:
       - ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - uses: 'google-github-actions/auth@v0'
-        with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      # - uses: 'google-github-actions/auth@v2'
+        # with:
+        #   credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       - uses: google-github-actions/setup-gcloud@v0
         with:
-          version: '430.0.0'
+          version: '285.0.0'
       - run: gcloud info
-      - name: Set up Go 1.21
+      - name: Set up Go 1.19
         uses: actions/setup-go@v1
         with:
-          go-version: 1.21.4
+          go-version: 1.19.4
         id: go
       - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@master
+        uses: docker-practice/actions-setup-docker@1.0.11
         with:
-          docker_version: 20.10
+          docker_version: 18.09
           docker_channel: stable
       - uses: actions/checkout@v3
-      - uses: jitterbit/get-changed-files@v1
-        id: changed-files
-        with:
-          format: space-delimited
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: jitterbit/get-changed-files@v1
+      #   id: changed-files
+      #   with:
+      #     format: space-delimited
+      #     token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3
         with:
           path: src/github.com/goharbor/harbor
@@ -82,7 +86,7 @@ jobs:
           if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
             echo "Do not need to build base images!"
           else
-            build_base_params=" BUILD_BASE=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+            build_base_params=" BUILD_BASE=true PUSHBASEIMAGE=false REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
           fi
           sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY= ${build_base_params}
           sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} NOTARYFLAG=true CHARTFLAG=true TRIVYFLAG=true HTTPPROXY= ${build_base_params}
@@ -91,9 +95,9 @@ jobs:
           echo "Package name is: $harbor_offline_build_bundle"
           echo "Package name is: $harbor_online_build_bundle"
 
-          echo -en "${{ secrets.HARBOR_SIGN_KEY }}" |  gpg --import
-          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_offline_build_bundle
-          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_online_build_bundle
+          # echo -en "${{ secrets.HARBOR_SIGN_KEY }}" |  gpg --import
+          # gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_offline_build_bundle
+          # gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_online_build_bundle
 
           source tests/ci/build_util.sh
           cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
@@ -117,7 +121,7 @@ jobs:
         with:
           status: ${{ job.status }}
           title: Build Package - ${{ env.BUILD_BUNDLE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: always()
