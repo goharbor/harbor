@@ -2,11 +2,7 @@ name: "Build Package Workflow"
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
-on:
-  push:
-    branches:
-      - main
-      - release-*
+on: workflow_dispatch
 
 jobs:
   BUILD_PACKAGE:
