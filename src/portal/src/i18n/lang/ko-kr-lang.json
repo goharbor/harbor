@@ -138,10 +138,10 @@
         "ADMIN_CLI_SECRET_RESET_BUTTON": "시크릿(Secret) 업로드",
         "NEW_SECRET": "시크릿(Secret)",
         "CONFIRM_SECRET": "시크릿(Secret) 재입력",
-        "GENERATE_SUCCESS": "Cli 시크릿(Secret)이 성공적으로 설정됐습니다",
-        "GENERATE_ERROR": "Cli 시크릿(Secret) 설정에 실패했습니다",
+        "GENERATE_SUCCESS": "CLI 시크릿(Secret)이 성공적으로 설정됐습니다",
+        "GENERATE_ERROR": "CLI 시크릿(Secret) 설정에 실패했습니다",
         "CONFIRM_TITLE_CLI_GENERATE": "시크릿(Secret)을 다시 생성할 수 있나요?",
-        "CONFIRM_BODY_CLI_GENERATE": "Cli 시크릿(Secret)을 재생성하면 이전 cli 시크릿이 삭제됩니다"
+        "CONFIRM_BODY_CLI_GENERATE": "CLI 시크릿(Secret)을 재생성하면 이전 cli 시크릿이 삭제됩니다"
     },
     "CHANGE_PWD": {
         "TITLE": "암호 변경",
