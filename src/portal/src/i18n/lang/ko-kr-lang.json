@@ -1812,7 +1812,7 @@
         "PAUSE_ALL_SUCCESS": "예정된 모든 작업이 성공적으로 일시 중지 됐습니다",
         "RESUME_ALL_SUCCESS": "예정된 모든 작업이 성공적으로 재개됐습니다",
         "VENDOR_TYPE": "공급자 분류",
-        "VENDOR_ID": "Vendor ID",
+        "VENDOR_ID": "공급자 ID",
         "NO_SCHEDULE": "에약 내역을 찾을 수 없습니다",
         "WORKERS": "Workers",
         "FREE_ALL": "모두 해제",
