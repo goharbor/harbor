@@ -754,7 +754,7 @@
         "PULL_COUNT": "풀(Pull) 수",
         "PULL_COMMAND": "풀(Pull) 명령어",
         "PULL_TIME": "풀(Pull) 시간",
-        "PUSH_TIME": "푸쉬(Push) 시간",
+        "PUSH_TIME": "푸시(Push) 시간",
         "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "나의 레포지토리",
         "PUBLIC_REPOSITORY": "퍼블릭 레포지토리",
