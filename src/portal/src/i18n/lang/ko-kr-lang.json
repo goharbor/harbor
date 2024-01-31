@@ -1850,7 +1850,7 @@
         "SCHEDULE_PAUSE_BTN_INFO": "일시 중지 — 실행을 위해 모든 일정을 일시 중지합니다.",
         "SCHEDULE_RESUME_BTN_INFO": "재개 — 실행할 모든 일정을 재개합니다.",
         "WORKER_FREE_BTN_INFO": "현재 실행 중인 작업을 중지하여 작업자를 해제합니다.",
-        "CRON": "Cron",
+        "CRON": "반복 작업",
         "WAITING_TOO_LONG_1": "특정 작업의 실행이 24시간 이상 보류되었습니다. 작업 서비스를 확인해주세요",
         "WAITING_TOO_LONG_2": "데쉬보드.",
         "WAITING_TOO_LONG_3": "자세한 내용은 다음을 확인해주세요",
