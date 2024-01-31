@@ -1835,7 +1835,7 @@
         "CHECK_IN_AT": "체크인 시간",
         "NO_WORKER": "작업자(Worker)를 찾을 수 없습니다",
         "JOB_QUEUE": "작업 대기열",
-        "JOB_SERVICE_DASHBOARD": "작업 서비스 데쉬보드",
+        "JOB_SERVICE_DASHBOARD": "작업 서비스 대시보드",
         "OPERATION_STOP_ALL_QUEUES": "모든 대기열 중단",
         "OPERATION_STOP_SPECIFIED_QUEUES": "특정 대기열 중단",
         "OPERATION_PAUSE_SPECIFIED_QUEUES": "특정 대기열 일시중지",
