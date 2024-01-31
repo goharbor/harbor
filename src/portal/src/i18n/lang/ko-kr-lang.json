@@ -1141,7 +1141,7 @@
         "UPLOADTIME": "업로드 시간",
         "NAME": "이름",
         "PULL_TIME": "풀(Pull) 시간",
-        "PUSH_TIME": "푸쉬(Push) 시간",
+        "PUSH_TIME": "푸시(Push) 시간",
         "OF": "of",
         "ITEMS": "아이템",
         "ADD_TAG": "태그 추가",
