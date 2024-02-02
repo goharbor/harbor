@@ -281,4 +281,4 @@ Select Filter Label For CVE Export
         Log  ${label}
         Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
     END
-    Retry Element Click  ${filter_label_xpath}
+    Retry Element Click  ${vulnerabilities_filter_label_xpath}
