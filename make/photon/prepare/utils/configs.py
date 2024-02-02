@@ -298,6 +298,9 @@ def parse_yaml_config(config_file_path, with_trivy):
             external_database=config_dict['external_database'])
     else:
         config_dict['internal_tls'] = InternalTLS()
+    
+    # ip_family config
+    config_dict['ip_family'] = configs.get('ip_family') or {'ipv4': {'enabled': True}, 'ipv6': {'enabled': False}}
 
     # metric configs
     metric_config = configs.get('metric')
