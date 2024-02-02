@@ -50,8 +50,12 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
+    {% if ip_family.ipv4.enabled %}
     listen 8443 ssl;
+    {% endif %}
+    {% if ip_family.ipv6.enabled %}
     listen [::]:8443 ssl;
+    {% endif %}
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
