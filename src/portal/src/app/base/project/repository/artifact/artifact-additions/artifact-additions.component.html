@@ -18,6 +18,20 @@
                         "></hbr-artifact-vulnerabilities>
                 </clr-tab-content>
             </clr-tab>
+            <clr-tab *ngIf="getSbom()">
+                <button clrTabLink id="sbom">
+                    {{ 'REPOSITORY.SBOM' | translate }}
+                </button>
+                <clr-tab-content id="sbom-content" *clrIfActive>
+                    <hbr-artifact-sbom
+                        [artifact]="artifact"
+                        [projectName]="projectName"
+                        [projectId]="projectId"
+                        [repoName]="repoName"
+                        [sbomDigest]="sbomDigest"
+                        [sbomLink]="getSbom()"></hbr-artifact-sbom>
+                </clr-tab-content>
+            </clr-tab>
             <clr-tab *ngIf="getBuildHistory()">
                 <button clrTabLink id="build-history">
                     {{ 'REPOSITORY.BUILD_HISTORY' | translate }}

@@ -18,4 +18,5 @@ export enum ADDITIONS {
     SUMMARY = 'readme.md',
     VALUES = 'values.yaml',
     DEPENDENCIES = 'dependencies',
+    SBOMS = 'sboms',
 }
