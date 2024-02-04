@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/aws/aws-sdk-go v1.34.28
+	github.com/aws/aws-sdk-go v1.50.5
 	github.com/beego/beego/v2 v2.0.6
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.3.4
@@ -21,12 +21,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.1
 	github.com/go-ldap/ldap/v3 v3.2.4
 	github.com/go-openapi/errors v0.20.4
-	github.com/go-openapi/loads v0.21.2
+	github.com/go-openapi/loads v0.21.2 // indirect
 	github.com/go-openapi/runtime v0.26.2
-	github.com/go-openapi/spec v0.20.11
+	github.com/go-openapi/spec v0.20.11 // indirect
 	github.com/go-openapi/strfmt v0.21.8
 	github.com/go-openapi/swag v0.22.7
-	github.com/go-openapi/validate v0.22.3
+	github.com/go-openapi/validate v0.22.3 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
