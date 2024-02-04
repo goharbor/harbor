@@ -176,9 +176,9 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 reference: this.artifactDigest,
                 repositoryName: dbEncodeURIComponent(this.repoName),
-                // scanType: <ScanType>{
-                //     scan_type: ScanTypes.SBOM,
-                // },
+                scanType: <ScanType>{
+                    scan_type: ScanTypes.SBOM,
+                },
             })
             .pipe(finalize(() => this.submitFinish.emit(false)))
             .subscribe(
@@ -219,15 +219,15 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.artifactDigest,
-                // withSbomOverview: true,
+                withScanOverview: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
             .subscribe(
                 (artifact: Artifact) => {
                     // To keep the same summary reference, use value copy.
-                    // if (artifact.sbom_overview) {
-                    //     this.copyValue(artifact.sbom_overview);
-                    // }
+                    if (artifact.sbom_overview) {
+                        this.copyValue(artifact.sbom_overview);
+                    }
                     if (!this.queued && !this.generating) {
                         // Scanning should be done
                         if (this.stateCheckTimer) {

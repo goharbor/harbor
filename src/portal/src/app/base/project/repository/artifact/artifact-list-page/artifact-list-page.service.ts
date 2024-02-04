@@ -170,8 +170,6 @@ export class ArtifactListPageService {
                     this._hasDeleteImagePermission = results[2];
                     this._hasScanImagePermission = results[3];
                     this._hasSbomPermission = results?.[4] ?? false;
-                    // TODO need to remove the static code
-                    this._hasSbomPermission = true;
                 },
                 error => this.errorHandlerService.error(error)
             );

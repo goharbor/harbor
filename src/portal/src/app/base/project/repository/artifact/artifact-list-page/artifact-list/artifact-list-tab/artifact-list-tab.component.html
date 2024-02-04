@@ -24,6 +24,7 @@
                                 canScanNow() &&
                                 selectedRowHasVul() &&
                                 hasEnabledScanner &&
+                                hasScannerSupportVulnerability &&
                                 hasScanImagePermission
                             )
                         "
@@ -48,7 +49,15 @@
                         [clrLoading]="generateSbomBtnState"
                         type="button"
                         class="btn btn-secondary"
-                        [disabled]="true"
+                        [disabled]="
+                            !(
+                                canGenerateSbomNow() &&
+                                selectedRowHasSbom() &&
+                                hasEnabledSbom &&
+                                hasScannerSupportSBOM &&
+                                hasSbomPermission
+                            )
+                        "
                         (click)="generateSbom()">
                         <clr-icon shape="file" size="16"></clr-icon>&nbsp;
                         <span>{{ 'SBOM.GENERATE' | translate }}</span>

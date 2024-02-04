@@ -19,6 +19,8 @@ export class ArtifactAdditionsComponent {
     repoName: string;
     @Input()
     digest: string;
+    @Input()
+    sbomDigest: string;
     constructor() {}
 
     getVulnerability(): AdditionLink {
@@ -29,6 +31,12 @@ export class ArtifactAdditionsComponent {
             return this.additionLinks[ADDITIONS.VULNERABILITIES];
         }
         return null;
+    }
+    getSbom(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.SBOMS]) {
+            return this.additionLinks[ADDITIONS.SBOMS];
+        }
+        return {};
     }
     getBuildHistory(): AdditionLink {
         if (this.additionLinks && this.additionLinks[ADDITIONS.BUILD_HISTORY]) {

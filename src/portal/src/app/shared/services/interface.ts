@@ -213,9 +213,12 @@ export interface VulnerabilitySummary {
 }
 export interface SbomSummary {
     report_id?: string;
+    mime_type?: string;
     sbom_digest?: string;
     scan_status?: string;
+    severity?: string;
     duration?: number;
+    summary?: SeveritySummary;
     start_time?: Date;
     end_time?: Date;
     scanner?: ScannerVo;

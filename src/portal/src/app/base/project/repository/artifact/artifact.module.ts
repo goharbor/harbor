@@ -12,6 +12,7 @@ import { SummaryComponent } from './artifact-additions/summary/summary.component
 import { DependenciesComponent } from './artifact-additions/dependencies/dependencies.component';
 import { BuildHistoryComponent } from './artifact-additions/build-history/build-history.component';
 import { ArtifactVulnerabilitiesComponent } from './artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component';
+import { ArtifactSbomComponent } from './artifact-additions/artifact-sbom/artifact-sbom.component';
 import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { ArtifactDetailRoutingResolverService } from '../../../../services/routing-resolvers/artifact-detail-routing-resolver.service';
 import { ResultBarChartComponent } from './vulnerability-scanning/result-bar-chart.component';
@@ -80,6 +81,7 @@ const routes: Routes = [
         SummaryComponent,
         DependenciesComponent,
         BuildHistoryComponent,
+        ArtifactSbomComponent,
         ArtifactVulnerabilitiesComponent,
         ResultBarChartComponent,
         ResultSbomComponent,
