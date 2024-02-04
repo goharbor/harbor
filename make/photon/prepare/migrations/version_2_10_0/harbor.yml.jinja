@@ -33,6 +33,28 @@ https:
 #   private_key: /your/private/key/path
 {% endif %}
 
+{% if ip_family is defined %}
+# # Harbor will set ipv4 enabled only by defualt if this block is not configured
+# # Otherwise, please uncomment this block to configure your own ip_family stacks
+ip_family:
+  # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
+  ipv6:
+    enabled: {{ ip_family.ipv6.enabled | lower }}
+  # ipv4Enabled set to true by default, currently it affected the nginx related component
+  ipv4:
+    enabled: {{ ip_family.ipv4.enabled | lower }}
+{% else %}
+# # Harbor will set ipv4 enabled only by defualt if this block is not configured
+# # Otherwise, please uncomment this block to configure your own ip_family stacks
+ip_family:
+  # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
+  ipv6:
+    enabled: false
+  # ipv4Enabled set to true by default, currently it affected the nginx related component
+  ipv4:
+    enabled: true
+{% endif %}
+
 {% if internal_tls is defined %}
 # Uncomment following will enable tls communication between all harbor components
 internal_tls:
