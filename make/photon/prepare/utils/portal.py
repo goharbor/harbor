@@ -14,6 +14,5 @@ def prepare_portal(config_dict):
         str(portal_conf_template_path),
         portal_conf,
         internal_tls=config_dict['internal_tls'],
-        ip_family=config_dict['ip_family'],
         uid=DEFAULT_UID,
         gid=DEFAULT_GID)
