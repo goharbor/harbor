@@ -1727,7 +1727,7 @@
         "DELETED_SUCCESS": "악세서리(Accessory)를 성공적으로 삭제했습니다",
         "DELETED_FAILED": "악세서리(Accessory) 삭제를 실패했습니닼",
         "CO_SIGNED": "Cosign에 의해 서명됨",
-        "NOTARY_SIGNED": "Notary에 의해 서명됟ㅁ",
+        "NOTARY_SIGNED": "Notary에 의해 서명됨",
         "ACCESSORY": "악세서리(Accessory)",
         "ACCESSORIES": "악세서리들(Accessories)",
         "SUBJECT_ARTIFACT": "Subject Artifact",
