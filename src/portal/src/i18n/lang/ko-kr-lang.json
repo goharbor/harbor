@@ -14,7 +14,7 @@
         "INVALID_MSG": "유효하지 않은 사용자 이름 또는 암호입니다.",
         "FORGOT_PWD": "암호 찾기",
         "HEADER_LINK": "로그인",
-        "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available.",
+        "CORE_SERVICE_NOT_AVAILABLE": "핵심 서비스를 이용할 수 없습니다.",
         "OR": "OR",
         "VIA_LOCAL_DB": "로컬 DB를 통해 로그인"
     },
