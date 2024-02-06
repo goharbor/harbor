@@ -87,7 +87,7 @@
         "SIGN_IN_PWD": "비밀번호를 입력하세요",
         "SIGN_UP_MAIL": "이메일은 비밀번호를 재설정하는 용도로만 사용됩니다.",
         "SIGN_UP_REAL_NAME": "성과 이름",
-        "ITEM_REQUIRED": "필드(Field)를 입력하세요.",
+        "ITEM_REQUIRED": "필드를 입력하세요.",
         "SCOPE_REQUIRED": "필드는 필수 항목이며 범위 형식이어야 합니다.",
         "NUMBER_REQUIRED": "필드는 필수 항목이며 숫자 형식이어야 합니다.",
         "PORT_REQUIRED": "필드는 필수 항목이며 유효한 포트 번호여야 합니다.",
