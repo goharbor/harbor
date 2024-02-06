@@ -123,8 +123,14 @@ func ListRegistrations(ctx context.Context, query *q.Query) ([]*Registration, er
 	}
 
 	// Order the list
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
+	if len(query.Sorts) > 0 {
+		for _, sort := range query.Sorts {
+			sortKey := sort.Key
+			if sort.DESC {
+				sortKey += " DESC"
+			}
+			qs = qs.OrderBy(sortKey)
+		}
 	} else {
 		qs = qs.OrderBy("-is_default", "-create_time")
 	}
