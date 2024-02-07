@@ -893,7 +893,7 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Télécharger le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tous les jours à' : déclenchement de l'analyse à l'heure spécifiée tous les jours.",
-            "VERIFY_CERT": "Verifier le certificat par le serveur LDAP",
+            "VERIFY_CERT": "Verifier le certificat du serveur LDAP",
             "REPO_TOOLTIP": "Les utilisateurs ne peuvent effectuer aucune opération sur les images dans ce mode.",
             "WEBHOOK_TOOLTIP": "Activez les webhooks pour recevoir des callbacks sur vos endpoint désignés lorsque certaines actions telles que l'image ou le chart est poussé, tiré, supprimé, scanné sont effectuées",
             "HOURLY_CRON": "Exécuter une fois par heure, au début de l'heure. Équivalent à 0 0 * * * *.",
