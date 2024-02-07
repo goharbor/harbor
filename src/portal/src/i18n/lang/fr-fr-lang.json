@@ -1211,7 +1211,7 @@
         "DELETE_REPLICATION": "Suppression de réplication",
         "DELETE_MEMBER": "Suppression de membre",
         "DELETE_GROUP": "Suppression de membre d'un groupe",
-        "DELETE_CHART_VERSION": "Supprimer version de chart",
+        "DELETE_CHART_VERSION": "Supprimer la version de chart",
         "DELETE_CHART": "Supprimer chart",
         "SWITCH_ROLE": "Changement de rôle",
         "ADD_GROUP": "Ajout de membre à un groupe",
