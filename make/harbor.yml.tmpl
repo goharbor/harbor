@@ -97,6 +97,10 @@ trivy:
   # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
   skip_update: false
   #
+  # skipJavaDBUpdate If the flag is enabled you have to manually download the `trivy-java.db` file and mount it in the
+  # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
+  skip_java_db_update: false
+  #
   # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
