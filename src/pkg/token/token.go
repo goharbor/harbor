@@ -19,10 +19,10 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -35,7 +35,7 @@ type Token struct {
 
 // New ...
 func New(opt *Options, claims jwt.Claims) (*Token, error) {
-	var v = jwt.NewValidator(jwt.WithLeeway(60 * time.Second))
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway))
 	if err := v.Validate(claims); err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	var parser = jwt.NewParser(jwt.WithLeeway(time.Duration(60)*time.Second), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
+	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
 	token, err := parser.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:

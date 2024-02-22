@@ -92,7 +92,7 @@ func TestRaw(t *testing.T) {
 	assert.NotNil(t, rawTk)
 }
 
-func TestRawWithClockSkew(t *testing.T) {
+func TestNewWithClockSkew(t *testing.T) {
 	rbacPolicy := &types.Policy{
 		Resource: "/project/library/repository",
 		Action:   "pull",

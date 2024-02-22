@@ -15,7 +15,7 @@
 package v2
 
 import (
-	"time"
+	"github.com/goharbor/harbor/src/common"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/golang-jwt/jwt/v5"
@@ -38,7 +38,7 @@ type Claims struct {
 
 // Valid checks if the issuer is harbor
 func (c *Claims) Valid() error {
-	var v = jwt.NewValidator(jwt.WithLeeway(60*time.Second), jwt.WithIssuer(Issuer))
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway), jwt.WithIssuer(Issuer))
 
 	if err := v.Validate(c.RegisteredClaims); err != nil {
 		return err

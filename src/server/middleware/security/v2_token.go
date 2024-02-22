@@ -17,12 +17,12 @@ package security
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	registry_token "github.com/docker/distribution/registry/auth/token"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
 	svc_token "github.com/goharbor/harbor/src/core/service/token"
@@ -59,7 +59,7 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
-	var v = jwt.NewValidator(jwt.WithLeeway(60*time.Second), jwt.WithAudience(svc_token.Registry))
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway), jwt.WithAudience(svc_token.Registry))
 	if err := v.Validate(t.Claims); err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
