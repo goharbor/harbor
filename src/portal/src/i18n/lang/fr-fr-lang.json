@@ -699,7 +699,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Aplanissement sur 3 niveaux' : 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bande passante",
         "BANDWIDTH_ERROR_TIP": "Veuillez saisir -1 ou un nombre entier supérieur à 0",
-        "BANDWIDTH_TOOLTIP": "Définissez la bande passante réseau maximale pour chaque exécution. Veuillez faire attention au nombre d'exécutions simultanées. Pour une bande passante illimitée, veuillez entrer -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Illimitée",
         "UNREACHABLE_SOURCE_REGISTRY": "Échec de connexion au registre source. Veuillez vérifier que le registre source est disponible avant d'éditer cette règle: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
