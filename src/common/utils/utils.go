@@ -342,3 +342,8 @@ func MostMatchSorter(a, b string, matchWord string) bool {
 	}
 	return len(a) < len(b)
 }
+
+// IsLocalPath checks if path is local
+func IsLocalPath(path string) bool {
+	return strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//")
+}
