@@ -56,11 +56,11 @@ require (
 	github.com/volcengine/volcengine-go-sdk v1.0.97
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.46.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0
-	go.opentelemetry.io/otel v1.21.0
+	go.opentelemetry.io/otel v1.23.1
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0
 	go.opentelemetry.io/otel/sdk v1.21.0
-	go.opentelemetry.io/otel/trace v1.21.0
+	go.opentelemetry.io/otel/trace v1.23.1
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/crypto v0.17.0
 	golang.org/x/net v0.17.0
@@ -103,7 +103,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
@@ -158,7 +158,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
-	go.opentelemetry.io/otel/metric v1.21.0 // indirect
+	go.opentelemetry.io/otel/metric v1.23.1 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
