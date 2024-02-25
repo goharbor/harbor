@@ -64,7 +64,7 @@ func (oc *OIDCController) RedirectLogin() {
 		return
 	}
 	redirectURL := oc.Ctx.Request.URL.Query().Get("redirect_url")
-	if strings.HasPrefix(redirectURL, "//") {
+	if !utils.IsLocalPath(redirectURL) {
 		log.Errorf("invalid redirect url: %v", redirectURL)
 		oc.SendBadRequestError(fmt.Errorf("cannot redirect to other site"))
 		return
