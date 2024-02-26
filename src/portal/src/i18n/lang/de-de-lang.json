@@ -699,7 +699,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Reduzierung um 3 Ebenen': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandbreite",
         "BANDWIDTH_ERROR_TIP": "Bitte -1 oder einen Integer-Wert größer als 0 eingeben",
-        "BANDWIDTH_TOOLTIP": "Legt die maximale Netzwerkbandbreite für jede Ausführung fest. Bitte auf die Anzahl der parallelen Ausführungen achten. Für umbegrenzte Bandbreite, bitte -1 eingeben",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unbegrenzt",
         "UNREACHABLE_SOURCE_REGISTRY": "Verbindung zur Quell-Registry fehlgeschlagen, bitte sicherstellen, dass die Quell-Registry verfügbar ist, bevor diese Regel angepasst wird: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",

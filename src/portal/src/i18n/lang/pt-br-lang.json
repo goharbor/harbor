@@ -698,7 +698,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Nivelar 3 posições': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Banda",
         "BANDWIDTH_ERROR_TIP": "Informe um número inteiro maior que 0 (zero) ou -1",
-        "BANDWIDTH_TOOLTIP": "Informe o limite de banda para cada execução. Tome cuidado e observe a relação com o número de execuções simultâneas. Para remover qualquer limite, informe -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Ilimitado",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
