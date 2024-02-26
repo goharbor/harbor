@@ -175,7 +175,27 @@ var (
     "com.example.key1": "value1"
   }
 }`
-
+	v2ManifestWithEmptyConfig = `{
+   "schemaVersion": 2,
+   "mediaType": "application/vnd.oci.image.manifest.v1+json",
+   "artifactType": "application/vnd.example+type",
+   "config": {
+     "mediaType": "application/vnd.oci.empty.v1+json",
+     "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+     "size": 2
+   },
+   "layers": [
+     {
+       "mediaType": "application/vnd.example+type",
+       "digest": "sha256:e258d248fda94c63753607f7c4494ee0fcbe92f1a76bfdac795c9d84101eb317",
+       "size": 1234
+     }
+   ],
+   "annotations": {
+     "oci.opencontainers.image.created": "2023-01-02T03:04:05Z",
+     "com.example.data": "payload"
+   }
+}`
 	index = `{
   "schemaVersion": 2,
   "manifests": [
@@ -265,6 +285,26 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 	a.Assert().Equal(int64(3043), artifact.Size)
 	a.Require().Len(artifact.Annotations, 1)
 	a.Equal("value1", artifact.Annotations["com.example.key1"])
+}
+
+// empty config layer
+func (a *abstractorTestSuite) TestAbstractMetadataOfV2ManifestWithEmptyConfig() {
+	// v1.MediaTypeImageManifest
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(v2ManifestWithEmptyConfig))
+	a.Require().Nil(err)
+	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
+	artifact := &artifact.Artifact{
+		ID: 1,
+	}
+	a.processor.On("AbstractMetadata", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	err = a.abstractor.AbstractMetadata(nil, artifact)
+	a.Require().Nil(err)
+	a.Assert().Equal(int64(1), artifact.ID)
+	a.Assert().Equal(v1.MediaTypeImageManifest, artifact.ManifestMediaType)
+	a.Assert().Equal("application/vnd.example+type", artifact.MediaType)
+	a.Assert().Equal(int64(1880), artifact.Size)
+	a.Require().Len(artifact.Annotations, 2)
+	a.Equal("payload", artifact.Annotations["com.example.data"])
 }
 
 // OCI index

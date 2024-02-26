@@ -131,7 +131,12 @@ func (a *abstractor) abstractManifestV2Metadata(artifact *artifact.Artifact, con
 	if manifest.Annotations[wasm.AnnotationVariantKey] == wasm.AnnotationVariantValue || manifest.Annotations[wasm.AnnotationHandlerKey] == wasm.AnnotationHandlerValue {
 		artifact.MediaType = wasm.MediaType
 	}
-
+	// https://github.com/opencontainers/image-spec/blob/v1.1.0/specs-go/v1/mediatype.go
+	// if config descriptor is empty JSON{}, using manifest.ArtifactType as artifact.MediaType
+	// artifacts have historically been created without an artifactType field, and tooling to work with artifacts should fallback to the config.mediaType value.
+	if manifest.Config.MediaType == v1.MediaTypeEmptyJSON && manifest.ArtifactType != "" {
+		artifact.MediaType = manifest.ArtifactType
+	}
 	// set size
 	artifact.Size = int64(len(content)) + manifest.Config.Size
 	for _, layer := range manifest.Layers {
