@@ -303,9 +303,12 @@ def parse_yaml_config(config_file_path, with_trivy):
     # for compatibility, user could configure the strong_ssl_ciphers either in https section or under internal_tls section,
     # but it is more reasonable to configure it in https_config
     if https_config:
-        config_dict['strong_ssl_ciphers'] =  https_config.get('strong_ssl_ciphers') or internal_tls_config.get('strong_ssl_ciphers')
+        config_dict['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers') 
     else:
         config_dict['strong_ssl_ciphers'] = False
+
+    if internal_tls_config:
+        config_dict['strong_ssl_ciphers'] = config_dict['strong_ssl_ciphers'] or internal_tls_config.get('strong_ssl_ciphers')
 
 
     # ip_family config
