@@ -237,6 +237,21 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.Require().Nil(err)
 	c.True(created)
 	c.Equal(int64(1), art.ID)
+
+	// reset the mock
+	c.SetupTest()
+
+	// the artifact doesn't exist and get a conflict error on creating the artifact and fail to get again
+	c.repoMgr.On("GetByName", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
+		ProjectID: 1,
+	}, nil)
+	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
+	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), errors.ConflictError(nil))
+	c.abstractor.On("AbstractMetadata").Return(nil)
+	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
+	c.Require().Error(err, errors.NotFoundError(nil))
+	c.False(created)
+	c.Require().Nil(art)
 }
 
 func (c *controllerTestSuite) TestEnsure() {

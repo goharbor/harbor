@@ -77,7 +77,7 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 }
 
 // Build an event by metadata
-func (e *Event) Build(ctx context.Context, metadata ...Metadata) error {
+func (e *Event) Build(_ context.Context, metadata ...Metadata) error {
 	for _, md := range metadata {
 		if err := md.Resolve(e); err != nil {
 			log.Debugf("failed to resolve event metadata: %v", md)

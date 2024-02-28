@@ -12,7 +12,7 @@ COPY ./make/photon/db/initial-registry.sql /docker-entrypoint-initdb.d/
 RUN chown -R postgres:postgres /docker-entrypoint.sh /docker-healthcheck.sh /docker-entrypoint-initdb.d \
     && chmod u+x /docker-entrypoint.sh /docker-healthcheck.sh
 
-ENTRYPOINT ["/docker-entrypoint.sh", "13", "14"]
+ENTRYPOINT ["/docker-entrypoint.sh", "14", "15"]
 HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
 USER postgres

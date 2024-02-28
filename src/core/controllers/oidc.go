@@ -63,7 +63,13 @@ func (oc *OIDCController) RedirectLogin() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	if err := oc.SetSession(redirectURLKey, oc.Ctx.Request.URL.Query().Get("redirect_url")); err != nil {
+	redirectURL := oc.Ctx.Request.URL.Query().Get("redirect_url")
+	if !utils.IsLocalPath(redirectURL) {
+		log.Errorf("invalid redirect url: %v", redirectURL)
+		oc.SendBadRequestError(fmt.Errorf("cannot redirect to other site"))
+		return
+	}
+	if err := oc.SetSession(redirectURLKey, redirectURL); err != nil {
 		log.Errorf("failed to set session for key: %s, error: %v", redirectURLKey, err)
 		oc.SendInternalServerError(err)
 		return
@@ -247,8 +253,8 @@ func (oc *OIDCController) Onboard() {
 		oc.SendBadRequestError(errors.New("username with illegal length"))
 		return
 	}
-	if utils.IsContainIllegalChar(username, []string{",", "~", "#", "$", "%"}) {
-		oc.SendBadRequestError(errors.New("username contains illegal characters"))
+	if strings.ContainsAny(username, common.IllegalCharsInUsername) {
+		oc.SendBadRequestError(errors.Errorf("username %v contains illegal characters: %v", username, common.IllegalCharsInUsername))
 		return
 	}
 

@@ -152,5 +152,8 @@ func (bm *basicManager) DefaultScannerUUID(ctx context.Context) (string, error) 
 	if err != nil {
 		return "", err
 	}
+	if reg == nil {
+		return "", nil
+	}
 	return reg.UUID, nil
 }

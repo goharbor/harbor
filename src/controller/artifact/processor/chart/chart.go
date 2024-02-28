@@ -58,7 +58,7 @@ type processor struct {
 	chartOperator chart.Operator
 }
 
-func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
+func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
 	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
@@ -122,10 +122,10 @@ func (p *processor) AbstractAddition(ctx context.Context, artifact *artifact.Art
 	return nil, nil
 }
 
-func (p *processor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (p *processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ArtifactTypeChart
 }
 
-func (p *processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (p *processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return []string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}
 }

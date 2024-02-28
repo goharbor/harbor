@@ -102,13 +102,13 @@ func (a *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 		return user, nil
 	} else if resp.StatusCode == http.StatusUnauthorized {
 		return nil, auth.NewErrAuth(string(data))
-	} else {
-		data, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Warningf("Failed to read response body, error: %v", err)
-		}
-		return nil, fmt.Errorf("failed to authenticate, status code: %d, text: %s", resp.StatusCode, string(data))
 	}
+	// else
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		log.Warningf("Failed to read response body, error: %v", err)
+	}
+	return nil, fmt.Errorf("failed to authenticate, status code: %d, text: %s", resp.StatusCode, string(data))
 }
 
 func (a *Auth) tokenReview(ctx context.Context, sessionID string) (*models.User, error) {
@@ -191,7 +191,7 @@ func (a *Auth) SearchGroup(ctx context.Context, groupKey string) (*model.UserGro
 }
 
 // OnBoardGroup create user group entity in Harbor DB, altGroupName is not used.
-func (a *Auth) OnBoardGroup(ctx context.Context, u *model.UserGroup, altGroupName string) error {
+func (a *Auth) OnBoardGroup(ctx context.Context, u *model.UserGroup, _ string) error {
 	// if group name provided, on board the user group
 	if len(u.GroupName) == 0 {
 		return errors.New("should provide a group name")

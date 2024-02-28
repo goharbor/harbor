@@ -186,6 +186,7 @@ func GDPRSetting(ctx context.Context) (*cfgModels.GDPRSetting, error) {
 	}
 	return &cfgModels.GDPRSetting{
 		DeleteUser: DefaultMgr().Get(ctx, common.GDPRDeleteUser).GetBool(),
+		AuditLogs:  DefaultMgr().Get(ctx, common.GDPRAuditLogs).GetBool(),
 	}, nil
 }
 
@@ -252,7 +253,6 @@ func SkipAuditLogDatabase(ctx context.Context) bool {
 
 // ScannerSkipUpdatePullTime returns the scanner skip update pull time setting
 func ScannerSkipUpdatePullTime(ctx context.Context) bool {
-	log.Infof("skip_update_pull_time:%v", DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool())
 	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()
 }
 

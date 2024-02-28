@@ -49,7 +49,7 @@ func (fc *FakeClient) GetUserInfo(token string) (*UserInfo, error) {
 }
 
 // UpdateConfig ...
-func (fc *FakeClient) UpdateConfig(cfg *ClientConfig) error {
+func (fc *FakeClient) UpdateConfig(_ *ClientConfig) error {
 	return nil
 }
 

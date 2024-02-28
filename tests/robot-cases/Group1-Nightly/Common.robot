@@ -69,6 +69,8 @@ Test Case - Push CNAB Bundle and Display
     Wait Until Page Contains  test${d}/cnab${d}
     Go Into Repo  test${d}  cnab${d}
     Go Into Index And Contain Artifacts  cnab_tag${d}  total_artifact_count=3  archive_count=2
+    Retry Element Click  //artifact-list-tab//clr-datagrid//clr-dg-row[1]//clr-dg-cell[1]//clr-icon
+    Retry Wait Element Count  //artifact-list-tab//clr-datagrid//clr-dg-row  2
     Close Browser
 
 Test Case - Create An New Project
@@ -474,19 +476,28 @@ Test Case - Copy A Image And Accessory
     Create An New Project And Go Into Project  ${source_project}
 
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${source_project}  ${image}  ${tag}
-    Cosign Generate Key Pair
     Docker Login  ${ip}  ${user}  ${pwd}
+    Cosign Generate Key Pair
     Cosign Sign  ${ip}/${source_project}/${image}:${tag}
-    Docker Logout  ${ip}
+    Notation Generate Cert
+    Notation Sign  ${ip}/${source_project}/${image}:${tag}
+
     Go Into Repo  ${source_project}  ${image}
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
 
     Copy Image  ${tag}  ${target_project}  ${image}
 
     Retry Double Keywords When Error  Go Into Project  ${target_project}  Retry Wait Until Page Contains  ${image}
     Go Into Repo  ${target_project}  ${image}
     Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,${tag})]
+    Should Be Signed  ${tag}
+    Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag}
+    Should Be Signed By Notation  ${tag}
+    Docker Logout  ${ip}
     Close Browser
 
 Test Case - Create An New Project With Quotas Set
@@ -610,17 +621,27 @@ Test Case - Tag Immutability
     Delete Success  busybox
     Close Browser
 
-Test Case - Robot Account
-    [tags]  robot_account
+Test Case - Project Level Robot Account
+    [tags]  project_robot
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project    project${d}
-    ${token}=    Create A Robot Account And Return Token    project${d}    robot${d}
-    Log To Console    ${token}
-    Log    ${token}
-    Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
-    Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    ${current_url}=  Get Location
+    ${words}=  Split String  ${current_url}  /
+    ${project_id}=  Set Variable  ${words}[-2]
+    Switch To Project Robot Account
+    ${resources}=  Create List  Repository
+    ${robot_account_name}  ${token}  ${permission_count}=  Create A Project Robot Account  robot1${d}  never  description=For testing  resources=${resources}
+    Push image  ${ip}  robot1${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Pull image  ${ip}  robot1${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Check Project Robot Account Permission  robot1${d}  ${permission_count}
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  repository
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
+    ${resources}=  Create List  all
+    ${robot_account_name}  ${token}  ${permission_count}=  Create A Project Robot Account  robot2${d}  days  days=10  description=For testing  resources=${resources}
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  project${d}  hello-world  latest  all
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
     Close Browser
 
 Test Case - Push Docker Manifest Index and Display
@@ -689,26 +710,44 @@ Test Case - Read Only Mode
 Test Case - System Robot Account Cover All Projects
     [Tags]  sys_robot_account_cover
     ${d}=  Get Current Date    result_format=%m%s
-    ${pro_name}=  Set Variable  project_${d}
+    ${project_name}=  Set Variable  project${d}
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  ${pro_name}
-    ${name}  ${secret}=  Create A New System Robot Account  is_cover_all=${true}
-    Navigate To Projects
+    Create An New Project And Go Into Project  ${project_name}
+    ${current_url}=  Get Location
+    ${words}=  Split String  ${current_url}  /
+    ${project_id}=  Set Variable  ${words}[-2]
     Switch To Robot Account
-    System Robot Account Exist  ${name}  all
+    ${robot_account_name}  ${token}=  Create A System Robot Account  sys${d}  never  description=For testing  cover_all_system_resources=${true}  cover_all_project_resources=${true}
+    Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
+    Pull image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 53 PERMISSION(S) '] and .//span[contains(.,'Never Expires')] and .//clr-dg-cell[text()='For testing'] ]
+    System Robot Account Exist  ${robot_account_name}  all
     Close Browser
 
 Test Case - System Robot Account
     [Tags]  sys_robot_account
     ${d}=  Get Current Date    result_format=%m%s
-    ${project_count}=  Evaluate  random.randint(3, 5)
-    ${pro_name}=  Set Variable  project_${d}
+    ${project_name}=  Set Variable  project${d}
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${project_permission_list}=  Create A Random Project Permission List  ${project_count}
-    ${name}  ${secret}=  Create A New System Robot Account  project_permission_list=${project_permission_list}
-    System Robot Account Exist  ${name}  ${project_count}
+    Create An New Project And Go Into Project  ${project_name}
+    ${current_url}=  Get Location
+    ${words}=  Split String  ${current_url}  /
+    ${project_id}=  Set Variable  ${words}[-2]
+    Switch To Robot Account
+    ${robot_account_name}  ${token}=  Create A System Robot Account  sys1${d}  days  days=100  description=For testing  cover_all_system_resources=${true}
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' 53 PERMISSION(S) '] and .//span[contains(.,'99d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all  1
+
+    ${robot_account_name}  ${token}=  Create A System Robot Account  sys2${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
+    Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 56 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
+    Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
     Close Browser
 
 Test Case - Go To Harbor Api Page
@@ -772,16 +811,45 @@ Test Case - Cosign And Cosign Deployment Security Policy
     Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
     Go Into Project  project${d}
     Go Into Repo  project${d}  ${image}
-    Should Not Be Signed By Cosign  ${tag}
+    Should Not Be Signed  ${tag}
     Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed by cosign.
     Cosign Generate Key Pair
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${false}
 
     Cosign Sign  ${ip}/project${d}/${image}:${tag}
     Cosign Verify  ${ip}/project${d}/${image}:${tag}  ${true}
-    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed By Cosign  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed  ${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
 
+    Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
+    Close Browser
+
+Test Case - Notation And Notation Deployment Security Policy
+    [Tags]  notation
+    Init Chrome Driver
+    ${user}=  Set Variable  user007
+    ${pwd}=  Set Variable  Test1@34
+    ${d}=  Get Current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    ${tag}=  Set Variable  latest
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Click Notation Deployment Security
+    Save Project Config
+    Content Notation Deployment security Be Selected
+
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  project${d}  ${image}  ${tag}
+    Go Into Project  project${d}
+    Go Into Repo  project${d}  ${image}
+    Should Not Be Signed  ${tag}
+    Cannot Pull Image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}  err_msg=The image is not signed by notation.
+
+    Notation Generate Cert
+    Notation Sign  ${ip}/project${d}/${image}:${tag}
+
+    Retry Double Keywords When Error  Retry Element Click  ${artifact_list_refresh_btn}  Should Be Signed  ${tag}
+    Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${image}:${tag}
     Retry Double Keywords When Error  Delete Accessory  ${tag}  Should be Accessory deleted  ${tag}
     Close Browser
 
@@ -1095,4 +1163,52 @@ Test Case - Retain Image Last Pull Time
     Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
     ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
     Should Not Be Empty  ${last_pull_time}
+    Close Browser
+
+Test Case - Banner Message
+    [Tags]  banner_message
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${message}=  Set Variable  This is a test message.
+    ${message_type}=  Set Variable  success
+    ${in_duration}=  Set Variable  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Switch To Configuration System Setting
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${message_type}=  Set Variable  info
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  warning
+    Set Banner Message  ${message}  ${message_type}  ${false}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${false}
+    ${message_type}=  Set Variable  danger
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${null}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    ${in_duration}=  Set Variable  ${false}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    ${in_duration}=  Set Variable  ${true}
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Set Banner Message  ${null}
+    Check Banner Message  ${null}
+    Reload Page
+    Set Banner Message  ${message}  ${message_type}  ${true}  ${in_duration}
+    Check Banner Message  ${message}  ${message_type}  ${true}
+    Check Banner Message on other pages  ${message}  ${message_type}  ${true}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Retry Double Keywords When Error  Retry Element Click  ${banner_message_close_alert}  Retry Wait Element Not Visible  ${banner_message_alert}
+    Go Into Project  library
+    Check Banner Message  ${null}
+    Switch To Logs
+    Check Banner Message  ${null}
+    Switch To Configuration System Setting
+    Check Banner Message  ${null}
+    Set Banner Message  ${null}
+    Reload Page
+    Check Banner Message  ${null}
     Close Browser

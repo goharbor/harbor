@@ -23,7 +23,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -193,8 +192,7 @@ func (lAPI *labelAPI) DeleteLabel(ctx context.Context, params operation.DeleteLa
 func (lAPI *labelAPI) requireAccess(ctx context.Context, label *pkg_model.Label, action rbac.Action, subresources ...rbac.Resource) error {
 	switch label.Scope {
 	case common.LabelScopeGlobal:
-		resource := system.NewNamespace().Resource(rbac.ResourceLabel)
-		return lAPI.RequireSystemAccess(ctx, action, resource)
+		return lAPI.RequireSystemAccess(ctx, action, rbac.ResourceLabel)
 	case common.LabelScopeProject:
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceLabel)

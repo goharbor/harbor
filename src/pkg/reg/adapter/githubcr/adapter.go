@@ -207,6 +207,6 @@ func (a *adapter) listArtifacts(repository string, filters []*model.Filter) ([]*
 	return filter.DoFilterArtifacts(artifacts, filters)
 }
 
-func (a *adapter) DeleteManifest(repository, reference string) error {
+func (a *adapter) DeleteManifest(_, _ string) error {
 	return nil
 }

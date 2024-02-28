@@ -293,6 +293,9 @@ Switch To Project Label
 Switch To Project Repo
     Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
 
+Switch To Project Scanner
+    Retry Element Click  xpath=//project-detail//a[contains(.,'Scanner')]
+
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
@@ -375,13 +378,29 @@ Back Project Home
     [Arguments]  ${project_name}
     Retry Link Click  //a[contains(.,'${project_name}')]
 
-Should Not Be Signed By Cosign
+Should Be Signed
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+
+Should Not Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
 
 Should Be Signed By Cosign
-    [Arguments]  ${tag}
-    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+    END
+
+Should Be Signed By Notation
+    [Arguments]  ${tag}=${null}  ${digest}=${null}
+    IF  '${tag}' != '${null}'
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    ELSE
+        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+    END
 
 Delete Accessory
     [Arguments]  ${tag}
@@ -402,7 +421,7 @@ Export CVEs
     Retry Button Click  ${export_cve_btn}
     Retry Text Input  ${export_cve_filter_repo_input}  ${repositories}
     Retry Text Input  ${export_cve_filter_tag_input}  ${tags}
-    Select Filter Label  @{labels}
+    Select Filter Label For CVE Export  @{labels}
     Retry Text Input  ${export_cve_filter_cveid_input}  ${cve_ids}
     Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Trigger exporting CVEs successfully!
 
@@ -418,3 +437,11 @@ Download Latest CVE CSV File
     Retry Double Keywords When Error  Retry Element Click  ${latest_download_cve_csv_file_xpath}  Retry Wait Until Page Does Not Contains  ${csv_file_name}
     Retry File Should Exist  ${csv_file_path}
     [Return]  ${csv_file_path}
+
+Select Project Scanner
+    [Arguments]  ${scanner_name}  ${scanner_count}=${null}
+    Retry Element Click  //*[@id='edit-scanner']
+    Run Keyword If  '${scanner_count}'!='${null}'   Retry Wait Element Count  //clr-dg-row  ${scanner_count}
+    Retry Element Click  //clr-dg-row[.//clr-dg-cell[text()='${scanner_name}']]//label[contains(@class,'clr-control-label')]
+    Retry Element Click  //*[@id='save-scanner']
+    Retry Wait Element Visible  //span[@id='scanner-name' and text()='${scanner_name}']

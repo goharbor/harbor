@@ -42,6 +42,9 @@ func TestDeletionBlob(t *testing.T) {
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, "", nil)
+	if err != nil {
+		t.Fatalf("failed to create new http request: %v", err)
+	}
 	varMap := make(map[string]string, 1)
 	varMap["reference"] = test.GetKeys(randomLayers1)[0].String()
 	req = mux.SetURLVars(req, varMap)

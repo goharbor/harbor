@@ -18,20 +18,44 @@
             (click)="goToLabelPage()">
             {{ 'LABEL.NO_LABELS' | translate }}
         </div>
-        <div [hidden]="!candidateLabels.length" class="has-label">
-            <button
-                type="button"
-                class="dropdown-item"
-                *ngFor="let label of candidateLabels"
-                (click)="selectLabel(label)">
-                <clr-icon
-                    shape="check"
-                    class="check-icon"
-                    [style.visibility]="isSelect(label) ? 'visible' : 'hidden'">
-                </clr-icon>
-                <hbr-label-piece [label]="label" [labelWidth]="130">
-                </hbr-label-piece>
-            </button>
-        </div>
+        <ng-container *ngIf="usedInDropdown; else notUsedInDropdown">
+            <div [hidden]="!candidateLabels.length" class="has-label">
+                <button
+                    clrDropdownItem
+                    type="button"
+                    class="dropdown-item"
+                    *ngFor="let label of candidateLabels"
+                    (click)="selectLabel(label)">
+                    <clr-icon
+                        shape="check"
+                        class="check-icon"
+                        [style.visibility]="
+                            isSelect(label) ? 'visible' : 'hidden'
+                        ">
+                    </clr-icon>
+                    <hbr-label-piece [label]="label" [labelWidth]="130">
+                    </hbr-label-piece>
+                </button>
+            </div>
+        </ng-container>
+        <ng-template #notUsedInDropdown>
+            <div [hidden]="!candidateLabels.length" class="has-label">
+                <button
+                    type="button"
+                    class="dropdown-item"
+                    *ngFor="let label of candidateLabels"
+                    (click)="selectLabel(label)">
+                    <clr-icon
+                        shape="check"
+                        class="check-icon"
+                        [style.visibility]="
+                            isSelect(label) ? 'visible' : 'hidden'
+                        ">
+                    </clr-icon>
+                    <hbr-label-piece [label]="label" [labelWidth]="130">
+                    </hbr-label-piece>
+                </button>
+            </div>
+        </ng-template>
     </div>
 </div>

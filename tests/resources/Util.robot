@@ -50,6 +50,8 @@ Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/UserProfile_Elements.robot
+Resource  Harbor-Pages/Administration-Project-Quotas.robot
+Resource  Harbor-Pages/Administration-Project-Quotas_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
 Resource  Harbor-Pages/GC.robot
@@ -82,6 +84,7 @@ Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
 Resource  Cosign_Util.robot
+Resource  Notation_Util.robot
 Resource  Imgpkg-Util.robot
 Resource  Webhook-Util.robot
 Resource  TestCaseBody.robot

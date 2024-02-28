@@ -464,7 +464,7 @@ func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
 }
 
 // Driver returns quota driver for the reference
-func Driver(ctx context.Context, reference string) (driver.Driver, error) {
+func Driver(_ context.Context, reference string) (driver.Driver, error) {
 	d, ok := driver.Get(reference)
 	if !ok {
 		return nil, fmt.Errorf("quota not support for %s", reference)

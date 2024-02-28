@@ -16,6 +16,7 @@ package dao
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -291,6 +292,59 @@ func (s *DaoTestSuite) TestDeleteProjectMemberByUserId() {
 	members, err := s.dao.GetProjectMember(ctx, queryMember, nil)
 	s.True(len(members) == 0)
 	s.Nil(err)
+}
+
+func (s *DaoTestSuite) TestDeleteProjectMemberByProjectID() {
+	s.WithUser(func(userID int64, username string) {
+		proj2, err := s.projectMgr.Get(s.Context(), "member_test_02")
+		s.Nil(err)
+		s.NotNil(proj2)
+		var addMember = models.Member{
+			ProjectID:  proj2.ProjectID,
+			EntityID:   int(userID),
+			EntityType: common.UserMember,
+			Role:       common.RoleDeveloper,
+		}
+		pmid, err := s.dao.AddProjectMember(s.Context(), addMember)
+		s.Nil(err)
+		s.True(pmid > 0)
+
+		err = s.dao.DeleteProjectMemberByProjectID(s.Context(), proj2.ProjectID)
+		s.Nil(err)
+
+		queryMember := models.Member{ProjectID: proj2.ProjectID, EntityID: int(userID), EntityType: common.UserMember}
+
+		// not exist
+		members, err := s.dao.GetProjectMember(s.Context(), queryMember, nil)
+		s.True(len(members) == 0)
+		s.Nil(err)
+	}, "test_project_member_delete")
+}
+
+func (s *DaoTestSuite) WithUser(f func(int64, string), usernames ...string) {
+	var username string
+	if len(usernames) > 0 {
+		username = usernames[0]
+	} else {
+		username = s.RandString(5)
+	}
+
+	o, err := orm.FromContext(orm.Context())
+	if err != nil {
+		s.Fail("got error %v", err)
+	}
+
+	var userID int64
+
+	email := fmt.Sprintf("%s@example.com", username)
+	sql := "INSERT INTO harbor_user (username, realname, email, password) VALUES (?, ?, ?, 'Harbor12345') RETURNING user_id"
+	s.Nil(o.Raw(sql, username, username, email).QueryRow(&userID))
+
+	defer func() {
+		o.Raw("delete from harbor_user WHERE user_id = ?", userID).Exec()
+	}()
+
+	f(userID, username)
 }
 
 func TestDaoTestSuite(t *testing.T) {

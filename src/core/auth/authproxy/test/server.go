@@ -58,9 +58,9 @@ func (ah *authHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				_, err := rw.Write([]byte(fmt.Sprintf(`{"session_id": "%s"}`, e.sessionID)))
 				if err != nil {
 					panic(err)
-				} else {
-					return
 				}
+				// else
+				return
 			}
 		}
 		http.Error(rw, fmt.Sprintf("Do not find entry in entrylist, username: %s", html.EscapeString(u)), http.StatusUnauthorized)
@@ -89,9 +89,9 @@ func (rth *reviewTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 			_, err := rw.Write([]byte(fmt.Sprintf(reviewStatusTpl, e.username)))
 			if err != nil {
 				panic(err)
-			} else {
-				return
 			}
+			// else return
+			return
 		}
 	}
 	http.Error(rw, html.EscapeString(fmt.Sprintf("failed to match token: %s, entrylist: %+v", reviewData.Spec.Token, rth.entries)), http.StatusUnauthorized)

@@ -80,12 +80,13 @@
                                 </button>
                                 <clr-dropdown-menu
                                     [hidden]="!selectedRow.length">
-                                    <div class="filter-grid" clrDropdownItem>
+                                    <div class="filter-grid">
                                         <label class="dropdown-header">{{
                                             'REPOSITORY.ADD_LABEL_TO_IMAGE'
                                                 | translate
                                         }}</label>
                                         <app-label-selector
+                                            [usedInDropdown]="true"
                                             [width]="200"
                                             [ownedLabels]="
                                                 selectedRow[0]?.labels

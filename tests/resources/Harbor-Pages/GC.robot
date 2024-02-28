@@ -23,10 +23,11 @@ Switch To Garbage Collection
     Retry Double Keywords When Error  Retry Element Click  xpath=${gc_page_xpath}  Retry Wait Until Page Contains Element  ${gc_now_button}
 
 GC Now
-    [Arguments]  ${untag}=${false}  ${dry_run}=${false}
+    [Arguments]  ${untag}=${false}  ${dry_run}=${false}  ${workers}=${null}
     Switch To Garbage Collection
     Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
     ${button}=  Run Keyword If  ${dry_run}==${false}  Set Variable  ${gc_now_button}  ELSE  Set Variable  ${dry_run_button}
+    Run Keyword If  '${workers}' != '${null}'  Select From List By Value  ${gc_workers_select}  ${workers}
     Retry Double Keywords When Error  Retry Element Click  ${button}  Retry Wait Until Page Contains  Running
     ${execution_id}=  Get Text  ${gc_latest_execution_id}
     [Return]  ${execution_id}
@@ -74,3 +75,15 @@ Check GC Log
         Wait Until Page Does Not Contain  ${log}
     END
     Switch Window  locator=MAIN
+
+Check GC History
+    [Arguments]  ${gc_job_id}  ${details}  ${trigger_type}=Manual  ${dry_run}=No  ${status}=SUCCESS
+    ${row}=  Set Variable  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]
+    Wait Until Element Is Visible And Enabled  ${row}//clr-dg-cell[2][text()='${trigger_type}']
+    Wait Until Element Is Visible And Enabled  ${row}//clr-dg-cell[3][text()='${dry_run}']
+    Wait Until Element Is Visible And Enabled  ${row}//clr-dg-cell[4][text()='${status}']
+    Wait Until Element Is Visible And Enabled  ${row}//clr-dg-cell[5]//span[contains(text(),'${details}')]
+
+Wait Until GC Complete
+    [Arguments]  ${gc_job_id}  ${status}=SUCCESS
+    Wait Until Element Is Visible And Enabled  //clr-dg-row[.//clr-dg-cell[text()='${gc_job_id}']]//clr-dg-cell[text()='${status}']

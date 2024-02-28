@@ -14,7 +14,11 @@
 
 package metadata
 
-import "github.com/goharbor/harbor/src/common"
+import (
+	"fmt"
+
+	"github.com/goharbor/harbor/src/common"
+)
 
 // Item - Configure item include default value, type, env name
 type Item struct {
@@ -181,6 +185,7 @@ var (
 		{Name: common.CacheExpireHours, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_EXPIRE_HOURS", DefaultValue: "24", ItemType: &IntType{}, Editable: false, Description: `The expire hours for cache`},
 
 		{Name: common.GDPRDeleteUser, Scope: SystemScope, Group: GDPRGroup, EnvKey: "GDPR_DELETE_USER", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag indicates if a user should be deleted compliant with GDPR.`},
+		{Name: common.GDPRAuditLogs, Scope: SystemScope, Group: GDPRGroup, EnvKey: "GDPR_AUDIT_LOGS", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag indicates if an audit logs of a deleted user should be GDPR compliant.`},
 
 		{Name: common.AuditLogForwardEndpoint, Scope: UserScope, Group: BasicGroup, EnvKey: "AUDIT_LOG_FORWARD_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The endpoint to forward the audit log.`},
 		{Name: common.SkipAuditLogDatabase, Scope: UserScope, Group: BasicGroup, EnvKey: "SKIP_LOG_AUDIT_DATABASE", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The option to skip audit log in database`},
@@ -192,5 +197,8 @@ var (
 
 		{Name: common.BannerMessage, Scope: UserScope, Group: BasicGroup, EnvKey: "BANNER_MESSAGE", DefaultValue: "", ItemType: &StringType{}, Editable: true, Description: `The customized banner message for the UI`},
 		{Name: common.QuotaUpdateProvider, Scope: SystemScope, Group: BasicGroup, EnvKey: "QUOTA_UPDATE_PROVIDER", DefaultValue: "db", ItemType: &StringType{}, Editable: false, Description: `The provider for updating quota, 'db' or 'redis' is supported`},
+
+		{Name: common.BeegoMaxMemoryBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_MEMORY_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxMemoryBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max memory, default is 128GB`},
+		{Name: common.BeegoMaxUploadSizeBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_UPLOAD_SIZE_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxUploadSizeBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max upload size, default it 128GB`},
 	}
 )

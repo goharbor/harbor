@@ -34,44 +34,26 @@
 }
 
 .input-width {
-  width: 232px;
+  width: 16rem;
 }
 
-.expiration-width {
-  width: 80px;
+.expiration {
+  margin-left: 1rem;
 }
 
-.check {
-  margin-right: 5px;
-  color: green;
-}
-
-.dropdown-per {
-  margin-left: -12px;
-}
-
-.mt-description {
-  width: 238px;
-}
-
-.mt-8px {
-  margin-top: 8px !important;
-}
 /* stylelint-disable */
 .showWarning {
   color: #b3a000;
 }
 
-.dropdown-item {
-  min-height: 20px;
-  display: flex;
+.icon {
+  margin-top: 3px;
+}
+
+.align-center {
   align-items: center;
 }
 
-.overflow-y-scroll {
-  overflow-y: auto;
-}
-
-.ml-20px {
-  margin-left: 20px;
+:host::ng-deep.modal-dialog {
+  width: 46.2rem;
 }

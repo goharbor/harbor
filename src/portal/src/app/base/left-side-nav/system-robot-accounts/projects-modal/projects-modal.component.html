@@ -12,7 +12,9 @@
         <p class="mt-0">
             {{ 'SYSTEM_ROBOT.PROJECTS_MODAL_SUMMARY' | translate }}
         </p>
-        <clr-datagrid>
+        <clr-datagrid
+            (clrDgRefresh)="clrDgRefresh($event)"
+            [clrDgLoading]="loading">
             <clr-dg-column>{{ 'PROJECT.NAME' | translate }}</clr-dg-column>
             <clr-dg-column>{{
                 'SYSTEM_ROBOT.PERMISSION_COLUMN' | translate
@@ -29,36 +31,26 @@
                     >
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div class="permissions">
-                        <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                            <button class="btn btn-link" clrDropdownTrigger>
-                                {{ p.access?.length }}
-                                {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
-                            </button>
-                            <clr-dropdown-menu
-                                clrPosition="bottom-left"
-                                *clrIfOpen>
-                                <div
-                                    clrDropdownItem
-                                    *ngFor="let item of p.access">
-                                    <span
-                                        >{{ i18nMap[item.action] | translate }}
-                                        {{
-                                            i18nMap[item.resource] | translate
-                                        }}</span
-                                    >
-                                </div>
-                            </clr-dropdown-menu>
-                        </clr-dropdown>
-                    </div>
+                    <robot-permissions-panel
+                        [mode]="PermissionSelectPanelModes.MODAL"
+                        [permissionsModel]="p.access"
+                        [candidatePermissions]="p.access">
+                        <button class="btn btn-link btn-sm m-0" modal>
+                            {{ p.access?.length }}
+                            {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                            <clr-icon
+                                class="icon"
+                                size="12"
+                                shape="caret down"></clr-icon>
+                        </button>
+                    </robot-permissions-panel>
                 </clr-dg-cell>
                 <clr-dg-cell>{{
                     getProject(p)?.creation_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
-                <clr-dg-pagination #pagination [clrDgPageSize]="10">
+                <clr-dg-pagination #pagination [clrDgPageSize]="pageSize">
                     <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 30]">{{
                         'PAGINATION.PAGE_SIZE' | translate
                     }}</clr-dg-page-size>
