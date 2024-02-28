@@ -48,7 +48,7 @@ type defaultProcessor struct {
 	regCli registry.Client
 }
 
-func (d *defaultProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (d *defaultProcessor) GetArtifactType(_ context.Context, artifact *artifact.Artifact) string {
 	// try to parse the type from the media type
 	strs := artifactTypeRegExp.FindStringSubmatch(artifact.MediaType)
 	if len(strs) == 2 {
@@ -57,7 +57,7 @@ func (d *defaultProcessor) GetArtifactType(ctx context.Context, artifact *artifa
 	// can not get the artifact type from the media type, return unknown
 	return ArtifactTypeUnknown
 }
-func (d *defaultProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (d *defaultProcessor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return nil
 }
 
@@ -101,24 +101,25 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	if err := json.Unmarshal(manifest, mani); err != nil {
 		return err
 	}
-	// get config layer
-	_, blob, err := d.regCli.PullBlob(artifact.RepositoryName, mani.Config.Digest.String())
-	if err != nil {
-		return err
-	}
-	defer blob.Close()
-	// parse metadata from config layer
-	metadata := map[string]interface{}{}
-	// Some artifact may not have empty config layer.
-	if mani.Config.Size != 0 {
-		if err := json.NewDecoder(blob).Decode(&metadata); err != nil {
+	// if artifact.MediaType match regex, will set artifact.ExtraAttrs
+	if d.GetArtifactType(ctx, artifact) != ArtifactTypeUnknown {
+		// get config layer
+		_, blob, err := d.regCli.PullBlob(artifact.RepositoryName, mani.Config.Digest.String())
+		if err != nil {
 			return err
 		}
+		defer blob.Close()
+		// parse metadata from config layer
+		metadata := map[string]interface{}{}
+		if err = json.NewDecoder(blob).Decode(&metadata); err != nil {
+			return err
+		}
+		// Populate all metadata into the ExtraAttrs first.
+		artifact.ExtraAttrs = metadata
 	}
-	// Populate all metadata into the ExtraAttrs first.
-	artifact.ExtraAttrs = metadata
+
 	annotationParser := annotation.NewParser()
-	err = annotationParser.Parse(ctx, artifact, manifest)
+	err := annotationParser.Parse(ctx, artifact, manifest)
 	if err != nil {
 		log.Errorf("the annotation parser parse annotation for artifact error: %v", err)
 	}
@@ -126,7 +127,7 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 	return nil
 }
 
-func (d *defaultProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*Addition, error) {
+func (d *defaultProcessor) AbstractAddition(_ context.Context, artifact *artifact.Artifact, _ string) (*Addition, error) {
 	// Addition not support for user-defined artifact yet.
 	// It will be support in the future.
 	// return error directly

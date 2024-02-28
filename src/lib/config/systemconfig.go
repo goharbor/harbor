@@ -83,11 +83,6 @@ func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
 
-// GetRedisOfRegURL returns the URL of Redis used by registry
-func GetRedisOfRegURL() string {
-	return os.Getenv("_REDIS_URL_REG")
-}
-
 // GetPortalURL returns the URL of portal
 func GetPortalURL() string {
 	url := os.Getenv("PORTAL_URL")
@@ -135,6 +130,16 @@ func GetExecutionStatusRefreshIntervalSeconds() int64 {
 // GetQuotaUpdateProvider returns the provider for updating quota.
 func GetQuotaUpdateProvider() string {
 	return DefaultMgr().Get(backgroundCtx, common.QuotaUpdateProvider).GetString()
+}
+
+// GetBeegoMaxMemoryBytes returns the max memory bytes of beego config
+func GetBeegoMaxMemoryBytes() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.BeegoMaxMemoryBytes).GetInt64()
+}
+
+// GetBeegoMaxUploadSizeBytes returns the max upload size bytes of beego config
+func GetBeegoMaxUploadSizeBytes() int64 {
+	return DefaultMgr().Get(backgroundCtx, common.BeegoMaxUploadSizeBytes).GetInt64()
 }
 
 // WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.

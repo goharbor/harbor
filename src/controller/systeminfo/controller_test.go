@@ -105,3 +105,25 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 func TestControllerSuite(t *testing.T) {
 	suite.Run(t, &sysInfoCtlTestSuite{})
 }
+
+func TestOIDCProviderName(t *testing.T) {
+	type args struct {
+		cfg map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal testing", args{map[string]interface{}{common.AUTHMode: common.OIDCAuth, common.OIDCName: "test"}}, "test"},
+		{"not oidc", args{map[string]interface{}{common.AUTHMode: common.DBAuth, common.OIDCName: "test"}}, ""},
+		{"empty provider", args{map[string]interface{}{common.AUTHMode: common.OIDCAuth, common.OIDCName: ""}}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := OIDCProviderName(tt.args.cfg); got != tt.want {
+				t.Errorf("OIDCProviderName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

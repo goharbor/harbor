@@ -160,6 +160,10 @@ Test Case - Cosign Sign Artifact
     [Tags]  cosign
     Harbor API Test  ./tests/apitests/python/test_cosign_sign_artifact.py
 
+Test Case - Notation Sign Artifact
+    [Tags]  notation
+    Harbor API Test  ./tests/apitests/python/test_notation_sign_artifact.py
+
 Test Case - Log Rotation
     [Tags]  log_rotation
     Harbor API Test  ./tests/apitests/python/test_log_rotation.py
@@ -190,3 +194,15 @@ Test Case - Referrers API
 Test Case - Podman Pull And Push To Harbor
     [Tags]  podman_pull_push
     Harbor API Test  ./tests/apitests/python/test_podman_pull_push.py
+
+Test Case - Security Hub
+    [Tags]  security_hub
+    Harbor API Test  ./tests/apitests/python/test_security_hub.py
+
+Test Case - Banner Message
+    [Tags]  banner_message
+    Harbor API Test  ./tests/apitests/python/test_banner_message.py
+
+Test Case - User CRUD
+    [Tags]  user_crud
+    Harbor API Test  ./tests/apitests/python/test_user_crud.py

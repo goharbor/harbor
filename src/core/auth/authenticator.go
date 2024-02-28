@@ -88,35 +88,35 @@ type DefaultAuthenticateHelper struct {
 }
 
 // Authenticate ...
-func (d *DefaultAuthenticateHelper) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
+func (d *DefaultAuthenticateHelper) Authenticate(_ context.Context, _ models.AuthModel) (*models.User, error) {
 	return nil, ErrNotSupported
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, fill in the user model based
 // on the data record of the user
-func (d *DefaultAuthenticateHelper) OnBoardUser(ctx context.Context, u *models.User) error {
+func (d *DefaultAuthenticateHelper) OnBoardUser(_ context.Context, _ *models.User) error {
 	return ErrNotSupported
 }
 
 // SearchUser - Get user information from account repository
-func (d *DefaultAuthenticateHelper) SearchUser(ctx context.Context, username string) (*models.User, error) {
+func (d *DefaultAuthenticateHelper) SearchUser(_ context.Context, username string) (*models.User, error) {
 	log.Errorf("Not support searching user, username: %s", username)
 	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", username)
 }
 
 // PostAuthenticate - Update user information after authenticate, such as OnBoard or sync info etc
-func (d *DefaultAuthenticateHelper) PostAuthenticate(ctx context.Context, u *models.User) error {
+func (d *DefaultAuthenticateHelper) PostAuthenticate(_ context.Context, _ *models.User) error {
 	return nil
 }
 
 // OnBoardGroup - OnBoardGroup, it will set the ID of the user group, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-func (d *DefaultAuthenticateHelper) OnBoardGroup(ctx context.Context, u *model.UserGroup, altGroupName string) error {
+func (d *DefaultAuthenticateHelper) OnBoardGroup(_ context.Context, _ *model.UserGroup, _ string) error {
 	return ErrNotSupported
 }
 
 // SearchGroup - Search ldap group by group key, groupKey is the unique attribute of group in authenticator, for LDAP, the key is group DN
-func (d *DefaultAuthenticateHelper) SearchGroup(ctx context.Context, groupKey string) (*model.UserGroup, error) {
+func (d *DefaultAuthenticateHelper) SearchGroup(_ context.Context, groupKey string) (*model.UserGroup, error) {
 	log.Errorf("Not support searching group, group key: %s", groupKey)
 	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", groupKey)
 }

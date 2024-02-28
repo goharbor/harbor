@@ -166,9 +166,11 @@
                     <span *ngIf="scanner.is_default" class="label label-info">{{
                         scanner.is_default
                     }}</span>
-                    <span *ngIf="!scanner.is_default">{{
-                        scanner.is_default
-                    }}</span>
+                    <span
+                        *ngIf="!scanner.is_default"
+                        class="label label-info"
+                        >{{ scanner.is_default }}</span
+                    >
                 </clr-dg-cell>
                 <clr-dg-cell>{{ scanner.description }}</clr-dg-cell>
             </clr-dg-row>

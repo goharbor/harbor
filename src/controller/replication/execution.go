@@ -296,6 +296,7 @@ func convertTask(task *task.Task) *Task {
 		ResourceType:        task.GetStringFromExtraAttrs("resource_type"),
 		SourceResource:      task.GetStringFromExtraAttrs("source_resource"),
 		DestinationResource: task.GetStringFromExtraAttrs("destination_resource"),
+		References:          task.GetStringFromExtraAttrs("references"),
 		Operation:           task.GetStringFromExtraAttrs("operation"),
 		JobID:               task.JobID,
 		CreationTime:        task.CreationTime,

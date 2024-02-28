@@ -24,6 +24,7 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -41,6 +42,8 @@ type Manager interface {
 	DeletePolicy(ctx context.Context, id int64) error
 	// Get the specified policy
 	GetPolicy(ctx context.Context, id int64) (*policy.Metadata, error)
+	// List the retention policy with query conditions
+	ListPolicyIDs(ctx context.Context, query *q.Query) ([]int64, error)
 }
 
 // DefaultManager ...
@@ -101,6 +104,19 @@ func (d *DefaultManager) GetPolicy(ctx context.Context, id int64) (*policy.Metad
 		}
 	}
 	return p, nil
+}
+
+// ListPolicyIDs list policy id by query
+func (d *DefaultManager) ListPolicyIDs(ctx context.Context, query *q.Query) ([]int64, error) {
+	policyIDs := make([]int64, 0)
+	plcs, err := dao.ListPolicies(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range plcs {
+		policyIDs = append(policyIDs, p.ID)
+	}
+	return policyIDs, nil
 }
 
 // NewManager ...

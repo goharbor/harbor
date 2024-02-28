@@ -48,38 +48,16 @@ where a.digest = s.digest
 order by s.critical_cnt desc, s.high_cnt desc, s.medium_cnt desc, s.low_cnt desc
 limit 5`
 
-	// sql to query the total artifact count,
-	// 1. exclude the artifact accessory,
-	// 2. exclude child artifact without tag
-	// 3. include top level artifact in image index
-	// The totalArtifactCountSQL and scannedArtifactCountSQL should use the same criteria to filter the artifact
-	totalArtifactCountSQL = `SELECT COUNT(1)
-FROM artifact a
-WHERE NOT EXISTS (select 1 from artifact_accessory acc WHERE acc.artifact_id = a.id)
-  AND (EXISTS (SELECT 1 FROM tag WHERE tag.artifact_id = a.id)
-    OR NOT EXISTS (SELECT 1 FROM artifact_reference ref WHERE ref.child_id = a.id))`
+	// sql to query the total artifact count, include all artifacts in the artifact table
+	totalArtifactCountSQL = `SELECT COUNT(1) FROM artifact`
 
-	// sql to query the scanned artifact count,
-	// exclude the artifact accessory, and child artifact in image index (without tag),
-	// include the image index artifact which at least one child artifact is scanned
+	// sql to query the scanned artifact count, include all artifacts in the artifact table
 	scannedArtifactCountSQL = `SELECT COUNT(1)
 FROM artifact a
 WHERE EXISTS (SELECT 1
               FROM scan_report s
               WHERE a.digest = s.digest
-                AND s.registration_uuid = ?)
-    -- exclude artifact accessory
-    AND NOT EXISTS (SELECT 1 FROM artifact_accessory acc WHERE acc.artifact_id = a.id)
-    -- not a child without tag
-    AND NOT EXISTS (SELECT 1 FROM artifact_reference WHERE child_id = a.id AND NOT EXISTS (SELECT 1 FROM tag WHERE artifact_id = a.id))
-    -- include image index which is scanned
-    OR EXISTS (SELECT 1
-              FROM scan_report s,
-                   artifact_reference ref
-              WHERE s.digest = ref.child_digest
-                AND ref.parent_id = a.id AND s.registration_uuid = ?  AND NOT EXISTS (SELECT 1
-                                                                                      FROM scan_report s
-                                                                                      WHERE s.digest = a.digest and s.registration_uuid = ?))`
+                AND s.registration_uuid = ?)`
 
 	// sql to query the dangerous CVEs
 	// sort the CVEs by CVSS score and severity level, make sure it is referred by a report
@@ -88,7 +66,7 @@ WHERE EXISTS (SELECT 1
        vr.package,
        vr.cvss_score_v3,
        vr.description,
-       vr.fixed_version,
+       vr.package_version,
        vr.severity,
        CASE vr.severity
            WHEN 'Critical' THEN 5
@@ -144,7 +122,7 @@ var filterMap = map[string]*filterMetaData{
 
 var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
 
-func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -160,7 +138,7 @@ func exactMatchFilter(ctx context.Context, key string, query *q.Query) (sqlStr s
 	return
 }
 
-func rangeFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -173,7 +151,7 @@ func rangeFilter(ctx context.Context, key string, query *q.Query) (sqlStr string
 	return
 }
 
-func tagFilter(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func tagFilter(ctx context.Context, _ string, query *q.Query) (sqlStr string, params []interface{}) {
 	if query == nil {
 		return
 	}
@@ -228,7 +206,7 @@ func (d *dao) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, 
 	return count, err
 }
 
-func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (*model.Summary, error) {
+func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) (*model.Summary, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -246,7 +224,7 @@ func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, 
 		&sum.FixableCnt)
 	return &sum, err
 }
-func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*model.DangerousArtifact, error) {
+func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) ([]*model.DangerousArtifact, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -259,7 +237,7 @@ func (d *dao) DangerousArtifacts(ctx context.Context, scannerUUID string, projec
 	return artifacts, err
 }
 
-func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) (int64, error) {
+func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) (int64, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return 0, nil
 	}
@@ -268,10 +246,10 @@ func (d *dao) ScannedArtifactsCount(ctx context.Context, scannerUUID string, pro
 	if err != nil {
 		return cnt, err
 	}
-	err = o.Raw(scannedArtifactCountSQL, scannerUUID, scannerUUID, scannerUUID).QueryRow(&cnt)
+	err = o.Raw(scannedArtifactCountSQL, scannerUUID).QueryRow(&cnt)
 	return cnt, err
 }
-func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, query *q.Query) ([]*scan.VulnerabilityRecord, error) {
+func (d *dao) DangerousCVEs(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) ([]*scan.VulnerabilityRecord, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
 		return nil, nil
 	}
@@ -288,7 +266,7 @@ func countSQL(strSQL string) string {
 	return fmt.Sprintf(`select count(1) cnt from (%v) as t`, strSQL)
 }
 
-func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string, projectID int64, tuneCount bool, query *q.Query) (int64, error) {
+func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string, _ int64, tuneCount bool, query *q.Query) (int64, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
@@ -329,7 +307,7 @@ func (d *dao) countExceedLimit(ctx context.Context, sqlStr string, params []inte
 	return exceed, nil
 }
 
-func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, projectID int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
+func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, _ int64, query *q.Query) ([]*model.VulnerabilityItem, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err

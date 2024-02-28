@@ -65,9 +65,9 @@ func (m *mgrTestSuite) TestUserDeleteGDPR() {
 	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
 		func(u *models.User) bool {
 			return u.UserID == 123 &&
-				u.Email == fmt.Sprintf("%s#%d", checkSum("existing@mytest.com"), existingUser.UserID) &&
-				u.Username == fmt.Sprintf("%s#%d", checkSum("existing"), existingUser.UserID) &&
-				u.Realname == fmt.Sprintf("%s#%d", checkSum("RealName"), existingUser.UserID) &&
+				u.Email == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("existing@mytest.com"), existingUser.UserID) &&
+				u.Username == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("existing"), existingUser.UserID) &&
+				u.Realname == fmt.Sprintf("%s#%d", m.mgr.GenerateCheckSum("RealName"), existingUser.UserID) &&
 				u.Deleted == true
 		}),
 		"username",
@@ -142,4 +142,28 @@ func TestInjectPasswd(t *testing.T) {
 	injectPasswd(u, p)
 	assert.Equal(t, "sha256", u.PasswordVersion)
 	assert.Equal(t, utils.Encrypt(p, u.Salt, "sha256"), u.Password)
+}
+
+func (m *mgrTestSuite) TestCreate() {
+	m.dao.On("Create", mock.Anything, testifymock.Anything).Return(3, nil)
+	u := &models.User{
+		Username: "test",
+		Email:    "test@example.com",
+		Realname: "test",
+	}
+	id, err := m.mgr.Create(context.Background(), u)
+	m.Nil(err)
+	m.Equal(3, id)
+	m.Equal(u.Username, "test")
+
+	u2 := &models.User{
+		Username: "test,test",
+		Email:    "test@example.com",
+		Realname: "test",
+	}
+
+	id, err = m.mgr.Create(context.Background(), u2)
+	m.Nil(err)
+	m.Equal(3, id)
+	m.Equal(u2.Username, "test_test", "username should be sanitized")
 }

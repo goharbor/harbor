@@ -35,9 +35,9 @@ ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
 ${configuration_system_wl_delete_a_cve_id_icon}    //app-security//form/section//ul/li[1]/a[2]/clr-icon
 ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${cve_allowlist_expires_btn}  //clr-date-container[.//div[@class='clr-input-group' and not(@hidden)]]//button
-${cve_allowlist_expires_yesterday}  //td[.//button[@class='day-btn is-today']]/preceding-sibling::td[1]
-${cve_allowlist_expires_tomorrow}  //td[.//button[@class='day-btn is-today']]/following-sibling::td[1]
-${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@for,'oidcAutoOnboard')]
+${cve_allowlist_expires_yesterday}  //td[.//button[@class='day-btn is-today']]/preceding::td[1]
+${cve_allowlist_expires_tomorrow}  //td[.//button[@class='day-btn is-today']]/following::td[1]
+${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'oidcAutoOnboard')]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 
 ${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
@@ -62,6 +62,14 @@ ${filter_dist_input}  //hbr-filter//input
 
 ${audit_log_forward_syslog_endpoint_input_id}  //*[@id='auditLogForwardEndpoint']
 ${skip_audit_log_database_checkbox}  //*[@id='skipAuditLogDatabase']
-${skip_audit_log_database_label}  //clr-checkbox-wrapper//label[contains(@for,'skipAuditLogDatabase')]
-${retain_image_last_pull_time_label}  //clr-checkbox-wrapper//label[contains(@for,'scannerSkipUpdatePullTime')]
+${skip_audit_log_database_label}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'skipAuditLogDatabase')]
+${retain_image_last_pull_time_label}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'scannerSkipUpdatePullTime')]
 ${retain_image_last_pull_time_checkbox}  //*[@id='scannerSkipUpdatePullTime']
+${banner_message_input_id}  //*[@id='banner-message']
+${banner_message_type_select_id}  //*[@id='banner-message-type']
+${banner_message_closable_checkbox}  //div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]
+${banner_message_from_date}  (//clr-date-container)[1]//button
+${banner_message_to_date}  (//clr-date-container)[2]//button
+${banner_message_date_next_month}  //button[@aria-label='Next month']
+${banner_message_close_alert}  //clr-alert//button[@aria-label='Close alert']
+${banner_message_alert}  //app-app-level-alerts

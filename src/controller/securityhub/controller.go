@@ -86,8 +86,8 @@ func NewController() Controller {
 func (c *controller) SecuritySummary(ctx context.Context, projectID int64, options ...Option) (*secHubModel.Summary, error) {
 	opts := newOptions(options...)
 	scannerUUID, err := c.scannerMgr.DefaultScannerUUID(ctx)
-	if err != nil {
-		return nil, err
+	if len(scannerUUID) == 0 || err != nil {
+		return &secHubModel.Summary{}, nil
 	}
 	sum, err := c.secHubMgr.Summary(ctx, scannerUUID, projectID, nil)
 	if err != nil {

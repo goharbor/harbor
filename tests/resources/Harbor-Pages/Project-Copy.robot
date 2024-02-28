@@ -4,7 +4,7 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 Copy Image
     [Arguments]  ${tag}  ${projectname}  ${reponame}  ${is_success}=${true}
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tag}')]//label
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tag}')]//label[contains(@class,'clr-control-label')]
     Retry Action Keyword  Copy Image Action  ${projectname}  ${reponame}  ${is_success}
 
 Copy Image Action

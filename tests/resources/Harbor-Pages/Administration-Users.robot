@@ -25,7 +25,7 @@ Assign User Admin
     Input Text  xpath=//harbor-user//hbr-filter//input  ${user}
     Sleep  2
     #select checkbox
-    Retry Element Click  //clr-dg-row[contains(.,'${user}')]//label
+    Retry Element Click  //clr-dg-row[contains(.,'${user}')]//label[contains(@class,'clr-control-label')]
     #click assign admin
     Retry Element Click  //*[@id='set-admin']
     Sleep  1

@@ -8,7 +8,7 @@ Resource  ../../resources/Util.robot
 
 Goto Project Config
     Retry Element Click  //project-detail//ul/li[contains(.,'Summary')]
-    Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(.,'Prevent vulnerable images from running.')]
+    Retry Double Keywords When Error  Retry Element Click  //project-detail//ul/li[contains(.,'Configuration')]  Retry Wait Element  //clr-checkbox-wrapper/label[contains(@class,'clr-control-label') and contains(.,'Prevent vulnerable images from running.')]
 
 Click Project Public
     Mouse Down  //hbr-project-policy-config//input[@name='public']
@@ -17,6 +17,10 @@ Click Project Public
 Click Cosign Deployment Security
     Mouse Down  //input[@id='content-trust-cosign']
     Mouse Up  //input[@id='content-trust-cosign']
+
+Click Notation Deployment Security
+    Mouse Down  //input[@id='content-trust']
+    Mouse Up  //input[@id='content-trust']
 
 Click Prevent Running
     Mouse Down  //hbr-project-policy-config//input[@name='prevent-vulnerability-image']
@@ -44,6 +48,9 @@ Project Should Be Public
 
 Content Cosign Deployment security Be Selected
     Checkbox Should Be Selected  //input[@id='content-trust-cosign']
+
+Content Notation Deployment security Be Selected
+    Checkbox Should Be Selected  //input[@id='content-trust']
 
 Prevent Running Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='prevent-vulnerability-image']

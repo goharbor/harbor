@@ -212,6 +212,7 @@ def parse_yaml_config(config_file_path, with_trivy):
     trivy_configs = configs.get("trivy") or {}
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
+    config_dict['trivy_skip_java_db_update'] = trivy_configs.get("skip_java_db_update") or False
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
     config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
@@ -298,6 +299,20 @@ def parse_yaml_config(config_file_path, with_trivy):
             external_database=config_dict['external_database'])
     else:
         config_dict['internal_tls'] = InternalTLS()
+    # the configure item apply to internal and external tls communication
+    # for compatibility, user could configure the strong_ssl_ciphers either in https section or under internal_tls section,
+    # but it is more reasonable to configure it in https_config
+    if https_config:
+        config_dict['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers') 
+    else:
+        config_dict['strong_ssl_ciphers'] = False
+
+    if internal_tls_config:
+        config_dict['strong_ssl_ciphers'] = config_dict['strong_ssl_ciphers'] or internal_tls_config.get('strong_ssl_ciphers')
+
+
+    # ip_family config
+    config_dict['ip_family'] = configs.get('ip_family') or {'ipv4': {'enabled': True}, 'ipv6': {'enabled': False}}
 
     # metric configs
     metric_config = configs.get('metric')

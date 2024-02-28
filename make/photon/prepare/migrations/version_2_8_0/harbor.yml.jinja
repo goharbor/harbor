@@ -105,10 +105,10 @@ storage_service:
     {% elif key == 'redirect' %}
 #   # set disable to true when you want to disable registry redirect
   redirect:
-      {% if value.disabled is not none %}
-    disable: {{ value.disabled }}
+      {% if storage_service.redirect.disabled is defined %}
+    disable: {{ storage_service.redirect.disabled | lower}}
       {% else %}
-    disable: {{ value.disable }}
+    disable: {{ storage_service.redirect.disable  | lower}}
       {% endif %}
     {% else %}
 #   # storage backend, default is filesystem, options include filesystem, azure, gcs, s3, swift and oss

@@ -79,9 +79,9 @@ func (suite *SecurityDaoTestSuite) TearDownTest() {
 	testDao.ExecuteBatchSQL([]string{
 		`delete from scan_report where uuid = 'uuid'`,
 		`delete from tag where id = 1001`,
-		`delete from artifact where digest = 'digest1001'`,
 		`delete from artifact_accessory where id = 1001`,
 		`delete from artifact_reference where id = 1001`,
+		`delete from artifact where digest = 'digest1001'`,
 		`delete from scanner_registration where uuid='ruuid'`,
 		`delete from scanner_registration where uuid='uuid2'`,
 		`delete from vulnerability_record where cve_id='2023-4567-12345'`,
@@ -149,7 +149,7 @@ func Test_checkQFilter(t *testing.T) {
 	}
 }
 
-func (suite *SecurityDaoTestSuite) TestExacthMatchFilter() {
+func (suite *SecurityDaoTestSuite) TestExactMatchFilter() {
 	type args struct {
 		ctx   context.Context
 		key   string
@@ -199,7 +199,8 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 func (suite *SecurityDaoTestSuite) TestCountArtifact() {
 	count, err := suite.dao.TotalArtifactsCount(suite.Context(), 0)
 	suite.NoError(err)
-	suite.Equal(int64(1), count)
+	// includes artifact_accessory(1), child artifact of image index(1), image index(1)
+	suite.Equal(int64(3), count)
 }
 func (suite *SecurityDaoTestSuite) TestCountVul() {
 	count, err := suite.dao.CountVulnerabilities(suite.Context(), "ruuid", 0, true, nil)

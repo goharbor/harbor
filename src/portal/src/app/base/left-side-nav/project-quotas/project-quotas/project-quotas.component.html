@@ -67,7 +67,9 @@
                 </clr-dg-action-bar>
                 <clr-dg-column>{{ 'QUOTA.PROJECT' | translate }}</clr-dg-column>
                 <clr-dg-column>{{ 'QUOTA.OWNER' | translate }}</clr-dg-column>
-                <clr-dg-column>{{ 'QUOTA.STORAGE' | translate }}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="'used.storage'">{{
+                    'QUOTA.STORAGE' | translate
+                }}</clr-dg-column>
                 <clr-dg-placeholder>{{
                     'QUOTA.PLACEHOLDER' | translate
                 }}</clr-dg-placeholder>

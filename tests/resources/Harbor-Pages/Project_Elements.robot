@@ -18,7 +18,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${create_project_button_xpath}  //clr-main-container//button[contains(., 'New Project')]
 ${project_name_xpath}  //*[@id='create_project_name']
-${project_public_xpath}  //input[@name='public']/..//label
+${project_public_xpath}  //input[@name='public']/..//label[contains(@class,'clr-control-label')]
 ${project_save_css}  html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
 ${projects_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Projects')]
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
@@ -57,16 +57,16 @@ ${tag_table_column_size}  xpath=//clr-dg-column//span[contains(.,'Size')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]
 ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
 ${project_member_action_xpath}  xpath=//*[@id='member-action']
-${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'Set Role')]
+${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(@class,'clr-control-label') and contains(.,'Set Role')]
 ${project_config_public_checkbox}  xpath=//input[@name='public']
 ${project_config_content_trust_checkbox}  xpath=//input[@name='content-trust']
 ${project_config_scan_images_on_push_checkbox}  xpath=//input[@name='scan-image-on-push']
 ${project_config_prevent_vulnerable_images_from_running_checkbox}  xpath=//input[@name='prevent-vulenrability-image-input']
 ${project_config_severity_select}  xpath=//select[@id='severity']
-${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div/clr-checkbox-wrapper/label
-${project_config_prevent_vulenrability_checkbox_label}    xpath=//*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System allowlist')]
-${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project allowlist')]
+${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div/clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]
+${project_config_prevent_vulenrability_checkbox_label}    xpath=//*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label[contains(@class,'clr-control-label')]
+${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(@class,'clr-control-label') and contains(.,'System allowlist')]
+${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(@class,'clr-control-label') and contains(.,'Project allowlist')]
 ${project_config_system_wl_radio_input_id}    systemAllowlistOrProjectAllowlist
 ${project_config_project_wl_radio_input_id}    systemAllowlistOrProjectAllowlist
 ${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']

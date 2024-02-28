@@ -32,21 +32,22 @@ Init Chrome Driver
     Create Directory    ${download_directory}
     Run  pkill chromedriver
     Run  pkill chrome
-    ${chrome options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
+    ${options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
     ${capabilities}=    Evaluate    sys.modules['selenium.webdriver'].DesiredCapabilities.CHROME    sys
     ${prefs}    Create Dictionary   download.default_directory=${download_directory}
     Set To Dictionary    ${capabilities}    acceptInsecureCerts    ${True}
-    Call Method    ${chrome options}    add_experimental_option    prefs    ${prefs}
-    Call Method    ${chrome options}    add_argument    --headless
-    Call Method    ${chrome options}    add_argument    --disable-gpu
-    Call Method    ${chrome options}    add_argument    --start-maximized
-    Call Method    ${chrome options}    add_argument    --no-sandbox
-    Call Method    ${chrome options}    add_argument    --window-size\=1600,900
-    ${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
-    #Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
+    Call Method    ${options}    add_experimental_option    prefs    ${prefs}
+    Call Method    ${options}    add_argument    --headless
+    Call Method    ${options}    add_argument    --disable-gpu
+    Call Method    ${options}    add_argument    --start-maximized
+    Call Method    ${options}    add_argument    --no-sandbox
+    Call Method    ${options}    add_argument    --window-size\=1600,900
+    Call Method    ${options}    add_argument    --ignore-certificate-errors
+    Call Method    ${options}    add_argument    --allow-insecure-localhost
+    ${options.binary_location}    Set Variable    /usr/bin/google-chrome
     FOR  ${n}  IN RANGE  1  6
         Log To Console  Trying Create Webdriver ${n} times ...
-        ${out}  Run Keyword And Ignore Error  Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
+        ${out}  Run Keyword And Ignore Error  Create Webdriver  Chrome  Chrome_headless  options=${options}
         Log To Console  Return value is ${out[0]}
         Exit For Loop If  '${out[0]}'=='PASS'
         Sleep  2

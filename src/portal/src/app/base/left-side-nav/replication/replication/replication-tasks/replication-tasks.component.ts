@@ -252,13 +252,11 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
                         count > 0 ||
                         this.execution?.status === executionStatus
                     ) {
-                        if (!this.tasksTimeout) {
-                            this.tasksTimeout = setTimeout(() => {
-                                this.clrLoadTasks(false, {
-                                    page: {},
-                                });
-                            }, REFRESH_TIME_DIFFERENCE);
-                        }
+                        this.tasksTimeout = setTimeout(() => {
+                            this.clrLoadTasks(false, {
+                                page: {},
+                            });
+                        }, REFRESH_TIME_DIFFERENCE);
                     }
                 },
                 error => {

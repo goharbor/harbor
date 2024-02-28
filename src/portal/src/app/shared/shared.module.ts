@@ -76,9 +76,36 @@ import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
 import { RemainingTimeComponent } from './components/remaining-time/remaining-time.component';
 import { LabelSelectorComponent } from './components/label-selector/label-selector.component';
 import { ScrollSectionDirective } from './directives/scroll/scroll-section.directive';
-import { ScrollManagerService } from './directives/scroll/scroll-manager.service';
 import { ScrollAnchorDirective } from './directives/scroll/scroll-anchor.directive';
 import { AppLevelAlertsComponent } from './components/app-level-alerts/app-level-alerts.component';
+// import echarts
+import * as echarts from 'echarts/core';
+import { PieChart } from 'echarts/charts';
+import {
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
+    LegendComponent,
+} from 'echarts/components';
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
+
+// register necessary components
+echarts.use([
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
+    PieChart,
+    LabelLayout,
+    UniversalTransition,
+    CanvasRenderer,
+    LegendComponent,
+]);
 
 // ClarityIcons is publicly accessible from the browser's window object.
 declare const ClarityIcons: ClarityIconsApi;
@@ -149,6 +176,7 @@ ClarityIcons.add({
         RemainingTimeComponent,
         LabelSelectorComponent,
         AppLevelAlertsComponent,
+        RobotPermissionsPanelComponent,
     ],
     exports: [
         TranslateModule,
@@ -191,6 +219,7 @@ ClarityIcons.add({
         RemainingTimeComponent,
         LabelSelectorComponent,
         AppLevelAlertsComponent,
+        RobotPermissionsPanelComponent,
     ],
     providers: [
         { provide: EndpointService, useClass: EndpointDefaultService },

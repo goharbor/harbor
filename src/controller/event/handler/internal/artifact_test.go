@@ -47,7 +47,7 @@ type ArtifactHandlerTestSuite struct {
 	suite.Suite
 
 	ctx            context.Context
-	handler        *Handler
+	handler        *ArtifactEventHandler
 	projectManager project.Manager
 	scannerCtl     scanner.Controller
 	reportMgr      *reportMock.Manager
@@ -70,7 +70,7 @@ func (suite *ArtifactHandlerTestSuite) SetupSuite() {
 	suite.execMgr = &taskMock.ExecutionManager{}
 	suite.reportMgr = &reportMock.Manager{}
 	suite.artMgr = &artMock.Manager{}
-	suite.handler = &Handler{execMgr: suite.execMgr, reportMgr: suite.reportMgr, artMgr: suite.artMgr}
+	suite.handler = &ArtifactEventHandler{execMgr: suite.execMgr, reportMgr: suite.reportMgr, artMgr: suite.artMgr}
 
 	// mock artifact
 	_, err := pkg.ArtifactMgr.Create(suite.ctx, &artifact.Artifact{ID: 1, RepositoryID: 1})

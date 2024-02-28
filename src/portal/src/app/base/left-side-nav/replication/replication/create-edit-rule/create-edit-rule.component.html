@@ -718,8 +718,25 @@
                             for="ruleDeletion"
                             >{{
                                 'REPLICATION.DELETE_REMOTE_IMAGES' | translate
-                            }}</label
-                        >
+                            }}
+                            <clr-tooltip>
+                                <clr-icon
+                                    clrTooltipTrigger
+                                    shape="info-circle"
+                                    size="24"></clr-icon>
+                                <clr-tooltip-content
+                                    clrPosition="top-left"
+                                    clrSize="lg"
+                                    *clrIfOpen>
+                                    <span>
+                                        {{
+                                            'REPLICATION.PUSH_BASED_ONLY'
+                                                | translate
+                                        }}
+                                    </span>
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -779,7 +796,9 @@
                                 clrSize="lg"
                                 *clrIfOpen>
                                 <span>{{
-                                    'REPLICATION.BANDWIDTH_TOOLTIP' | translate
+                                    'REPLICATION.BANDWIDTH_TOOLTIP'
+                                        | translate
+                                            : { max_job_workers: maxJobWorkers }
                                 }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>

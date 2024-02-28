@@ -22,6 +22,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
+	"github.com/goharbor/harbor/src/pkg/reg/dao"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/aliacr"
@@ -51,8 +53,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
 	// register the TencentCloud TCR adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
-	"github.com/goharbor/harbor/src/pkg/reg/dao"
-	"github.com/goharbor/harbor/src/pkg/reg/model"
+	// register the VolcEngine CR Registry adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/volcenginecr"
 )
 
 var (
@@ -144,7 +146,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
 
-func (m *manager) CreateAdapter(ctx context.Context, registry *model.Registry) (adapter.Adapter, error) {
+func (m *manager) CreateAdapter(_ context.Context, registry *model.Registry) (adapter.Adapter, error) {
 	factory, err := adapter.GetFactory(registry.Type)
 	if err != nil {
 		return nil, err
@@ -152,11 +154,11 @@ func (m *manager) CreateAdapter(ctx context.Context, registry *model.Registry) (
 	return factory.Create(registry)
 }
 
-func (m *manager) ListRegistryProviderTypes(ctx context.Context) ([]string, error) {
+func (m *manager) ListRegistryProviderTypes(_ context.Context) ([]string, error) {
 	return adapter.ListRegisteredAdapterTypes(), nil
 }
 
-func (m *manager) ListRegistryProviderInfos(ctx context.Context) (infos map[string]*model.AdapterPattern, err error) {
+func (m *manager) ListRegistryProviderInfos(_ context.Context) (infos map[string]*model.AdapterPattern, err error) {
 	return adapter.ListRegisteredAdapterInfos(), nil
 }
 

@@ -45,7 +45,7 @@ func NewPoolManager() PoolManager {
 	return &poolManager{}
 }
 
-func (p poolManager) List(ctx context.Context, monitorClient JobServiceMonitorClient) ([]*WorkerPool, error) {
+func (p poolManager) List(_ context.Context, monitorClient JobServiceMonitorClient) ([]*WorkerPool, error) {
 	workerPool := make([]*WorkerPool, 0)
 	wh, err := monitorClient.WorkerPoolHeartbeats()
 	if err != nil {

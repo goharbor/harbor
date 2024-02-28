@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/distribution/manifest/schema2"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
@@ -37,7 +38,7 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 func (suite *MiddlewareTestSuite) TearDownTest() {
 }
 
-func (suite *MiddlewareTestSuite) prepare(name, subject string) (distribution.Manifest, distribution.Descriptor, *http.Request) {
+func (suite *MiddlewareTestSuite) prepare(name, digset string, withoutSub ...bool) (distribution.Manifest, distribution.Descriptor, *http.Request) {
 	body := fmt.Sprintf(`
 	{
    "schemaVersion":2,
@@ -61,7 +62,29 @@ func (suite *MiddlewareTestSuite) prepare(name, subject string) (distribution.Ma
       "mediaType":"application/vnd.oci.image.manifest.v1+json",
       "size":419,
       "digest":"%s"
-   }}`, subject)
+   }}`, digset)
+
+	if len(withoutSub) > 0 && withoutSub[0] {
+		body = fmt.Sprintf(`
+	{
+   "schemaVersion":2,
+   "mediaType":"application/vnd.oci.image.manifest.v1+json",
+   "config":{
+      "mediaType":"application/vnd.example.sbom",
+      "size":2,
+      "digest":"%s"
+   },
+   "layers":[
+      {
+         "mediaType":"application/vnd.example.sbom.text",
+         "size":37,
+         "digest":"sha256:45592a729ef6884ea3297e9510d79104f27aeef5f4919b3a921e3abb7f469709"
+      }
+   ],
+   "annotations":{
+      "org.example.sbom.format":"text"
+   }}`, digset)
+	}
 
 	manifest, descriptor, err := distribution.UnmarshalManifest("application/vnd.oci.image.manifest.v1+json", []byte(body))
 	suite.Nil(err)
@@ -94,19 +117,21 @@ func (suite *MiddlewareTestSuite) addArt(pid, repositoryID int64, repositoryName
 	return afid
 }
 
-func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryName, dgt, accdgt string) int64 {
-	subaf := &artifact.Artifact{
-		Type:           "Docker-Image",
-		ProjectID:      pid,
-		RepositoryID:   repositoryID,
-		RepositoryName: repositoryName,
-		Digest:         dgt,
-		Size:           1024,
-		PushTime:       time.Now(),
-		PullTime:       time.Now(),
+func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryName, dgt, accdgt string, createSub ...bool) int64 {
+	if len(createSub) > 0 && createSub[0] {
+		subaf := &artifact.Artifact{
+			Type:           "Docker-Image",
+			ProjectID:      pid,
+			RepositoryID:   repositoryID,
+			RepositoryName: repositoryName,
+			Digest:         dgt,
+			Size:           1024,
+			PushTime:       time.Now(),
+			PullTime:       time.Now(),
+		}
+		_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
+		suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 	}
-	_, err := pkg.ArtifactMgr.Create(suite.Context(), subaf)
-	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
 
 	af := &artifact.Artifact{
 		Type:           "Subject",
@@ -124,7 +149,8 @@ func (suite *MiddlewareTestSuite) addArtAcc(pid, repositoryID int64, repositoryN
 	accid, err := accessory.Mgr.Create(suite.Context(), accessorymodel.AccessoryData{
 		ID:                1,
 		ArtifactID:        afid,
-		SubArtifactDigest: subaf.Digest,
+		SubArtifactDigest: dgt,
+		SubArtifactRepo:   repositoryName,
 		Digest:            accdgt,
 		Type:              accessorymodel.TypeSubject,
 	})
@@ -165,6 +191,40 @@ func (suite *MiddlewareTestSuite) TestSubject() {
 	})
 }
 
+func (suite *MiddlewareTestSuite) TestSubjectAfterAcc() {
+	// add acc, with subject digest
+	// add subject
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/hello-world", projectName)
+		_, repoId, err := repository.Ctl.Ensure(suite.Context(), name)
+
+		_, descriptor, req := suite.prepare(name, suite.DigestString(), true)
+		suite.Nil(err)
+
+		subArtDigest := descriptor.Digest.String()
+		accArtDigest := suite.DigestString()
+
+		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, accArtDigest)
+		subArtID := suite.addArt(projectID, repoId, name, subArtDigest)
+
+		res := httptest.NewRecorder()
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": subArtDigest})
+		Middleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusCreated, res.Code)
+
+		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
+			Keywords: map[string]interface{}{
+				"SubjectArtifactDigest": subArtDigest,
+				"SubjectArtifactRepo":   name,
+			},
+		})
+		suite.Equal(1, len(accs))
+		suite.Equal(subArtDigest, accs[0].GetData().SubArtifactDigest)
+		suite.Equal(subArtID, accs[0].GetData().SubArtifactID)
+		suite.Equal(accID, accs[0].GetData().ID)
+	})
+}
+
 func (suite *MiddlewareTestSuite) TestSubjectDup() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/hello-world", projectName)
@@ -174,7 +234,7 @@ func (suite *MiddlewareTestSuite) TestSubjectDup() {
 		_, descriptor, req := suite.prepare(name, subArtDigest)
 		suite.Nil(err)
 
-		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, descriptor.Digest.String())
+		accID := suite.addArtAcc(projectID, repoId, name, subArtDigest, descriptor.Digest.String(), true)
 
 		res := httptest.NewRecorder()
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
@@ -194,76 +254,81 @@ func (suite *MiddlewareTestSuite) TestSubjectDup() {
 }
 
 func (suite *MiddlewareTestSuite) TestIsNydusImage() {
-	mf := `{
-  "schemaVersion": 2,
-  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-  "config": {
-    "mediaType": "application/vnd.docker.container.image.v1+json",
-    "digest": "sha256:e314d79415361272a5ff6919ce70eb1d82ae55641ff60dcd8286b731cae2b5e7",
-    "size": 3322
-  },
-  "layers": [
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:bce0a563197a6aae0044f2063bf95f43bb956640b374fbdf0886cbc6926e2b7c",
-      "size": 3440759,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:7dedc3aaf7177a1d6792efcf1eae1305033fbac8dc48eb0caf49373b5d21475f",
-      "size": 337049,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:f6bf79efcfc89f657b9705ef9ed77659e413e355efac8c6d3eea49d908c9218a",
-      "size": 5810244,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:35c290e1471c2f546ba7ca8eb47b334c0234e6a2d2b274c54fe96e016c1913c7",
-      "size": 7936,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
-      "digest": "sha256:1f168a347d1c654776644b331e631c3a1208699e2f608e29d8e3fd74e5fd99e8",
-      "size": 7728,
-      "annotations": {
-        "containerd.io/snapshot/nydus-blob": "true"
-      }
-    },
-    {
-      "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
-      "digest": "sha256:86211e9295fabea433b7186ddfa6fd31af048a2f6fe3cf8d747b6f7ea39c0ea6",
-      "size": 35092,
-      "annotations": {
-        "containerd.io/snapshot/nydus-bootstrap": "true",
-        "containerd.io/snapshot/nydus-fs-version": "6"
-      }
-    }
-  ],
-  "subject": {
-    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-    "digest": "sha256:f4d532d482a050a3bb02886be6d6deda9c22cf8df44b1465f04c8648ee573a70",
-    "size": 1363
-  }
-}`
+	makeManifest := func(configType string) string {
+		return fmt.Sprintf(`{
+			"schemaVersion": 2,
+			"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+			"config": {
+				"mediaType": "%s",
+				"digest": "sha256:e314d79415361272a5ff6919ce70eb1d82ae55641ff60dcd8286b731cae2b5e7",
+				"size": 3322
+			},
+			"layers": [
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:bce0a563197a6aae0044f2063bf95f43bb956640b374fbdf0886cbc6926e2b7c",
+					"size": 3440759,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:7dedc3aaf7177a1d6792efcf1eae1305033fbac8dc48eb0caf49373b5d21475f",
+					"size": 337049,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:f6bf79efcfc89f657b9705ef9ed77659e413e355efac8c6d3eea49d908c9218a",
+					"size": 5810244,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:35c290e1471c2f546ba7ca8eb47b334c0234e6a2d2b274c54fe96e016c1913c7",
+					"size": 7936,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.oci.image.layer.nydus.blob.v1",
+					"digest": "sha256:1f168a347d1c654776644b331e631c3a1208699e2f608e29d8e3fd74e5fd99e8",
+					"size": 7728,
+					"annotations": {
+						"containerd.io/snapshot/nydus-blob": "true"
+					}
+				},
+				{
+					"mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+					"digest": "sha256:86211e9295fabea433b7186ddfa6fd31af048a2f6fe3cf8d747b6f7ea39c0ea6",
+					"size": 35092,
+					"annotations": {
+						"containerd.io/snapshot/nydus-bootstrap": "true",
+						"containerd.io/snapshot/nydus-fs-version": "6"
+					}
+				}
+			],
+			"subject": {
+				"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+				"digest": "sha256:f4d532d482a050a3bb02886be6d6deda9c22cf8df44b1465f04c8648ee573a70",
+				"size": 1363
+			}
+		}`, configType)
+	}
 	manifest := &ocispec.Manifest{}
-	err := json.Unmarshal([]byte(mf), manifest)
+	err := json.Unmarshal([]byte(makeManifest(ocispec.MediaTypeImageConfig)), manifest)
 	suite.Nil(err)
 	suite.True(isNydusImage(manifest))
 
+	err = json.Unmarshal([]byte(makeManifest(schema2.MediaTypeImageConfig)), manifest)
+	suite.Nil(err)
+	suite.True(isNydusImage(manifest))
 }
 
 func TestMiddlewareTestSuite(t *testing.T) {
