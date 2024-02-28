@@ -46,7 +46,7 @@ func (resource ResourceName) FormatValue(value int64) string {
 type ResourceList map[ResourceName]int64
 
 // Validate validates this resource list
-func (resources ResourceList) Validate(formats strfmt.Registry) error {
+func (resources ResourceList) Validate(_ strfmt.Registry) error {
 	return nil
 }
 

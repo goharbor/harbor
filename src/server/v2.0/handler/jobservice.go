@@ -42,7 +42,7 @@ func newJobServiceAPI() *jobServiceAPI {
 	return &jobServiceAPI{jobCtr: jobmonitor.Ctl}
 }
 
-func (j *jobServiceAPI) GetWorkerPools(ctx context.Context, params jobservice.GetWorkerPoolsParams) middleware.Responder {
+func (j *jobServiceAPI) GetWorkerPools(ctx context.Context, _ jobservice.GetWorkerPoolsParams) middleware.Responder {
 	if err := j.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceJobServiceMonitor); err != nil {
 		return j.SendError(ctx, err)
 	}
@@ -143,7 +143,7 @@ func toScheduleResponse(schs []*scheduler.Schedule) []*models.ScheduleTask {
 	return result
 }
 
-func (j *jobServiceAPI) ListJobQueues(ctx context.Context, params jobservice.ListJobQueuesParams) middleware.Responder {
+func (j *jobServiceAPI) ListJobQueues(ctx context.Context, _ jobservice.ListJobQueuesParams) middleware.Responder {
 	if err := j.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceJobServiceMonitor); err != nil {
 		return j.SendError(ctx, err)
 	}

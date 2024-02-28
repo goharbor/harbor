@@ -53,7 +53,7 @@ var (
 }
 */
 func SignatureMiddleware() func(http.Handler) http.Handler {
-	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+	return middleware.AfterResponse(func(_ http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {
 			return nil
 		}

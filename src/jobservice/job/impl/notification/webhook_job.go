@@ -46,7 +46,7 @@ func (wj *WebhookJob) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (wj *WebhookJob) Validate(params job.Parameters) error {
+func (wj *WebhookJob) Validate(_ job.Parameters) error {
 	return nil
 }
 
@@ -84,7 +84,7 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 }
 
 // execute webhook job
-func (wj *WebhookJob) execute(ctx job.Context, params map[string]interface{}) error {
+func (wj *WebhookJob) execute(_ job.Context, params map[string]interface{}) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 

@@ -54,7 +54,7 @@ func (d *Auth) SearchUser(ctx context.Context, username string) (*models.User, e
 }
 
 // OnBoardUser -
-func (d *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
+func (d *Auth) OnBoardUser(_ context.Context, _ *models.User) error {
 	return nil
 }
 

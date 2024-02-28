@@ -63,7 +63,7 @@ type ManifestListCache struct {
 }
 
 // CacheContent ...
-func (m *ManifestListCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string) {
+func (m *ManifestListCache) CacheContent(ctx context.Context, _ string, man distribution.Manifest, art lib.ArtifactInfo, _ RemoteInterface, contentType string) {
 	_, payload, err := man.Payload()
 	if err != nil {
 		log.Errorf("failed to get payload, error %v", err)
@@ -171,7 +171,7 @@ type ManifestCache struct {
 }
 
 // CacheContent ...
-func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, contentType string) {
+func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, _ string) {
 	var waitBlobs []distribution.Descriptor
 	for n := 0; n < maxManifestWait; n++ {
 		time.Sleep(sleepIntervalSec * time.Second)

@@ -30,7 +30,7 @@ type ScannerRegistration struct {
 }
 
 // ToSwagger ...
-func (s *ScannerRegistration) ToSwagger(ctx context.Context) *models.ScannerRegistration {
+func (s *ScannerRegistration) ToSwagger(_ context.Context) *models.ScannerRegistration {
 	if s.Registration == nil {
 		return nil
 	}
@@ -66,7 +66,7 @@ type ScannerMetadata struct {
 }
 
 // ToSwagger ...
-func (s *ScannerMetadata) ToSwagger(ctx context.Context) *models.ScannerAdapterMetadata {
+func (s *ScannerMetadata) ToSwagger(_ context.Context) *models.ScannerAdapterMetadata {
 	if s.ScannerAdapterMetadata == nil {
 		return nil
 	}

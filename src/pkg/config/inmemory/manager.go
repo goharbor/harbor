@@ -48,7 +48,7 @@ func (d *Driver) Load(context.Context) (map[string]interface{}, error) {
 }
 
 // Save only save user config setting to driver, for example: database, REST
-func (d *Driver) Save(ctx context.Context, cfg map[string]interface{}) error {
+func (d *Driver) Save(_ context.Context, cfg map[string]interface{}) error {
 	d.Lock()
 	defer d.Unlock()
 	for k, v := range cfg {
