@@ -16,4 +16,6 @@ def prepare_portal(config_dict):
         internal_tls=config_dict['internal_tls'],
         ip_family=config_dict['ip_family'],
         uid=DEFAULT_UID,
-        gid=DEFAULT_GID)
+        gid=DEFAULT_GID,
+        strong_ssl_ciphers=config_dict['strong_ssl_ciphers']
+        )

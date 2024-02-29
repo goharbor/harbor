@@ -486,3 +486,25 @@ func TestValidateCronString(t *testing.T) {
 		}
 	}
 }
+
+func TestIsLocalPath(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"normal test", args{"/harbor/project"}, true},
+		{"failed", args{"www.myexample.com"}, false},
+		{"other_site1", args{"//www.myexample.com"}, false},
+		{"other_site2", args{"https://www.myexample.com"}, false},
+		{"other_site", args{"http://www.myexample.com"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, IsLocalPath(tt.args.path), "IsLocalPath(%v)", tt.args.path)
+		})
+	}
+}
