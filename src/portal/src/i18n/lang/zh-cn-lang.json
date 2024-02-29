@@ -285,7 +285,10 @@
         "PREVENT_VULNERABLE_2": "以上的镜像运行。",
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
-        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描"
+        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "添加用户成员",

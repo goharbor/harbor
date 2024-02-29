@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "und darüber.",
         "SCAN": "Scannen auf Schwachstellen",
         "AUTOSCAN_TOGGLE": "Images automatisch beim Hochladen scannen",
-        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden."
+        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Nutzer als Mitglied hinzufügen",

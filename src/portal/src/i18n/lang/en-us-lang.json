@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "Vulnerability scanning",
         "AUTOSCAN_TOGGLE": "Automatically scan images on push",
-        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
+        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Add User Member",

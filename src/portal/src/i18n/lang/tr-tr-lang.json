@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "ve yukarıda yüklenilmekte.",
         "SCAN": "Güvenlik açığı taraması",
         "AUTOSCAN_TOGGLE": "İmajları yüklerken anında tarayın",
-        "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın."
+        "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Kullanıcı Üyesi Ekle",
