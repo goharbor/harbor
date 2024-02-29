@@ -41,7 +41,7 @@ type Controller interface {
 
 type controller struct{}
 
-func (c *controller) GetHealth(ctx context.Context) *OverallHealthStatus {
+func (c *controller) GetHealth(_ context.Context) *OverallHealthStatus {
 	var isHealthy healthy = true
 	components := []*ComponentHealthStatus{}
 	ch := make(chan *ComponentHealthStatus, len(registry))

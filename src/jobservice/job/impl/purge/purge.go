@@ -47,7 +47,7 @@ func (j *Job) ShouldRetry() bool {
 }
 
 // Validate is implementation of same method in Interface.
-func (j *Job) Validate(params job.Parameters) error {
+func (j *Job) Validate(_ job.Parameters) error {
 	return nil
 }
 

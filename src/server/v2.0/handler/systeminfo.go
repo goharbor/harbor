@@ -24,7 +24,7 @@ func newSystemInfoAPI() *sysInfoAPI {
 	}
 }
 
-func (s *sysInfoAPI) GetSystemInfo(ctx context.Context, params systeminfo.GetSystemInfoParams) middleware.Responder {
+func (s *sysInfoAPI) GetSystemInfo(ctx context.Context, _ systeminfo.GetSystemInfoParams) middleware.Responder {
 	opt := si.Options{}
 	sc, ok := security.FromContext(ctx)
 	if ok && sc.IsAuthenticated() {
@@ -37,7 +37,7 @@ func (s *sysInfoAPI) GetSystemInfo(ctx context.Context, params systeminfo.GetSys
 	return systeminfo.NewGetSystemInfoOK().WithPayload(s.convertInfo(data))
 }
 
-func (s *sysInfoAPI) GetCert(ctx context.Context, params systeminfo.GetCertParams) middleware.Responder {
+func (s *sysInfoAPI) GetCert(ctx context.Context, _ systeminfo.GetCertParams) middleware.Responder {
 	f, err := s.ctl.GetCA(ctx)
 	if err != nil {
 		return s.SendError(ctx, err)
@@ -45,7 +45,7 @@ func (s *sysInfoAPI) GetCert(ctx context.Context, params systeminfo.GetCertParam
 	return systeminfo.NewGetCertOK().WithContentDisposition("attachment; filename=ca.crt").WithPayload(f)
 }
 
-func (s *sysInfoAPI) GetVolumes(ctx context.Context, params systeminfo.GetVolumesParams) middleware.Responder {
+func (s *sysInfoAPI) GetVolumes(ctx context.Context, _ systeminfo.GetVolumesParams) middleware.Responder {
 	if err := s.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceSystemVolumes); err != nil {
 		return s.SendError(ctx, err)
 	}

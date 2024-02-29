@@ -144,7 +144,7 @@ func (a *Handler) onPull(ctx context.Context, event *event.ArtifactEvent) error 
 	return nil
 }
 
-func (a *Handler) updatePullTimeInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *Handler) updatePullTimeInCache(_ context.Context, event *event.ArtifactEvent) {
 	var tagName string
 	if len(event.Tags) != 0 {
 		tagName = event.Tags[0]
@@ -158,7 +158,7 @@ func (a *Handler) updatePullTimeInCache(ctx context.Context, event *event.Artifa
 	a.pullTimeStore[key] = time.Now()
 }
 
-func (a *Handler) addPullCountInCache(ctx context.Context, event *event.ArtifactEvent) {
+func (a *Handler) addPullCountInCache(_ context.Context, event *event.ArtifactEvent) {
 	a.pullCountLock.Lock()
 	defer a.pullCountLock.Unlock()
 

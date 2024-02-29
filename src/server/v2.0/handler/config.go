@@ -38,7 +38,7 @@ func newConfigAPI() *configAPI {
 	return &configAPI{controller: config.Ctl}
 }
 
-func (c *configAPI) GetConfigurations(ctx context.Context, params configure.GetConfigurationsParams) middleware.Responder {
+func (c *configAPI) GetConfigurations(ctx context.Context, _ configure.GetConfigurationsParams) middleware.Responder {
 	if sec, exist := security.FromContext(ctx); exist {
 		if sec.IsSolutionUser() {
 			cfg, err := c.controller.AllConfigs(ctx)
@@ -104,7 +104,7 @@ func toCfgMap(conf *models.Configurations) (map[string]interface{}, error) {
 	return cfgMap, nil
 }
 
-func (c *configAPI) GetInternalconfig(ctx context.Context, params configure.GetInternalconfigParams) middleware.Responder {
+func (c *configAPI) GetInternalconfig(ctx context.Context, _ configure.GetInternalconfigParams) middleware.Responder {
 	if err := c.RequireSolutionUserAccess(ctx); err != nil {
 		return c.SendError(ctx, err)
 	}

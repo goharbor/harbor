@@ -198,7 +198,7 @@ func (c *controller) updateUsageWithRetry(ctx context.Context, reference, refere
 	options := []retry.Option{
 		retry.Timeout(defaultRetryTimeout),
 		retry.Backoff(false),
-		retry.Callback(func(err error, sleep time.Duration) {
+		retry.Callback(func(err error, _ time.Duration) {
 			log.G(ctx).Debugf("failed to update the quota usage for %s %s, error: %v", reference, referenceID, err)
 		}),
 	}
@@ -284,7 +284,7 @@ func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
 }
 
 // Driver returns quota driver for the reference
-func Driver(ctx context.Context, reference string) (driver.Driver, error) {
+func Driver(_ context.Context, reference string) (driver.Driver, error) {
 	d, ok := driver.Get(reference)
 	if !ok {
 		return nil, fmt.Errorf("quota not support for %s", reference)
@@ -316,7 +316,7 @@ func reserveResources(resources types.ResourceList) func(hardLimits, used types.
 }
 
 func rollbackResources(resources types.ResourceList) func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
-	return func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+	return func(_, used types.ResourceList) (types.ResourceList, error) {
 		newUsed := types.Subtract(used, resources)
 		// ensure that new used is never negative
 		if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {

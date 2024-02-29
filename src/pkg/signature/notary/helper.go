@@ -44,7 +44,7 @@ var (
 )
 
 func init() {
-	mockRetriever = func(keyName, alias string, createNew bool, attempts int) (passphrase string, giveup bool, err error) {
+	mockRetriever = func(_, _ string, _ bool, _ int) (passphrase string, giveup bool, err error) {
 		passphrase = "hardcode"
 		giveup = false
 		err = nil

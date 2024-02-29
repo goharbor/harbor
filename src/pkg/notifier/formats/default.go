@@ -66,7 +66,7 @@ type Default struct{}
    }
 }
 */
-func (d *Default) Format(ctx context.Context, he *model.HookEvent) (http.Header, []byte, error) {
+func (d *Default) Format(_ context.Context, he *model.HookEvent) (http.Header, []byte, error) {
 	if he == nil {
 		return nil, nil, errors.Errorf("HookEvent should not be nil")
 	}

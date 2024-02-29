@@ -119,7 +119,7 @@ var (
 	}
 )
 
-func (r *retentionAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ interface{}) middleware.Responder {
 	if err := r.RequireAuthenticated(ctx); err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -127,7 +127,7 @@ func (r *retentionAPI) Prepare(ctx context.Context, operation string, params int
 	return nil
 }
 
-func (r *retentionAPI) GetRentenitionMetadata(ctx context.Context, params operation.GetRentenitionMetadataParams) middleware.Responder {
+func (r *retentionAPI) GetRentenitionMetadata(_ context.Context, _ operation.GetRentenitionMetadataParams) middleware.Responder {
 	return operation.NewGetRentenitionMetadataOK().WithPayload(rentenitionMetadataPayload)
 }
 

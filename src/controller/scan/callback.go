@@ -55,7 +55,7 @@ func init() {
 	}
 }
 
-func scanAllCallback(ctx context.Context, param string) error {
+func scanAllCallback(ctx context.Context, _ string) error {
 	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
 	return err
 }

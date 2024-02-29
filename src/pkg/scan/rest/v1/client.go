@@ -97,7 +97,7 @@ func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Cli
 		httpClient: &http.Client{
 			Timeout:   time.Second * 5,
 			Transport: transport,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
 		},

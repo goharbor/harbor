@@ -40,7 +40,7 @@ func NewWorkerManager() WorkerManager {
 	return &workerManagerImpl{taskMgr: task.NewManager()}
 }
 
-func (w *workerManagerImpl) List(ctx context.Context, monitClient JobServiceMonitorClient, poolID string) ([]*Worker, error) {
+func (w *workerManagerImpl) List(_ context.Context, monitClient JobServiceMonitorClient, poolID string) ([]*Worker, error) {
 	wphs, err := monitClient.WorkerPoolHeartbeats()
 	if err != nil {
 		return nil, err

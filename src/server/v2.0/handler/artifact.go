@@ -73,7 +73,7 @@ type artifactAPI struct {
 	labelMgr label.Manager
 }
 
-func (a *artifactAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (a *artifactAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		a.SendError(ctx, err)
 	}
@@ -430,7 +430,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 
 	content, _ := json.Marshal(vulnerabilities)
 
-	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+	return middleware.ResponderFunc(func(w http.ResponseWriter, _ runtime.Producer) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(content)
 	})
@@ -451,7 +451,7 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 		return a.SendError(ctx, err)
 	}
 
-	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+	return middleware.ResponderFunc(func(w http.ResponseWriter, _ runtime.Producer) {
 		w.Header().Set("Content-Type", addition.ContentType)
 		_, _ = w.Write(addition.Content)
 	})
