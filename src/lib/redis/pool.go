@@ -84,7 +84,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 			Dial: func() (redis.Conn, error) {
 				return redis.DialURL(rawurl)
 			},
-			TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			TestOnBorrow: func(c redis.Conn, _ time.Time) error {
 				_, err := c.Do("PING")
 				return err
 			},
@@ -102,9 +102,8 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 		}
 		knownPool.Store(name, pool)
 		return pool, nil
-	} else {
-		return nil, fmt.Errorf("bad redis url: not support scheme %s", u.Scheme)
 	}
+	return nil, fmt.Errorf("bad redis url: not support scheme %s", u.Scheme)
 }
 
 func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, error) {
@@ -172,7 +171,7 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 			log.Debug(name, "dial redis master:", masterAddr, "db:", db)
 			return redis.Dial("tcp", masterAddr, redisOptions...)
 		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+		TestOnBorrow: func(c redis.Conn, _ time.Time) error {
 			if !sentinel.TestRole(c, "master") {
 				return fmt.Errorf("check role failed, %s", name)
 			}

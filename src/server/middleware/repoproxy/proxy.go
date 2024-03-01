@@ -217,7 +217,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, _ *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
 	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
@@ -291,7 +291,7 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, _ *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
 	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
 	if err != nil {
 		return err

@@ -339,7 +339,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	return
 }
 
-func (a *adapter) listReposByNamespace(region string, namespace string, c *cr.Client) (repos []aliRepo, err error) {
+func (a *adapter) listReposByNamespace(_ string, namespace string, c *cr.Client) (repos []aliRepo, err error) {
 	var reposReq = cr.CreateGetRepoListByNamespaceRequest()
 	var reposResp = cr.CreateGetRepoListByNamespaceResponse()
 	reposReq.SetDomain(a.domain)

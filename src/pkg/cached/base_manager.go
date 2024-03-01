@@ -87,12 +87,12 @@ func (bm *BaseManager) WithCacheClient(cc cache.Cache) *BaseManager {
 }
 
 // CacheClient returns the cache client.
-func (bm *BaseManager) CacheClient(ctx context.Context) cache.Cache {
+func (bm *BaseManager) CacheClient(_ context.Context) cache.Cache {
 	return bm.cacheClient
 }
 
 // ResourceType returns the resource type.
-func (bm *BaseManager) ResourceType(ctx context.Context) string {
+func (bm *BaseManager) ResourceType(_ context.Context) string {
 	return bm.resourceType
 }
 
