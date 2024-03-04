@@ -116,7 +116,7 @@ func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (strin
 }
 
 // QuerySetterForCount creates the query setter used for count with the sort and pagination information ignored
-func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
+func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query, _ ...string) (orm.QuerySeter, error) {
 	query = q.MustClone(query)
 	query.Sorts = nil
 	query.PageSize = 0

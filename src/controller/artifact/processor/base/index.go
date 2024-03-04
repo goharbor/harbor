@@ -37,22 +37,22 @@ type IndexProcessor struct {
 }
 
 // AbstractMetadata abstracts metadata of artifact
-func (m *IndexProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
+func (m *IndexProcessor) AbstractMetadata(_ context.Context, _ *artifact.Artifact, _ []byte) error {
 	return nil
 }
 
 // AbstractAddition abstracts the addition of artifact
-func (m *IndexProcessor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
+func (m *IndexProcessor) AbstractAddition(_ context.Context, _ *artifact.Artifact, addition string) (*processor.Addition, error) {
 	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 		WithMessage("addition %s isn't supported", addition)
 }
 
 // GetArtifactType returns the artifact type
-func (m *IndexProcessor) GetArtifactType(ctx context.Context, artifact *artifact.Artifact) string {
+func (m *IndexProcessor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ""
 }
 
 // ListAdditionTypes returns the supported addition types
-func (m *IndexProcessor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (m *IndexProcessor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	return nil
 }

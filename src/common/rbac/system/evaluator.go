@@ -25,7 +25,7 @@ import (
 
 // NewEvaluator create evaluator for the system
 func NewEvaluator(username string, policies []*types.Policy) evaluator.Evaluator {
-	return namespace.New(NamespaceKind, func(ctx context.Context, ns types.Namespace) evaluator.Evaluator {
+	return namespace.New(NamespaceKind, func(_ context.Context, _ types.Namespace) evaluator.Evaluator {
 		return rbac.New(&rbacUser{
 			username: username,
 			policies: policies,

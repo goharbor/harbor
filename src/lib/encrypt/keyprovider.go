@@ -37,7 +37,7 @@ func NewFileKeyProvider(path string) KeyProvider {
 }
 
 // Get returns the key read from file
-func (f *FileKeyProvider) Get(params map[string]interface{}) (string, error) {
+func (f *FileKeyProvider) Get(_ map[string]interface{}) (string, error) {
 	b, err := os.ReadFile(f.path)
 	if err != nil {
 		return "", err
@@ -51,6 +51,6 @@ type PresetKeyProvider struct {
 }
 
 // Get ...
-func (p *PresetKeyProvider) Get(params map[string]interface{}) (string, error) {
+func (p *PresetKeyProvider) Get(_ map[string]interface{}) (string, error) {
 	return p.Key, nil
 }

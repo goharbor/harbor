@@ -52,7 +52,7 @@ func init() {
 	}
 }
 
-func sweepCallback(ctx context.Context, p string) error {
+func sweepCallback(ctx context.Context, _ string) error {
 	params := &SweepParams{ExecRetainCounts: job.GetExecutionSweeperCount()}
 	return SweepCtl.Start(ctx, params, task.ExecutionTriggerSchedule)
 }
