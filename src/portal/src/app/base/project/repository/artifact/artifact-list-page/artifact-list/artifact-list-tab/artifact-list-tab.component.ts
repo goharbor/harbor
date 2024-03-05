@@ -46,7 +46,6 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    ScanTypes,
 } from '../../../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -102,7 +101,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     projectName: string;
     repoName: string;
     registryUrl: string;
-    sbomEnabled: boolean;
     artifactList: ArtifactFront[] = [];
     availableTime = AVAILABLE_TIME;
     inprogress: boolean;
@@ -149,9 +147,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     get hasEnabledScanner(): boolean {
         return this.artifactListPageService.hasEnabledScanner();
-    }
-    get hasEnabledSbom(): boolean {
-        return this.appConfigService.getConfig().sbom_enabled;
     }
     get hasScannerSupportVulnerability(): boolean {
         return this.artifactListPageService.hasScannerSupportVulnerability();
@@ -243,7 +238,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     ngOnInit() {
         const appConfig = this.appConfigService.getConfig();
         this.registryUrl = appConfig.registry_url;
-        this.sbomEnabled = appConfig.sbom_enabled;
         this.initRouterData();
         if (!this.updateArtifactSub) {
             this.updateArtifactSub = this.eventService.subscribe(
@@ -290,7 +284,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.copyDigestSub.unsubscribe();
             this.copyDigestSub = null;
         }
-        this.datagrid['columnsService']?.columns?.forEach((item, index) => {
+        this.datagrid?.['columnsService']?.columns?.forEach((item, index) => {
             if (this.depth) {
                 this.hiddenArray[index] = !!item?._value?.hidden;
             } else {
@@ -562,6 +556,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return formatSize(tagSize);
     }
 
+    hasEnabledSbom(): boolean {
+        return (
+            this.hasScannerSupportSBOM &&
+            this.hasEnabledScanner &&
+            this.hasSbomPermission
+        );
+    }
+
     retag() {
         if (this.selectedRow && this.selectedRow.length && !this.depth) {
             this.copyArtifactComponent.retag(this.selectedRow[0].digest);
@@ -748,11 +750,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
-                queryParams: { [UN_LOGGED_PARAM]: YES },
+                queryParams: {
+                    [UN_LOGGED_PARAM]: YES,
+                    sbomDigest: artifact.sbomDigest ?? '',
+                },
             });
         } else {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
+                queryParams: { sbomDigest: artifact.sbomDigest ?? '' },
             });
         }
     }
@@ -768,10 +774,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
     }
 
-    // Get vulnerability scanning status
+    // Get sbom status
     sbomStatus(artifact: Artifact): string {
         if (artifact) {
-            let so = this.handleScanOverview((<any>artifact).sbom_overview);
+            let so = (<any>artifact).sbom_overview;
             if (so && so.scan_status) {
                 return so.scan_status;
             }
@@ -862,12 +868,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
 
     selectedRowHasSbom(): boolean {
-        return !!(
-            this.selectedRow &&
-            this.selectedRow[0] &&
-            this.selectedRow[0].addition_links &&
-            this.selectedRow[0].addition_links[ADDITIONS.SBOMS]
-        );
+        return !!(this.selectedRow && this.selectedRow[0]);
     }
 
     hasVul(artifact: Artifact): boolean {
@@ -926,10 +927,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return null;
     }
 
-    handleSbomOverview(sbomOverview: any): any {
-        return this.handleScanOverview(sbomOverview);
-    }
-
     goIntoIndexArtifact(artifact: Artifact) {
         let depth: string = '';
         if (this.depth) {
@@ -984,6 +981,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             }
         }
+    }
+    // when finished, remove it from selectedRow
+    sbomFinished(artifact: Artifact) {
+        this.scanFinished(artifact);
     }
 
     getIconsFromBackEnd() {
@@ -1063,9 +1064,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             if (artifacts.length) {
                 artifacts.forEach(item => {
                     item.signed = CHECKING;
-                    const sbomOverview = this.handleSbomOverview(
-                        item?.sbom_overview
-                    );
+                    const sbomOverview = item?.sbom_overview;
                     item.sbomDigest = sbomOverview?.sbom_digest;
                     let queryTypes = `${AccessoryType.COSIGN} ${AccessoryType.NOTATION}`;
                     if (!item.sbomDigest) {
@@ -1128,7 +1127,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.selectedRow && this.selectedRow.length) {
             let flag: boolean = true;
             this.selectedRow.forEach(item => {
-                const st: string = this.scanStatus(item);
+                const st: string = this.sbomStatus(item);
                 if (!this.isRunningState(st)) {
                     flag = false;
                 }

@@ -1,10 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScannerVo, SbomSummary } from '../../../../../../shared/services';
 import { SBOM_SCAN_STATUS } from '../../../../../../shared/units/utils';
 import { UN_LOGGED_PARAM, YES } from 'src/app/account/sign-in/sign-in.service';
 import { HAS_STYLE_MODE, StyleMode } from '../../../../../../services/theme';
+import { ScanTypes } from 'src/app/shared/entities/shared.const';
 
 const MIN = 60;
 const MIN_STR = 'min ';
@@ -16,9 +17,8 @@ const SUCCESS_PCT: number = 100;
     templateUrl: './sbom-tip-histogram.component.html',
     styleUrls: ['./sbom-tip-histogram.component.scss'],
 })
-export class SbomTipHistogramComponent implements OnInit {
+export class SbomTipHistogramComponent {
     @Input() scanner: ScannerVo;
-    _sbomPackages: number = 0;
     @Input() sbomSummary: SbomSummary = {
         scan_status: SBOM_SCAN_STATUS.NOT_GENERATED_SBOM,
     };
@@ -29,22 +29,6 @@ export class SbomTipHistogramComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
         private router: Router
     ) {}
-
-    ngOnInit(): void {
-        this._sbomPackages = this.sbomSummary?.summary?.total ?? 0;
-    }
-
-    get sbomPackages(): number {
-        return this._sbomPackages;
-    }
-
-    get sevSummary(): { [key: string]: number } {
-        if (this.sbomSummary && this.sbomSummary.summary) {
-            return this.sbomSummary.summary.summary;
-        }
-
-        return null;
-    }
 
     duration(): string {
         if (this.sbomSummary && this.sbomSummary.duration) {
@@ -63,8 +47,8 @@ export class SbomTipHistogramComponent implements OnInit {
     }
 
     public get completePercent(): string {
-        return this.sbomSummary
-            ? `${this.sbomSummary.complete_percent}%`
+        return this.sbomSummary.scan_status === SBOM_SCAN_STATUS.SUCCESS
+            ? `100%`
             : '0%';
     }
     isLimitedSuccess(): boolean {
@@ -79,7 +63,9 @@ export class SbomTipHistogramComponent implements OnInit {
     }
 
     get noSbom(): boolean {
-        return this.sbomPackages === 0;
+        return (
+            this.sbomSummary.scan_status === SBOM_SCAN_STATUS.NOT_GENERATED_SBOM
+        );
     }
 
     isThemeLight() {
@@ -106,12 +92,16 @@ export class SbomTipHistogramComponent implements OnInit {
                 queryParams: {
                     [UN_LOGGED_PARAM]: YES,
                     sbomDigest: this.sbomDigest ?? '',
+                    tab: ScanTypes.SBOM,
                 },
             });
         } else {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
-                queryParams: { sbomDigest: this.sbomDigest ?? '' },
+                queryParams: {
+                    sbomDigest: this.sbomDigest ?? '',
+                    tab: ScanTypes.SBOM,
+                },
             });
         }
     }

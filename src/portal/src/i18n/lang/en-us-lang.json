@@ -1049,14 +1049,14 @@
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "Not Generated SBOM",
+            "OTHER_STATUS": "Not Generated",
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
             "STOPPED": "Generating SBOM stopped"
         },
         "NO_SBOM": "No SBOM",
-        "PACKAGES": "SBOM Packages:",
+        "PACKAGES": "SBOM",
         "REPORTED_BY": "Reported by {{scanner}}",
         "GENERATE": "Start SBOM",
         "DOWNLOAD": "Download SBOM",

@@ -22,6 +22,7 @@ export class ArtifactSummaryComponent implements OnInit {
     tagId: string;
     artifactDigest: string;
     sbomDigest?: string;
+    activeTab?: string;
     repositoryName: string;
     projectId: string | number;
     referArtifactNameArray: string[] = [];
@@ -96,6 +97,7 @@ export class ArtifactSummaryComponent implements OnInit {
         this.artifactDigest = this.route.snapshot.params['digest'];
         this.projectId = this.route.snapshot.parent.params['id'];
         this.sbomDigest = this.route.snapshot.queryParams['sbomDigest'];
+        this.activeTab = this.route.snapshot.queryParams['tab'];
         if (this.repositoryName && this.artifactDigest) {
             const resolverData = this.route.snapshot.data;
             if (resolverData) {

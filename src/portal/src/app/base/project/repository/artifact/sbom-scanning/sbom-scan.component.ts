@@ -24,7 +24,7 @@ import {
     HarborEvent,
 } from '../../../../../services/event-service/event.service';
 import { ScanService } from '../../../../../../../ng-swagger-gen/services/scan.service';
-import { NativeSbomReportSummary, ScanType } from 'ng-swagger-gen/models';
+import { SBOMOverview, ScanRequestType } from 'ng-swagger-gen/models';
 import { ScanTypes } from 'src/app/shared/entities/shared.const';
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
@@ -38,9 +38,10 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() inputScanner: ScannerVo;
     @Input() repoName: string = '';
     @Input() projectName: string = '';
+    @Input() projectId: string = '';
     @Input() artifactDigest: string = '';
     @Input() sbomDigest: string = '';
-    @Input() summary: NativeSbomReportSummary;
+    @Input() sbomOverview: SBOMOverview;
     onSubmitting: boolean = false;
     onStopping: boolean = false;
     retryCounter: number = 0;
@@ -72,7 +73,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
             // Avoid duplicated subscribing
             this.stateCheckTimer = timer(0, STATE_CHECK_INTERVAL).subscribe(
                 () => {
-                    this.getSummary();
+                    this.getSbomOverview();
                 }
             );
         }
@@ -119,8 +120,8 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
 
     // Get vulnerability scanning status
     public get status(): string {
-        if (this.summary && this.summary.scan_status) {
-            return this.summary.scan_status;
+        if (this.sbomOverview && this.sbomOverview.scan_status) {
+            return this.sbomOverview.scan_status;
         }
         return SBOM_SCAN_STATUS.NOT_GENERATED_SBOM;
     }
@@ -174,7 +175,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 reference: this.artifactDigest,
                 repositoryName: dbEncodeURIComponent(this.repoName),
-                scanType: <ScanType>{
+                scanRequestType: <ScanRequestType>{
                     scan_type: ScanTypes.SBOM,
                 },
             })
@@ -183,7 +184,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 () => {
                     this.onSubmitting = false;
                     // Forcely change status to queued after successful submitting
-                    this.summary = {
+                    this.sbomOverview = {
                         scan_status: SBOM_SCAN_STATUS.PENDING,
                     };
                     // Start check status util the job is done
@@ -193,7 +194,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                             STATE_CHECK_INTERVAL,
                             STATE_CHECK_INTERVAL
                         ).subscribe(() => {
-                            this.getSummary();
+                            this.getSbomOverview();
                         });
                     }
                 },
@@ -208,7 +209,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
             );
     }
 
-    getSummary(): void {
+    getSbomOverview(): void {
         if (!this.repoName || !this.artifactDigest) {
             return;
         }
@@ -217,16 +218,14 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.artifactDigest,
-                withScanOverview: true,
+                withSbomOverview: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
             .subscribe(
                 (artifact: Artifact) => {
                     // To keep the same summary reference, use value copy.
                     if (artifact.sbom_overview) {
-                        this.copyValue(
-                            Object.values(artifact.sbom_overview)[0]
-                        );
+                        this.copyValue(artifact.sbom_overview);
                     }
                     if (!this.queued && !this.generating) {
                         // Scanning should be done
@@ -256,11 +255,11 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
             );
     }
 
-    copyValue(newVal: NativeSbomReportSummary): void {
-        if (!this.summary || !newVal || !newVal.scan_status) {
+    copyValue(newVal: SBOMOverview): void {
+        if (!this.sbomOverview || !newVal || !newVal.scan_status) {
             return;
         }
-        this.summary = clone(newVal);
+        this.sbomOverview = clone(newVal);
     }
 
     viewLog(): string {
@@ -268,12 +267,12 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
             this.projectName
         }/repositories/${dbEncodeURIComponent(this.repoName)}/artifacts/${
             this.artifactDigest
-        }/scan/${this.summary.report_id}/log`;
+        }/scan/${this.sbomOverview.report_id}/log`;
     }
 
     getScanner(): ScannerVo {
-        if (this.summary && this.summary.scanner) {
-            return this.summary.scanner;
+        if (this.sbomOverview && this.sbomOverview.scanner) {
+            return this.sbomOverview.scanner;
         }
         return this.inputScanner;
     }
@@ -295,7 +294,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 reference: this.artifactDigest,
                 repositoryName: dbEncodeURIComponent(this.repoName),
-                scanType: <ScanType>{
+                stopRequestType: <ScanRequestType>{
                     scan_type: ScanTypes.SBOM,
                 },
             })
@@ -314,7 +313,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                             STATE_CHECK_INTERVAL,
                             STATE_CHECK_INTERVAL
                         ).subscribe(() => {
-                            this.getSummary();
+                            this.getSbomOverview();
                         });
                     }
                     this.errorHandler.info('SBOM.TRIGGER_STOP_SUCCESS');

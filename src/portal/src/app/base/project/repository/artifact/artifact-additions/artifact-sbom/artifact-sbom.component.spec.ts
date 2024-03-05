@@ -17,6 +17,7 @@ import { SessionUser } from '../../../../../../shared/entities/session-user';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ArtifactSbomPackageItem } from '../../artifact';
 import { ArtifactService } from 'ng-swagger-gen/services';
+import { ArtifactListPageService } from '../../artifact-list-page/artifact-list-page.service';
 
 describe('ArtifactSbomComponent', () => {
     let component: ArtifactSbomComponent;
@@ -97,13 +98,9 @@ describe('ArtifactSbomComponent', () => {
         },
         packages: artifactSbomPackages,
     };
-    const mockedLink: AdditionLink = {
-        absolute: false,
-        href: '/test',
-    };
     const fakedArtifactService = {
-        getSbomAddition() {
-            return of(artifactSbomJson);
+        getAddition() {
+            return of(JSON.stringify(artifactSbomJson));
         },
     };
     const fakedUserPermissionService = {
@@ -131,6 +128,12 @@ describe('ArtifactSbomComponent', () => {
     };
     const mockedSbomDigest =
         'sha256:51a41cec9de9d62ee60e206f5a8a615a028a65653e45539990867417cb486285';
+    const mockedArtifactListPageService = {
+        hasScannerSupportSBOM(): boolean {
+            return true;
+        },
+        init() {},
+    };
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
@@ -153,6 +156,10 @@ describe('ArtifactSbomComponent', () => {
                     useValue: fakedUserPermissionService,
                 },
                 { provide: SessionService, useValue: fakedSessionService },
+                {
+                    provide: ArtifactListPageService,
+                    useValue: mockedArtifactListPageService,
+                },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
@@ -162,8 +169,7 @@ describe('ArtifactSbomComponent', () => {
         fixture = TestBed.createComponent(ArtifactSbomComponent);
         component = fixture.componentInstance;
         component.hasSbomPermission = true;
-        component.hasEnabledSbom = true;
-        component.sbomLink = mockedLink;
+        component.hasScannerSupportSBOM = true;
         component.sbomDigest = mockedSbomDigest;
         component.ngOnInit();
         fixture.detectChanges();

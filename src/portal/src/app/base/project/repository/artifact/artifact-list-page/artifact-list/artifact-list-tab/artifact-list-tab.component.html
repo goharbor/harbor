@@ -44,7 +44,7 @@
                         <span>{{ 'VULNERABILITY.STOP_NOW' | translate }}</span>
                     </button>
                     <button
-                        *ngIf="sbomEnabled"
+                        *ngIf="hasEnabledSbom()"
                         id="generate-sbom-btn"
                         [clrLoading]="generateSbomBtnState"
                         type="button"
@@ -53,9 +53,9 @@
                             !(
                                 canGenerateSbomNow() &&
                                 selectedRowHasSbom() &&
-                                hasEnabledSbom &&
-                                hasScannerSupportSBOM &&
-                                hasSbomPermission
+                                hasEnabledScanner &&
+                                hasSbomPermission &&
+                                hasScannerSupportSBOM
                             )
                         "
                         (click)="generateSbom()">
@@ -63,12 +63,18 @@
                         <span>{{ 'SBOM.GENERATE' | translate }}</span>
                     </button>
                     <button
-                        id="stop-scan"
-                        *ngIf="sbomEnabled"
+                        id="stop-sbom-scan"
+                        *ngIf="hasEnabledSbom()"
                         [clrLoading]="stopBtnState"
                         type="button"
                         class="btn btn-secondary scan-btn"
-                        [disabled]="!(canStopSbom() && hasScanImagePermission)"
+                        [disabled]="
+                            !(
+                                canStopSbom() &&
+                                hasSbomPermission &&
+                                hasEnabledScanner
+                            )
+                        "
                         (click)="stopSbom()">
                         <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
                         <span>{{ 'SBOM.STOP' | translate }}</span>
@@ -428,25 +434,21 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <span *ngIf="!hasSbom(artifact)">
+                        <span *ngIf="!hasScannerSupportSBOM">
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
-                            (scanFinished)="submitSbomFinish($event)"
-                            *ngIf="hasSbom(artifact)"
-                            [inputScanner]="
-                                handleSbomOverview(artifact.sbom_overview)
-                                    ?.scanner
-                            "
-                            (submitFinish)="submitFinish($event)"
+                            (scanFinished)="sbomFinished($event)"
+                            *ngIf="hasScannerSupportSBOM"
+                            [inputScanner]="artifact?.sbom_overview?.scanner"
+                            (submitFinish)="submitSbomFinish($event)"
                             [projectName]="projectName"
+                            [projectId]="projectId"
                             [repoName]="repoName"
                             [artifactDigest]="artifact?.digest"
                             [sbomDigest]="artifact?.sbomDigest"
-                            [summary]="
-                                handleSbomOverview(artifact.sbom_overview)
-                            ">
+                            [sbomOverview]="artifact?.sbom_overview">
                         </hbr-sbom-bar>
                     </div>
                 </clr-dg-cell>

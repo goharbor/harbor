@@ -6,24 +6,15 @@ import {
 } from '../../../../../shared/services';
 import { SBOM_SCAN_STATUS } from '../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
-import { NativeSbomReportSummary } from 'ng-swagger-gen/models';
 import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogram.component';
+import { SBOMOverview } from 'ng-swagger-gen/models';
 
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;
     let fixture: ComponentFixture<ResultSbomComponent>;
-    let mockData: NativeSbomReportSummary = {
+    let mockData: SBOMOverview = {
         scan_status: SBOM_SCAN_STATUS.SUCCESS,
-        severity: 'High',
         end_time: new Date().toUTCString(),
-        summary: {
-            total: 124,
-            fixable: 50,
-            summary: {
-                High: 5,
-                Low: 5,
-            },
-        },
     };
     const mockedSbomDigest =
         'sha256:51a41cec9de9d62ee60e206f5a8a615a028a65653e45539990867417cb486285';
@@ -46,7 +37,7 @@ describe('ResultSbomComponent (inline template)', () => {
         component = fixture.componentInstance;
         component.artifactDigest = 'mockTag';
         component.sbomDigest = mockedSbomDigest;
-        component.summary = mockData;
+        component.sbomOverview = mockData;
         fixture.detectChanges();
     });
 
@@ -54,7 +45,7 @@ describe('ResultSbomComponent (inline template)', () => {
         expect(component).toBeTruthy();
     });
     it('should show "scan stopped" if status is STOPPED', () => {
-        component.summary.scan_status = SBOM_SCAN_STATUS.STOPPED;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.STOPPED;
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -65,7 +56,7 @@ describe('ResultSbomComponent (inline template)', () => {
     });
 
     it('should show progress if status is SCANNING', () => {
-        component.summary.scan_status = SBOM_SCAN_STATUS.RUNNING;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.RUNNING;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
@@ -78,7 +69,7 @@ describe('ResultSbomComponent (inline template)', () => {
     });
 
     it('should show QUEUED if status is QUEUED', () => {
-        component.summary.scan_status = SBOM_SCAN_STATUS.PENDING;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.PENDING;
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -93,7 +84,7 @@ describe('ResultSbomComponent (inline template)', () => {
     });
 
     it('should show summary bar chart if status is COMPLETED', () => {
-        component.summary.scan_status = SBOM_SCAN_STATUS.SUCCESS;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.SUCCESS;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {

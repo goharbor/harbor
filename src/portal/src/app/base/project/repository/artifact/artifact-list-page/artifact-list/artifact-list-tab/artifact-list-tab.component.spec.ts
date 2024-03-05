@@ -236,7 +236,16 @@ describe('ArtifactListTabComponent', () => {
         getScanBtnState(): ClrLoadingState {
             return ClrLoadingState.DEFAULT;
         },
+        getSbomBtnState(): ClrLoadingState {
+            return ClrLoadingState.DEFAULT;
+        },
         hasEnabledScanner(): boolean {
+            return true;
+        },
+        hasSbomPermission(): boolean {
+            return true;
+        },
+        hasScannerSupportSBOM(): boolean {
             return true;
         },
         hasAddLabelImagePermission(): boolean {

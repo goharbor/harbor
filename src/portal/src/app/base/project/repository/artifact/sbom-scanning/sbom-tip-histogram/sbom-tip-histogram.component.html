@@ -2,7 +2,6 @@
     <clr-tooltip>
         <div clrTooltipTrigger class="tip-block">
             <div *ngIf="!noSbom" class="circle-block">
-                <clr-icon shape="details"></clr-icon>
                 <a
                     href="javascript:void(0)"
                     class="digest margin-left-5"
@@ -27,7 +26,7 @@
                     *ngIf="!noSbom"
                     class="level-border clr-display-inline-block margin-right-5">
                     <div>
-                        {{ 'SBOM.PACKAGES' | translate }} {{ sbomPackages }}
+                        {{ 'SBOM.PACKAGES' | translate }}
                     </div>
                 </div>
                 <ng-container *ngIf="noSbom">
