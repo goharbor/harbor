@@ -6776,6 +6776,10 @@ definitions:
     type: object
     description: 'The generate SBOM overview information'
     properties:
+      report_id:
+        type: string
+        description: 'id of the native sbom report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
       start_time:
         type: string
         format: date-time
@@ -6801,10 +6805,6 @@ definitions:
         format: int64
         description: 'Time in seconds required to create the report'
         example: 300
-      complete_percent:
-        type: integer
-        description: 'The complete percent of the scanning which value is between 0 and 100'
-        example: 100
       scanner:
         $ref: '#/definitions/Scanner'
   NativeReportSummary:

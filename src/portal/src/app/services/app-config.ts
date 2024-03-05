@@ -29,7 +29,6 @@ export class AppConfig {
     registry_storage_provider_name: string;
     read_only: boolean;
     show_popular_repo: boolean;
-    sbom_enabled: boolean;
     banner_message: string;
     current_time: string;
     oidc_provider_name: string;
@@ -44,7 +43,6 @@ export class AppConfig {
         this.project_creation_restriction = 'everyone';
         this.self_registration = true;
         this.has_ca_root = false;
-        this.sbom_enabled = false;
         this.harbor_version = 'unknown';
         this.clair_vulnerability_status = {
             overall_last_update: 0,

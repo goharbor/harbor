@@ -53,9 +53,9 @@
                             !(
                                 canGenerateSbomNow() &&
                                 selectedRowHasSbom() &&
-                                hasEnabledSbom &&
-                                hasScannerSupportSBOM &&
-                                hasSbomPermission
+                                hasEnabledScanner &&
+                                hasSbomPermission &&
+                                hasScannerSupportSBOM
                             )
                         "
                         (click)="generateSbom()">

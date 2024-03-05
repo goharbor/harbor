@@ -46,7 +46,6 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
-    ScanTypes,
 } from '../../../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -102,7 +101,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     projectName: string;
     repoName: string;
     registryUrl: string;
-    sbomEnabled: boolean;
     artifactList: ArtifactFront[] = [];
     availableTime = AVAILABLE_TIME;
     inprogress: boolean;
@@ -240,7 +238,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     ngOnInit() {
         const appConfig = this.appConfigService.getConfig();
         this.registryUrl = appConfig.registry_url;
-        this.sbomEnabled = appConfig.sbom_enabled;
         this.initRouterData();
         if (!this.updateArtifactSub) {
             this.updateArtifactSub = this.eventService.subscribe(
@@ -753,11 +750,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
-                queryParams: { [UN_LOGGED_PARAM]: YES },
+                queryParams: {
+                    [UN_LOGGED_PARAM]: YES,
+                    sbomDigest: artifact.sbomDigest ?? '',
+                },
             });
         } else {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
+                queryParams: { sbomDigest: artifact.sbomDigest ?? '' },
             });
         }
     }
@@ -981,6 +982,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         }
     }
+    // when finished, remove it from selectedRow
+    sbomFinished(artifact: Artifact) {
+        this.scanFinished(artifact);
+    }
 
     // when finished, remove it from selectedRow
     sbomFinished(artifact: Artifact) {
@@ -1127,7 +1132,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.selectedRow && this.selectedRow.length) {
             let flag: boolean = true;
             this.selectedRow.forEach(item => {
-                const st: string = this.scanStatus(item);
+                const st: string = this.sbomStatus(item);
                 if (!this.isRunningState(st)) {
                     flag = false;
                 }

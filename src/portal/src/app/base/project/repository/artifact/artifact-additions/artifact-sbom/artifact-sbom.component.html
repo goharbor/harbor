@@ -32,10 +32,10 @@
                     </div>
                 </div>
             </clr-dg-action-bar>
-            <clr-dg-column [clrDgField]="'package'">{{
+            <clr-dg-column [clrDgField]="'package'" class="package-medium">{{
                 'SBOM.GRID.COLUMN_PACKAGE' | translate
             }}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'version'">{{
+            <clr-dg-column [clrDgField]="'version'" class="version-medium">{{
                 'SBOM.GRID.COLUMN_VERSION' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{
@@ -50,17 +50,25 @@
                 </ng-template>
             </clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let res of artifactSbomPackages()">
-                <clr-dg-cell>{{ res.name ?? '' }}</clr-dg-cell>
-                <clr-dg-cell>{{ res.versionInfo ?? '' }}</clr-dg-cell>
+                <clr-dg-cell class="package-medium">{{
+                    res.name ?? ''
+                }}</clr-dg-cell>
+                <clr-dg-cell class="version-medium">{{
+                    res.versionInfo ?? ''
+                }}</clr-dg-cell>
                 <clr-dg-cell>{{ res.licenseConcluded ?? '' }}</clr-dg-cell>
             </clr-dg-row>
 
             <clr-dg-footer>
                 <div class="report">
-                    <i *ngIf="artifact?.scanner">{{
+                    <i *ngIf="artifact?.sbom_overview">{{
                         'SBOM.REPORTED_BY'
                             | translate
-                                : { scanner: getScannerInfo(artifact?.scanner) }
+                                : {
+                                      scanner: getScannerInfo(
+                                          artifact?.sbom_overview?.scanner
+                                      )
+                                  }
                     }}</i>
                 </div>
                 <clr-dg-pagination

@@ -62,3 +62,13 @@
 .label {
   min-width: 3rem;
 }
+
+.package-medium {
+  max-width: 25rem;
+  text-overflow: ellipsis;
+}
+
+.version-medium {
+  min-width: 22rem;
+  text-overflow: ellipsis;
+}

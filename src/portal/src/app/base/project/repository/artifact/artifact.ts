@@ -216,10 +216,7 @@ export const ArtifactSbomFieldMapper = {
  * else return false.
  */
 export function isSpdxSbom(sbomJson?: Object): boolean {
-    return sbomJson[ArtifactSbomFieldMapper.sbomVersion] ||
-        sbomJson[ArtifactSbomFieldMapper.sbomId]
-        ? true
-        : false;
+    return Object.keys(sbomJson ?? {}).includes(ArtifactSbomFieldMapper.sbomId);
 }
 
 /**
@@ -343,7 +340,6 @@ export function readDataFromArtifactSbomJson(
  */
 export function getArtifactSbom(sbomJson?: Object): ArtifactSbom {
     if (sbomJson) {
-        // only support to parse spdx json
         if (isSpdxSbom(sbomJson)) {
             const artifactSbom = <ArtifactSbom>{};
             artifactSbom.sbomJsonRaw = sbomJson;

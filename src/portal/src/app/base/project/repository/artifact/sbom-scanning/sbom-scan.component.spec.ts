@@ -10,7 +10,6 @@ import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogr
 import { SBOMOverview } from './sbom-overview';
 import { of, timer } from 'rxjs';
 import { ArtifactService, ScanService } from 'ng-swagger-gen/services';
-import { Artifact } from 'ng-swagger-gen/models';
 
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;

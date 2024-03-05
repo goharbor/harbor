@@ -1,15 +1,23 @@
-import { Component, Input } from '@angular/core';
+import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
 import { ADDITIONS } from './models';
 import { AdditionLinks } from '../../../../../../../ng-swagger-gen/models/addition-links';
 import { AdditionLink } from '../../../../../../../ng-swagger-gen/models/addition-link';
 import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
+import { ClrTabs } from '@clr/angular';
 
 @Component({
     selector: 'artifact-additions',
     templateUrl: './artifact-additions.component.html',
     styleUrls: ['./artifact-additions.component.scss'],
 })
-export class ArtifactAdditionsComponent {
+export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     @Input() artifact: Artifact;
     @Input() additionLinks: AdditionLinks;
     @Input() projectName: string;
@@ -21,7 +29,26 @@ export class ArtifactAdditionsComponent {
     digest: string;
     @Input()
     sbomDigest: string;
-    constructor() {}
+    @Input()
+    tab: string;
+
+    @Input() currentTabLinkId: string = 'vulnerability';
+    activeTab: string = null;
+
+    @ViewChild('additionsTab') tabs: ClrTabs;
+    constructor(private ref: ChangeDetectorRef) {}
+
+    ngOnInit(): void {
+        this.activeTab = this.tab;
+    }
+
+    ngAfterViewChecked() {
+        if (this.activeTab) {
+            this.currentTabLinkId = this.activeTab;
+            this.activeTab = null;
+        }
+        this.ref.detectChanges();
+    }
 
     getVulnerability(): AdditionLink {
         if (
@@ -61,5 +88,9 @@ export class ArtifactAdditionsComponent {
             return this.additionLinks[ADDITIONS.VALUES];
         }
         return null;
+    }
+
+    actionTab(tab: string): void {
+        this.currentTabLinkId = tab;
     }
 }

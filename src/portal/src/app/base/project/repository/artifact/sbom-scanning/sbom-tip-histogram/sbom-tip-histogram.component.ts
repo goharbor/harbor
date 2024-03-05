@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScannerVo, SbomSummary } from '../../../../../../shared/services';
@@ -20,9 +20,8 @@ const SUCCESS_PCT: number = 100;
     templateUrl: './sbom-tip-histogram.component.html',
     styleUrls: ['./sbom-tip-histogram.component.scss'],
 })
-export class SbomTipHistogramComponent implements OnInit {
+export class SbomTipHistogramComponent {
     @Input() scanner: ScannerVo;
-    _sbomPackages: number = 0;
     @Input() sbomSummary: SbomSummary = {
         scan_status: SBOM_SCAN_STATUS.NOT_GENERATED_SBOM,
     };
@@ -33,22 +32,6 @@ export class SbomTipHistogramComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
         private router: Router
     ) {}
-
-    ngOnInit(): void {
-        this._sbomPackages = this.sbomSummary?.summary?.total ?? 0;
-    }
-
-    get sbomPackages(): number {
-        return this._sbomPackages;
-    }
-
-    get sevSummary(): { [key: string]: number } {
-        if (this.sbomSummary && this.sbomSummary.summary) {
-            return this.sbomSummary.summary.summary;
-        }
-
-        return null;
-    }
 
     duration(): string {
         if (this.sbomSummary && this.sbomSummary.duration) {

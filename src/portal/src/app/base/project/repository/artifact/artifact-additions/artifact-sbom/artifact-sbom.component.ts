@@ -1,4 +1,10 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    Input,
+    OnDestroy,
+    OnInit,
+} from '@angular/core';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
@@ -32,6 +38,8 @@ import {
     getArtifactSbom,
 } from '../../artifact';
 import { ArtifactService } from 'ng-swagger-gen/services';
+import { ScanTypes } from 'src/app/shared/entities/shared.const';
+import { ArtifactListPageService } from '../../artifact-list-page/artifact-list-page.service';
 
 @Component({
     selector: 'hbr-artifact-sbom',
@@ -39,8 +47,6 @@ import { ArtifactService } from 'ng-swagger-gen/services';
     styleUrls: ['./artifact-sbom.component.scss'],
 })
 export class ArtifactSbomComponent implements OnInit, OnDestroy {
-    @Input()
-    sbomLink: AdditionLink;
     @Input()
     projectName: string;
     @Input()
@@ -53,7 +59,7 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
 
     artifactSbom: ArtifactSbom;
     loading: boolean = false;
-    hasEnabledSbom: boolean = false;
+    hasScannerSupportSBOM: boolean = false;
     downloadSbomBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     hasSbomPermission: boolean = false;
 
@@ -69,15 +75,16 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
         private errorHandler: ErrorHandler,
         private appConfigService: AppConfigService,
         private artifactService: ArtifactService,
+        private artifactListPageService: ArtifactListPageService,
         private userPermissionService: UserPermissionService,
         private eventService: EventService,
         private session: SessionService
     ) {}
 
     ngOnInit() {
+        this.artifactListPageService.init(this.projectId);
         this.getSbom();
         this.getSbomPermission();
-        this.hasEnabledSbom = this.appConfigService.getConfig().sbom_enabled;
         if (!this.sub) {
             this.sub = this.eventService.subscribe(
                 HarborEvent.UPDATE_SBOM_INFO,
@@ -109,23 +116,19 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     }
 
     getSbom() {
-        if (
-            this.sbomDigest &&
-            this.sbomLink &&
-            !this.sbomLink.absolute &&
-            this.sbomLink.href
-        ) {
+        if (this.sbomDigest) {
             if (!this.hasShowLoading) {
                 this.loading = true;
                 this.hasShowLoading = true;
             }
-            const sbomAdditionParams = <ArtifactService.GetSbomAdditionParams>{
+            const sbomAdditionParams = <ArtifactService.GetAdditionParams>{
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.sbomDigest,
                 projectName: this.projectName,
+                addition: ScanTypes.SBOM,
             };
             this.artifactService
-                .getSbomAddition(sbomAdditionParams)
+                .getAddition(sbomAdditionParams)
                 .pipe(
                     finalize(() => {
                         this.loading = false;
@@ -134,7 +137,14 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
                 )
                 .subscribe(
                     res => {
-                        this.artifactSbom = getArtifactSbom(res);
+                        if (res) {
+                            this.artifactSbom = getArtifactSbom(
+                                JSON.parse(res)
+                            );
+                        } else {
+                            this.loading = false;
+                            this.hasShowLoading = false;
+                        }
                     },
                     error => {
                         this.errorHandler.error(error);
@@ -190,9 +200,9 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
         return (
             this.hasViewInitWithDelay &&
             this.artifact.sbom_overview &&
-            (this.artifact.sbom_overview.sbom_status ===
+            (this.artifact.sbom_overview.scan_status ===
                 SBOM_SCAN_STATUS.PENDING ||
-                this.artifact.sbom_overview.sbom_status ===
+                this.artifact.sbom_overview.scan_status ===
                     SBOM_SCAN_STATUS.RUNNING)
         );
     }
@@ -200,7 +210,7 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     downloadSbom() {
         this.downloadSbomBtnState = ClrLoadingState.LOADING;
         if (
-            this.artifact?.sbom_overview?.sbom_status ===
+            this.artifact?.sbom_overview?.scan_status ===
             SBOM_SCAN_STATUS.SUCCESS
         ) {
             downloadJson(
@@ -212,9 +222,11 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     }
 
     canDownloadSbom(): boolean {
+        this.hasScannerSupportSBOM =
+            this.artifactListPageService.hasScannerSupportSBOM();
         return (
-            this.hasEnabledSbom &&
-            this.hasSbomPermission &&
+            this.hasScannerSupportSBOM &&
+            //this.hasSbomPermission &&
             this.sbomDigest &&
             this.downloadSbomBtnState !== ClrLoadingState.LOADING &&
             this.artifactSbom !== undefined
