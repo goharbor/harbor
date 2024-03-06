@@ -287,7 +287,10 @@
         "PREVENT_VULNERABLE_2": "y más arriba de ser desplegado.",
         "SCAN": "Escaneo de vulnerabilidad",
         "AUTOSCAN_TOGGLE": "Escanee automáticamente las imágenes al instante",
-        "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto."
+        "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Add User Member",

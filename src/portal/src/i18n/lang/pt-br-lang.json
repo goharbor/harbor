@@ -284,7 +284,10 @@
         "PREVENT_VULNERABLE_2": "e acima de serem utilizadas.",
         "SCAN": "Análise de vulnerabilidades",
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
-        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto."
+        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Adicionar um usuário",

@@ -158,6 +158,9 @@ export class ProjectDefaultService extends ProjectService {
                         auto_scan: projectPolicy.ScanImgOnPush
                             ? 'true'
                             : 'false',
+                        auto_sbom_generation: projectPolicy.GenerateSbomOnPush
+                            ? 'true'
+                            : 'false',
                         reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
                     },
                     cve_allowlist: projectAllowlist,
