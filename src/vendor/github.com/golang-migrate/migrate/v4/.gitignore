@@ -1,0 +1,10 @@
+.DS_Store
+cli/build
+cli/cli
+cli/migrate
+.coverage
+.godoc.pid
+vendor/
+.vscode/
+.idea
+dist/

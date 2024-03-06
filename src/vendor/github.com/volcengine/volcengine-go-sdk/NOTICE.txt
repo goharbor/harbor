@@ -1,0 +1,10 @@
+Volcengine SDK for Go
+Copyright 2022 Beijing Volcanoengine Technology Ltd.  All Rights Reserved.
+
+
+The Initial Developer of some parts of the framework, which are copied from, derived from, or
+inspired by AWS SDK for Go (https://github.com/aws/aws-sdk-go), is Amazon.com, Inc. or its affiliates (http://www.amazon.com/).
+
+AWS SDK for Go
+Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Copyright 2014-2015 Stripe, Inc.

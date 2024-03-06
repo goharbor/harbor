@@ -1,0 +1,20 @@
+IDEAS/TODO:
+----
+ - zero context each time -- see if that affects performance
+ - benchmarks for memory allocations
+ - benchmarks for runJob
+ - investigate changing runJob to use a shared context, and zero'ing it's value each time
+ - revisit the retry backoff
+ - generally, look into process scalability. Eg, if we have 30 processes, each with concurrency=25, that's a lot of pinging redis
+ - thought: what if we *scale up* to max workers if some are idle, should we shut them down?
+   - thing we're guarding against: 100 goroutines all polling redis
+   - alt: some clever mechanism to only check redis if we are busy?
+ - is there some way to detect redis contention, or overall, just measure the latency of redis
+   - both lock contention (not enuf redis pool)
+   - enuf pool, but redis itself is overloaded
+ - It could be cool to provide an API for that redis stuff.
+   - latencies
+   - lock contention
+   - number of redis connections used by work
+   - overall redis stuff: mem, avail, cxns
+ - it might be nice to have an overall counter like sidekiq
