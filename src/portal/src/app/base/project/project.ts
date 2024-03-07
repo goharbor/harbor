@@ -33,6 +33,7 @@ export class Project {
         prevent_vul: string | boolean;
         severity: string;
         auto_scan: string | boolean;
+        auto_sbom_generation: string | boolean;
         retention_id: number;
     };
     constructor() {
