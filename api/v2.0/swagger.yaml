@@ -8368,6 +8368,14 @@ definitions:
         default: ""
         description: Indicate the healthy of the registration
         example: "healthy"
+      capabilities:
+        type: string
+        description: Indicates the capabilities of a scanner
+        example: "{
+          support_vulnerability: true,
+          support_sbom: true
+        }"
+        x-omitempty: false
 
   ScannerRegistrationReq:
     type: object
@@ -8412,6 +8420,13 @@ definitions:
         type: boolean
         default: false
         description: Indicate whether the registration is enabled or not
+      capabilities:
+        type: string
+        description: Indicates the capabilities of a scanner
+        example: "{
+         support_vulnerability: true,
+         support_sbom: true
+       }"
 
   ScannerRegistrationSettings:
     type: object

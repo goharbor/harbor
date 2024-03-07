@@ -35,9 +35,10 @@ func TestModel(t *testing.T) {
 // TestJSON tests the marshal and unmarshal functions
 func (suite *ModelTestSuite) TestJSON() {
 	r := &Registration{
-		Name:        "forUT",
-		Description: "sample registration",
-		URL:         "https://sample.scanner.com",
+		Name:         "forUT",
+		Description:  "sample registration",
+		URL:          "https://sample.scanner.com",
+		Capabilities: `{"support_vulnerability": true, "support_sbom": true}`,
 	}
 
 	json, err := r.ToJSON()
@@ -51,6 +52,7 @@ func (suite *ModelTestSuite) TestJSON() {
 	err = r2.FromJSON(json)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), "forUT", r2.Name)
+	assert.Equal(suite.T(), `{"support_vulnerability": true, "support_sbom": true}`, r2.Capabilities)
 }
 
 // TestValidate tests the validate function

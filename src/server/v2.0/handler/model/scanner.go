@@ -52,6 +52,7 @@ func (s *ScannerRegistration) ToSwagger(_ context.Context) *models.ScannerRegist
 		Vendor:           s.Vendor,
 		Version:          s.Version,
 		Health:           s.Health,
+		Capabilities:     s.Capabilities,
 	}
 }
 

@@ -65,6 +65,9 @@ type Registration struct {
 
 	Metadata *v1.ScannerAdapterMetadata `orm:"-" json:"-"`
 
+	// Capabilities indicates the capabilities of a scanner, like whether supports sbom generation
+	Capabilities string `orm:"column(capabilities);null;size(1024)" json:"capabilities"`
+
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
 	UpdateTime time.Time `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`

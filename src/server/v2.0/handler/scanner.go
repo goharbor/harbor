@@ -245,4 +245,5 @@ func copyToScannerRegistration(r *scanner.Registration, req *models.ScannerRegis
 	r.UseInternalAddr = lib.BoolValue(req.UseInternalAddr)
 	r.Auth = req.Auth
 	r.AccessCredential = req.AccessCredential
+	r.Capabilities = req.Capabilities
 }

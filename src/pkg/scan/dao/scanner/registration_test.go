@@ -47,10 +47,11 @@ func (suite *RegistrationDAOTestSuite) SetupSuite() {
 func (suite *RegistrationDAOTestSuite) SetupTest() {
 	suite.registrationID = uuid.New().String()
 	r := &Registration{
-		UUID:        suite.registrationID,
-		Name:        "forUT",
-		Description: "sample registration",
-		URL:         "https://sample.scanner.com",
+		UUID:         suite.registrationID,
+		Name:         "forUT",
+		Description:  "sample registration",
+		URL:          "https://sample.scanner.com",
+		Capabilities: `{"support_vulnerability": true, "support_sbom": true}`,
 	}
 
 	_, err := AddRegistration(suite.Context(), r)
@@ -71,6 +72,7 @@ func (suite *RegistrationDAOTestSuite) TestGet() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), r.Name, "forUT")
+	assert.Equal(suite.T(), r.Capabilities, `{"support_vulnerability": true, "support_sbom": true}`)
 
 	// Not found
 	re, err := GetRegistration(suite.Context(), "not_found")
