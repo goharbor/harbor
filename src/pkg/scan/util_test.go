@@ -15,16 +15,16 @@
 package scan
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/google/go-containerregistry/pkg/registry"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/controller/robot"
 	rm "github.com/goharbor/harbor/src/pkg/robot/model"
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	"github.com/google/go-containerregistry/pkg/registry"
 )
 
 func TestGenAccessoryArt(t *testing.T) {
@@ -55,9 +55,6 @@ func TestGenAccessoryArt(t *testing.T) {
 	}
 
 	s, err := GenAccessoryArt(sq, []byte(`{"name": "harborAccTest", "version": "1.0"}`), "application/vnd.goharbor.harbor.main.v1", r)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
 	assert.Nil(t, err)
 	assert.Equal(t, "sha256:791d1fe83f1c759f45ea096cf0710e42f152771d5ca0603f4263d02f2736d2c3", s)
 }

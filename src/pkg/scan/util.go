@@ -19,9 +19,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/controller/robot"
-	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -32,6 +29,9 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+
+	"github.com/goharbor/harbor/src/controller/robot"
+	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 type Insecure bool
@@ -77,6 +77,11 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, mediaType string, robo
 	accArt = mutate.MediaType(accArt, ocispec.MediaTypeImageManifest)
 	accArt = mutate.ConfigMediaType(accArt, types.MediaType(mediaType))
 	accArt = mutate.Subject(accArt, *accSubArt).(v1.Image)
+	// TODO replace the hardcoded scanner and description
+	accArt = mutate.Annotations(accArt, map[string]string{
+		"created-by": "trivy",
+		"org.opencontainers.artifact.description": "SPDX JSON SBOM",
+	}).(v1.Image)
 
 	digest, err := accArt.Digest()
 	if err != nil {
