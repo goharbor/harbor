@@ -8450,6 +8450,12 @@ definitions:
   ScannerCapability:
     type: object
     properties:
+      type:
+        type: string
+        description: |
+          Specify the type of scanner capability, like vulnerability or sbom
+        x-omitempty: false
+        example: "sbom"
       consumes_mime_types:
         type: array
         items:
