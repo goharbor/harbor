@@ -56,5 +56,5 @@ func TestGenAccessoryArt(t *testing.T) {
 
 	s, err := GenAccessoryArt(sq, []byte(`{"name": "harborAccTest", "version": "1.0"}`), "application/vnd.goharbor.harbor.main.v1", r)
 	assert.Nil(t, err)
-	assert.Equal(t, "sha256:791d1fe83f1c759f45ea096cf0710e42f152771d5ca0603f4263d02f2736d2c3", s)
+	assert.Equal(t, "sha256:8de6104b79deca0253ff8667692f03e34753494c77ec81f631b45aad69223c18", s)
 }
