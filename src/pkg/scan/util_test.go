@@ -54,7 +54,11 @@ func TestGenAccessoryArt(t *testing.T) {
 		},
 	}
 
-	s, err := GenAccessoryArt(sq, []byte(`{"name": "harborAccTest", "version": "1.0"}`), "application/vnd.goharbor.harbor.main.v1", r)
+	annotations := map[string]string{
+		"created-by": "trivy",
+		"org.opencontainers.artifact.description": "SPDX JSON SBOM",
+	}
+	s, err := GenAccessoryArt(sq, []byte(`{"name": "harborAccTest", "version": "1.0"}`), annotations, "application/vnd.goharbor.harbor.main.v1", r)
 	assert.Nil(t, err)
 	assert.Equal(t, "sha256:8de6104b79deca0253ff8667692f03e34753494c77ec81f631b45aad69223c18", s)
 }

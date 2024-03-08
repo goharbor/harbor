@@ -47,7 +47,7 @@ type referrer struct {
 }
 
 // GenAccessoryArt composes the accessory oci object and push it back to harbor core as an accessory of the scanned artifact.
-func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, mediaType string, robot robot.Robot) (string, error) {
+func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[string]string, mediaType string, robot robot.Robot) (string, error) {
 	accArt, err := mutate.Append(empty.Image, mutate.Addendum{
 		Layer: static.NewLayer(accData, ocispec.MediaTypeImageLayer),
 		History: v1.History{
@@ -78,10 +78,7 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, mediaType string, robo
 	accArt = mutate.ConfigMediaType(accArt, types.MediaType(mediaType))
 	accArt = mutate.Subject(accArt, *accSubArt).(v1.Image)
 	// TODO replace the hardcoded scanner and description
-	accArt = mutate.Annotations(accArt, map[string]string{
-		"created-by": "trivy",
-		"org.opencontainers.artifact.description": "SPDX JSON SBOM",
-	}).(v1.Image)
+	accArt = mutate.Annotations(accArt, accAnnotations).(v1.Image)
 
 	digest, err := accArt.Digest()
 	if err != nil {
