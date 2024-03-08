@@ -77,7 +77,6 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[str
 	accArt = mutate.MediaType(accArt, ocispec.MediaTypeImageManifest)
 	accArt = mutate.ConfigMediaType(accArt, types.MediaType(mediaType))
 	accArt = mutate.Subject(accArt, *accSubArt).(v1.Image)
-	// TODO replace the hardcoded scanner and description
 	accArt = mutate.Annotations(accArt, accAnnotations).(v1.Image)
 
 	digest, err := accArt.Digest()
