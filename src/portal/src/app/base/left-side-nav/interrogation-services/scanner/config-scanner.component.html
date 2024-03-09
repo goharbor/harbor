@@ -139,9 +139,21 @@
             <clr-dg-column class="width-240" [clrDgField]="'url'">{{
                 'SCANNER.ENDPOINT' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{ 'SCANNER.HEALTH' | translate }}</clr-dg-column>
-            <clr-dg-column>{{ 'SCANNER.ENABLED' | translate }}</clr-dg-column>
-            <clr-dg-column>{{ 'SCANNER.AUTH' | translate }}</clr-dg-column>
+            <clr-dg-column class="width-120">{{
+                'SCANNER.HEALTH' | translate
+            }}</clr-dg-column>
+            <clr-dg-column class="width-120">{{
+                'SCANNER.ENABLED' | translate
+            }}</clr-dg-column>
+            <clr-dg-column class="width-120">{{
+                'SCANNER.AUTH' | translate
+            }}</clr-dg-column>
+            <clr-dg-column class="width-120">{{
+                'SCANNER.VULNERABILITY' | translate
+            }}</clr-dg-column>
+            <clr-dg-column class="width-120">{{
+                'SCANNER.SBOM' | translate
+            }}</clr-dg-column>
             <clr-dg-column>{{
                 'SCANNER.DESCRIPTION' | translate
             }}</clr-dg-column>
@@ -197,6 +209,18 @@
                 </clr-dg-cell>
                 <clr-dg-cell>{{
                     scanner.auth ? scanner.auth : 'None'
+                }}</clr-dg-cell>
+                <clr-dg-cell>{{
+                    (supportCapability(scanner, 'vulnerability')
+                        ? 'SCANNER.SUPPORTED'
+                        : 'SCANNER.NOT_SUPPORTED'
+                    ) | translate
+                }}</clr-dg-cell>
+                <clr-dg-cell>{{
+                    (supportCapability(scanner, 'sbom')
+                        ? 'SCANNER.SUPPORTED'
+                        : 'SCANNER.NOT_SUPPORTED'
+                    ) | translate
                 }}</clr-dg-cell>
                 <clr-dg-cell>{{ scanner.description }}</clr-dg-cell>
                 <scanner-metadata

@@ -178,6 +178,17 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     addSuccess() {
         this.getScanners();
     }
+
+    supportCapability(scanner: Scanner, capabilityType: string): boolean {
+        return scanner && scanner.metadata && capabilityType
+            ? (
+                  scanner?.metadata?.capabilities?.filter(
+                      ({ type }) => type === capabilityType
+                  ) ?? []
+              ).length >= 1
+            : false;
+    }
+
     changeStat() {
         if (this.selectedRow) {
             let scanner: ScannerRegistrationReq = clone(this.selectedRow);
