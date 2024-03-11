@@ -150,9 +150,8 @@ func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (b
 		return true, nil
 	} else if errors.IsNotFoundErr(err) {
 		return false, nil
-	} else {
-		return false, err
 	}
+	return false, err
 }
 
 func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error) {

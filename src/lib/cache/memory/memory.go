@@ -60,7 +60,7 @@ func (c *Cache) Contains(ctx context.Context, key string) bool {
 }
 
 // Delete delete item from cache by key
-func (c *Cache) Delete(ctx context.Context, key string) error {
+func (c *Cache) Delete(_ context.Context, key string) error {
 	c.storage.Delete(c.opts.Key(key))
 	return nil
 }
@@ -89,12 +89,12 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 }
 
 // Ping ping the cache
-func (c *Cache) Ping(ctx context.Context) error {
+func (c *Cache) Ping(_ context.Context) error {
 	return nil
 }
 
 // Save cache the value by key
-func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(_ context.Context, key string, value interface{}, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return fmt.Errorf("failed to encode value, key %s, error: %v", key, err)
@@ -118,7 +118,7 @@ func (c *Cache) Save(ctx context.Context, key string, value interface{}, expirat
 }
 
 // Scan scans the keys matched by match string
-func (c *Cache) Scan(ctx context.Context, match string) (cache.Iterator, error) {
+func (c *Cache) Scan(_ context.Context, match string) (cache.Iterator, error) {
 	var keys []string
 	c.storage.Range(func(k, v interface{}) bool {
 		matched := true
@@ -147,7 +147,7 @@ type ScanIterator struct {
 }
 
 // Next checks whether has the next element
-func (i *ScanIterator) Next(ctx context.Context) bool {
+func (i *ScanIterator) Next(_ context.Context) bool {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 

@@ -33,9 +33,9 @@ type Project struct {
 
 // ToSwagger converts the project to the swagger model
 func (p *Project) ToSwagger() *models.Project {
-	var currentUserRoleIds []int32
+	var currentUserRoleIDs []int32
 	for _, role := range p.RoleList {
-		currentUserRoleIds = append(currentUserRoleIds, int32(role))
+		currentUserRoleIDs = append(currentUserRoleIDs, int32(role))
 	}
 
 	var md *models.ProjectMetadata
@@ -63,7 +63,7 @@ func (p *Project) ToSwagger() *models.Project {
 	return &models.Project{
 		CreationTime:       strfmt.DateTime(p.CreationTime),
 		CurrentUserRoleID:  int64(p.Role),
-		CurrentUserRoleIds: currentUserRoleIds,
+		CurrentUserRoleIds: currentUserRoleIDs,
 		CVEAllowlist:       &allowlist,
 		Metadata:           md,
 		Name:               p.Name,

@@ -71,7 +71,7 @@ func (sde *ScanDataExport) ShouldRetry() bool {
 // Validate Indicate whether the parameters of job are valid.
 // Return:
 // error if parameters are not valid. NOTES: If no parameters needed, directly return nil.
-func (sde *ScanDataExport) Validate(params job.Parameters) error {
+func (sde *ScanDataExport) Validate(_ job.Parameters) error {
 	return nil
 }
 
@@ -204,24 +204,24 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			return err
 		}
 
-		projectIds := filterCriteria.Projects
-		if len(projectIds) == 0 {
+		projectIDs := filterCriteria.Projects
+		if len(projectIDs) == 0 {
 			return nil
 		}
 
 		// extract the repository ids if any repositories have been specified
-		repoIds, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIds)
+		repoIDs, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIDs)
 		if err != nil {
 			return err
 		}
 
-		if len(repoIds) == 0 {
+		if len(repoIDs) == 0 {
 			logger.Infof("No repositories found with specified names: %v", filterCriteria.Repositories)
 			return nil
 		}
 
 		// filter artifacts by tags
-		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIds)
+		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIDs)
 		if err != nil {
 			return err
 		}

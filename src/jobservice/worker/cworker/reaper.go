@@ -136,7 +136,7 @@ func (r *reaper) syncOutdatedStats() error {
 
 	// Loop all the in progress jobs to check if they're really in progress or
 	// status is hung.
-	h := func(k string, v int64) (err error) {
+	h := func(k string, _ int64) (err error) {
 		defer func() {
 			if errs.IsObjectNotFoundError(err) {
 				// As the job stats is lost and we don't have chance to restore it, then directly discard it.

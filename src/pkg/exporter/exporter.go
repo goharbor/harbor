@@ -82,10 +82,10 @@ func (e *Exporter) RegisterCollector(collectors ...collector) error {
 	return nil
 }
 
-func newServer(opt *Opt, r *prometheus.Registry) *http.Server {
+func newServer(opt *Opt, _ *prometheus.Registry) *http.Server {
 	exporterMux := http.NewServeMux()
 	exporterMux.Handle(opt.MetricsPath, promhttp.Handler())
-	exporterMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	exporterMux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`<html>
 		<head><title>Harbor Exporter</title></head>
 		<body>

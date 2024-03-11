@@ -91,7 +91,7 @@ func (gc *GarbageCollector) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (gc *GarbageCollector) Validate(params job.Parameters) error {
+func (gc *GarbageCollector) Validate(_ job.Parameters) error {
 	return nil
 }
 
