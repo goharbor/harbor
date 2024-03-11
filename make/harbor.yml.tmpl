@@ -19,7 +19,7 @@ https:
   # enable strong ssl ciphers (default: false)
   # strong_ssl_ciphers: false
 
-# # Harbor will set ipv4 enabled only by defualt if this block is not configured
+# # Harbor will set ipv4 enabled only by default if this block is not configured
 # # Otherwise, please uncomment this block to configure your own ip_family stacks
 # ip_family:
 #   # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
@@ -253,7 +253,7 @@ proxy:
 #   enabled: true
 #   # set sample_rate to 1 if you wanna sampling 100% of trace data; set 0.5 if you wanna sampling 50% of trace data, and so forth
 #   sample_rate: 1
-#   # # namespace used to differenciate different harbor services
+#   # # namespace used to differentiate different harbor services
 #   # namespace:
 #   # # attributes is a key value dict contains user defined attributes used to initialize trace provider
 #   # attributes:
@@ -306,6 +306,6 @@ cache:
 #   # can improve the performance of high concurrent pushing to the same project,
 #   # and reduce the database connections spike and occupies.
 #   # By redis will bring up some delay for quota usage updation for display, so only
-#   # suggest switch provider to redis if you were ran into the db connections spike aroud
-#   # the scenario of high concurrent pushing to same project, no improvment for other scenes.
+#   # suggest switch provider to redis if you were ran into the db connections spike around
+#   # the scenario of high concurrent pushing to same project, no improvement for other scenes.
 #   quota_update_provider: redis # Or db
