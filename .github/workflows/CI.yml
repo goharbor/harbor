@@ -42,9 +42,9 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.21
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-           go-version: 1.21.4
+           go-version: 1.21.5
         id: go
       - uses: actions/checkout@v3
         with:
@@ -89,7 +89,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -103,9 +103,9 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.21
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.4
+          go-version: 1.21.5
         id: go
       - uses: actions/checkout@v3
         with:
@@ -158,9 +158,9 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.21
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.4
+          go-version: 1.21.5
         id: go
       - uses: actions/checkout@v3
         with:
@@ -213,9 +213,9 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.21
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.4
+          go-version: 1.21.5
         id: go
       - uses: actions/checkout@v3
         with:
@@ -266,9 +266,9 @@ jobs:
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.21
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.4
+          go-version: 1.21.5
         id: go
       - uses: actions/checkout@v3
         with:
@@ -331,7 +331,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

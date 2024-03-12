@@ -285,7 +285,10 @@
     "PREVENT_VULNERABLE_2": "或更高危險級別的映像檔部署。",
     "SCAN": "弱點掃描",
     "AUTOSCAN_TOGGLE": "推送時自動掃描映像檔",
-    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。"
+    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。",
+    "SBOM": "SBOM generation",
+    "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+    "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
   },
   "MEMBER": {
     "NEW_USER": "新增使用者成員",
@@ -410,6 +413,7 @@
    "IMMUTABLE_TAG": "Immutable Tag",
    "LOG": "Log",
    "NOTIFICATION_POLICY": "Notification Policy",
+   "QUOTA": "Quota",
    "BACK": "Back",
    "NEXT": "Next",
    "FINISH": "Finish",
@@ -697,7 +701,7 @@
     "FLATTEN_LEVEL_TIP_3": "'平整化 3 等級': 'a/b/c/d/img' -> 'ns/d/img'",
     "BANDWIDTH": "頻寬",
     "BANDWIDTH_ERROR_TIP": "請輸入 -1 或大於 0 的整數",
-    "BANDWIDTH_TOOLTIP": "設定每個執行的最大網路頻寬。請注意並發執行的數量。若要無限制頻寬，請輸入 -1",
+    "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
     "UNLIMITED": "無限制",
     "UNREACHABLE_SOURCE_REGISTRY": "無法連線到來源 Registry，請在編輯此規則之前確保來源 Registry 可用： {{error}}",
     "CRON_ERROR_TIP": "cron 字串的第一個欄位必須是 0，第二個欄位不能是 \"*\"",

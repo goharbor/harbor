@@ -35,7 +35,7 @@ type LoggerManager struct {
 }
 
 // Init redirect the audit log to the forward endpoint
-func (a *LoggerManager) Init(ctx context.Context, logEndpoint string) {
+func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 	var w io.Writer
 	w, err := syslog.Dial("tcp", logEndpoint,
 		syslog.LOG_INFO, "audit")

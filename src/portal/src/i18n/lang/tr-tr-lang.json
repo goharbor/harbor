@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "ve yukarıda yüklenilmekte.",
         "SCAN": "Güvenlik açığı taraması",
         "AUTOSCAN_TOGGLE": "İmajları yüklerken anında tarayın",
-        "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın."
+        "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Kullanıcı Üyesi Ekle",
@@ -411,6 +414,7 @@
         "IMMUTABLE_TAG": "Immutable Tag",
         "LOG": "Log",
         "NOTIFICATION_POLICY": "Notification Policy",
+        "QUOTA": "Quota",
         "BACK": "Back",
         "NEXT": "Next",
         "FINISH": "Finish",
@@ -698,7 +702,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandwidth",
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
-        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unlimited",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",

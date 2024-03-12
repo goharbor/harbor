@@ -4719,7 +4719,7 @@ paths:
       summary: Get job log by job id
       description: Get job log by job id, it is only used by administrator
       produces:
-        - text/plain  
+        - text/plain
       tags:
         - jobservice
       parameters:
@@ -4850,7 +4850,6 @@ paths:
         '200':
           description: Get scheduler status successfully.
           schema:
-            type: object
             $ref: '#/definitions/SchedulerStatus'
         '401':
           $ref: '#/responses/401'
@@ -6072,7 +6071,7 @@ paths:
           description: Specify whether the dangerous Artifact are included inside summary information
           type: boolean
           required: false
-          default: false                  
+          default: false
       responses:
         '200':
           description: Success
@@ -6091,15 +6090,15 @@ paths:
     get:
       summary: Get the vulnerability list.
       description: |
-        Get the vulnerability list. use q to pass the query condition, 
+        Get the vulnerability list. use q to pass the query condition,
         supported conditions:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
-        repository_name(exact match) 
-        project_id(exact match) 
+        repository_name(exact match)
+        project_id(exact match)
         package(exact match)
-        tag(exact match) 
+        tag(exact match)
         digest(exact match)
       tags:
         - securityhub
@@ -7165,6 +7164,10 @@ definitions:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
         x-nullable: true
+      auto_sbom_generation:
+        type: string
+        description: 'Whether generating SBOM automatically when pushing a subject artifact. The valid values are "true", "false".'
+        x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
         description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
@@ -7657,8 +7660,9 @@ definitions:
         description: The level of the robot, project or system
       duration:
         type: integer
+        x-nullable: true
         format: int64
-        description: The duration of the robot in days
+        description: The duration of the robot in days, duration must be either -1(Never) or a positive integer
       editable:
         type: boolean
         x-omitempty: false
@@ -7705,7 +7709,7 @@ definitions:
       duration:
         type: integer
         format: int64
-        description: The duration of the robot in days
+        description: The duration of the robot in days, duration must be either -1(Never) or a positive integer
       permissions:
         type: array
         items:
@@ -7757,7 +7761,7 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference).
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
@@ -7995,7 +7999,7 @@ definitions:
         type: string
         description: |
           The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manual', 'None' and 'Schedule'.
-          'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and 
+          'Manual' means to trigger it right away, 'Schedule' means to trigger it by a specified cron schedule and
           'None' means to cancel the schedule.
         enum:
           - Hourly
@@ -9814,12 +9818,12 @@ definitions:
     type: object
     description: the dangerous CVE information
     properties:
-      cve_id: 
+      cve_id:
         type: string
         description: the cve id
       severity:
         type: string
-        description: the severity of the CVE        
+        description: the severity of the CVE
       cvss_score_v3:
         type: number
         format: float64
@@ -9829,7 +9833,7 @@ definitions:
         description: the description of the CVE
       package:
         type: string
-        description: the package of the CVE      
+        description: the package of the CVE
       version:
         type: string
         description: the version of the package
@@ -9837,14 +9841,14 @@ definitions:
     type: object
     description: the dangerous artifact information
     properties:
-      project_id: 
+      project_id:
         type: integer
         format: int64
         description: the project id of the artifact
       repository_name:
         type: string
         description: the repository name of the artifact
-      digest: 
+      digest:
         type: string
         description: the digest of the artifact
       critical_cnt:
@@ -9904,6 +9908,6 @@ definitions:
         description: The description of the vulnerability
       links:
         type: array
-        items: 
+        items:
           type: string
         description: Links of the vulnerability

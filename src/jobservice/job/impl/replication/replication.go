@@ -51,6 +51,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/quay"
 	// import tencentcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
+	// register the VolcEngine CR Registry adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/volcenginecr"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
@@ -73,7 +75,7 @@ func (r *Replication) ShouldRetry() bool {
 }
 
 // Validate does nothing
-func (r *Replication) Validate(params job.Parameters) error {
+func (r *Replication) Validate(_ job.Parameters) error {
 	return nil
 }
 

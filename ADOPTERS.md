@@ -39,6 +39,7 @@ be added to this list as they transition to production deployments.
 <a href="https://www.dynatrace.com/" target="_blank" border="0"><img alt="Dynatrace" src="https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/users-partners/dynatrace-logo.png"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.home.cern/" target="_blank" border="0">CERN</a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.ns.nl/" target="_blank" border="0"><img alt="Nederlandse Spoorwegen" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/nederlandse-spoorwegen.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://www.de-cix.net/" target="_blank" border="0"><img alt="DE-CIX" src="https://raw.githubusercontent.com/goharbor/website/main/docs/img/adopters/de-cix.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
 
@@ -87,6 +88,8 @@ feature within Harbor before deploying images into production.
 **Allegis:** Harbor is used at Allegis as a secure private registry to store
 and scan customized container images for different business applications, like
 ELK stack, as part of their CI/CD pipeline.
+
+**DE-CIX:** Harbor has been integrated into the application stack to replace the former hosted Docker registry, now known as the Distribution Registry. With Harbor, we have started separating access to project-related images using OIDC group mapping and robot accounts with dedicated permissions. Another significant benefit comes with the implemented vulnerability scanner, which makes vulnerabilities more transparent to our teams.
 
 ## Adding your logo
 

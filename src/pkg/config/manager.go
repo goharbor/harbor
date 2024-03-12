@@ -136,7 +136,7 @@ func (c *CfgManager) Save(ctx context.Context) error {
 }
 
 // Get ...
-func (c *CfgManager) Get(ctx context.Context, key string) *metadata.ConfigureValue {
+func (c *CfgManager) Get(_ context.Context, key string) *metadata.ConfigureValue {
 	configValue, err := c.Store.Get(key)
 	if err != nil {
 		log.Debugf("failed to get key %v, error: %v, maybe default value not defined before get", key, err)
@@ -146,7 +146,7 @@ func (c *CfgManager) Get(ctx context.Context, key string) *metadata.ConfigureVal
 }
 
 // Set ...
-func (c *CfgManager) Set(ctx context.Context, key string, value interface{}) {
+func (c *CfgManager) Set(_ context.Context, key string, value interface{}) {
 	configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
 	if err != nil {
 		log.Errorf("error when setting key: %v,  error %v", key, err)

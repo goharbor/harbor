@@ -98,7 +98,7 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 	return rp, nil
 }
 
-func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, rawReportData string) error {
+func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, _ string, rawReportData string) error {
 	var vulnReport vuln.Report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
 	if err != nil {
@@ -198,7 +198,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	return nil
 }
 
-func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, reportUUID string, artifactDigest string, reportSummary string, records []*scan.VulnerabilityRecord) (string, error) {
+func (c *nativeToRelationalSchemaConverter) fromSchema(_ context.Context, _ string, artifactDigest string, reportSummary string, records []*scan.VulnerabilityRecord) (string, error) {
 	if len(reportSummary) == 0 {
 		return "", nil
 	}

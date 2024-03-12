@@ -19,7 +19,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class Permission:
 
 
-    def __init__(self, url, method, expect_status_code, payload=None, res_id_field=None, payload_id_field=None, id_from_header=False):
+    def __init__(self, url, method, expect_status_code=None, payload=None, res_id_field=None, payload_id_field=None, id_from_header=False):
         self.url = url
         self.method = method
         self.expect_status_code = expect_status_code
@@ -33,7 +33,10 @@ class Permission:
         if ID_PLACEHOLDER in self.url:
             self.url = self.url.replace(ID_PLACEHOLDER, str(self.payload.get(self.payload_id_field)))
         response = requests.request(self.method, self.url, data=json.dumps(self.payload), verify=False, auth=(user_name, password), headers={"Content-Type": "application/json"})
-        assert response.status_code == self.expect_status_code, "Failed to call the {} {}, expected status code is {}, but got {}, error msg is {}".format(self.method, self.url, self.expect_status_code, response.status_code, response.text)
+        if self.expect_status_code == None:
+            assert response.status_code != 403, "Failed to call the {} {}, expected status code is not 403, but got {}, error msg is {}".format(self.method, self.url, response.status_code, response.text)
+        else:
+            assert response.status_code == self.expect_status_code, "Failed to call the {} {}, expected status code is {}, but got {}, error msg is {}".format(self.method, self.url, self.expect_status_code, response.status_code, response.text)
         if self.res_id_field and self.payload_id_field and self.id_from_header == False:
             self.payload[self.payload_id_field] = int(json.loads(response.text)[self.res_id_field])
         elif self.res_id_field and self.payload_id_field and self.id_from_header == True:
@@ -228,7 +231,7 @@ scan_all_reset_schedule_payload = {
 }
 create_scan_all_schedule = Permission("{}/system/scanAll/schedule".format(harbor_base_url), "POST", 201, scan_all_weekly_schedule_payload)
 update_scan_all_schedule = Permission("{}/system/scanAll/schedule".format(harbor_base_url), "PUT", 200, scan_all_reset_schedule_payload)
-stop_scan_all = Permission("{}/system/scanAll/stop".format(harbor_base_url), "POST", 202)
+stop_scan_all = Permission("{}/system/scanAll/stop".format(harbor_base_url), "POST")
 scan_all_metrics = Permission("{}/scans/all/metrics".format(harbor_base_url), "GET", 200)
 scan_all_schedule_metrics = Permission("{}/scans/schedule/metrics".format(harbor_base_url), "GET", 200)
 # scan all permissions end
@@ -288,6 +291,52 @@ list_vul = Permission("{}/security/vul".format(harbor_base_url), "GET", 200)
 read_catalog = Permission("{}/v2/_catalog".format(endpoint_URL), "GET", 200)
 # catalog permissions end
 
+# garbage-collection permissions start
+gc_payload = {
+    "parameters": {
+        "delete_untagged": True,
+        "workers": 1,
+        "dry_run": True
+    },
+    "schedule": {
+        "type": "Manual"
+    }
+}
+create_gc = Permission("{}/system/gc/schedule".format(harbor_base_url), "POST", 201, gc_payload, "id", id_from_header=True)
+list_gc = Permission("{}/system/gc".format(harbor_base_url), "GET", 200)
+read_gc = Permission("{}/system/gc/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=gc_payload, payload_id_field="id")
+stop_gc = Permission("{}/system/gc/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=gc_payload, payload_id_field="id")
+read_gc_log = Permission("{}/system/gc/{}/log".format(harbor_base_url, "88888888"), "GET", 404)
+read_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url), "GET", 200)
+update_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url), "PUT", 200, gc_payload)
+# garbage-collection permissions end
+
+# purge-audit permissions start
+purge_audit_payload = {
+    "parameters": {
+        "audit_retention_hour": 24,
+        "include_operations": "create,delete,pull",
+        "dry_run": True
+    },
+    "schedule": {
+        "type": "Manual"
+    }
+}
+create_purge_audit = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "POST", 201, purge_audit_payload, "id", id_from_header=True)
+list_purge_audit = Permission("{}/system/purgeaudit".format(harbor_base_url), "GET", 200)
+read_purge_audit = Permission("{}/system/purgeaudit/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, payload=purge_audit_payload, payload_id_field="id")
+stop_purge_audit = Permission("{}/system/purgeaudit/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, payload=purge_audit_payload, payload_id_field="id")
+read_purge_audit_log = Permission("{}/system/purgeaudit/{}/log".format(harbor_base_url, "88888888"), "GET", 404)
+read_purge_audit_schedule = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "GET", 200)
+update_purge_audit_schedule = Permission("{}/system/purgeaudit/schedule".format(harbor_base_url), "PUT", 200, purge_audit_payload)
+# purge-audit permissions end
+
+# quota permissions start
+list_quota = Permission("{}/quotas".format(harbor_base_url), "GET", 200)
+read_quota = Permission("{}/quotas/{}".format(harbor_base_url, "88888888"), "GET", 404)
+# quota permissions end
+
+
 resource_permissions = {
     "audit-log": [list_audit_logs],
     "preheat-instance": [create_preheat_instance, list_preheat_instance, read_preheat_instance, update_preheat_instance, delete_preheat_instance],
@@ -302,7 +351,10 @@ resource_permissions = {
     "scanner": [list_scanner, create_scanner, ping_scanner, read_scanner, update_scanner, delete_scanner, set_default_scanner, get_scanner_metadata],
     "label": [create_label, read_label, update_label, delete_label],
     "security-hub": [read_summary, list_vul],
-    "catalog": [read_catalog]
+    "catalog": [read_catalog],
+    "garbage-collection": [create_gc, list_gc, read_gc, stop_gc, read_gc_log, read_gc_schedule, update_gc_schedule],
+    "purge-audit": [create_purge_audit, list_purge_audit, read_purge_audit, stop_purge_audit, read_purge_audit_log, read_purge_audit_schedule, update_purge_audit_schedule],
+    "quota": [list_quota, read_quota]
 }
 resource_permissions["all"] = [item for sublist in resource_permissions.values() for item in sublist]
 

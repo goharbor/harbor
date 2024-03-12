@@ -251,7 +251,7 @@ func (w *basicWorker) Schedule(jobName string, params job.Parameters, runAfterSe
 }
 
 // PeriodicallyEnqueue job
-func (w *basicWorker) PeriodicallyEnqueue(jobName string, params job.Parameters, cronSetting string, isUnique bool, webHook string) (*job.Stats, error) {
+func (w *basicWorker) PeriodicallyEnqueue(jobName string, params job.Parameters, cronSetting string, _ bool, webHook string) (*job.Stats, error) {
 	p := &period.Policy{
 		ID:            utils.MakeIdentifier(),
 		JobName:       jobName,
@@ -369,7 +369,7 @@ func (w *basicWorker) StopJob(jobID string) error {
 }
 
 // RetryJob retry the job
-func (w *basicWorker) RetryJob(jobID string) error {
+func (w *basicWorker) RetryJob(_ string) error {
 	return errors.New("not implemented")
 }
 

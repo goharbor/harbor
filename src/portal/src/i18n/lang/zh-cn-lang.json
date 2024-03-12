@@ -285,7 +285,10 @@
         "PREVENT_VULNERABLE_2": "以上的镜像运行。",
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
-        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描"
+        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "添加用户成员",
@@ -698,7 +701,7 @@
         "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "带宽",
         "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
-        "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "无限制",
         "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}",
         "CRON_ERROR_TIP": "Cron 字符串的第一项必须为0且第二项不能为\"*\"",

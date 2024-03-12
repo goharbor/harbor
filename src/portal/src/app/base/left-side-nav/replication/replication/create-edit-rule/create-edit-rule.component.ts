@@ -41,6 +41,7 @@ import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { TranslateService } from '@ngx-translate/core';
 import { cronRegex } from '../../../../../shared/units/utils';
 import { FilterType } from '../../../../../shared/entities/shared.const';
+import { JobserviceService } from 'ng-swagger-gen/services';
 import { RegistryService } from '../../../../../../../ng-swagger-gen/services/registry.service';
 import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
 import { Label } from '../../../../../../../ng-swagger-gen/models/label';
@@ -80,6 +81,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     headerTitle = 'REPLICATION.ADD_POLICY';
 
     createEditRuleOpened: boolean;
+    maxJobWorkers = 10;
     inProgress = false;
     onGoing = false;
     inNameChecking = false;
@@ -125,6 +127,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         private endpointService: RegistryService,
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
+        private jobServiceService: JobserviceService,
         private labelService: LabelService
     ) {
         this.createForm();
@@ -238,6 +241,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                     }
                 }
             });
+        this.initMaxJobWorkers();
     }
     trimText(event) {
         if (event.target.value) {
@@ -367,6 +371,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
         this.stringForLabelFilter = '';
+        this.copyStringForLabelFilter = '';
     }
 
     updateRuleFormAndCopyUpdateForm(rule: ReplicationPolicy): void {
@@ -532,7 +537,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         let filters: any = copyRuleForm.filters;
 
         // set label filter
-        if (this.stringForLabelFilter) {
+        if (this.stringForLabelFilter || this.copyStringForLabelFilter) {
             // set stringForLabelFilter
             copyRuleForm.filters.forEach(item => {
                 if (item.type === FilterType.LABEL) {
@@ -904,5 +909,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             return this.stringForLabelFilter.indexOf(v) !== -1;
         }
         return false;
+    }
+
+    initMaxJobWorkers() {
+        this.jobServiceService.getWorkerPools().subscribe({
+            next: pools => {
+                if ((pools ?? []).length > 0) {
+                    this.maxJobWorkers = pools[0].concurrency;
+                }
+            },
+        });
     }
 }

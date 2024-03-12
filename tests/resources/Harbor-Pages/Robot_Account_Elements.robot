@@ -21,7 +21,7 @@ ${sys_robot_account_name_input}              //*[@id='name']
 ${sys_robot_account_expiration_type_select}  //*[@id='expiration-type']
 ${sys_robot_account_expiration_input}        //*[@id='robotTokenExpiration']
 ${sys_robot_account_description_textarea}    //*[@id='description']
-${sys_robot_account_coverall_chb_input}  xpath=//input[@id='coverAll']
+${sys_robot_account_coverall_chb_input}      //input[@id='coverAll']
 ${sys_robot_account_coverall_chb}            //clr-checkbox-wrapper[contains(@class, 'clr-checkbox-wrapper')]/label[contains(@class,'clr-control-label') and contains(@for, 'coverAll')]
 ${sys_robot_account_permission_list_btn}     //form/section//clr-dropdown/button
 ${save_sys_robot_account_btn}                //*[@id='system-robot-save']

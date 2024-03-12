@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "Vulnerability scanning",
         "AUTOSCAN_TOGGLE": "Automatically scan images on push",
-        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
+        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Add User Member",
@@ -411,6 +414,7 @@
         "IMMUTABLE_TAG": "Immutable Tag",
         "LOG": "Log",
         "NOTIFICATION_POLICY": "Notification Policy",
+        "QUOTA": "Quota",
         "BACK": "Back",
         "NEXT": "Next",
         "FINISH": "Finish",
@@ -699,7 +703,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandwidth",
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
-        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unlimited",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
@@ -999,7 +1003,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
+        "COPYRIGHT": "Project Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",

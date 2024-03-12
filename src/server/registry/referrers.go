@@ -63,20 +63,8 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Get the artifact by reference
-	art, err := r.artifactManager.GetByDigest(ctx, repository, reference)
-	if err != nil {
-		if errors.IsNotFoundErr(err) {
-			// If artifact not found, return empty json
-			newListReferrersOK().WithPayload(nil).WriteResponse(w)
-			return
-		}
-		lib_http.SendError(w, err)
-		return
-	}
-
 	// Query accessories with matching subject artifact digest
-	query := q.New(q.KeyWords{"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName})
+	query := q.New(q.KeyWords{"SubjectArtifactDigest": reference, "SubjectArtifactRepo": repository})
 	total, err := r.accessoryManager.Count(ctx, query)
 	if err != nil {
 		lib_http.SendError(w, err)

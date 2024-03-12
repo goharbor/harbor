@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "und darüber.",
         "SCAN": "Scannen auf Schwachstellen",
         "AUTOSCAN_TOGGLE": "Images automatisch beim Hochladen scannen",
-        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden."
+        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Nutzer als Mitglied hinzufügen",
@@ -411,6 +414,7 @@
         "IMMUTABLE_TAG": "Immutable Tag",
         "LOG": "Log",
         "NOTIFICATION_POLICY": "Notification Policy",
+        "QUOTA": "Quota",
         "BACK": "Back",
         "NEXT": "Next",
         "FINISH": "Finish",
@@ -698,7 +702,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Reduzierung um 3 Ebenen': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandbreite",
         "BANDWIDTH_ERROR_TIP": "Bitte -1 oder einen Integer-Wert größer als 0 eingeben",
-        "BANDWIDTH_TOOLTIP": "Legt die maximale Netzwerkbandbreite für jede Ausführung fest. Bitte auf die Anzahl der parallelen Ausführungen achten. Für umbegrenzte Bandbreite, bitte -1 eingeben",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unbegrenzt",
         "UNREACHABLE_SOURCE_REGISTRY": "Verbindung zur Quell-Registry fehlgeschlagen, bitte sicherstellen, dass die Quell-Registry verfügbar ist, bevor diese Regel angepasst wird: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
@@ -998,7 +1002,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
+        "COPYRIGHT": "Project Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
