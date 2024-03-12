@@ -21,18 +21,19 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.5
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/go-openapi/errors v0.21.0
-	github.com/go-openapi/loads v0.21.2 // indirect
+	github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime v0.26.2
-	github.com/go-openapi/spec v0.20.11 // indirect
+	github.com/go-openapi/spec v0.20.11
 	github.com/go-openapi/strfmt v0.22.0
 	github.com/go-openapi/swag v0.22.7
-	github.com/go-openapi/validate v0.22.3 // indirect
+	github.com/go-openapi/validate v0.22.3
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/google/go-containerregistry v0.19.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/handlers v1.5.2
@@ -95,10 +96,14 @@ require (
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dnaeon/go-vcr v1.2.0 // indirect
+	github.com/docker/cli v24.0.6+incompatible // indirect
+	github.com/docker/docker v24.0.7+incompatible // indirect
+	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -130,10 +135,12 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -154,6 +161,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/vbatts/tar-split v0.11.3 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
 	go.mongodb.org/mongo-driver v1.13.1 // indirect

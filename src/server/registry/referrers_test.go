@@ -37,7 +37,7 @@ func TestReferrersHandlerOK(t *testing.T) {
 		Return(&artifact.Artifact{
 			Digest:            digestVal,
 			ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
-			MediaType:         "application/vnd.example.sbom",
+			MediaType:         "application/vnd.example.main",
 			Size:              1000,
 			Annotations: map[string]string{
 				"name": "test-image",
@@ -72,8 +72,8 @@ func TestReferrersHandlerOK(t *testing.T) {
 	}
 	index := &ocispec.Index{}
 	json.Unmarshal([]byte(rec.Body.String()), index)
-	if index.Manifests[0].ArtifactType != "application/vnd.example.sbom" {
-		t.Errorf("Expected response body %s, but got %s", "application/vnd.example.sbom", rec.Body.String())
+	if index.Manifests[0].ArtifactType != "application/vnd.example.main" {
+		t.Errorf("Expected response body %s, but got %s", "application/vnd.example.main", rec.Body.String())
 	}
 }
 
