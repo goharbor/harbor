@@ -27,7 +27,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
-	jwt "github.com/golang-jwt/jwt/v4"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/rbac"

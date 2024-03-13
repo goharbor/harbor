@@ -3,7 +3,6 @@ package registry
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +10,6 @@ import (
 	beegocontext "github.com/beego/beego/v2/server/web/context"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -40,6 +38,7 @@ func TestReferrersHandlerOK(t *testing.T) {
 			Digest:            digestVal,
 			ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
 			MediaType:         "application/vnd.example.sbom",
+			ArtifactType:      "application/vnd.example+type",
 			Size:              1000,
 			Annotations: map[string]string{
 				"name": "test-image",
@@ -74,8 +73,8 @@ func TestReferrersHandlerOK(t *testing.T) {
 	}
 	index := &ocispec.Index{}
 	json.Unmarshal([]byte(rec.Body.String()), index)
-	if index.Manifests[0].ArtifactType != "application/vnd.example.sbom" {
-		t.Errorf("Expected response body %s, but got %s", "application/vnd.example.sbom", rec.Body.String())
+	if index.Manifests[0].ArtifactType != "application/vnd.example+type" {
+		t.Errorf("Expected response body %s, but got %s", "application/vnd.example+type", rec.Body.String())
 	}
 }
 
@@ -93,8 +92,10 @@ func TestReferrersHandlerEmpty(t *testing.T) {
 	artifactMock := &arttesting.Manager{}
 	accessoryMock := &accessorytesting.Manager{}
 
-	artifactMock.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).
-		Return(nil, errors.NotFoundError(nil))
+	accessoryMock.On("Count", mock.Anything, mock.Anything).
+		Return(int64(0), nil)
+	accessoryMock.On("List", mock.Anything, mock.Anything).
+		Return([]accessorymodel.Accessory{}, nil)
 
 	handler := &referrersHandler{
 		artifactManager:  artifactMock,
@@ -109,7 +110,6 @@ func TestReferrersHandlerEmpty(t *testing.T) {
 	}
 	index := &ocispec.Index{}
 	json.Unmarshal([]byte(rec.Body.String()), index)
-	fmt.Println(index)
 	if index.SchemaVersion != 0 && len(index.Manifests) != -0 {
 		t.Errorf("Expected empty response body, but got %s", rec.Body.String())
 	}

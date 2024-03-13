@@ -150,6 +150,8 @@ type Artifact struct {
 	Digest string `json:"digest"`
 	// The mime type of the scanned artifact
 	MimeType string `json:"mime_type"`
+	// The size the scanned artifact
+	Size int64 `json:"size"`
 }
 
 // Registry represents Registry connection settings.

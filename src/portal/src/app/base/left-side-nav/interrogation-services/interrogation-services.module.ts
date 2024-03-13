@@ -50,7 +50,7 @@ const routes: Routes = [
             },
             {
                 path: '',
-                redirectTo: 'scanners',
+                redirectTo: 'security-hub',
                 pathMatch: 'full',
             },
         ],

@@ -23,6 +23,12 @@ https:
   # The path of cert and key files for nginx
   certificate: {{ https.certificate }}
   private_key: {{ https.private_key }}
+  # enable strong ssl ciphers (default: false)
+  {% if strong_ssl_ciphers is defined %}
+  strong_ssl_ciphers: {{ strong_ssl_ciphers | lower }}
+  {% else %}
+  strong_ssl_ciphers: false
+  {% endif %}
 {% else %}
 # https related config
 # https:
@@ -31,28 +37,8 @@ https:
 #   # The path of cert and key files for nginx
 #   certificate: /your/certificate/path
 #   private_key: /your/private/key/path
-{% endif %}
-
-{% if ip_family is defined %}
-# # Harbor will set ipv4 enabled only by defualt if this block is not configured
-# # Otherwise, please uncomment this block to configure your own ip_family stacks
-ip_family:
-  # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
-  ipv6:
-    enabled: {{ ip_family.ipv6.enabled | lower }}
-  # ipv4Enabled set to true by default, currently it affected the nginx related component
-  ipv4:
-    enabled: {{ ip_family.ipv4.enabled | lower }}
-{% else %}
-# # Harbor will set ipv4 enabled only by defualt if this block is not configured
-# # Otherwise, please uncomment this block to configure your own ip_family stacks
-ip_family:
-  # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
-  ipv6:
-    enabled: false
-  # ipv4Enabled set to true by default, currently it affected the nginx related component
-  ipv4:
-    enabled: true
+#   enable strong ssl ciphers (default: false)
+#   strong_ssl_ciphers: false
 {% endif %}
 
 {% if internal_tls is defined %}
@@ -60,13 +46,9 @@ ip_family:
 internal_tls:
   # set enabled to true means internal tls is enabled
   enabled: {{ internal_tls.enabled | lower }}
+  {% if internal_tls.dir is defined %}
   # put your cert and key files on dir
   dir: {{ internal_tls.dir }}
-  # enable strong ssl ciphers (default: false)
-  {% if internal_tls.strong_ssl_ciphers is defined %}
-  strong_ssl_ciphers: {{ internal_tls.strong_ssl_ciphers | lower }}
-  {% else %}
-  strong_ssl_ciphers: false
   {% endif %}
 {% else %}
 # internal_tls:
@@ -74,8 +56,6 @@ internal_tls:
 #   enabled: true
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
-#   # enable strong ssl ciphers (default: false)
-#   strong_ssl_ciphers: false
 {% endif %}
 
 # Uncomment external_url if you want to enable external proxy
