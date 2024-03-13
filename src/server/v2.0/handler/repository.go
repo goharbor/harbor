@@ -55,7 +55,7 @@ type repositoryAPI struct {
 	artCtl  artifact.Controller
 }
 
-func (r *repositoryAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (r *repositoryAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		r.SendError(ctx, err)
 	}

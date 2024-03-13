@@ -37,7 +37,7 @@ func init() {
 	}
 }
 
-func cleanupCallBack(ctx context.Context, param string) error {
+func cleanupCallBack(ctx context.Context, _ string) error {
 	err := cleanupController.Start(ctx, true, task.ExecutionTriggerSchedule)
 	if err != nil {
 		logger.Errorf("System artifact cleanup job encountered errors: %v", err)

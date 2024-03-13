@@ -42,7 +42,7 @@ func newPermissionsAPIAPI() *permissionsAPI {
 	}
 }
 
-func (p *permissionsAPI) GetPermissions(ctx context.Context, params permissions.GetPermissionsParams) middleware.Responder {
+func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPermissionsParams) middleware.Responder {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
 		return p.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
