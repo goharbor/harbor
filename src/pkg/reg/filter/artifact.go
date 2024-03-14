@@ -19,6 +19,8 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
+
+	"regexp"
 )
 
 // DoFilterArtifacts filter the artifacts according to the filters
@@ -35,6 +37,10 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 	var fs ArtifactFilters
 	for _, filter := range filters {
 		var f ArtifactFilter
+
+		// following block builds ArtifactFilters based on the type of filter
+		// filter types are the ones shown on UI, like Tag, Label
+		// it builds for filters using double star and regex
 		switch filter.Type {
 		case model.FilterTypeLabel:
 			f = &artifactLabelFilter{
@@ -44,6 +50,18 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 		case model.FilterTypeTag:
 			f = &artifactTagFilter{
 				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
+			}
+
+		case model.FilterTypeTagRegex:
+			f = &artifactTagFilterRegex{
+				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
+			}
+
+		case model.FilterTypeLabelRegex:
+			f = &artifactLabelFilterRegex{
+				labels:     filter.Value.([]string),
 				decoration: filter.Decoration,
 			}
 		}
@@ -223,6 +241,134 @@ func (a *artifactTagFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifa
 				Labels: artifact.Labels,
 				Tags:   tags, // only replicate the matched tags
 			})
+		}
+	}
+	return result, nil
+}
+
+type artifactTagFilterRegex struct {
+	// regex pattern
+	pattern string
+	// "matches", "excludes"
+	decoration string
+}
+
+func (a *artifactTagFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
+	if len(a.pattern) == 0 {
+		return artifacts, nil
+	}
+
+	// Compiling regex & checking if its valid
+	filterRegexPattern, err := regexp.Compile(a.pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.Artifact
+	for _, artifact := range artifacts {
+		// for individual artifact, use its own tags to match, reserve the matched tags.
+		// for accessory artifact, use the parent tags to match,
+		var tagsForMatching []string
+		if artifact.IsAcc {
+			tagsForMatching = append(tagsForMatching, artifact.ParentTags...)
+		} else {
+			tagsForMatching = append(tagsForMatching, artifact.Tags...)
+		}
+
+		// untagged artifact
+		if len(tagsForMatching) == 0 {
+			// filter matching using regex
+			match := filterRegexPattern.MatchString("")
+
+			if a.decoration == model.Excludes {
+				if !match {
+					result = append(result, artifact)
+				}
+			} else {
+				if match {
+					result = append(result, artifact)
+				}
+			}
+			continue
+		}
+
+		// tagged artifact
+		var tags []string
+		for _, tag := range tagsForMatching {
+			// filter matching using regex
+			match := filterRegexPattern.MatchString(tag)
+
+			if a.decoration == model.Excludes {
+				if !match {
+					tags = append(tags, tag)
+				}
+			} else {
+				if match {
+					tags = append(tags, tag)
+				}
+			}
+		}
+		if len(tags) == 0 {
+			continue
+		}
+		// copy a new artifact here to avoid changing the original one
+		if artifact.IsAcc {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   artifact.Tags, // use its own tags to replicate
+			})
+		} else {
+			result = append(result, &model.Artifact{
+				Type:   artifact.Type,
+				Digest: artifact.Digest,
+				Labels: artifact.Labels,
+				Tags:   tags, // only replicate the matched tags
+			})
+		}
+	}
+	return result, nil
+}
+
+type artifactLabelFilterRegex struct {
+	labels []string
+	// "matches", "excludes"
+	decoration string
+}
+
+func (a *artifactLabelFilterRegex) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
+	if len(a.labels) == 0 {
+		return artifacts, nil
+	}
+	var result []*model.Artifact
+	for _, artifact := range artifacts {
+		match := true
+	outer:
+		for _, label := range a.labels {
+			filterRegexPattern, err := regexp.Compile(label)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, lbl := range artifact.Labels {
+				exists := filterRegexPattern.MatchString(lbl)
+
+				if !exists {
+					match = false
+					break outer
+				}
+			}
+		}
+		// add the artifact to the result list if it contains all labels defined for the filter
+		if a.decoration == model.Excludes {
+			if !match {
+				result = append(result, artifact)
+			}
+		} else {
+			if match {
+				result = append(result, artifact)
+			}
 		}
 	}
 	return result, nil

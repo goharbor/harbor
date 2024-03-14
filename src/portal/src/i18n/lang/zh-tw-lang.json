@@ -105,7 +105,10 @@
     "OIDC_VERIFYCERT": "如果您的 OIDC 伺服器是透過自簽憑證託管的，請取消勾選此框。",
     "OIDC_AUTOONBOARD": "跳過註冊引導畫面，使用者無法更改其使用者名稱。使用者名稱將由 ID Token 提供。",
     "OIDC_USER_CLAIM": "使用者名稱將從 ID Token 中的特定宣告中取得。若未指定特定宣告，則預設會使用 'name' 宣告。",
-    "NEW_SECRET": "密碼必須超過 8 個字元，並至少包含 1 個大寫字母、1 個小寫字母和 1 個數字。"
+    "NEW_SECRET": "密碼必須超過 8 個字元，並至少包含 1 個大寫字母、1 個小寫字母和 1 個數字。",
+    "REGEX_BASED": "使用正規表示法規則過濾人工製品。",
+    "DOUBLE_STAR_BASED": "以雙星規則過濾人工製品。"
+
   },
   "PLACEHOLDER": {
     "CURRENT_PWD": "輸入目前密碼",
@@ -708,7 +711,8 @@
     "COPY_BY_CHUNK": "分段複製",
     "COPY_BY_CHUNK_TIP": "指定是否按分段複製 blob。分段傳輸可能會增加 API 請求的數量。",
     "TRIGGER_STOP_SUCCESS": "成功觸發停止執行",
-    "CRON_STR": "Cron 字串"
+    "CRON_STR": "Cron 字串",
+    "FILTER_TYPE":"過濾器類型"
   },
   "DESTINATION": {
     "NEW_ENDPOINT": "新增端點",

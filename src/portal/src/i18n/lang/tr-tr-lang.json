@@ -106,7 +106,9 @@
         "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
-        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number.",
+        "REGEX_BASED": "Yapıtları düzenli ifade kurallarına göre filtreleyin.",
+        "DOUBLE_STAR_BASED": "Eserleri çift yıldız kurallarına göre filtreleyin."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Güncel şifrenizi giriniz",
@@ -709,7 +711,8 @@
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILTER_TYPE":"Filtre tipi"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",

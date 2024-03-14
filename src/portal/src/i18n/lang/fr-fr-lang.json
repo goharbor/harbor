@@ -106,7 +106,9 @@
         "OIDC_VERIFYCERT": "Décocher cette case si votre serveur OIDC est hébergé avec un certificat auto-signé.",
         "OIDC_AUTOONBOARD": "Ignorer l'écran d'accueil afin que l'utilisateur ne puisse pas modifier son nom d'utilisateur. Le nom d'utilisateur est fourni à partir du Token ID.",
         "OIDC_USER_CLAIM": "Le nom du claim dans le ID Token à partir duquel le nom d'utilisateur est récupéré. S'il n'est pas spécifié, la valeur par défaut sera 'name'.",
-        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
+        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
+        "REGEX_BASED": "Filtrez les artefacts par des règles d'expression régulière.",
+        "DOUBLE_STAR_BASED": "Filtrez les artefacts selon les règles de la double étoile."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -709,7 +711,8 @@
         "COPY_BY_CHUNK": "Copier par morceaux",
         "COPY_BY_CHUNK_TIP": "Spécifie si le blob doit être copié par morceaux. Transférer par morceaux peut augmenter le nombre de requêtes faites à l'API.",
         "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'exécution",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILTER_TYPE":"Type de filtre"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Endpoint",

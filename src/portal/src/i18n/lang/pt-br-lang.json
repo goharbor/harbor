@@ -105,7 +105,9 @@
         "OIDC_VERIFYCERT": "Desmarque para ignorar certificados inválidos ou auto-assinados no provedor ODIC.",
         "OIDC_AUTOONBOARD": "Pular tela de alteração durante o cadastro automático. Informações, como nome e e-mail, virão do provedor externo.",
         "OIDC_USER_CLAIM": "Nome da propriedade (claim) cujo valor representa o nome de usuário (login). Se não informado, 'name' será usado.",
-        "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número."
+        "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número.",
+        "REGEX_BASED": "Filtrar artefatos por regras de expressão regular.",
+        "DOUBLE_STAR_BASED": "Filtrar artefatos por regras de estrela dupla."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Informe a senha atual",
@@ -708,7 +710,8 @@
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILTER_TYPE": "Tipo de filtro"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endereço",

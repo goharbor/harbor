@@ -105,7 +105,9 @@
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
         "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
         "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
-        "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。"
+        "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。",
+        "REGEX_BASED": "通过正则表达式规则过滤人工制品。",
+        "DOUBLE_STAR_BASED": "按双星规则过滤人工制品。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -708,7 +710,8 @@
         "COPY_BY_CHUNK": "分块复制",
         "COPY_BY_CHUNK_TIP": "请指定是否开启分块复制。开启此项可能导致相应的 API 请求数量增加。",
         "TRIGGER_STOP_SUCCESS": "成功触发停止执行",
-        "CRON_STR": "Cron"
+        "CRON_STR": "Cron",
+        "FILTER_TYPE":"过滤类型"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",

@@ -18,10 +18,12 @@ import "github.com/goharbor/harbor/src/lib/errors"
 
 // const definition
 const (
-	FilterTypeResource = "resource"
-	FilterTypeName     = "name"
-	FilterTypeTag      = "tag"
-	FilterTypeLabel    = "label"
+	FilterTypeResource   = "resource"
+	FilterTypeName       = "name"
+	FilterTypeTag        = "tag"
+	FilterTypeLabel      = "label"
+	FilterTypeLabelRegex = "labelRegex"
+	FilterTypeTagRegex   = "tagRegex"
 
 	TriggerTypeManual     = "manual"
 	TriggerTypeScheduled  = "scheduled"
@@ -42,7 +44,7 @@ type Filter struct {
 
 func (f *Filter) Validate() error {
 	switch f.Type {
-	case FilterTypeResource, FilterTypeName, FilterTypeTag:
+	case FilterTypeResource, FilterTypeName, FilterTypeTag, FilterTypeTagRegex:
 		value, ok := f.Value.(string)
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
@@ -61,7 +63,7 @@ func (f *Filter) Validate() error {
 					WithMessage("only tag and label filter support decoration")
 			}
 		}
-	case FilterTypeLabel:
+	case FilterTypeLabel, FilterTypeLabelRegex:
 		labels, ok := f.Value.([]interface{})
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
