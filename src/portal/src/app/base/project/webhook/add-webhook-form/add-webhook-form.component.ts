@@ -132,7 +132,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
 
     add() {
         this.submitting = true;
-        if (this.webhook?.targets[0]?.type === WebhookType.SLACK) {
+        if (this.webhook?.targets[0]?.type === WebhookType.SLACK || this.webhook?.targets[0]?.type === WebhookType.TEAMS) {
             delete this.webhook?.targets[0]?.payload_format;
         }
         this.webhookService
@@ -155,7 +155,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
 
     save() {
         this.submitting = true;
-        if (this.webhook?.targets[0]?.type === WebhookType.SLACK) {
+        if (this.webhook?.targets[0]?.type === WebhookType.SLACK || this.webhook?.targets[0]?.type === WebhookType.TEAMS) {
             delete this.webhook?.targets[0]?.payload_format;
         }
         this.webhookService

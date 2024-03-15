@@ -97,7 +97,7 @@ func initSupportedNotifyType() {
 		supportedEventTypes = append(supportedEventTypes, EventType(eventType))
 	}
 
-	notifyTypes := []string{notifier_model.NotifyTypeHTTP, notifier_model.NotifyTypeSlack}
+	notifyTypes := []string{notifier_model.NotifyTypeHTTP, notifier_model.NotifyTypeSlack, notifier_model.NotifyTypeTeams}
 	for _, notifyType := range notifyTypes {
 		supportedNotifyTypes = append(supportedNotifyTypes, NotifyType(notifyType))
 	}

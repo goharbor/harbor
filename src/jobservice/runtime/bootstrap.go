@@ -324,6 +324,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
 			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),
 			job.SlackJobVendorType:          (*notification.SlackJob)(nil),
+			job.TeamsJobVendorType:          (*notification.TeamsJob)(nil),
 			job.P2PPreheatVendorType:        (*preheat.Job)(nil),
 			job.ScanDataExportVendorType:    (*scandataexport.ScanDataExport)(nil),
 			// In v2.2 we migrate the scheduled replication, garbage collection and scan all to
