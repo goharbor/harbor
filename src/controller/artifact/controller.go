@@ -356,7 +356,16 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 	for _, acc := range art.Accessories {
 		// only hard ref accessory should be removed
 		if acc.IsHard() {
-			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, true, true); err != nil {
+			// if this acc artifact has parent(is child), set isRoot to false
+			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
+				Keywords: map[string]interface{}{
+					"ChildID": acc.GetData().ArtifactID,
+				},
+			})
+			if err != nil {
+				return err
+			}
+			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, len(parents) == 0, true); err != nil {
 				return err
 			}
 		}
@@ -369,7 +378,12 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
-		if err = c.deleteDeeply(ctx, reference.ChildID, false, false); err != nil {
+		// if the child artifact is an accessory, set isAccessory to true
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": reference.ChildID}))
+		if err != nil {
+			return err
+		}
+		if err = c.deleteDeeply(ctx, reference.ChildID, false, len(accs) > 0); err != nil {
 			return err
 		}
 	}
