@@ -280,12 +280,12 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		if num, err := r.launcher.Launch(ctx, p, id, dryRun); err != nil {
 			logger.Errorf("failed to launch the retention jobs, err: %v", err)
 
-			if err = r.execMgr.StopAndWait(ctx, id, 10*time.Second); err != nil {
-				logger.Errorf("failed to stop the retention execution %d: %v", id, err)
+			if stopErr := r.execMgr.StopAndWait(ctx, id, 10*time.Second); stopErr != nil {
+				logger.Errorf("failed to stop the retention execution %d: %v", id, stopErr)
 			}
 
-			if err = r.execMgr.MarkError(ctx, id, err.Error()); err != nil {
-				logger.Errorf("failed to mark error for the retention execution %d: %v", id, err)
+			if markErr := r.execMgr.MarkError(ctx, id, err.Error()); markErr != nil {
+				logger.Errorf("failed to mark error for the retention execution %d: %v", id, markErr)
 			}
 		} else if num == 0 {
 			// no candidates, mark the execution as done directly
