@@ -146,3 +146,21 @@ func TestIsLocalRegistry(t *testing.T) {
 	}
 	assert.False(t, isLocalRegistry(reg2))
 }
+
+func TestReplicationHandler_ShortResourceName(t *testing.T) {
+	namespace, resource := getMetadataFromResource("busybox:v1")
+	assert.Equal(t, "", namespace)
+	assert.Equal(t, "busybox:v1", resource)
+}
+
+func TestReplicationHandler_NormalResourceName(t *testing.T) {
+	namespace, resource := getMetadataFromResource("library/busybox:v1")
+	assert.Equal(t, "library", namespace)
+	assert.Equal(t, "busybox:v1", resource)
+}
+
+func TestReplicationHandler_LongResourceName(t *testing.T) {
+	namespace, resource := getMetadataFromResource("library/bitnami/fluentd:1.13.3-debian-10-r0")
+	assert.Equal(t, "library", namespace)
+	assert.Equal(t, "bitnami/fluentd:1.13.3-debian-10-r0", resource)
+}
