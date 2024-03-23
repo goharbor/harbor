@@ -57,7 +57,7 @@ func (n *WebhookPolicy) ToTargets() []*models.WebhookTargetObject {
 	return results
 }
 
-// NewNotifiactionPolicy ...
+// NewWebhookPolicy ...
 func NewWebhookPolicy(p *model.Policy) *WebhookPolicy {
 	return &WebhookPolicy{
 		Policy: p,
