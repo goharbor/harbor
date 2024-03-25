@@ -74,6 +74,7 @@ func (s *ScannerMetadata) ToSwagger(_ context.Context) *models.ScannerAdapterMet
 	var capabilities []*models.ScannerCapability
 	for _, c := range s.Capabilities {
 		capabilities = append(capabilities, &models.ScannerCapability{
+			Type:              c.Type,
 			ConsumesMimeTypes: c.ConsumesMimeTypes,
 			ProducesMimeTypes: c.ProducesMimeTypes,
 		})
