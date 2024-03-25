@@ -994,6 +994,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 			Digest:      param.Artifact.Digest,
 			Tag:         param.Tag,
 			MimeType:    param.Artifact.ManifestMediaType,
+			Size:        param.Artifact.Size,
 		},
 	}
 

@@ -89,11 +89,11 @@ func (r *referrersHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			Size:         accArt.Size,
 			Digest:       digest.Digest(accArt.Digest),
 			Annotations:  accArt.Annotations,
-			ArtifactType: accArt.MediaType,
+			ArtifactType: accArt.ArtifactType,
 		}
-		// filter by the artifactType since the artifactType is actually the config media type of the artifact.
+		// filter use accArt.ArtifactType as artifactType
 		if at != "" {
-			if accArt.MediaType == at {
+			if accArt.ArtifactType == at {
 				mfs = append(mfs, mf)
 			}
 		} else {

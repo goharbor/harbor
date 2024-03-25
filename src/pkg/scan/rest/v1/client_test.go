@@ -58,6 +58,7 @@ func (suite *ClientTestSuite) TestClientMetadata() {
 	require.NotNil(suite.T(), m)
 
 	assert.Equal(suite.T(), m.Scanner.Name, "Trivy")
+	assert.Equal(suite.T(), m.Capabilities[0].Type, "sbom")
 }
 
 // TestClientSubmitScan tests the scan submission of client
@@ -119,6 +120,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Version: "0.1.0",
 			},
 			Capabilities: []*ScannerCapability{{
+				Type: "sbom",
 				ConsumesMimeTypes: []string{
 					MimeTypeOCIArtifact,
 					MimeTypeDockerArtifact,
