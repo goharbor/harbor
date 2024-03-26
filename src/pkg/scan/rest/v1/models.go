@@ -37,6 +37,7 @@ type Scanner struct {
 // report MIME types. For example, a scanner capable of analyzing Docker images and producing
 // a vulnerabilities report recognizable by Harbor web console might be represented with the
 // following capability:
+//   - type: vulnerability
 //   - consumes MIME types:
 //     -- application/vnd.oci.image.manifest.v1+json
 //     -- application/vnd.docker.distribution.manifest.v2+json
@@ -44,6 +45,8 @@ type Scanner struct {
 //     -- application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
 //     -- application/vnd.scanner.adapter.vuln.report.raw
 type ScannerCapability struct {
+	// The type of the scanner capability, vulnerability or sbom
+	Type string `json:"type"`
 	// The set of MIME types of the artifacts supported by the scanner to produce the reports
 	// specified in the "produces_mime_types". A given mime type should only be present in one
 	// capability item.

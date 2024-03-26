@@ -75,8 +75,7 @@ func (r *replicationTestSuite) TestStart() {
 	// got error when running the replication flow
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
-	r.execMgr.On("StopAndWait", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.execMgr.On("StopAndWaitWithError", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
 	r.ormCreator.On("Create").Return(nil)
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
