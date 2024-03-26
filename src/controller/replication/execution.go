@@ -154,11 +154,8 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {
 	logger := log.GetLogger(ctx)
 	// try to stop the execution first in case that some tasks are already created
-	if err := c.execMgr.StopAndWait(ctx, executionID, 10*time.Second); err != nil {
-		logger.Errorf("failed to stop the execution %d: %v", executionID, err)
-	}
-	if err := c.execMgr.MarkError(ctx, executionID, err.Error()); err != nil {
-		logger.Errorf("failed to mark error for the execution %d: %v", executionID, err)
+	if e := c.execMgr.StopAndWaitWithError(ctx, executionID, 10*time.Second, err); e != nil {
+		logger.Errorf("failed to stop the execution %d: %v", executionID, e)
 	}
 }
 
