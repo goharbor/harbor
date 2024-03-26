@@ -50,7 +50,9 @@ func NewExporter(opt *Opt) *Exporter {
 	err := exporter.RegisterCollector(NewHealthCollect(hbrCli),
 		NewSystemInfoCollector(hbrCli),
 		NewProjectCollector(),
-		NewJobServiceCollector())
+		NewJobServiceCollector(),
+		NewStatisticsCollector(),
+	)
 	if err != nil {
 		log.Warningf("calling RegisterCollector() errored out, error: %v", err)
 	}
