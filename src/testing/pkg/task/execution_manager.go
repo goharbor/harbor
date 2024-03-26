@@ -209,6 +209,20 @@ func (_m *ExecutionManager) StopAndWait(ctx context.Context, id int64, timeout t
 	return r0
 }
 
+// StopAndWaitWithError provides a mock function with given fields: ctx, id, timeout, origError
+func (_m *ExecutionManager) StopAndWaitWithError(ctx context.Context, id int64, timeout time.Duration, origError error) error {
+	ret := _m.Called(ctx, id, timeout, origError)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, time.Duration, error) error); ok {
+		r0 = rf(ctx, id, timeout, origError)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateExtraAttrs provides a mock function with given fields: ctx, id, extraAttrs
 func (_m *ExecutionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
 	ret := _m.Called(ctx, id, extraAttrs)

@@ -59,6 +59,8 @@ type ExecutionManager interface {
 	// StopAndWait stops all linked tasks of the specified execution and waits until all tasks are stopped
 	// or get an error
 	StopAndWait(ctx context.Context, id int64, timeout time.Duration) (err error)
+	// StopAndWaitWithError calls the StopAndWait first, if it doesn't return error, then it call MarkError if the origError is not empty
+	StopAndWaitWithError(ctx context.Context, id int64, timeout time.Duration, origError error) (err error)
 	// Delete the specified execution and its tasks
 	Delete(ctx context.Context, id int64) (err error)
 	// Delete all executions and tasks of the specific vendor. They can be deleted only when all the executions/tasks
@@ -248,6 +250,16 @@ func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout ti
 	case err := <-errChan:
 		return err
 	}
+}
+
+func (e *executionManager) StopAndWaitWithError(ctx context.Context, id int64, timeout time.Duration, origError error) error {
+	if err := e.StopAndWait(ctx, id, timeout); err != nil {
+		return err
+	}
+	if origError != nil {
+		return e.MarkError(ctx, id, origError.Error())
+	}
+	return nil
 }
 
 func (e *executionManager) Delete(ctx context.Context, id int64) error {
