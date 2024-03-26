@@ -117,7 +117,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestStartCleanupErrorDuringTaskCrea
 		suite.taskMgr.On("Create", ctx, executionID, mock.Anything).Return(taskId, errors.New("test error")).Once()
 
 		suite.execMgr.On("MarkError", ctx, executionID, mock.Anything).Return(nil).Once()
-		suite.execMgr.On("StopAndWait", ctx, executionID, mock.Anything).Return(nil).Once()
+		suite.execMgr.On("StopAndWaitWithError", ctx, executionID, mock.Anything, mock.Anything).Return(nil).Once()
 
 		err := suite.ctl.Start(ctx, false, "SCHEDULE")
 		suite.Error(err)
