@@ -106,6 +106,15 @@ func Middleware() func(http.Handler) http.Handler {
 			return err
 		}
 
+		/*
+			when an images is pushed, it could be
+				1. single image (do nothing)
+				2. an accesory image
+				3. a subject image
+				4. both as an accessory and a subject image
+			and a subject image or accessory image could be pushed in either order
+		*/
+
 		if mf.Subject != nil {
 			subjectArt, err := artifact.Ctl.GetByReference(ctx, info.Repository, mf.Subject.Digest.String(), nil)
 			if err != nil {
@@ -113,7 +122,7 @@ func Middleware() func(http.Handler) http.Handler {
 					logger.Errorf("failed to get subject artifact: %s, error: %v", mf.Subject.Digest, err)
 					return err
 				}
-				log.Debug("the subject of the signature doesn't exist.")
+				log.Debug("the subject artifact doesn't exist.")
 			}
 			art, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Reference, nil)
 			if err != nil {
@@ -128,7 +137,12 @@ func Middleware() func(http.Handler) http.Handler {
 				Digest:            art.Digest,
 			}
 			accData.Type = model.TypeSubject
-			switch mf.Config.MediaType {
+			// since oci-spec 1.1, image type may from artifactType if presents, otherwise would be Config.MediaType
+			fromType := mf.Config.MediaType
+			if mf.ArtifactType != "" {
+				fromType = mf.ArtifactType
+			}
+			switch fromType {
 			case ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig:
 				if isNydusImage(mf) {
 					accData.Type = model.TypeNydusAccelerator
@@ -152,18 +166,18 @@ func Middleware() func(http.Handler) http.Handler {
 			// when subject artifact is pushed after accessory artifact, current subject artifact do not exist.
 			// so we use reference manifest subject digest instead of subjectArt.Digest
 			w.Header().Set("OCI-Subject", mf.Subject.Digest.String())
-		} else {
+		}
+
+		// check if images is a Subject artifact
+		digest := digest.FromBytes(body)
+		accs, err := accessory.Mgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": digest, "SubjectArtifactRepo": info.Repository}))
+		if err != nil {
+			logger.Errorf("failed to list accessory artifact: %s, error: %v", digest, err)
+			return err
+		}
+		if len(accs) > 0 {
 			// In certain cases, the OCI client may push the subject artifact and accessory in either order.
 			// Therefore, it is necessary to handle situations where the client pushes the accessory ahead of the subject artifact.
-			digest := digest.FromBytes(body)
-			accs, err := accessory.Mgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactDigest": digest, "SubjectArtifactRepo": info.Repository}))
-			if err != nil {
-				logger.Errorf("failed to list accessory artifact: %s, error: %v", digest, err)
-				return err
-			}
-			if len(accs) <= 0 {
-				return nil
-			}
 			art, err := artifact.Ctl.GetByReference(ctx, info.Repository, digest.String(), nil)
 			if err != nil {
 				logger.Errorf("failed to list artifact: %s, error: %v", digest, err)
