@@ -14,10 +14,21 @@
 
 package scan
 
+import v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+
 // Options keep the settings/configurations for scanning.
 type Options struct {
 	ExecutionID int64  // The execution id to scan artifact
 	Tag         string // The tag of the artifact to scan
+	ScanType    string // The scan type could be sbom or vulnerability
+}
+
+// GetScanType returns the scan type. for backward compatibility, the default type is vulnerability.
+func (o *Options) GetScanType() string {
+	if len(o.ScanType) == 0 {
+		o.ScanType = v1.ScanTypeVulnerability
+	}
+	return o.ScanType
 }
 
 // Option represents an option item by func template.
@@ -41,6 +52,14 @@ func WithTag(tag string) Option {
 	return func(options *Options) error {
 		options.Tag = tag
 
+		return nil
+	}
+}
+
+// WithScanType set the scanType
+func WithScanType(scanType string) Option {
+	return func(options *Options) error {
+		options.ScanType = scanType
 		return nil
 	}
 }
