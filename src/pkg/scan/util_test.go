@@ -22,8 +22,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/goharbor/harbor/src/controller/robot"
-	rm "github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -47,11 +46,9 @@ func TestGenAccessoryArt(t *testing.T) {
 			Digest:     "sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7",
 		},
 	}
-	r := robot.Robot{
-		Robot: rm.Robot{
-			Name:   "admin",
-			Secret: "Harbor12345",
-		},
+	r := &model.Robot{
+		Name:   "admin",
+		Secret: "Harbor12345",
 	}
 
 	annotations := map[string]string{

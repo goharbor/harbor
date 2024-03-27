@@ -25,7 +25,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/goharbor/harbor/src/common/rbac"
 	ar "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/robot"
@@ -91,6 +90,7 @@ type launchScanJobParam struct {
 	Artifact     *ar.Artifact
 	Tag          string
 	Reports      []*scan.Report
+	Type         string
 }
 
 // basicController is default implementation of api.Controller interface
@@ -287,6 +287,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 				Artifact:     art,
 				Tag:          tag,
 				Reports:      reports,
+				Type:         opts.GetScanType(),
 			})
 		}
 	}
@@ -912,7 +913,7 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 }
 
 // makeRobotAccount creates a robot account based on the arguments for scanning.
-func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64, repository string, registration *scanner.Registration) (*robot.Robot, error) {
+func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64, repository string, registration *scanner.Registration, permission []*types.Policy) (*robot.Robot, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
@@ -934,16 +935,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			{
 				Kind:      "project",
 				Namespace: projectName,
-				Access: []*types.Policy{
-					{
-						Resource: rbac.ResourceRepository,
-						Action:   rbac.ActionPull,
-					},
-					{
-						Resource: rbac.ResourceRepository,
-						Action:   rbac.ActionScannerPull,
-					},
-				},
+				Access:    permission,
 			},
 		},
 	}
@@ -980,7 +972,12 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 		return errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	robot, err := bc.makeRobotAccount(ctx, param.Artifact.ProjectID, param.Artifact.RepositoryName, param.Registration)
+	// Get Scanner handler by scan type to separate the scan logic for different scan types
+	handler := sca.GetScanHandler(param.Type)
+	if handler == nil {
+		return fmt.Errorf("failed to get scan handler, type is %v", param.Type)
+	}
+	robot, err := bc.makeRobotAccount(ctx, param.Artifact.ProjectID, param.Artifact.RepositoryName, param.Registration, handler.RequiredPermissions())
 	if err != nil {
 		return errors.Wrap(err, "scan controller: launch scan job")
 	}
