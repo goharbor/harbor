@@ -214,6 +214,12 @@ const (
 	AuditLogForwardEndpoint = "audit_log_forward_endpoint"
 	// SkipAuditLogDatabase skip to log audit log in database
 	SkipAuditLogDatabase = "skip_audit_log_database"
+
+	// AuditLogTrackIPAddress track client ip address with audit_logs
+	AuditLogTrackIPAddress = "audit_log_track_ip_address"
+	// AuditLogTrackUserAgent track user agent with audit_logs
+	AuditLogTrackUserAgent = "audit_log_track_user_agent"
+
 	// MaxAuditRetentionHour allowed in audit log purge
 	MaxAuditRetentionHour = 240000
 	// ScannerSkipUpdatePullTime

@@ -188,6 +188,8 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
                 prop === 'robot_name_prefix' ||
                 prop === 'audit_log_forward_endpoint' ||
                 prop === 'skip_audit_log_database' ||
+                prop === 'audit_log_track_ip_address' ||
+                prop === 'audit_log_track_user_agent' ||
                 prop === 'session_timeout' ||
                 prop === 'scanner_skip_update_pulltime' ||
                 prop === 'banner_message'

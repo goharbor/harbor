@@ -10,6 +10,7 @@ import { AuditlogService } from '../../../../../ng-swagger-gen/services/auditlog
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../shared/shared.module';
+import { AppConfigService } from '../../../services/app-config.service';
 
 describe('RecentLogComponent (inline template)', () => {
     let component: RecentLogComponent;
@@ -19,6 +20,9 @@ describe('RecentLogComponent (inline template)', () => {
         error() {
             return undefined;
         },
+    };
+    let fakeAppConfigService = {
+        handleError: () => {},
     };
     const mockedAuditLogs: AuditLog[] = [];
     for (let i = 0; i < 18; i++) {
@@ -83,6 +87,7 @@ describe('RecentLogComponent (inline template)', () => {
             providers: [
                 { provide: ErrorHandler, useValue: fakedErrorHandler },
                 { provide: AuditlogService, useValue: fakedAuditlogService },
+                { provide: AppConfigService, useValue: fakeAppConfigService },
             ],
         }).compileComponents();
     });

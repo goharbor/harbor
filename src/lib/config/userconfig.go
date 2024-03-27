@@ -251,6 +251,16 @@ func SkipAuditLogDatabase(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.SkipAuditLogDatabase).GetBool()
 }
 
+// AuditLogTrackIPAddress enables ip address tracking
+func AuditLogTrackIPAddress(ctx context.Context) bool {
+	return DefaultMgr().Get(ctx, common.AuditLogTrackIPAddress).GetBool()
+}
+
+// AuditLogTrackUserAgent enables user info tracking
+func AuditLogTrackUserAgent(ctx context.Context) bool {
+	return DefaultMgr().Get(ctx, common.AuditLogTrackUserAgent).GetBool()
+}
+
 // ScannerSkipUpdatePullTime returns the scanner skip update pull time setting
 func ScannerSkipUpdatePullTime(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()

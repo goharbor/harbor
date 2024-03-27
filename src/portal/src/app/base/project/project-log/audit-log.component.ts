@@ -25,6 +25,7 @@ import {
     setPageSizeToLocalStorage,
 } from '../../../shared/units/utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { AppConfigService } from '../../../services/app-config.service';
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 
@@ -104,7 +105,8 @@ export class AuditLogComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private auditLogService: ProjectService,
-        private messageHandlerService: MessageHandlerService
+        private messageHandlerService: MessageHandlerService,
+        private appConfigService: AppConfigService
     ) {
         // Get current user from registered resolver.
         this.route.data.subscribe(
@@ -120,6 +122,19 @@ export class AuditLogComponent implements OnInit {
         }
     }
 
+    isIPTracked(): boolean {
+        if (this.appConfigService?.configurations?.audit_log_track_ip_address) {
+            return true;
+        }
+        return false;
+    }
+
+    isUATracked(): boolean {
+        if (this.appConfigService?.configurations?.audit_log_track_user_agent) {
+            return true;
+        }
+        return false;
+    }
     retrieve(state?: ClrDatagridStateInterface) {
         if (state && state.page) {
             this.pageSize = state.page.size;

@@ -112,6 +112,8 @@ export class Configuration {
     oidc_group_filter: StringValueItem;
     audit_log_forward_endpoint: StringValueItem;
     skip_audit_log_database: BoolValueItem;
+    audit_log_track_ip_address: BoolValueItem;
+    audit_log_track_user_agent: BoolValueItem;
     session_timeout: NumberValueItem;
     scanner_skip_update_pulltime: BoolValueItem;
     banner_message: StringValueItem;
@@ -189,6 +191,8 @@ export class Configuration {
         this.storage_per_project = new NumberValueItem(-1, true);
         this.audit_log_forward_endpoint = new StringValueItem('', true);
         this.skip_audit_log_database = new BoolValueItem(false, true);
+        this.audit_log_track_ip_address = new BoolValueItem(false, true);
+        this.audit_log_track_user_agent = new BoolValueItem(false, true);
         this.session_timeout = new NumberValueItem(60, true);
         this.scanner_skip_update_pulltime = new BoolValueItem(false, true);
         this.banner_message = new StringValueItem(

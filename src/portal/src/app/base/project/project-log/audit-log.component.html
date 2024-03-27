@@ -69,6 +69,12 @@
             <clr-dg-column>{{
                 'AUDIT_LOG.OPERATION' | translate
             }}</clr-dg-column>
+            <clr-dg-column *ngIf="isIPTracked()">{{
+                'AUDIT_LOG.IP_ADDRESS' | translate
+            }}</clr-dg-column>
+            <clr-dg-column *ngIf="isUATracked()">{{
+                'AUDIT_LOG.USER_AGENT' | translate
+            }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.TIMESTAMP' | translate
             }}</clr-dg-column>
@@ -77,6 +83,12 @@
                 <clr-dg-cell>{{ l.resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource_type }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.operation }}</clr-dg-cell>
+                <clr-dg-cell *ngIf="isIPTracked()">{{
+                    l.client_ip
+                }}</clr-dg-cell>
+                <clr-dg-cell *ngIf="isUATracked()">{{
+                    l.user_agent
+                }}</clr-dg-cell>
                 <clr-dg-cell>{{
                     l.op_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
