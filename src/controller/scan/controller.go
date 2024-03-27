@@ -55,10 +55,11 @@ type Controller interface {
 	//   Arguments:
 	//     ctx context.Context : the context for this method
 	//     artifact *artifact.Artifact : the artifact whose scan job to be stopped
+	//     capType string : the capability type of the scanner, vulnerability or SBOM.
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	Stop(ctx context.Context, artifact *artifact.Artifact) error
+	Stop(ctx context.Context, artifact *artifact.Artifact, capType string) error
 
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
