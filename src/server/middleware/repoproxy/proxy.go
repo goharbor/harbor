@@ -304,6 +304,10 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 		// Then GET the image by digest, in order to associate the tag with the digest
 		// Ensure tag after head request, make sure tags in proxy cache keep update
 		bCtx := orm.Context()
+		_, err := ctl.ProxyManifest(ctx, art, remote)
+		if err != nil {
+			log.Debugf("Failed to ensure proxy manifest %+v , error %v", art, err)
+		}
 		for i := 0; i < ensureTagMaxRetry; i++ {
 			time.Sleep(ensureTagInterval)
 			bArt := lib.ArtifactInfo{ProjectName: art.ProjectName, Repository: art.Repository, Digest: string(desc.Digest)}
