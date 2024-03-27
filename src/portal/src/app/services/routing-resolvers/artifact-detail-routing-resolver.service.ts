@@ -51,6 +51,7 @@ export class ArtifactDetailRoutingResolverService {
                         projectName: project.name,
                         withLabel: true,
                         withScanOverview: true,
+                        withSbomOverview: true,
                         withTag: false,
                         withImmutableStatus: true,
                     }),
