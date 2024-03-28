@@ -45,6 +45,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 	"github.com/goharbor/harbor/src/pkg/task"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
