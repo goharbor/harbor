@@ -379,7 +379,9 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 			}
 
 			err = bc.startScanAll(ctx, executionID)
-			log.Errorf("failed to start scan all, executionID=%d, error: %v", executionID, err)
+			if err != nil {
+				log.Errorf("failed to start scan all, executionID=%d, error: %v", executionID, err)
+			}
 		}(bc.makeCtx())
 	} else {
 		if err := bc.startScanAll(ctx, executionID); err != nil {
@@ -994,6 +996,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 			Digest:      param.Artifact.Digest,
 			Tag:         param.Tag,
 			MimeType:    param.Artifact.ManifestMediaType,
+			Size:        param.Artifact.Size,
 		},
 	}
 
