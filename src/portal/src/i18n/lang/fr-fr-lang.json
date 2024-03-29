@@ -1856,7 +1856,7 @@
         "WORKER_FREE_BTN_INFO": "Arrête les tâches en cours pour libérer le worker",
         "CRON": "Cron",
         "WAITING_TOO_LONG_1": "Certaines tâches sont en attente d'exécution depuis plus de 24 heures. Veuillez vérifier le tableau de bord ",
-        "WAITING_TOO_LONG_2": "du service des tâches.",
+        "WAITING_TOO_LONG_2": "tableau de bord.",
         "WAITING_TOO_LONG_3": "Pour plus de détails, veuillez consulter le ",
         "WAITING_TOO_LONG_4": "Wiki."
     },
