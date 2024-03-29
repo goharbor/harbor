@@ -2,7 +2,7 @@
 set -e
 
 echo "get the conformance testing code..."
-git clone https://github.com/opencontainers/distribution-spec.git
+# git clone https://github.com/opencontainers/distribution-spec.git
 
 function createPro {
    echo "create testing project: $2"
@@ -31,4 +31,5 @@ export OCI_CROSSMOUNT_NAMESPACE="crossmount/testrepo"
 export OCI_AUTOMATIC_CROSSMOUNT="false"
 
 cd ./distribution-spec/conformance
+git checkout tags/v1.1.0
 go test .
