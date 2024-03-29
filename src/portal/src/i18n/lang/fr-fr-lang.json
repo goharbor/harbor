@@ -396,7 +396,7 @@
         "GARBAGE_COLLECTION": "Purge",
         "PURGE_AUDIT": "Audit de purge",
         "JOBSERVICE_MONITOR": "Job Service Monitor",
-        "TAG_RETENTION": "Rétention de tag",
+        "TAG_RETENTION": "Rétention des tags",
         "SCANNER": "Scanner",
         "LABEL": "Label",
         "EXPORT_CVE": "Exporter CVE",
