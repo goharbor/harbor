@@ -343,10 +343,10 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 	return status != execution.Status, status, false, err
 }
 
-type jsonbStr struct {
-	keyPrefix  string
-	jsonbKey   string
-	jsonbValue interface{}
+type jsonbStru struct {
+	keyPrefix string
+	key       string
+	value     interface{}
 }
 
 func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
@@ -358,31 +358,31 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 	// append the filter for "extra attrs"
 	if query != nil && len(query.Keywords) > 0 {
 		var (
-			jsonbStrs []jsonbStr
-			args      []interface{}
+			jsonbStrus []jsonbStru
+			args       []interface{}
 		)
 
 		for key, value := range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {
-				jsonbStrs = append(jsonbStrs, jsonbStr{
-					keyPrefix:  "ExtraAttrs.",
-					jsonbKey:   key,
-					jsonbValue: value,
+				jsonbStrus = append(jsonbStrus, jsonbStru{
+					keyPrefix: "ExtraAttrs.",
+					key:       key,
+					value:     value,
 				})
 			}
 			if strings.HasPrefix(key, "extra_attrs.") {
-				jsonbStrs = append(jsonbStrs, jsonbStr{
-					keyPrefix:  "extra_attrs.",
-					jsonbKey:   key,
-					jsonbValue: value,
+				jsonbStrus = append(jsonbStrus, jsonbStru{
+					keyPrefix: "extra_attrs.",
+					key:       key,
+					value:     value,
 				})
 			}
 		}
-		if len(jsonbStrs) == 0 {
+		if len(jsonbStrus) == 0 {
 			return qs, nil
 		}
 
-		idSql, args := buildInClauseSQLForExtraAttrs(jsonbStrs)
+		idSql, args := buildInClauseSQLForExtraAttrs(jsonbStrus)
 		inClause, err := orm.CreateInClause(ctx, idSql, args...)
 		if err != nil {
 			return nil, err
@@ -407,8 +407,8 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 // key = extra_attrs.a.b.c
 //
 //	==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
-func buildInClauseSQLForExtraAttrs(jsonbStrs []jsonbStr) (string, []interface{}) {
-	if len(jsonbStrs) == 0 {
+func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{}) {
+	if len(jsonbStrus) == 0 {
 		return "", nil
 	}
 
@@ -416,8 +416,8 @@ func buildInClauseSQLForExtraAttrs(jsonbStrs []jsonbStr) (string, []interface{})
 	var args []interface{}
 	sql := "select id from execution where"
 
-	for i, jsonbStr := range jsonbStrs {
-		keys := strings.Split(strings.TrimPrefix(jsonbStr.jsonbKey, jsonbStr.keyPrefix), ".")
+	for i, jsonbStr := range jsonbStrus {
+		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
 		if len(keys) == 1 {
 			if i == 0 {
 				cond += "extra_attrs->>?=?"
@@ -441,7 +441,7 @@ func buildInClauseSQLForExtraAttrs(jsonbStrs []jsonbStr) (string, []interface{})
 		for _, item := range keys {
 			args = append(args, item)
 		}
-		args = append(args, jsonbStr.jsonbValue)
+		args = append(args, jsonbStr.value)
 
 	}
 
