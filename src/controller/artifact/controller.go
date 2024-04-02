@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -73,6 +74,7 @@ var (
 		chart.ArtifactTypeChart: icon.DigestOfIconChart,
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
+		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
 	}
 )
 

@@ -49,8 +49,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
+	"github.com/goharbor/harbor/src/testing/controller/artifact"
 )
 
 var (
@@ -108,6 +110,8 @@ type basicController struct {
 	rc robot.Controller
 	// Tag controller
 	tagCtl tag.Controller
+	// Artifact controller
+	artCtl artifact.Controller
 	// UUID generator
 	uuid uuidGenerator
 	// Configuration getter func
@@ -259,7 +263,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 		launchScanJobParams []*launchScanJobParam
 	)
 	for _, art := range artifacts {
-		reports, err := bc.makeReportPlaceholder(ctx, r, art)
+		reports, err := bc.makeReportPlaceholder(ctx, r, art, opts)
 		if err != nil {
 			if errors.IsConflictErr(err) {
 				errs = append(errs, err)
@@ -326,7 +330,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	for _, launchScanJobParam := range launchScanJobParams {
 		launchScanJobParam.ExecutionID = opts.ExecutionID
 
-		if err := bc.launchScanJob(ctx, launchScanJobParam); err != nil {
+		if err := bc.launchScanJob(ctx, launchScanJobParam, opts); err != nil {
 			log.G(ctx).Warningf("scan artifact %s@%s failed, error: %v", artifact.RepositoryName, artifact.Digest, err)
 			errs = append(errs, err)
 		}
@@ -546,11 +550,13 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 	return nil
 }
 
-func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner.Registration, art *ar.Artifact) ([]*scan.Report, error) {
-	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType)
-
+func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner.Registration, art *ar.Artifact, opts *Options) ([]*scan.Report, error) {
+	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType, opts.GetScanType())
 	oldReports, err := bc.manager.GetBy(bc.cloneCtx(ctx), art.Digest, r.UUID, mimeTypes)
 	if err != nil {
+		return nil, err
+	}
+	if err := bc.deleteArtifactAccessories(ctx, oldReports); err != nil {
 		return nil, err
 	}
 
@@ -574,7 +580,7 @@ func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner
 
 	var reports []*scan.Report
 
-	for _, pm := range r.GetProducesMimeTypes(art.ManifestMediaType) {
+	for _, pm := range r.GetProducesMimeTypes(art.ManifestMediaType, opts.GetScanType()) {
 		report := &scan.Report{
 			Digest:           art.Digest,
 			RegistrationUUID: r.UUID,
@@ -991,7 +997,7 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 }
 
 // launchScanJob launches a job to run scan
-func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJobParam) error {
+func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJobParam, opts *Options) error {
 	// don't launch scan job for the artifact which is not supported by the scanner
 	if !hasCapability(param.Registration, param.Artifact) {
 		return nil
@@ -1031,6 +1037,11 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 			Tag:         param.Tag,
 			MimeType:    param.Artifact.ManifestMediaType,
 			Size:        param.Artifact.Size,
+		},
+		RequestType: []*v1.ScanType{
+			{
+				Type: opts.GetScanType(),
+			},
 		},
 	}
 
@@ -1264,4 +1275,49 @@ func parseOptions(options ...Option) (*Options, error) {
 	}
 
 	return ops, nil
+}
+
+// deleteArtifactAccessories delete the accessory in reports, only delete sbom accessory
+func (bc *basicController) deleteArtifactAccessories(ctx context.Context, reports []*scan.Report) error {
+	for _, rpt := range reports {
+		if rpt.MimeType != v1.MimeTypeSBOMReport {
+			continue
+		}
+		if err := bc.deleteArtifactAccessory(ctx, rpt.Report); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// deleteArtifactAccessory check if current report has accessory info, if there is, delete it
+func (bc *basicController) deleteArtifactAccessory(ctx context.Context, report string) error {
+	if len(report) == 0 {
+		return nil
+	}
+	sbomSummary := sbomModel.Summary{}
+	if err := json.Unmarshal([]byte(report), &sbomSummary); err != nil {
+		// it could be a non sbom report, just skip
+		log.Debugf("fail to unmarshal %v, skip to delete sbom report", err)
+		return nil
+	}
+	repo, dgst := sbomSummary.SBOMAccArt()
+	if len(repo) == 0 || len(dgst) == 0 {
+		return nil
+	}
+	art, err := bc.ar.GetByReference(ctx, repo, dgst, nil)
+	if err != nil {
+		if errors.IsNotFoundErr(err) {
+			return nil
+		}
+		return err
+	}
+	if art == nil {
+		return nil
+	}
+	err = bc.ar.Delete(ctx, art.ID)
+	if errors.IsNotFoundErr(err) {
+		return nil
+	}
+	return err
 }

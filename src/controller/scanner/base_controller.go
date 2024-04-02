@@ -79,7 +79,11 @@ func (bc *basicController) ListRegistrations(ctx context.Context, query *q.Query
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: list registrations")
 	}
-
+	for _, r := range l {
+		if err := bc.appendCap(ctx, r); err != nil {
+			return nil, err
+		}
+	}
 	return l, nil
 }
 
@@ -122,8 +126,23 @@ func (bc *basicController) GetRegistration(ctx context.Context, registrationUUID
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: get registration")
 	}
-
+	if r == nil {
+		return nil, nil
+	}
+	if err := bc.appendCap(ctx, r); err != nil {
+		return nil, err
+	}
 	return r, nil
+}
+
+func (bc *basicController) appendCap(ctx context.Context, r *scanner.Registration) error {
+	mt, err := bc.Ping(ctx, r)
+	if err != nil {
+		logger.Errorf("Get registration error: %s", err)
+		return err
+	}
+	r.Capabilities = mt.ConvertCapability()
+	return nil
 }
 
 // RegistrationExists ...

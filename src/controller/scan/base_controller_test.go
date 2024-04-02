@@ -108,6 +108,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Version: "0.1.0",
 		},
 		Capabilities: []*v1.ScannerCapability{{
+			Type: v1.ScanTypeVulnerability,
 			ConsumesMimeTypes: []string{
 				v1.MimeTypeOCIArtifact,
 				v1.MimeTypeDockerArtifact,
@@ -115,7 +116,17 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			ProducesMimeTypes: []string{
 				v1.MimeTypeNativeReport,
 			},
-		}},
+		},
+			{
+				Type: v1.ScanTypeSbom,
+				ConsumesMimeTypes: []string{
+					v1.MimeTypeOCIArtifact,
+				},
+				ProducesMimeTypes: []string{
+					v1.MimeTypeSBOMReport,
+				},
+			},
+		},
 		Properties: v1.ScannerProperties{
 			"extra": "testing",
 		},
@@ -654,4 +665,23 @@ func TestIsSBOMMimeTypes(t *testing.T) {
 
 	// Test with an empty slice
 	assert.False(t, isSBOMMimeTypes([]string{}))
+}
+
+func (suite *ControllerTestSuite) TestDeleteArtifactAccessories() {
+	// artifact not provided
+	suite.Nil(suite.c.deleteArtifactAccessories(context.TODO(), nil))
+
+	// artifact is provided
+	art := &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1, RepositoryName: "library/photon"}}
+	mock.OnAnything(suite.ar, "GetByReference").Return(art, nil).Once()
+	mock.OnAnything(suite.ar, "Delete").Return(nil).Once()
+	reportContent := `{"sbom_digest":"sha256:12345", "scan_status":"Success", "duration":3, "sbom_repository":"library/photon"}`
+	emptyReportContent := ``
+	reports := []*scan.Report{
+		{Report: reportContent},
+		{Report: emptyReportContent},
+	}
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	suite.NoError(suite.c.deleteArtifactAccessories(ctx, reports))
+
 }

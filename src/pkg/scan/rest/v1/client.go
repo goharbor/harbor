@@ -68,7 +68,7 @@ type Client interface {
 	//   Returns:
 	//     string : the scan report of the given artifact
 	//     error  : non nil error if any errors occurred
-	GetScanReport(scanRequestID, reportMIMEType string) (string, error)
+	GetScanReport(scanRequestID, reportMIMEType string, urlParameter string) (string, error)
 }
 
 // basicClient is default implementation of the Client interface
@@ -97,7 +97,7 @@ func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Cli
 		httpClient: &http.Client{
 			Timeout:   time.Second * 5,
 			Transport: transport,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 				return http.ErrUseLastResponse
 			},
 		},
@@ -167,7 +167,7 @@ func (c *basicClient) SubmitScan(req *ScanRequest) (*ScanResponse, error) {
 }
 
 // GetScanReport ...
-func (c *basicClient) GetScanReport(scanRequestID, reportMIMEType string) (string, error) {
+func (c *basicClient) GetScanReport(scanRequestID, reportMIMEType string, urlParameter string) (string, error) {
 	if len(scanRequestID) == 0 {
 		return "", errors.New("empty scan request ID")
 	}
@@ -177,8 +177,11 @@ func (c *basicClient) GetScanReport(scanRequestID, reportMIMEType string) (strin
 	}
 
 	def := c.spec.GetScanReport(scanRequestID, reportMIMEType)
-
-	req, err := http.NewRequest(http.MethodGet, def.URL, nil)
+	reportURL := def.URL
+	if len(urlParameter) > 0 {
+		reportURL = fmt.Sprintf("%s?%s", def.URL, urlParameter)
+	}
+	req, err := http.NewRequest(http.MethodGet, reportURL, nil)
 	if err != nil {
 		return "", errors.Wrap(err, "v1 client: get scan report")
 	}

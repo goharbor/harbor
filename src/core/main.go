@@ -70,6 +70,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	_ "github.com/goharbor/harbor/src/pkg/scan/sbom"
 	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/version"
