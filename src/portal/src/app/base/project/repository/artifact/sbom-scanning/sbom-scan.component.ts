@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Subscription, timer } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { ScannerVo } from '../../../../../shared/services';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import {
     clone,
@@ -27,6 +26,7 @@ import { ScanService } from '../../../../../../../ng-swagger-gen/services/scan.s
 import { ScanType } from 'ng-swagger-gen/models';
 import { ScanTypes } from '../../../../../shared/entities/shared.const';
 import { SBOMOverview } from './sbom-overview';
+import { Scanner } from '../../../../left-side-nav/interrogation-services/scanner/scanner';
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
 
@@ -36,7 +36,7 @@ const RETRY_TIMES: number = 3;
     styleUrls: ['./scanning.scss'],
 })
 export class ResultSbomComponent implements OnInit, OnDestroy {
-    @Input() inputScanner: ScannerVo;
+    @Input() inputScanner: Scanner;
     @Input() repoName: string = '';
     @Input() projectName: string = '';
     @Input() projectId: string = '';
@@ -271,10 +271,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
         }/scan/${this.sbomOverview.report_id}/log`;
     }
 
-    getScanner(): ScannerVo {
-        if (this.sbomOverview && this.sbomOverview.scanner) {
-            return this.sbomOverview.scanner;
-        }
+    getScanner(): Scanner {
         return this.inputScanner;
     }
 

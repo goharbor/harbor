@@ -84,6 +84,7 @@ import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
+import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
@@ -160,6 +161,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     get generateSbomBtnState(): ClrLoadingState {
         return this.artifactListPageService.getSbomBtnState();
     }
+    get projectScanner(): Scanner {
+        return this.artifactListPageService.getProjectScanner();
+    }
+
     onSendingScanCommand: boolean;
     onSendingStopScanCommand: boolean = false;
     onStopScanArtifactsLength: number = 0;
@@ -268,6 +273,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                     this.copyDigestComponent.showDigestId(a.digest);
                 }
             );
+        }
+        if (this.projectId) {
+            this.artifactListPageService.init(this.projectId);
         }
     }
 
@@ -982,11 +990,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         }
     }
-    // when finished, remove it from selectedRow
-    sbomFinished(artifact: Artifact) {
-        this.scanFinished(artifact);
-    }
-
     // when finished, remove it from selectedRow
     sbomFinished(artifact: Artifact) {
         this.scanFinished(artifact);

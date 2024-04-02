@@ -6,6 +6,7 @@ import {
     USERSTATICPERMISSION,
 } from '../../../../../shared/services';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
+import { Scanner } from '../../../../left-side-nav/interrogation-services/scanner/scanner';
 
 @Injectable()
 export class ArtifactListPageService {
@@ -19,12 +20,17 @@ export class ArtifactListPageService {
     private _hasDeleteImagePermission: boolean = false;
     private _hasScanImagePermission: boolean = false;
     private _hasSbomPermission: boolean = false;
+    private _scanner: Scanner = undefined;
 
     constructor(
         private scanningService: ScanningResultService,
         private userPermissionService: UserPermissionService,
         private errorHandlerService: ErrorHandler
     ) {}
+
+    getProjectScanner(): Scanner {
+        return this._scanner;
+    }
 
     getScanBtnState(): ClrLoadingState {
         return this._scanBtnState;
@@ -103,29 +109,28 @@ export class ArtifactListPageService {
         this._sbomBtnState = ClrLoadingState.LOADING;
         this.scanningService.getProjectScanner(projectId).subscribe(
             response => {
-                if (
-                    response &&
-                    '{}' !== JSON.stringify(response) &&
-                    !response.disabled &&
-                    response.health === 'healthy'
-                ) {
-                    this.updateStates(
-                        true,
-                        ClrLoadingState.SUCCESS,
-                        ClrLoadingState.SUCCESS
-                    );
-                    if (response?.capabilities) {
-                        this.updateCapabilities(response?.capabilities);
+                if (response && '{}' !== JSON.stringify(response)) {
+                    this._scanner = response;
+                    if (!response.disabled && response.health === 'healthy') {
+                        this.updateStates(
+                            true,
+                            ClrLoadingState.SUCCESS,
+                            ClrLoadingState.SUCCESS
+                        );
+                        if (response?.capabilities) {
+                            this.updateCapabilities(response?.capabilities);
+                        }
+                    } else {
+                        this.updateStates(
+                            false,
+                            ClrLoadingState.ERROR,
+                            ClrLoadingState.ERROR
+                        );
                     }
-                } else {
-                    this.updateStates(
-                        false,
-                        ClrLoadingState.ERROR,
-                        ClrLoadingState.ERROR
-                    );
                 }
             },
             error => {
+                this._scanner = null;
                 this.updateStates(
                     false,
                     ClrLoadingState.ERROR,

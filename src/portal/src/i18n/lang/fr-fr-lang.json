@@ -804,6 +804,7 @@
         "FILTER_BY_LABEL": "Filtrer les images par label",
         "FILTER_ARTIFACT_BY_LABEL": "Filtrer les artefact par label",
         "ADD_LABELS": "Ajouter des labels",
+        "STOP": "Stop",
         "RETAG": "Copier",
         "ACTION": "Action",
         "DEPLOY": "Déployer",
@@ -1056,7 +1057,7 @@
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "GENERATE": "Create SBOM",
+        "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
         "Details": "SBOM details",
         "STOP": "Stop SBOM",
@@ -1106,12 +1107,12 @@
         "PLACEHOLDER": "Filtrer les vulnérabilités",
         "PACKAGE": "paquet",
         "PACKAGES": "paquets",
-        "SCAN_NOW": "Analyser",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "Scan par {{scanner}}",
         "REPORTED_BY": "Rapporté par {{scanner}}",
         "NO_SCANNER": "Aucun scanneur",
         "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'analyse",
-        "STOP_NOW": "Arrêter l'analyse"
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Commande de push",
