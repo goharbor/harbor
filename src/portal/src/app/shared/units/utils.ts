@@ -275,6 +275,21 @@ export const VULNERABILITY_SCAN_STATUS = {
     SUCCESS: 'Success',
     SCHEDULED: 'Scheduled',
 };
+
+/**
+ * The state of sbom generation
+ */
+export const SBOM_SCAN_STATUS = {
+    // front-end status
+    NOT_GENERATED_SBOM: 'Not generated SBOM',
+    // back-end status
+    PENDING: 'Pending',
+    RUNNING: 'Running',
+    ERROR: 'Error',
+    STOPPED: 'Stopped',
+    SUCCESS: 'Success',
+    SCHEDULED: 'Scheduled',
+};
 /**
  * The severity of vulnerability scanning
  */

@@ -777,6 +777,7 @@
         "ARTIFACTS": "Artifacts",
         "SIZE": "Boyut",
         "VULNERABILITY": "Güvenlik Açığı",
+        "SBOM": "SBOM",
         "BUILD_HISTORY": "Geçmişi Oluştur",
         "SIGNED": "İmzalanmış",
         "AUTHOR": "Yazar",
@@ -1027,6 +1028,41 @@
         "IN_PROGRESS": "Ara...",
         "BACK": "Geri"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "Not Generated",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "SBOM scan stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Create SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "Taranmadı",
@@ -1107,6 +1143,7 @@
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifacts!",
         "SCAN_UNSUPPORTED": "Unsupported",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Özet",
         "DEPENDENCIES": "Bağımlılıklar",
         "VALUES": "Değerler",
