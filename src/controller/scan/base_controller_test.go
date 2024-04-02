@@ -380,7 +380,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 func (suite *ControllerTestSuite) TestScanControllerStop() {
 	{
 		// artifact not provieded
-		suite.Require().Error(suite.c.Stop(context.TODO(), nil))
+		suite.Require().Error(suite.c.Stop(context.TODO(), nil, "Vulnerability"))
 	}
 
 	{
@@ -392,7 +392,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact, "Vulnerability"))
 	}
 
 	{
@@ -402,7 +402,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "Vulnerability"))
 	}
 
 	{
@@ -411,7 +411,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "Vulnerability"))
 	}
 }
 
