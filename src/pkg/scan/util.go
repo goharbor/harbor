@@ -34,8 +34,10 @@ import (
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
+// Insecure ...
 type Insecure bool
 
+// RemoteOptions ...
 func (i Insecure) RemoteOptions() []remote.Option {
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: bool(i)}
@@ -76,14 +78,14 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[str
 	// https://github.com/google/go-containerregistry/issues/1832
 	accArt = mutate.MediaType(accArt, ocispec.MediaTypeImageManifest)
 	accArt = mutate.ConfigMediaType(accArt, types.MediaType(mediaType))
-	accArt = mutate.Subject(accArt, *accSubArt).(v1.Image)
 	accArt = mutate.Annotations(accArt, accAnnotations).(v1.Image)
+	accArt = mutate.Subject(accArt, *accSubArt).(v1.Image)
 
-	digest, err := accArt.Digest()
+	dgst, err := accArt.Digest()
 	if err != nil {
 		return "", err
 	}
-	accRef, err := name.ParseReference(fmt.Sprintf("%s/%s@%s", sq.Registry.URL, sq.Artifact.Repository, digest.String()))
+	accRef, err := name.ParseReference(fmt.Sprintf("%s/%s@%s", sq.Registry.URL, sq.Artifact.Repository, dgst.String()))
 	if err != nil {
 		return "", err
 	}
@@ -91,5 +93,5 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[str
 	if err := remote.Write(accRef, accArt, opts...); err != nil {
 		return "", err
 	}
-	return digest.String(), nil
+	return dgst.String(), nil
 }
