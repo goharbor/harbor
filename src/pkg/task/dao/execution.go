@@ -417,6 +417,9 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 	sql := "select id from execution where"
 
 	for i, jsonbStr := range jsonbStrus {
+		if jsonbStr.key == "" || jsonbStr.value == "" {
+			return "", nil
+		}
 		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
 		if len(keys) == 1 {
 			if i == 0 {
@@ -442,7 +445,6 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 			args = append(args, item)
 		}
 		args = append(args, jsonbStr.value)
-
 	}
 
 	return fmt.Sprintf("%s %s", sql, cond), args
