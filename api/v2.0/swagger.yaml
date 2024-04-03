@@ -991,6 +991,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_sbom_overview
+          in: query
+          description: Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
+          type: boolean
+          required: false
+          default: false          
         - name: with_signature
           in: query
           description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
@@ -1096,6 +1102,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_sbom_overview
+          in: query
+          description: Specify whether the SBOM overview is included in returning artifact, when this option is true, the SBOM overview will be included in the response
+          type: boolean
+          required: false
+          default: false
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts.
@@ -1164,6 +1176,11 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - name: scan_request_type
+          in: body
+          required: false
+          schema: 
+            $ref: '#/definitions/ScanRequestType'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -1432,7 +1449,7 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies]
+          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
           required: true
       responses:
         '200':
@@ -6592,6 +6609,9 @@ definitions:
       scan_overview:
         $ref: '#/definitions/ScanOverview'
         description: The overview of the scan result.
+      sbom_overview:
+        $ref: '#/definitions/SBOMOverview'
+        description: The overview of the generating SBOM progress
       accessories:
         type: array
         items:
@@ -6738,11 +6758,47 @@ definitions:
         type: string
         description: Version of the scanner adapter
         example: "v0.9.1"
+  ScanRequestType:
+    type: object
+    properties:
+      scan_type: 
+        type: string
+        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
+        enum: [vulnerability, sbom]
   ScanOverview:
     type: object
     description: 'The scan overview attached in the metadata of tag'
     additionalProperties:
       $ref: '#/definitions/NativeReportSummary'
+  SBOMOverview:
+    type: object
+    description: 'The generate SBOM overview information'
+    properties:
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the generating sbom report task'
+        example: '2006-01-02T14:04:05Z'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the generating sbom report task'
+        example: '2006-01-02T15:04:05Z'
+      scan_status:
+        type: string
+        description: 'The status of the generating SBOM task'
+      sbom_digest:
+        type: string
+        description: 'The digest of the generated SBOM accessory'   
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'   
+      duration: 
+        type: integer
+        format: int64
+        description: 'Time in seconds required to create the report'
+        example: 300
   NativeReportSummary:
     type: object
     description: 'The summary for the native report'
@@ -8368,7 +8424,12 @@ definitions:
         default: ""
         description: Indicate the healthy of the registration
         example: "healthy"
-
+      capabilities:
+        type: object
+        description: Indicates the capabilities of the scanner, e.g. support_vulnerability or support_sbom.
+        additionalProperties: True
+        example:  {"support_vulnerability": true, "support_sbom": true}
+    
   ScannerRegistrationReq:
     type: object
     required:
