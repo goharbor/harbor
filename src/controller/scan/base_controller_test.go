@@ -78,7 +78,7 @@ type ControllerTestSuite struct {
 	taskMgr         *tasktesting.Manager
 	reportMgr       *reporttesting.Manager
 	ar              artifact.Controller
-	c               Controller
+	c               *basicController
 	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
 	cache           *mockcache.Cache
 }
@@ -180,7 +180,19 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 	}
 
+	sbomReport := []*scan.Report{
+		{
+			ID:               12,
+			UUID:             "rp-uuid-002",
+			Digest:           "digest-code",
+			RegistrationUUID: "uuid001",
+			MimeType:         "application/vnd.scanner.adapter.sbom.report.harbor+json; version=1.0",
+			Status:           "Success",
+			Report:           `{"sbom_digest": "sha256:1234567890", "scan_status": "Success", "duration": 3, "start_time": "2021-09-01T00:00:00Z", "end_time": "2021-09-01T00:00:03Z"}`,
+		},
+	}
 	mgr.On("GetBy", mock.Anything, suite.artifact.Digest, suite.registration.UUID, []string{v1.MimeTypeNativeReport}).Return(reports, nil)
+	mgr.On("GetBy", mock.Anything, suite.artifact.Digest, suite.registration.UUID, []string{v1.MimeTypeSBOMReport}).Return(sbomReport, nil)
 	mgr.On("Get", mock.Anything, "rp-uuid-001").Return(reports[0], nil)
 	mgr.On("UpdateReportData", "rp-uuid-001", suite.rawReport, (int64)(10000)).Return(nil)
 	mgr.On("UpdateStatus", "the-uuid-123", "Success", (int64)(10000)).Return(nil)
@@ -619,4 +631,27 @@ func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs .
 	extraAttrs[artifactIDKey] = float64(artifactID)
 
 	return extraAttrs
+}
+
+func (suite *ControllerTestSuite) TestGenerateSBOMSummary() {
+	sum, err := suite.c.GetSBOMSummary(context.TODO(), suite.artifact, []string{v1.MimeTypeSBOMReport})
+	suite.Nil(err)
+	suite.NotNil(sum)
+	status := sum["scan_status"]
+	suite.NotNil(status)
+	dgst := sum["sbom_digest"]
+	suite.NotNil(dgst)
+	suite.Equal("Success", status)
+	suite.Equal("sha256:1234567890", dgst)
+}
+
+func TestIsSBOMMimeTypes(t *testing.T) {
+	// Test with a slice containing the SBOM mime type
+	assert.True(t, isSBOMMimeTypes([]string{v1.MimeTypeSBOMReport}))
+
+	// Test with a slice not containing the SBOM mime type
+	assert.False(t, isSBOMMimeTypes([]string{"application/vnd.oci.image.manifest.v1+json"}))
+
+	// Test with an empty slice
+	assert.False(t, isSBOMMimeTypes([]string{}))
 }
