@@ -20,6 +20,10 @@ Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 
+Test Case - Quota Sorting
+    [Tags]  quota_sorting
+    Harbor API Test  ./tests/apitests/python/test_quota_sorting.py
+
 Test Case - Add Private Project Member and Check User Can See It
     [Tags]  private_member
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
