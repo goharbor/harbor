@@ -1243,6 +1243,8 @@ paths:
           description: Successfully get scan log file
           schema:
             type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
