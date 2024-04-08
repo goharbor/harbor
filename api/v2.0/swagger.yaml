@@ -1194,7 +1194,6 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/ScanType'
-            type: object
           description: 'The scan type: Vulnerabilities, SBOM'
       responses:
         '202':
