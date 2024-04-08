@@ -1855,7 +1855,7 @@
         "SCHEDULE_RESUME_BTN_INFO": "REPRENDRE — Reprend les files d'attente de tâches à exécuter.",
         "WORKER_FREE_BTN_INFO": "Arrête les tâches en cours pour libérer le worker",
         "CRON": "Cron",
-        "WAITING_TOO_LONG_1": "Certaines tâches sont en attente d'exécution depuis plus de 24 heures. Veuillez vérifier le tableau de bord ",
+        "WAITING_TOO_LONG_1": "Certaines tâches sont en attente d'exécution depuis plus de 24 heures. Veuillez vérifier le ",
         "WAITING_TOO_LONG_2": "tableau de bord.",
         "WAITING_TOO_LONG_3": "Pour plus de détails, veuillez consulter le ",
         "WAITING_TOO_LONG_4": "Wiki."
