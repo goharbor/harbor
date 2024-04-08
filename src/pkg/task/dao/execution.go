@@ -382,8 +382,8 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 			return qs, nil
 		}
 
-		idSql, args := buildInClauseSQLForExtraAttrs(jsonbStrus)
-		inClause, err := orm.CreateInClause(ctx, idSql, args...)
+		idSQL, args := buildInClauseSQLForExtraAttrs(jsonbStrus)
+		inClause, err := orm.CreateInClause(ctx, idSQL, args...)
 		if err != nil {
 			return nil, err
 		}
