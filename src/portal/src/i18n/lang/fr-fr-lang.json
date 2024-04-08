@@ -402,7 +402,7 @@
         "EXPORT_CVE": "Exporter les CVE",
         "SECURITY_HUB": "Centre de sécurité",
         "CATALOG": "Catalogue",
-        "METADATA": "Métadonnées projet",
+        "METADATA": "Métadonnées du projet",
         "REPOSITORY": "Dépôt",
         "ARTIFACT": "Artefact",
         "SCAN": "Scan",
