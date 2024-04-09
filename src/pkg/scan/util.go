@@ -30,7 +30,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -49,7 +49,7 @@ type referrer struct {
 }
 
 // GenAccessoryArt composes the accessory oci object and push it back to harbor core as an accessory of the scanned artifact.
-func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[string]string, mediaType string, robot robot.Robot) (string, error) {
+func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[string]string, mediaType string, robot *model.Robot) (string, error) {
 	accArt, err := mutate.Append(empty.Image, mutate.Addendum{
 		Layer: static.NewLayer(accData, ocispec.MediaTypeImageLayer),
 		History: v1.History{

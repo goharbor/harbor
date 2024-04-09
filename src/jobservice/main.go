@@ -36,6 +36,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	_ "github.com/goharbor/harbor/src/pkg/config/rest"
+	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 )
 
 func main() {
