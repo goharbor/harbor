@@ -16,6 +16,7 @@ package scan
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -34,8 +35,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
@@ -145,6 +146,7 @@ func (j *Job) Validate(params job.Parameters) error {
 func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Get logger
 	myLogger := ctx.GetLogger()
+	startTime := time.Now()
 
 	// shouldStop checks if the job should be stopped
 	shouldStop := func() bool {
@@ -160,6 +162,11 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	r, _ := extractRegistration(params)
 	req, _ := ExtractScanReq(params)
 	mimeTypes, _ := extractMimeTypes(params)
+	scanType := v1.ScanTypeVulnerability
+	if len(req.RequestType) > 0 {
+		scanType = req.RequestType[0].Type
+	}
+	handler := GetScanHandler(scanType)
 
 	// Print related infos to log
 	printJSONParameter(JobParamRegistration, removeRegistrationAuthInfo(r), myLogger)
@@ -235,30 +242,19 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 					}
 
 					myLogger.Debugf("check scan report for mime %s at %s", m, t.Format("2006/01/02 15:04:05"))
-
-					rawReport, err := client.GetScanReport(resp.ID, m)
+					rawReport, err := fetchScanReportFromScanner(client, resp.ID, m)
 					if err != nil {
 						// Not ready yet
 						if notReadyErr, ok := err.(*v1.ReportNotReadyError); ok {
 							// Reset to the new check interval
 							tm.Reset(time.Duration(notReadyErr.RetryAfter) * time.Second)
 							myLogger.Infof("Report with mime type %s is not ready yet, retry after %d seconds", m, notReadyErr.RetryAfter)
-
 							continue
 						}
-
-						errs[i] = errors.Wrap(err, fmt.Sprintf("check scan report with mime type %s", m))
+						errs[i] = errors.Wrap(err, fmt.Sprintf("scan job: fetch scan report, mimetype %v", m))
 						return
 					}
-
-					// Make sure the data is aligned with the v1 spec.
-					if _, err = report.ResolveData(m, []byte(rawReport)); err != nil {
-						errs[i] = errors.Wrap(err, "scan job: resolve report data")
-						return
-					}
-
 					rawReports[i] = rawReport
-
 					return
 				case <-ctx.SystemContext().Done():
 					// Terminated by system
@@ -292,33 +288,19 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Log error to the job log
 	if err != nil {
 		myLogger.Error(err)
-
 		return err
 	}
 
 	for i, mimeType := range mimeTypes {
-		reports, err := report.Mgr.GetBy(ctx.SystemContext(), req.Artifact.Digest, r.UUID, []string{mimeType})
+		rp, err := getReportPlaceholder(ctx.SystemContext(), req.Artifact.Digest, r.UUID, mimeType, myLogger)
 		if err != nil {
-			myLogger.Error("Failed to get report for artifact %s of mimetype %s, error %v", req.Artifact.Digest, mimeType, err)
-
 			return err
 		}
+		myLogger.Debugf("Converting report ID %s to the new V2 schema", rp.UUID)
 
-		if len(reports) == 0 {
-			myLogger.Error("No report found for artifact %s of mimetype %s, error %v", req.Artifact.Digest, mimeType, err)
-
-			return errors.NotFoundError(nil).WithMessage("no report found to update data")
-		}
-
-		rp := reports[0]
-
-		logger.Debugf("Converting report ID %s to the new V2 schema", rp.UUID)
-
-		// use a new ormer here to use the short db connection
-		_, reportData, err := postprocessors.Converter.ToRelationalSchema(ctx.SystemContext(), rp.UUID, rp.RegistrationUUID, rp.Digest, rawReports[i])
+		reportData, err := handler.PostScan(ctx, req, rp, rawReports[i], startTime, robotAccount)
 		if err != nil {
 			myLogger.Errorf("Failed to convert vulnerability data to new schema for report %s, error %v", rp.UUID, err)
-
 			return err
 		}
 
@@ -328,7 +310,6 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		// would be redundant
 		if err := report.Mgr.UpdateReportData(ctx.SystemContext(), rp.UUID, reportData); err != nil {
 			myLogger.Errorf("Failed to update report data for report %s, error %v", rp.UUID, err)
-
 			return err
 		}
 
@@ -336,6 +317,31 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	return nil
+}
+
+func getReportPlaceholder(ctx context.Context, digest string, reportUUID string, mimeType string, logger logger.Interface) (*scan.Report, error) {
+	reports, err := report.Mgr.GetBy(ctx, digest, reportUUID, []string{mimeType})
+	if err != nil {
+		logger.Error("Failed to get report for artifact %s of mimetype %s, error %v", digest, mimeType, err)
+		return nil, err
+	}
+	if len(reports) == 0 {
+		logger.Errorf("No report found for artifact %s of mimetype %s, error %v", digest, mimeType, err)
+		return nil, errors.NotFoundError(nil).WithMessage("no report found to update data")
+	}
+	return reports[0], nil
+}
+
+func fetchScanReportFromScanner(client v1.Client, requestID string, m string) (rawReport string, err error) {
+	rawReport, err = client.GetScanReport(requestID, m)
+	if err != nil {
+		return "", err
+	}
+	// Make sure the data is aligned with the v1 spec.
+	if _, err = report.ResolveData(m, []byte(rawReport)); err != nil {
+		return "", err
+	}
+	return rawReport, nil
 }
 
 // ExtractScanReq extracts the scan request from the job parameters.
