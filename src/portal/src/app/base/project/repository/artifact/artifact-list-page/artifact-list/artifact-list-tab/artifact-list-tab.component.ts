@@ -77,7 +77,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../../../../services/event-service/event.service';
-import { AppConfigService } from 'src/app/services/app-config.service';
+import { AppConfigService } from '../../../../../../../services/app-config.service';
 import { ArtifactListPageService } from '../../artifact-list-page.service';
 import { ACCESSORY_PAGE_SIZE } from './sub-accessories/sub-accessories.component';
 import { Accessory } from 'ng-swagger-gen/models/accessory';

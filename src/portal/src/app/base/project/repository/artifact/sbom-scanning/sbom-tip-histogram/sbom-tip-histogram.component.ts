@@ -3,9 +3,12 @@ import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScannerVo, SbomSummary } from '../../../../../../shared/services';
 import { SBOM_SCAN_STATUS } from '../../../../../../shared/units/utils';
-import { UN_LOGGED_PARAM, YES } from 'src/app/account/sign-in/sign-in.service';
+import {
+    UN_LOGGED_PARAM,
+    YES,
+} from '../../../../../../account/sign-in/sign-in.service';
 import { HAS_STYLE_MODE, StyleMode } from '../../../../../../services/theme';
-import { ScanTypes } from 'src/app/shared/entities/shared.const';
+import { ScanTypes } from '../../../../../../shared/entities/shared.const';
 
 const MIN = 60;
 const MIN_STR = 'min ';

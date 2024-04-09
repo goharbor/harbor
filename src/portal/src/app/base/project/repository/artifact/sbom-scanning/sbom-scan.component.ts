@@ -25,7 +25,7 @@ import {
 } from '../../../../../services/event-service/event.service';
 import { ScanService } from '../../../../../../../ng-swagger-gen/services/scan.service';
 import { ScanType } from 'ng-swagger-gen/models';
-import { ScanTypes } from 'src/app/shared/entities/shared.const';
+import { ScanTypes } from '../../../../../shared/entities/shared.const';
 import { SBOMOverview } from './sbom-overview';
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
