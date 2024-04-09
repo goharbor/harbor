@@ -1,0 +1,78 @@
+<div class="tip-wrapper width-215">
+    <clr-tooltip>
+        <div clrTooltipTrigger class="tip-block">
+            <div *ngIf="!noSbom" class="circle-block">
+                <a
+                    href="javascript:void(0)"
+                    class="digest margin-left-5"
+                    (click)="goIntoArtifactSbomSummaryPage()"
+                    title="{{ 'SBOM.Details' | translate }">
+                    {{ 'SBOM.Details' | translate }}</a
+                >
+            </div>
+            <div
+                *ngIf="noSbom"
+                class="pl-1 margin-left-5 tip-wrapper bar-block-none shadow-none width-150">
+                {{ 'SBOM.NO_SBOM' | translate }}
+            </div>
+        </div>
+        <clr-tooltip-content
+            class="w-800"
+            [clrPosition]="'right'"
+            [clrSize]="'lg'"
+            *clrIfOpen>
+            <div class="bar-tooltip-font-larger">
+                <div
+                    *ngIf="!noSbom"
+                    class="level-border clr-display-inline-block margin-right-5">
+                    <div>
+                        {{ 'SBOM.PACKAGES' | translate }}
+                    </div>
+                </div>
+                <ng-container *ngIf="noSbom">
+                    <span>{{ 'SBOM.NO_SBOM' | translate }}</span>
+                </ng-container>
+            </div>
+            <hr />
+            <div *ngIf="scanner">
+                <span class="bar-scanning-time">{{
+                    'SCANNER.SCANNED_BY' | translate
+                }}</span>
+                <span class="margin-left-5">{{ getScannerInfo() }}</span>
+            </div>
+            <div>
+                <span class="bar-scanning-time">{{
+                    'SCANNER.DURATION' | translate
+                }}</span>
+                <span class="margin-left-5">{{ duration() }}</span>
+            </div>
+            <div>
+                <span class="bar-scanning-time"
+                    >{{ 'SBOM.CHART.SCANNING_TIME' | translate }}
+                </span>
+                <span>{{ completeTimestamp | harborDatetime : 'short' }}</span>
+            </div>
+        </clr-tooltip-content>
+    </clr-tooltip>
+    <clr-tooltip class="margin-left-5" *ngIf="isLimitedSuccess()">
+        <div clrTooltipTrigger>
+            <clr-icon
+                shape="exclamation-triangle"
+                size="20"
+                class="is-warning"></clr-icon>
+        </div>
+        <clr-tooltip-content [clrSize]="'lg'" *clrIfOpen>
+            <div class="font-weight-600">
+                <span class="bar-scanning-time"
+                    >{{ 'SBOM.CHART.SCANNING_PERCENT' | translate }}
+                </span>
+                <span>{{ completePercent }}</span>
+            </div>
+            <div>
+                <span>{{
+                    'SBOM.CHART.SCANNING_PERCENT_EXPLAIN' | translate
+                }}</span>
+            </div>
+        </clr-tooltip-content>
+    </clr-tooltip>
+</div>

@@ -1206,6 +1206,12 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - name: scanType
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ScanType'
+          description: 'The scan type: Vulnerabilities, SBOM'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -9980,3 +9986,11 @@ definitions:
         items:
           type: string
         description: Links of the vulnerability
+
+  ScanType:
+    type: object
+    properties:
+      scan_type:
+        type: string
+        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
+        enum: [ vulnerability, sbom ]

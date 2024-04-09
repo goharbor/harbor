@@ -15,11 +15,10 @@ import {
     CURRENT_BASE_HREF,
     dbEncodeURIComponent,
     DEFAULT_SUPPORTED_MIME_TYPES,
-    VULNERABILITY_SCAN_STATUS,
+    SBOM_SCAN_STATUS,
 } from '../../../../../shared/units/utils';
 import { ArtifactService } from '../../../../../../../ng-swagger-gen/services/artifact.service';
 import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
-import { NativeReportSummary } from '../../../../../../../ng-swagger-gen/models/native-report-summary';
 import {
     EventService,
     HarborEvent,
@@ -27,26 +26,28 @@ import {
 import { ScanService } from '../../../../../../../ng-swagger-gen/services/scan.service';
 import { ScanType } from 'ng-swagger-gen/models';
 import { ScanTypes } from '../../../../../shared/entities/shared.const';
-
+import { SBOMOverview } from './sbom-overview';
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
 
 @Component({
-    selector: 'hbr-vulnerability-bar',
-    templateUrl: './result-bar-chart-component.html',
+    selector: 'hbr-sbom-bar',
+    templateUrl: './sbom-scan-component.html',
     styleUrls: ['./scanning.scss'],
 })
-export class ResultBarChartComponent implements OnInit, OnDestroy {
+export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() inputScanner: ScannerVo;
     @Input() repoName: string = '';
     @Input() projectName: string = '';
+    @Input() projectId: string = '';
     @Input() artifactDigest: string = '';
-    @Input() summary: NativeReportSummary;
+    @Input() sbomDigest: string = '';
+    @Input() sbomOverview: SBOMOverview;
     onSubmitting: boolean = false;
     onStopping: boolean = false;
     retryCounter: number = 0;
     stateCheckTimer: Subscription;
-    scanSubscription: Subscription;
+    generateSbomSubscription: Subscription;
     stopSubscription: Subscription;
     timerHandler: any;
     @Output()
@@ -66,37 +67,37 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         if (
-            (this.status === VULNERABILITY_SCAN_STATUS.RUNNING ||
-                this.status === VULNERABILITY_SCAN_STATUS.PENDING) &&
+            (this.status === SBOM_SCAN_STATUS.RUNNING ||
+                this.status === SBOM_SCAN_STATUS.PENDING) &&
             !this.stateCheckTimer
         ) {
             // Avoid duplicated subscribing
             this.stateCheckTimer = timer(0, STATE_CHECK_INTERVAL).subscribe(
                 () => {
-                    this.getSummary();
+                    this.getSbomOverview();
                 }
             );
         }
-        if (!this.scanSubscription) {
-            this.scanSubscription = this.eventService.subscribe(
-                HarborEvent.START_SCAN_ARTIFACT,
+        if (!this.generateSbomSubscription) {
+            this.generateSbomSubscription = this.eventService.subscribe(
+                HarborEvent.START_GENERATE_SBOM,
                 (artifactDigest: string) => {
                     let myFullTag: string =
                         this.repoName + '/' + this.artifactDigest;
                     if (myFullTag === artifactDigest) {
-                        this.scanNow();
+                        this.generateSbom();
                     }
                 }
             );
         }
         if (!this.stopSubscription) {
             this.stopSubscription = this.eventService.subscribe(
-                HarborEvent.STOP_SCAN_ARTIFACT,
+                HarborEvent.STOP_SBOM_ARTIFACT,
                 (artifactDigest: string) => {
                     let myFullTag: string =
                         this.repoName + '/' + this.artifactDigest;
                     if (myFullTag === artifactDigest) {
-                        this.stopScan();
+                        this.stopSbom();
                     }
                 }
             );
@@ -108,9 +109,9 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
             this.stateCheckTimer.unsubscribe();
             this.stateCheckTimer = null;
         }
-        if (this.scanSubscription) {
-            this.scanSubscription.unsubscribe();
-            this.scanSubscription = null;
+        if (this.generateSbomSubscription) {
+            this.generateSbomSubscription.unsubscribe();
+            this.generateSbomSubscription = null;
         }
         if (this.stopSubscription) {
             this.stopSubscription.unsubscribe();
@@ -120,41 +121,43 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
 
     // Get vulnerability scanning status
     public get status(): string {
-        if (this.summary && this.summary.scan_status) {
-            return this.summary.scan_status;
+        if (this.sbomOverview && this.sbomOverview.scan_status) {
+            return this.sbomOverview.scan_status;
         }
-        return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
+        return SBOM_SCAN_STATUS.NOT_GENERATED_SBOM;
     }
 
     public get completed(): boolean {
-        return this.status === VULNERABILITY_SCAN_STATUS.SUCCESS;
+        return this.status === SBOM_SCAN_STATUS.SUCCESS;
     }
 
     public get error(): boolean {
-        return this.status === VULNERABILITY_SCAN_STATUS.ERROR;
+        return this.status === SBOM_SCAN_STATUS.ERROR;
     }
 
     public get queued(): boolean {
-        return this.status === VULNERABILITY_SCAN_STATUS.PENDING;
+        return this.status === SBOM_SCAN_STATUS.PENDING;
     }
 
-    public get scanning(): boolean {
-        return this.status === VULNERABILITY_SCAN_STATUS.RUNNING;
+    public get generating(): boolean {
+        return this.status === SBOM_SCAN_STATUS.RUNNING;
     }
+
     public get stopped(): boolean {
-        return this.status === VULNERABILITY_SCAN_STATUS.STOPPED;
+        return this.status === SBOM_SCAN_STATUS.STOPPED;
     }
+
     public get otherStatus(): boolean {
         return !(
             this.completed ||
             this.error ||
             this.queued ||
-            this.scanning ||
+            this.generating ||
             this.stopped
         );
     }
 
-    scanNow(): void {
+    generateSbom(): void {
         if (this.onSubmitting) {
             // Avoid duplicated submitting
             console.error('duplicated submit');
@@ -174,7 +177,7 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                 reference: this.artifactDigest,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 // scanType: <ScanType>{
-                //     scan_type: ScanTypes.VULNERABILITY,
+                //     scan_type: ScanTypes.SBOM,
                 // },
             })
             .pipe(finalize(() => this.submitFinish.emit(false)))
@@ -182,8 +185,8 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                 () => {
                     this.onSubmitting = false;
                     // Forcely change status to queued after successful submitting
-                    this.summary = {
-                        scan_status: VULNERABILITY_SCAN_STATUS.PENDING,
+                    this.sbomOverview = {
+                        scan_status: SBOM_SCAN_STATUS.PENDING,
                     };
                     // Start check status util the job is done
                     if (!this.stateCheckTimer) {
@@ -192,7 +195,7 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                             STATE_CHECK_INTERVAL,
                             STATE_CHECK_INTERVAL
                         ).subscribe(() => {
-                            this.getSummary();
+                            this.getSbomOverview();
                         });
                     }
                 },
@@ -207,7 +210,7 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
             );
     }
 
-    getSummary(): void {
+    getSbomOverview(): void {
         if (!this.repoName || !this.artifactDigest) {
             return;
         }
@@ -216,18 +219,16 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                 projectName: this.projectName,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.artifactDigest,
-                withScanOverview: true,
+                // withSbomOverview: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
             .subscribe(
                 (artifact: Artifact) => {
                     // To keep the same summary reference, use value copy.
-                    if (artifact.scan_overview) {
-                        this.copyValue(
-                            Object.values(artifact.scan_overview)[0]
-                        );
-                    }
-                    if (!this.queued && !this.scanning) {
+                    // if (artifact.sbom_overview) {
+                    //     this.copyValue(artifact.sbom_overview);
+                    // }
+                    if (!this.queued && !this.generating) {
                         // Scanning should be done
                         if (this.stateCheckTimer) {
                             this.stateCheckTimer.unsubscribe();
@@ -236,7 +237,7 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                         this.scanFinished.emit(artifact);
                     }
                     this.eventService.publish(
-                        HarborEvent.UPDATE_VULNERABILITY_INFO,
+                        HarborEvent.UPDATE_SBOM_INFO,
                         artifact
                     );
                 },
@@ -255,29 +256,32 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
             );
     }
 
-    copyValue(newVal: NativeReportSummary): void {
-        if (!this.summary || !newVal || !newVal.scan_status) {
+    copyValue(newVal: SBOMOverview): void {
+        if (!this.sbomOverview || !newVal || !newVal.scan_status) {
             return;
         }
-        this.summary = clone(newVal);
+        this.sbomOverview = clone(newVal);
     }
+
     viewLog(): string {
         return `${CURRENT_BASE_HREF}/projects/${
             this.projectName
         }/repositories/${dbEncodeURIComponent(this.repoName)}/artifacts/${
             this.artifactDigest
-        }/scan/${this.summary.report_id}/log`;
+        }/scan/${this.sbomOverview.report_id}/log`;
     }
+
     getScanner(): ScannerVo {
-        if (this.summary && this.summary.scanner) {
-            return this.summary.scanner;
+        if (this.sbomOverview && this.sbomOverview.scanner) {
+            return this.sbomOverview.scanner;
         }
         return this.inputScanner;
     }
-    stopScan() {
+
+    stopSbom() {
         if (this.onStopping) {
             // Avoid duplicated stopping command
-            console.error('duplicated stopping command');
+            console.error('duplicated stopping command for SBOM generation');
             return;
         }
         if (!this.repoName || !this.artifactDigest) {
@@ -292,7 +296,7 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                 reference: this.artifactDigest,
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 scanType: <ScanType>{
-                    scan_type: ScanTypes.VULNERABILITY,
+                    scan_type: ScanTypes.SBOM,
                 },
             })
             .pipe(
@@ -310,12 +314,10 @@ export class ResultBarChartComponent implements OnInit, OnDestroy {
                             STATE_CHECK_INTERVAL,
                             STATE_CHECK_INTERVAL
                         ).subscribe(() => {
-                            this.getSummary();
+                            this.getSbomOverview();
                         });
                     }
-                    this.errorHandler.info(
-                        'VULNERABILITY.TRIGGER_STOP_SUCCESS'
-                    );
+                    this.errorHandler.info('SBOM.TRIGGER_STOP_SUCCESS');
                 },
                 error => {
                     this.errorHandler.error(error);
