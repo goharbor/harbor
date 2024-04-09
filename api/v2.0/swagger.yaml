@@ -9992,4 +9992,5 @@ definitions:
     properties:
       scan_type:
         type: string
-        description: The type of capability, Vulnerability or SBOM.
+        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
+        enum: [ vulnerability, sbom ]
