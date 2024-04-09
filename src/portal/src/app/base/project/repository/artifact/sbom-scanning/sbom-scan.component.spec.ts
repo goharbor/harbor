@@ -1,63 +1,44 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ResultBarChartComponent } from './result-bar-chart.component';
-import { ResultTipHistogramComponent } from './result-tip-histogram/result-tip-histogram.component';
-import { HistogramChartComponent } from './histogram-chart/histogram-chart.component';
+import { ResultSbomComponent } from './sbom-scan.component';
 import {
-    JobLogDefaultService,
-    JobLogService,
     ScanningResultDefaultService,
     ScanningResultService,
 } from '../../../../../shared/services';
-import { VULNERABILITY_SCAN_STATUS } from '../../../../../shared/units/utils';
-import { NativeReportSummary } from '../../../../../../../ng-swagger-gen/models/native-report-summary';
+import { SBOM_SCAN_STATUS } from '../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
+import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogram.component';
+import { SBOMOverview } from './sbom-overview';
 import { of, timer } from 'rxjs';
 import { ArtifactService, ScanService } from 'ng-swagger-gen/services';
+import { Artifact } from 'ng-swagger-gen/models';
 
-describe('ResultBarChartComponent (inline template)', () => {
-    let component: ResultBarChartComponent;
-    let fixture: ComponentFixture<ResultBarChartComponent>;
+describe('ResultSbomComponent (inline template)', () => {
+    let component: ResultSbomComponent;
+    let fixture: ComponentFixture<ResultSbomComponent>;
+    let mockData: SBOMOverview = {
+        scan_status: SBOM_SCAN_STATUS.SUCCESS,
+        end_time: new Date().toUTCString(),
+    };
     const mockedSbomDigest =
         'sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3';
-    let mockData: NativeReportSummary = {
+    const mockedSbomOverview = {
         report_id: '12345',
-        scan_status: VULNERABILITY_SCAN_STATUS.SUCCESS,
-        severity: 'High',
-        end_time: new Date().toUTCString(),
+        scan_status: 'Error',
         scanner: {
             name: 'Trivy',
             vendor: 'vm',
             version: 'v1.2',
         },
-        summary: {
-            total: 124,
-            fixable: 50,
-            summary: {
-                High: 5,
-                Low: 5,
-            },
-        },
     };
-    let mockCloneData: NativeReportSummary = {
-        report_id: '123456',
-        scan_status: VULNERABILITY_SCAN_STATUS.SUCCESS,
-        severity: 'High',
-        end_time: new Date().toUTCString(),
+    const mockedCloneSbomOverview = {
+        report_id: '12346',
+        scan_status: 'Pending',
         scanner: {
             name: 'Trivy',
             vendor: 'vm',
-            version: 'v1.3',
-        },
-        summary: {
-            total: 124,
-            fixable: 50,
-            summary: {
-                High: 5,
-                Low: 5,
-            },
+            version: 'v1.2',
         },
     };
-
     const FakedScanService = {
         scanArtifact: () => of({}),
         stopScanArtifact: () => of({}),
@@ -100,9 +81,11 @@ describe('ResultBarChartComponent (inline template)', () => {
                 push_time: '2024-03-06T09:47:08.163Z',
                 references: null,
                 repository_id: 2,
-                scan_overview: {
+                sbom_overview: {
                     duration: 2,
                     end_time: '2024-04-02T01:50:59.406Z',
+                    sbom_digest:
+                        'sha256:8cca43ea666e0e7990c2433e3b185313e6ba303cc7a3124bb767823c79fb74a6',
                     scan_status: 'Success',
                     start_time: '2024-04-02T01:50:57.176Z',
                 },
@@ -111,20 +94,16 @@ describe('ResultBarChartComponent (inline template)', () => {
                 type: 'IMAGE',
             }),
     };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
-            declarations: [
-                ResultBarChartComponent,
-                ResultTipHistogramComponent,
-                HistogramChartComponent,
-            ],
+            declarations: [ResultSbomComponent, SbomTipHistogramComponent],
             providers: [
                 {
                     provide: ScanningResultService,
                     useValue: ScanningResultDefaultService,
                 },
-                { provide: JobLogService, useValue: JobLogDefaultService },
                 {
                     provide: ScanService,
                     useValue: FakedScanService,
@@ -138,12 +117,12 @@ describe('ResultBarChartComponent (inline template)', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(ResultBarChartComponent);
+        fixture = TestBed.createComponent(ResultSbomComponent);
         component = fixture.componentInstance;
-        component.artifactDigest = 'mockTag';
-        component.summary = mockData;
         component.repoName = 'mockRepo';
         component.artifactDigest = mockedSbomDigest;
+        component.sbomDigest = mockedSbomDigest;
+        component.sbomOverview = mockData;
         fixture.detectChanges();
     });
 
@@ -151,18 +130,18 @@ describe('ResultBarChartComponent (inline template)', () => {
         expect(component).toBeTruthy();
     });
     it('should show "scan stopped" if status is STOPPED', () => {
-        component.summary.scan_status = VULNERABILITY_SCAN_STATUS.STOPPED;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.STOPPED;
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
             let el: HTMLElement = fixture.nativeElement.querySelector('span');
             expect(el).toBeTruthy();
-            expect(el.textContent).toEqual('VULNERABILITY.STATE.STOPPED');
+            expect(el.textContent).toEqual('SBOM.STATE.STOPPED');
         });
     });
 
     it('should show progress if status is SCANNING', () => {
-        component.summary.scan_status = VULNERABILITY_SCAN_STATUS.RUNNING;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.RUNNING;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
@@ -175,7 +154,7 @@ describe('ResultBarChartComponent (inline template)', () => {
     });
 
     it('should show QUEUED if status is QUEUED', () => {
-        component.summary.scan_status = VULNERABILITY_SCAN_STATUS.PENDING;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.PENDING;
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
@@ -185,85 +164,82 @@ describe('ResultBarChartComponent (inline template)', () => {
             expect(el).toBeTruthy();
             let el2: HTMLElement = el.querySelector('span');
             expect(el2).toBeTruthy();
-            expect(el2.textContent).toEqual('VULNERABILITY.STATE.QUEUED');
+            expect(el2.textContent).toEqual('SBOM.STATE.QUEUED');
         });
     });
 
     it('should show summary bar chart if status is COMPLETED', () => {
-        component.summary.scan_status = VULNERABILITY_SCAN_STATUS.SUCCESS;
+        component.sbomOverview.scan_status = SBOM_SCAN_STATUS.SUCCESS;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
             fixture.detectChanges();
-            let el: HTMLElement = fixture.nativeElement.querySelector(
-                'hbr-result-tip-histogram'
-            );
+            let el: HTMLElement = fixture.nativeElement.querySelector('a');
             expect(el).not.toBeNull();
         });
     });
-    it('Test ResultBarChartComponent getScanner', () => {
+    it('Test ResultSbomComponent getScanner', () => {
         fixture.detectChanges();
-        component.summary = mockData;
-        expect(component.getScanner()).toBe(mockData.scanner);
+        expect(component.getScanner()).toBeUndefined();
+        component.sbomOverview = mockedSbomOverview;
+        expect(component.getScanner()).toBe(mockedSbomOverview.scanner);
         component.projectName = 'test';
         component.repoName = 'ui';
         component.artifactDigest = 'dg';
         expect(component.viewLog()).toBe(
             '/api/v2.0/projects/test/repositories/ui/artifacts/dg/scan/12345/log'
         );
-        component.copyValue(mockCloneData);
-        expect(component.summary.report_id).toBe(mockCloneData.report_id);
+        component.copyValue(mockedCloneSbomOverview);
+        expect(component.sbomOverview.report_id).toBe(
+            mockedCloneSbomOverview.report_id
+        );
     });
-    it('Test ResultBarChartComponent status', () => {
+    it('Test ResultSbomComponent status', () => {
+        component.sbomOverview = mockedSbomOverview;
         fixture.detectChanges();
-        component.summary.scan_status = VULNERABILITY_SCAN_STATUS.SUCCESS;
-        expect(component.status).toBe(VULNERABILITY_SCAN_STATUS.SUCCESS);
-        expect(component.completed).toBeTruthy();
+        expect(component.status).toBe(SBOM_SCAN_STATUS.ERROR);
+        expect(component.completed).toBeFalsy();
         expect(component.queued).toBeFalsy();
-        expect(component.scanning).toBeFalsy();
+        expect(component.generating).toBeFalsy();
         expect(component.stopped).toBeFalsy();
         expect(component.otherStatus).toBeFalsy();
-        expect(component.error).toBeFalsy();
+        expect(component.error).toBeTruthy();
     });
-    it('Test ResultBarChartComponent ngOnDestroy', () => {
+    it('Test ResultSbomComponent ngOnDestroy', () => {
         component.stateCheckTimer = timer(0, 10000).subscribe(() => {});
         component.ngOnDestroy();
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             expect(component.stateCheckTimer).toBeNull();
-            expect(component.scanSubscription).toBeNull();
+            expect(component.generateSbomSubscription).toBeNull();
             expect(component.stopSubscription).toBeNull();
         });
     });
-    it('Test ResultBarChartComponent scanNow', () => {
+    it('Test ResultSbomComponent generateSbom', () => {
         fixture.detectChanges();
-        component.scanNow();
+        component.generateSbom();
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
             expect(component.onSubmitting).toBeFalse();
         });
     });
-    it('Test ResultBarChartComponent stopScan', () => {
+    it('Test ResultSbomComponent stopSbom', () => {
         fixture.detectChanges();
-        component.stopScan();
+        component.stopSbom();
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
             expect(component.onStopping).toBeFalse();
-            expect(component.stateCheckTimer).toBeNull();
         });
     });
-    it('Test ResultBarChartComponent getSummary', () => {
+    it('Test ResultSbomComponent getSbomOverview', () => {
         fixture.detectChanges();
-        // component.summary.scan_status = VULNERABILITY_SCAN_STATUS.SUCCESS;
-        component.getSummary();
+        component.getSbomOverview();
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
-            expect(component.summary.scan_status).toBe(
-                VULNERABILITY_SCAN_STATUS.SUCCESS
-            );
+            expect(component.stateCheckTimer).toBeUndefined();
         });
     });
 });

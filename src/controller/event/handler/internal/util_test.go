@@ -95,6 +95,36 @@ func (suite *AutoScanTestSuite) TestAutoScan() {
 	suite.Nil(autoScan(ctx, art))
 }
 
+func (suite *AutoScanTestSuite) TestAutoScanSBOM() {
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
+		Metadata: map[string]string{
+			proModels.ProMetaAutoSBOMGen: "true",
+		},
+	}, nil)
+
+	mock.OnAnything(suite.scanController, "Scan").Return(nil)
+
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	art := &artifact.Artifact{}
+
+	suite.Nil(autoGenSBOM(ctx, art))
+}
+
+func (suite *AutoScanTestSuite) TestAutoScanSBOMFalse() {
+	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
+		Metadata: map[string]string{
+			proModels.ProMetaAutoSBOMGen: "false",
+		},
+	}, nil)
+
+	mock.OnAnything(suite.scanController, "Scan").Return(nil)
+
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	art := &artifact.Artifact{}
+
+	suite.Nil(autoGenSBOM(ctx, art))
+}
+
 func (suite *AutoScanTestSuite) TestAutoScanFailed() {
 	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{
 		Metadata: map[string]string{

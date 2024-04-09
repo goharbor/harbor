@@ -10,11 +10,15 @@ import { ErrorHandler } from '../../../../../shared/units/error-handler';
 @Injectable()
 export class ArtifactListPageService {
     private _scanBtnState: ClrLoadingState;
+    private _sbomBtnState: ClrLoadingState;
     private _hasEnabledScanner: boolean = false;
+    private _hasScannerSupportVulnerability: boolean = false;
+    private _hasScannerSupportSBOM: boolean = false;
     private _hasAddLabelImagePermission: boolean = false;
     private _hasRetagImagePermission: boolean = false;
     private _hasDeleteImagePermission: boolean = false;
     private _hasScanImagePermission: boolean = false;
+    private _hasSbomPermission: boolean = false;
 
     constructor(
         private scanningService: ScanningResultService,
@@ -24,6 +28,10 @@ export class ArtifactListPageService {
 
     getScanBtnState(): ClrLoadingState {
         return this._scanBtnState;
+    }
+
+    getSbomBtnState(): ClrLoadingState {
+        return this._sbomBtnState;
     }
 
     hasEnabledScanner(): boolean {
@@ -46,14 +54,53 @@ export class ArtifactListPageService {
         return this._hasScanImagePermission;
     }
 
+    hasSbomPermission(): boolean {
+        return this._hasSbomPermission;
+    }
+
+    hasScannerSupportVulnerability(): boolean {
+        return this._hasScannerSupportVulnerability;
+    }
+
+    hasScannerSupportSBOM(): boolean {
+        return this._hasScannerSupportSBOM;
+    }
+
     init(projectId: number) {
         this._getProjectScanner(projectId);
         this._getPermissionRule(projectId);
     }
 
+    updateStates(
+        enabledScanner: boolean,
+        scanState?: ClrLoadingState,
+        sbomState?: ClrLoadingState
+    ) {
+        if (scanState) {
+            this._scanBtnState = scanState;
+        }
+        if (sbomState) {
+            this._sbomBtnState = sbomState;
+        }
+        this._hasEnabledScanner = enabledScanner;
+    }
+
+    updateCapabilities(capabilities?: any) {
+        if (capabilities) {
+            if (capabilities?.support_vulnerability !== undefined) {
+                this._hasScannerSupportVulnerability =
+                    capabilities.support_vulnerability;
+            }
+            if (capabilities?.support_sbom !== undefined) {
+                this._hasScannerSupportSBOM = capabilities.support_sbom;
+            }
+        }
+    }
+
     private _getProjectScanner(projectId: number): void {
         this._hasEnabledScanner = false;
         this._scanBtnState = ClrLoadingState.LOADING;
+        this._sbomBtnState = ClrLoadingState.LOADING;
         this.scanningService.getProjectScanner(projectId).subscribe(
             response => {
                 if (
@@ -62,14 +109,28 @@ export class ArtifactListPageService {
                     !response.disabled &&
                     response.health === 'healthy'
                 ) {
-                    this._scanBtnState = ClrLoadingState.SUCCESS;
-                    this._hasEnabledScanner = true;
+                    this.updateStates(
+                        true,
+                        ClrLoadingState.SUCCESS,
+                        ClrLoadingState.SUCCESS
+                    );
+                    if (response?.capabilities) {
+                        this.updateCapabilities(response?.capabilities);
+                    }
                 } else {
-                    this._scanBtnState = ClrLoadingState.ERROR;
+                    this.updateStates(
+                        false,
+                        ClrLoadingState.ERROR,
+                        ClrLoadingState.ERROR
+                    );
                 }
             },
             error => {
-                this._scanBtnState = ClrLoadingState.ERROR;
+                this.updateStates(
+                    false,
+                    ClrLoadingState.ERROR,
+                    ClrLoadingState.ERROR
+                );
             }
         );
     }
@@ -94,6 +155,11 @@ export class ArtifactListPageService {
                 action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE
                     .CREATE,
             },
+            {
+                resource: USERSTATICPERMISSION.REPOSITORY_TAG_SBOM_JOB.KEY,
+                action: USERSTATICPERMISSION.REPOSITORY_TAG_SBOM_JOB.VALUE
+                    .CREATE,
+            },
         ];
         this.userPermissionService
             .hasProjectPermissions(projectId, permissions)
@@ -103,6 +169,9 @@ export class ArtifactListPageService {
                     this._hasRetagImagePermission = results[1];
                     this._hasDeleteImagePermission = results[2];
                     this._hasScanImagePermission = results[3];
+                    this._hasSbomPermission = results?.[4] ?? false;
+                    // TODO need to remove the static code
+                    this._hasSbomPermission = true;
                 },
                 error => this.errorHandlerService.error(error)
             );

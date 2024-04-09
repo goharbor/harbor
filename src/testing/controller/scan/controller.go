@@ -191,13 +191,13 @@ func (_m *Controller) ScanAll(ctx context.Context, trigger string, async bool) (
 	return r0, r1
 }
 
-// Stop provides a mock function with given fields: ctx, _a1
-func (_m *Controller) Stop(ctx context.Context, _a1 *artifact.Artifact) error {
-	ret := _m.Called(ctx, _a1)
+// Stop provides a mock function with given fields: ctx, _a1, capType
+func (_m *Controller) Stop(ctx context.Context, _a1 *artifact.Artifact, capType string) error {
+	ret := _m.Called(ctx, _a1, capType)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact) error); ok {
-		r0 = rf(ctx, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, *artifact.Artifact, string) error); ok {
+		r0 = rf(ctx, _a1, capType)
 	} else {
 		r0 = ret.Error(0)
 	}

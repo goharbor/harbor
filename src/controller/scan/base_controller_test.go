@@ -45,6 +45,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 	"github.com/goharbor/harbor/src/pkg/task"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
@@ -380,7 +381,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 func (suite *ControllerTestSuite) TestScanControllerStop() {
 	{
 		// artifact not provieded
-		suite.Require().Error(suite.c.Stop(context.TODO(), nil))
+		suite.Require().Error(suite.c.Stop(context.TODO(), nil, "vulnerability"))
 	}
 
 	{
@@ -392,7 +393,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
 	}
 
 	{
@@ -402,7 +403,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
 	}
 
 	{
@@ -411,7 +412,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 
-		suite.Require().Error(suite.c.Stop(ctx, suite.artifact))
+		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
 	}
 }
 
