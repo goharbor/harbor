@@ -363,14 +363,14 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 		)
 
 		for key, value := range query.Keywords {
-			if strings.HasPrefix(key, "ExtraAttrs.") {
+			if strings.HasPrefix(key, "ExtraAttrs.") && key != "ExtraAttrs." {
 				jsonbStrus = append(jsonbStrus, jsonbStru{
 					keyPrefix: "ExtraAttrs.",
 					key:       key,
 					value:     value,
 				})
 			}
-			if strings.HasPrefix(key, "extra_attrs.") {
+			if strings.HasPrefix(key, "extra_attrs.") && key != "extra_attrs." {
 				jsonbStrus = append(jsonbStrus, jsonbStru{
 					keyPrefix: "extra_attrs.",
 					key:       key,
@@ -421,6 +421,7 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 			return "", nil
 		}
 		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
+		fmt.Println(len(keys))
 		if len(keys) == 1 {
 			if i == 0 {
 				cond += "extra_attrs->>?=?"
