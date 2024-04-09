@@ -421,7 +421,6 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 			return "", nil
 		}
 		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
-		fmt.Println(len(keys))
 		if len(keys) == 1 {
 			if i == 0 {
 				cond += "extra_attrs->>?=?"
