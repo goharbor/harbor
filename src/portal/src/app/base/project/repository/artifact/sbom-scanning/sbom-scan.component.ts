@@ -113,7 +113,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
             this.generateSbomSubscription.unsubscribe();
             this.generateSbomSubscription = null;
         }
-        if (!this.stopSubscription) {
+        if (this.stopSubscription) {
             this.stopSubscription.unsubscribe();
             this.stopSubscription = null;
         }

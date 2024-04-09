@@ -18,6 +18,11 @@ describe('SbomTipHistogramComponent', () => {
         id: 123,
         type: 'IMAGE',
     };
+    const mockedScanner = {
+        name: 'Trivy',
+        vendor: 'vm',
+        version: 'v1.2',
+    };
     const mockActivatedRoute = {
         RouterparamMap: of({ get: key => 'value' }),
         snapshot: {
@@ -66,7 +71,7 @@ describe('SbomTipHistogramComponent', () => {
         fixture.detectChanges();
     });
 
-    it('should create', () => {
+    it('Test SbomTipHistogramComponent basic functions', () => {
         fixture.whenStable().then(() => {
             expect(component).toBeTruthy();
             expect(component.isLimitedSuccess()).toBeFalsy();
@@ -74,6 +79,25 @@ describe('SbomTipHistogramComponent', () => {
             expect(component.isThemeLight()).toBeFalsy();
             expect(component.duration()).toBe('0');
             expect(component.completePercent).toBe('0%');
+        });
+    });
+
+    it('Test SbomTipHistogramComponent completeTimestamp', () => {
+        fixture.whenStable().then(() => {
+            component.sbomSummary.end_time = new Date('2024-04-08 00:01:02');
+            expect(component.completeTimestamp).toBe(
+                component.sbomSummary.end_time
+            );
+        });
+    });
+
+    it('Test SbomTipHistogramComponent getScannerInfo', () => {
+        fixture.whenStable().then(() => {
+            expect(component.getScannerInfo()).toBe('');
+            component.scanner = mockedScanner;
+            expect(component.getScannerInfo()).toBe(
+                `${mockedScanner.name}@${mockedScanner.version}`
+            );
         });
     });
 });

@@ -8,7 +8,9 @@ import { SBOM_SCAN_STATUS } from '../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogram.component';
 import { SBOMOverview } from './sbom-overview';
-import { Subscription } from 'rxjs';
+import { of, timer } from 'rxjs';
+import { ArtifactService, ScanService } from 'ng-swagger-gen/services';
+import { Artifact } from 'ng-swagger-gen/models';
 
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;
@@ -18,7 +20,7 @@ describe('ResultSbomComponent (inline template)', () => {
         end_time: new Date().toUTCString(),
     };
     const mockedSbomDigest =
-        'sha256:51a41cec9de9d62ee60e206f5a8a615a028a65653e45539990867417cb486285';
+        'sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3';
     const mockedSbomOverview = {
         report_id: '12345',
         scan_status: 'Error',
@@ -37,6 +39,61 @@ describe('ResultSbomComponent (inline template)', () => {
             version: 'v1.2',
         },
     };
+    const FakedScanService = {
+        scanArtifact: () => of({}),
+        stopScanArtifact: () => of({}),
+    };
+    const FakedArtifactService = {
+        getArtifact: () =>
+            of({
+                accessories: null,
+                addition_links: {
+                    build_history: {
+                        absolute: false,
+                        href: '/api/v2.0/projects/xuel/repositories/ui%252Fserver%252Fconfig-dev/artifacts/sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3/additions/build_history',
+                    },
+                    vulnerabilities: {
+                        absolute: false,
+                        href: '/api/v2.0/projects/xuel/repositories/ui%252Fserver%252Fconfig-dev/artifacts/sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3/additions/vulnerabilities',
+                    },
+                },
+                digest: 'sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3',
+                extra_attrs: {
+                    architecture: 'amd64',
+                    author: '',
+                    config: {
+                        Env: [
+                            'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+                        ],
+                        WorkingDir: '/',
+                    },
+                    created: '2024-01-10T10:05:33.2702206Z',
+                    os: 'linux',
+                },
+                icon: 'sha256:0048162a053eef4d4ce3fe7518615bef084403614f8bca43b40ae2e762e11e06',
+                id: 3,
+                labels: null,
+                manifest_media_type:
+                    'application/vnd.docker.distribution.manifest.v2+json',
+                media_type: 'application/vnd.docker.container.image.v1+json',
+                project_id: 3,
+                pull_time: '2024-04-02T01:50:58.332Z',
+                push_time: '2024-03-06T09:47:08.163Z',
+                references: null,
+                repository_id: 2,
+                sbom_overview: {
+                    duration: 2,
+                    end_time: '2024-04-02T01:50:59.406Z',
+                    sbom_digest:
+                        'sha256:8cca43ea666e0e7990c2433e3b185313e6ba303cc7a3124bb767823c79fb74a6',
+                    scan_status: 'Success',
+                    start_time: '2024-04-02T01:50:57.176Z',
+                },
+                size: 3957,
+                tags: null,
+                type: 'IMAGE',
+            }),
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -47,6 +104,14 @@ describe('ResultSbomComponent (inline template)', () => {
                     provide: ScanningResultService,
                     useValue: ScanningResultDefaultService,
                 },
+                {
+                    provide: ScanService,
+                    useValue: FakedScanService,
+                },
+                {
+                    provide: ArtifactService,
+                    useValue: FakedArtifactService,
+                },
             ],
         }).compileComponents();
     });
@@ -54,7 +119,8 @@ describe('ResultSbomComponent (inline template)', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(ResultSbomComponent);
         component = fixture.componentInstance;
-        component.artifactDigest = 'mockTag';
+        component.repoName = 'mockRepo';
+        component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.sbomOverview = mockData;
         fixture.detectChanges();
@@ -140,7 +206,40 @@ describe('ResultSbomComponent (inline template)', () => {
         expect(component.error).toBeTruthy();
     });
     it('Test ResultSbomComponent ngOnDestroy', () => {
+        component.stateCheckTimer = timer(0, 10000).subscribe(() => {});
         component.ngOnDestroy();
-        expect(component.stateCheckTimer).toBeUndefined();
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            expect(component.stateCheckTimer).toBeNull();
+            expect(component.generateSbomSubscription).toBeNull();
+            expect(component.stopSubscription).toBeNull();
+        });
+    });
+    it('Test ResultSbomComponent generateSbom', () => {
+        fixture.detectChanges();
+        component.generateSbom();
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            expect(component.onSubmitting).toBeFalse();
+        });
+    });
+    it('Test ResultSbomComponent stopSbom', () => {
+        fixture.detectChanges();
+        component.stopSbom();
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            expect(component.onStopping).toBeFalse();
+        });
+    });
+    it('Test ResultSbomComponent getSbomOverview', () => {
+        fixture.detectChanges();
+        component.getSbomOverview();
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            expect(component.stateCheckTimer).toBeUndefined();
+        });
     });
 });
