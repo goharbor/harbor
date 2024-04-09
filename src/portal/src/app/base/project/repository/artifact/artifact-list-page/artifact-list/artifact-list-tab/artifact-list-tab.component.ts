@@ -37,6 +37,7 @@ import {
     setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
     VULNERABILITY_SCAN_STATUS,
+    SBOM_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
 import { ErrorHandler } from '../../../../../../../shared/units/error-handler';
 import { ArtifactService } from '../../../artifact.service';
@@ -76,7 +77,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../../../../services/event-service/event.service';
-import { AppConfigService } from 'src/app/services/app-config.service';
+import { AppConfigService } from '../../../../../../../services/app-config.service';
 import { ArtifactListPageService } from '../../artifact-list-page.service';
 import { ACCESSORY_PAGE_SIZE } from './sub-accessories/sub-accessories.component';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
@@ -141,28 +142,60 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     get hasScanImagePermission(): boolean {
         return this.artifactListPageService.hasScanImagePermission();
     }
+    get hasSbomPermission(): boolean {
+        return this.artifactListPageService.hasSbomPermission();
+    }
     get hasEnabledScanner(): boolean {
         return this.artifactListPageService.hasEnabledScanner();
     }
+    get hasScannerSupportVulnerability(): boolean {
+        return this.artifactListPageService.hasScannerSupportVulnerability();
+    }
+    get hasScannerSupportSBOM(): boolean {
+        return this.artifactListPageService.hasScannerSupportSBOM();
+    }
     get scanBtnState(): ClrLoadingState {
         return this.artifactListPageService.getScanBtnState();
+    }
+    get generateSbomBtnState(): ClrLoadingState {
+        return this.artifactListPageService.getSbomBtnState();
     }
     onSendingScanCommand: boolean;
     onSendingStopScanCommand: boolean = false;
     onStopScanArtifactsLength: number = 0;
     scanStoppedArtifactLength: number = 0;
+
+    onSendingSbomCommand: boolean;
+    onSendingStopSbomCommand: boolean = false;
+    onStopSbomArtifactsLength: number = 0;
+    sbomStoppedArtifactLength: number = 0;
+
     artifactDigest: string;
     depth: string;
     // could Pagination filter
     filters: string[];
     scanFinishedArtifactLength: number = 0;
     onScanArtifactsLength: number = 0;
+    sbomFinishedArtifactLength: number = 0;
+    onSbomArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     updateArtifactSub: Subscription;
 
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
-        [false, false, false, false, false, false, true, false, false, false]
+        [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true,
+            false,
+            false,
+            false,
+        ]
     );
     deleteAccessorySub: Subscription;
     copyDigestSub: Subscription;
@@ -203,7 +236,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
     ngOnInit() {
-        this.registryUrl = this.appConfigService.getConfig().registry_url;
+        const appConfig = this.appConfigService.getConfig();
+        this.registryUrl = appConfig.registry_url;
         this.initRouterData();
         if (!this.updateArtifactSub) {
             this.updateArtifactSub = this.eventService.subscribe(
@@ -250,7 +284,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.copyDigestSub.unsubscribe();
             this.copyDigestSub = null;
         }
-        this.datagrid['columnsService']?.columns?.forEach((item, index) => {
+        this.datagrid?.['columnsService']?.columns?.forEach((item, index) => {
             if (this.depth) {
                 this.hiddenArray[index] = !!item?._value?.hidden;
             } else {
@@ -326,6 +360,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 withImmutableStatus: true,
                 withLabel: true,
                 withScanOverview: true,
+                // withSbomOverview: true,
                 withTag: false,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
                 withAccessory: false,
@@ -350,6 +385,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                     withImmutableStatus: true,
                                     withLabel: true,
                                     withScanOverview: true,
+                                    // withSbomOverview: true,
                                     withTag: false,
                                     XAcceptVulnerabilities:
                                         DEFAULT_SUPPORTED_MIME_TYPES,
@@ -381,7 +417,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                 });
                                 this.getArtifactTagsAsync(this.artifactList);
                                 this.getAccessoriesAsync(this.artifactList);
-                                this.checkCosignAsync(this.artifactList);
+                                this.checkCosignAndSbomAsync(this.artifactList);
                                 this.getIconsFromBackEnd();
                             },
                             error => {
@@ -420,7 +456,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                         this.artifactList = res.body;
                         this.getArtifactTagsAsync(this.artifactList);
                         this.getAccessoriesAsync(this.artifactList);
-                        this.checkCosignAsync(this.artifactList);
+                        this.checkCosignAndSbomAsync(this.artifactList);
                         this.getIconsFromBackEnd();
                     },
                     error => {
@@ -517,6 +553,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     sizeTransform(tagSize: string): string {
         return formatSize(tagSize);
+    }
+
+    hasEnabledSbom(): boolean {
+        return (
+            this.hasScannerSupportSBOM &&
+            this.hasEnabledScanner &&
+            this.hasSbomPermission
+        );
     }
 
     retag() {
@@ -714,6 +758,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
 
+    // Get sbom status
+    sbomStatus(artifact: Artifact): string {
+        if (artifact) {
+            let so = (<any>artifact).sbom_overview;
+            if (so && so.scan_status) {
+                return so.scan_status;
+            }
+        }
+        return SBOM_SCAN_STATUS.NOT_GENERATED_SBOM;
+    }
+
     // Get vulnerability scanning status
     scanStatus(artifact: Artifact): string {
         if (artifact) {
@@ -771,11 +826,23 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
     }
 
+    selectedRowHasSbom(): boolean {
+        return !!(this.selectedRow && this.selectedRow[0]);
+    }
+
     hasVul(artifact: Artifact): boolean {
         return !!(
             artifact &&
             artifact.addition_links &&
             artifact.addition_links[ADDITIONS.VULNERABILITIES]
+        );
+    }
+
+    hasSbom(artifact: Artifact): boolean {
+        return !!(
+            artifact &&
+            artifact.addition_links &&
+            artifact.addition_links[ADDITIONS.SBOMS]
         );
     }
 
@@ -794,9 +861,27 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             this.onSendingScanCommand = e;
         }
     }
+
+    submitSbomFinish(e: boolean) {
+        this.sbomFinishedArtifactLength += 1;
+        // all selected scan action has started
+        if (this.sbomFinishedArtifactLength === this.onSbomArtifactsLength) {
+            this.onSendingSbomCommand = e;
+        }
+    }
+
+    submitSbomStopFinish(e: boolean) {
+        this.sbomStoppedArtifactLength += 1;
+        // all selected scan action has stopped
+        if (this.sbomStoppedArtifactLength === this.onStopSbomArtifactsLength) {
+            this.onSendingSbomCommand = e;
+        }
+    }
+
     handleScanOverview(scanOverview: any): any {
         if (scanOverview) {
-            return Object.values(scanOverview)[0];
+            const keys = Object.keys(scanOverview) ?? [];
+            return keys.length > 0 ? scanOverview[keys[0]] : null;
         }
         return null;
     }
@@ -855,6 +940,11 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 }
             }
         }
+    }
+
+    // when finished, remove it from selectedRow
+    sbomFinished(artifact: Artifact) {
+        this.scanFinished(artifact);
     }
 
     getIconsFromBackEnd() {
@@ -929,11 +1019,18 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             });
         }
     }
-    checkCosignAsync(artifacts: ArtifactFront[]) {
+
+    checkCosignAndSbomAsync(artifacts: ArtifactFront[]) {
         if (artifacts) {
             if (artifacts.length) {
                 artifacts.forEach(item => {
                     item.signed = CHECKING;
+                    // const sbomOverview = item?.sbom_overview;
+                    // item.sbomDigest = sbomOverview?.sbom_digest;
+                    // let queryTypes = `${AccessoryType.COSIGN} ${AccessoryType.NOTATION}`;
+                    // if (!item.sbomDigest) {
+                    //     queryTypes = `${queryTypes} ${AccessoryType.SBOM}`;
+                    // }
                     this.newArtifactService
                         .listAccessories({
                             projectName: this.projectName,
@@ -979,6 +1076,24 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return false;
     }
 
+    // return true if all selected rows are in "running" state
+    canStopSbom(): boolean {
+        if (this.onSendingStopSbomCommand) {
+            return false;
+        }
+        if (this.selectedRow && this.selectedRow.length) {
+            let flag: boolean = true;
+            this.selectedRow.forEach(item => {
+                const st: string = this.sbomStatus(item);
+                if (!this.isRunningState(st)) {
+                    flag = false;
+                }
+            });
+            return flag;
+        }
+        return false;
+    }
+
     isRunningState(state: string): boolean {
         return (
             state === VULNERABILITY_SCAN_STATUS.RUNNING ||
@@ -1001,6 +1116,22 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             });
         }
     }
+
+    stopSbom() {
+        if (this.selectedRow && this.selectedRow.length) {
+            this.sbomStoppedArtifactLength = 0;
+            this.onStopSbomArtifactsLength = this.selectedRow.length;
+            this.onSendingStopSbomCommand = true;
+            this.selectedRow.forEach((data: any) => {
+                let digest = data.digest;
+                this.eventService.publish(
+                    HarborEvent.STOP_SBOM_ARTIFACT,
+                    this.repoName + '/' + digest
+                );
+            });
+        }
+    }
+
     tagsString(tags: Tag[]): string {
         if (tags?.length) {
             const arr: string[] = [];

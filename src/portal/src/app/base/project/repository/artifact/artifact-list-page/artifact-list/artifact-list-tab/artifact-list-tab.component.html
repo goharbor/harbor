@@ -42,6 +42,34 @@
                         <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
                         <span>{{ 'VULNERABILITY.STOP_NOW' | translate }}</span>
                     </button>
+                    <button
+                        *ngIf="hasEnabledSbom()"
+                        id="generate-sbom-btn"
+                        [clrLoading]="generateSbomBtnState"
+                        type="button"
+                        class="btn btn-secondary"
+                        [disabled]="true"
+                        (click)="generateSbom()">
+                        <clr-icon shape="file" size="16"></clr-icon>&nbsp;
+                        <span>{{ 'SBOM.GENERATE' | translate }}</span>
+                    </button>
+                    <button
+                        id="stop-sbom-btn"
+                        *ngIf="hasEnabledSbom()"
+                        [clrLoading]="stopBtnState"
+                        type="button"
+                        class="btn btn-secondary scan-btn"
+                        [disabled]="
+                            !(
+                                canStopSbom() &&
+                                hasSbomPermission &&
+                                hasEnabledScanner
+                            )
+                        "
+                        (click)="stopSbom()">
+                        <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
+                        <span>{{ 'SBOM.STOP' | translate }}</span>
+                    </button>
                     <clr-dropdown class="btn btn-link" *ngIf="!depth">
                         <span
                             clrDropdownTrigger
@@ -174,23 +202,29 @@
                     {{ 'REPOSITORY.VULNERABILITY' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column class="annotations-column">
+            <clr-dg-column class="sbom-column">
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
+                    {{ 'REPOSITORY.SBOM' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="annotations-column">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
                     {{ 'ARTIFACT.ANNOTATION' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
                     {{ 'REPOSITORY.LABELS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
                     {{ 'REPOSITORY.PUSH_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }">
                     {{ 'REPOSITORY.PULL_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
@@ -387,6 +421,26 @@
                                 handleScanOverview(artifact.scan_overview)
                             ">
                         </hbr-vulnerability-bar>
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">
+                        <span *ngIf="!hasScannerSupportSBOM">
+                            {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
+                        </span>
+                        <hbr-sbom-bar
+                            (submitStopFinish)="submitSbomStopFinish($event)"
+                            (scanFinished)="sbomFinished($event)"
+                            *ngIf="hasScannerSupportSBOM"
+                            [inputScanner]="artifact?.sbom_overview?.scanner"
+                            (submitFinish)="submitSbomFinish($event)"
+                            [projectName]="projectName"
+                            [projectId]="projectId"
+                            [repoName]="repoName"
+                            [artifactDigest]="artifact?.digest"
+                            [sbomDigest]="artifact?.sbomDigest"
+                            [sbomOverview]="artifact?.sbom_overview">
+                        </hbr-sbom-bar>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>

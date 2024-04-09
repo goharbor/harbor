@@ -340,15 +340,16 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 }
 
 // Stop scan job of a given artifact
-func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact) error {
+func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capType string) error {
 	if artifact == nil {
 		return errors.New("nil artifact to stop scan")
 	}
-	query := q.New(q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest})
+	query := q.New(q.KeyWords{"vendor_type": job.ImageScanJobVendorType, "extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": capType})
 	executions, err := bc.execMgr.List(ctx, query)
 	if err != nil {
 		return err
 	}
+
 	if len(executions) == 0 {
 		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
 		return errors.BadRequestError(nil).WithMessage(message)
