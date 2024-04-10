@@ -17,6 +17,7 @@ package scan
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -674,12 +675,23 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	return reports, nil
 }
 
+func isSBOMMimeTypes(mimeTypes []string) bool {
+	for _, mimeType := range mimeTypes {
+		if mimeType == v1.MimeTypeSBOMReport {
+			return true
+		}
+	}
+	return false
+}
+
 // GetSummary ...
 func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, mimeTypes []string) (map[string]interface{}, error) {
 	if artifact == nil {
 		return nil, errors.New("no way to get report summaries for nil artifact")
 	}
-
+	if isSBOMMimeTypes(mimeTypes) {
+		return bc.GetSBOMSummary(ctx, artifact, mimeTypes)
+	}
 	// Get reports first
 	rps, err := bc.GetReport(ctx, artifact, mimeTypes)
 	if err != nil {
@@ -706,6 +718,30 @@ func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact
 	}
 
 	return summaries, nil
+}
+
+func (bc *basicController) GetSBOMSummary(ctx context.Context, art *ar.Artifact, mimeTypes []string) (map[string]interface{}, error) {
+	if art == nil {
+		return nil, errors.New("no way to get report summaries for nil artifact")
+	}
+	r, err := bc.sc.GetRegistrationByProject(ctx, art.ProjectID)
+	if err != nil {
+		return nil, errors.Wrap(err, "scan controller: get sbom summary")
+	}
+	reports, err := bc.manager.GetBy(ctx, art.Digest, r.UUID, mimeTypes)
+	if err != nil {
+		return nil, err
+	}
+	if len(reports) == 0 {
+		return map[string]interface{}{}, nil
+	}
+	reportContent := reports[0].Report
+	if len(reportContent) == 0 {
+		log.Warning("no content for current report")
+	}
+	result := map[string]interface{}{}
+	err = json.Unmarshal([]byte(reportContent), &result)
+	return result, err
 }
 
 // GetScanLog ...
