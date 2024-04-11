@@ -21,12 +21,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-const (
-	// ScanTypeVulnerability the scan type for vulnerability
-	ScanTypeVulnerability = "vulnerability"
-	// ScanTypeSbom the scan type for sbom
-	ScanTypeSbom = "sbom"
-)
+var supportedMimeTypes = []string{
+	MimeTypeNativeReport,
+	MimeTypeGenericVulnerabilityReport,
+	MimeTypeSBOMReport,
+}
 
 // Scanner represents metadata of a Scanner Adapter which allow Harbor to lookup a scanner capable of
 // scanning a given Artifact stored in its registry and making sure that it can interpret a
@@ -105,7 +104,7 @@ func (md *ScannerAdapterMetadata) Validate() error {
 		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
 		found = false
 		for _, pm := range ca.ProducesMimeTypes {
-			if pm == MimeTypeNativeReport || pm == MimeTypeGenericVulnerabilityReport {
+			if isSupportedMimeType(pm) {
 				found = true
 				break
 			}
@@ -117,6 +116,15 @@ func (md *ScannerAdapterMetadata) Validate() error {
 	}
 
 	return nil
+}
+
+func isSupportedMimeType(mimeType string) bool {
+	for _, mt := range supportedMimeTypes {
+		if mt == mimeType {
+			return true
+		}
+	}
+	return false
 }
 
 // HasCapability returns true when mine type of the artifact support by the scanner

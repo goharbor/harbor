@@ -258,6 +258,11 @@ func (a *ArtifactEventHandler) onPush(ctx context.Context, event *event.Artifact
 		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}
+
+		log.Debugf("auto generate sbom is triggered for artifact event %+v", event)
+		if err := autoGenSBOM(ctx, &artifact.Artifact{Artifact: *event.Artifact}); err != nil {
+			log.Errorf("generate sbom for artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
+		}
 	}()
 
 	return nil

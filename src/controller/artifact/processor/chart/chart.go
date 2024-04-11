@@ -85,11 +85,11 @@ func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artif
 			if err != nil {
 				return nil, err
 			}
+			defer blob.Close()
 			content, err := io.ReadAll(blob)
 			if err != nil {
 				return nil, err
 			}
-			blob.Close()
 			chartDetails, err := p.chartOperator.GetDetails(content)
 			if err != nil {
 				return nil, err
