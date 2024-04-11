@@ -115,6 +115,11 @@ trivy:
   #
   # insecure The flag to skip verifying registry certificate
   insecure: false
+  #
+  # timeout The duration to wait for scan completion.
+  # There is upper bound of 30 minutes defined in scan job. So if this `timeout` is larger than 30m0s, it will also timeout at 30m0s.
+  timeout: 5m0s
+  #
   # github_token The GitHub access token to download Trivy DB
   #
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
