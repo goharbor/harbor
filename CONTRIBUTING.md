@@ -165,7 +165,7 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.5    | 1.17.7      |
 |   2.6    | 1.18.6      |
 |   2.7    | 1.19.4      |
-|   2.8    | 1.21.7      |
+|   2.8    | 1.21.9      |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
