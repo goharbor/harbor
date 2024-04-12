@@ -12,6 +12,8 @@ func (dst *NoticeResponse) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *NoticeResponse) Encode(dst []byte) []byte {
-	return append(dst, (*ErrorResponse)(src).marshalBinary('N')...)
+func (src *NoticeResponse) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'N')
+	dst = (*ErrorResponse)(src).appendFields(dst)
+	return finishMessage(dst, sp)
 }
