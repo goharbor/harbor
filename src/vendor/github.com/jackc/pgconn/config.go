@@ -366,9 +366,9 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 	config.TLSConfig = fallbacks[0].TLSConfig
 	config.Fallbacks = fallbacks[1:]
 
-	passfile, err := pgpassfile.ReadPassfile(settings["passfile"])
-	if err == nil {
-		if config.Password == "" {
+	if config.Password == "" {
+		passfile, err := pgpassfile.ReadPassfile(settings["passfile"])
+		if err == nil {
 			host := config.Host
 			if network, _ := NetworkAddress(config.Host, config.Port); network == "unix" {
 				host = "localhost"

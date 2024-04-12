@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-
-	"github.com/jackc/pgio"
 )
 
 type Describe struct {
@@ -37,18 +35,12 @@ func (dst *Describe) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *Describe) Encode(dst []byte) []byte {
-	dst = append(dst, 'D')
-	sp := len(dst)
-	dst = pgio.AppendInt32(dst, -1)
-
+func (src *Describe) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'D')
 	dst = append(dst, src.ObjectType)
 	dst = append(dst, src.Name...)
 	dst = append(dst, 0)
-
-	pgio.SetInt32(dst[sp:], int32(len(dst[sp:])))
-
-	return dst
+	return finishMessage(dst, sp)
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

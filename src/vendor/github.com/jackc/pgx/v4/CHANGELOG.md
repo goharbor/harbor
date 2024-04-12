@@ -1,3 +1,26 @@
+# 4.18.2 (March 4, 2024)
+
+Fix CVE-2024-27289
+
+SQL injection can occur when all of the following conditions are met:
+
+1. The non-default simple protocol is used.
+2. A placeholder for a numeric value must be immediately preceded by a minus.
+3. There must be a second placeholder for a string value after the first placeholder; both must be on the same line.
+4. Both parameter values must be user-controlled.
+
+Thanks to Paul Gerste for reporting this issue.
+
+Fix CVE-2024-27304
+
+SQL injection can occur if an attacker can cause a single query or bind message to exceed 4 GB in size. An integer
+overflow in the calculated message size can cause the one large message to be sent as multiple messages under the
+attacker's control.
+
+Thanks to Paul Gerste for reporting this issue.
+
+* Fix *dbTx.Exec not checking if it is already closed
+
 # 4.18.1 (February 27, 2023)
 
 * Fix: Support pgx v4 and v5 stdlib in same program (Tomáš Procházka)

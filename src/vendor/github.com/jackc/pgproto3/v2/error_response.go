@@ -2,7 +2,6 @@ package pgproto3
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"strconv"
 )
@@ -111,120 +110,113 @@ func (dst *ErrorResponse) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *ErrorResponse) Encode(dst []byte) []byte {
-	return append(dst, src.marshalBinary('E')...)
+func (src *ErrorResponse) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'E')
+	dst = src.appendFields(dst)
+	return finishMessage(dst, sp)
 }
 
-func (src *ErrorResponse) marshalBinary(typeByte byte) []byte {
-	var bigEndian BigEndianBuf
-	buf := &bytes.Buffer{}
-
-	buf.WriteByte(typeByte)
-	buf.Write(bigEndian.Uint32(0))
-
+func (src *ErrorResponse) appendFields(dst []byte) []byte {
 	if src.Severity != "" {
-		buf.WriteByte('S')
-		buf.WriteString(src.Severity)
-		buf.WriteByte(0)
+		dst = append(dst, 'S')
+		dst = append(dst, src.Severity...)
+		dst = append(dst, 0)
 	}
 	if src.SeverityUnlocalized != "" {
-		buf.WriteByte('V')
-		buf.WriteString(src.SeverityUnlocalized)
-		buf.WriteByte(0)
+		dst = append(dst, 'V')
+		dst = append(dst, src.SeverityUnlocalized...)
+		dst = append(dst, 0)
 	}
 	if src.Code != "" {
-		buf.WriteByte('C')
-		buf.WriteString(src.Code)
-		buf.WriteByte(0)
+		dst = append(dst, 'C')
+		dst = append(dst, src.Code...)
+		dst = append(dst, 0)
 	}
 	if src.Message != "" {
-		buf.WriteByte('M')
-		buf.WriteString(src.Message)
-		buf.WriteByte(0)
+		dst = append(dst, 'M')
+		dst = append(dst, src.Message...)
+		dst = append(dst, 0)
 	}
 	if src.Detail != "" {
-		buf.WriteByte('D')
-		buf.WriteString(src.Detail)
-		buf.WriteByte(0)
+		dst = append(dst, 'D')
+		dst = append(dst, src.Detail...)
+		dst = append(dst, 0)
 	}
 	if src.Hint != "" {
-		buf.WriteByte('H')
-		buf.WriteString(src.Hint)
-		buf.WriteByte(0)
+		dst = append(dst, 'H')
+		dst = append(dst, src.Hint...)
+		dst = append(dst, 0)
 	}
 	if src.Position != 0 {
-		buf.WriteByte('P')
-		buf.WriteString(strconv.Itoa(int(src.Position)))
-		buf.WriteByte(0)
+		dst = append(dst, 'P')
+		dst = append(dst, strconv.Itoa(int(src.Position))...)
+		dst = append(dst, 0)
 	}
 	if src.InternalPosition != 0 {
-		buf.WriteByte('p')
-		buf.WriteString(strconv.Itoa(int(src.InternalPosition)))
-		buf.WriteByte(0)
+		dst = append(dst, 'p')
+		dst = append(dst, strconv.Itoa(int(src.InternalPosition))...)
+		dst = append(dst, 0)
 	}
 	if src.InternalQuery != "" {
-		buf.WriteByte('q')
-		buf.WriteString(src.InternalQuery)
-		buf.WriteByte(0)
+		dst = append(dst, 'q')
+		dst = append(dst, src.InternalQuery...)
+		dst = append(dst, 0)
 	}
 	if src.Where != "" {
-		buf.WriteByte('W')
-		buf.WriteString(src.Where)
-		buf.WriteByte(0)
+		dst = append(dst, 'W')
+		dst = append(dst, src.Where...)
+		dst = append(dst, 0)
 	}
 	if src.SchemaName != "" {
-		buf.WriteByte('s')
-		buf.WriteString(src.SchemaName)
-		buf.WriteByte(0)
+		dst = append(dst, 's')
+		dst = append(dst, src.SchemaName...)
+		dst = append(dst, 0)
 	}
 	if src.TableName != "" {
-		buf.WriteByte('t')
-		buf.WriteString(src.TableName)
-		buf.WriteByte(0)
+		dst = append(dst, 't')
+		dst = append(dst, src.TableName...)
+		dst = append(dst, 0)
 	}
 	if src.ColumnName != "" {
-		buf.WriteByte('c')
-		buf.WriteString(src.ColumnName)
-		buf.WriteByte(0)
+		dst = append(dst, 'c')
+		dst = append(dst, src.ColumnName...)
+		dst = append(dst, 0)
 	}
 	if src.DataTypeName != "" {
-		buf.WriteByte('d')
-		buf.WriteString(src.DataTypeName)
-		buf.WriteByte(0)
+		dst = append(dst, 'd')
+		dst = append(dst, src.DataTypeName...)
+		dst = append(dst, 0)
 	}
 	if src.ConstraintName != "" {
-		buf.WriteByte('n')
-		buf.WriteString(src.ConstraintName)
-		buf.WriteByte(0)
+		dst = append(dst, 'n')
+		dst = append(dst, src.ConstraintName...)
+		dst = append(dst, 0)
 	}
 	if src.File != "" {
-		buf.WriteByte('F')
-		buf.WriteString(src.File)
-		buf.WriteByte(0)
+		dst = append(dst, 'F')
+		dst = append(dst, src.File...)
+		dst = append(dst, 0)
 	}
 	if src.Line != 0 {
-		buf.WriteByte('L')
-		buf.WriteString(strconv.Itoa(int(src.Line)))
-		buf.WriteByte(0)
+		dst = append(dst, 'L')
+		dst = append(dst, strconv.Itoa(int(src.Line))...)
+		dst = append(dst, 0)
 	}
 	if src.Routine != "" {
-		buf.WriteByte('R')
-		buf.WriteString(src.Routine)
-		buf.WriteByte(0)
+		dst = append(dst, 'R')
+		dst = append(dst, src.Routine...)
+		dst = append(dst, 0)
 	}
 
 	for k, v := range src.UnknownFields {
-		buf.WriteByte(k)
-		buf.WriteByte(0)
-		buf.WriteString(v)
-		buf.WriteByte(0)
+		dst = append(dst, k)
+		dst = append(dst, v...)
+		dst = append(dst, 0)
 	}
 
-	buf.WriteByte(0)
+	dst = append(dst, 0)
 
-	binary.BigEndian.PutUint32(buf.Bytes()[1:5], uint32(buf.Len()-1))
-
-	return buf.Bytes()
+	return dst
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

@@ -4,7 +4,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+
+	"github.com/jackc/pgio"
 )
+
+// maxMessageBodyLen is the maximum length of a message body in bytes. See PG_LARGE_MESSAGE_LIMIT in the PostgreSQL
+// source. It is defined as (MaxAllocSize - 1). MaxAllocSize is defined as 0x3fffffff.
+const maxMessageBodyLen = (0x3fffffff - 1)
 
 // Message is the interface implemented by an object that can decode and encode
 // a particular PostgreSQL message.
@@ -14,7 +20,7 @@ type Message interface {
 	Decode(data []byte) error
 
 	// Encode appends itself to dst and returns the new buffer.
-	Encode(dst []byte) []byte
+	Encode(dst []byte) ([]byte, error)
 }
 
 type FrontendMessage interface {
@@ -62,4 +68,24 @@ func getValueFromJSON(v map[string]string) ([]byte, error) {
 		return hex.DecodeString(binary)
 	}
 	return nil, errors.New("unknown protocol representation")
+}
+
+// beginMessage begines a new message of type t. It appends the message type and a placeholder for the message length to
+// dst. It returns the new buffer and the position of the message length placeholder.
+func beginMessage(dst []byte, t byte) ([]byte, int) {
+	dst = append(dst, t)
+	sp := len(dst)
+	dst = pgio.AppendInt32(dst, -1)
+	return dst, sp
+}
+
+// finishMessage finishes a message that was started with beginMessage. It computes the message length and writes it to
+// dst[sp]. If the message length is too large it returns an error. Otherwise it returns the final message buffer.
+func finishMessage(dst []byte, sp int) ([]byte, error) {
+	messageBodyLen := len(dst[sp:])
+	if messageBodyLen > maxMessageBodyLen {
+		return nil, errors.New("message body too large")
+	}
+	pgio.SetInt32(dst[sp:], int32(messageBodyLen))
+	return dst, nil
 }

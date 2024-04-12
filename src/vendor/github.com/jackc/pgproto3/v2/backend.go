@@ -49,7 +49,12 @@ func NewBackend(cr ChunkReader, w io.Writer) *Backend {
 
 // Send sends a message to the frontend.
 func (b *Backend) Send(msg BackendMessage) error {
-	_, err := b.w.Write(msg.Encode(nil))
+	buf, err := msg.Encode(nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = b.w.Write(buf)
 	return err
 }
 
@@ -184,11 +189,11 @@ func (b *Backend) Receive() (FrontendMessage, error) {
 // contextual identification of FrontendMessages. For example, in the
 // PG message flow documentation for PasswordMessage:
 //
-// 		Byte1('p')
+//			Byte1('p')
 //
-//      Identifies the message as a password response. Note that this is also used for
-//		GSSAPI, SSPI and SASL response messages. The exact message type can be deduced from
-//		the context.
+//	     Identifies the message as a password response. Note that this is also used for
+//			GSSAPI, SSPI and SASL response messages. The exact message type can be deduced from
+//			the context.
 //
 // Since the Frontend does not know about the state of a backend, it is important
 // to call SetAuthType() after an authentication request is received by the Frontend.

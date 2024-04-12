@@ -31,10 +31,10 @@ func (dst *GSSEncRequest) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 4 byte message length.
-func (src *GSSEncRequest) Encode(dst []byte) []byte {
+func (src *GSSEncRequest) Encode(dst []byte) ([]byte, error) {
 	dst = pgio.AppendInt32(dst, 8)
 	dst = pgio.AppendInt32(dst, gssEncReqNumber)
-	return dst
+	return dst, nil
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

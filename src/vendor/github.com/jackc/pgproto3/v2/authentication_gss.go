@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+
 	"github.com/jackc/pgio"
 )
 
@@ -26,11 +27,10 @@ func (a *AuthenticationGSS) Decode(src []byte) error {
 	return nil
 }
 
-func (a *AuthenticationGSS) Encode(dst []byte) []byte {
-	dst = append(dst, 'R')
-	dst = pgio.AppendInt32(dst, 4)
+func (a *AuthenticationGSS) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'R')
 	dst = pgio.AppendUint32(dst, AuthTypeGSS)
-	return dst
+	return finishMessage(dst, sp)
 }
 
 func (a *AuthenticationGSS) MarshalJSON() ([]byte, error) {
