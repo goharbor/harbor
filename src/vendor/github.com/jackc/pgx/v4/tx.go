@@ -264,6 +264,10 @@ func (tx *dbTx) Rollback(ctx context.Context) error {
 
 // Exec delegates to the underlying *Conn
 func (tx *dbTx) Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error) {
+	if tx.closed {
+		return pgconn.CommandTag{}, ErrTxClosed
+	}
+
 	return tx.conn.Exec(ctx, sql, arguments...)
 }
 

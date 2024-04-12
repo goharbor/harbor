@@ -57,7 +57,11 @@ func NewFrontend(cr ChunkReader, w io.Writer) *Frontend {
 
 // Send sends a message to the backend.
 func (f *Frontend) Send(msg FrontendMessage) error {
-	_, err := f.w.Write(msg.Encode(nil))
+	buf, err := msg.Encode(nil)
+	if err != nil {
+		return err
+	}
+	_, err = f.w.Write(buf)
 	return err
 }
 
