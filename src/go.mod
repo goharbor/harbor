@@ -14,7 +14,7 @@ require (
 	github.com/casbin/casbin v1.9.1
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
-	github.com/coreos/go-oidc/v3 v3.9.0
+	github.com/coreos/go-oidc/v3 v3.10.0
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
@@ -107,7 +107,7 @@ require (
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
+	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
