@@ -41,7 +41,11 @@ func (c *PgConn) scramAuth(serverAuthMechanisms []string) error {
 		AuthMechanism: "SCRAM-SHA-256",
 		Data:          sc.clientFirstMessage(),
 	}
-	_, err = c.conn.Write(saslInitialResponse.Encode(nil))
+	buf, err := saslInitialResponse.Encode(nil)
+	if err != nil {
+		return err
+	}
+	_, err = c.conn.Write(buf)
 	if err != nil {
 		return err
 	}
@@ -60,7 +64,11 @@ func (c *PgConn) scramAuth(serverAuthMechanisms []string) error {
 	saslResponse := &pgproto3.SASLResponse{
 		Data: []byte(sc.clientFinalMessage()),
 	}
-	_, err = c.conn.Write(saslResponse.Encode(nil))
+	buf, err = saslResponse.Encode(nil)
+	if err != nil {
+		return err
+	}
+	_, err = c.conn.Write(buf)
 	if err != nil {
 		return err
 	}
@@ -78,12 +86,14 @@ func (c *PgConn) rxSASLContinue() (*pgproto3.AuthenticationSASLContinue, error) 
 	if err != nil {
 		return nil, err
 	}
-	saslContinue, ok := msg.(*pgproto3.AuthenticationSASLContinue)
-	if ok {
-		return saslContinue, nil
+	switch m := msg.(type) {
+	case *pgproto3.AuthenticationSASLContinue:
+		return m, nil
+	case *pgproto3.ErrorResponse:
+		return nil, ErrorResponseToPgError(m)
 	}
 
-	return nil, errors.New("expected AuthenticationSASLContinue message but received unexpected message")
+	return nil, fmt.Errorf("expected AuthenticationSASLContinue message but received unexpected message %T", msg)
 }
 
 func (c *PgConn) rxSASLFinal() (*pgproto3.AuthenticationSASLFinal, error) {
@@ -91,12 +101,14 @@ func (c *PgConn) rxSASLFinal() (*pgproto3.AuthenticationSASLFinal, error) {
 	if err != nil {
 		return nil, err
 	}
-	saslFinal, ok := msg.(*pgproto3.AuthenticationSASLFinal)
-	if ok {
-		return saslFinal, nil
+	switch m := msg.(type) {
+	case *pgproto3.AuthenticationSASLFinal:
+		return m, nil
+	case *pgproto3.ErrorResponse:
+		return nil, ErrorResponseToPgError(m)
 	}
 
-	return nil, errors.New("expected AuthenticationSASLFinal message but received unexpected message")
+	return nil, fmt.Errorf("expected AuthenticationSASLFinal message but received unexpected message %T", msg)
 }
 
 type scramClient struct {

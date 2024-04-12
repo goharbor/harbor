@@ -20,8 +20,8 @@ func (dst *NoData) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *NoData) Encode(dst []byte) []byte {
-	return append(dst, 'n', 0, 0, 0, 4)
+func (src *NoData) Encode(dst []byte) ([]byte, error) {
+	return append(dst, 'n', 0, 0, 0, 4), nil
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

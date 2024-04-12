@@ -3,8 +3,6 @@ package pgproto3
 import (
 	"bytes"
 	"encoding/json"
-
-	"github.com/jackc/pgio"
 )
 
 type CopyFail struct {
@@ -28,17 +26,11 @@ func (dst *CopyFail) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *CopyFail) Encode(dst []byte) []byte {
-	dst = append(dst, 'f')
-	sp := len(dst)
-	dst = pgio.AppendInt32(dst, -1)
-
+func (src *CopyFail) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'f')
 	dst = append(dst, src.Message...)
 	dst = append(dst, 0)
-
-	pgio.SetInt32(dst[sp:], int32(len(dst[sp:])))
-
-	return dst
+	return finishMessage(dst, sp)
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

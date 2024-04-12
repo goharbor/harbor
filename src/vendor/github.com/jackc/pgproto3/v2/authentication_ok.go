@@ -35,11 +35,10 @@ func (dst *AuthenticationOk) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *AuthenticationOk) Encode(dst []byte) []byte {
-	dst = append(dst, 'R')
-	dst = pgio.AppendInt32(dst, 8)
+func (src *AuthenticationOk) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'R')
 	dst = pgio.AppendUint32(dst, AuthTypeOk)
-	return dst
+	return finishMessage(dst, sp)
 }
 
 // MarshalJSON implements encoding/json.Marshaler.

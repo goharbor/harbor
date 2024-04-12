@@ -29,12 +29,11 @@ func (dst *BackendKeyData) Decode(src []byte) error {
 }
 
 // Encode encodes src into dst. dst will include the 1 byte message type identifier and the 4 byte message length.
-func (src *BackendKeyData) Encode(dst []byte) []byte {
-	dst = append(dst, 'K')
-	dst = pgio.AppendUint32(dst, 12)
+func (src *BackendKeyData) Encode(dst []byte) ([]byte, error) {
+	dst, sp := beginMessage(dst, 'K')
 	dst = pgio.AppendUint32(dst, src.ProcessID)
 	dst = pgio.AppendUint32(dst, src.SecretKey)
-	return dst
+	return finishMessage(dst, sp)
 }
 
 // MarshalJSON implements encoding/json.Marshaler.
