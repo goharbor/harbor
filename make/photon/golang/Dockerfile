@@ -12,7 +12,7 @@ ENV GOLANG_VERSION ${GOVERSION}
 
 RUN set eux; \
     url="https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz"; \
-    sha256="13b76a9b2a26823e53062fa841b07087d48ae2ef2936445dc34c4ae03293702c"; \
+    sha256="f76194c2dc607e0df4ed2e7b825b5847cb37e34fc70d780e2f6c7e805634a7ea"; \
     wget -O go.tgz.asc "$url.asc"; \
     wget -O go.tgz "$url"; \
     echo "$sha256 *go.tgz" | sha256sum -c -; \
