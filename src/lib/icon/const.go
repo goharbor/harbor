@@ -27,4 +27,5 @@ const (
 	DigestOfIconAccCosign   = "sha256:20401d5b3a0f6dbc607c8d732eb08471af4ae6b19811a4efce8c6a724aed2882"
 	DigestOfIconAccNotation = "sha256:3ac706e102bbe9362b400aa162df58135d35e66b9c3bee2165de92022d25fe34"
 	DigestOfIconAccNydus    = "sha256:dfcb6617cd9c144358dc1b305b87bbe34f0b619f1e329116e6aee2e41f2e34cf"
+	DigestOfIconAccSBOM     = "sha256:c19f80c357cd7e90d2a01b9ae3e2eb62ce447a2662bb590a19177d72d550bdae"
 )

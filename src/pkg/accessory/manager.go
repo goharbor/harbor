@@ -33,6 +33,7 @@ var (
 		model.TypeCosignSignature:   icon.DigestOfIconAccCosign,
 		model.TypeNotationSignature: icon.DigestOfIconAccNotation,
 		model.TypeNydusAccelerator:  icon.DigestOfIconAccNydus,
+		model.TypeHarborSBOM:        icon.DigestOfIconAccSBOM,
 	}
 )
 
