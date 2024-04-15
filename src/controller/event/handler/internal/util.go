@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 )
 
@@ -42,4 +43,22 @@ func autoScan(ctx context.Context, a *artifact.Artifact, tags ...string) error {
 
 		return scan.DefaultController.Scan(ctx, a, options...)
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-auto-scan"))
+}
+
+func autoGenSBOM(ctx context.Context, a *artifact.Artifact) error {
+	proj, err := project.Ctl.Get(ctx, a.ProjectID)
+	if err != nil {
+		return err
+	}
+	if !proj.AutoSBOMGen() {
+		return nil
+	}
+	// transaction here to work with the image index
+	return orm.WithTransaction(func(ctx context.Context) error {
+		options := []scan.Option{}
+		// TODO: extract the sbom scan type to a constant
+		options = append(options, scan.WithScanType("sbom"))
+		log.Debugf("sbom scan controller artifact %+v, options %+v", a, options)
+		return scan.DefaultController.Scan(ctx, a, options...)
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-auto-gen-sbom"))
 }

@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -33,11 +34,11 @@ func (suite *VulAssemblerTestSuite) TestScannable() {
 	checker := &scan.Checker{}
 	scanCtl := &scan.Controller{}
 
-	assembler := VulAssembler{
-		scanChecker:      checker,
-		scanCtl:          scanCtl,
-		withScanOverview: true,
-		mimeTypes:        []string{"mimeType"},
+	assembler := ScanReportAssembler{
+		scanChecker:    checker,
+		scanCtl:        scanCtl,
+		overviewOption: model.NewOverviewOptions(model.WithVuln(true)),
+		mimeTypes:      []string{"mimeType"},
 	}
 
 	mock.OnAnything(checker, "IsScannable").Return(true, nil)
@@ -56,10 +57,10 @@ func (suite *VulAssemblerTestSuite) TestNotScannable() {
 	checker := &scan.Checker{}
 	scanCtl := &scan.Controller{}
 
-	assembler := VulAssembler{
-		scanChecker:      checker,
-		scanCtl:          scanCtl,
-		withScanOverview: true,
+	assembler := ScanReportAssembler{
+		scanChecker:    checker,
+		scanCtl:        scanCtl,
+		overviewOption: model.NewOverviewOptions(model.WithVuln(true)),
 	}
 
 	mock.OnAnything(checker, "IsScannable").Return(false, nil)
@@ -72,6 +73,32 @@ func (suite *VulAssemblerTestSuite) TestNotScannable() {
 	suite.Nil(assembler.WithArtifacts(&art).Assemble(context.TODO()))
 	suite.Len(art.AdditionLinks, 0)
 	scanCtl.AssertNotCalled(suite.T(), "GetSummary")
+}
+
+func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverview() {
+	checker := &scan.Checker{}
+	scanCtl := &scan.Controller{}
+
+	assembler := ScanReportAssembler{
+		scanChecker:    checker,
+		scanCtl:        scanCtl,
+		overviewOption: model.NewOverviewOptions(model.WithSBOM(true)),
+		mimeTypes:      []string{v1sq.MimeTypeSBOMReport},
+	}
+
+	mock.OnAnything(checker, "IsScannable").Return(true, nil)
+	overview := map[string]interface{}{
+		"sbom_digest": "sha256:123456",
+		"scan_status": "Success",
+	}
+	mock.OnAnything(scanCtl, "GetSummary").Return(overview, nil)
+
+	var artifact model.Artifact
+	err := assembler.WithArtifacts(&artifact).Assemble(context.TODO())
+	suite.Nil(err)
+	suite.Equal(artifact.SBOMOverView["sbom_digest"], "sha256:123456")
+	suite.Equal(artifact.SBOMOverView["scan_status"], "Success")
+
 }
 
 func TestVulAssemblerTestSuite(t *testing.T) {

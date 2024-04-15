@@ -5,19 +5,19 @@ set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
 sudo go env -w GO111MODULE=auto
-go get github.com/docker/distribution
-go get github.com/docker/libtrust
-go get golang.org/x/lint/golint
-go get github.com/GeertJohan/fgt
-go get github.com/dghubble/sling
-set +e
-go get github.com/stretchr/testify
-go get golang.org/x/tools/cmd/cover
-go get github.com/mattn/goveralls
-go get -u github.com/client9/misspell/cmd/misspell
+pwd
+# cd ./src
+# go get github.com/docker/distribution@latest
+# go get github.com/docker/libtrust@latest
+# set +e
+# go get github.com/stretchr/testify@v1.8.4
+go install golang.org/x/tools/cmd/cover@latest
+go install github.com/mattn/goveralls@latest
+go install github.com/client9/misspell/cmd/misspell@latest
 set -e
+# cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
-# go install/go get installation aren't guaranteed to work. We recommend using binary installation.
+# go get installation aren't guaranteed to work. We recommend using binary installation.
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2

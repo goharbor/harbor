@@ -14,6 +14,8 @@
 
 package scan
 
+import v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+
 // Options keep the settings/configurations for scanning.
 type Options struct {
 	ExecutionID int64  // The execution id to scan artifact
@@ -24,7 +26,7 @@ type Options struct {
 // GetScanType returns the scan type. for backward compatibility, the default type is vulnerability.
 func (o *Options) GetScanType() string {
 	if len(o.ScanType) == 0 {
-		o.ScanType = "vulnerability"
+		o.ScanType = v1.ScanTypeVulnerability
 	}
 	return o.ScanType
 }

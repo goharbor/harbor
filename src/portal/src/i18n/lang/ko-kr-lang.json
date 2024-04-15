@@ -775,6 +775,7 @@
         "ARTIFACTS": "아티팩트들",
         "SIZE": "크기",
         "VULNERABILITY": "취약점",
+        "SBOM": "SBOM",
         "BUILD_HISTORY": "기록 생성",
         "SIGNED": "서명됨",
         "AUTHOR": "작성자",
@@ -1025,6 +1026,41 @@
         "IN_PROGRESS": "검색 중...",
         "BACK": "뒤로"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "Not Generated",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "SBOM scan stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Create SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "스캔되지 않음",
@@ -1105,6 +1141,7 @@
         "ALL": "모두",
         "PLACEHOLDER": "아티팩트를 찾을 수 없음!",
         "SCAN_UNSUPPORTED": "지원되지 않음",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "요약",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
