@@ -104,14 +104,14 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
 	close(closing)
-	shutdownChan := make(chan struct{}, 1)
+	shutdownChan := make(chan struct{})
 	go func() {
+		defer close(shutdownChan)
 		for _, s := range shutdowns {
 			s()
 		}
 		<-done
 		log.Infof("Goroutines exited normally")
-		shutdownChan <- struct{}{}
 	}()
 	select {
 	case <-shutdownChan:
