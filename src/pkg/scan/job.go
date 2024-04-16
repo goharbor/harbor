@@ -242,7 +242,13 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 					}
 
 					myLogger.Debugf("check scan report for mime %s at %s", m, t.Format("2006/01/02 15:04:05"))
-					rawReport, err := fetchScanReportFromScanner(client, resp.ID, m)
+
+					reportURLParameter, err := handler.ReportURLParameter(req)
+					if err != nil {
+						errs[i] = errors.Wrap(err, "scan job: get report url")
+						return
+					}
+					rawReport, err := fetchScanReportFromScanner(client, resp.ID, m, reportURLParameter)
 					if err != nil {
 						// Not ready yet
 						if notReadyErr, ok := err.(*v1.ReportNotReadyError); ok {
@@ -332,13 +338,13 @@ func getReportPlaceholder(ctx context.Context, digest string, reportUUID string,
 	return reports[0], nil
 }
 
-func fetchScanReportFromScanner(client v1.Client, requestID string, m string) (rawReport string, err error) {
-	rawReport, err = client.GetScanReport(requestID, m)
+func fetchScanReportFromScanner(client v1.Client, requestID string, mimType string, urlParameter string) (rawReport string, err error) {
+	rawReport, err = client.GetScanReport(requestID, mimType, urlParameter)
 	if err != nil {
 		return "", err
 	}
 	// Make sure the data is aligned with the v1 spec.
-	if _, err = report.ResolveData(m, []byte(rawReport)); err != nil {
+	if _, err = report.ResolveData(mimType, []byte(rawReport)); err != nil {
 		return "", err
 	}
 	return rawReport, nil
@@ -367,7 +373,20 @@ func ExtractScanReq(params job.Parameters) (*v1.ScanRequest, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-
+	reqType := v1.ScanTypeVulnerability
+	// attach the request with ProducesMimeTypes and Parameters
+	if len(req.RequestType) > 0 {
+		// current only support requestType with one element for each request
+		if len(req.RequestType[0].Type) > 0 {
+			reqType = req.RequestType[0].Type
+		}
+		handler := GetScanHandler(reqType)
+		if handler == nil {
+			return nil, errors.Errorf("failed to get scan handler, request type %v", reqType)
+		}
+		req.RequestType[0].ProducesMimeTypes = handler.RequestProducesMineTypes()
+		req.RequestType[0].Parameters = handler.RequestParameters()
+	}
 	return req, nil
 }
 

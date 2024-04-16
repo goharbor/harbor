@@ -86,6 +86,9 @@ var (
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionStop},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
@@ -169,6 +172,9 @@ var (
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionStop},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
@@ -223,6 +229,7 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
@@ -267,6 +274,7 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
@@ -290,6 +298,7 @@ var (
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 

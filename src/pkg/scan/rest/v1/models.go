@@ -21,6 +21,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
+const (
+	supportVulnerability = "support_vulnerability"
+	supportSBOM          = "support_sbom"
+)
+
 var supportedMimeTypes = []string{
 	MimeTypeNativeReport,
 	MimeTypeGenericVulnerabilityReport,
@@ -151,6 +156,20 @@ func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapabil
 	}
 
 	return nil
+}
+
+// ConvertCapability converts the capability to map, used in get scanner API
+func (md *ScannerAdapterMetadata) ConvertCapability() map[string]interface{} {
+	capabilities := make(map[string]interface{})
+	for _, c := range md.Capabilities {
+		if c.Type == ScanTypeVulnerability {
+			capabilities[supportVulnerability] = true
+		}
+		if c.Type == ScanTypeSbom {
+			capabilities[supportSBOM] = true
+		}
+	}
+	return capabilities
 }
 
 // Artifact represents an artifact stored in Registry.

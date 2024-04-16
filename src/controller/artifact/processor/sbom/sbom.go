@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	// processorArtifactTypeSBOM is the artifact type for SBOM, it's scope is only used in the processor
-	processorArtifactTypeSBOM = "SBOM"
+	// ArtifactTypeSBOM is the artifact type for SBOM, it's scope is only used in the processor
+	ArtifactTypeSBOM = "SBOM"
 	// processorMediaType is the media type for SBOM, it's scope is only used to register the processor
 	processorMediaType = "application/vnd.goharbor.harbor.sbom.v1"
 )
@@ -85,5 +85,5 @@ func (m *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 
 // GetArtifactType the artifact type is used to display the artifact type in the UI
 func (m *Processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
-	return processorArtifactTypeSBOM
+	return ArtifactTypeSBOM
 }

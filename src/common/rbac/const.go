@@ -51,6 +51,7 @@ const (
 	ResourceRobot              = Resource("robot")
 	ResourceNotificationPolicy = Resource("notification-policy")
 	ResourceScan               = Resource("scan")
+	ResourceSBOM               = Resource("sbom")
 	ResourceScanner            = Resource("scanner")
 	ResourceArtifact           = Resource("artifact")
 	ResourceTag                = Resource("tag")
@@ -181,6 +182,10 @@ var (
 			{Resource: ResourceScan, Action: ActionCreate},
 			{Resource: ResourceScan, Action: ActionRead},
 			{Resource: ResourceScan, Action: ActionStop},
+
+			{Resource: ResourceSBOM, Action: ActionCreate},
+			{Resource: ResourceSBOM, Action: ActionStop},
+			{Resource: ResourceSBOM, Action: ActionRead},
 
 			{Resource: ResourceTag, Action: ActionCreate},
 			{Resource: ResourceTag, Action: ActionList},

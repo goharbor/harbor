@@ -594,7 +594,13 @@ func (a *projectAPI) GetScannerOfProject(ctx context.Context, params operation.G
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-
+	if scanner != nil {
+		metadata, err := a.scannerCtl.GetMetadata(ctx, scanner.UUID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		scanner.Capabilities = metadata.ConvertCapability()
+	}
 	return operation.NewGetScannerOfProjectOK().WithPayload(model.NewScannerRegistration(scanner).ToSwagger(ctx))
 }
 

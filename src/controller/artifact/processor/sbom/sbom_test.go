@@ -158,7 +158,7 @@ func (suite *SBOMProcessorTestSuite) TestAbstractAdditionPullManifestError() {
 }
 
 func (suite *SBOMProcessorTestSuite) TestGetArtifactType() {
-	suite.Equal(processorArtifactTypeSBOM, suite.processor.GetArtifactType(context.Background(), &artifact.Artifact{}))
+	suite.Equal(ArtifactTypeSBOM, suite.processor.GetArtifactType(context.Background(), &artifact.Artifact{}))
 }
 
 func TestSBOMProcessorTestSuite(t *testing.T) {
