@@ -188,7 +188,7 @@ func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 		ResourceType: "artifact"}
 
 	if len(p.Tags) == 0 {
-		auditLog.Resource = fmt.Sprintf("%s:%s",
+		auditLog.Resource = fmt.Sprintf("%s@%s",
 			p.Artifact.RepositoryName, p.Artifact.Digest)
 	} else {
 		auditLog.Resource = fmt.Sprintf("%s:%s",
