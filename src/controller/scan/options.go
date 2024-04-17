@@ -21,6 +21,7 @@ type Options struct {
 	ExecutionID int64  // The execution id to scan artifact
 	Tag         string // The tag of the artifact to scan
 	ScanType    string // The scan type could be sbom or vulnerability
+	FromEvent   bool   // indicate the current call from event or not
 }
 
 // GetScanType returns the scan type. for backward compatibility, the default type is vulnerability.
@@ -60,6 +61,14 @@ func WithTag(tag string) Option {
 func WithScanType(scanType string) Option {
 	return func(options *Options) error {
 		options.ScanType = scanType
+		return nil
+	}
+}
+
+// WithFromEvent set the caller's source
+func WithFromEvent(fromEvent bool) Option {
+	return func(options *Options) error {
+		options.FromEvent = fromEvent
 		return nil
 	}
 }
