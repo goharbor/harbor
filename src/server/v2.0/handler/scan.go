@@ -82,8 +82,8 @@ func (s *scanAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifac
 	if !distribution.IsDigest(params.Reference) {
 		options = append(options, scan.WithTag(params.Reference))
 	}
-	if params.ScanRequestType != nil && validScanType(params.ScanRequestType.ScanType) {
-		scanType = params.ScanRequestType.ScanType
+	if params.ScanType != nil && validScanType(params.ScanType.ScanType) {
+		scanType = params.ScanType.ScanType
 		options = append(options, scan.WithScanType(scanType))
 	}
 	res := rbac.ResourceScan
