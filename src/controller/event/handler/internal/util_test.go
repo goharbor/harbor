@@ -101,9 +101,7 @@ func (suite *AutoScanTestSuite) TestAutoScanSBOM() {
 			proModels.ProMetaAutoSBOMGen: "true",
 		},
 	}, nil)
-
-	mock.OnAnything(suite.scanController, "Scan").Return(nil)
-
+	suite.scanController.On("Scan", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	art := &artifact.Artifact{}
 
@@ -117,7 +115,7 @@ func (suite *AutoScanTestSuite) TestAutoScanSBOMFalse() {
 		},
 	}, nil)
 
-	mock.OnAnything(suite.scanController, "Scan").Return(nil)
+	suite.scanController.On("Scan", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	art := &artifact.Artifact{}
