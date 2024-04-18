@@ -803,6 +803,7 @@
         "FILTER_BY_LABEL": "Filtrar imagens por marcadores",
         "FILTER_ARTIFACT_BY_LABEL": "Filtrar por marcador",
         "ADD_LABELS": "Adicionar Marcadores",
+        "STOP": "Stop",
         "RETAG": "Copiar",
         "ACTION": "AÇÃO",
         "DEPLOY": "IMPLANTAR",
@@ -1054,7 +1055,7 @@
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "GENERATE": "Create SBOM",
+        "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
         "Details": "SBOM details",
         "STOP": "Stop SBOM",
@@ -1104,12 +1105,12 @@
         "PLACEHOLDER": "Filtrar",
         "PACKAGE": "pacote",
         "PACKAGES": "pacotes",
-        "SCAN_NOW": "Examinar",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "EXAMINAR COM {{scanner}}",
         "REPORTED_BY": "Encontrado com {{scanner}}",
         "NO_SCANNER": "NENHUM",
         "TRIGGER_STOP_SUCCESS": "Exame foi interrompido",
-        "STOP_NOW": "Interromper"
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "Comando Push",

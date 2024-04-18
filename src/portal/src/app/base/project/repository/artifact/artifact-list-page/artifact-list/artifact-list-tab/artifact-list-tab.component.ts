@@ -84,6 +84,7 @@ import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
+import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
@@ -160,6 +161,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     get generateSbomBtnState(): ClrLoadingState {
         return this.artifactListPageService.getSbomBtnState();
     }
+    get projectScanner(): Scanner {
+        return this.artifactListPageService.getProjectScanner();
+    }
+
     onSendingScanCommand: boolean;
     onSendingStopScanCommand: boolean = false;
     onStopScanArtifactsLength: number = 0;
@@ -190,7 +195,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             false,
             false,
             false,
-            true,
+            false,
             true,
             false,
             false,
@@ -268,6 +273,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                     this.copyDigestComponent.showDigestId(a.digest);
                 }
             );
+        }
+        if (this.projectId) {
+            this.artifactListPageService.init(this.projectId);
         }
     }
 
@@ -360,7 +368,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 withImmutableStatus: true,
                 withLabel: true,
                 withScanOverview: true,
-                // withSbomOverview: true,
+                withSbomOverview: true,
                 withTag: false,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
                 withAccessory: false,
@@ -385,7 +393,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                     withImmutableStatus: true,
                                     withLabel: true,
                                     withScanOverview: true,
-                                    // withSbomOverview: true,
+                                    withSbomOverview: true,
                                     withTag: false,
                                     XAcceptVulnerabilities:
                                         DEFAULT_SUPPORTED_MIME_TYPES,
@@ -435,6 +443,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 withLabel: true,
                 withScanOverview: true,
+                withSbomOverview: true,
                 withTag: false,
                 sort: getSortingString(state),
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
@@ -749,11 +758,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
-                queryParams: { [UN_LOGGED_PARAM]: YES },
+                queryParams: {
+                    [UN_LOGGED_PARAM]: YES,
+                    sbomDigest: artifact.sbomDigest ?? '',
+                },
             });
         } else {
             this.router.navigate(relativeRouterLink, {
                 relativeTo: this.activatedRoute,
+                queryParams: { sbomDigest: artifact.sbomDigest ?? '' },
             });
         }
     }
@@ -800,6 +813,26 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         return false;
     }
+    // if has running job, return false
+    canGenerateSbomNow(): boolean {
+        if (!this.hasSbomPermission) {
+            return false;
+        }
+        if (this.onSendingSbomCommand) {
+            return false;
+        }
+        if (this.selectedRow && this.selectedRow.length) {
+            let flag: boolean = true;
+            this.selectedRow.forEach(item => {
+                const st: string = this.sbomStatus(item);
+                if (this.isRunningState(st)) {
+                    flag = false;
+                }
+            });
+            return flag;
+        }
+        return false;
+    }
     // Trigger scan
     scanNow(): void {
         if (!this.selectedRow.length) {
@@ -812,6 +845,22 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             let digest = data.digest;
             this.eventService.publish(
                 HarborEvent.START_SCAN_ARTIFACT,
+                this.repoName + '/' + digest
+            );
+        });
+    }
+    // Generate SBOM
+    generateSbom(): void {
+        if (!this.selectedRow.length) {
+            return;
+        }
+        this.sbomFinishedArtifactLength = 0;
+        this.onSbomArtifactsLength = this.selectedRow.length;
+        this.onSendingSbomCommand = true;
+        this.selectedRow.forEach((data: any) => {
+            let digest = data.digest;
+            this.eventService.publish(
+                HarborEvent.START_GENERATE_SBOM,
                 this.repoName + '/' + digest
             );
         });
@@ -941,7 +990,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         }
     }
-
     // when finished, remove it from selectedRow
     sbomFinished(artifact: Artifact) {
         this.scanFinished(artifact);
@@ -1019,18 +1067,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             });
         }
     }
-
     checkCosignAndSbomAsync(artifacts: ArtifactFront[]) {
         if (artifacts) {
             if (artifacts.length) {
                 artifacts.forEach(item => {
                     item.signed = CHECKING;
-                    // const sbomOverview = item?.sbom_overview;
-                    // item.sbomDigest = sbomOverview?.sbom_digest;
-                    // let queryTypes = `${AccessoryType.COSIGN} ${AccessoryType.NOTATION}`;
-                    // if (!item.sbomDigest) {
-                    //     queryTypes = `${queryTypes} ${AccessoryType.SBOM}`;
-                    // }
+                    const sbomOverview = item?.sbom_overview;
+                    item.sbomDigest = sbomOverview?.sbom_digest;
+                    let queryTypes = `${AccessoryType.COSIGN} ${AccessoryType.NOTATION}`;
+                    if (!item.sbomDigest) {
+                        queryTypes = `${queryTypes} ${AccessoryType.SBOM}`;
+                    }
                     this.newArtifactService
                         .listAccessories({
                             projectName: this.projectName,
@@ -1038,16 +1085,21 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             reference: item.digest,
                             page: 1,
                             pageSize: ACCESSORY_PAGE_SIZE,
-                            q: encodeURIComponent(
-                                `type={${AccessoryType.COSIGN} ${AccessoryType.NOTATION}}`
-                            ),
+                            q: encodeURIComponent(`type={${queryTypes}}`),
                         })
                         .subscribe({
                             next: res => {
-                                if (res?.length) {
-                                    item.signed = TRUE;
-                                } else {
-                                    item.signed = FALSE;
+                                item.signed = res?.filter(
+                                    item => item.type !== AccessoryType.SBOM
+                                )?.length
+                                    ? TRUE
+                                    : FALSE;
+                                if (!item.sbomDigest) {
+                                    item.sbomDigest =
+                                        res?.filter(
+                                            item =>
+                                                item.type === AccessoryType.SBOM
+                                        )?.[0]?.digest ?? null;
                                 }
                             },
                             error: err => {
@@ -1075,7 +1127,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         return false;
     }
-
     // return true if all selected rows are in "running" state
     canStopSbom(): boolean {
         if (this.onSendingStopSbomCommand) {
@@ -1142,6 +1193,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         return null;
     }
+
     deleteAccessory(a: Accessory) {
         let titleKey: string,
             summaryKey: string,

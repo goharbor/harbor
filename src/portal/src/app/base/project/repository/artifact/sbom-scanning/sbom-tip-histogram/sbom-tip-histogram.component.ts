@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ScannerVo, SbomSummary } from '../../../../../../shared/services';
+import { SbomSummary } from '../../../../../../shared/services';
 import { SBOM_SCAN_STATUS } from '../../../../../../shared/units/utils';
 import {
     UN_LOGGED_PARAM,
@@ -9,6 +9,7 @@ import {
 } from '../../../../../../account/sign-in/sign-in.service';
 import { HAS_STYLE_MODE, StyleMode } from '../../../../../../services/theme';
 import { ScanTypes } from '../../../../../../shared/entities/shared.const';
+import { Scanner } from '../../../../../left-side-nav/interrogation-services/scanner/scanner';
 
 const MIN = 60;
 const MIN_STR = 'min ';
@@ -21,7 +22,7 @@ const SUCCESS_PCT: number = 100;
     styleUrls: ['./sbom-tip-histogram.component.scss'],
 })
 export class SbomTipHistogramComponent {
-    @Input() scanner: ScannerVo;
+    @Input() scanner: Scanner;
     @Input() sbomSummary: SbomSummary = {
         scan_status: SBOM_SCAN_STATUS.NOT_GENERATED_SBOM,
     };
@@ -54,6 +55,7 @@ export class SbomTipHistogramComponent {
             ? `100%`
             : '0%';
     }
+
     isLimitedSuccess(): boolean {
         return (
             this.sbomSummary && this.sbomSummary.complete_percent < SUCCESS_PCT

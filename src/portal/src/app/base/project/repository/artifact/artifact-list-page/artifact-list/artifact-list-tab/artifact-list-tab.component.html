@@ -24,6 +24,7 @@
                                 canScanNow() &&
                                 selectedRowHasVul() &&
                                 hasEnabledScanner &&
+                                hasScannerSupportVulnerability &&
                                 hasScanImagePermission
                             )
                         "
@@ -33,43 +34,25 @@
                         <span>{{ 'VULNERABILITY.SCAN_NOW' | translate }}</span>
                     </button>
                     <button
-                        id="stop-scan"
-                        [clrLoading]="stopBtnState"
-                        type="button"
-                        class="btn btn-secondary scan-btn"
-                        [disabled]="!(canStopScan() && hasScanImagePermission)"
-                        (click)="stopNow()">
-                        <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
-                        <span>{{ 'VULNERABILITY.STOP_NOW' | translate }}</span>
-                    </button>
-                    <button
                         *ngIf="hasEnabledSbom()"
                         id="generate-sbom-btn"
                         [clrLoading]="generateSbomBtnState"
                         type="button"
                         class="btn btn-secondary"
-                        [disabled]="true"
-                        (click)="generateSbom()">
-                        <clr-icon shape="file" size="16"></clr-icon>&nbsp;
-                        <span>{{ 'SBOM.GENERATE' | translate }}</span>
-                    </button>
-                    <button
-                        id="stop-sbom-btn"
-                        *ngIf="hasEnabledSbom()"
-                        [clrLoading]="stopBtnState"
-                        type="button"
-                        class="btn btn-secondary scan-btn"
                         [disabled]="
                             !(
-                                canStopSbom() &&
+                                canGenerateSbomNow() &&
+                                selectedRowHasSbom() &&
+                                hasEnabledScanner &&
                                 hasSbomPermission &&
-                                hasEnabledScanner
+                                hasScannerSupportSBOM
                             )
                         "
-                        (click)="stopSbom()">
-                        <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
-                        <span>{{ 'SBOM.STOP' | translate }}</span>
+                        (click)="generateSbom()">
+                        <clr-icon shape="sbom" size="16"></clr-icon>&nbsp;
+                        <span>{{ 'SBOM.GENERATE' | translate }}</span>
                     </button>
+
                     <clr-dropdown class="btn btn-link" *ngIf="!depth">
                         <span
                             clrDropdownTrigger
@@ -83,6 +66,45 @@
                             clrPosition="bottom-left"
                             *clrIfOpen>
                             <div
+                                class="dropdown-divider"
+                                role="separator"
+                                aria-hidden="true"></div>
+                            <button
+                                clrDropdownItem
+                                id="stop-scan"
+                                [clrLoading]="stopBtnState"
+                                type="button"
+                                class="btn btn-secondary scan-btn action-dropdown-item"
+                                [disabled]="
+                                    !(canStopScan() && hasScanImagePermission)
+                                "
+                                (click)="stopNow()">
+                                <span>{{
+                                    'VULNERABILITY.STOP_NOW' | translate
+                                }}</span>
+                            </button>
+                            <button
+                                clrDropdownItem
+                                id="stop-sbom-btn"
+                                *ngIf="hasEnabledSbom()"
+                                [clrLoading]="stopBtnState"
+                                type="button"
+                                class="btn btn-secondary scan-btn action-dropdown-item"
+                                [disabled]="
+                                    !(
+                                        canStopSbom() &&
+                                        hasSbomPermission &&
+                                        hasEnabledScanner
+                                    )
+                                "
+                                (click)="stopSbom()">
+                                <span>{{ 'SBOM.STOP' | translate }}</span>
+                            </button>
+                            <div
+                                class="dropdown-divider"
+                                role="separator"
+                                aria-hidden="true"></div>
+                            <div
                                 id="artifact-list-copy-digest"
                                 class="action-dropdown-item no-border"
                                 aria-label="copy digest"
@@ -93,6 +115,10 @@
                                 (click)="showDigestId()">
                                 {{ 'REPOSITORY.COPY_DIGEST_ID' | translate }}
                             </div>
+                            <div
+                                class="dropdown-divider"
+                                role="separator"
+                                aria-hidden="true"></div>
                             <clr-dropdown>
                                 <button
                                     id="artifact-list-add-labels"
@@ -106,6 +132,10 @@
                                     ">
                                     {{ 'REPOSITORY.ADD_LABELS' | translate }}
                                 </button>
+                                <div
+                                    class="dropdown-divider"
+                                    role="separator"
+                                    aria-hidden="true"></div>
                                 <clr-dropdown-menu
                                     [hidden]="!selectedRow.length">
                                     <div class="filter-grid">
@@ -432,7 +462,7 @@
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
                             *ngIf="hasScannerSupportSBOM"
-                            [inputScanner]="artifact?.sbom_overview?.scanner"
+                            [inputScanner]="projectScanner"
                             (submitFinish)="submitSbomFinish($event)"
                             [projectName]="projectName"
                             [projectId]="projectId"

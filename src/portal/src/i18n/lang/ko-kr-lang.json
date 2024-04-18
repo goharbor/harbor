@@ -802,6 +802,7 @@
         "FILTER_BY_LABEL": "라벨별로 이미지 필터",
         "FILTER_ARTIFACT_BY_LABEL": "라벨별로 아티팩트 필터",
         "ADD_LABELS": "라벨 추가",
+        "STOP": "Stop",
         "RETAG": "복사",
         "ACTION": "동작",
         "DEPLOY": "배포",
@@ -1055,7 +1056,7 @@
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "GENERATE": "Create SBOM",
+        "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
         "Details": "SBOM details",
         "STOP": "Stop SBOM",
@@ -1105,12 +1106,12 @@
         "PLACEHOLDER": "취약점 필터",
         "PACKAGE": "패키지",
         "PACKAGES": "패키지들",
-        "SCAN_NOW": "스캔",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "{{scanner}로 스캔",
         "REPORTED_BY": "{{scanner}}로 보고 됨",
         "NO_SCANNER": "스캐너 없음",
         "TRIGGER_STOP_SUCCESS": "트리거 중지 스캔이 성공적으로 수행되었습니다",
-        "STOP_NOW": "스캔 중지"
+        "STOP_NOW": "Stop Scan"
     },
     "PUSH_IMAGE": {
         "TITLE": "푸시 명령어",

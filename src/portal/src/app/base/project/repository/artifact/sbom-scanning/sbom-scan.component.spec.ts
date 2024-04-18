@@ -10,7 +10,6 @@ import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogr
 import { SBOMOverview } from './sbom-overview';
 import { of, timer } from 'rxjs';
 import { ArtifactService, ScanService } from 'ng-swagger-gen/services';
-import { Artifact } from 'ng-swagger-gen/models';
 
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;
@@ -21,23 +20,18 @@ describe('ResultSbomComponent (inline template)', () => {
     };
     const mockedSbomDigest =
         'sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3';
+    const mockScanner = {
+        name: 'Trivy',
+        vendor: 'vm',
+        version: 'v1.2',
+    };
     const mockedSbomOverview = {
         report_id: '12345',
         scan_status: 'Error',
-        scanner: {
-            name: 'Trivy',
-            vendor: 'vm',
-            version: 'v1.2',
-        },
     };
     const mockedCloneSbomOverview = {
         report_id: '12346',
         scan_status: 'Pending',
-        scanner: {
-            name: 'Trivy',
-            vendor: 'vm',
-            version: 'v1.2',
-        },
     };
     const FakedScanService = {
         scanArtifact: () => of({}),
@@ -120,6 +114,7 @@ describe('ResultSbomComponent (inline template)', () => {
         fixture = TestBed.createComponent(ResultSbomComponent);
         component = fixture.componentInstance;
         component.repoName = 'mockRepo';
+        component.inputScanner = mockScanner;
         component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.sbomOverview = mockData;
@@ -180,9 +175,11 @@ describe('ResultSbomComponent (inline template)', () => {
     });
     it('Test ResultSbomComponent getScanner', () => {
         fixture.detectChanges();
+        component.inputScanner = undefined;
         expect(component.getScanner()).toBeUndefined();
+        component.inputScanner = mockScanner;
         component.sbomOverview = mockedSbomOverview;
-        expect(component.getScanner()).toBe(mockedSbomOverview.scanner);
+        expect(component.getScanner()).toBe(mockScanner);
         component.projectName = 'test';
         component.repoName = 'ui';
         component.artifactDigest = 'dg';
@@ -239,7 +236,9 @@ describe('ResultSbomComponent (inline template)', () => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
-            expect(component.stateCheckTimer).toBeUndefined();
+            expect(component.sbomOverview.scan_status).toBe(
+                SBOM_SCAN_STATUS.SUCCESS
+            );
         });
     });
 });
