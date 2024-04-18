@@ -113,7 +113,7 @@ type Controller interface {
 	//  Arguments:
 	//    ctx context.Context : the context.Context for this method
 	//    projectID int64  : the ID of the given project
-	//    scannerID string : the UUID of the the scanner
+	//    scannerID string : the UUID of the scanner
 	//
 	//  Returns:
 	//    error : non nil error if any errors occurred
