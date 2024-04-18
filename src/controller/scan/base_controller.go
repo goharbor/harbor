@@ -247,15 +247,18 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	if err != nil {
 		return err
 	}
-
-	if !scannable {
-		return errors.BadRequestError(nil).WithMessage("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
-	}
-
 	// Parse options
 	opts, err := parseOptions(options...)
 	if err != nil {
 		return errors.Wrap(err, "scan controller: scan")
+	}
+
+	if !scannable {
+		if opts.FromEvent {
+			// skip to return err for event related scan
+			return nil
+		}
+		return errors.BadRequestError(nil).WithMessage("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
 	}
 
 	var (
