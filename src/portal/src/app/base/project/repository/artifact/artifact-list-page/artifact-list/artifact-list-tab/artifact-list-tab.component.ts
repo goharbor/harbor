@@ -907,7 +907,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         this.scanStoppedArtifactLength += 1;
         // all selected scan action has stopped
         if (this.scanStoppedArtifactLength === this.onStopScanArtifactsLength) {
-            this.onSendingScanCommand = e;
+            this.onSendingStopScanCommand = e;
         }
     }
 
@@ -923,7 +923,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         this.sbomStoppedArtifactLength += 1;
         // all selected scan action has stopped
         if (this.sbomStoppedArtifactLength === this.onStopSbomArtifactsLength) {
-            this.onSendingSbomCommand = e;
+            this.onSendingStopSbomCommand = e;
         }
     }
 
