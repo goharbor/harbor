@@ -70,10 +70,11 @@ const (
 	artfiactKey     = "artifact"
 	registrationKey = "registration"
 
-	artifactIDKey  = "artifact_id"
-	artifactTagKey = "artifact_tag"
-	reportUUIDsKey = "report_uuids"
-	robotIDKey     = "robot_id"
+	artifactIDKey       = "artifact_id"
+	artifactTagKey      = "artifact_tag"
+	reportUUIDsKey      = "report_uuids"
+	robotIDKey          = "robot_id"
+	enabledCapabilities = "enabled_capabilities"
 )
 
 // uuidGenerator is a func template which is for generating UUID.
@@ -316,6 +317,9 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 			registrationKey: map[string]interface{}{
 				"id":   r.ID,
 				"name": r.Name,
+			},
+			enabledCapabilities: map[string]interface{}{
+				"type": opts.GetScanType(),
 			},
 		}
 		if op := operator.FromContext(ctx); op != "" {
