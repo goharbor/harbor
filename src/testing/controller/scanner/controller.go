@@ -281,6 +281,24 @@ func (_m *Controller) RegistrationExists(ctx context.Context, registrationUUID s
 	return r0
 }
 
+// RetrieveCap provides a mock function with given fields: ctx, r
+func (_m *Controller) RetrieveCap(ctx context.Context, r *scanner.Registration) error {
+	ret := _m.Called(ctx, r)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RetrieveCap")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *scanner.Registration) error); ok {
+		r0 = rf(ctx, r)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SetDefaultRegistration provides a mock function with given fields: ctx, registrationUUID
 func (_m *Controller) SetDefaultRegistration(ctx context.Context, registrationUUID string) error {
 	ret := _m.Called(ctx, registrationUUID)
