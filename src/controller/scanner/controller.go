@@ -154,4 +154,7 @@ type Controller interface {
 	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
 	//    error                      : non nil error if any errors occurred
 	GetMetadata(ctx context.Context, registrationUUID string) (*v1.ScannerAdapterMetadata, error)
+
+	// RetrieveCap retrieve scanner capabilities
+	RetrieveCap(ctx context.Context, r *scanner.Registration) error
 }

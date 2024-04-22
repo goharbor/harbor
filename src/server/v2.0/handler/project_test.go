@@ -89,6 +89,7 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(nil, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 		res, err := suite.Get("/projects/1/scanner")
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -98,6 +99,7 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(suite.reg, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 		var scanner scanner.Registration
 		res, err := suite.GetJSON("/projects/1/scanner", &scanner)
 		suite.NoError(err)
@@ -110,6 +112,7 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(suite.reg, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 
 		var scanner scanner.Registration
 		res, err := suite.GetJSON("/projects/library/scanner", &scanner)
