@@ -180,12 +180,8 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     }
 
     supportCapability(scanner: Scanner, capabilityType: string): boolean {
-        return scanner && scanner.metadata && capabilityType
-            ? (
-                  scanner?.metadata?.capabilities?.filter(
-                      ({ type }) => type === capabilityType
-                  ) ?? []
-              ).length >= 1
+        return scanner && scanner.capabilities && capabilityType
+            ? scanner?.capabilities?.[`support_${capabilityType}`] ?? false
             : false;
     }
 
