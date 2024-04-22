@@ -161,13 +161,21 @@ func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapabil
 // ConvertCapability converts the capability to map, used in get scanner API
 func (md *ScannerAdapterMetadata) ConvertCapability() map[string]interface{} {
 	capabilities := make(map[string]interface{})
+	oldScanner := true
 	for _, c := range md.Capabilities {
+		if len(c.Type) > 0 {
+			oldScanner = false
+		}
 		if c.Type == ScanTypeVulnerability {
 			capabilities[supportVulnerability] = true
-		}
-		if c.Type == ScanTypeSbom {
+		} else if c.Type == ScanTypeSbom {
 			capabilities[supportSBOM] = true
 		}
+	}
+	if oldScanner && len(capabilities) == 0 {
+		// to compatible with old version scanner, suppose they should always support scan vulnerability when capability is empty
+		capabilities[supportVulnerability] = true
+		capabilities[supportSBOM] = false
 	}
 	return capabilities
 }
