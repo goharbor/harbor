@@ -112,9 +112,11 @@ func (v *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 
 // annotations defines the annotations for the accessory artifact
 func (v *scanHandler) annotations() map[string]string {
+	t := time.Now().Format(time.RFC3339)
 	return map[string]string{
-		"created-by":                              "Harbor",
-		"org.opencontainers.artifact.created":     time.Now().Format(time.RFC3339),
+		"created":                             t,
+		"created-by":                          "Harbor",
+		"org.opencontainers.artifact.created": t,
 		"org.opencontainers.artifact.description": "SPDX JSON SBOM",
 	}
 }
