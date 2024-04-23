@@ -45,6 +45,9 @@ redis:
     maxactive: 500
     idletimeout: 60s
 http:
+{% if relativeurls %}
+  relativeurls: true
+{% else %}
 {% if internal_tls.enabled %}
   addr: :5443
   tls:
