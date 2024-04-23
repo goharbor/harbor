@@ -47,7 +47,7 @@ redis:
 http:
 {% if relativeurls %}
   relativeurls: true
-{% else %}
+{% endif %}
 {% if internal_tls.enabled %}
   addr: :5443
   tls:
