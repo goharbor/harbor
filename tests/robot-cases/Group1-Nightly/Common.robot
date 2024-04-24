@@ -885,13 +885,13 @@ Test Case - Audit Log And Purge
     # pull artifact
     Docker Pull  ${ip}/project${d}/${image}:${tag1}
     Docker Logout  ${ip}
-    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  pull
+    Verify Log  ${user}  project${d}/${image}@${sha256}  artifact  pull
     Go Into Repo  project${d}  ${image}
     # delete artifact
     @{tag_list}  Create List  ${tag1}
     Multi-delete Artifact  @{tag_list}
     Switch To Logs
-    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  delete
+    Verify Log  ${user}  project${d}/${image}@${sha256}  artifact  delete
     Go Into Project  project${d}
     # delete repository
     Delete Repo  project${d}  ${image}
