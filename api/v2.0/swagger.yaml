@@ -1192,6 +1192,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1223,6 +1225,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -1476,6 +1480,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
@@ -4823,6 +4829,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /schedules:
@@ -6456,6 +6464,14 @@ responses:
         type: string
     schema:
       $ref: '#/definitions/Errors'
+  '422':
+    description: Unsupported Type
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'    
   '500':
     description: Internal server error
     headers:

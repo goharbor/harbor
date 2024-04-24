@@ -751,7 +751,7 @@ func (bc *basicController) GetSBOMSummary(ctx context.Context, art *ar.Artifact,
 	reportContent := reports[0].Report
 	result := map[string]interface{}{}
 	if len(reportContent) == 0 {
-		log.Warning("no content for current report")
+		log.Debug("no content for current report")
 		return result, nil
 	}
 	err = json.Unmarshal([]byte(reportContent), &result)
