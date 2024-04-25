@@ -10,7 +10,6 @@ import {
 } from '@ngx-translate/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UserPermissionService } from '../../../../../../shared/services';
-import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { SessionService } from '../../../../../../shared/services/session.service';
 import { SessionUser } from '../../../../../../shared/entities/session-user';

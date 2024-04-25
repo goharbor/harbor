@@ -76,7 +76,7 @@ export enum AccessoryType {
     COSIGN = 'signature.cosign',
     NOTATION = 'signature.notation',
     NYDUS = 'accelerator.nydus',
-    SBOM = 'harbor.sbom',
+    SBOM = 'sbom.harbor',
 }
 
 export enum ArtifactType {
