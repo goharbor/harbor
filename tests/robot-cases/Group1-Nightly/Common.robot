@@ -1151,8 +1151,8 @@ Test Case - Retain Image Last Pull Time
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
     Should Be Empty  ${last_pull_time}
     Switch To Configuration System Setting
     Set Up Retain Image Last Pull Time  disable
@@ -1160,8 +1160,8 @@ Test Case - Retain Image Last Pull Time
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
     Should Not Be Empty  ${last_pull_time}
     Close Browser
 
