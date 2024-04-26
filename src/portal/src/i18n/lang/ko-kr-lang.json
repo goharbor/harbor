@@ -403,6 +403,7 @@
         "REPOSITORY": "저장소",
         "ARTIFACT": "아티팩트",
         "SCAN": "스캔",
+        "SBOM": "SBOM",
         "TAG": "태그",
         "ACCESSORY": "액세서리",
         "ARTIFACT_ADDITION": "아티팩트 추가",
@@ -1059,7 +1060,7 @@
         "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
         "Details": "SBOM details",
-        "STOP": "Stop SBOM",
+        "STOP": "Stop Generate SBOM",
         "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
     },
     "VULNERABILITY": {

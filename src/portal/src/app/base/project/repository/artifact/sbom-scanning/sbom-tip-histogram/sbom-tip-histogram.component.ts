@@ -68,9 +68,7 @@ export class SbomTipHistogramComponent {
     }
 
     get noSbom(): boolean {
-        return (
-            this.sbomSummary.scan_status === SBOM_SCAN_STATUS.NOT_GENERATED_SBOM
-        );
+        return this.sbomDigest === undefined || this.sbomDigest === '';
     }
 
     isThemeLight() {
