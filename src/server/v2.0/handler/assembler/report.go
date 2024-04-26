@@ -21,16 +21,12 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 )
 
 const (
 	vulnerabilitiesAddition = "vulnerabilities"
-	startTime               = "start_time"
-	endTime                 = "end_time"
-	scanStatus              = "scan_status"
-	sbomDigest              = "sbom_digest"
-	duration                = "duration"
 )
 
 // NewScanReportAssembler returns vul assembler
@@ -92,17 +88,19 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeSBOMReport})
 			if err != nil {
 				log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
-			} else if len(overview) > 0 {
+			}
+			if len(overview) > 0 {
 				artifact.SBOMOverView = map[string]interface{}{
-					startTime:  overview[startTime],
-					endTime:    overview[endTime],
-					scanStatus: overview[scanStatus],
-					sbomDigest: overview[sbomDigest],
-					duration:   overview[duration],
+					sbomModel.StartTime:  overview[sbomModel.StartTime],
+					sbomModel.EndTime:    overview[sbomModel.EndTime],
+					sbomModel.ScanStatus: overview[sbomModel.ScanStatus],
+					sbomModel.SBOMDigest: overview[sbomModel.SBOMDigest],
+					sbomModel.Duration:   overview[sbomModel.Duration],
+					sbomModel.ReportID:   overview[sbomModel.ReportID],
+					sbomModel.Scanner:    overview[sbomModel.Scanner],
 				}
 			}
 		}
 	}
-
 	return nil
 }

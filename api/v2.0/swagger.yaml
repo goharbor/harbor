@@ -6816,6 +6816,8 @@ definitions:
         format: int64
         description: 'Time in seconds required to create the report'
         example: 300
+      scanner:
+        $ref: '#/definitions/Scanner'
   NativeReportSummary:
     type: object
     description: 'The summary for the native report'
