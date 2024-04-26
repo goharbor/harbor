@@ -745,7 +745,7 @@ Test Case - System Robot Account
 
     ${robot_account_name}  ${token}=  Create A System Robot Account  sys2${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
     Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
-    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 56 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 59 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
     Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
     Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
     Close Browser
