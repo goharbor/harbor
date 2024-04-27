@@ -87,6 +87,24 @@ func (_m *Manager) DeleteByDigests(ctx context.Context, digests ...string) error
 	return r0
 }
 
+// DeleteByExtraAttr provides a mock function with given fields: ctx, mimeType, attrName, attrValue
+func (_m *Manager) DeleteByExtraAttr(ctx context.Context, mimeType string, attrName string, attrValue string) error {
+	ret := _m.Called(ctx, mimeType, attrName, attrValue)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteByExtraAttr")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, mimeType, attrName, attrValue)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetBy provides a mock function with given fields: ctx, digest, registrationUUID, mimeTypes
 func (_m *Manager) GetBy(ctx context.Context, digest string, registrationUUID string, mimeTypes []string) ([]*scan.Report, error) {
 	ret := _m.Called(ctx, digest, registrationUUID, mimeTypes)
