@@ -1099,7 +1099,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                         res?.filter(
                                             item =>
                                                 item.type === AccessoryType.SBOM
-                                        )?.[0]?.digest ?? null;
+                                        )?.[0]?.digest ?? undefined;
                                 }
                             },
                             error: err => {

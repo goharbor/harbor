@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -36,6 +37,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	pkgArt "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
@@ -319,6 +321,11 @@ func (a *ArtifactEventHandler) onDelete(ctx context.Context, event *event.Artifa
 		log.Errorf("failed to delete scan reports of artifact %v, error: %v", unrefDigests, err)
 	}
 
+	if event.Artifact.Type == sbom.ArtifactTypeSBOM && len(event.Artifact.Digest) > 0 {
+		if err := reportMgr.DeleteByExtraAttr(ctx, v1.MimeTypeSBOMReport, "sbom_digest", event.Artifact.Digest); err != nil {
+			log.Errorf("failed to delete scan reports of with sbom digest %v, error: %v", event.Artifact.Digest, err)
+		}
+	}
 	return nil
 }
 

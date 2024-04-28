@@ -1,13 +1,6 @@
-import {
-    AfterViewInit,
-    Component,
-    Input,
-    OnDestroy,
-    OnInit,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
-import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import {
     ScannerVo,
     UserPermissionService,
@@ -30,7 +23,6 @@ import {
     HarborEvent,
 } from '../../../../../../services/event-service/event.service';
 import { severityText } from '../../../../../left-side-nav/interrogation-services/vulnerability-database/security-hub.interface';
-import { AppConfigService } from 'src/app/services/app-config.service';
 
 import {
     ArtifactSbom,
@@ -38,8 +30,7 @@ import {
     getArtifactSbom,
 } from '../../artifact';
 import { ArtifactService } from 'ng-swagger-gen/services';
-import { ScanTypes } from 'src/app/shared/entities/shared.const';
-import { ArtifactListPageService } from '../../artifact-list-page/artifact-list-page.service';
+import { ScanTypes } from '../../../../../../shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-artifact-sbom',
@@ -56,13 +47,12 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     @Input()
     sbomDigest: string;
     @Input() artifact: Artifact;
+    @Input() hasScannerSupportSBOM: boolean = false;
 
     artifactSbom: ArtifactSbom;
     loading: boolean = false;
-    hasScannerSupportSBOM: boolean = false;
     downloadSbomBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     hasSbomPermission: boolean = false;
-
     hasShowLoading: boolean = false;
     sub: Subscription;
     hasViewInitWithDelay: boolean = false;
@@ -73,16 +63,13 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     readonly severityText = severityText;
     constructor(
         private errorHandler: ErrorHandler,
-        private appConfigService: AppConfigService,
         private artifactService: ArtifactService,
-        private artifactListPageService: ArtifactListPageService,
         private userPermissionService: UserPermissionService,
         private eventService: EventService,
         private session: SessionService
     ) {}
 
     ngOnInit() {
-        this.artifactListPageService.init(this.projectId);
         this.getSbom();
         this.getSbomPermission();
         if (!this.sub) {
@@ -222,8 +209,6 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     }
 
     canDownloadSbom(): boolean {
-        this.hasScannerSupportSBOM =
-            this.artifactListPageService.hasScannerSupportSBOM();
         return (
             this.hasScannerSupportSBOM &&
             //this.hasSbomPermission &&
@@ -234,7 +219,12 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
     }
 
     artifactSbomPackages(): ArtifactSbomPackageItem[] {
-        return this.artifactSbom?.sbomPackage?.packages ?? [];
+        return (
+            this.artifactSbom?.sbomPackage?.packages?.filter(
+                item =>
+                    item?.name || item?.versionInfo || item?.licenseConcluded
+            ) ?? []
+        );
     }
 
     load(state: ClrDatagridStateInterface) {

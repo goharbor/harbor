@@ -10,7 +10,8 @@ import { ADDITIONS } from './models';
 import { AdditionLinks } from '../../../../../../../ng-swagger-gen/models/addition-links';
 import { AdditionLink } from '../../../../../../../ng-swagger-gen/models/addition-link';
 import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
-import { ClrTabs } from '@clr/angular';
+import { ClrLoadingState, ClrTabs } from '@clr/angular';
+import { ArtifactListPageService } from '../artifact-list-page/artifact-list-page.service';
 
 @Component({
     selector: 'artifact-additions',
@@ -32,14 +33,21 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     @Input()
     tab: string;
 
-    @Input() currentTabLinkId: string = 'vulnerability';
+    @Input() currentTabLinkId: string = '';
     activeTab: string = null;
 
     @ViewChild('additionsTab') tabs: ClrTabs;
-    constructor(private ref: ChangeDetectorRef) {}
+    constructor(
+        private ref: ChangeDetectorRef,
+        private artifactListPageService: ArtifactListPageService
+    ) {}
 
     ngOnInit(): void {
         this.activeTab = this.tab;
+        if (!this.activeTab) {
+            this.currentTabLinkId = 'vulnerability';
+        }
+        this.artifactListPageService.init(this.projectId);
     }
 
     ngAfterViewChecked() {
@@ -48,6 +56,10 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
             this.activeTab = null;
         }
         this.ref.detectChanges();
+    }
+
+    hasScannerSupportSBOM(): boolean {
+        return this.artifactListPageService.hasScannerSupportSBOM();
     }
 
     getVulnerability(): AdditionLink {
@@ -59,12 +71,7 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
         }
         return null;
     }
-    getSbom(): AdditionLink {
-        if (this.additionLinks && this.additionLinks[ADDITIONS.SBOMS]) {
-            return this.additionLinks[ADDITIONS.SBOMS];
-        }
-        return {};
-    }
+
     getBuildHistory(): AdditionLink {
         if (this.additionLinks && this.additionLinks[ADDITIONS.BUILD_HISTORY]) {
             return this.additionLinks[ADDITIONS.BUILD_HISTORY];
@@ -92,5 +99,13 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
 
     actionTab(tab: string): void {
         this.currentTabLinkId = tab;
+    }
+
+    getScanBtnState(): ClrLoadingState {
+        return this.artifactListPageService.getScanBtnState();
+    }
+
+    hasEnabledScanner(): boolean {
+        return this.artifactListPageService.hasEnabledScanner();
     }
 }

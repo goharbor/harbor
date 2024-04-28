@@ -405,6 +405,7 @@
         "REPOSITORY": "仓库",
         "ARTIFACT": "Artifact",
         "SCAN": "扫描",
+        "SBOM": "SBOM",
         "TAG": "Tag",
         "ACCESSORY": "附件",
         "ARTIFACT_ADDITION": "Artifact 额外信息",
@@ -1059,7 +1060,7 @@
         "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
         "Details": "SBOM details",
-        "STOP": "Stop SBOM",
+        "STOP": "Stop Generate SBOM",
         "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
     },
     "VULNERABILITY": {
