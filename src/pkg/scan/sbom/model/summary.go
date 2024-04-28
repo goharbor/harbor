@@ -27,6 +27,10 @@ const (
 	Duration = "duration"
 	// ScanStatus ...
 	ScanStatus = "scan_status"
+	// ReportID ...
+	ReportID = "report_id"
+	// Scanner ...
+	Scanner = "scanner"
 )
 
 // Summary includes the sbom summary information
