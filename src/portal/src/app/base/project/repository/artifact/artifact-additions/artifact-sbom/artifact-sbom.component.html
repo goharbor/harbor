@@ -32,12 +32,18 @@
                     </div>
                 </div>
             </clr-dg-action-bar>
-            <clr-dg-column [clrDgField]="'package'" class="package-medium">{{
-                'SBOM.GRID.COLUMN_PACKAGE' | translate
-            }}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'version'" class="version-medium">{{
-                'SBOM.GRID.COLUMN_VERSION' | translate
-            }}</clr-dg-column>
+            <clr-dg-column
+                [clrDgSortBy]="'name'"
+                [clrDgField]="'name'"
+                class="package-medium"
+                >{{ 'SBOM.GRID.COLUMN_PACKAGE' | translate }}</clr-dg-column
+            >
+            <clr-dg-column
+                [clrDgSortBy]="'versionInfo'"
+                [clrDgField]="'versionInfo'"
+                class="version-medium"
+                >{{ 'SBOM.GRID.COLUMN_VERSION' | translate }}</clr-dg-column
+            >
             <clr-dg-column>{{
                 'SBOM.GRID.COLUMN_LICENSE' | translate
             }}</clr-dg-column>
