@@ -751,11 +751,32 @@ func (bc *basicController) GetSBOMSummary(ctx context.Context, art *ar.Artifact,
 	reportContent := reports[0].Report
 	result := map[string]interface{}{}
 	if len(reportContent) == 0 {
+		status := bc.retrieveStatusFromTask(ctx, reports[0].UUID)
+		if len(status) > 0 {
+			result[sbomModel.ReportID] = reports[0].UUID
+			result[sbomModel.ScanStatus] = status
+		}
 		log.Debug("no content for current report")
 		return result, nil
 	}
 	err = json.Unmarshal([]byte(reportContent), &result)
 	return result, err
+}
+
+// retrieve the status from task
+func (bc *basicController) retrieveStatusFromTask(ctx context.Context, reportID string) string {
+	if len(reportID) == 0 {
+		return ""
+	}
+	tasks, err := bc.taskMgr.ListScanTasksByReportUUID(ctx, reportID)
+	if err != nil {
+		log.Warningf("can not find the task with report UUID %v, error %v", reportID, err)
+		return ""
+	}
+	if len(tasks) > 0 {
+		return tasks[0].Status
+	}
+	return ""
 }
 
 // GetScanLog ...

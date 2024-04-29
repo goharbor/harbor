@@ -13,10 +13,13 @@
                     [clrIfActive]="currentTabLinkId === 'vulnerability'">
                     <clr-tab-content id="vulnerability-content">
                         <hbr-artifact-vulnerabilities
+                            *ngIf="currentTabLinkId === 'vulnerability'"
                             [artifact]="artifact"
                             [projectName]="projectName"
                             [projectId]="projectId"
                             [repoName]="repoName"
+                            [scanBtnState]="getScanBtnState()"
+                            [hasEnabledScanner]="hasEnabledScanner()"
                             [digest]="digest"
                             [vulnerabilitiesLink]="
                                 getVulnerability()
@@ -24,16 +27,18 @@
                     </clr-tab-content>
                 </ng-template>
             </clr-tab>
-            <clr-tab *ngIf="getSbom()">
+            <clr-tab *ngIf="hasScannerSupportSBOM()">
                 <button clrTabLink id="sbom" (click)="actionTab('sbom')">
                     {{ 'REPOSITORY.SBOM' | translate }}
                 </button>
                 <ng-template [clrIfActive]="currentTabLinkId === 'sbom'">
                     <clr-tab-content id="sbom-content">
                         <hbr-artifact-sbom
+                            *ngIf="currentTabLinkId === 'sbom'"
                             [artifact]="artifact"
                             [projectName]="projectName"
                             [projectId]="projectId"
+                            [hasScannerSupportSBOM]="hasScannerSupportSBOM()"
                             [repoName]="repoName"
                             [sbomDigest]="sbomDigest"></hbr-artifact-sbom>
                     </clr-tab-content>
@@ -50,6 +55,7 @@
                     [clrIfActive]="currentTabLinkId === 'build-history'">
                     <clr-tab-content>
                         <hbr-artifact-build-history
+                            *ngIf="currentTabLinkId === 'build-history'"
                             [buildHistoryLink]="
                                 getBuildHistory()
                             "></hbr-artifact-build-history>
@@ -67,6 +73,7 @@
                     [clrIfActive]="currentTabLinkId === 'summary-link'">
                     <clr-tab-content id="summary-content">
                         <hbr-artifact-summary
+                            *ngIf="currentTabLinkId === 'summary-link'"
                             [summaryLink]="getSummary()"></hbr-artifact-summary>
                     </clr-tab-content>
                 </ng-template>
@@ -81,6 +88,7 @@
                 <ng-template [clrIfActive]="currentTabLinkId === 'depend-link'">
                     <clr-tab-content id="depend-content">
                         <hbr-artifact-dependencies
+                            *ngIf="currentTabLinkId === 'depend-link'"
                             [dependenciesLink]="
                                 getDependencies()
                             "></hbr-artifact-dependencies>
@@ -97,6 +105,7 @@
                 <ng-template [clrIfActive]="currentTabLinkId === 'value-link'">
                     <clr-tab-content id="value-content">
                         <hbr-artifact-values
+                            *ngIf="currentTabLinkId === 'value-link'"
                             [valuesLink]="getValues()"></hbr-artifact-values>
                     </clr-tab-content>
                 </ng-template>
