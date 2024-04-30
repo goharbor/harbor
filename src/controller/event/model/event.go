@@ -74,3 +74,9 @@ type RetentionRule struct {
 	// Selector attached to the rule for filtering scope (e.g: repositories or namespaces)
 	ScopeSelectors map[string][]*rule.Selector `json:"scope_selectors,omitempty"`
 }
+
+// Scan describes scan infos
+type Scan struct {
+	// ScanType the scan type
+	ScanType string `json:"scan_type,omitempty"`
+}
