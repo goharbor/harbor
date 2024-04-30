@@ -289,6 +289,7 @@ func (d *DeleteTagEvent) String() string {
 // ScanImageEvent is scanning image related event data to publish
 type ScanImageEvent struct {
 	EventType string
+	ScanType  string
 	Artifact  *v1.Artifact
 	OccurAt   time.Time
 	Operator  string
