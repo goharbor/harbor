@@ -326,12 +326,6 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return err
 	}
 
-	if isAccessory {
-		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
-			return err
-		}
-	}
-
 	// the child artifact is referenced by some tags, skip
 	if !isRoot && len(art.Tags) > 0 {
 		return nil
@@ -352,6 +346,12 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		}
 		// the child artifact is referenced by other artifacts, skip
 		return nil
+	}
+
+	if isAccessory {
+		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
+			return err
+		}
 	}
 
 	// delete accessories if contains any
