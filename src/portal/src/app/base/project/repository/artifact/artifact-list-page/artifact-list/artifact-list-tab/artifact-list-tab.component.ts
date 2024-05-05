@@ -984,6 +984,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (this.selectedRow && this.selectedRow.length) {
             for (let i = 0; i < this.selectedRow.length; i++) {
                 if (artifact.digest === this.selectedRow[i].digest) {
+                    if (artifact.sbom_overview) {
+                        this.selectedRow[i].sbom_overview =
+                            artifact.sbom_overview;
+                    }
+                    if (artifact.sbom_overview.sbom_digest) {
+                        this.selectedRow[i].sbomDigest =
+                            artifact.sbom_overview.sbom_digest;
+                    }
                     this.selectedRow.splice(i, 1);
                     break;
                 }
@@ -1099,7 +1107,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                         res?.filter(
                                             item =>
                                                 item.type === AccessoryType.SBOM
-                                        )?.[0]?.digest ?? null;
+                                        )?.[0]?.digest ?? undefined;
                                 }
                             },
                             error: err => {

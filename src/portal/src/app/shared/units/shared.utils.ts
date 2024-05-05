@@ -142,7 +142,16 @@ export const errorHandler = function (error: any): string {
     }
     // Not a standard error return Basically not used cover unknown error
     try {
-        return JSON.parse(error.error).message;
+        const jsonError = JSON.parse(error.error);
+        if (jsonError.errors && jsonError.errors instanceof Array) {
+            return (
+                jsonError.errors?.map(error => error.message) ?? [
+                    'UNKNOWN_ERROR',
+                ]
+            ).join(',');
+        } else {
+            return JSON.parse(error.error).message;
+        }
     } catch (err) {}
     // Not a standard error return Basically not used cover unknown error
     if (typeof error.error === 'string') {

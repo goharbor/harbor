@@ -87,7 +87,7 @@ func (v *scanHandler) RequiredPermissions() []*types.Policy {
 
 // PostScan defines task specific operations after the scan is complete
 func (v *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel.Report, rawReport string, startTime time.Time, robot *model.Robot) (string, error) {
-	sbomContent, err := retrieveSBOMContent(rawReport)
+	sbomContent, s, err := retrieveSBOMContent(rawReport)
 	if err != nil {
 		return "", err
 	}
@@ -107,19 +107,21 @@ func (v *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 		myLogger.Errorf("error when create accessory from image %v", err)
 		return "", err
 	}
-	return v.generateReport(startTime, sr.Artifact.Repository, dgst, "Success")
+	return v.generateReport(startTime, sr.Artifact.Repository, dgst, "Success", s)
 }
 
 // annotations defines the annotations for the accessory artifact
 func (v *scanHandler) annotations() map[string]string {
+	t := time.Now().Format(time.RFC3339)
 	return map[string]string{
-		"created-by":                              "Harbor",
-		"org.opencontainers.artifact.created":     time.Now().Format(time.RFC3339),
+		"created":                             t,
+		"created-by":                          "Harbor",
+		"org.opencontainers.artifact.created": t,
 		"org.opencontainers.artifact.description": "SPDX JSON SBOM",
 	}
 }
 
-func (v *scanHandler) generateReport(startTime time.Time, repository, digest, status string) (string, error) {
+func (v *scanHandler) generateReport(startTime time.Time, repository, digest, status string, scanner *v1.Scanner) (string, error) {
 	summary := sbom.Summary{}
 	endTime := time.Now()
 	summary[sbom.StartTime] = startTime
@@ -128,6 +130,7 @@ func (v *scanHandler) generateReport(startTime time.Time, repository, digest, st
 	summary[sbom.SBOMRepository] = repository
 	summary[sbom.SBOMDigest] = digest
 	summary[sbom.ScanStatus] = status
+	summary[sbom.Scanner] = scanner
 	rep, err := json.Marshal(summary)
 	if err != nil {
 		return "", err
@@ -148,15 +151,15 @@ func registryFQDN(ctx context.Context) string {
 }
 
 // retrieveSBOMContent retrieves the "sbom" field from the raw report
-func retrieveSBOMContent(rawReport string) ([]byte, error) {
+func retrieveSBOMContent(rawReport string) ([]byte, *v1.Scanner, error) {
 	rpt := vuln.Report{}
 	err := json.Unmarshal([]byte(rawReport), &rpt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	sbomContent, err := json.Marshal(rpt.SBOM)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return sbomContent, nil
+	return sbomContent, rpt.Scanner, nil
 }
