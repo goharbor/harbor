@@ -18,7 +18,7 @@ require (
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
-	github.com/go-asn1-ber/asn1-ber v1.5.5
+	github.com/go-asn1-ber/asn1-ber v1.5.6
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/go-openapi/errors v0.21.0
 	github.com/go-openapi/loads v0.21.2 // indirect
@@ -35,7 +35,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-containerregistry v0.19.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/csrf v1.6.2
+	github.com/gorilla/csrf v1.7.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
@@ -71,7 +71,7 @@ require (
 	golang.org/x/time v0.5.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.14.2
+	helm.sh/helm/v3 v3.14.4
 	k8s.io/api v0.30.0
 	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.29.0
@@ -118,7 +118,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/gorilla/securecookie v1.1.1 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
