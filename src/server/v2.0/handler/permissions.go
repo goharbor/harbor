@@ -61,7 +61,7 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		if err != nil {
 			return p.SendError(ctx, err)
 		}
-		is, err := p.mc.IsProjectAdmin(ctx, user.UserID)
+		is, err := p.mc.IsProjectAdmin(ctx, *user)
 		if err != nil {
 			return p.SendError(ctx, err)
 		}
