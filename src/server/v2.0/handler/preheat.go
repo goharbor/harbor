@@ -65,7 +65,7 @@ type preheatAPI struct {
 	taskCtl      taskCtl.Controller
 }
 
-func (api *preheatAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (api *preheatAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 
@@ -160,7 +160,7 @@ func (api *preheatAPI) ListInstances(ctx context.Context, params operation.ListI
 		WithLink(api.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())
 }
 
-func (api *preheatAPI) ListProviders(ctx context.Context, params operation.ListProvidersParams) middleware.Responder {
+func (api *preheatAPI) ListProviders(ctx context.Context, _ operation.ListProvidersParams) middleware.Responder {
 	if err := api.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}

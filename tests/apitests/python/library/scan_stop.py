@@ -11,7 +11,9 @@ class StopScan(base.Base, object):
 
     def stop_scan_artifact(self, project_name, repo_name, reference, expect_status_code = 202, expect_response_body = None, **kwargs):
         try:
-            data, status_code, _ = self._get_client(**kwargs).stop_scan_artifact_with_http_info(project_name, repo_name, reference)
+            scanType = v2_swagger_client.ScanType()
+            scanType.scan_type = "vulnerability"
+            data, status_code, _ = self._get_client(**kwargs).stop_scan_artifact_with_http_info(project_name, repo_name, reference, scanType)
         except ApiException as e:
             base._assert_status_code(expect_status_code, e.status)
             if expect_response_body is not None:

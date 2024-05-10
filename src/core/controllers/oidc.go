@@ -63,7 +63,13 @@ func (oc *OIDCController) RedirectLogin() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	if err := oc.SetSession(redirectURLKey, oc.Ctx.Request.URL.Query().Get("redirect_url")); err != nil {
+	redirectURL := oc.Ctx.Request.URL.Query().Get("redirect_url")
+	if !utils.IsLocalPath(redirectURL) {
+		log.Errorf("invalid redirect url: %v", redirectURL)
+		oc.SendBadRequestError(fmt.Errorf("cannot redirect to other site"))
+		return
+	}
+	if err := oc.SetSession(redirectURLKey, redirectURL); err != nil {
 		log.Errorf("failed to set session for key: %s, error: %v", redirectURLKey, err)
 		oc.SendInternalServerError(err)
 		return

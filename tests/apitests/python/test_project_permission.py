@@ -89,9 +89,12 @@ copy_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts?fr
 delete_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts/{}".format(harbor_base_url, project_name, source_artifact_tag), "DELETE", 200)
 
 # 6. Resource scan      actions: ['read', 'create', 'stop']
+stop_scan_payload = {
+    "scan_type": "vulnerability"
+}
 create_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202)
-stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202)
-read_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/0/log".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "get", 404)
+stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, stop_scan_payload)
+read_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/83be44fd-1234-5678-b49f-4b6d6e8f5730/log".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "get", 404)
 
 # 7. Resource tag      actions: ['list', 'create', 'delete']
 tag_payload = { "name": "test-{}".format(int(random.randint(1000, 9999))) }
@@ -192,12 +195,12 @@ if "tag-retention" in resources or "all" == resources:
 create_tag_retention_rule = Permission("{}/retentions".format(harbor_base_url), "POST", 201, tag_retention_rule_payload, "id", id_from_header=True)
 read_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, tag_retention_rule_payload, payload_id_field="id")
 update_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "PUT", 200, tag_retention_rule_payload, payload_id_field="id")
-execute_tag_retention = Permission("{}/retentions/888/executions".format(harbor_base_url), "POST", 400, tag_retention_rule_payload, payload_id_field="id")
+execute_tag_retention = Permission("{}/retentions/88888888/executions".format(harbor_base_url), "POST", 400, tag_retention_rule_payload, payload_id_field="id")
 list_tag_retention_execution = Permission("{}/retentions/{}/executions".format(harbor_base_url, ID_PLACEHOLDER), "GET", 200, tag_retention_rule_payload, payload_id_field="id")
 tag_retention_rule_payload["action"] = "stop"
-stop_tag_retention = Permission("{}/retentions/{}/executions/888".format(harbor_base_url, ID_PLACEHOLDER), "PATCH", 404, tag_retention_rule_payload, payload_id_field="id")
-list_tag_retention_tasks = Permission("{}/retentions/{}/executions/888/tasks".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
-read_tag_retention_tasks = Permission("{}/retentions/{}/executions/888/tasks/888".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
+stop_tag_retention = Permission("{}/retentions/{}/executions/88888888".format(harbor_base_url, ID_PLACEHOLDER), "PATCH", 404, tag_retention_rule_payload, payload_id_field="id")
+list_tag_retention_tasks = Permission("{}/retentions/{}/executions/88888888/tasks".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
+read_tag_retention_tasks = Permission("{}/retentions/{}/executions/88888888/tasks/88888888".format(harbor_base_url, ID_PLACEHOLDER), "GET", 404, tag_retention_rule_payload, payload_id_field="id")
 delete_tag_retention = Permission("{}/retentions/{}".format(harbor_base_url, ID_PLACEHOLDER), "DELETE", 200, tag_retention_rule_payload, payload_id_field="id")
 
 # 16. Resource log   actions: ['list']
@@ -226,8 +229,8 @@ list_webhook = Permission("{}/projects/{}/webhook/policies".format(harbor_base_u
 read_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 200, webhook_payload, payload_id_field="id")
 update_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "PUT", 200, webhook_payload, payload_id_field="id")
 list_webhook_executions = Permission("{}/projects/{}/webhook/policies/{}/executions".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 200, webhook_payload, payload_id_field="id")
-list_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/888/tasks".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
-read_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/888/tasks/888/log".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
+list_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/88888888/tasks".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
+read_webhook_executions_tasks = Permission("{}/projects/{}/webhook/policies/{}/executions/88888888/tasks/88888888/log".format(harbor_base_url, project_id, ID_PLACEHOLDER), "GET", 404, webhook_payload, payload_id_field="id")
 list_webhook_events = Permission("{}/projects/{}/webhook/events".format(harbor_base_url, project_id), "GET", 200)
 delete_webhook = Permission("{}/projects/{}/webhook/policies/{}".format(harbor_base_url, project_id, ID_PLACEHOLDER), "DELETE", 200, webhook_payload, payload_id_field="id")
 
@@ -249,16 +252,22 @@ resource_permissions = {
     "log": [list_log],
     "notification-policy": [create_webhook, list_webhook, read_webhook, update_webhook, list_webhook_executions, list_webhook_executions_tasks, read_webhook_executions_tasks, list_webhook_events, delete_webhook]
 }
-resource_permissions["all"] = [item for sublist in resource_permissions.values() for item in sublist]
 
 
 def main():
+    global resources  # Declare resources as a global variable
+
+    if str(resources) == "all":
+        resources = ','.join(str(key) for key in resource_permissions.keys())
+
     for resource in resources.split(","):
         for permission in resource_permissions[resource]:
             print("=================================================")
             print("call: {} {}".format(permission.method, permission.url))
             print("payload: {}".format(json.dumps(permission.payload)))
-            print("response: {}".format(permission.call().text))
+            resp = permission.call()
+            print("response: {}".format(resp.text))
+            print("response status code: {}".format(resp.status_code))
             print("=================================================\n")
 
 

@@ -96,7 +96,7 @@ func GenerateSummary(r *scan.Report, options ...Option) (interface{}, error) {
 type SummaryGenerator func(r *scan.Report, options ...Option) (interface{}, error)
 
 // GenerateNativeSummary generates the report summary for the native report.
-func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, error) {
+func GenerateNativeSummary(r *scan.Report, _ ...Option) (interface{}, error) {
 	sum := &vuln.NativeReportSummary{}
 	sum.ReportID = r.UUID
 	sum.StartTime = r.StartTime

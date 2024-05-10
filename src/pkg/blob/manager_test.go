@@ -130,7 +130,7 @@ func (suite *ManagerTestSuite) TestCleanupAssociationsForProject() {
 		artifact1 := suite.DigestString()
 		artifact2 := suite.DigestString()
 
-		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world')`
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
 		suite.ExecSQL(sql, artifact1, projectID, 10)
 		suite.ExecSQL(sql, artifact2, projectID, 10)
 
@@ -200,7 +200,7 @@ func (suite *ManagerTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 		artifact1 := suite.DigestString()
 		artifact2 := suite.DigestString()
 
-		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world')`
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
 		suite.ExecSQL(sql, artifact1, projectID, 11)
 		suite.ExecSQL(sql, artifact2, projectID, 11)
 

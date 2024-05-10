@@ -145,6 +145,8 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	// add parse digest here is to return ErrDigestInvalidFormat before GetByReference throws an NOT_FOUND(404)
 	// Do not add the logic into GetByReference as it's a shared method for PUT/GET/DELETE/Internal call,
 	// and NOT_FOUND satisfy PUT/GET/Internal call.
+	// According to https://github.com/opencontainers/distribution-spec/blob/v1.1.0/spec.md#deleting-tags
+	// If tag deletion is disabled, the registry MUST respond with either a 400 Bad Request or a 405 Method Not Allowed
 	if _, err := digest.Parse(reference); err != nil {
 		lib_http.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
 		return

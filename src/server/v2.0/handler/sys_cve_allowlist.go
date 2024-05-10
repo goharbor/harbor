@@ -52,7 +52,7 @@ func (s systemCVEAllowListAPI) PutSystemCVEAllowlist(ctx context.Context, params
 	return system_cve_allowlist.NewPutSystemCVEAllowlistOK()
 }
 
-func (s systemCVEAllowListAPI) GetSystemCVEAllowlist(ctx context.Context, params system_cve_allowlist.GetSystemCVEAllowlistParams) middleware.Responder {
+func (s systemCVEAllowListAPI) GetSystemCVEAllowlist(ctx context.Context, _ system_cve_allowlist.GetSystemCVEAllowlistParams) middleware.Responder {
 	if err := s.RequireAuthenticated(ctx); err != nil {
 		return s.SendError(ctx, err)
 	}

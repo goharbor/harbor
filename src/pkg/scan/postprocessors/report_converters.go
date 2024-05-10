@@ -98,7 +98,7 @@ func (c *nativeToRelationalSchemaConverter) FromRelationalSchema(ctx context.Con
 	return rp, nil
 }
 
-func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, rawReportData string) error {
+func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, reportUUID string, registrationUUID string, _ string, rawReportData string) error {
 	var vulnReport vuln.Report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
 	if err != nil {
@@ -198,7 +198,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	return nil
 }
 
-func (c *nativeToRelationalSchemaConverter) fromSchema(ctx context.Context, reportUUID string, artifactDigest string, reportSummary string, records []*scan.VulnerabilityRecord) (string, error) {
+func (c *nativeToRelationalSchemaConverter) fromSchema(_ context.Context, _ string, artifactDigest string, reportSummary string, records []*scan.VulnerabilityRecord) (string, error) {
 	if len(reportSummary) == 0 {
 		return "", nil
 	}
@@ -354,25 +354,28 @@ func (c *nativeToRelationalSchemaConverter) updateReport(ctx context.Context, vu
 	return report.Mgr.Update(ctx, r, "CriticalCnt", "HighCnt", "MediumCnt", "LowCnt", "NoneCnt", "UnknownCnt", "FixableCnt")
 }
 
-// CVSS ...
-type CVSS struct {
-	NVD Nvd `json:"nvd"`
+// CVS ...
+type CVS struct {
+	CVSS map[string]map[string]interface{} `json:"CVSS"`
 }
 
-// Nvd ...
-type Nvd struct {
-	V3Score float64 `json:"V3Score"`
-}
-
-func parseScoreFromVendorAttribute(ctx context.Context, vendorAttribute string) (NvdV3Score float64) {
-	var data map[string]CVSS
+func parseScoreFromVendorAttribute(ctx context.Context, vendorAttribute string) float64 {
+	var data CVS
 	err := json.Unmarshal([]byte(vendorAttribute), &data)
 	if err != nil {
 		log.G(ctx).Errorf("failed to parse vendor_attribute, error %v", err)
 		return 0
 	}
-	if cvss, ok := data["CVSS"]; ok {
-		return cvss.NVD.V3Score
+
+	// set the nvd as the first priority, if it's unavailable, return the first V3Score available.
+	if val, ok := data.CVSS["nvd"]["V3Score"]; ok {
+		return val.(float64)
+	}
+
+	for vendor := range data.CVSS {
+		if val, ok := data.CVSS[vendor]["V3Score"]; ok {
+			return val.(float64)
+		}
 	}
 	return 0
 }

@@ -46,7 +46,7 @@ type replicationAPI struct {
 	ctl replication.Controller
 }
 
-func (r *replicationAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (r *replicationAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 

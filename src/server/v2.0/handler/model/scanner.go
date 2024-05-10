@@ -30,7 +30,7 @@ type ScannerRegistration struct {
 }
 
 // ToSwagger ...
-func (s *ScannerRegistration) ToSwagger(ctx context.Context) *models.ScannerRegistration {
+func (s *ScannerRegistration) ToSwagger(_ context.Context) *models.ScannerRegistration {
 	if s.Registration == nil {
 		return nil
 	}
@@ -52,6 +52,7 @@ func (s *ScannerRegistration) ToSwagger(ctx context.Context) *models.ScannerRegi
 		Vendor:           s.Vendor,
 		Version:          s.Version,
 		Health:           s.Health,
+		Capabilities:     s.Capabilities,
 	}
 }
 
@@ -66,7 +67,7 @@ type ScannerMetadata struct {
 }
 
 // ToSwagger ...
-func (s *ScannerMetadata) ToSwagger(ctx context.Context) *models.ScannerAdapterMetadata {
+func (s *ScannerMetadata) ToSwagger(_ context.Context) *models.ScannerAdapterMetadata {
 	if s.ScannerAdapterMetadata == nil {
 		return nil
 	}
@@ -74,6 +75,7 @@ func (s *ScannerMetadata) ToSwagger(ctx context.Context) *models.ScannerAdapterM
 	var capabilities []*models.ScannerCapability
 	for _, c := range s.Capabilities {
 		capabilities = append(capabilities, &models.ScannerCapability{
+			Type:              c.Type,
 			ConsumesMimeTypes: c.ConsumesMimeTypes,
 			ProducesMimeTypes: c.ProducesMimeTypes,
 		})

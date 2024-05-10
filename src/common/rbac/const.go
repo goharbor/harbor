@@ -51,6 +51,7 @@ const (
 	ResourceRobot              = Resource("robot")
 	ResourceNotificationPolicy = Resource("notification-policy")
 	ResourceScan               = Resource("scan")
+	ResourceSBOM               = Resource("sbom")
 	ResourceScanner            = Resource("scanner")
 	ResourceArtifact           = Resource("artifact")
 	ResourceTag                = Resource("tag")
@@ -149,6 +150,9 @@ var (
 			{Resource: ResourceSecurityHub, Action: ActionList},
 
 			{Resource: ResourceCatalog, Action: ActionRead},
+
+			{Resource: ResourceQuota, Action: ActionRead},
+			{Resource: ResourceQuota, Action: ActionList},
 		},
 		"Project": {
 			{Resource: ResourceLog, Action: ActionList},
@@ -178,6 +182,10 @@ var (
 			{Resource: ResourceScan, Action: ActionCreate},
 			{Resource: ResourceScan, Action: ActionRead},
 			{Resource: ResourceScan, Action: ActionStop},
+
+			{Resource: ResourceSBOM, Action: ActionCreate},
+			{Resource: ResourceSBOM, Action: ActionStop},
+			{Resource: ResourceSBOM, Action: ActionRead},
 
 			{Resource: ResourceTag, Action: ActionCreate},
 			{Resource: ResourceTag, Action: ActionList},
@@ -221,6 +229,8 @@ var (
 			{Resource: ResourceLabel, Action: ActionDelete},
 			{Resource: ResourceLabel, Action: ActionList},
 			{Resource: ResourceLabel, Action: ActionUpdate},
+
+			{Resource: ResourceQuota, Action: ActionRead},
 		},
 	}
 )

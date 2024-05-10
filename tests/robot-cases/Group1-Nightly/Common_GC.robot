@@ -23,6 +23,25 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+Test Case - Project Quota Sorting
+    [Tags]  project_quota_sorting
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d1}=    Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d1}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d1}  alpine  2.6  2.6
+    ${d2}=    Get Current Date    result_format=%m%s
+    Create An New Project And Go Into Project  project${d2}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d2}  photon  2.0  2.0
+    Switch to Project Quotas Tag
+    Check Project Quota Sorting  project${d1}  project${d2}
+    Go Into Project  project${d1}
+    Delete Repo  project${d1}  alpine
+    Go Into Project  project${d2}
+    Delete Repo  project${d2}  photon
+    GC Now
+    Close Browser
+
 Test Case - Garbage Collection
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s

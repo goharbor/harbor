@@ -118,7 +118,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 }
 
 // sendResponse ...
-func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Request, repositoryNames []string) {
+func (r *repositoryHandler) sendResponse(w http.ResponseWriter, _ *http.Request, repositoryNames []string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(catalogAPIResponse{

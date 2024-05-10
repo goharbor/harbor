@@ -160,7 +160,7 @@ func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter 
 	return filteredArts, nil
 }
 
-func (dfp *DefaultFilterProcessor) ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error) {
+func (dfp *DefaultFilterProcessor) ProcessLabelFilter(_ context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error) {
 	// return all artifacts if no label need to be filtered
 	if len(labelIDs) == 0 {
 		return arts, nil

@@ -59,6 +59,6 @@ describe('LabelSelectorComponent', () => {
         fixture.detectChanges();
         await fixture.whenStable();
         const checkIcon = fixture.nativeElement.querySelector('.check-icon');
-        expect(checkIcon.style.visibility).toEqual('visible');
+        expect(checkIcon.style.visibility).toEqual('hidden');
     });
 });

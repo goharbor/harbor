@@ -35,7 +35,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func putManifestResources(r *http.Request, reference, referenceID string) (types.ResourceList, error) {
+func putManifestResources(r *http.Request, _, referenceID string) (types.ResourceList, error) {
 	logger := log.G(r.Context()).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})
 
 	projectID, _ := strconv.ParseInt(referenceID, 10, 64)

@@ -382,3 +382,8 @@ export const stringsForClarity: Partial<ClrCommonStrings> = {
     datepickerSelectYearText: 'CLARITY.DATE_PICKER_SELECT_YEAR_TEXT',
     datepickerSelectedLabel: 'CLARITY.DATE_PICKER_SELECTED_LABEL',
 };
+
+export enum ScanTypes {
+    SBOM = 'sbom',
+    VULNERABILITY = 'vulnerability',
+}

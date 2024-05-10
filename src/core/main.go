@@ -60,6 +60,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/notation"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/sbom"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
@@ -69,6 +70,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	_ "github.com/goharbor/harbor/src/pkg/scan/sbom"
+	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/server"
@@ -102,14 +105,14 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
 	close(closing)
-	shutdownChan := make(chan struct{}, 1)
+	shutdownChan := make(chan struct{})
 	go func() {
+		defer close(shutdownChan)
 		for _, s := range shutdowns {
 			s()
 		}
 		<-done
 		log.Infof("Goroutines exited normally")
-		shutdownChan <- struct{}{}
 	}()
 	select {
 	case <-shutdownChan:

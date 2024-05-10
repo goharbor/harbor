@@ -195,7 +195,7 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 	return operation.NewGetRegistryInfoOK().WithPayload(in)
 }
 
-func (r *registryAPI) ListRegistryProviderTypes(ctx context.Context, params operation.ListRegistryProviderTypesParams) middleware.Responder {
+func (r *registryAPI) ListRegistryProviderTypes(ctx context.Context, _ operation.ListRegistryProviderTypesParams) middleware.Responder {
 	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplicationAdapter); err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -271,7 +271,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 	return operation.NewPingRegistryOK()
 }
 
-func (r *registryAPI) ListRegistryProviderInfos(ctx context.Context, params operation.ListRegistryProviderInfosParams) middleware.Responder {
+func (r *registryAPI) ListRegistryProviderInfos(ctx context.Context, _ operation.ListRegistryProviderInfosParams) middleware.Responder {
 	if err := r.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceReplicationAdapter); err != nil {
 		return r.SendError(ctx, err)
 	}

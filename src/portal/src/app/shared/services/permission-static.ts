@@ -105,6 +105,13 @@ export const USERSTATICPERMISSION = {
             READ: 'read',
         },
     },
+    REPOSITORY_TAG_SBOM_JOB: {
+        KEY: 'sbom',
+        VALUE: {
+            CREATE: 'create',
+            READ: 'read',
+        },
+    },
     REPOSITORY_ARTIFACT_LABEL: {
         KEY: 'artifact-label',
         VALUE: {

@@ -43,7 +43,7 @@ type driver struct {
 	blobCtl blob.Controller
 }
 
-func (d *driver) Enabled(ctx context.Context, key string) (bool, error) {
+func (d *driver) Enabled(ctx context.Context, _ string) (bool, error) {
 	// NOTE: every time load the new configurations from the db to get the latest configurations may have performance problem.
 	if err := d.cfg.Load(ctx); err != nil {
 		return false, err

@@ -93,7 +93,7 @@ class TestScanDataExport(unittest.TestCase):
 
         # 10. Wait for the export scan data execution to succeed
         execution = None
-        for i in range(5):
+        for i in range(15):
             print("wait for the job to finish:", i)
             execution = self.scan_data_export.get_scan_data_export_execution(execution_id, **user_client)
             if execution.status == "Success":

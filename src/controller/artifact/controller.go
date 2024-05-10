@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -73,6 +74,7 @@ var (
 		chart.ArtifactTypeChart: icon.DigestOfIconChart,
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
+		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
 	}
 )
 
@@ -227,6 +229,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		if !errors.IsConflictErr(err) {
 			return false, nil, err
 		}
+		log.Debugf("failed to create artifact %s@%s: %v", repository, digest, err)
 		// if got conflict error, try to get the artifact again
 		artifact, err = c.artMgr.GetByDigest(ctx, repository, digest)
 		if err != nil {
@@ -323,12 +326,6 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return err
 	}
 
-	if isAccessory {
-		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
-			return err
-		}
-	}
-
 	// the child artifact is referenced by some tags, skip
 	if !isRoot && len(art.Tags) > 0 {
 		return nil
@@ -351,11 +348,26 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return nil
 	}
 
+	if isAccessory {
+		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
+			return err
+		}
+	}
+
 	// delete accessories if contains any
 	for _, acc := range art.Accessories {
 		// only hard ref accessory should be removed
 		if acc.IsHard() {
-			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, true, true); err != nil {
+			// if this acc artifact has parent(is child), set isRoot to false
+			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
+				Keywords: map[string]interface{}{
+					"ChildID": acc.GetData().ArtifactID,
+				},
+			})
+			if err != nil {
+				return err
+			}
+			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, len(parents) == 0, true); err != nil {
 				return err
 			}
 		}
@@ -368,7 +380,12 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
-		if err = c.deleteDeeply(ctx, reference.ChildID, false, false); err != nil {
+		// if the child artifact is an accessory, set isAccessory to true
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": reference.ChildID}))
+		if err != nil {
+			return err
+		}
+		if err = c.deleteDeeply(ctx, reference.ChildID, false, len(accs) > 0); err != nil {
 			return err
 		}
 	}

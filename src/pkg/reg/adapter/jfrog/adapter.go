@@ -342,7 +342,7 @@ func (a *adapter) preparePushBlob(repository string) (string, error) {
 	return "", err
 }
 
-func (a *adapter) ackPushBlob(repository, digest, location, size string) error {
+func (a *adapter) ackPushBlob(repository, digest, location, _ string) error {
 	url := fmt.Sprintf("%s/v2/%s/blobs/uploads/%s?digest=%s", a.registry.URL, repository, location, digest)
 	req, err := http.NewRequest(http.MethodPut, url, nil)
 	if err != nil {

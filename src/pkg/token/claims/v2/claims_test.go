@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 )
 

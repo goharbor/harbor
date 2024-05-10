@@ -23,6 +23,12 @@ https:
   # The path of cert and key files for nginx
   certificate: {{ https.certificate }}
   private_key: {{ https.private_key }}
+  # enable strong ssl ciphers (default: false)
+  {% if strong_ssl_ciphers is defined %}
+  strong_ssl_ciphers: {{ strong_ssl_ciphers | lower }}
+  {% else %}
+  strong_ssl_ciphers: false
+  {% endif %}
 {% else %}
 # https related config
 # https:
@@ -31,6 +37,8 @@ https:
 #   # The path of cert and key files for nginx
 #   certificate: /your/certificate/path
 #   private_key: /your/private/key/path
+#   enable strong ssl ciphers (default: false)
+#   strong_ssl_ciphers: false
 {% endif %}
 
 {% if internal_tls is defined %}
@@ -38,13 +46,9 @@ https:
 internal_tls:
   # set enabled to true means internal tls is enabled
   enabled: {{ internal_tls.enabled | lower }}
+  {% if internal_tls.dir is defined %}
   # put your cert and key files on dir
   dir: {{ internal_tls.dir }}
-  # enable strong ssl ciphers (default: false)
-  {% if internal_tls.strong_ssl_ciphers is defined %}
-  strong_ssl_ciphers: {{ internal_tls.strong_ssl_ciphers | lower }}
-  {% else %}
-  strong_ssl_ciphers: false
   {% endif %}
 {% else %}
 # internal_tls:
@@ -52,8 +56,6 @@ internal_tls:
 #   enabled: true
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
-#   # enable strong ssl ciphers (default: false)
-#   strong_ssl_ciphers: false
 {% endif %}
 
 # Uncomment external_url if you want to enable external proxy

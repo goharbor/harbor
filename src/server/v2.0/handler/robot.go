@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -276,7 +275,7 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectID
 // more validation
 func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.RobotPermission) error {
 	if !isValidDuration(d) {
-		return errors.New(nil).WithMessage("bad request error duration input: %d", d).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request error duration input: %d, duration must be either -1(Never) or a positive integer", d).WithCode(errors.BadRequestCode)
 	}
 
 	if !isValidLevel(level) {
@@ -323,7 +322,10 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 }
 
 func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.UpdateRobotParams, r *robot.Robot) error {
-	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+	if params.Robot.Duration == nil {
+		params.Robot.Duration = &r.Duration
+	}
+	if err := rAPI.validate(*params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return err
 	}
 	if r.Level != robot.LEVELSYSTEM {
@@ -342,15 +344,12 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
 
-	if r.Duration != params.Robot.Duration {
-		r.Duration = params.Robot.Duration
-		if params.Robot.Duration == -1 {
+	if r.Duration != *params.Robot.Duration {
+		r.Duration = *params.Robot.Duration
+		if *params.Robot.Duration == -1 {
 			r.ExpiresAt = -1
-		} else if params.Robot.Duration == 0 {
-			r.Duration = int64(config.RobotTokenDuration(ctx))
-			r.ExpiresAt = r.CreationTime.AddDate(0, 0, config.RobotTokenDuration(ctx)).Unix()
 		} else {
-			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(params.Robot.Duration)).Unix()
+			r.ExpiresAt = r.CreationTime.AddDate(0, 0, int(*params.Robot.Duration)).Unix()
 		}
 	}
 
@@ -375,7 +374,7 @@ func isValidLevel(l string) bool {
 }
 
 func isValidDuration(d int64) bool {
-	return d >= int64(-1) && d < math.MaxInt32
+	return d == -1 || (d > 0 && d < math.MaxInt32)
 }
 
 // validateName validates the robot name, especially '+' cannot be a valid character

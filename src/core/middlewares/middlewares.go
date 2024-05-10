@@ -55,6 +55,7 @@ var (
 	dbTxSkippers = []middleware.Skipper{
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/token")),
 		func(r *http.Request) bool { // skip tx for GET, HEAD and Options requests
 			m := r.Method
 			return m == http.MethodGet || m == http.MethodHead || m == http.MethodOptions

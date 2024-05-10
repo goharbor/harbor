@@ -253,7 +253,6 @@ func SkipAuditLogDatabase(ctx context.Context) bool {
 
 // ScannerSkipUpdatePullTime returns the scanner skip update pull time setting
 func ScannerSkipUpdatePullTime(ctx context.Context) bool {
-	log.Infof("skip_update_pull_time:%v", DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool())
 	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()
 }
 

@@ -16,13 +16,19 @@ http {
 
     server {
 {% if internal_tls.enabled %}
+        #ip_family
+    {% if ip_family.ipv4.enabled %}
         listen 8443 ssl;
+    {% endif %}
+    {% if ip_family.ipv6.enabled %}
+        listen [::]:8443 ssl;
+    {% endif %}
         # SSL
         ssl_certificate /etc/harbor/tls/portal.crt;
         ssl_certificate_key /etc/harbor/tls/portal.key;
 
         ssl_protocols TLSv1.2 TLSv1.3;
-    {% if internal_tls.strong_ssl_ciphers %}
+    {% if strong_ssl_ciphers %}
         ssl_ciphers ECDHE+AESGCM:DHE+AESGCM:ECDHE+RSA+SHA256:DHE+RSA+SHA256:!AES128;
     {% else %}
         ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';

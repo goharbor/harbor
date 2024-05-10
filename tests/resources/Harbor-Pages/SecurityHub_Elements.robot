@@ -28,3 +28,4 @@ ${vulnerabilities_count_xpath}  //clr-dg-footer//div[contains(@class,'datagrid-f
 ${vulnerabilities_filter_select}  (//form//div[@class='clr-select-wrapper']//select)
 ${vulnerabilities_filter_input}  (//form[contains(@class,'clr-form')]//input)
 ${vulnerabilities_datagrid_row}  //clr-datagrid//clr-dg-row
+${vulnerabilities_filter_label_xpath}  //form//clr-dropdown[contains(@class,'dropdown')]

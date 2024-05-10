@@ -736,7 +736,9 @@
                                 clrSize="lg"
                                 *clrIfOpen>
                                 <span>{{
-                                    'REPLICATION.BANDWIDTH_TOOLTIP' | translate
+                                    'REPLICATION.BANDWIDTH_TOOLTIP'
+                                        | translate
+                                            : { max_job_workers: maxJobWorkers }
                                 }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>

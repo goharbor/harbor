@@ -37,6 +37,8 @@ const (
 	proScannerMetaKey = "projectScanner"
 	statusUnhealthy   = "unhealthy"
 	statusHealthy     = "healthy"
+	// RetrieveCapFailMsg the message indicate failed to retrieve the scanner capabilities
+	RetrieveCapFailMsg = "failed to retrieve scanner capabilities, error %v"
 )
 
 // DefaultController is a singleton api controller for plug scanners
@@ -79,7 +81,12 @@ func (bc *basicController) ListRegistrations(ctx context.Context, query *q.Query
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: list registrations")
 	}
-
+	for _, r := range l {
+		if err := bc.RetrieveCap(ctx, r); err != nil {
+			log.Warningf(RetrieveCapFailMsg, err)
+			return l, nil
+		}
+	}
 	return l, nil
 }
 
@@ -122,8 +129,24 @@ func (bc *basicController) GetRegistration(ctx context.Context, registrationUUID
 	if err != nil {
 		return nil, errors.Wrap(err, "api controller: get registration")
 	}
-
+	if r == nil {
+		return nil, nil
+	}
+	if err := bc.RetrieveCap(ctx, r); err != nil {
+		log.Warningf(RetrieveCapFailMsg, err)
+		return r, nil
+	}
 	return r, nil
+}
+
+func (bc *basicController) RetrieveCap(ctx context.Context, r *scanner.Registration) error {
+	mt, err := bc.Ping(ctx, r)
+	if err != nil {
+		logger.Errorf("Get registration error: %s", err)
+		return err
+	}
+	r.Capabilities = mt.ConvertCapability()
+	return nil
 }
 
 // RegistrationExists ...

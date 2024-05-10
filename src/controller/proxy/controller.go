@@ -101,7 +101,7 @@ func (c *controller) EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagNam
 	// search the digest in cache and query with trimmed digest
 	var trimmedDigest string
 	err := c.cache.Fetch(ctx, TrimmedManifestlist+art.Digest, &trimmedDigest)
-	if errors.Is(err, cache.ErrNotFound) {
+	if errors.Is(err, cache.ErrNotFound) { // nolint:revive
 		// skip to update digest, continue
 	} else if err != nil {
 		// for other error, return
@@ -183,7 +183,10 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	if c.cache == nil {
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
-
+	// Pass digest to the cache key, digest is more stable than tag, because tag could be updated
+	if len(art.Digest) == 0 {
+		art.Digest = string(desc.Digest)
+	}
 	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
 	if err != nil {
 		if errors.Is(err, cache.ErrNotFound) {
@@ -260,7 +263,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	return man, nil
 }
 
-func (c *controller) HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
+func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
@@ -318,8 +321,8 @@ func getRemoteRepo(art lib.ArtifactInfo) string {
 }
 
 func getReference(art lib.ArtifactInfo) string {
-	if len(art.Tag) > 0 {
-		return art.Tag
+	if len(art.Digest) > 0 {
+		return art.Digest
 	}
-	return art.Digest
+	return art.Tag
 }

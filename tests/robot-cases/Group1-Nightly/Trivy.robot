@@ -182,7 +182,7 @@ Test Case - External Scanner CRUD
     Filter Scanner By Name  scanner${d}
     Filter Scanner By Endpoint  ${SCANNER_ENDPOINT}
     Retry Wait Element Count  //clr-dg-row  1
-    Retry Wait Until Page Contains Element  //clr-dg-row[.//span[text()='scanner${d}'] and .//clr-dg-cell[text()='${SCANNER_ENDPOINT}'] and .//span[text()='Healthy'] and .//clr-dg-cell[text()='None']]
+    Retry Double Keywords When Error  Retry Element Click  xpath=${scanner_list_refresh_btn}  Retry Wait Until Page Contains Element  //clr-dg-row[.//span[text()='scanner${d}'] and .//clr-dg-cell[text()='${SCANNER_ENDPOINT}'] and .//span[text()='Healthy'] and .//clr-dg-cell[text()='None']]
     # Delete this scanner
     Delete Scanner  scanner${d}
     Close Browser

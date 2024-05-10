@@ -94,6 +94,6 @@ func initRepositoryMgr(cacheEnabled bool) {
 	}
 }
 
-func initManifestManager(cacheEnabled bool) {
+func initManifestManager(_ bool) {
 	ManifestMgr = cachedManifest.NewManager()
 }

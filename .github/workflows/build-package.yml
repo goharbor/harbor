@@ -19,14 +19,14 @@ jobs:
       - uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-      - uses: google-github-actions/setup-gcloud@v1
+      - uses: google-github-actions/setup-gcloud@v2
         with:
           version: '430.0.0'
       - run: gcloud info
-      - name: Set up Go 1.21
+      - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
-          go-version: 1.21.4
+          go-version: 1.22.2
         id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master

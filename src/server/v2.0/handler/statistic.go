@@ -46,7 +46,7 @@ type statisticAPI struct {
 	systemArtifactMgr systemartifact.Manager
 }
 
-func (s *statisticAPI) GetStatistic(ctx context.Context, params operation.GetStatisticParams) middleware.Responder {
+func (s *statisticAPI) GetStatistic(ctx context.Context, _ operation.GetStatisticParams) middleware.Responder {
 	if err := s.RequireAuthenticated(ctx); err != nil {
 		return s.SendError(ctx, err)
 	}

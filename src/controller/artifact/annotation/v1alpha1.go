@@ -39,7 +39,7 @@ type v1alpha1Parser struct {
 	regCli reg.Client
 }
 
-func (p *v1alpha1Parser) Parse(ctx context.Context, artifact *artifact.Artifact, manifest []byte) error {
+func (p *v1alpha1Parser) Parse(_ context.Context, artifact *artifact.Artifact, manifest []byte) error {
 	if artifact.ManifestMediaType != v1.MediaTypeImageManifest && artifact.ManifestMediaType != schema2.MediaTypeManifest {
 		return nil
 	}
@@ -92,6 +92,7 @@ func parseV1alpha1Icon(artifact *artifact.Artifact, manifest *v1.Manifest, reg r
 	if err != nil {
 		return err
 	}
+	defer icon.Close()
 	// check the size of the size <= 1MB
 	data, err := io.ReadAll(io.LimitReader(icon, 1<<20))
 	if err != nil {

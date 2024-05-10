@@ -30,7 +30,7 @@ func NewQueueClient() QueueManager {
 	return &queueManagerImpl{}
 }
 
-func (w *queueManagerImpl) List(ctx context.Context, monitClient JobServiceMonitorClient) ([]*Queue, error) {
+func (w *queueManagerImpl) List(_ context.Context, monitClient JobServiceMonitorClient) ([]*Queue, error) {
 	resultQueues := make([]*Queue, 0)
 	queues, err := monitClient.Queues()
 	if err != nil {

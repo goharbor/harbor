@@ -256,7 +256,7 @@ func (p *purgeAPI) GetPurgeJobLog(ctx context.Context, params purge.GetPurgeJobL
 	return purge.NewGetPurgeJobLogOK().WithPayload(string(taskLog))
 }
 
-func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, params purge.GetPurgeScheduleParams) middleware.Responder {
+func (p *purgeAPI) GetPurgeSchedule(ctx context.Context, _ purge.GetPurgeScheduleParams) middleware.Responder {
 	if err := p.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourcePurgeAuditLog); err != nil {
 		return p.SendError(ctx, err)
 	}

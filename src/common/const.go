@@ -14,6 +14,8 @@
 
 package common
 
+import "time"
+
 type contextKey string
 
 // const variables
@@ -241,4 +243,7 @@ const (
 	BeegoMaxUploadSizeBytes = "beego_max_upload_size_bytes"
 	// DefaultBeegoMaxUploadSizeBytes sets default max upload size to 128GB
 	DefaultBeegoMaxUploadSizeBytes = 1 << 37
+
+	// Global Leeway used for token validation
+	JwtLeeway = 60 * time.Second
 )
