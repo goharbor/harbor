@@ -89,8 +89,8 @@ func Test_scanHandler_RequestProducesMineTypes(t *testing.T) {
 	}
 }
 
-func mockGetRegistry(ctx context.Context) string {
-	return "myharbor.example.com"
+func mockGetRegistry(ctx context.Context) (string, bool) {
+	return "myharbor.example.com", false
 }
 
 func mockGenAccessory(scanRep v1.ScanRequest, sbomContent []byte, labels map[string]string, mediaType string, robot *model.Robot) (string, error) {
