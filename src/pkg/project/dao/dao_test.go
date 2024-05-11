@@ -16,13 +16,12 @@ package dao
 
 import (
 	"fmt"
-	commonmodels "github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/suite"
 	"testing"
 
-	_ "github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
