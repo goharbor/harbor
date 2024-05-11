@@ -16,8 +16,8 @@ package handler
 
 import (
 	"context"
-
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/goharbor/harbor/src/common/security/local"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
@@ -57,15 +57,14 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 	if secCtx.IsSysAdmin() {
 		isSystemAdmin = true
 	} else {
-		user, err := p.uc.GetByName(ctx, secCtx.GetUsername())
-		if err != nil {
-			return p.SendError(ctx, err)
+		if sc, ok := secCtx.(*local.SecurityContext); ok {
+			user := sc.User()
+			is, err := p.mc.IsProjectAdmin(ctx, *user)
+			if err != nil {
+				return p.SendError(ctx, err)
+			}
+			isProjectAdmin = is
 		}
-		is, err := p.mc.IsProjectAdmin(ctx, *user)
-		if err != nil {
-			return p.SendError(ctx, err)
-		}
-		isProjectAdmin = is
 	}
 	if !isSystemAdmin && !isProjectAdmin {
 		return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))
