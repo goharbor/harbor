@@ -86,6 +86,9 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[str
 		return "", err
 	}
 	accRef, err := name.ParseReference(fmt.Sprintf("%s/%s@%s", sq.Registry.URL, sq.Artifact.Repository, dgst.String()))
+	if sq.Registry.Insecure {
+		accRef, err = name.ParseReference(fmt.Sprintf("%s/%s@%s", sq.Registry.URL, sq.Artifact.Repository, dgst.String()), name.Insecure)
+	}
 	if err != nil {
 		return "", err
 	}
