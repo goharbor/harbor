@@ -206,6 +206,8 @@ type Registry struct {
 	// An optional value of the HTTP Authorization header sent with each request to the Docker Registry for getting or exchanging token.
 	// For example, `Basic: Base64(username:password)`.
 	Authorization string `json:"authorization"`
+	// Insecure is an indicator of https or http.
+	Insecure bool `json:"insecure"`
 }
 
 // ScanRequest represents a structure that is sent to a Scanner Adapter to initiate artifact scanning.
