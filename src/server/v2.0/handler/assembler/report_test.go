@@ -51,7 +51,7 @@ func (suite *VulAssemblerTestSuite) TestScannable() {
 	var artifact model.Artifact
 
 	suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-	suite.Len(artifact.AdditionLinks, 1)
+	suite.Len(artifact.AdditionLinks, 2)
 	suite.Equal(artifact.ScanOverview, summary)
 }
 

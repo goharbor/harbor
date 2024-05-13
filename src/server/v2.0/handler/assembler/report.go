@@ -29,6 +29,7 @@ import (
 
 const (
 	vulnerabilitiesAddition = "vulnerabilities"
+	sbomAddition            = "sbom"
 )
 
 // NewScanReportAssembler returns vul assembler
@@ -38,7 +39,6 @@ func NewScanReportAssembler(option *model.OverviewOptions, mimeTypes []string) *
 		scanChecker:    scan.NewChecker(),
 		scanCtl:        scan.DefaultController,
 		mimeTypes:      mimeTypes,
-		executionMgr:   task.ExecMgr,
 	}
 }
 
@@ -88,6 +88,9 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 				}
 			}
 		}
+
+		// set sbom additional link if it is supported, use the empty digest
+		artifact.SetSBOMAdditionLink("", version)
 		if assembler.overviewOption.WithSBOM {
 			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeSBOMReport})
 			if err != nil {
@@ -124,6 +127,10 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 				sbomModel.Duration:   overview[sbomModel.Duration],
 				sbomModel.ReportID:   overview[sbomModel.ReportID],
 				sbomModel.Scanner:    overview[sbomModel.Scanner],
+			}
+			if sbomDgst, ok := overview[sbomModel.SBOMDigest].(string); ok {
+				// set additional link for sbom digest
+				artifact.SetSBOMAdditionLink(sbomDgst, version)
 			}
 		}
 	}
