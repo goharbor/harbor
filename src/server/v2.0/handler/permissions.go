@@ -16,7 +16,7 @@ package handler
 
 import (
 	"context"
-	
+
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -60,11 +60,11 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 	} else {
 		if sc, ok := secCtx.(*local.SecurityContext); ok {
 			user := sc.User()
-			is, err := p.mc.IsProjectAdmin(ctx, *user)
+			var err error
+			isProjectAdmin, err = p.mc.IsProjectAdmin(ctx, *user)
 			if err != nil {
 				return p.SendError(ctx, err)
 			}
-			isProjectAdmin = is
 		}
 	}
 	if !isSystemAdmin && !isProjectAdmin {
