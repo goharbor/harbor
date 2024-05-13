@@ -58,7 +58,10 @@ import (
 
 var (
 	// Ctl is a global artifact controller instance
-	Ctl = NewController()
+	Ctl                 = NewController()
+	skippedContentTypes = map[string]struct{}{
+		"application/vnd.in-toto+json": {},
+	}
 )
 
 var (
@@ -113,6 +116,8 @@ type Controller interface {
 	RemoveLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
 	// Walk walks the artifact tree rooted at root, calling walkFn for each artifact in the tree, including root.
 	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
+	// HasUnscannableLayer check artifact with digest if has unscannable layer
+	HasUnscannableLayer(ctx context.Context, dgst string) (bool, error)
 }
 
 // NewController creates an instance of the default artifact controller
@@ -758,4 +763,22 @@ func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
 		return
 	}
 	art.Accessories = accs
+}
+
+// HasUnscannableLayer check if it is a in-toto sbom, if it contains any blob with a content_type is application/vnd.in-toto+json, then consider as in-toto sbom
+func (c *controller) HasUnscannableLayer(ctx context.Context, dgst string) (bool, error) {
+	if len(dgst) == 0 {
+		return false, nil
+	}
+	blobs, err := c.blobMgr.GetByArt(ctx, dgst)
+	if err != nil {
+		return false, err
+	}
+	for _, b := range blobs {
+		if _, exist := skippedContentTypes[b.ContentType]; exist {
+			log.Debugf("the artifact with digest %v is unscannable, because it contains content type: %v", dgst, b.ContentType)
+			return true, nil
+		}
+	}
+	return false, nil
 }
