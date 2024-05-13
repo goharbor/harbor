@@ -372,7 +372,7 @@ func (suite *DaoTestSuite) TestListAdminRolesOfUser() {
 				}
 				roles, err := suite.dao.ListAdminRolesOfUser(orm.Context(), userTest)
 				suite.Nil(err)
-				suite.Len(roles, 1)
+				suite.Len(roles, 2)
 			})
 		})
 	}
