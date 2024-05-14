@@ -451,18 +451,22 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <span *ngIf="!hasScannerSupportSBOM">
+                        <span *ngIf="!hasSbom(artifact)">
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
-                            *ngIf="hasScannerSupportSBOM"
-                            [inputScanner]="projectScanner"
+                            *ngIf="hasSbom(artifact)"
+                            [inputScanner]="
+                                handleSbomOverview(artifact.sbom_overview)
+                                    ?.scanner
+                            "
                             (submitFinish)="submitSbomFinish($event)"
                             [projectName]="projectName"
                             [projectId]="projectId"
                             [repoName]="repoName"
+                            [accessories]="artifact?.accessories"
                             [artifactDigest]="artifact?.digest"
                             [sbomDigest]="artifact?.sbomDigest"
                             [sbomOverview]="artifact?.sbom_overview">

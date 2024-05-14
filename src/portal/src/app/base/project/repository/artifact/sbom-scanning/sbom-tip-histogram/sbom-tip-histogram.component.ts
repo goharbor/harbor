@@ -10,6 +10,8 @@ import {
 import { HAS_STYLE_MODE, StyleMode } from '../../../../../../services/theme';
 import { ScanTypes } from '../../../../../../shared/entities/shared.const';
 import { Scanner } from '../../../../../left-side-nav/interrogation-services/scanner/scanner';
+import { Accessory } from 'ng-swagger-gen/models';
+import { AccessoryType } from '../../artifact';
 
 const MIN = 60;
 const MIN_STR = 'min ';
@@ -28,6 +30,7 @@ export class SbomTipHistogramComponent {
     };
     @Input() artifactDigest: string = '';
     @Input() sbomDigest: string = '';
+    @Input() accessories: Accessory[] = [];
     constructor(
         private translate: TranslateService,
         private activatedRoute: ActivatedRoute,
@@ -50,6 +53,14 @@ export class SbomTipHistogramComponent {
         return '0';
     }
 
+    public getSbomAccessories(): Accessory[] {
+        return (
+            this.accessories.filter(
+                accessory => accessory.type === AccessoryType.SBOM
+            ) ?? []
+        );
+    }
+
     public get completePercent(): string {
         return this.sbomSummary.scan_status === SBOM_SCAN_STATUS.SUCCESS
             ? `100%`
@@ -67,8 +78,12 @@ export class SbomTipHistogramComponent {
             : new Date();
     }
 
-    get noSbom(): boolean {
-        return this.sbomDigest === undefined || this.sbomDigest === '';
+    showSbomDetailLink(): boolean {
+        return this.sbomDigest && this.getSbomAccessories.length > 0;
+    }
+
+    showNoSbom(): boolean {
+        return !this.sbomDigest && this.getSbomAccessories.length === 0;
     }
 
     isThemeLight() {

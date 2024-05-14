@@ -161,9 +161,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     get generateSbomBtnState(): ClrLoadingState {
         return this.artifactListPageService.getSbomBtnState();
     }
-    get projectScanner(): Scanner {
-        return this.artifactListPageService.getProjectScanner();
-    }
 
     onSendingScanCommand: boolean;
     onSendingStopScanCommand: boolean = false;
@@ -935,6 +932,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         return null;
     }
 
+    handleSbomOverview(sbomOverview: any): any {
+        if (sbomOverview) {
+            const keys = Object.keys(sbomOverview) ?? [];
+            return keys.length > 0 ? sbomOverview[keys[0]] : null;
+        }
+        return null;
+    }
+
     goIntoIndexArtifact(artifact: Artifact) {
         let depth: string = '';
         if (this.depth) {
@@ -991,6 +996,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                     if (artifact.sbom_overview.sbom_digest) {
                         this.selectedRow[i].sbomDigest =
                             artifact.sbom_overview.sbom_digest;
+                    }
+                    if (artifact.accessories !== undefined) {
+                        this.selectedRow[i].accessories = artifact.accessories;
                     }
                     this.selectedRow.splice(i, 1);
                     break;

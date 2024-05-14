@@ -1056,6 +1056,7 @@
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
         "REPORTED_BY": "Reported by {{scanner}}",
         "GENERATE": "Generate SBOM",
         "DOWNLOAD": "Download SBOM",
