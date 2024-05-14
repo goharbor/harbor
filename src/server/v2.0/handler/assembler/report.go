@@ -20,8 +20,10 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 )
 
@@ -36,13 +38,15 @@ func NewScanReportAssembler(option *model.OverviewOptions, mimeTypes []string) *
 		scanChecker:    scan.NewChecker(),
 		scanCtl:        scan.DefaultController,
 		mimeTypes:      mimeTypes,
+		executionMgr:   task.ExecMgr,
 	}
 }
 
 // ScanReportAssembler vul assembler
 type ScanReportAssembler struct {
-	scanChecker scan.Checker
-	scanCtl     scan.Controller
+	scanChecker  scan.Checker
+	scanCtl      scan.Controller
+	executionMgr task.ExecutionManager
 
 	artifacts      []*model.Artifact
 	mimeTypes      []string
@@ -89,16 +93,37 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 			if err != nil {
 				log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
 			}
-			if len(overview) > 0 {
-				artifact.SBOMOverView = map[string]interface{}{
-					sbomModel.StartTime:  overview[sbomModel.StartTime],
-					sbomModel.EndTime:    overview[sbomModel.EndTime],
-					sbomModel.ScanStatus: overview[sbomModel.ScanStatus],
-					sbomModel.SBOMDigest: overview[sbomModel.SBOMDigest],
-					sbomModel.Duration:   overview[sbomModel.Duration],
-					sbomModel.ReportID:   overview[sbomModel.ReportID],
-					sbomModel.Scanner:    overview[sbomModel.Scanner],
+			if len(overview) == 0 {
+				log.Warningf("overview is empty, retrieve sbom status from execution")
+				query := q.New(q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": "sbom"})
+				// sort by ID desc to get the latest execution
+				query.Sorts = []*q.Sort{q.NewSort("ID", true)}
+				execs, err := assembler.executionMgr.List(ctx, query)
+				if err != nil {
+					log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
+					continue
 				}
+				// if no execs, means this artifact is not scanned, leave the sbom_overview empty
+				if len(execs) == 0 {
+					continue
+				}
+				artifact.SBOMOverView = map[string]interface{}{
+					sbomModel.ScanStatus: execs[0].Status,
+					sbomModel.StartTime:  execs[0].StartTime,
+					sbomModel.EndTime:    execs[0].EndTime,
+					sbomModel.Duration:   int64(execs[0].EndTime.Sub(execs[0].StartTime).Seconds()),
+				}
+				continue
+			}
+
+			artifact.SBOMOverView = map[string]interface{}{
+				sbomModel.StartTime:  overview[sbomModel.StartTime],
+				sbomModel.EndTime:    overview[sbomModel.EndTime],
+				sbomModel.ScanStatus: overview[sbomModel.ScanStatus],
+				sbomModel.SBOMDigest: overview[sbomModel.SBOMDigest],
+				sbomModel.Duration:   overview[sbomModel.Duration],
+				sbomModel.ReportID:   overview[sbomModel.ReportID],
+				sbomModel.Scanner:    overview[sbomModel.Scanner],
 			}
 		}
 	}

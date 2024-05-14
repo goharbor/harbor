@@ -21,9 +21,11 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
+	mockTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
 type VulAssemblerTestSuite struct {
@@ -99,6 +101,40 @@ func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverview() {
 	suite.Equal(artifact.SBOMOverView["sbom_digest"], "sha256:123456")
 	suite.Equal(artifact.SBOMOverView["scan_status"], "Success")
 
+}
+
+func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverviewImageIndex() {
+	checker := &scan.Checker{}
+	scanCtl := &scan.Controller{}
+	exeMgr := &mockTask.ExecutionManager{}
+
+	assembler := ScanReportAssembler{
+		scanChecker:    checker,
+		scanCtl:        scanCtl,
+		executionMgr:   exeMgr,
+		overviewOption: model.NewOverviewOptions(model.WithSBOM(true)),
+		mimeTypes:      []string{v1sq.MimeTypeSBOMReport},
+	}
+
+	mock.OnAnything(checker, "IsScannable").Return(true, nil)
+	overview := map[string]interface{}{}
+	mock.OnAnything(scanCtl, "GetSummary").Return(overview, nil)
+	execs := []*task.Execution{
+		{ID: 1, Status: "Error"},
+		{ID: 2, Status: "Success"},
+	}
+	mock.OnAnything(exeMgr, "List").Return(execs, nil).Once()
+
+	var artifact model.Artifact
+	err := assembler.WithArtifacts(&artifact).Assemble(context.TODO())
+	suite.Nil(err)
+	suite.Equal(artifact.SBOMOverView["scan_status"], "Error")
+
+	mock.OnAnything(exeMgr, "List").Return(nil, nil).Once()
+	var artifact2 model.Artifact
+	err2 := assembler.WithArtifacts(&artifact2).Assemble(context.TODO())
+	suite.Nil(err2)
+	suite.Nil(artifact2.SBOMOverView, "sbom overview should be nil")
 }
 
 func TestVulAssemblerTestSuite(t *testing.T) {
