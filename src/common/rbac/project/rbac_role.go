@@ -125,10 +125,7 @@ var (
 			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
