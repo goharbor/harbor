@@ -43,13 +43,13 @@ const (
 )
 
 func init() {
-	scan.RegisterScanHanlder(v1.ScanTypeSbom, &scanHandler{GenAccessoryFunc: scan.GenAccessoryArt, RegistryServer: registryFQDN})
+	scan.RegisterScanHanlder(v1.ScanTypeSbom, &scanHandler{GenAccessoryFunc: scan.GenAccessoryArt, RegistryServer: registry})
 }
 
 // ScanHandler defines the Handler to generate sbom
 type scanHandler struct {
 	GenAccessoryFunc func(scanRep v1.ScanRequest, sbomContent []byte, labels map[string]string, mediaType string, robot *model.Robot) (string, error)
-	RegistryServer   func(ctx context.Context) string
+	RegistryServer   func(ctx context.Context) (string, bool)
 }
 
 // RequestProducesMineTypes defines the mine types produced by the scan handler
@@ -96,7 +96,7 @@ func (v *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 		Artifact: sr.Artifact,
 	}
 	// the registry server url is core by default, need to replace it with real registry server url
-	scanReq.Registry.URL = v.RegistryServer(ctx.SystemContext())
+	scanReq.Registry.URL, scanReq.Registry.Insecure = v.RegistryServer(ctx.SystemContext())
 	if len(scanReq.Registry.URL) == 0 {
 		return "", fmt.Errorf("empty registry server")
 	}
@@ -139,15 +139,16 @@ func (v *scanHandler) generateReport(startTime time.Time, repository, digest, st
 }
 
 // extract server name from config, and remove the protocol prefix
-func registryFQDN(ctx context.Context) string {
+func registry(ctx context.Context) (string, bool) {
 	cfgMgr, ok := config.FromContext(ctx)
 	if ok {
 		extURL := cfgMgr.Get(context.Background(), common.ExtEndpoint).GetString()
+		insecure := strings.HasPrefix(extURL, "http://")
 		server := strings.TrimPrefix(extURL, "https://")
 		server = strings.TrimPrefix(server, "http://")
-		return server
+		return server, insecure
 	}
-	return ""
+	return "", false
 }
 
 // retrieveSBOMContent retrieves the "sbom" field from the raw report
