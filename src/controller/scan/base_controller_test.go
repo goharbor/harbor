@@ -350,6 +350,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	{
 		// artifact not provieded
 		suite.Require().Error(suite.c.Scan(context.TODO(), nil))
+		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Times(3)
 	}
 
 	{
@@ -448,6 +449,7 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 // TestScanControllerGetReport ...
 func (suite *ControllerTestSuite) TestScanControllerGetReport() {
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 		walkFn := args.Get(2).(func(*artifact.Artifact) error)
@@ -466,13 +468,13 @@ func (suite *ControllerTestSuite) TestScanControllerGetReport() {
 // TestScanControllerGetSummary ...
 func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
 	mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
 		walkFn := args.Get(2).(func(*artifact.Artifact) error)
 		walkFn(suite.artifact)
 	}).Once()
 	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return(nil, nil).Once()
-
 	sum, err := suite.c.GetSummary(ctx, suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(sum))
@@ -480,6 +482,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
 
 // TestScanControllerGetScanLog ...
 func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
 	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 		{
@@ -500,6 +503,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
 
 func (suite *ControllerTestSuite) TestScanControllerGetMultiScanLog() {
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Times(4)
 	suite.taskMgr.On("ListScanTasksByReportUUID", ctx, "rp-uuid-001").Return([]*task.Task{
 		{
 			ID:         1,
@@ -562,7 +566,7 @@ func (suite *ControllerTestSuite) TestScanAll() {
 	{
 		// no artifacts found when scan all
 		executionID := int64(1)
-
+		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
 		suite.execMgr.On(
 			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
 			mock.Anything).Return(executionID, nil).Once()

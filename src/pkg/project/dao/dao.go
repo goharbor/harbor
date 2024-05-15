@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -43,7 +44,7 @@ type DAO interface {
 	// ListRoles the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 	// ListAdminRolesOfUser returns the roles of user for the all projects
-	ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error)
+	ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error)
 }
 
 // New returns an instance of the default DAO
@@ -202,18 +203,38 @@ func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupI
 	return roles, nil
 }
 
-func (d *dao) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
+func (d *dao) ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sql := `select b.* from project as a left join project_member as b on a.project_id = b.project_id where a.deleted = 'f' and b.entity_id = ? and b.entity_type = 'u' and b.role = 1;`
-
-	var members []models.Member
-	_, err = o.Raw(sql, userID).QueryRows(&members)
+	var membersU []models.Member
+	sqlU := `select b.* from project as a left join project_member as b on a.project_id = b.project_id where a.deleted = 'f' and b.entity_id = ? and b.entity_type = 'u' and b.role = 1;`
+	_, err = o.Raw(sqlU, user.UserID).QueryRows(&membersU)
 	if err != nil {
 		return nil, err
+	}
+
+	var membersG []models.Member
+	if len(user.GroupIDs) > 0 {
+		var params []interface{}
+		params = append(params, user.GroupIDs)
+		sqlG := fmt.Sprintf(`select b.* from project as a 
+    		left join project_member as b on a.project_id = b.project_id 
+           	where a.deleted = 'f' and b.entity_id in ( %s ) and b.entity_type = 'g' and b.role = 1;`, orm.ParamPlaceholderForIn(len(user.GroupIDs)))
+		_, err = o.Raw(sqlG, params).QueryRows(&membersG)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var members []models.Member
+	if len(membersU) > 0 {
+		members = append(members, membersU...)
+	}
+	if len(membersG) > 0 {
+		members = append(members, membersG...)
 	}
 
 	return members, nil

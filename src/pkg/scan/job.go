@@ -419,6 +419,7 @@ func removeScanAuthInfo(sr *v1.ScanRequest) string {
 			URL:           sr.Registry.URL,
 			Authorization: "[HIDDEN]",
 		},
+		RequestType: sr.RequestType,
 	}
 
 	str, err := req.ToJSON()

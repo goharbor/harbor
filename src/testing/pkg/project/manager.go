@@ -5,8 +5,11 @@ package project
 import (
 	context "context"
 
-	models "github.com/goharbor/harbor/src/pkg/project/models"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+
 	mock "github.com/stretchr/testify/mock"
+
+	models "github.com/goharbor/harbor/src/pkg/project/models"
 
 	q "github.com/goharbor/harbor/src/lib/q"
 )
@@ -150,9 +153,9 @@ func (_m *Manager) List(ctx context.Context, query *q.Query) ([]*models.Project,
 	return r0, r1
 }
 
-// ListAdminRolesOfUser provides a mock function with given fields: ctx, userID
-func (_m *Manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
-	ret := _m.Called(ctx, userID)
+// ListAdminRolesOfUser provides a mock function with given fields: ctx, user
+func (_m *Manager) ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error) {
+	ret := _m.Called(ctx, user)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListAdminRolesOfUser")
@@ -160,19 +163,19 @@ func (_m *Manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]mode
 
 	var r0 []models.Member
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) ([]models.Member, error)); ok {
-		return rf(ctx, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, commonmodels.User) ([]models.Member, error)); ok {
+		return rf(ctx, user)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) []models.Member); ok {
-		r0 = rf(ctx, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, commonmodels.User) []models.Member); ok {
+		r0 = rf(ctx, user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.Member)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, userID)
+	if rf, ok := ret.Get(1).(func(context.Context, commonmodels.User) error); ok {
+		r1 = rf(ctx, user)
 	} else {
 		r1 = ret.Error(1)
 	}
