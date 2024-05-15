@@ -83,7 +83,7 @@ func (c *Client) getProjects() ([]*Project, error) {
 
 func (c *Client) getProjectsByName(name string) ([]*Project, error) {
 	var projects []*Project
-	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&search_namespaces=true&per_page=50", c.url, name)
+	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=true&search_namespaces=true&per_page=50", c.url, name)
 	if err := c.GetAndIteratePagination(urlAPI, &projects); err != nil {
 		return nil, err
 	}
