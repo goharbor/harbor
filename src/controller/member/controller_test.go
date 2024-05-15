@@ -98,7 +98,7 @@ func (suite *MemberControllerTestSuite) TestAddProjectMemberWithUserGroup() {
 
 func (suite *MemberControllerTestSuite) TestIsProjectAdmin() {
 	mock.OnAnything(suite.projectMgr, "ListAdminRolesOfUser").Return([]models.Member{models.Member{ID: 2, ProjectID: 2}}, nil)
-	ok, err := suite.controller.IsProjectAdmin(context.Background(), 2)
+	ok, err := suite.controller.IsProjectAdmin(context.Background(), comModels.User{UserID: 1})
 	suite.NoError(err)
 	suite.True(ok)
 }
