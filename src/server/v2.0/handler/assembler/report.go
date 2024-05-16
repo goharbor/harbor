@@ -38,6 +38,7 @@ func NewScanReportAssembler(option *model.OverviewOptions, mimeTypes []string) *
 		overviewOption: option,
 		scanChecker:    scan.NewChecker(),
 		scanCtl:        scan.DefaultController,
+		executionMgr:   task.ExecMgr,
 		mimeTypes:      mimeTypes,
 	}
 }
