@@ -41,6 +41,9 @@ fi
 cat $docker_config_file
 sudo systemctl stop docker
 sudo systemctl start docker
+# debug
+sudo systemctl status docker.service
+sudo journalctl -xeu docker.service
 sleep 2
 #------------------------------------------------------------#
 
