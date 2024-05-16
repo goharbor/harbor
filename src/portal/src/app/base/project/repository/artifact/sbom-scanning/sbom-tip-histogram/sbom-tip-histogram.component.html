@@ -1,7 +1,7 @@
 <div class="tip-wrapper width-215">
     <clr-tooltip>
         <div clrTooltipTrigger class="tip-block">
-            <div *ngIf="!noSbom" class="circle-block">
+            <div *ngIf="showSbomDetailLink()" class="circle-block">
                 <a
                     href="javascript:void(0)"
                     class="digest margin-left-5"
@@ -11,9 +11,14 @@
                 >
             </div>
             <div
-                *ngIf="noSbom"
+                *ngIf="showNoSbom()"
                 class="pl-1 margin-left-5 tip-wrapper bar-block-none shadow-none width-150">
                 {{ 'SBOM.NO_SBOM' | translate }}
+            </div>
+            <div
+                *ngIf="!showSbomDetailLink() && !showNoSbom()"
+                class="pl-1 margin-left-5 tip-wrapper bar-block-none shadow-none width-150">
+                {{ 'SBOM.COMPLETED,' | translate }}
             </div>
         </div>
         <clr-tooltip-content
@@ -23,14 +28,17 @@
             *clrIfOpen>
             <div class="bar-tooltip-font-larger">
                 <div
-                    *ngIf="!noSbom"
+                    *ngIf="showSbomDetailLink()"
                     class="level-border clr-display-inline-block margin-right-5">
                     <div>
                         {{ 'SBOM.PACKAGES' | translate }}
                     </div>
                 </div>
-                <ng-container *ngIf="noSbom">
+                <ng-container *ngIf="showNoSbom()">
                     <span>{{ 'SBOM.NO_SBOM' | translate }}</span>
+                </ng-container>
+                <ng-container *ngIf="!showSbomDetailLink() && !showNoSbom()">
+                    <span>{{ 'SBOM.COMPLETED' | translate }}</span>
                 </ng-container>
             </div>
             <hr />

@@ -23,7 +23,7 @@ import {
     HarborEvent,
 } from '../../../../../services/event-service/event.service';
 import { ScanService } from '../../../../../../../ng-swagger-gen/services/scan.service';
-import { ScanType } from 'ng-swagger-gen/models';
+import { Accessory, ScanType } from 'ng-swagger-gen/models';
 import { ScanTypes } from '../../../../../shared/entities/shared.const';
 import { SBOMOverview } from './sbom-overview';
 import { Scanner } from '../../../../left-side-nav/interrogation-services/scanner/scanner';
@@ -43,6 +43,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() artifactDigest: string = '';
     @Input() sbomDigest: string = '';
     @Input() sbomOverview: SBOMOverview;
+    @Input() accessories: Accessory[] = [];
     onSubmitting: boolean = false;
     onStopping: boolean = false;
     retryCounter: number = 0;

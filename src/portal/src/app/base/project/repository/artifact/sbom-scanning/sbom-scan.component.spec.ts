@@ -10,6 +10,7 @@ import { SbomTipHistogramComponent } from './sbom-tip-histogram/sbom-tip-histogr
 import { SBOMOverview } from './sbom-overview';
 import { of, timer } from 'rxjs';
 import { ArtifactService, ScanService } from 'ng-swagger-gen/services';
+import { AccessoryType } from '../artifact';
 
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;
@@ -165,6 +166,13 @@ describe('ResultSbomComponent (inline template)', () => {
 
     it('should show summary bar chart if status is COMPLETED', () => {
         component.sbomOverview.scan_status = SBOM_SCAN_STATUS.SUCCESS;
+        component.sbomDigest = mockedSbomDigest;
+        component.accessories = [
+            {
+                type: AccessoryType.SBOM,
+                digest: mockedSbomDigest,
+            },
+        ];
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
