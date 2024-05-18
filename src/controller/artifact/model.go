@@ -80,6 +80,19 @@ func (artifact *Artifact) SetAdditionLink(addition, version string) {
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
 }
 
+func (artifact *Artifact) SetSBOMAdditionLink(sbomDgst string, version string) {
+	if artifact.AdditionLinks == nil {
+		artifact.AdditionLinks = make(map[string]*AdditionLink)
+	}
+	addition := "sboms"
+	projectName, repo := utils.ParseRepository(artifact.RepositoryName)
+	// encode slash as %252F
+	repo = repository.Encode(repo)
+	href := fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s", version, projectName, repo, sbomDgst, addition)
+
+	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
+}
+
 // AdditionLink is a link via that the addition can be fetched
 type AdditionLink struct {
 	HREF     string `json:"href"`

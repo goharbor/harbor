@@ -32,6 +32,7 @@ export class ProjectPolicy {
     PreventVulImg: boolean;
     PreventVulImgSeverity: string;
     ScanImgOnPush: boolean;
+    GenerateSbomOnPush: boolean;
 
     constructor() {
         this.Public = false;
@@ -40,6 +41,7 @@ export class ProjectPolicy {
         this.PreventVulImg = false;
         this.PreventVulImgSeverity = LOW;
         this.ScanImgOnPush = false;
+        this.GenerateSbomOnPush = false;
     }
 
     initByProject(pro: Project) {
@@ -52,6 +54,7 @@ export class ProjectPolicy {
             this.PreventVulImgSeverity = pro.metadata.severity;
         }
         this.ScanImgOnPush = pro.metadata.auto_scan === 'true';
+        this.GenerateSbomOnPush = pro.metadata.auto_sbom_generation === 'true';
     }
 }
 

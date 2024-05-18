@@ -76,6 +76,9 @@ const (
 
 	// TypeSubject ...
 	TypeSubject = "subject.accessory"
+
+	// TypeHarborSBOM identifies sbom.harbor
+	TypeHarborSBOM = "sbom.harbor"
 )
 
 // AccessoryData ...

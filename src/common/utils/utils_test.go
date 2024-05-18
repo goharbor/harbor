@@ -501,6 +501,7 @@ func TestIsLocalPath(t *testing.T) {
 		{"other_site1", args{"//www.myexample.com"}, false},
 		{"other_site2", args{"https://www.myexample.com"}, false},
 		{"other_site", args{"http://www.myexample.com"}, false},
+		{"empty_path", args{""}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
