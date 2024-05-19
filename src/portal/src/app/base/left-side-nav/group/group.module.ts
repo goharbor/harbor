@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../shared/shared.module';
 import { GroupComponent } from './group.component';
 import { AddGroupModalComponent } from './add-group-modal/add-group-modal.component';
@@ -11,7 +12,7 @@ const routes: Routes = [
     },
 ];
 @NgModule({
-    imports: [SharedModule, RouterModule.forChild(routes)],
+    imports: [SharedModule, RouterModule.forChild(routes), FormsModule],
     declarations: [GroupComponent, AddGroupModalComponent],
 })
 export class GroupModule {}
