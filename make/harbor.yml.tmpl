@@ -16,6 +16,18 @@ https:
   # The path of cert and key files for nginx
   certificate: /your/certificate/path
   private_key: /your/private/key/path
+  # enable strong ssl ciphers (default: false)
+  # strong_ssl_ciphers: false
+
+# # Harbor will set ipv4 enabled only by default if this block is not configured
+# # Otherwise, please uncomment this block to configure your own ip_family stacks
+# ip_family:
+#   # ipv6Enabled set to true if ipv6 is enabled in docker network, currently it affected the nginx related component
+#   ipv6:
+#     enabled: false
+#   # ipv4Enabled set to true by default, currently it affected the nginx related component
+#   ipv4:
+#     enabled: true
 
 # # Uncomment following will enable tls communication between all harbor components
 # internal_tls:
@@ -23,8 +35,7 @@ https:
 #   enabled: true
 #   # put your cert and key files on dir
 #   dir: /etc/harbor/tls/internal
-#   # enable strong ssl ciphers (default: false)
-#   strong_ssl_ciphers: false
+
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
@@ -87,6 +98,10 @@ trivy:
   # `metadata.json` files and mount them in the `/home/scanner/.cache/trivy/db` path.
   skip_update: false
   #
+  # skipJavaDBUpdate If the flag is enabled you have to manually download the `trivy-java.db` file and mount it in the
+  # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
+  skip_java_db_update: false
+  #
   # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
@@ -100,6 +115,11 @@ trivy:
   #
   # insecure The flag to skip verifying registry certificate
   insecure: false
+  #
+  # timeout The duration to wait for scan completion.
+  # There is upper bound of 30 minutes defined in scan job. So if this `timeout` is larger than 30m0s, it will also timeout at 30m0s.
+  timeout: 5m0s
+  #
   # github_token The GitHub access token to download Trivy DB
   #
   # Anonymous downloads from GitHub are subject to the limit of 60 requests per hour. Normally such rate limit is enough
@@ -154,7 +174,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.10.0
+_version: 2.11.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -238,7 +258,7 @@ proxy:
 #   enabled: true
 #   # set sample_rate to 1 if you wanna sampling 100% of trace data; set 0.5 if you wanna sampling 50% of trace data, and so forth
 #   sample_rate: 1
-#   # # namespace used to differenciate different harbor services
+#   # # namespace used to differentiate different harbor services
 #   # namespace:
 #   # # attributes is a key value dict contains user defined attributes used to initialize trace provider
 #   # attributes:
@@ -291,6 +311,6 @@ cache:
 #   # can improve the performance of high concurrent pushing to the same project,
 #   # and reduce the database connections spike and occupies.
 #   # By redis will bring up some delay for quota usage updation for display, so only
-#   # suggest switch provider to redis if you were ran into the db connections spike aroud
-#   # the scenario of high concurrent pushing to same project, no improvment for other scenes.
+#   # suggest switch provider to redis if you were ran into the db connections spike around
+#   # the scenario of high concurrent pushing to same project, no improvement for other scenes.
 #   quota_update_provider: redis # Or db

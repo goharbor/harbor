@@ -30,6 +30,8 @@ describe('ArtifactSummaryComponent', () => {
             return undefined;
         },
     };
+    const mockedSbomDigest =
+        'sha256:51a41cec9de9d62ee60e206f5a8a615a028a65653e45539990867417cb486285';
     let component: ArtifactSummaryComponent;
     let fixture: ComponentFixture<ArtifactSummaryComponent>;
     const mockActivatedRoute = {
@@ -41,6 +43,9 @@ describe('ArtifactSummaryComponent', () => {
                 subscribe: () => {
                     return of(null);
                 },
+            },
+            queryParams: {
+                sbomDigest: mockedSbomDigest,
             },
             parent: {
                 params: {
@@ -89,6 +94,7 @@ describe('ArtifactSummaryComponent', () => {
         component = fixture.componentInstance;
         component.repositoryName = 'demo';
         component.artifactDigest = 'sha: acf4234f';
+        component.sbomDigest = mockedSbomDigest;
         fixture.detectChanges();
     });
 

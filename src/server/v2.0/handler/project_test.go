@@ -22,6 +22,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
@@ -36,6 +37,7 @@ type ProjectTestSuite struct {
 	scannerCtl *scannertesting.Controller
 	project    *models.Project
 	reg        *scanner.Registration
+	metadata   *v1.ScannerAdapterMetadata
 }
 
 func (suite *ProjectTestSuite) SetupSuite() {
@@ -59,7 +61,12 @@ func (suite *ProjectTestSuite) SetupSuite() {
 			scannerCtl: suite.scannerCtl,
 		},
 	}
-
+	suite.metadata = &v1.ScannerAdapterMetadata{
+		Capabilities: []*v1.ScannerCapability{
+			{Type: "vulnerability", ProducesMimeTypes: []string{v1.MimeTypeScanResponse}},
+			{Type: "sbom", ProducesMimeTypes: []string{v1.MimeTypeSBOMReport}},
+		},
+	}
 	suite.Suite.SetupSuite()
 }
 
@@ -81,7 +88,8 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 		// scanner not found
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(nil, nil).Once()
-
+		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 		res, err := suite.Get("/projects/1/scanner")
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -90,7 +98,8 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 	{
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(suite.reg, nil).Once()
-
+		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 		var scanner scanner.Registration
 		res, err := suite.GetJSON("/projects/1/scanner", &scanner)
 		suite.NoError(err)
@@ -101,7 +110,9 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 	{
 		mock.OnAnything(projectCtlMock, "GetByName").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "GetMetadata").Return(suite.metadata, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "GetRegistrationByProject").Return(suite.reg, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "RetrieveCap").Return(nil).Once()
 
 		var scanner scanner.Registration
 		res, err := suite.GetJSON("/projects/library/scanner", &scanner)

@@ -18,7 +18,7 @@ import {
     ActivatedRouteSnapshot,
 } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
-import { map, catchError, mergeMap } from 'rxjs/operators';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { Artifact } from '../../../../ng-swagger-gen/models/artifact';
 import { ArtifactService } from '../../../../ng-swagger-gen/services/artifact.service';
 import { Project } from '../../base/project/project';
@@ -51,6 +51,7 @@ export class ArtifactDetailRoutingResolverService {
                         projectName: project.name,
                         withLabel: true,
                         withScanOverview: true,
+                        withSbomOverview: true,
                         withTag: false,
                         withImmutableStatus: true,
                     }),

@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/member"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -57,15 +58,14 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 	if secCtx.IsSysAdmin() {
 		isSystemAdmin = true
 	} else {
-		user, err := p.uc.GetByName(ctx, secCtx.GetUsername())
-		if err != nil {
-			return p.SendError(ctx, err)
+		if sc, ok := secCtx.(*local.SecurityContext); ok {
+			user := sc.User()
+			var err error
+			isProjectAdmin, err = p.mc.IsProjectAdmin(ctx, *user)
+			if err != nil {
+				return p.SendError(ctx, err)
+			}
 		}
-		is, err := p.mc.IsProjectAdmin(ctx, user.UserID)
-		if err != nil {
-			return p.SendError(ctx, err)
-		}
-		isProjectAdmin = is
 	}
 	if !isSystemAdmin && !isProjectAdmin {
 		return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))

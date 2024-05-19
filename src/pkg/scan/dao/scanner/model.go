@@ -66,8 +66,9 @@ type Registration struct {
 	Metadata *v1.ScannerAdapterMetadata `orm:"-" json:"-"`
 
 	// Timestamps
-	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
-	UpdateTime time.Time `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
+	CreateTime   time.Time              `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
+	UpdateTime   time.Time              `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
+	Capabilities map[string]interface{} `orm:"-" json:"capabilities,omitempty"`
 }
 
 // TableName for Endpoint
@@ -151,15 +152,20 @@ func (r *Registration) HasCapability(manifestMimeType string) bool {
 }
 
 // GetProducesMimeTypes returns produces mime types for the artifact
-func (r *Registration) GetProducesMimeTypes(mimeType string) []string {
+func (r *Registration) GetProducesMimeTypes(mimeType string, scanType string) []string {
 	if r.Metadata == nil {
 		return nil
 	}
-
 	for _, capability := range r.Metadata.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == mimeType {
-				return capability.ProducesMimeTypes
+		capType := capability.Type
+		if len(capType) == 0 {
+			capType = v1.ScanTypeVulnerability
+		}
+		if scanType == capType {
+			for _, mt := range capability.ConsumesMimeTypes {
+				if mt == mimeType {
+					return capability.ProducesMimeTypes
+				}
 			}
 		}
 	}
