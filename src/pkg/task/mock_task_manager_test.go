@@ -257,6 +257,24 @@ func (_m *mockTaskManager) ListScanTasksByReportUUID(ctx context.Context, uuid s
 	return r0, r1
 }
 
+// RetrieveStatusFromTask provides a mock function with given fields: ctx, reportID
+func (_m *mockTaskManager) RetrieveStatusFromTask(ctx context.Context, reportID string) string {
+	ret := _m.Called(ctx, reportID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RetrieveStatusFromTask")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, reportID)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // Stop provides a mock function with given fields: ctx, id
 func (_m *mockTaskManager) Stop(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
