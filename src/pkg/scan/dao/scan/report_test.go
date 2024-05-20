@@ -54,14 +54,6 @@ func (suite *ReportTestSuite) SetupTest() {
 		MimeType:         v1.MimeTypeNativeReport,
 	}
 	suite.create(r)
-	sbomReport := &Report{
-		UUID:             "uuid3",
-		Digest:           "digest1003",
-		RegistrationUUID: "ruuid",
-		MimeType:         v1.MimeTypeSBOMReport,
-		Report:           `{"sbom_digest": "sha256:abc"}`,
-	}
-	suite.create(sbomReport)
 }
 
 // TearDownTest clears enf for test case.
@@ -111,17 +103,6 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 
 	err = suite.dao.UpdateReportData(orm.Context(), "uuid", "{\"a\": 900}")
 	suite.Require().NoError(err)
-}
-
-func (suite *ReportTestSuite) TestDeleteReportBySBOMDigest() {
-	l, err := suite.dao.List(orm.Context(), nil)
-	suite.Require().NoError(err)
-	suite.Equal(2, len(l))
-	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:abc")
-	suite.Require().NoError(err)
-	l2, err := suite.dao.List(orm.Context(), nil)
-	suite.Require().NoError(err)
-	suite.Equal(1, len(l2))
 }
 
 func (suite *ReportTestSuite) create(r *Report) {
