@@ -15,16 +15,16 @@ import { AccessoryType } from '../artifact';
 describe('ResultSbomComponent (inline template)', () => {
     let component: ResultSbomComponent;
     let fixture: ComponentFixture<ResultSbomComponent>;
-    let mockData: SBOMOverview = {
-        scan_status: SBOM_SCAN_STATUS.SUCCESS,
-        end_time: new Date().toUTCString(),
-    };
     const mockedSbomDigest =
         'sha256:052240e8190b7057439d2bee1dffb9b37c8800e5c1af349f667635ae1debf8f3';
     const mockScanner = {
         name: 'Trivy',
         vendor: 'vm',
         version: 'v1.2',
+    };
+    let mockData: SBOMOverview = {
+        scan_status: SBOM_SCAN_STATUS.SUCCESS,
+        end_time: new Date().toUTCString(),
     };
     const mockedSbomOverview = {
         report_id: '12345',
@@ -34,6 +34,12 @@ describe('ResultSbomComponent (inline template)', () => {
         report_id: '12346',
         scan_status: 'Pending',
     };
+    const mockedAccessories = [
+        {
+            type: AccessoryType.SBOM,
+            digest: mockedSbomDigest,
+        },
+    ];
     const FakedScanService = {
         scanArtifact: () => of({}),
         stopScanArtifact: () => of({}),
@@ -41,7 +47,7 @@ describe('ResultSbomComponent (inline template)', () => {
     const FakedArtifactService = {
         getArtifact: () =>
             of({
-                accessories: null,
+                accessories: mockedAccessories,
                 addition_links: {
                     build_history: {
                         absolute: false,
@@ -83,6 +89,7 @@ describe('ResultSbomComponent (inline template)', () => {
                         'sha256:8cca43ea666e0e7990c2433e3b185313e6ba303cc7a3124bb767823c79fb74a6',
                     scan_status: 'Success',
                     start_time: '2024-04-02T01:50:57.176Z',
+                    scanner: mockScanner,
                 },
                 size: 3957,
                 tags: null,
@@ -119,6 +126,7 @@ describe('ResultSbomComponent (inline template)', () => {
         component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.sbomOverview = mockData;
+        component.accessories = mockedAccessories;
         fixture.detectChanges();
     });
 
@@ -166,19 +174,18 @@ describe('ResultSbomComponent (inline template)', () => {
 
     it('should show summary bar chart if status is COMPLETED', () => {
         component.sbomOverview.scan_status = SBOM_SCAN_STATUS.SUCCESS;
+        component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
-        component.accessories = [
-            {
-                type: AccessoryType.SBOM,
-                digest: mockedSbomDigest,
-            },
-        ];
-        fixture.detectChanges();
-
+        component.accessories = mockedAccessories;
         fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            let el: HTMLElement = fixture.nativeElement.querySelector('a');
+            const el: HTMLElement =
+                fixture.nativeElement.querySelector('.tip-block');
             expect(el).not.toBeNull();
+            const textContent = el.textContent;
+            expect(component.sbomOverview.scan_status).toBe(
+                SBOM_SCAN_STATUS.SUCCESS
+            );
+            expect(textContent).toBe('SBOM Detail');
         });
     });
     it('Test ResultSbomComponent getScanner', () => {
