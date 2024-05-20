@@ -25,7 +25,7 @@ require (
 	github.com/go-openapi/runtime v0.26.2
 	github.com/go-openapi/spec v0.20.11 // indirect
 	github.com/go-openapi/strfmt v0.23.0
-	github.com/go-openapi/swag v0.22.7
+	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.22.3 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
