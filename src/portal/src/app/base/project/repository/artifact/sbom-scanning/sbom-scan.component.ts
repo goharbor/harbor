@@ -221,6 +221,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.artifactDigest,
                 withSbomOverview: true,
+                withAccessory: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
             .subscribe(
