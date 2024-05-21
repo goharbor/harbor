@@ -1,9 +1,8 @@
 .tip-wrapper {
     display: flex;
-    align-items: center;
-    color: #fff;
-    text-align: center;
-    font-size: 10px;
+    align-items: left;
+    text-align: left;
+    font-size: .65rem;
     height: 15px;
     line-height: 15px;
 }
@@ -33,12 +32,8 @@ hr {
     margin-left: 5px;
 }
 
-.width-215 {
-    width: 215px;
-}
-
-.width-150 {
-    width: 150px;
+.width-120 {
+    width: 120px;
 }
 
 .level-border>div{

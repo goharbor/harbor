@@ -79,11 +79,11 @@ export class SbomTipHistogramComponent {
     }
 
     showSbomDetailLink(): boolean {
-        return this.sbomDigest && this.getSbomAccessories.length > 0;
+        return this.sbomDigest && this.getSbomAccessories().length > 0;
     }
 
     showNoSbom(): boolean {
-        return !this.sbomDigest && this.getSbomAccessories.length === 0;
+        return !this.sbomDigest && this.getSbomAccessories().length === 0;
     }
 
     isThemeLight() {
