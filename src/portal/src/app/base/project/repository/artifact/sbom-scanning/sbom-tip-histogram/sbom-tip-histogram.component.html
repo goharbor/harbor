@@ -1,10 +1,10 @@
-<div class="tip-wrapper width-215">
+<div class="tip-wrapper width-120">
     <clr-tooltip>
         <div clrTooltipTrigger class="tip-block">
             <div *ngIf="showSbomDetailLink()" class="circle-block">
                 <a
                     href="javascript:void(0)"
-                    class="digest margin-left-5"
+                    class="digest"
                     (click)="goIntoArtifactSbomSummaryPage()"
                     title="{{ 'SBOM.Details' | translate }">
                     {{ 'SBOM.Details' | translate }}</a
@@ -12,13 +12,13 @@
             </div>
             <div
                 *ngIf="showNoSbom()"
-                class="pl-1 margin-left-5 tip-wrapper bar-block-none shadow-none width-150">
+                class="tip-wrapper bar-block-none shadow-none width-120">
                 {{ 'SBOM.NO_SBOM' | translate }}
             </div>
             <div
                 *ngIf="!showSbomDetailLink() && !showNoSbom()"
-                class="pl-1 margin-left-5 tip-wrapper bar-block-none shadow-none width-150">
-                {{ 'SBOM.COMPLETED,' | translate }}
+                class="tip-wrapper width-120">
+                {{ 'SBOM.COMPLETED' | translate }}
             </div>
         </div>
         <clr-tooltip-content

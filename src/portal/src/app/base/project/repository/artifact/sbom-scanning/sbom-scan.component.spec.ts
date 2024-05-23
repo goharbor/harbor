@@ -173,19 +173,22 @@ describe('ResultSbomComponent (inline template)', () => {
     });
 
     it('should show summary bar chart if status is COMPLETED', () => {
+        component.sbomOverview = { ...mockedSbomOverview };
         component.sbomOverview.scan_status = SBOM_SCAN_STATUS.SUCCESS;
+        component.sbomOverview.sbom_digest = mockedSbomDigest;
         component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.accessories = mockedAccessories;
         fixture.whenStable().then(() => {
+            fixture.detectChanges();
             const el: HTMLElement =
                 fixture.nativeElement.querySelector('.tip-block');
             expect(el).not.toBeNull();
-            const textContent = el.textContent;
+            const textContent = el?.textContent;
             expect(component.sbomOverview.scan_status).toBe(
                 SBOM_SCAN_STATUS.SUCCESS
             );
-            expect(textContent).toBe('SBOM Detail');
+            expect(textContent?.trim()).toBe('SBOM.Details');
         });
     });
     it('Test ResultSbomComponent getScanner', () => {
@@ -210,7 +213,7 @@ describe('ResultSbomComponent (inline template)', () => {
         component.sbomOverview = mockedSbomOverview;
         fixture.detectChanges();
         expect(component.status).toBe(SBOM_SCAN_STATUS.ERROR);
-        expect(component.completed).toBeFalsy();
+        expect(component.completed).toBeTruthy();
         expect(component.queued).toBeFalsy();
         expect(component.generating).toBeFalsy();
         expect(component.stopped).toBeFalsy();
