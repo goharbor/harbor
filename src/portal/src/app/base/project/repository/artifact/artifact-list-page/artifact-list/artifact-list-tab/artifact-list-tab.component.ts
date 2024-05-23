@@ -182,6 +182,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     onSbomArtifactsLength: number = 0;
     stopBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     updateArtifactSub: Subscription;
+    updateArtifactSbomSub: Subscription;
 
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.ARTIFACT_LIST_TAB_COMPONENT,
@@ -249,6 +250,20 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                         this.artifactList.forEach(item => {
                             if (item.digest === artifact.digest) {
                                 item.scan_overview = artifact.scan_overview;
+                            }
+                        });
+                    }
+                }
+            );
+        }
+        if (!this.updateArtifactSbomSub) {
+            this.updateArtifactSbomSub = this.eventService.subscribe(
+                HarborEvent.UPDATE_SBOM_INFO,
+                (artifact: Artifact) => {
+                    if (this.artifactList && this.artifactList.length) {
+                        this.artifactList.forEach(item => {
+                            if (item.digest === artifact.digest) {
+                                this.updateArtifact(artifact, item);
                             }
                         });
                     }
@@ -984,22 +999,28 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
         this.refresh();
     }
+
+    updateArtifact(from: Artifact, to: Artifact) {
+        if (from.scan_overview) {
+            to.scan_overview = from.scan_overview;
+        }
+        if (from.sbom_overview) {
+            to.sbom_overview = from.sbom_overview;
+        }
+        if (from.sbom_overview.sbom_digest) {
+            to.sbomDigest = from.sbom_overview.sbom_digest;
+        }
+        if (from.accessories !== undefined && from.accessories.length > 0) {
+            to.accessories = from.accessories;
+        }
+    }
+
     // when finished, remove it from selectedRow
     scanFinished(artifact: Artifact) {
         if (this.selectedRow && this.selectedRow.length) {
             for (let i = 0; i < this.selectedRow.length; i++) {
                 if (artifact.digest === this.selectedRow[i].digest) {
-                    if (artifact.sbom_overview) {
-                        this.selectedRow[i].sbom_overview =
-                            artifact.sbom_overview;
-                    }
-                    if (artifact.sbom_overview.sbom_digest) {
-                        this.selectedRow[i].sbomDigest =
-                            artifact.sbom_overview.sbom_digest;
-                    }
-                    if (artifact.accessories !== undefined) {
-                        this.selectedRow[i].accessories = artifact.accessories;
-                    }
+                    this.updateArtifact(artifact, this.selectedRow[i]);
                     this.selectedRow.splice(i, 1);
                     break;
                 }
