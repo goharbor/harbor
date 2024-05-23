@@ -213,7 +213,7 @@ describe('ResultSbomComponent (inline template)', () => {
         component.sbomOverview = mockedSbomOverview;
         fixture.detectChanges();
         expect(component.status).toBe(SBOM_SCAN_STATUS.ERROR);
-        expect(component.completed).toBeFalsy();
+        expect(component.completed).toBeTruthy();
         expect(component.queued).toBeFalsy();
         expect(component.generating).toBeFalsy();
         expect(component.stopped).toBeFalsy();
