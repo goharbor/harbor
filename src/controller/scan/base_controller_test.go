@@ -45,7 +45,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
-	_ "github.com/goharbor/harbor/src/pkg/scan/vulnerability"
 	"github.com/goharbor/harbor/src/pkg/task"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
@@ -55,6 +54,7 @@ import (
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
+	scanTest "github.com/goharbor/harbor/src/testing/pkg/scan"
 	postprocessorstesting "github.com/goharbor/harbor/src/testing/pkg/scan/postprocessors"
 	reporttesting "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	tasktesting "github.com/goharbor/harbor/src/testing/pkg/task"
@@ -63,6 +63,8 @@ import (
 // ControllerTestSuite is the test suite for scan controller.
 type ControllerTestSuite struct {
 	suite.Suite
+
+	scanHandler *scanTest.Handler
 
 	artifactCtl         *artifacttesting.Controller
 	accessoryMgr        *accessorytesting.Manager
@@ -91,6 +93,8 @@ func TestController(t *testing.T) {
 
 // SetupSuite ...
 func (suite *ControllerTestSuite) SetupSuite() {
+	suite.scanHandler = &scanTest.Handler{}
+	sca.RegisterScanHanlder(v1.ScanTypeVulnerability, suite.scanHandler)
 	suite.originalArtifactCtl = artifact.Ctl
 	suite.artifactCtl = &artifacttesting.Controller{}
 	artifact.Ctl = suite.artifactCtl
@@ -212,7 +216,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	mgr.On("GetBy", mock.Anything, suite.artifact.Digest, suite.registration.UUID, []string{v1.MimeTypeSBOMReport}).Return(sbomReport, nil)
 	mgr.On("GetBy", mock.Anything, suite.wrongArtifact.Digest, suite.registration.UUID, []string{v1.MimeTypeSBOMReport}).Return(emptySBOMReport, nil)
 	mgr.On("Get", mock.Anything, "rp-uuid-001").Return(reports[0], nil)
-	mgr.On("UpdateReportData", "rp-uuid-001", suite.rawReport, (int64)(10000)).Return(nil)
+	mgr.On("Update", "rp-uuid-001", suite.rawReport, (int64)(10000)).Return(nil)
 	mgr.On("UpdateStatus", "the-uuid-123", "Success", (int64)(10000)).Return(nil)
 	suite.reportMgr = mgr
 
@@ -347,6 +351,19 @@ func (suite *ControllerTestSuite) TearDownSuite() {
 
 // TestScanControllerScan ...
 func (suite *ControllerTestSuite) TestScanControllerScan() {
+	rpts := []*scan.Report{
+		{UUID: "uuid"},
+	}
+	requiredPermission := []*types.Policy{
+		{
+			Resource: rbac.ResourceRepository,
+			Action:   rbac.ActionPull,
+		},
+		{
+			Resource: rbac.ResourceRepository,
+			Action:   rbac.ActionScannerPull,
+		},
+	}
 	{
 		// artifact not provieded
 		suite.Require().Error(suite.c.Scan(context.TODO(), nil))
@@ -369,6 +386,8 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 
 		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
 		mock.OnAnything(suite.taskMgr, "Create").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
 
 		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 
@@ -388,7 +407,10 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 		}, nil).Once()
 
 		mock.OnAnything(suite.reportMgr, "Delete").Return(fmt.Errorf("delete failed")).Once()
-
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
+		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed to create task")).Once()
 		suite.Require().Error(suite.c.Scan(context.TODO(), suite.artifact))
 	}
 
@@ -403,7 +425,9 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{
 			{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Running"},
 		}, nil).Once()
-
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
+		mock.OnAnything(suite.execMgr, "Create").Return(int64(0), fmt.Errorf("failed to create execution")).Once()
 		suite.Require().Error(suite.c.Scan(context.TODO(), suite.artifact))
 	}
 }
@@ -465,21 +489,6 @@ func (suite *ControllerTestSuite) TestScanControllerGetReport() {
 	assert.Equal(suite.T(), 1, len(rep))
 }
 
-// TestScanControllerGetSummary ...
-func (suite *ControllerTestSuite) TestScanControllerGetSummary() {
-	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
-	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
-	mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
-	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
-		walkFn := args.Get(2).(func(*artifact.Artifact) error)
-		walkFn(suite.artifact)
-	}).Once()
-	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return(nil, nil).Once()
-	sum, err := suite.c.GetSummary(ctx, suite.artifact, []string{v1.MimeTypeNativeReport})
-	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(sum))
-}
-
 // TestScanControllerGetScanLog ...
 func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
 	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
@@ -492,6 +501,13 @@ func (suite *ControllerTestSuite) TestScanControllerGetScanLog() {
 	}, nil).Once()
 
 	mock.OnAnything(suite.taskMgr, "GetLog").Return([]byte("log"), nil).Once()
+
+	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(suite.artifact)
+	}).Once()
+
+	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil)
 
 	bytes, err := suite.c.GetScanLog(ctx, &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1}}, "rp-uuid-001")
 	require.NoError(suite.T(), err)
@@ -566,6 +582,21 @@ func (suite *ControllerTestSuite) TestScanAll() {
 	{
 		// no artifacts found when scan all
 		executionID := int64(1)
+		rpts := []*scan.Report{
+			{UUID: "uuid"},
+		}
+		requiredPermission := []*types.Policy{
+			{
+				Resource: rbac.ResourceRepository,
+				Action:   rbac.ActionPull,
+			},
+			{
+				Resource: rbac.ResourceRepository,
+				Action:   rbac.ActionScannerPull,
+			},
+		}
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
 		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
 		suite.execMgr.On(
 			"Create", mock.Anything, "SCAN_ALL", int64(0), "SCHEDULE",
@@ -607,8 +638,6 @@ func (suite *ControllerTestSuite) TestScanAll() {
 			walkFn(suite.artifact)
 		}).Once()
 
-		mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return(nil, nil).Once()
-
 		mock.OnAnything(suite.reportMgr, "Delete").Return(nil).Once()
 		mock.OnAnything(suite.reportMgr, "Create").Return("uuid", nil).Once()
 		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed")).Once()
@@ -635,16 +664,6 @@ func (suite *ControllerTestSuite) TestStopScanAll() {
 	suite.NoError(err)
 }
 
-func (suite *ControllerTestSuite) TestDeleteReports() {
-	suite.reportMgr.On("DeleteByDigests", context.TODO(), "digest").Return(nil).Once()
-
-	suite.NoError(suite.c.DeleteReports(context.TODO(), "digest"))
-
-	suite.reportMgr.On("DeleteByDigests", context.TODO(), "digest").Return(fmt.Errorf("failed")).Once()
-
-	suite.Error(suite.c.DeleteReports(context.TODO(), "digest"))
-}
-
 func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]interface{} {
 	b, _ := json.Marshal(map[string]interface{}{reportUUIDsKey: reportUUIDs})
 
@@ -653,58 +672,4 @@ func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs .
 	extraAttrs[artifactIDKey] = float64(artifactID)
 
 	return extraAttrs
-}
-
-func (suite *ControllerTestSuite) TestGenerateSBOMSummary() {
-	sum, err := suite.c.GetSBOMSummary(context.TODO(), suite.artifact, []string{v1.MimeTypeSBOMReport})
-	suite.Nil(err)
-	suite.NotNil(sum)
-	status := sum["scan_status"]
-	suite.NotNil(status)
-	dgst := sum["sbom_digest"]
-	suite.NotNil(dgst)
-	suite.Equal("Success", status)
-	suite.Equal("sha256:1234567890", dgst)
-	tasks := []*task.Task{{Status: "Error"}}
-	suite.taskMgr.On("ListScanTasksByReportUUID", mock.Anything, "rp-uuid-004").Return(tasks, nil).Once()
-	sum2, err := suite.c.GetSummary(context.TODO(), suite.wrongArtifact, []string{v1.MimeTypeSBOMReport})
-	suite.Nil(err)
-	suite.NotNil(sum2)
-
-}
-
-func TestIsSBOMMimeTypes(t *testing.T) {
-	// Test with a slice containing the SBOM mime type
-	assert.True(t, isSBOMMimeTypes([]string{v1.MimeTypeSBOMReport}))
-
-	// Test with a slice not containing the SBOM mime type
-	assert.False(t, isSBOMMimeTypes([]string{"application/vnd.oci.image.manifest.v1+json"}))
-
-	// Test with an empty slice
-	assert.False(t, isSBOMMimeTypes([]string{}))
-}
-
-func (suite *ControllerTestSuite) TestDeleteArtifactAccessories() {
-	// artifact not provided
-	suite.Nil(suite.c.deleteArtifactAccessories(context.TODO(), nil))
-
-	// artifact is provided
-	art := &artifact.Artifact{Artifact: art.Artifact{ID: 1, ProjectID: 1, RepositoryName: "library/photon"}}
-	mock.OnAnything(suite.ar, "GetByReference").Return(art, nil).Once()
-	mock.OnAnything(suite.ar, "Delete").Return(nil).Once()
-	reportContent := `{"sbom_digest":"sha256:12345", "scan_status":"Success", "duration":3, "sbom_repository":"library/photon"}`
-	emptyReportContent := ``
-	reports := []*scan.Report{
-		{Report: reportContent},
-		{Report: emptyReportContent},
-	}
-	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
-	suite.NoError(suite.c.deleteArtifactAccessories(ctx, reports))
-}
-
-func (suite *ControllerTestSuite) TestRetrieveStatusFromTask() {
-	tasks := []*task.Task{{Status: "Error"}}
-	suite.taskMgr.On("ListScanTasksByReportUUID", mock.Anything, "rp-uuid-004").Return(tasks, nil).Once()
-	status := suite.c.retrieveStatusFromTask(nil, "rp-uuid-004")
-	suite.Equal("Error", status)
 }
