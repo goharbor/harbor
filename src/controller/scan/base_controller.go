@@ -17,7 +17,6 @@ package scan
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -49,7 +48,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/postprocessors"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
@@ -275,8 +273,9 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 		errs                []error
 		launchScanJobParams []*launchScanJobParam
 	)
+	handler := sca.GetScanHandler(opts.GetScanType())
 	for _, art := range artifacts {
-		reports, err := bc.makeReportPlaceholder(ctx, r, art, opts)
+		reports, err := handler.MakePlaceHolder(ctx, art, r)
 		if err != nil {
 			if errors.IsConflictErr(err) {
 				errs = append(errs, err)
@@ -566,63 +565,6 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 	return nil
 }
 
-func (bc *basicController) makeReportPlaceholder(ctx context.Context, r *scanner.Registration, art *ar.Artifact, opts *Options) ([]*scan.Report, error) {
-	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType, opts.GetScanType())
-	oldReports, err := bc.manager.GetBy(bc.cloneCtx(ctx), art.Digest, r.UUID, mimeTypes)
-	if err != nil {
-		return nil, err
-	}
-	if err := bc.deleteArtifactAccessories(ctx, oldReports); err != nil {
-		return nil, err
-	}
-
-	if err := bc.assembleReports(ctx, oldReports...); err != nil {
-		return nil, err
-	}
-
-	if len(oldReports) > 0 {
-		for _, oldReport := range oldReports {
-			if !job.Status(oldReport.Status).Final() {
-				return nil, errors.ConflictError(nil).WithMessage("a previous scan process is %s", oldReport.Status)
-			}
-		}
-
-		for _, oldReport := range oldReports {
-			if err := bc.manager.Delete(ctx, oldReport.UUID); err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	var reports []*scan.Report
-
-	for _, pm := range r.GetProducesMimeTypes(art.ManifestMediaType, opts.GetScanType()) {
-		report := &scan.Report{
-			Digest:           art.Digest,
-			RegistrationUUID: r.UUID,
-			MimeType:         pm,
-		}
-
-		create := func(ctx context.Context) error {
-			reportUUID, err := bc.manager.Create(ctx, report)
-			if err != nil {
-				return err
-			}
-			report.UUID = reportUUID
-
-			return nil
-		}
-
-		if err := orm.WithTransaction(create)(orm.SetTransactionOpNameToContext(ctx, "tx-make-report-placeholder")); err != nil {
-			return nil, err
-		}
-
-		reports = append(reports, report)
-	}
-
-	return reports, nil
-}
-
 // GetReport ...
 func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact, mimeTypes []string) ([]*scan.Report, error) {
 	if artifact == nil {
@@ -697,95 +639,10 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	return reports, nil
 }
 
-func isSBOMMimeTypes(mimeTypes []string) bool {
-	for _, mimeType := range mimeTypes {
-		if mimeType == v1.MimeTypeSBOMReport {
-			return true
-		}
-	}
-	return false
-}
-
 // GetSummary ...
-func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, mimeTypes []string) (map[string]interface{}, error) {
-	if artifact == nil {
-		return nil, errors.New("no way to get report summaries for nil artifact")
-	}
-	if isSBOMMimeTypes(mimeTypes) {
-		return bc.GetSBOMSummary(ctx, artifact, mimeTypes)
-	}
-	// Get reports first
-	rps, err := bc.GetReport(ctx, artifact, mimeTypes)
-	if err != nil {
-		return nil, err
-	}
-
-	summaries := make(map[string]interface{}, len(rps))
-	for _, rp := range rps {
-		sum, err := report.GenerateSummary(rp)
-		if err != nil {
-			return nil, err
-		}
-
-		if s, ok := summaries[rp.MimeType]; ok {
-			r, err := report.MergeSummary(rp.MimeType, s, sum)
-			if err != nil {
-				return nil, err
-			}
-
-			summaries[rp.MimeType] = r
-		} else {
-			summaries[rp.MimeType] = sum
-		}
-	}
-
-	return summaries, nil
-}
-
-func (bc *basicController) GetSBOMSummary(ctx context.Context, art *ar.Artifact, mimeTypes []string) (map[string]interface{}, error) {
-	if art == nil {
-		return nil, errors.New("no way to get report summaries for nil artifact")
-	}
-	r, err := bc.sc.GetRegistrationByProject(ctx, art.ProjectID)
-	if err != nil {
-		return nil, errors.Wrap(err, "scan controller: get sbom summary")
-	}
-	reports, err := bc.manager.GetBy(ctx, art.Digest, r.UUID, mimeTypes)
-	if err != nil {
-		return nil, err
-	}
-	if len(reports) == 0 {
-		return map[string]interface{}{}, nil
-	}
-	reportContent := reports[0].Report
-	result := map[string]interface{}{}
-	if len(reportContent) == 0 {
-		status := bc.retrieveStatusFromTask(ctx, reports[0].UUID)
-		if len(status) > 0 {
-			result[sbomModel.ReportID] = reports[0].UUID
-			result[sbomModel.ScanStatus] = status
-		}
-		log.Debug("no content for current report")
-		return result, nil
-	}
-	err = json.Unmarshal([]byte(reportContent), &result)
-	return result, err
-}
-
-// retrieve the status from task
-func (bc *basicController) retrieveStatusFromTask(ctx context.Context, reportID string) string {
-	if len(reportID) == 0 {
-		return ""
-	}
-	tasks, err := bc.taskMgr.ListScanTasksByReportUUID(ctx, reportID)
-	if err != nil {
-		log.Warningf("can not find the task with report UUID %v, error %v", reportID, err)
-		return ""
-	}
-	if len(tasks) > 0 {
-		return tasks[0].Status
-	}
-	return ""
+func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, scanType string, mimeTypes []string) (map[string]interface{}, error) {
+	handler := sca.GetScanHandler(scanType)
+	return handler.GetSummary(ctx, artifact, mimeTypes)
 }
 
 // GetScanLog ...
@@ -821,7 +678,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 		if !scanTaskForArtifacts(t, artifactMap) {
 			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
 		}
-		for _, reportUUID := range getReportUUIDs(t.ExtraAttrs) {
+		for _, reportUUID := range GetReportUUIDs(t.ExtraAttrs) {
 			reportUUIDToTasks[reportUUID] = t
 		}
 	}
@@ -900,14 +757,6 @@ func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bo
 	}
 	_, exist := artifactMap[artifactID]
 	return exist
-}
-
-// DeleteReports ...
-func (bc *basicController) DeleteReports(ctx context.Context, digests ...string) error {
-	if err := bc.manager.DeleteByDigests(ctx, digests...); err != nil {
-		return errors.Wrap(err, "scan controller: delete reports")
-	}
-	return nil
 }
 
 func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artifact, allowlist allowlist.CVESet, allowlistIsExpired bool) (*Vulnerable, error) {
@@ -1204,7 +1053,7 @@ func (bc *basicController) assembleReports(ctx context.Context, reports ...*scan
 
 	reportUUIDToTasks := map[string]*task.Task{}
 	for _, task := range tasks {
-		for _, reportUUID := range getReportUUIDs(task.ExtraAttrs) {
+		for _, reportUUID := range GetReportUUIDs(task.ExtraAttrs) {
 			reportUUIDToTasks[reportUUID] = task
 		}
 	}
@@ -1275,7 +1124,8 @@ func getArtifactTag(extraAttrs map[string]interface{}) string {
 	return tag
 }
 
-func getReportUUIDs(extraAttrs map[string]interface{}) []string {
+// GetReportUUIDs returns the report UUIDs from the extra attributes
+func GetReportUUIDs(extraAttrs map[string]interface{}) []string {
 	var reportUUIDs []string
 
 	if extraAttrs != nil {
@@ -1313,49 +1163,4 @@ func parseOptions(options ...Option) (*Options, error) {
 	}
 
 	return ops, nil
-}
-
-// deleteArtifactAccessories delete the accessory in reports, only delete sbom accessory
-func (bc *basicController) deleteArtifactAccessories(ctx context.Context, reports []*scan.Report) error {
-	for _, rpt := range reports {
-		if rpt.MimeType != v1.MimeTypeSBOMReport {
-			continue
-		}
-		if err := bc.deleteArtifactAccessory(ctx, rpt.Report); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// deleteArtifactAccessory check if current report has accessory info, if there is, delete it
-func (bc *basicController) deleteArtifactAccessory(ctx context.Context, report string) error {
-	if len(report) == 0 {
-		return nil
-	}
-	sbomSummary := sbomModel.Summary{}
-	if err := json.Unmarshal([]byte(report), &sbomSummary); err != nil {
-		// it could be a non sbom report, just skip
-		log.Debugf("fail to unmarshal %v, skip to delete sbom report", err)
-		return nil
-	}
-	repo, dgst := sbomSummary.SBOMAccArt()
-	if len(repo) == 0 || len(dgst) == 0 {
-		return nil
-	}
-	art, err := bc.ar.GetByReference(ctx, repo, dgst, nil)
-	if err != nil {
-		if errors.IsNotFoundErr(err) {
-			return nil
-		}
-		return err
-	}
-	if art == nil {
-		return nil
-	}
-	err = bc.ar.Delete(ctx, art.ID)
-	if errors.IsNotFoundErr(err) {
-		return nil
-	}
-	return err
 }

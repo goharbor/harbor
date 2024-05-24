@@ -15,12 +15,15 @@
 package scan
 
 import (
+	"context"
 	"time"
 
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -44,8 +47,21 @@ type Handler interface {
 	RequiredPermissions() []*types.Policy
 	// RequestParameters defines the parameters for scan request
 	RequestParameters() map[string]interface{}
-	// ReportURLParameter defines the parameters for scan report
-	ReportURLParameter(sr *v1.ScanRequest) (string, error)
 	// PostScan defines the operation after scan
 	PostScan(ctx job.Context, sr *v1.ScanRequest, rp *scan.Report, rawReport string, startTime time.Time, robot *model.Robot) (string, error)
+	ReportHandler
+}
+
+// ReportHandler handler for scan report, it could be sbom report or vulnerability report
+type ReportHandler interface {
+	// URLParameter defines the parameters for scan report
+	URLParameter(sr *v1.ScanRequest) (string, error)
+	// Update update the report data in the database by UUID
+	Update(ctx context.Context, uuid string, report string) error
+	// MakePlaceHolder make the report place holder, if exist, delete it and create a new one
+	MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) (rps []*scan.Report, err error)
+	// GetPlaceHolder get the the report place holder
+	GetPlaceHolder(ctx context.Context, artRepo string, artDigest string, scannerUUID string, mimeType string) (rp *scan.Report, err error)
+	// GetSummary get the summary of the report
+	GetSummary(ctx context.Context, ar *artifact.Artifact, mimeTypes []string) (map[string]interface{}, error)
 }

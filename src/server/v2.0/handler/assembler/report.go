@@ -29,7 +29,6 @@ import (
 
 const (
 	vulnerabilitiesAddition = "vulnerabilities"
-	sbomAddition            = "sbom"
 )
 
 // NewScanReportAssembler returns vul assembler
@@ -80,7 +79,7 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 
 		if assembler.overviewOption.WithVuln {
 			for _, mimeType := range assembler.mimeTypes {
-				overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{mimeType})
+				overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, v1.ScanTypeVulnerability, []string{mimeType})
 				if err != nil {
 					log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, mimeType, err)
 				} else if len(overview) > 0 {
@@ -93,13 +92,17 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 		// set sbom additional link if it is supported, use the empty digest
 		artifact.SetSBOMAdditionLink("", version)
 		if assembler.overviewOption.WithSBOM {
-			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeSBOMReport})
+			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, v1.ScanTypeSbom, []string{v1.MimeTypeSBOMReport})
 			if err != nil {
 				log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
 			}
 			if len(overview) == 0 {
 				log.Warningf("overview is empty, retrieve sbom status from execution")
-				query := q.New(q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": "sbom"})
+				// Get latest execution with digest, repository, and scan type is sbom, the status is the scan status
+				query := q.New(
+					q.KeyWords{"extra_attrs.artifact.digest": artifact.Digest,
+						"extra_attrs.artifact.repository_name":  artifact.RepositoryName,
+						"extra_attrs.enabled_capabilities.type": "sbom"})
 				// sort by ID desc to get the latest execution
 				query.Sorts = []*q.Sort{q.NewSort("ID", true)}
 				execs, err := assembler.executionMgr.List(ctx, query)
