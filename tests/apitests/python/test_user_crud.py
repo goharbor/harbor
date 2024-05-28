@@ -109,13 +109,13 @@ class TestUser(unittest.TestCase):
         self.assertTrue(user.sysadmin_flag, "User should be an admin.")
 
 
-        def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
-            self.assertEqual(user.username, user_name)
-            self.assertEqual(user.user_id, user_id)
-            self.assertEqual(user.email, "realname-{}@harbortest.com".format(timestamp))
-            self.assertEqual(user.comment, comment)
-            self.assertEqual(user.realname, "realname-{}".format(timestamp))
-            self.assertEqual(user.sysadmin_flag, sysadmin_flag)
+    def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
+        self.assertEqual(user.username, user_name)
+        self.assertEqual(user.user_id, user_id)
+        self.assertEqual(user.email, "realname-{}@harbortest.com".format(timestamp))
+        self.assertEqual(user.comment, comment)
+        self.assertEqual(user.realname, "realname-{}".format(timestamp))
+        self.assertEqual(user.sysadmin_flag, sysadmin_flag)
 
 
 if __name__ == '__main__':
