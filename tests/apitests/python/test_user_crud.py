@@ -91,14 +91,31 @@ class TestUser(unittest.TestCase):
         self.user.delete_user(user_id, **ADMIN_CLIENT)
         self.user.get_user_by_id(user_id, expect_status_code=404, expect_response_body="user {} not found".format(user_id), **ADMIN_CLIENT)
 
+    def test_update_user_role(self):
+        """
+        Test case:
+            Update User Role
+        Test step and expected result:
+            1. Create a new user;
+            2. Update the user's role to sysadmin;
+            3. Verify the user has sysadmin privileges.
+        """
+        # 1. Create a new user;
+        user_id, user_name = self.user.create_user(**ADMIN_CLIENT)
+        # 2. Update the user's role to sysadmin;
+        self.user.update_user_role_as_sysadmin(user_id, True, **ADMIN_CLIENT)
+        # 3. Verify the user has sysadmin privileges.
+        user = self.user.get_user_by_id(user_id, **ADMIN_CLIENT)
+        self.assertTrue(user.sysadmin_flag, "User should be an admin.")
 
-    def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
-        self.assertEqual(user.username, user_name)
-        self.assertEqual(user.user_id, user_id)
-        self.assertEqual(user.email, "realname-{}@harbortest.com".format(timestamp))
-        self.assertEqual(user.comment, comment)
-        self.assertEqual(user.realname, "realname-{}".format(timestamp))
-        self.assertEqual(user.sysadmin_flag, sysadmin_flag)
+
+        def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
+            self.assertEqual(user.username, user_name)
+            self.assertEqual(user.user_id, user_id)
+            self.assertEqual(user.email, "realname-{}@harbortest.com".format(timestamp))
+            self.assertEqual(user.comment, comment)
+            self.assertEqual(user.realname, "realname-{}".format(timestamp))
+            self.assertEqual(user.sysadmin_flag, sysadmin_flag)
 
 
 if __name__ == '__main__':
