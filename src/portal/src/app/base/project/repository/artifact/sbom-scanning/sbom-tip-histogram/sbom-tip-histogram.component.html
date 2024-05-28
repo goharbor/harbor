@@ -1,5 +1,5 @@
 <div class="tip-wrapper width-120">
-    <clr-tooltip>
+    <clr-tooltip *ngIf="showTooltip()">
         <div clrTooltipTrigger class="tip-block">
             <div *ngIf="showSbomDetailLink()" class="circle-block">
                 <a
@@ -10,15 +10,8 @@
                     {{ 'SBOM.Details' | translate }}</a
                 >
             </div>
-            <div
-                *ngIf="showNoSbom()"
-                class="tip-wrapper bar-block-none shadow-none width-120">
+            <div *ngIf="showNoSbom()" class="tip-wrapper label width-120">
                 {{ 'SBOM.NO_SBOM' | translate }}
-            </div>
-            <div
-                *ngIf="!showSbomDetailLink() && !showNoSbom()"
-                class="tip-wrapper width-120">
-                {{ 'SBOM.COMPLETED' | translate }}
             </div>
         </div>
         <clr-tooltip-content
@@ -36,9 +29,6 @@
                 </div>
                 <ng-container *ngIf="showNoSbom()">
                     <span>{{ 'SBOM.NO_SBOM' | translate }}</span>
-                </ng-container>
-                <ng-container *ngIf="!showSbomDetailLink() && !showNoSbom()">
-                    <span>{{ 'SBOM.COMPLETED' | translate }}</span>
                 </ng-container>
             </div>
             <hr />
@@ -59,27 +49,6 @@
                     >{{ 'SBOM.CHART.SCANNING_TIME' | translate }}
                 </span>
                 <span>{{ completeTimestamp | harborDatetime : 'short' }}</span>
-            </div>
-        </clr-tooltip-content>
-    </clr-tooltip>
-    <clr-tooltip class="margin-left-5" *ngIf="isLimitedSuccess()">
-        <div clrTooltipTrigger>
-            <clr-icon
-                shape="exclamation-triangle"
-                size="20"
-                class="is-warning"></clr-icon>
-        </div>
-        <clr-tooltip-content [clrSize]="'lg'" *clrIfOpen>
-            <div class="font-weight-600">
-                <span class="bar-scanning-time"
-                    >{{ 'SBOM.CHART.SCANNING_PERCENT' | translate }}
-                </span>
-                <span>{{ completePercent }}</span>
-            </div>
-            <div>
-                <span>{{
-                    'SBOM.CHART.SCANNING_PERCENT_EXPLAIN' | translate
-                }}</span>
             </div>
         </clr-tooltip-content>
     </clr-tooltip>
