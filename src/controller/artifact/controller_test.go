@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -149,7 +150,7 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	artifact := c.ctl.assembleArtifact(ctx, art, option)
 	c.Require().NotNil(artifact)
 	c.Equal(art.ID, artifact.ID)
-	c.Equal(icon.DigestOfIconDefault, artifact.Icon)
+	c.Equal(icon.DigestOfIconAccCosign, artifact.Icon)
 	c.Contains(artifact.Tags, tg)
 	c.Contains(artifact.Labels, lb)
 	c.Contains(artifact.Accessories, acc)
@@ -203,18 +204,34 @@ func (c *controllerTestSuite) TestPopulateIcon() {
 			ico: "sha256:abcd",
 		},
 	}
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	for _, cs := range cases {
 		a := &Artifact{
 			Artifact: *cs.art,
 		}
-		c.ctl.populateIcon(a)
+		c.ctl.populateIcon(context.TODO(), a)
 		c.Equal(cs.ico, a.Icon)
 	}
 }
 
+func (c *controllerTestSuite) TestPopulateIconOfSigAcc() {
+	a := &Artifact{
+		Artifact: artifact.Artifact{
+			ID:     6,
+			Digest: "sha256:abc",
+			Type:   image.ArtifactTypeImage,
+		},
+	}
+	data := []byte(`{"artifact_id":6,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:abc","icon":"","id":4,"size":501,"subject_artifact_id":8,"type":"signature.cosign"}`)
+	acc, err := accessorymodel.ToAccessory(data)
+	c.Require().Nil(err)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{acc}, nil)
+	c.ctl.populateIcon(context.TODO(), a)
+	c.Equal(icon.DigestOfIconAccCosign, a.Icon)
+}
+
 func (c *controllerTestSuite) TestEnsureArtifact() {
 	digest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
-
 	// the artifact already exists
 	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID: 1,
@@ -328,6 +345,7 @@ func (c *controllerTestSuite) TestGet() {
 		ID:           1,
 		RepositoryID: 1,
 	}, nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
 	art, err := c.ctl.Get(nil, 1, nil)
 	c.Require().Nil(err)
@@ -358,6 +376,7 @@ func (c *controllerTestSuite) TestGetByDigest() {
 		RepositoryID: 1,
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	art, err = c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
@@ -371,7 +390,7 @@ func (c *controllerTestSuite) TestGetByTag() {
 		RepositoryID: 1,
 	}, nil)
 	c.tagCtl.On("List").Return(nil, nil)
-	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
+	_, err := c.ctl.getByTag(context.Background(), "library/hello-world", "latest", nil)
 	c.Require().NotNil(err)
 	c.True(errors.IsErr(err, errors.NotFoundCode))
 
@@ -396,7 +415,8 @@ func (c *controllerTestSuite) TestGetByTag() {
 		ID: 1,
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	art, err = c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
@@ -412,7 +432,8 @@ func (c *controllerTestSuite) TestGetByReference() {
 		RepositoryID: 1,
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	art, err := c.ctl.GetByReference(nil, "library/hello-world",
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	art, err := c.ctl.GetByReference(context.Background(), "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
@@ -439,7 +460,8 @@ func (c *controllerTestSuite) TestGetByReference() {
 		ID: 1,
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	art, err = c.ctl.GetByReference(nil, "library/hello-world", "latest", nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	art, err = c.ctl.GetByReference(context.Background(), "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
@@ -541,6 +563,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 }
 
 func (c *controllerTestSuite) TestCopy() {
+	os.Setenv("UTTEST", "true")
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID:     1,
 		Digest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",

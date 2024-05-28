@@ -78,6 +78,9 @@ var (
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
 		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
+		// for cosign and notation artifact
+		accessorymodel.TypeNotationSignature: icon.DigestOfIconAccNotation,
+		accessorymodel.TypeCosignSignature:   icon.DigestOfIconAccCosign,
 	}
 )
 
@@ -118,6 +121,8 @@ type Controller interface {
 	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
 	// HasUnscannableLayer check artifact with digest if has unscannable layer
 	HasUnscannableLayer(ctx context.Context, dgst string) (bool, error)
+	// List accessory records by artifact id if this artifact is a accessory
+	ListAccByArtID(ctx context.Context, ArtifactID int64) (accs []accessorymodel.Accessory, err error)
 }
 
 // NewController creates an instance of the default artifact controller
@@ -309,7 +314,8 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": id}))
+	// accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": id}))
+	accs, err := c.ListAccByArtID(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -386,7 +392,8 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 			return err
 		}
 		// if the child artifact is an accessory, set isAccessory to true
-		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": reference.ChildID}))
+		accs, err := c.ListAccByArtID(ctx, reference.ChildID)
+		// accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": reference.ChildID}))
 		if err != nil {
 			return err
 		}
@@ -696,11 +703,13 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
 
-	// populate icon for the known artifact types
-	c.populateIcon(artifact)
-
 	if option == nil {
 		return artifact
+	}
+	// set populate icon as an option
+	if option.WithIcon {
+		// populate icon for the known artifact types
+		c.populateIcon(ctx, artifact)
 	}
 	if option.WithTag {
 		c.populateTags(ctx, artifact, option.TagOption)
@@ -714,8 +723,18 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	return artifact
 }
 
-func (c *controller) populateIcon(art *Artifact) {
+func (c *controller) populateIcon(ctx context.Context, art *Artifact) {
 	if len(art.Icon) == 0 {
+		accs, err := c.ListAccByArtID(ctx, art.ID)
+		if err != nil {
+			log.Errorf("failed to list artifat accessories %d: %v", art.ID, err)
+			return
+		}
+		if len(accs) > 0 {
+			accType := accs[0].GetData().Type
+			art.Icon = defaultIcons[accType]
+			return
+		}
 		if i, ok := defaultIcons[art.Type]; ok {
 			art.Icon = i
 		} else {
@@ -781,4 +800,13 @@ func (c *controller) HasUnscannableLayer(ctx context.Context, dgst string) (bool
 		}
 	}
 	return false, nil
+}
+
+// List accessory records by artifact id if this artifact is a accessory
+func (c *controller) ListAccByArtID(ctx context.Context, ArtifactID int64) ([]accessorymodel.Accessory, error) {
+	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": ArtifactID}))
+	if err != nil {
+		return nil, err
+	}
+	return accs, nil
 }
