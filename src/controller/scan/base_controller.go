@@ -333,7 +333,11 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 		if op := operator.FromContext(ctx); op != "" {
 			extraAttrs["operator"] = op
 		}
-		executionID, err := bc.execMgr.Create(ctx, job.ImageScanJobVendorType, artifact.ID, task.ExecutionTriggerManual, extraAttrs)
+		vendorType := handler.JobVendorType()
+		// for vulnerability and generate sbom, use different vendor type
+		// because the execution reaper only keep the latest execution for the vendor type IMAGE_SCAN
+		// both vulnerability and sbom need to keep the latest scan execution to get the latest scan status
+		executionID, err := bc.execMgr.Create(ctx, vendorType, artifact.ID, task.ExecutionTriggerManual, extraAttrs)
 		if err != nil {
 			return err
 		}
@@ -364,7 +368,8 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 	if artifact == nil {
 		return errors.New("nil artifact to stop scan")
 	}
-	query := q.New(q.KeyWords{"vendor_type": job.ImageScanJobVendorType, "extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": capType})
+	vendorType := sca.GetScanHandler(capType).JobVendorType()
+	query := q.New(q.KeyWords{"vendor_type": vendorType, "extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": capType})
 	executions, err := bc.execMgr.List(ctx, query)
 	if err != nil {
 		return err
@@ -960,7 +965,8 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 	params[sca.JobParameterRequest] = sJSON
 	params[sca.JobParameterMimes] = mimes
 	params[sca.JobParameterRobot] = robotJSON
-
+	// because there is only one task type implementation
+	// both the vulnerability scan and generate sbom use the same job type for now
 	j := &task.Job{
 		Name: job.ImageScanJobVendorType,
 		Metadata: &job.Metadata{
