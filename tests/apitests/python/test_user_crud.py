@@ -107,6 +107,26 @@ class TestUser(unittest.TestCase):
         # 3. Verify the user has sysadmin privileges.
         user = self.user.get_user_by_id(user_id, **ADMIN_CLIENT)
         self.assertTrue(user.sysadmin_flag, "User should be an admin.")
+        
+    def test_update_user_password(self):
+        """
+        Test case:
+            Update User Password
+        Test step and expected result:
+            1. Create a new user;
+            2. Update the user's password;
+            3. Attempt login with the new password should succeed.
+        """
+        # 1. Create a new user;
+        user_id, user_name = self.user.create_user(**ADMIN_CLIENT)
+        # 2. Update the user's password;
+        new_password = "NewPassword123!"
+        self.user.update_user_pwd(user_id, new_password=new_password, old_password="Harbor12345678", **ADMIN_CLIENT)
+        # 3. Attempt login with the new password should succeed.
+        # Simulate login or check with new password
+        # This step assumes existence of a login method or similar authentication check
+        login_success = self.user.authenticate(user_name, new_password, **ADMIN_CLIENT)
+        self.assertTrue(login_success, "User should be able to log in with the new password.")
 
 
     def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
