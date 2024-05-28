@@ -89,6 +89,24 @@ func (_m *Handler) GetSummary(ctx context.Context, ar *artifact.Artifact, mimeTy
 	return r0, r1
 }
 
+// JobVendorType provides a mock function with given fields:
+func (_m *Handler) JobVendorType() string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for JobVendorType")
+	}
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // MakePlaceHolder provides a mock function with given fields: ctx, art, r
 func (_m *Handler) MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) ([]*scan.Report, error) {
 	ret := _m.Called(ctx, art, r)

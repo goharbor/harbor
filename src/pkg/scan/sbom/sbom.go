@@ -345,3 +345,7 @@ func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mi
 	err = json.Unmarshal([]byte(reportContent), &result)
 	return result, err
 }
+
+func (h *scanHandler) JobVendorType() string {
+	return job.SBOMJobVendorType
+}
