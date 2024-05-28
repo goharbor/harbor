@@ -90,6 +90,24 @@ class TestUser(unittest.TestCase):
         # 11. Delete user(UA);
         self.user.delete_user(user_id, **ADMIN_CLIENT)
         self.user.get_user_by_id(user_id, expect_status_code=404, expect_response_body="user {} not found".format(user_id), **ADMIN_CLIENT)
+        
+    def test_delete_user_and_error_handling(self):
+        """
+        Test case:
+            Delete User and Error Handling
+        Test step and expected result:
+            1. Create a new user;
+            2. Delete the user;
+            3. Attempt to retrieve the deleted user should return an error.
+        """
+        # 1. Create a new user;
+        user_id, user_name = self.user.create_user(**ADMIN_CLIENT)
+        #  2. Delete the user;
+        self.user.delete_user(user_id, **ADMIN_CLIENT)
+        # 3. Attempt to retrieve the deleted user should return an error.
+        with self.assertRaises(Exception) as context:
+            self.user.get_user_by_id(user_id, expect_status_code=404, **ADMIN_CLIENT)
+        self.assertIn("user not found", str(context.exception), "Expected error message not found.")
 
 
     def check_user(self, user, user_name, user_id, timestamp, comment=None, sysadmin_flag=False):
