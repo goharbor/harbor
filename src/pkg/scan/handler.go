@@ -50,6 +50,8 @@ type Handler interface {
 	// PostScan defines the operation after scan
 	PostScan(ctx job.Context, sr *v1.ScanRequest, rp *scan.Report, rawReport string, startTime time.Time, robot *model.Robot) (string, error)
 	ReportHandler
+	// JobVendorType returns the job vendor type
+	JobVendorType() string
 }
 
 // ReportHandler handler for scan report, it could be sbom report or vulnerability report

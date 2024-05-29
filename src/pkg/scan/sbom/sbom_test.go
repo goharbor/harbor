@@ -12,6 +12,8 @@ import (
 	sc "github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/controller/scanner"
 	"github.com/goharbor/harbor/src/lib/orm"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -194,7 +196,16 @@ func (suite *SBOMTestSuite) TestPostScan() {
 
 func (suite *SBOMTestSuite) TestMakeReportPlaceHolder() {
 	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
-	art := &artifact.Artifact{Artifact: art.Artifact{ID: 1, Digest: "digest", ManifestMediaType: v1.MimeTypeDockerArtifact}}
+	acc := &basemodel.Default{
+		Data: accessoryModel.AccessoryData{
+			ID:                1,
+			ArtifactID:        2,
+			SubArtifactDigest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+			Type:              accessoryModel.TypeHarborSBOM,
+		},
+	}
+	art := &artifact.Artifact{Artifact: art.Artifact{ID: 1, Digest: "digest", ManifestMediaType: v1.MimeTypeDockerArtifact},
+		Accessories: []accessoryModel.Accessory{acc}}
 	r := &scanner.Registration{
 		UUID: "uuid",
 		Metadata: &v1.ScannerAdapterMetadata{
@@ -208,6 +219,8 @@ func (suite *SBOMTestSuite) TestMakeReportPlaceHolder() {
 	mock.OnAnything(suite.sbomManager, "Create").Return("uuid", nil).Once()
 	mock.OnAnything(suite.sbomManager, "Delete").Return(nil).Once()
 	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{{Status: "Success"}}, nil)
+	mock.OnAnything(suite.artifactCtl, "Get").Return(art, nil)
+	mock.OnAnything(suite.artifactCtl, "Delete").Return(nil)
 	rps, err := suite.handler.MakePlaceHolder(ctx, art, r)
 	require.NoError(suite.T(), err)
 	suite.Equal(1, len(rps))
