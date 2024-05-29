@@ -32,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan"
@@ -247,7 +248,7 @@ func (h *scanHandler) deleteSBOMAccessories(ctx context.Context, reports []*sbom
 		if rpt.MimeType != v1.MimeTypeSBOMReport {
 			continue
 		}
-		if err := h.deleteSBOMAccessory(ctx, rpt.ReportSummary); err != nil {
+		if err := h.deleteSBOMAccessory(ctx, rpt.ArtifactID); err != nil {
 			return err
 		}
 		if err := mgr.Delete(ctx, rpt.UUID); err != nil {
@@ -258,36 +259,25 @@ func (h *scanHandler) deleteSBOMAccessories(ctx context.Context, reports []*sbom
 }
 
 // deleteSBOMAccessory check if current report has sbom accessory info, if there is, delete it
-func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, report string) error {
-	if len(report) == 0 {
-		return nil
-	}
-	sbomSummary := sbom.Summary{}
-	if err := json.Unmarshal([]byte(report), &sbomSummary); err != nil {
-		// it could be a non sbom report, just skip
-		log.Debugf("fail to unmarshal %v, skip to delete sbom report", err)
-		return nil
-	}
-	repo, dgst := sbomSummary.SBOMAccArt()
-	if len(repo) == 0 || len(dgst) == 0 {
-		return nil
-	}
+func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, artID int64) error {
 	artifactCtl := h.ArtifactControllerFunc()
-	art, err := artifactCtl.GetByReference(ctx, repo, dgst, nil)
-	if errors.IsNotFoundErr(err) {
-		return nil
-	}
+	art, err := artifactCtl.Get(ctx, artID, &artifact.Option{
+		WithAccessory: true,
+	})
 	if err != nil {
 		return err
 	}
 	if art == nil {
 		return nil
 	}
-	err = artifactCtl.Delete(ctx, art.ID)
-	if errors.IsNotFoundErr(err) {
-		return nil
+	for _, acc := range art.Accessories {
+		if acc.GetData().Type == accessoryModel.TypeHarborSBOM {
+			if err := artifactCtl.Delete(ctx, acc.GetData().ArtifactID); err != nil {
+				return err
+			}
+		}
 	}
-	return err
+	return nil
 }
 
 func (h *scanHandler) GetPlaceHolder(ctx context.Context, artRepo string, artDigest, scannerUUID string, mimeType string) (rp *scanModel.Report, err error) {
