@@ -198,19 +198,15 @@ func retrieveSBOMContent(rawReport string) ([]byte, *v1.Scanner, error) {
 }
 
 func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) (rps []*scanModel.Report, err error) {
-	var reports []*scanModel.Report
 	mgr := h.SBOMMgrFunc()
 	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType, v1.ScanTypeSbom)
 	if len(mimeTypes) == 0 {
 		return nil, errors.New("no mime types to make report placeholders")
 	}
-	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes[0], sbomMediaTypeSpdx)
-	if err != nil {
+	if err := h.delete(ctx, art, mimeTypes[0], r); err != nil {
 		return nil, err
 	}
-	if err := h.deleteSBOMAccessories(ctx, sbomReports); err != nil {
-		return nil, err
-	}
+	var reports []*scanModel.Report
 	for _, mt := range mimeTypes {
 		report := &sbom.Report{
 			ArtifactID:       art.ID,
@@ -241,19 +237,23 @@ func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifac
 	return reports, nil
 }
 
-// deleteSBOMAccessories delete the sbom accessory in reports
-func (h *scanHandler) deleteSBOMAccessories(ctx context.Context, reports []*sbom.Report) error {
+// delete deletes the sbom report and accessory
+func (h *scanHandler) delete(ctx context.Context, art *artifact.Artifact, mimeTypes string, r *scanner.Registration) error {
 	mgr := h.SBOMMgrFunc()
-	for _, rpt := range reports {
+	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes, sbomMediaTypeSpdx)
+	if err != nil {
+		return err
+	}
+	for _, rpt := range sbomReports {
 		if rpt.MimeType != v1.MimeTypeSBOMReport {
 			continue
-		}
-		if err := h.deleteSBOMAccessory(ctx, rpt.ArtifactID); err != nil {
-			return err
 		}
 		if err := mgr.Delete(ctx, rpt.UUID); err != nil {
 			return err
 		}
+	}
+	if err := h.deleteSBOMAccessory(ctx, art.ID); err != nil {
+		return err
 	}
 	return nil
 }
