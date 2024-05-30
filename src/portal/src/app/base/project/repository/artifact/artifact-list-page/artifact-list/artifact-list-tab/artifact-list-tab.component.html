@@ -218,7 +218,7 @@
                     {{ 'REPOSITORY.SIGNED' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="'size'">
+            <clr-dg-column [clrDgSortBy]="'size'" class="size-column">
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
                     {{ 'REPOSITORY.SIZE' | translate }}
                 </ng-template>
@@ -451,13 +451,22 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <span *ngIf="!hasSbom(artifact)">
+                        <span
+                            *ngIf="artifact?.accessoryLoading"
+                            class="spinner spinner-inline ml-2"></span>
+                        <span
+                            *ngIf="
+                                !hasSbom(artifact) &&
+                                !artifact?.accessoryLoading
+                            ">
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
-                            *ngIf="hasSbom(artifact)"
+                            *ngIf="
+                                hasSbom(artifact) && !artifact?.accessoryLoading
+                            "
                             [inputScanner]="
                                 handleSbomOverview(artifact.sbom_overview)
                                     ?.scanner
@@ -529,13 +538,18 @@
                                     [clrPosition]="'top-middle'"
                                     *clrIfOpen>
                                     <div
-                                        *ngFor="let label of artifact.labels"
-                                        class="margin-5px">
-                                        <hbr-label-piece
-                                            [labelWidth]="130"
-                                            [label]="label"
-                                            [withTooltip]="true">
-                                        </hbr-label-piece>
+                                        class="clr-signpost-content-label-list">
+                                        <div
+                                            *ngFor="
+                                                let label of artifact.labels
+                                            "
+                                            class="margin-5px">
+                                            <hbr-label-piece
+                                                [labelWidth]="130"
+                                                [label]="label"
+                                                [withTooltip]="true">
+                                            </hbr-label-piece>
+                                        </div>
                                     </div>
                                 </clr-signpost-content>
                             </clr-signpost>

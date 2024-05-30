@@ -12,6 +12,7 @@ export interface ArtifactFront extends Artifact {
     signed?: string;
     sbomDigest?: string;
     accessoryNumber?: number;
+    accessoryLoading?: boolean;
 }
 
 export interface AccessoryFront extends Accessory {
