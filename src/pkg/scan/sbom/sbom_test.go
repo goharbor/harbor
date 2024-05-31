@@ -219,6 +219,7 @@ func (suite *SBOMTestSuite) TestMakeReportPlaceHolder() {
 	mock.OnAnything(suite.sbomManager, "Create").Return("uuid", nil).Once()
 	mock.OnAnything(suite.sbomManager, "Delete").Return(nil).Once()
 	mock.OnAnything(suite.taskMgr, "ListScanTasksByReportUUID").Return([]*task.Task{{Status: "Success"}}, nil)
+	mock.OnAnything(suite.taskMgr, "IsTaskFinished").Return(true).Once()
 	mock.OnAnything(suite.artifactCtl, "Get").Return(art, nil)
 	mock.OnAnything(suite.artifactCtl, "Delete").Return(nil)
 	rps, err := suite.handler.MakePlaceHolder(ctx, art, r)

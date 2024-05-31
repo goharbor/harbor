@@ -197,6 +197,24 @@ func (_m *mockTaskManager) GetLogByJobID(ctx context.Context, jobID string) ([]b
 	return r0, r1
 }
 
+// IsTaskFinished provides a mock function with given fields: ctx, reportID
+func (_m *mockTaskManager) IsTaskFinished(ctx context.Context, reportID string) bool {
+	ret := _m.Called(ctx, reportID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsTaskFinished")
+	}
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = rf(ctx, reportID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // List provides a mock function with given fields: ctx, query
 func (_m *mockTaskManager) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	ret := _m.Called(ctx, query)
