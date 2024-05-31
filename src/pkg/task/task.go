@@ -69,6 +69,8 @@ type Manager interface {
 	ListScanTasksByReportUUID(ctx context.Context, uuid string) (tasks []*Task, err error)
 	// RetrieveStatusFromTask retrieve status from task
 	RetrieveStatusFromTask(ctx context.Context, reportID string) string
+	// IsTaskFinished checks if the scan task is finished by report UUID
+	IsTaskFinished(ctx context.Context, reportID string) bool
 }
 
 // NewManager creates an instance of the default task manager
@@ -298,4 +300,12 @@ func (m *manager) RetrieveStatusFromTask(ctx context.Context, reportID string) s
 		return tasks[0].Status
 	}
 	return ""
+}
+
+func (m *manager) IsTaskFinished(ctx context.Context, reportID string) bool {
+	status := m.RetrieveStatusFromTask(ctx, reportID)
+	if len(status) == 0 {
+		return true
+	}
+	return job.Status(status).Final()
 }
