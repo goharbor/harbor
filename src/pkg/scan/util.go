@@ -16,7 +16,6 @@ package scan
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -29,22 +28,14 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/lib/log"
+	http_common "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 // RemoteOptions ...
 func RemoteOptions() []remote.Option {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	if commonhttp.InternalEnableVerifyClientCert() {
-		tlsConfig, err := commonhttp.GetInternalTLSConfig()
-		if err != nil {
-			log.Errorf("SBOM client load cert file with err: %v", err)
-		}
-		tr.TLSClientConfig = tlsConfig
-	}
+	tr := http_common.GetHTTPTransport(http_common.WithInsecure(true))
 	return []remote.Option{remote.WithTransport(tr)}
 }
 
