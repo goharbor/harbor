@@ -244,6 +244,13 @@ func (h *scanHandler) delete(ctx context.Context, art *artifact.Artifact, mimeTy
 	if err != nil {
 		return err
 	}
+	taskMgr := h.TaskMgrFunc()
+	// check if any report has running task associate with it
+	for _, rpt := range sbomReports {
+		if !taskMgr.IsTaskFinished(ctx, rpt.UUID) {
+			return errors.ConflictError(nil).WithMessage("a previous sbom generate process is running")
+		}
+	}
 	for _, rpt := range sbomReports {
 		if rpt.MimeType != v1.MimeTypeSBOMReport {
 			continue
