@@ -128,7 +128,7 @@ func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverviewImageIndex() {
 	var artifact model.Artifact
 	err := assembler.WithArtifacts(&artifact).Assemble(context.TODO())
 	suite.Nil(err)
-	suite.Equal(artifact.SBOMOverView["scan_status"], "Error")
+	suite.Nil(artifact.SBOMOverView["scan_status"])
 
 	mock.OnAnything(exeMgr, "List").Return(nil, nil).Once()
 	var artifact2 model.Artifact
