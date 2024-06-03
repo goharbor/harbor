@@ -179,8 +179,8 @@ describe('ResultSbomComponent (inline template)', () => {
         component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.accessories = mockedAccessories;
+        fixture.detectChanges();
         fixture.whenStable().then(() => {
-            fixture.detectChanges();
             const el: HTMLElement =
                 fixture.nativeElement.querySelector('.tip-block');
             expect(el).not.toBeNull();
