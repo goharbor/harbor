@@ -59,7 +59,10 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     }
 
     hasScannerSupportSBOM(): boolean {
-        return this.artifactListPageService.hasScannerSupportSBOM();
+        if (this.additionLinks && this.additionLinks[ADDITIONS.SBOMS]) {
+            return true;
+        }
+        return false;
     }
 
     getVulnerability(): AdditionLink {
