@@ -107,7 +107,7 @@ func (e *executionDAO) Count(ctx context.Context, query *q.Query) (int64, error)
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := e.querySetter(ctx, query)
+	qs, err := e.querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -349,8 +349,8 @@ type jsonbStru struct {
 	value     interface{}
 }
 
-func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Execution{}, query)
+func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Execution{}, query, options...)
 	if err != nil {
 		return nil, err
 	}
