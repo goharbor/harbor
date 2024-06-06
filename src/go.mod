@@ -18,7 +18,7 @@ require (
 	github.com/dghubble/sling v1.1.0
 	github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
-	github.com/go-asn1-ber/asn1-ber v1.5.6
+	github.com/go-asn1-ber/asn1-ber v1.5.7
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/loads v0.21.2 // indirect
