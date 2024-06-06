@@ -620,8 +620,8 @@ github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAh
 github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/volcengine/volc-sdk-golang v1.0.23 h1:anOslb2Qp6ywnsbyq9jqR0ljuO63kg9PY+4OehIk5R8=
 github.com/volcengine/volc-sdk-golang v1.0.23/go.mod h1:AfG/PZRUkHJ9inETvbjNifTDgut25Wbkm2QoYBTbvyU=
-github.com/volcengine/volcengine-go-sdk v1.0.97 h1:JykYagPlleFuFIrk90uigS1UyIZPRIYX6TnC6FErWP4=
-github.com/volcengine/volcengine-go-sdk v1.0.97/go.mod h1:oht5AKDJsk0fY6tV2ViqaVlOO14KSRmXZlI8ikK60Tg=
+github.com/volcengine/volcengine-go-sdk v1.0.138 h1:u1dL+Dc1kWBTrufU4LrspRdvjhkxNESWfMHR/G4Pvcg=
+github.com/volcengine/volcengine-go-sdk v1.0.138/go.mod h1:oht5AKDJsk0fY6tV2ViqaVlOO14KSRmXZlI8ikK60Tg=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
