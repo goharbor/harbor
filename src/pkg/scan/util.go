@@ -15,9 +15,7 @@
 package scan
 
 import (
-	"crypto/tls"
 	"fmt"
-	"net/http"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -30,22 +28,15 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
+	http_common "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	v1sq "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
-// Insecure ...
-type Insecure bool
-
 // RemoteOptions ...
-func (i Insecure) RemoteOptions() []remote.Option {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: bool(i)}
+func RemoteOptions() []remote.Option {
+	tr := http_common.GetHTTPTransport(http_common.WithInsecure(true))
 	return []remote.Option{remote.WithTransport(tr)}
-}
-
-type referrer struct {
-	Insecure
 }
 
 // GenAccessoryArt composes the accessory oci object and push it back to harbor core as an accessory of the scanned artifact.
@@ -92,7 +83,7 @@ func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[str
 	if err != nil {
 		return "", err
 	}
-	opts := append(referrer{Insecure: true}.RemoteOptions(), remote.WithAuth(&authn.Basic{Username: robot.Name, Password: robot.Secret}))
+	opts := append(RemoteOptions(), remote.WithAuth(&authn.Basic{Username: robot.Name, Password: robot.Secret}))
 	if err := remote.Write(accRef, accArt, opts...); err != nil {
 		return "", err
 	}

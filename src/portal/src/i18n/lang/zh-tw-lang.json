@@ -1047,11 +1047,11 @@
         "FOOT_OF": "of"
     },
     "STATE": {
-        "OTHER_STATUS": "Not Generated",
+        "OTHER_STATUS": "No SBOM",
         "QUEUED": "Queued",
         "ERROR": "View Log",
         "SCANNING": "Generating",
-        "STOPPED": "SBOM scan stopped"
+        "STOPPED": "Generation stopped"
     },
     "NO_SBOM": "No SBOM",
     "PACKAGES": "SBOM",
@@ -1112,7 +1112,7 @@
     "REPORTED_BY": "由 {{scanner}} 報告",
     "NO_SCANNER": "無掃描器",
     "TRIGGER_STOP_SUCCESS": "成功觸發停止掃描",
-    "STOP_NOW": "立即停止掃描"
+    "STOP_NOW": "Stop Scan Vulnerability"
   },
   "PUSH_IMAGE": {
     "TITLE": "推送命令",
