@@ -97,6 +97,10 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 				log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
 			}
 			if len(overview) == 0 {
+				// only fetch the sbom overview from execution when the overview is empty and the artifact has child references ( image index, cnab etc)
+				if len(artifact.References) == 0 {
+					continue
+				}
 				log.Warningf("overview is empty, retrieve sbom status from execution")
 				// Get latest execution with digest, repository, and scan type is sbom, the status is the scan status
 				query := q.New(
