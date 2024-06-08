@@ -35,6 +35,16 @@
                 </button>
                 <div class="dropdown-divider"></div>
                 <button
+                  id="toggle-star-project"
+                  type="button"
+                  class="btn btn-secondary"
+                  [class.active]="isStarred(selectedRow)"
+                  (click)="toggleStar(selectedRow)">
+                  <clr-icon shape="star" size="16"></clr-icon>&nbsp;
+                  <span>{{ isStarred(selectedRow) ? 'PROJECT.UNSTAR' : 'PROJECT.STAR' | translate }}</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button
                     id="delete-project"
                     type="button"
                     class="btn btn-secondary"

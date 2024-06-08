@@ -64,6 +64,7 @@ type Controller interface {
 	Update(ctx context.Context, project *models.Project) error
 	// ListRoles lists the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, u *commonmodels.User) ([]int, error)
+	UpdateStarStatus(ctx context.Context, projectID int64, isStarred bool) error
 }
 
 // NewController creates an instance of the default project controller
@@ -363,4 +364,18 @@ func (c *controller) loadOwners(ctx context.Context, projects models.Projects) e
 	}
 
 	return nil
+}
+
+func (c *controller) UpdateStarStatus(ctx context.Context, projectID int64, isStarred bool) error {
+	// Get the project to ensure it exists
+	project, err := c.Get(ctx, projectID)
+	if err != nil {
+			return err
+	}
+
+	// Update the star status in the project's metadata
+	project.Metadata["isStarred"] = strconv.FormatBool(isStarred)
+
+	// Save the updated project
+	return c.Update(ctx, project)
 }
