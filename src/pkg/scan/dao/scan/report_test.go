@@ -53,13 +53,14 @@ func (suite *ReportTestSuite) SetupTest() {
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
 	}
-
 	suite.create(r)
 }
 
 // TearDownTest clears enf for test case.
 func (suite *ReportTestSuite) TearDownTest() {
 	_, err := suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid"}})
+	require.NoError(suite.T(), err)
+	_, err = suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid3"}})
 	require.NoError(suite.T(), err)
 }
 
@@ -95,7 +96,7 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 	err := suite.dao.UpdateReportData(orm.Context(), "uuid", "{}")
 	suite.Require().NoError(err)
 
-	l, err := suite.dao.List(orm.Context(), nil)
+	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid"}))
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(l))
 	suite.Equal("{}", l[0].Report)

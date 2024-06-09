@@ -21,6 +21,17 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
+const (
+	supportVulnerability = "support_vulnerability"
+	supportSBOM          = "support_sbom"
+)
+
+var supportedMimeTypes = []string{
+	MimeTypeNativeReport,
+	MimeTypeGenericVulnerabilityReport,
+	MimeTypeSBOMReport,
+}
+
 // Scanner represents metadata of a Scanner Adapter which allow Harbor to lookup a scanner capable of
 // scanning a given Artifact stored in its registry and making sure that it can interpret a
 // returned result.
@@ -37,6 +48,7 @@ type Scanner struct {
 // report MIME types. For example, a scanner capable of analyzing Docker images and producing
 // a vulnerabilities report recognizable by Harbor web console might be represented with the
 // following capability:
+//   - type: vulnerability
 //   - consumes MIME types:
 //     -- application/vnd.oci.image.manifest.v1+json
 //     -- application/vnd.docker.distribution.manifest.v2+json
@@ -44,6 +56,8 @@ type Scanner struct {
 //     -- application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0
 //     -- application/vnd.scanner.adapter.vuln.report.raw
 type ScannerCapability struct {
+	// The type of the scanner capability, vulnerability or sbom
+	Type string `json:"type"`
 	// The set of MIME types of the artifacts supported by the scanner to produce the reports
 	// specified in the "produces_mime_types". A given mime type should only be present in one
 	// capability item.
@@ -95,7 +109,7 @@ func (md *ScannerAdapterMetadata) Validate() error {
 		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
 		found = false
 		for _, pm := range ca.ProducesMimeTypes {
-			if pm == MimeTypeNativeReport || pm == MimeTypeGenericVulnerabilityReport {
+			if isSupportedMimeType(pm) {
 				found = true
 				break
 			}
@@ -107,6 +121,15 @@ func (md *ScannerAdapterMetadata) Validate() error {
 	}
 
 	return nil
+}
+
+func isSupportedMimeType(mimeType string) bool {
+	for _, mt := range supportedMimeTypes {
+		if mt == mimeType {
+			return true
+		}
+	}
+	return false
 }
 
 // HasCapability returns true when mine type of the artifact support by the scanner
@@ -135,6 +158,28 @@ func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapabil
 	return nil
 }
 
+// ConvertCapability converts the capability to map, used in get scanner API
+func (md *ScannerAdapterMetadata) ConvertCapability() map[string]interface{} {
+	capabilities := make(map[string]interface{})
+	oldScanner := true
+	for _, c := range md.Capabilities {
+		if len(c.Type) > 0 {
+			oldScanner = false
+		}
+		if c.Type == ScanTypeVulnerability {
+			capabilities[supportVulnerability] = true
+		} else if c.Type == ScanTypeSbom {
+			capabilities[supportSBOM] = true
+		}
+	}
+	if oldScanner && len(capabilities) == 0 {
+		// to compatible with old version scanner, suppose they should always support scan vulnerability when capability is empty
+		capabilities[supportVulnerability] = true
+		capabilities[supportSBOM] = false
+	}
+	return capabilities
+}
+
 // Artifact represents an artifact stored in Registry.
 type Artifact struct {
 	// ID of the namespace (project). It will not be sent to scanner adapter.
@@ -150,6 +195,8 @@ type Artifact struct {
 	Digest string `json:"digest"`
 	// The mime type of the scanned artifact
 	MimeType string `json:"mime_type"`
+	// The size the scanned artifact
+	Size int64 `json:"size"`
 }
 
 // Registry represents Registry connection settings.
@@ -159,6 +206,8 @@ type Registry struct {
 	// An optional value of the HTTP Authorization header sent with each request to the Docker Registry for getting or exchanging token.
 	// For example, `Basic: Base64(username:password)`.
 	Authorization string `json:"authorization"`
+	// Insecure is an indicator of https or http.
+	Insecure bool `json:"insecure"`
 }
 
 // ScanRequest represents a structure that is sent to a Scanner Adapter to initiate artifact scanning.
@@ -168,6 +217,18 @@ type ScanRequest struct {
 	Registry *Registry `json:"registry"`
 	// Artifact to be scanned.
 	Artifact *Artifact `json:"artifact"`
+	// RequestType
+	RequestType []*ScanType `json:"enabled_capabilities"`
+}
+
+// ScanType represent the type of the scan request
+type ScanType struct {
+	// Type sets the type of the scan, it could be sbom or vulnerability, default is vulnerability
+	Type string `json:"type"`
+	// ProducesMimeTypes defines scanreport should be
+	ProducesMimeTypes []string `json:"produces_mime_types"`
+	// Parameters extra parameters
+	Parameters map[string]interface{} `json:"parameters"`
 }
 
 // FromJSON parses ScanRequest from json data

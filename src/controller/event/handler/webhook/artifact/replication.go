@@ -216,7 +216,9 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 
 func getMetadataFromResource(resource string) (namespace, nameAndTag string) {
 	// Usually resource format likes 'library/busybox:v1', but it could be 'busybox:v1' in docker registry
-	meta := strings.Split(resource, "/")
+	// It also could be 'library/bitnami/fluentd:1.13.3-debian-10-r0' so we need to split resource to only 2 parts
+	// possible namespace and image name which may include slashes for example: bitnami/fluentd:1.13.3-debian-10-r0
+	meta := strings.SplitN(resource, "/", 2)
 	if len(meta) == 1 {
 		return "", meta[0]
 	}
