@@ -35,6 +35,7 @@ import (
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/label/model"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -676,6 +677,29 @@ func (c *controllerTestSuite) TestWalk() {
 
 		c.Equal(3, n)
 	}
+}
+
+func (c *controllerTestSuite) TestIsIntoto() {
+	blobs := []*models.Blob{
+		{Digest: "sha256:00000", ContentType: "application/vnd.oci.image.manifest.v1+json"},
+		{Digest: "sha256:22222", ContentType: "application/vnd.oci.image.config.v1+json"},
+		{Digest: "sha256:11111", ContentType: "application/vnd.in-toto+json"},
+	}
+	c.blobMgr.On("GetByArt", mock.Anything, mock.Anything).Return(blobs, nil).Once()
+	isIntoto, err := c.ctl.HasUnscannableLayer(context.Background(), "sha256: 77777")
+	c.Nil(err)
+	c.True(isIntoto)
+
+	blobs2 := []*models.Blob{
+		{Digest: "sha256:00000", ContentType: "application/vnd.oci.image.manifest.v1+json"},
+		{Digest: "sha256:22222", ContentType: "application/vnd.oci.image.config.v1+json"},
+		{Digest: "sha256:11111", ContentType: "application/vnd.oci.image.layer.v1.tar+gzip"},
+	}
+
+	c.blobMgr.On("GetByArt", mock.Anything, mock.Anything).Return(blobs2, nil).Once()
+	isIntoto2, err := c.ctl.HasUnscannableLayer(context.Background(), "sha256: 8888")
+	c.Nil(err)
+	c.False(isIntoto2)
 }
 
 func TestControllerTestSuite(t *testing.T) {

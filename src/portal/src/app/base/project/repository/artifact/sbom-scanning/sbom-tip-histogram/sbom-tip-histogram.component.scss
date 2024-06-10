@@ -1,0 +1,60 @@
+.tip-wrapper {
+    display: flex;
+    align-items: left;
+    text-align: left;
+    font-size: .65rem;
+    height: 15px;
+    line-height: 15px;
+}
+
+.bar-scanning-time {
+    margin-top: 12px;
+}
+
+.bar-tooltip-font-larger {
+    span {
+        font-size: 16px;
+        vertical-align: middle
+    }
+}
+
+hr {
+    border-bottom: 0;
+    border-color: #aaa;
+    margin: 6px -10px;
+}
+
+.font-weight-600 {
+    font-weight: 600;
+}
+
+.margin-left-5 {
+    margin-left: 5px;
+}
+
+.width-120 {
+    width: 120px;
+}
+
+.level-border>div{
+    display: inline-flex;
+    align-items: center;
+    justify-items: center;
+    border-radius: 50%;
+    height: 26px;
+    width: 26px;
+    line-height: 26px;
+}
+
+.tip-block {
+    position: relative;
+
+    .label {
+        max-width: 80%;
+        min-width: 50%;
+    }
+}
+
+.margin-right-5 {
+    margin-right: 5px;
+}

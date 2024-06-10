@@ -403,6 +403,7 @@
         "REPOSITORY": "저장소",
         "ARTIFACT": "아티팩트",
         "SCAN": "스캔",
+        "SBOM": "SBOM",
         "TAG": "태그",
         "ACCESSORY": "액세서리",
         "ARTIFACT_ADDITION": "아티팩트 추가",
@@ -775,6 +776,7 @@
         "ARTIFACTS": "아티팩트들",
         "SIZE": "크기",
         "VULNERABILITY": "취약점",
+        "SBOM": "SBOM",
         "BUILD_HISTORY": "기록 생성",
         "SIGNED": "서명됨",
         "AUTHOR": "작성자",
@@ -801,6 +803,7 @@
         "FILTER_BY_LABEL": "라벨별로 이미지 필터",
         "FILTER_ARTIFACT_BY_LABEL": "라벨별로 아티팩트 필터",
         "ADD_LABELS": "라벨 추가",
+        "STOP": "Stop",
         "RETAG": "복사",
         "ACTION": "동작",
         "DEPLOY": "배포",
@@ -1025,6 +1028,42 @@
         "IN_PROGRESS": "검색 중...",
         "BACK": "뒤로"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "No SBOM",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Generate SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop Generate SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "스캔되지 않음",
@@ -1069,12 +1108,12 @@
         "PLACEHOLDER": "취약점 필터",
         "PACKAGE": "패키지",
         "PACKAGES": "패키지들",
-        "SCAN_NOW": "스캔",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "{{scanner}로 스캔",
         "REPORTED_BY": "{{scanner}}로 보고 됨",
         "NO_SCANNER": "스캐너 없음",
         "TRIGGER_STOP_SUCCESS": "트리거 중지 스캔이 성공적으로 수행되었습니다",
-        "STOP_NOW": "스캔 중지"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "푸시 명령어",
@@ -1105,6 +1144,7 @@
         "ALL": "모두",
         "PLACEHOLDER": "아티팩트를 찾을 수 없음!",
         "SCAN_UNSUPPORTED": "지원되지 않음",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "요약",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
@@ -1459,9 +1499,10 @@
         "NAME_COLON": "이름:",
         "VENDOR_COLON": "Vendor:",
         "VERSION_COLON": "버전:",
-        "CAPABILITIES": "기능",
+        "CAPABILITIES": "기능:",
         "CONSUMES_MIME_TYPES_COLON": "Mime 유형 사용:",
         "PRODUCTS_MIME_TYPES_COLON": "Mime 유형 제공:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "속성",
         "NEW_SCANNER": "새 스캐너",
         "SET_AS_DEFAULT": "기본으로 설정",

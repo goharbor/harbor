@@ -590,12 +590,16 @@ func (a *projectAPI) GetScannerOfProject(ctx context.Context, params operation.G
 		return a.SendError(ctx, err)
 	}
 
-	scanner, err := a.scannerCtl.GetRegistrationByProject(ctx, p.ProjectID)
+	s, err := a.scannerCtl.GetRegistrationByProject(ctx, p.ProjectID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-
-	return operation.NewGetScannerOfProjectOK().WithPayload(model.NewScannerRegistration(scanner).ToSwagger(ctx))
+	if s != nil {
+		if err := a.scannerCtl.RetrieveCap(ctx, s); err != nil {
+			log.Warningf(scanner.RetrieveCapFailMsg, err)
+		}
+	}
+	return operation.NewGetScannerOfProjectOK().WithPayload(model.NewScannerRegistration(s).ToSwagger(ctx))
 }
 
 func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params operation.ListScannerCandidatesOfProjectParams) middleware.Responder {

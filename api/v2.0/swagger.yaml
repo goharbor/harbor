@@ -996,7 +996,7 @@ paths:
           description: Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
           type: boolean
           required: false
-          default: false          
+          default: false
         - name: with_signature
           in: query
           description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
@@ -1176,11 +1176,11 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
-        - name: scan_request_type
+        - name: scanType
           in: body
           required: false
-          schema: 
-            $ref: '#/definitions/ScanRequestType'
+          schema:
+            $ref: '#/definitions/ScanType'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -1192,6 +1192,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1206,6 +1208,12 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - name: scanType
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ScanType'
+          description: 'The scan type: Vulnerabilities, SBOM'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -1217,6 +1225,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -1470,6 +1480,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
@@ -4817,6 +4829,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /schedules:
@@ -6450,6 +6464,14 @@ responses:
         type: string
     schema:
       $ref: '#/definitions/Errors'
+  '422':
+    description: Unsupported Type
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'    
   '500':
     description: Internal server error
     headers:
@@ -6760,13 +6782,6 @@ definitions:
         type: string
         description: Version of the scanner adapter
         example: "v0.9.1"
-  ScanRequestType:
-    type: object
-    properties:
-      scan_type: 
-        type: string
-        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
-        enum: [vulnerability, sbom]
   ScanOverview:
     type: object
     description: 'The scan overview attached in the metadata of tag'
@@ -6791,16 +6806,18 @@ definitions:
         description: 'The status of the generating SBOM task'
       sbom_digest:
         type: string
-        description: 'The digest of the generated SBOM accessory'   
+        description: 'The digest of the generated SBOM accessory'
       report_id:
         type: string
         description: 'id of the native scan report'
-        example: '5f62c830-f996-11e9-957f-0242c0a89008'   
-      duration: 
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      duration:
         type: integer
         format: int64
         description: 'Time in seconds required to create the report'
         example: 300
+      scanner:
+        $ref: '#/definitions/Scanner'
   NativeReportSummary:
     type: object
     description: 'The summary for the native report'
@@ -8431,7 +8448,7 @@ definitions:
         description: Indicates the capabilities of the scanner, e.g. support_vulnerability or support_sbom.
         additionalProperties: True
         example:  {"support_vulnerability": true, "support_sbom": true}
-    
+
   ScannerRegistrationReq:
     type: object
     required:
@@ -9980,3 +9997,10 @@ definitions:
         items:
           type: string
         description: Links of the vulnerability
+  ScanType:
+    type: object
+    properties:
+      scan_type:
+        type: string
+        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
+        enum: [ vulnerability, sbom ]

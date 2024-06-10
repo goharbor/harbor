@@ -210,3 +210,7 @@ Test Case - Banner Message
 Test Case - User CRUD
     [Tags]  user_crud
     Harbor API Test  ./tests/apitests/python/test_user_crud.py
+
+Test Case - Limited Guest GetRepository
+    [Tags]  limited_guest_getrepository
+    Harbor API Test  ./tests/apitests/python/test_user_limited_guest_get_repository.py

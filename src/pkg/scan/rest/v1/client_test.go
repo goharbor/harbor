@@ -72,7 +72,7 @@ func (suite *ClientTestSuite) TestClientSubmitScan() {
 
 // TestClientGetScanReportError tests getting report failed
 func (suite *ClientTestSuite) TestClientGetScanReportError() {
-	_, err := suite.client.GetScanReport("id1", MimeTypeNativeReport)
+	_, err := suite.client.GetScanReport("id1", MimeTypeNativeReport, "")
 	require.Error(suite.T(), err)
 	assert.Condition(suite.T(), func() (success bool) {
 		success = strings.Index(err.Error(), "error") != -1
@@ -82,14 +82,14 @@ func (suite *ClientTestSuite) TestClientGetScanReportError() {
 
 // TestClientGetScanReport tests getting report
 func (suite *ClientTestSuite) TestClientGetScanReport() {
-	res, err := suite.client.GetScanReport("id2", MimeTypeNativeReport)
+	res, err := suite.client.GetScanReport("id2", MimeTypeNativeReport, "")
 	require.NoError(suite.T(), err)
 	require.NotEmpty(suite.T(), res)
 }
 
 // TestClientGetScanReportNotReady tests the case that the report is not ready
 func (suite *ClientTestSuite) TestClientGetScanReportNotReady() {
-	_, err := suite.client.GetScanReport("id3", MimeTypeNativeReport)
+	_, err := suite.client.GetScanReport("id3", MimeTypeNativeReport, "")
 	require.Error(suite.T(), err)
 	require.Condition(suite.T(), func() (success bool) {
 		_, success = err.(*ReportNotReadyError)
