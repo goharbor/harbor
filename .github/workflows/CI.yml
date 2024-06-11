@@ -5,7 +5,7 @@ env:
    POSTGRESQL_USR: postgres
    POSTGRESQL_PWD: root123
    POSTGRESQL_DATABASE: registry
-   DOCKER_COMPOSE_VERSION: 1.23.0
+   DOCKER_COMPOSE_VERSION: 2.27.1
    HARBOR_ADMIN: admin
    HARBOR_ADMIN_PASSWD: Harbor12345
    CORE_SECRET: tempString
@@ -66,7 +66,7 @@ jobs:
           env
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
@@ -131,7 +131,7 @@ jobs:
           df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
       - name: install
@@ -186,7 +186,7 @@ jobs:
           df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
       - name: install
@@ -240,7 +240,7 @@ jobs:
           df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
       - name: install
@@ -292,7 +292,7 @@ jobs:
           df -h
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
