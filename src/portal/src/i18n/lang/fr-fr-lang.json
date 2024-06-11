@@ -1049,11 +1049,11 @@
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "Not Generated",
+            "OTHER_STATUS": "No SBOM",
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
-            "STOPPED": "SBOM scan stopped"
+            "STOPPED": "Generation stopped"
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
@@ -1114,7 +1114,7 @@
         "REPORTED_BY": "Rapporté par {{scanner}}",
         "NO_SCANNER": "Aucun scanneur",
         "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'analyse",
-        "STOP_NOW": "Stop Scan"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Commande de push",

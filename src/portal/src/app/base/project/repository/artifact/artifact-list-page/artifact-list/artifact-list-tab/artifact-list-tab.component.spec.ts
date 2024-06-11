@@ -393,7 +393,7 @@ describe('ArtifactListTabComponent', () => {
             fixture.nativeElement.querySelector('#generate-sbom-btn');
         fixture.detectChanges();
         await fixture.whenStable();
-        expect(generatedButton.disabled).toBeFalsy();
+        expect(generatedButton.disabled).toBeTruthy();
     });
     it('Stop SBOM button should be disabled', async () => {
         await fixture.whenStable();

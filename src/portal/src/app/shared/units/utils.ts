@@ -293,7 +293,7 @@ export const VULNERABILITY_SCAN_STATUS = {
  */
 export const SBOM_SCAN_STATUS = {
     // front-end status
-    NOT_GENERATED_SBOM: 'Not generated SBOM',
+    NOT_GENERATED_SBOM: 'No SBOM',
     // back-end status
     PENDING: 'Pending',
     RUNNING: 'Running',

@@ -342,6 +342,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		reportConverter: &postprocessorstesting.ScanReportV1ToV2Converter{},
 		cache:           func() cache.Cache { return suite.cache },
 	}
+	mock.OnAnything(suite.scanHandler, "JobVendorType").Return("IMAGE_SCAN")
+
 }
 
 // TearDownSuite ...

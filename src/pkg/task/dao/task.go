@@ -114,8 +114,8 @@ func (t *taskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([
 	}
 
 	var tasks []*Task
-	param := fmt.Sprintf(`{"report_uuids":["%s"]}`, uuid)
-	sql := `SELECT * FROM task WHERE extra_attrs::jsonb @> cast( ? as jsonb )`
+	param := fmt.Sprintf(`"%s"`, uuid)
+	sql := `SELECT * FROM task WHERE extra_attrs::jsonb -> 'report_uuids' @> ?`
 	_, err = ormer.Raw(sql, param).QueryRows(&tasks)
 	if err != nil {
 		return nil, err

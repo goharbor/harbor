@@ -14,7 +14,8 @@ hbr-sbom-bar {
     }
 
     .label {
-        width: 50%;
+        max-width: 60%;
+        min-width: 50%;
     }
 }
 

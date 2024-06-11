@@ -48,6 +48,11 @@ hr {
 
 .tip-block {
     position: relative;
+
+    .label {
+        max-width: 80%;
+        min-width: 50%;
+    }
 }
 
 .margin-right-5 {

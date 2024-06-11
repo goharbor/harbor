@@ -1048,11 +1048,11 @@
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "Not Generated",
+            "OTHER_STATUS": "No SBOM",
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
-            "STOPPED": "SBOM scan stopped"
+            "STOPPED": "Generation stopped"
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
@@ -1113,7 +1113,7 @@
         "REPORTED_BY": "{{scanner}}로 보고 됨",
         "NO_SCANNER": "스캐너 없음",
         "TRIGGER_STOP_SUCCESS": "트리거 중지 스캔이 성공적으로 수행되었습니다",
-        "STOP_NOW": "Stop Scan"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "푸시 명령어",

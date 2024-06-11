@@ -129,7 +129,9 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     }
 
     public get completed(): boolean {
-        return this.status === SBOM_SCAN_STATUS.SUCCESS || !!this.sbomDigest;
+        return !!this.sbomOverview && this.status !== SBOM_SCAN_STATUS.SUCCESS
+            ? false
+            : this.status === SBOM_SCAN_STATUS.SUCCESS || !!this.sbomDigest;
     }
 
     public get error(): boolean {

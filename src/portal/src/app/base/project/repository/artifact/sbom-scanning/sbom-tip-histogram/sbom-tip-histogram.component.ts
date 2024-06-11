@@ -55,7 +55,7 @@ export class SbomTipHistogramComponent {
 
     public getSbomAccessories(): Accessory[] {
         return (
-            this.accessories.filter(
+            this.accessories?.filter(
                 accessory => accessory.type === AccessoryType.SBOM
             ) ?? []
         );
@@ -67,11 +67,6 @@ export class SbomTipHistogramComponent {
             : '0%';
     }
 
-    isLimitedSuccess(): boolean {
-        return (
-            this.sbomSummary && this.sbomSummary.complete_percent < SUCCESS_PCT
-        );
-    }
     get completeTimestamp(): Date {
         return this.sbomSummary && this.sbomSummary.end_time
             ? this.sbomSummary.end_time
@@ -83,7 +78,17 @@ export class SbomTipHistogramComponent {
     }
 
     showNoSbom(): boolean {
-        return !this.sbomDigest && this.getSbomAccessories().length === 0;
+        return !this.sbomDigest || this.getSbomAccessories().length === 0;
+    }
+
+    showTooltip() {
+        return (
+            !this.sbomSummary ||
+            !(
+                this.sbomSummary &&
+                this.sbomSummary.scan_status !== SBOM_SCAN_STATUS.SUCCESS
+            )
+        );
     }
 
     isThemeLight() {

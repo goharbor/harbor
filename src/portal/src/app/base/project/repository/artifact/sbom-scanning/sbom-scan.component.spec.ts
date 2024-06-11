@@ -179,8 +179,8 @@ describe('ResultSbomComponent (inline template)', () => {
         component.artifactDigest = mockedSbomDigest;
         component.sbomDigest = mockedSbomDigest;
         component.accessories = mockedAccessories;
+        fixture.detectChanges();
         fixture.whenStable().then(() => {
-            fixture.detectChanges();
             const el: HTMLElement =
                 fixture.nativeElement.querySelector('.tip-block');
             expect(el).not.toBeNull();
@@ -213,7 +213,7 @@ describe('ResultSbomComponent (inline template)', () => {
         component.sbomOverview = mockedSbomOverview;
         fixture.detectChanges();
         expect(component.status).toBe(SBOM_SCAN_STATUS.ERROR);
-        expect(component.completed).toBeTruthy();
+        expect(component.completed).toBeFalsy();
         expect(component.queued).toBeFalsy();
         expect(component.generating).toBeFalsy();
         expect(component.stopped).toBeFalsy();

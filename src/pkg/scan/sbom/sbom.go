@@ -32,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan"
@@ -197,19 +198,15 @@ func retrieveSBOMContent(rawReport string) ([]byte, *v1.Scanner, error) {
 }
 
 func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) (rps []*scanModel.Report, err error) {
-	var reports []*scanModel.Report
 	mgr := h.SBOMMgrFunc()
 	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType, v1.ScanTypeSbom)
 	if len(mimeTypes) == 0 {
 		return nil, errors.New("no mime types to make report placeholders")
 	}
-	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes[0], sbomMediaTypeSpdx)
-	if err != nil {
+	if err := h.delete(ctx, art, mimeTypes[0], r); err != nil {
 		return nil, err
 	}
-	if err := h.deleteSBOMAccessories(ctx, sbomReports); err != nil {
-		return nil, err
-	}
+	var reports []*scanModel.Report
 	for _, mt := range mimeTypes {
 		report := &sbom.Report{
 			ArtifactID:       art.ID,
@@ -240,54 +237,55 @@ func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifac
 	return reports, nil
 }
 
-// deleteSBOMAccessories delete the sbom accessory in reports
-func (h *scanHandler) deleteSBOMAccessories(ctx context.Context, reports []*sbom.Report) error {
+// delete deletes the sbom report and accessory
+func (h *scanHandler) delete(ctx context.Context, art *artifact.Artifact, mimeTypes string, r *scanner.Registration) error {
 	mgr := h.SBOMMgrFunc()
-	for _, rpt := range reports {
+	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes, sbomMediaTypeSpdx)
+	if err != nil {
+		return err
+	}
+	// check if any report has running task associate with it
+	taskMgr := h.TaskMgrFunc()
+	for _, rpt := range sbomReports {
+		if !taskMgr.IsTaskFinished(ctx, rpt.UUID) {
+			return errors.ConflictError(nil).WithMessage("a previous sbom generate process is running")
+		}
+	}
+
+	for _, rpt := range sbomReports {
 		if rpt.MimeType != v1.MimeTypeSBOMReport {
 			continue
-		}
-		if err := h.deleteSBOMAccessory(ctx, rpt.ReportSummary); err != nil {
-			return err
 		}
 		if err := mgr.Delete(ctx, rpt.UUID); err != nil {
 			return err
 		}
 	}
+	if err := h.deleteSBOMAccessory(ctx, art.ID); err != nil {
+		return err
+	}
 	return nil
 }
 
 // deleteSBOMAccessory check if current report has sbom accessory info, if there is, delete it
-func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, report string) error {
-	if len(report) == 0 {
-		return nil
-	}
-	sbomSummary := sbom.Summary{}
-	if err := json.Unmarshal([]byte(report), &sbomSummary); err != nil {
-		// it could be a non sbom report, just skip
-		log.Debugf("fail to unmarshal %v, skip to delete sbom report", err)
-		return nil
-	}
-	repo, dgst := sbomSummary.SBOMAccArt()
-	if len(repo) == 0 || len(dgst) == 0 {
-		return nil
-	}
+func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, artID int64) error {
 	artifactCtl := h.ArtifactControllerFunc()
-	art, err := artifactCtl.GetByReference(ctx, repo, dgst, nil)
-	if errors.IsNotFoundErr(err) {
-		return nil
-	}
+	art, err := artifactCtl.Get(ctx, artID, &artifact.Option{
+		WithAccessory: true,
+	})
 	if err != nil {
 		return err
 	}
 	if art == nil {
 		return nil
 	}
-	err = artifactCtl.Delete(ctx, art.ID)
-	if errors.IsNotFoundErr(err) {
-		return nil
+	for _, acc := range art.Accessories {
+		if acc.GetData().Type == accessoryModel.TypeHarborSBOM {
+			if err := artifactCtl.Delete(ctx, acc.GetData().ArtifactID); err != nil {
+				return err
+			}
+		}
 	}
-	return err
+	return nil
 }
 
 func (h *scanHandler) GetPlaceHolder(ctx context.Context, artRepo string, artDigest, scannerUUID string, mimeType string) (rp *scanModel.Report, err error) {
@@ -344,4 +342,8 @@ func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mi
 	}
 	err = json.Unmarshal([]byte(reportContent), &result)
 	return result, err
+}
+
+func (h *scanHandler) JobVendorType() string {
+	return job.SBOMJobVendorType
 }
