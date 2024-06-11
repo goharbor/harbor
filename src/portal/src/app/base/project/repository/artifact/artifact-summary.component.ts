@@ -1,10 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
-import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { Label } from '../../../../../../ng-swagger-gen/models/label';
-import { ProjectService } from '../../../../shared/services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppConfigService } from '../../../../services/app-config.service';
 import { Project } from '../../project';
 import { artifactDefault } from './artifact';
 import { SafeUrl } from '@angular/platform-browser';
@@ -24,6 +21,8 @@ import {
 export class ArtifactSummaryComponent implements OnInit {
     tagId: string;
     artifactDigest: string;
+    sbomDigest?: string;
+    activeTab?: string;
     repositoryName: string;
     projectId: string | number;
     referArtifactNameArray: string[] = [];
@@ -37,10 +36,7 @@ export class ArtifactSummaryComponent implements OnInit {
     loading: boolean = false;
 
     constructor(
-        private projectService: ProjectService,
-        private errorHandler: ErrorHandler,
         private route: ActivatedRoute,
-        private appConfigService: AppConfigService,
         private router: Router,
         private frontEndArtifactService: ArtifactService,
         private event: EventService
@@ -100,6 +96,8 @@ export class ArtifactSummaryComponent implements OnInit {
         this.repositoryName = this.route.snapshot.params['repo'];
         this.artifactDigest = this.route.snapshot.params['digest'];
         this.projectId = this.route.snapshot.parent.params['id'];
+        this.sbomDigest = this.route.snapshot.queryParams['sbomDigest'];
+        this.activeTab = this.route.snapshot.queryParams['tab'];
         if (this.repositoryName && this.artifactDigest) {
             const resolverData = this.route.snapshot.data;
             if (resolverData) {

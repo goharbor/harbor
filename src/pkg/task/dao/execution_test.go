@@ -395,22 +395,36 @@ func TestExecutionDAOSuite(t *testing.T) {
 }
 
 func Test_buildInClauseSQLForExtraAttrs(t *testing.T) {
-	type args struct {
-		keys []string
-	}
 	tests := []struct {
 		name string
-		args args
+		args []jsonbStru
 		want string
 	}{
-		{"extra_attrs.", args{[]string{}}, ""},
-		{"extra_attrs.id", args{[]string{"id"}}, "select id from execution where extra_attrs->>?=?"},
-		{"extra_attrs.artifact.digest", args{[]string{"artifact", "digest"}}, "select id from execution where extra_attrs->?->>?=?"},
-		{"extra_attrs.a.b.c", args{[]string{"a", "b", "c"}}, "select id from execution where extra_attrs->?->?->>?=?"},
+		{"extra_attrs.", []jsonbStru{}, ""},
+		{"extra_attrs.", []jsonbStru{{}}, ""},
+		{"extra_attrs.id", []jsonbStru{{
+			keyPrefix: "extra_attrs.",
+			key:       "extra_attrs.id",
+			value:     "1",
+		}}, "select id from execution where extra_attrs->>?=?"},
+		{"extra_attrs.artifact.digest", []jsonbStru{{
+			keyPrefix: "extra_attrs.",
+			key:       "extra_attrs.artifact.digest",
+			value:     "sha256:1234",
+		}}, "select id from execution where extra_attrs->?->>?=?"},
+		{"extra_attrs.a.b.c", []jsonbStru{{
+			keyPrefix: "extra_attrs.",
+			key:       "extra_attrs.a.b.c",
+			value:     "test_value_1",
+		}, {
+			keyPrefix: "extra_attrs.",
+			key:       "extra_attrs.d.e",
+			value:     "test_value_2",
+		}}, "select id from execution where extra_attrs->?->?->>?=? and extra_attrs->?->>?=?"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := buildInClauseSQLForExtraAttrs(tt.args.keys); got != tt.want {
+			if got, _ := buildInClauseSQLForExtraAttrs(tt.args); got != tt.want {
 				t.Errorf("buildInClauseSQLForExtraAttrs() = %v, want %v", got, tt.want)
 			}
 		})

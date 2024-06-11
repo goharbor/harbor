@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
@@ -57,7 +58,10 @@ import (
 
 var (
 	// Ctl is a global artifact controller instance
-	Ctl = NewController()
+	Ctl                 = NewController()
+	skippedContentTypes = map[string]struct{}{
+		"application/vnd.in-toto+json": {},
+	}
 )
 
 var (
@@ -73,6 +77,7 @@ var (
 		chart.ArtifactTypeChart: icon.DigestOfIconChart,
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
+		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
 	}
 )
 
@@ -111,6 +116,8 @@ type Controller interface {
 	RemoveLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
 	// Walk walks the artifact tree rooted at root, calling walkFn for each artifact in the tree, including root.
 	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
+	// HasUnscannableLayer check artifact with digest if has unscannable layer
+	HasUnscannableLayer(ctx context.Context, dgst string) (bool, error)
 }
 
 // NewController creates an instance of the default artifact controller
@@ -324,12 +331,6 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return err
 	}
 
-	if isAccessory {
-		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
-			return err
-		}
-	}
-
 	// the child artifact is referenced by some tags, skip
 	if !isRoot && len(art.Tags) > 0 {
 		return nil
@@ -352,11 +353,26 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return nil
 	}
 
+	if isAccessory {
+		if err := c.accessoryMgr.DeleteAccessories(ctx, q.New(q.KeyWords{"ArtifactID": art.ID, "Digest": art.Digest})); err != nil && !errors.IsErr(err, errors.NotFoundCode) {
+			return err
+		}
+	}
+
 	// delete accessories if contains any
 	for _, acc := range art.Accessories {
 		// only hard ref accessory should be removed
 		if acc.IsHard() {
-			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, true, true); err != nil {
+			// if this acc artifact has parent(is child), set isRoot to false
+			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
+				Keywords: map[string]interface{}{
+					"ChildID": acc.GetData().ArtifactID,
+				},
+			})
+			if err != nil {
+				return err
+			}
+			if err = c.deleteDeeply(ctx, acc.GetData().ArtifactID, len(parents) == 0, true); err != nil {
 				return err
 			}
 		}
@@ -369,7 +385,12 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 			!errors.IsErr(err, errors.NotFoundCode) {
 			return err
 		}
-		if err = c.deleteDeeply(ctx, reference.ChildID, false, false); err != nil {
+		// if the child artifact is an accessory, set isAccessory to true
+		accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": reference.ChildID}))
+		if err != nil {
+			return err
+		}
+		if err = c.deleteDeeply(ctx, reference.ChildID, false, len(accs) > 0); err != nil {
 			return err
 		}
 	}
@@ -742,4 +763,22 @@ func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
 		return
 	}
 	art.Accessories = accs
+}
+
+// HasUnscannableLayer check if it is a in-toto sbom, if it contains any blob with a content_type is application/vnd.in-toto+json, then consider as in-toto sbom
+func (c *controller) HasUnscannableLayer(ctx context.Context, dgst string) (bool, error) {
+	if len(dgst) == 0 {
+		return false, nil
+	}
+	blobs, err := c.blobMgr.GetByArt(ctx, dgst)
+	if err != nil {
+		return false, err
+	}
+	for _, b := range blobs {
+		if _, exist := skippedContentTypes[b.ContentType]; exist {
+			log.Debugf("the artifact with digest %v is unscannable, because it contains content type: %v", dgst, b.ContentType)
+			return true, nil
+		}
+	}
+	return false, nil
 }

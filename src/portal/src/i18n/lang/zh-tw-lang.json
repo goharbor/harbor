@@ -285,7 +285,10 @@
     "PREVENT_VULNERABLE_2": "或更高危險級別的映像檔部署。",
     "SCAN": "弱點掃描",
     "AUTOSCAN_TOGGLE": "推送時自動掃描映像檔",
-    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。"
+    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。",
+    "SBOM": "SBOM generation",
+    "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+    "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
   },
   "MEMBER": {
     "NEW_USER": "新增使用者成員",
@@ -402,6 +405,7 @@
    "REPOSITORY": "Repository",
    "ARTIFACT": "Artifact",
    "SCAN": "Scan",
+   "SBOM": "SBOM",
    "TAG": "Tag",
    "ACCESSORY": "Accessory",
    "ARTIFACT_ADDITION": "Artifact Addition",
@@ -698,7 +702,7 @@
     "FLATTEN_LEVEL_TIP_3": "'平整化 3 等級': 'a/b/c/d/img' -> 'ns/d/img'",
     "BANDWIDTH": "頻寬",
     "BANDWIDTH_ERROR_TIP": "請輸入 -1 或大於 0 的整數",
-    "BANDWIDTH_TOOLTIP": "設定每個執行的最大網路頻寬。請注意並發執行的數量。若要無限制頻寬，請輸入 -1",
+    "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
     "UNLIMITED": "無限制",
     "UNREACHABLE_SOURCE_REGISTRY": "無法連線到來源 Registry，請在編輯此規則之前確保來源 Registry 可用： {{error}}",
     "CRON_ERROR_TIP": "cron 字串的第一個欄位必須是 0，第二個欄位不能是 \"*\"",
@@ -773,6 +777,7 @@
     "ARTIFACTS": "Artifacts",
     "SIZE": "大小",
     "VULNERABILITY": "弱點",
+    "SBOM": "SBOM",
     "BUILD_HISTORY": "建置歷史",
     "SIGNED": "已簽署",
     "AUTHOR": "作者",
@@ -797,6 +802,7 @@
     "LABELS": "標籤",
     "ADD_LABEL_TO_IMAGE": "新增標籤到此映像檔",
     "ADD_LABELS": "新增標籤",
+    "STOP": "Stop",
     "RETAG": "複製",
     "FILTER_BY_LABEL": "篩選標籤",
     "FILTER_ARTIFACT_BY_LABEL": "透過標籤篩選 Artifact",
@@ -1021,6 +1027,42 @@
     "IN_PROGRESS": "搜尋中...",
     "BACK": "返回"
   },
+  "SBOM": {
+    "CHART": {
+        "SCANNING_TIME": "Scan completed time:",
+        "SCANNING_PERCENT": "Scan progress:",
+        "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+        "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+        "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+        "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+    },
+    "GRID": {
+        "PLACEHOLDER": "No scan results found.",
+        "COLUMN_PACKAGE": "Package",
+        "COLUMN_PACKAGES": "Packages",
+        "COLUMN_VERSION": "Current version",
+        "COLUMN_LICENSE": "License",
+        "COLUMN_DESCRIPTION": "Description",
+        "FOOT_ITEMS": "Items",
+        "FOOT_OF": "of"
+    },
+    "STATE": {
+        "OTHER_STATUS": "No SBOM",
+        "QUEUED": "Queued",
+        "ERROR": "View Log",
+        "SCANNING": "Generating",
+        "STOPPED": "Generation stopped"
+    },
+    "NO_SBOM": "No SBOM",
+    "PACKAGES": "SBOM",
+    "COMPLETED": "Completed",
+    "REPORTED_BY": "Reported by {{scanner}}",
+    "GENERATE": "Generate SBOM",
+    "DOWNLOAD": "Download SBOM",
+    "Details": "SBOM details",
+    "STOP": "Stop Generate SBOM",
+    "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+},
   "VULNERABILITY": {
     "STATE": {
       "OTHER_STATUS": "未掃描",
@@ -1070,7 +1112,7 @@
     "REPORTED_BY": "由 {{scanner}} 報告",
     "NO_SCANNER": "無掃描器",
     "TRIGGER_STOP_SUCCESS": "成功觸發停止掃描",
-    "STOP_NOW": "立即停止掃描"
+    "STOP_NOW": "Stop Scan Vulnerability"
   },
   "PUSH_IMAGE": {
     "TITLE": "推送命令",
@@ -1101,6 +1143,7 @@
     "ALL": "全部",
     "PLACEHOLDER": "未發現任何 artifacts！",
     "SCAN_UNSUPPORTED": "不支援掃描",
+    "SBOM_UNSUPPORTED": "Unsupported",
     "SUMMARY": "摘要",
     "DEPENDENCIES": "相依性",
     "VALUES": "值",
@@ -1425,6 +1468,10 @@
     "NAME_REQUIRED": "名稱必填",
     "NAME_REX": "名稱必須由小寫字母、數字和 ._- 組成，至少2個字元，並且必須以字母或數字開頭。",
     "DESCRIPTION": "描述",
+    "SBOM": "SBOM",
+    "VULNERABILITY": "Vulnerability",
+    "SUPPORTED": "Supported",
+    "NOT_SUPPORTED": "Not Supported",
     "ENDPOINT": "端點",
     "ENDPOINT_EXISTS": "端點 URL 已存在",
     "ENDPOINT_REQUIRED": "端點 URL 必填",
@@ -1453,9 +1500,10 @@
     "NAME_COLON": "名稱：",
     "VENDOR_COLON": "供應商：",
     "VERSION_COLON": "版本：",
-    "CAPABILITIES": "功能",
+    "CAPABILITIES": "功能:",
     "CONSUMES_MIME_TYPES_COLON": "可處理的 MIME 類型：",
     "PRODUCTS_MIME_TYPES_COLON": "產出的 MIME 類型：",
+    "CAPABILITIES_TYPE": "Type:",
     "PROPERTIES": "屬性",
     "NEW_SCANNER": "新增掃描器",
     "SET_AS_DEFAULT": "設為預設",

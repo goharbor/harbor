@@ -991,6 +991,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_sbom_overview
+          in: query
+          description: Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
+          type: boolean
+          required: false
+          default: false
         - name: with_signature
           in: query
           description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
@@ -1096,6 +1102,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_sbom_overview
+          in: query
+          description: Specify whether the SBOM overview is included in returning artifact, when this option is true, the SBOM overview will be included in the response
+          type: boolean
+          required: false
+          default: false
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts.
@@ -1164,6 +1176,11 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - name: scanType
+          in: body
+          required: false
+          schema:
+            $ref: '#/definitions/ScanType'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -1175,6 +1192,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1189,6 +1208,12 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - name: scanType
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ScanType'
+          description: 'The scan type: Vulnerabilities, SBOM'
       responses:
         '202':
           $ref: '#/responses/202'
@@ -1200,6 +1225,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'  
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -1226,6 +1253,8 @@ paths:
           description: Successfully get scan log file
           schema:
             type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -1432,7 +1461,7 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies]
+          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
           required: true
       responses:
         '200':
@@ -1451,6 +1480,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
@@ -4798,6 +4829,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /schedules:
@@ -6431,6 +6464,14 @@ responses:
         type: string
     schema:
       $ref: '#/definitions/Errors'
+  '422':
+    description: Unsupported Type
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'    
   '500':
     description: Internal server error
     headers:
@@ -6592,6 +6633,9 @@ definitions:
       scan_overview:
         $ref: '#/definitions/ScanOverview'
         description: The overview of the scan result.
+      sbom_overview:
+        $ref: '#/definitions/SBOMOverview'
+        description: The overview of the generating SBOM progress
       accessories:
         type: array
         items:
@@ -6743,6 +6787,37 @@ definitions:
     description: 'The scan overview attached in the metadata of tag'
     additionalProperties:
       $ref: '#/definitions/NativeReportSummary'
+  SBOMOverview:
+    type: object
+    description: 'The generate SBOM overview information'
+    properties:
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the generating sbom report task'
+        example: '2006-01-02T14:04:05Z'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the generating sbom report task'
+        example: '2006-01-02T15:04:05Z'
+      scan_status:
+        type: string
+        description: 'The status of the generating SBOM task'
+      sbom_digest:
+        type: string
+        description: 'The digest of the generated SBOM accessory'
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      duration:
+        type: integer
+        format: int64
+        description: 'Time in seconds required to create the report'
+        example: 300
+      scanner:
+        $ref: '#/definitions/Scanner'
   NativeReportSummary:
     type: object
     description: 'The summary for the native report'
@@ -7761,7 +7836,7 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are *, artifact, artifact-addition, artifact-label, audit-log, catalog, configuration, distribution, garbage-collection, helm-chart, helm-chart-version, helm-chart-version-label, immutable-tag, label, ldap-user, log, member, metadata, notification-policy, preheat-instance, preheat-policy, project, quota, registry, replication, replication-adapter, replication-policy, repository, robot, scan, scan-all, scanner, system-volumes, tag, tag-retention, user, user-group or "" (for self-reference).
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
@@ -8368,6 +8443,11 @@ definitions:
         default: ""
         description: Indicate the healthy of the registration
         example: "healthy"
+      capabilities:
+        type: object
+        description: Indicates the capabilities of the scanner, e.g. support_vulnerability or support_sbom.
+        additionalProperties: True
+        example:  {"support_vulnerability": true, "support_sbom": true}
 
   ScannerRegistrationReq:
     type: object
@@ -8450,6 +8530,12 @@ definitions:
   ScannerCapability:
     type: object
     properties:
+      type:
+        type: string
+        description: |
+          Specify the type of scanner capability, like vulnerability or sbom
+        x-omitempty: false
+        example: "sbom"
       consumes_mime_types:
         type: array
         items:
@@ -9911,3 +9997,10 @@ definitions:
         items:
           type: string
         description: Links of the vulnerability
+  ScanType:
+    type: object
+    properties:
+      scan_type:
+        type: string
+        description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
+        enum: [ vulnerability, sbom ]

@@ -23,10 +23,10 @@ jobs:
         with:
           version: '430.0.0'
       - run: gcloud info
-      - name: Set up Go 1.21
+      - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
-          go-version: 1.21.5
+          go-version: 1.22.3
         id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master

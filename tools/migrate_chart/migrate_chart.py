@@ -3,7 +3,10 @@
 import subprocess
 import signal
 import sys
+import os
 from pathlib import Path
+import tarfile
+import yaml
 
 import click
 import requests
@@ -32,24 +35,51 @@ def graceful_exit(signum, frame):
 signal.signal(signal.SIGINT, graceful_exit)
 signal.signal(signal.SIGTERM, graceful_exit)
 
+def find_chart_yaml(tar, path=''):
+    # Iterate through the members of the tarfile
+    for member in tar.getmembers():
+        # If the member is a directory, recursively search within it
+        if member.isdir():
+            find_chart_yaml(tar, os.path.join(path, member.name))
+        # If the member is a file and its name is 'chart.yaml', return its path
+        if "Chart.yaml" in member.name:
+            return os.path.join(path, member.name)
+
+def read_chart_version(chart_tgz_path):
+    # Open the chart tgz file
+    with tarfile.open(chart_tgz_path, 'r:gz') as tar:
+        # Find the path to chart.yaml within the tarball
+        chart_yaml_path = find_chart_yaml(tar)
+        if chart_yaml_path:
+            # Extract the chart.yaml file
+            chart_yaml_file = tar.extractfile(chart_yaml_path)
+            if chart_yaml_file is not None:
+                # Load the YAML content from chart.yaml
+                chart_data = yaml.safe_load(chart_yaml_file)
+                # Read the version from chart.yaml
+                version = chart_data.get('version')
+                name = chart_data.get('name')
+                return name, version
+            else:
+                raise Exception("Failed to read chart.yaml from the chart tgz file. filename {}".format(chart_tgz_path))
+        else:
+            raise Exception("chart.yaml not found in the chart tgz file. filename {}".format(chart_tgz_path))
+
 class ChartV2:
 
     def __init__(self, filepath:Path):
         self.filepath = filepath
         self.project = self.filepath.parts[-2]
-        parts = self.filepath.stem.split('-')
-        flag = False
+        self.name = ""
+        self.version = ""
         try:
-            for i in range(len(parts)-1, -1, -1):
-                if parts[i][0].isnumeric() or ((parts[i][0]=='v' or  parts[i][0]=='v') and parts[i][1].isnumeric()) :
-                    self.name, self.version = '-'.join(parts[:i]), '-'.join(parts[i:])
-                    flag = True
-                    break
-            if not flag:
+            self.name, self.version = read_chart_version(filepath)
+            if self.name == "" or self.version == "" or self.name is None or self.version is None :
                 raise Exception('chart name: {} is illegal'.format('-'.join(parts)))
         except Exception as e:
             click.echo("Skipped chart: {} due to illegal chart name. Error: {}".format(filepath, e), err=True)
         return
+
     def __check_exist(self, hostname, username, password):
         return requests.get(CHART_URL_PATTERN.format(
                 host=hostname,
@@ -90,6 +120,9 @@ def migrate(hostname, username, password):
     item_show_func=lambda x: "{}/{}:{} total errors: {}".format(x.project, x.name, x.version, len(errs)) if x else '') as bar:
         for chart in bar:
             try:
+                if chart.name == "" or chart.version == "" :
+                    print("skip the chart {} has no name or version info".format(chart.filepath))
+                    continue
                 result = chart.migrate(hostname, username, password)
                 if result.stderr:
                     errs.append("chart: {name}:{version} in {project} has err: {err}".format(
@@ -99,10 +132,11 @@ def migrate(hostname, username, password):
                         err=result.stderr
                     ))
             except Exception as e:
-                errs.append("chart: {name}:{version} in {project} has err: {err}".format(
+                errs.append("chart: {name}:{version} in {project}, path {path} has err: {err}".format(
                     name=chart.name,
                     version=chart.version,
                     project=chart.project,
+                    path = chart.filepath,
                     err=e))
     click.echo("Migration is Done.")
     print_exist_errs()

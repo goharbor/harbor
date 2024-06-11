@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -45,7 +46,7 @@ type Controller interface {
 	// Count get the total amount of project members
 	Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error)
 	// IsProjectAdmin judges if the user is a project admin of any project
-	IsProjectAdmin(ctx context.Context, memberID int) (bool, error)
+	IsProjectAdmin(ctx context.Context, member commonmodels.User) (bool, error)
 }
 
 // Request - Project Member Request
@@ -261,8 +262,8 @@ func (c *controller) Delete(ctx context.Context, projectNameOrID interface{}, me
 	return c.mgr.Delete(ctx, p.ProjectID, memberID)
 }
 
-func (c *controller) IsProjectAdmin(ctx context.Context, memberID int) (bool, error) {
-	members, err := c.projectMgr.ListAdminRolesOfUser(ctx, memberID)
+func (c *controller) IsProjectAdmin(ctx context.Context, member commonmodels.User) (bool, error) {
+	members, err := c.projectMgr.ListAdminRolesOfUser(ctx, member)
 	if err != nil {
 		return false, err
 	}

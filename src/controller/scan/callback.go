@@ -120,6 +120,13 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 				if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
 					e.Operator = operator
 				}
+
+				// extract ScanType if exist in ExtraAttrs
+				if c, ok := exec.ExtraAttrs["enabled_capabilities"].(map[string]interface{}); ok {
+					if Type, ok := c["type"].(string); ok {
+						e.ScanType = Type
+					}
+				}
 				// fire event
 				notification.AddEvent(ctx, e)
 			}
