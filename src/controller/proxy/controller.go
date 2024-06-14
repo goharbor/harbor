@@ -172,9 +172,6 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
-		go func() {
-			c.local.DeleteManifest(remoteRepo, art.Tag)
-		}()
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 
@@ -220,11 +217,6 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	ref := getReference(art)
 	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
-		if errors.IsNotFoundErr(err) {
-			go func() {
-				c.local.DeleteManifest(remoteRepo, art.Tag)
-			}()
-		}
 		return man, err
 	}
 	ct, _, err := man.Payload()
