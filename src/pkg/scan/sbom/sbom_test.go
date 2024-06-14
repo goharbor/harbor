@@ -147,7 +147,6 @@ func (suite *SBOMTestSuite) SetupSuite() {
 
 	suite.handler = &scanHandler{
 		GenAccessoryFunc:       mockGenAccessory,
-		RegistryServer:         mockGetRegistry,
 		SBOMMgrFunc:            func() Manager { return suite.sbomManager },
 		TaskMgrFunc:            func() task.Manager { return suite.taskMgr },
 		ArtifactControllerFunc: func() artifact.Controller { return suite.artifactCtl },
