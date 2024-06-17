@@ -16,7 +16,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/coreos/go-oidc/v3 v3.10.0
 	github.com/dghubble/sling v1.1.0
-	github.com/docker/distribution v2.8.2+incompatible
+	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/go-asn1-ber/asn1-ber v1.5.7
 	github.com/go-ldap/ldap/v3 v3.4.6
@@ -71,10 +71,10 @@ require (
 	golang.org/x/time v0.5.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.14.4
+	helm.sh/helm/v3 v3.15.2
 	k8s.io/api v0.30.0
 	k8s.io/apimachinery v0.30.0
-	k8s.io/client-go v0.29.0
+	k8s.io/client-go v0.30.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -101,8 +101,8 @@ require (
 	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dnaeon/go-vcr v1.2.0 // indirect
-	github.com/docker/cli v24.0.6+incompatible // indirect
-	github.com/docker/docker v24.0.9+incompatible // indirect
+	github.com/docker/cli v25.0.1+incompatible // indirect
+	github.com/docker/docker v25.0.5+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
