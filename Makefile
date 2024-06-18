@@ -23,7 +23,7 @@
 #
 # package_online:
 #				prepare online install package
-#			for example: make package_online -e DEVFLAG=false\
+#			for example: make package_online \
 #							REGISTRYSERVER=reg-bj.goharbor.io \
 #							REGISTRYPROJECTNAME=harborrelease
 #
@@ -31,13 +31,13 @@
 #				prepare offline install package
 #
 # pushimage:	push Harbor images to specific registry server
-#			for example: make pushimage -e DEVFLAG=false REGISTRYUSER=admin \
+#			for example: make pushimage REGISTRYUSER=admin \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYSERVER=reg-bj.goharbor.io/ \
 #							REGISTRYPROJECTNAME=harborrelease
 #				note**: need add "/" on end of REGISTRYSERVER. If not setting \
 #						this value will push images directly to dockerhub.
-#						 make pushimage -e DEVFLAG=false REGISTRYUSER=goharbor \
+#						 make pushimage REGISTRYUSER=goharbor \
 #							REGISTRYPASSWORD=***** \
 #							REGISTRYPROJECTNAME=goharbor
 #
@@ -59,24 +59,17 @@
 #				note**: If commit new code to github, the git commit TAG will \
 #				change. Better use this command clean previous images and \
 #				files with specific TAG.
-#   By default DEVFLAG=true, if you want to release new version of Harbor, \
-#		should setting the flag to false.
-#				make XXXX -e DEVFLAG=false
 
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKE_PREPARE_PATH=$(MAKEPATH)/photon/prepare
-SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
-CORE_PATH=$(BUILDPATH)/src/core
-PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 
 # parameters
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
-DEVFLAG=true
 TRIVYFLAG=false
 HTTPPROXY=
 BUILDBIN=true
@@ -133,13 +126,6 @@ DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
 
 # go parameters
-GOCMD=$(shell which go)
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOINSTALL=$(GOCMD) install
-GOTEST=$(GOCMD) test
-GODEP=$(GOTEST) -i
-GOFMT=gofmt -w
 GOBUILDIMAGE=golang:1.22.3
 GOBUILDPATHINCONTAINER=/harbor
 
@@ -165,13 +151,11 @@ GOBUILDPATH_JOBSERVICE=$(GOBUILDPATHINCONTAINER)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATHINCONTAINER)/src/registryctl
 GOBUILDPATH_MIGRATEPATCH=$(GOBUILDPATHINCONTAINER)/src/cmd/migrate-patch
 GOBUILDPATH_STANDALONE_DB_MIGRATOR=$(GOBUILDPATHINCONTAINER)/src/cmd/standalone-db-migrator
-GOBUILDPATH_EXPORTER=$(GOBUILDPATHINCONTAINER)/src/cmd/exporter
 GOBUILDMAKEPATH=make
 GOBUILDMAKEPATH_CORE=$(GOBUILDMAKEPATH)/photon/core
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/photon/jobservice
 GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/photon/registryctl
 GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR=$(GOBUILDMAKEPATH)/photon/standalone-db-migrator
-GOBUILDMAKEPATH_EXPORTER=$(GOBUILDMAKEPATH)/photon/exporter
 
 # binary
 CORE_BINARYPATH=$(BUILDPATH)/$(GOBUILDMAKEPATH_CORE)
@@ -185,12 +169,10 @@ STANDALONE_DB_MIGRATOR_BINARYPATH=$(BUILDPATH)/$(GOBUILDMAKEPATH_STANDALONE_DB_M
 STANDALONE_DB_MIGRATOR_BINARYNAME=migrate
 
 # configfile
-CONFIGPATH=$(MAKEPATH)
 INSIDE_CONFIGPATH=/compose_location
 CONFIGFILE=harbor.yml
 
 # prepare parameters
-PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARA=--conf $(INSIDE_CONFIGPATH)/$(CONFIGFILE)
 ifeq ($(TRIVYFLAG), true)
@@ -199,9 +181,6 @@ endif
 
 # makefile
 MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
-
-# common dockerfile
-DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
 DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare
@@ -225,7 +204,6 @@ endif
 
 # package
 TARCMD=$(shell which tar)
-ZIPCMD=$(shell which gzip)
 DOCKERIMGFILE=harbor
 HARBORPKG=harbor
 
@@ -387,17 +365,17 @@ build:
 		echo Should pull base images from registry in docker configuration since no base images built. ; \
 		exit 1; \
 	fi
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
-	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
-	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
-	 -e VERSIONTAG=$(VERSIONTAG) \
-	 -e BUILDBIN=$(BUILDBIN) \
-	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
-	 -e REGISTRYURL=$(REGISTRYURL) \
-	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
-	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
-	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) GOBUILDIMAGE=$(GOBUILDIMAGE) \
+		REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG) \
+		TRIVYVERSION=$(TRIVYVERSION) TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
+		VERSIONTAG=$(VERSIONTAG) \
+		BUILDBIN=$(BUILDBIN) TRIVYFLAG=$(TRIVYFLAG) \
+		NPM_REGISTRY=$(NPM_REGISTRY) BASEIMAGETAG=$(BASEIMAGETAG) IMAGENAMESPACE=$(IMAGENAMESPACE) BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
+		REGISTRYURL=$(REGISTRYURL) \
+		TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
+		PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) BUILD_BASE=$(BUILD_BASE) \
+		REGISTRYUSER=$(REGISTRYUSER) REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
+		PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
