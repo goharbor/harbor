@@ -15,6 +15,7 @@
             <clr-dg-action-bar class="action-bar">
                 <div>
                     <button
+                        *ngIf="hasEnabledScanner"
                         id="scan-btn"
                         [clrLoading]="scanBtnState"
                         type="button"
@@ -68,6 +69,7 @@
                             <button
                                 clrDropdownItem
                                 id="stop-scan"
+                                *ngIf="hasEnabledScanner"
                                 [clrLoading]="stopBtnState"
                                 type="button"
                                 class="btn btn-secondary scan-btn action-dropdown-item"
@@ -97,6 +99,7 @@
                                 <span>{{ 'SBOM.STOP' | translate }}</span>
                             </button>
                             <div
+                                *ngIf="hasEnabledScanner || hasEnabledSbom()"
                                 class="dropdown-divider"
                                 role="separator"
                                 aria-hidden="true"></div>
