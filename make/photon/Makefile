@@ -154,7 +154,7 @@ _build_trivy_adapter:
 			$(call _extract_archive, $(TRIVY_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
 		else \
 			echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
-			cd $(DOCKERFILEPATH_TRIVY_ADAPTER) && $(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) && cd - ; \
+			$(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) ; \
 		fi ; \
 		echo "Building Trivy adapter container for photon..." ; \
 		$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
