@@ -55,7 +55,7 @@ type BaseRouter struct {
 // NewBaseRouter is the constructor of BaseRouter.
 func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br := &BaseRouter{
-		router:        mux.NewRouter(),
+		router:        newMuxRouter(),
 		handler:       handler,
 		authenticator: authenticator,
 	}

@@ -23,8 +23,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/mux"
-
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -118,7 +116,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 
 // HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
+	vars := getPathParams(req)
 	jobID := vars["job_id"]
 
 	jobStats, err := dh.controller.GetJob(jobID)
@@ -140,7 +138,7 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 
 // HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
+	vars := getPathParams(req)
 	jobID := vars["job_id"]
 
 	data, err := io.ReadAll(req.Body)
@@ -195,7 +193,7 @@ func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.
 
 // HandleJobLogReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
+	vars := getPathParams(req)
 	jobID := vars["job_id"]
 
 	if strings.Contains(jobID, "..") || strings.ContainsRune(jobID, os.PathSeparator) {
@@ -226,7 +224,7 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 // HandlePeriodicExecutions is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request) {
 	// Get param
-	vars := mux.Vars(req)
+	vars := getPathParams(req)
 	jobID := vars["job_id"]
 
 	// Get query params

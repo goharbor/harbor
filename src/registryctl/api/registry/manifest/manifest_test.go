@@ -9,9 +9,9 @@ import (
 	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
+	regBlob "github.com/goharbor/harbor/src/registryctl/api/registry/blob"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
 )
 
@@ -55,8 +55,7 @@ func TestDeleteManifest(t *testing.T) {
 	varMap := make(map[string]string, 1)
 	varMap["reference"] = manifestDigest.String()
 	varMap["name"] = fmt.Sprintf("%v", repo.Named())
-	req = mux.SetURLVars(req, varMap)
-
+	req = regBlob.SetURLVars(req, varMap)
 	manifestHandler := NewHandler(inmemoryDriver)
 	rec := httptest.NewRecorder()
 	manifestHandler.ServeHTTP(rec, req)

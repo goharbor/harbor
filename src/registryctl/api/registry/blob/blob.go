@@ -20,7 +20,6 @@ import (
 
 	"github.com/docker/distribution/registry/storage"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
@@ -56,7 +55,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracelib.StartTrace(r.Context(), tracerName, "delete-blob", trace.WithAttributes(attribute.Key("method").String(r.Method)))
 	defer span.End()
-	ref := mux.Vars(r)["reference"]
+	ref := getPathParams(r)["reference"]
 	if ref == "" {
 		err := errors.New("no reference specified")
 		tracelib.RecordError(span, err, "no reference specified")

@@ -7,7 +7,6 @@ import (
 
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/registryctl/api/registry/test"
@@ -47,7 +46,7 @@ func TestDeletionBlob(t *testing.T) {
 	}
 	varMap := make(map[string]string, 1)
 	varMap["reference"] = test.GetKeys(randomLayers1)[0].String()
-	req = mux.SetURLVars(req, varMap)
+	req = SetURLVars(req, varMap)
 
 	blobHandler := NewHandler(inmemoryDriver)
 	rec := httptest.NewRecorder()
