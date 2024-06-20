@@ -2,5 +2,5 @@ FROM photon:5.0
 
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -g 999 redis \
-    && useradd -u 999 -g 999 -c "Redis Database Server" -d /var/lib/redis -s /sbin/nologin -m redis
-RUN tdnf install -y redis && tdnf clean all
+    && useradd -u 999 -g 999 -c "Redis Database Server" -d /var/lib/redis -s /sbin/nologin -m redis \
+    && tdnf install -y redis && tdnf clean all
