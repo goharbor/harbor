@@ -17,5 +17,6 @@ def prepare_portal(config_dict):
         ip_family=config_dict['ip_family'],
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
+        ssl_protocols=config_dict['ssl_protocols'],
         strong_ssl_ciphers=config_dict['strong_ssl_ciphers']
         )
