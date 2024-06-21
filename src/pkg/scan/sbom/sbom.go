@@ -22,13 +22,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	scanCtl "github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -54,7 +52,6 @@ const (
 func init() {
 	scan.RegisterScanHanlder(v1.ScanTypeSbom, &scanHandler{
 		GenAccessoryFunc:       scan.GenAccessoryArt,
-		RegistryServer:         registry,
 		SBOMMgrFunc:            func() Manager { return Mgr },
 		TaskMgrFunc:            func() task.Manager { return task.Mgr },
 		ArtifactControllerFunc: func() artifact.Controller { return artifact.Ctl },
@@ -67,7 +64,6 @@ func init() {
 // scanHandler defines the Handler to generate sbom
 type scanHandler struct {
 	GenAccessoryFunc       func(scanRep v1.ScanRequest, sbomContent []byte, labels map[string]string, mediaType string, robot *model.Robot) (string, error)
-	RegistryServer         func(ctx context.Context) (string, bool)
 	SBOMMgrFunc            func() Manager
 	TaskMgrFunc            func() task.Manager
 	ArtifactControllerFunc func() artifact.Controller
@@ -96,8 +92,10 @@ func (h *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 		Registry: sr.Registry,
 		Artifact: sr.Artifact,
 	}
-	// the registry server url is core by default, need to replace it with real registry server url
-	scanReq.Registry.URL, scanReq.Registry.Insecure = h.RegistryServer(ctx.SystemContext())
+	scanReq.Registry.Insecure = strings.HasPrefix(scanReq.Registry.URL, "http://")
+	// the registry URL should not contain http:// or https:// prefix
+	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "http://")
+	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "https://")
 	if len(scanReq.Registry.URL) == 0 {
 		return "", fmt.Errorf("empty registry server")
 	}
@@ -168,19 +166,6 @@ func (h *scanHandler) Update(ctx context.Context, uuid string, report string) er
 		return err
 	}
 	return nil
-}
-
-// extract server name from config, and remove the protocol prefix
-func registry(ctx context.Context) (string, bool) {
-	cfgMgr, ok := config.FromContext(ctx)
-	if ok {
-		extURL := cfgMgr.Get(context.Background(), common.ExtEndpoint).GetString()
-		insecure := strings.HasPrefix(extURL, "http://")
-		server := strings.TrimPrefix(extURL, "https://")
-		server = strings.TrimPrefix(server, "http://")
-		return server, insecure
-	}
-	return "", false
 }
 
 // retrieveSBOMContent retrieves the "sbom" field from the raw report
