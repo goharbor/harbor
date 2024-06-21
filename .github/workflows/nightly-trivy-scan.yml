@@ -12,7 +12,7 @@ jobs:
       matrix:
         # maintain the versions of harbor that need to be actively
         # security scanned
-        versions: [dev, v2.10.0-dev]
+        versions: [dev, v2.11.0-dev]
         # list of images that need to be scanned
         images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare]
     permissions:
