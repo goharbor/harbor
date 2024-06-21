@@ -378,7 +378,10 @@ build:
 		PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator \
+		VERSIONTAG=$(VERSIONTAG) \
+		BASEIMAGETAG=$(BASEIMAGETAG) IMAGENAMESPACE=$(IMAGENAMESPACE) BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
+		PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB)
 
 build_base_docker:
 	if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
