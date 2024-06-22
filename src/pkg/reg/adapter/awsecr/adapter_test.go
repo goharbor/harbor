@@ -100,7 +100,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 			AccessKey:    "xxx",
 			AccessSecret: "ppp",
 		},
-		URL: "https://123456.dkr.ecr.us-iso-east-1.sc2s.sgov.gov",
+		URL: "https://123456.dkr.ecr.us-isob-east-1.sc2s.sgov.gov",
 	})
 	assert.Nil(t, err)
 	assert.NotNil(t, adapter)
