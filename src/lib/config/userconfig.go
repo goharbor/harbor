@@ -81,6 +81,7 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 		SearchScope:         mgr.Get(ctx, common.LDAPGroupSearchScope).GetInt(),
 		AdminDN:             mgr.Get(ctx, common.LDAPGroupAdminDn).GetString(),
 		MembershipAttribute: mgr.Get(ctx, common.LDAPGroupMembershipAttribute).GetString(),
+		SyncInBackground:    mgr.Get(ctx, common.LDAPGroupSyncInBackground).GetBool(),
 	}, nil
 }
 

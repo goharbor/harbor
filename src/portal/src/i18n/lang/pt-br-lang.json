@@ -924,7 +924,10 @@
             "LDAP_GROUP_MEMBERSHIP": "Filiação de Grupo LDAP",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Atributo que informa a lista de grupos do usuário. Se não informado, o nome \"memberof\" será usado. Alguns servidores LDAP utilizam o atributo \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
+            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão.",
+          "GROUP_SYNC_IN_BACKGROUND": "LDAP Group Sync in Background",
+            "GROUP_SYNC_IN_BACKGROUND_INFO": "Enable this option to sync LDAP group information in background to avoid timeout when there are too many groups. If disabled, the LDAP group information will be synced when the user logs in."
+
 
         },
         "UAA": {

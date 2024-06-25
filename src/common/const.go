@@ -134,6 +134,7 @@ const (
 	OIDCGroupType                     = 3
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
+	LDAPGroupSyncInBackground         = "ldap_group_sync_in_background"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"

@@ -83,11 +83,13 @@ func (m *manager) Get(ctx context.Context, id int) (*model.UserGroup, error) {
 func (m *manager) Populate(ctx context.Context, userGroups []model.UserGroup) ([]int, error) {
 	ugList := make([]int, 0)
 	for _, group := range userGroups {
-		err := m.Onboard(ctx, &group)
-		if err != nil {
-			// log the current error and continue
-			log.Warningf("failed to onboard user group %+v, error %v, continue with other user groups", group, err)
-			continue
+		if group.ID == 0 {
+			err := m.Onboard(ctx, &group)
+			if err != nil {
+				// log the current error and continue
+				log.Warningf("failed to onboard user group %+v, error %v, continue with other user groups", group, err)
+				continue
+			}
 		}
 		if group.ID > 0 {
 			ugList = append(ugList, group.ID)

@@ -927,7 +927,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Grup Üyeliği",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Öznitelik, LDAP grubunun üyeliğini gösterir, varsayılan değer memberof, bazı LDAP sunucularında \"ismemberof\" olabilir. This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin."
+            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin.",
+          "GROUP_SYNC_IN_BACKGROUND": "LDAP Group Sync in Background",
+            "GROUP_SYNC_IN_BACKGROUND_INFO": "Enable this option to sync LDAP group information in background to avoid timeout when there are too many groups. If disabled, the LDAP group information will be synced when the user logs in."
 
         },
         "UAA": {

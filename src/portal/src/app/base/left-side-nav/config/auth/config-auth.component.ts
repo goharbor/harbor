@@ -132,6 +132,10 @@ export class ConfigurationAuthComponent implements OnInit {
         this.currentConfig.ldap_verify_cert.value = $event;
     }
 
+    setLdapGroupSyncInBackgroundValue($event: any) {
+        this.currentConfig.ldap_group_sync_in_background.value = $event;
+    }
+
     public pingTestServer(): void {
         if (this.testingOnGoing) {
             return; // Should not come here

@@ -498,6 +498,35 @@
                 </option>
             </select>
         </clr-select-container>
+       <clr-checkbox-container>
+            <label for="ldapGroupSyncInBackground"
+                >{{ 'CONFIG.LDAP.GROUP_SYNC_IN_BACKGROUND' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.LDAP.GROUP_SYNC_IN_BACKGROUND_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="ldapGroupSyncInBackground"
+                    id="ldapGroupSyncInBackground"
+                    [ngModel]="currentConfig.ldap_group_sync_in_background.value"
+                    [disabled]="disabled(currentConfig.ldap_group_sync_in_background)"
+                    (ngModelChange)="setLdapGroupSyncInBackgroundValue($event)" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
     </section>
     <clr-checkbox-container *ngIf="showSelfReg">
         <label for="selfReg"

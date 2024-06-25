@@ -864,7 +864,7 @@
         "SESSION_TIMEOUT": "会话过期时间（分钟）",
         "SESSION_TIMEOUT_INFO": "设置 Harbor UI 的会话过期时间。默认值为60分钟。",
         "AUTH_MODE": "认证模式",
-        "PRIMARY_AUTH_MODE": "Primary Auth Mode",
+        "PRIMARY_AUTH_MODE": "首选认证模式",
         "PRO_CREATION_RESTRICTION": "项目创建",
         "SELF_REGISTRATION": "允许自注册",
         "AUTH_MODE_DB": "数据库",
@@ -926,7 +926,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP 组成员",
             "LDAP_GROUP_MEMBERSHIP_INFO": "LDAP组成员的membership属性，默认为 memberof, 在某些LDAP服务器会变为 ismemberof。如果要开启LDAP组功能，则此项必填",
             "GROUP_SCOPE": "LDAP组搜索范围",
-            "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\""
+            "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\"",
+            "GROUP_SYNC_IN_BACKGROUND": "LDAP组后台同步",
+            "GROUP_SYNC_IN_BACKGROUND_INFO": "在LDAP组数量较多的情况下，会导致用户登录超时，打开这个选项可以在后台同步组信息，如果未开启，则在用户登录的时候同步LDAP组信息。"
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",

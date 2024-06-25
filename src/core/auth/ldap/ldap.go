@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/ldap"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -116,8 +117,17 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 	if len(groupCfg.Filter) == 0 {
 		return
 	}
+	if groupCfg.SyncInBackground {
+		l.syncGroupIDFromDB(ctx, ldapUsers, u)
+		return
+	}
+	l.syncAndOnboardGroup(ctx, ldapUsers, u, sess)
+}
+
+func (l *Auth) syncAndOnboardGroup(ctx context.Context, ldapUsers []model.User, u *models.User, sess *ldap.Session) {
 	userGroups := make([]ugModel.UserGroup, 0)
 	for _, dn := range ldapUsers[0].GroupDNList {
+		// verify the group always exist in the ldap server and can be filtered by the ldap group search filter
 		lGroups, err := sess.SearchGroupByDN(dn)
 		if err != nil {
 			log.Warningf("Can not get the ldap group name with DN %v, error %v", dn, err)
@@ -129,9 +139,73 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		}
 		userGroups = append(userGroups, ugModel.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}
-	u.GroupIDs, err = ugCtl.Ctl.Populate(ctx, userGroups)
+	groupIDs, err := ugCtl.Ctl.Populate(ctx, userGroups)
 	if err != nil {
 		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+	}
+	u.GroupIDs = groupIDs
+}
+
+func (l *Auth) syncGroupIDFromDB(ctx context.Context, ldapUsers []model.User, u *models.User) {
+	userGroups := make([]ugModel.UserGroup, 0)
+	groupsToBeSync := make([]string, 0)
+	for _, dn := range ldapUsers[0].GroupDNList {
+		log.Debugf("sync group in background for user %v", u.Username)
+		groups, err := ugCtl.Ctl.List(ctx, q.New(q.KeyWords{"LdapGroupDN": dn}))
+		if err != nil {
+			log.Warningf("Failed to fetch ldap group configuration:%v", err)
+			continue
+		}
+		// if the group does not exist in Harbor, launch a go routine to sync it
+		// when a group not exist in Harbor, usually it should have no actual permission link to it, so we can skip attach the group id to current user
+		if len(groups) == 0 {
+			groupsToBeSync = append(groupsToBeSync, dn)
+			continue
+		}
+		// when there are many groups for a single user, we don't verify the group in ldap server for performance consideration and just attach it
+		// attach the existing group to the user, skip to verify it in the ldap server and do not verify the ldap group search filter
+		userGroups = append(userGroups, *groups[0])
+		log.Debugf("attached group %v to user %v", groups[0].ID, u.Username)
+	}
+	// sync group in background
+	if len(groupsToBeSync) > 0 {
+		go l.onBoardGroups(orm.Context(), groupsToBeSync)
+	}
+	groupIDs, err := ugCtl.Ctl.Populate(ctx, userGroups)
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+	}
+	u.GroupIDs = groupIDs
+}
+
+func (l *Auth) onBoardGroups(ctx context.Context, dnList []string) {
+	// use different session because it is background goroutine
+	ldapSession, err := ldapCtl.Ctl.Session(ctx)
+	if err != nil {
+		log.Errorf("can not load system ldap config: %v", err)
+		return
+	}
+	if err = ldapSession.Open(); err != nil {
+		log.Warningf("ldap connection fail: %v", err)
+		return
+	}
+	defer ldapSession.Close()
+
+	for _, dn := range dnList {
+		lGroups, err := ldapSession.SearchGroupByDN(dn) // make sure this group exist in LDAP and matched by filter
+		if err != nil {
+			log.Warningf("Can not get the ldap group name with DN %v, error %v", dn, err)
+			continue
+		}
+		if len(lGroups) == 0 {
+			log.Warningf("Can not get the ldap group name with DN %v", dn)
+			continue
+		}
+		u := &ugModel.UserGroup{GroupName: lGroups[0].Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType}
+		if err := l.OnBoardGroup(ctx, u, ""); err != nil {
+			log.Warningf("Failed to onboard group dn: %v, error %v", u.LdapGroupDN, err)
+			continue
+		}
 	}
 }
 
@@ -274,7 +348,6 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 				}
 			}
 		}
-
 		return nil
 	}
 

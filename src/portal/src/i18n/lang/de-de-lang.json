@@ -927,8 +927,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Gruppenmitgliedschaft",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
             "GROUP_SCOPE": "LDAP Gruppen Search Scope",
-            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
-
+            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree.",
+            "GROUP_SYNC_IN_BACKGROUND": "LDAP Group Sync in Background",
+            "GROUP_SYNC_IN_BACKGROUND_INFO": "Enable this option to sync LDAP group information in background to avoid timeout when there are too many groups. If disabled, the LDAP group information will be synced when the user logs in."               
         },
         "UAA": {
             "ENDPOINT": "UAA Endpunkt",

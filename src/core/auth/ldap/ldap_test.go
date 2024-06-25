@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@ package ldap
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -30,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	ldapModel "github.com/goharbor/harbor/src/pkg/ldap/model"
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	userpkg "github.com/goharbor/harbor/src/pkg/user"
@@ -454,4 +456,75 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	if len(memberList) == 0 {
 		t.Errorf("Failed to query project member, %v", queryMember)
 	}
+}
+
+func TestSyncGroupIDFromDB(t *testing.T) {
+	ctx := orm.Context()
+	user := &models.User{
+		Username: "mike01",
+	}
+	ldapUsers := []ldapModel.User{
+		{Username: "mike", GroupDNList: []string{"cn=harbor_users,ou=groups,dc=example,dc=com", "cn=harbor_admin,ou=groups,dc=example,dc=com"}},
+	}
+	userGroups := []ugModel.UserGroup{{GroupName: "harbor_users", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
+	groupIds, err := usergroup.Mgr.Populate(ctx, userGroups)
+	defer func() {
+		for _, id := range groupIds {
+			usergroup.Mgr.Delete(orm.Context(), id)
+		}
+	}()
+	if err != nil {
+		t.Errorf("failed to populate group in the database err: %v", err)
+	}
+	if len(groupIds) < 0 {
+		t.Errorf("failed to populate group in the database")
+	}
+	authHelper.syncGroupIDFromDB(ctx, ldapUsers, user)
+	// only one group id should be attached
+	assert.True(t, len(user.GroupIDs) == 1)
+	assert.Equal(t, user.GroupIDs[0], groupIds[0])
+
+	time.Sleep(2 * time.Second)
+	authHelper.syncGroupIDFromDB(ctx, ldapUsers, user)
+	// both two groups are attached
+	assert.True(t, len(user.GroupIDs) == 2)
+	defer func() {
+		for _, id := range user.GroupIDs {
+			usergroup.Mgr.Delete(orm.Context(), id)
+		}
+	}()
+}
+
+func TestOnBoardGroups(t *testing.T) {
+	groupListToDelete, err := usergroup.Mgr.List(orm.Context(), nil)
+	for _, group := range groupListToDelete {
+		usergroup.Mgr.Delete(orm.Context(), group.ID)
+	}
+	grps := []string{"cn=harbor_root,dc=harbor,dc=example,dc=com", "cn=harbor_admin,ou=groups,dc=example,dc=com"}
+	authHelper.onBoardGroups(orm.Context(), grps)
+	groupList, err := usergroup.Mgr.List(orm.Context(), nil)
+	defer func() {
+		for _, group := range groupList {
+			usergroup.Mgr.Delete(orm.Context(), group.ID)
+		}
+	}()
+	if err != nil {
+		t.Errorf("Failed to list user groups, %v", err)
+	}
+	assert.Equal(t, 2, len(groupList))
+}
+
+func TestSearchGroup(t *testing.T) {
+	ctx := orm.Context()
+	group, err := authHelper.SearchGroup(ctx, "cn=harbor_root,dc=harbor,dc=example,dc=com")
+	if err != nil {
+		t.Errorf("Failed to search group, %v", err)
+	}
+	if group == nil {
+		t.Errorf("Failed to search group")
+	}
+	assert.Equal(t, group.LdapGroupDN, "cn=harbor_root,dc=harbor,dc=example,dc=com")
+	_, err = authHelper.SearchGroup(ctx, "cn=nonexist,dc=harbor,dc=example,dc=com")
+	assert.NotNil(t, err)
+
 }

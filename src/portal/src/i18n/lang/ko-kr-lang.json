@@ -925,7 +925,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group 멤버쉽",
             "LDAP_GROUP_MEMBERSHIP_INFO": "속성은 LDAP 그룹의 멤버십을 나타내며 기본값은 memberof이며 일부 LDAP 서버에서는 \"ismemberof\"일 수 있습니다. LDAP 그룹 관련 기능을 활성화해야 하는 경우 이 필드를 비워둘 수 없습니다.",
             "GROUP_SCOPE": "LDAP 그룹 검색 범위",
-            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다."
+            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다.",
+          "GROUP_SYNC_IN_BACKGROUND": "LDAP Group Sync in Background",
+            "GROUP_SYNC_IN_BACKGROUND_INFO": "Enable this option to sync LDAP group information in background to avoid timeout when there are too many groups. If disabled, the LDAP group information will be synced when the user logs in."
 
         },
         "UAA": {
