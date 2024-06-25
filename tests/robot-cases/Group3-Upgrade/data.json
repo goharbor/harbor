@@ -28,7 +28,7 @@
    ],
    "endpoint":[
       {
-         "url":"https://harbor-repo.vmware.com",
+         "url":"https://registry.goharbor.io",
          "name":"endpoint_for_proxy_cache",
          "user":"",
          "pass":"",
