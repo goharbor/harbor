@@ -15,7 +15,6 @@
             <clr-dg-action-bar class="action-bar">
                 <div>
                     <button
-                        *ngIf="hasEnabledScanner"
                         id="scan-btn"
                         [clrLoading]="scanBtnState"
                         type="button"
@@ -35,7 +34,6 @@
                         <span>{{ 'VULNERABILITY.SCAN_NOW' | translate }}</span>
                     </button>
                     <button
-                        *ngIf="hasEnabledSbom()"
                         id="generate-sbom-btn"
                         [clrLoading]="generateSbomBtnState"
                         type="button"
@@ -69,7 +67,6 @@
                             <button
                                 clrDropdownItem
                                 id="stop-scan"
-                                *ngIf="hasEnabledScanner"
                                 [clrLoading]="stopBtnState"
                                 type="button"
                                 class="btn btn-secondary scan-btn action-dropdown-item"
@@ -84,7 +81,6 @@
                             <button
                                 clrDropdownItem
                                 id="stop-sbom-btn"
-                                *ngIf="hasEnabledSbom()"
                                 [clrLoading]="stopBtnState"
                                 type="button"
                                 class="btn btn-secondary scan-btn action-dropdown-item"
@@ -99,7 +95,6 @@
                                 <span>{{ 'SBOM.STOP' | translate }}</span>
                             </button>
                             <div
-                                *ngIf="hasEnabledScanner || hasEnabledSbom()"
                                 class="dropdown-divider"
                                 role="separator"
                                 aria-hidden="true"></div>
