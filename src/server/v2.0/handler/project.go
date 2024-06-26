@@ -818,6 +818,20 @@ func getProjectRegistrySummary(ctx context.Context, p *project.Project, summary 
 	}
 }
 
+func (a *projectAPI) UpdateStarStatusHandler(ctx context.Context, params operation.UpdateStarStatusParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectID, rbac.ActionUpdate); err != nil {
+			return a.SendError(ctx, err)
+	}
+
+	// Call the UpdateStarStatus method from the controller
+	err := a.controller.UpdateStarStatus(ctx, params.ProjectID, params.Body.IsStarred)
+	if err != nil {
+			return a.SendError(ctx, err)
+	}
+
+	return operation.NewUpdateStarStatusNoContent()
+}
+
 // Returns the highest role in the role list.
 // This func should be removed once we deprecate the "current_user_role_id" in project API
 // A user can have multiple roles and they may not have a strict ranking relationship
