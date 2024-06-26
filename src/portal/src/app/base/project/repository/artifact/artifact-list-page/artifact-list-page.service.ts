@@ -127,6 +127,12 @@ export class ArtifactListPageService {
                             ClrLoadingState.ERROR
                         );
                     }
+                } else {
+                    this.updateStates(
+                        false,
+                        ClrLoadingState.ERROR,
+                        ClrLoadingState.ERROR
+                    );
                 }
             },
             error => {

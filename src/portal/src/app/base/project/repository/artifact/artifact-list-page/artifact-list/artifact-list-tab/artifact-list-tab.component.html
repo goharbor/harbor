@@ -34,7 +34,6 @@
                         <span>{{ 'VULNERABILITY.SCAN_NOW' | translate }}</span>
                     </button>
                     <button
-                        *ngIf="hasEnabledSbom()"
                         id="generate-sbom-btn"
                         [clrLoading]="generateSbomBtnState"
                         type="button"
@@ -82,7 +81,6 @@
                             <button
                                 clrDropdownItem
                                 id="stop-sbom-btn"
-                                *ngIf="hasEnabledSbom()"
                                 [clrLoading]="stopBtnState"
                                 type="button"
                                 class="btn btn-secondary scan-btn action-dropdown-item"
