@@ -1031,38 +1031,38 @@
     },
     "SBOM": {
         "CHART": {
-            "SCANNING_TIME": "Scan completed time:",
-            "SCANNING_PERCENT": "Scan progress:",
-            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
-            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
-            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+            "SCANNING_TIME": "Temps d'analyse complète:",
+            "SCANNING_PERCENT": "Analyse en cours:",
+            "SCANNING_PERCENT_EXPLAIN": "Le pourcentage d'avancement de l'analyse est calculé comme suit : nombre d'images analysées avec succès / nombre total d'images référencées dans l'index d'images.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} sur {{totalPackages}} {{package}} ont un {{sbom}} connu.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} sur {{totalPackages}} {{package}} a un {{sbom}} connu.",
+            "TOOLTIPS_TITLE_ZERO": "Aucun SBOM identifiable détecté"
         },
         "GRID": {
-            "PLACEHOLDER": "No scan results found.",
+            "PLACEHOLDER": "Aucun résultat d'analyse trouvé.",
             "COLUMN_PACKAGE": "Package",
             "COLUMN_PACKAGES": "Packages",
-            "COLUMN_VERSION": "Current version",
+            "COLUMN_VERSION": "Version actuelle",
             "COLUMN_LICENSE": "License",
             "COLUMN_DESCRIPTION": "Description",
-            "FOOT_ITEMS": "Items",
+            "FOOT_ITEMS": "Elements",
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "No SBOM",
-            "QUEUED": "Queued",
-            "ERROR": "View Log",
-            "SCANNING": "Generating",
-            "STOPPED": "Generation stopped"
+            "OTHER_STATUS": "Pas de SBOM",
+            "QUEUED": "En attente",
+            "ERROR": "Voir le log",
+            "SCANNING": "En cours de génération",
+            "STOPPED": "Génération arrêtée"
         },
-        "NO_SBOM": "No SBOM",
+        "NO_SBOM": "Pas de SBOM",
         "PACKAGES": "SBOM",
-        "COMPLETED": "Completed",
-        "REPORTED_BY": "Reported by {{scanner}}",
-        "GENERATE": "Generate SBOM",
-        "DOWNLOAD": "Download SBOM",
-        "Details": "SBOM details",
-        "STOP": "Stop Generate SBOM",
+        "COMPLETED": "Terminé",
+        "REPORTED_BY": "Généré par {{scanner}}",
+        "GENERATE": "Générer le SBOM",
+        "DOWNLOAD": "Télécharger le SBOM",
+        "Details": "Détails du SBOM",
+        "STOP": "Arrêter la génération du SBOM",
         "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
     },
     "VULNERABILITY": {
@@ -1079,7 +1079,7 @@
             "COLUMN_SEVERITY": "Séverité",
             "COLUMN_PACKAGE": "Paquet",
             "COLUMN_PACKAGES": "Paquets",
-            "COLUMN_VERSION": "Version Actuelle",
+            "COLUMN_VERSION": "Version actuelle",
             "COLUMN_FIXED": "Réparé dans la version",
             "COLUMN_DESCRIPTION": "Description",
             "FOOT_ITEMS": "Entrées",
@@ -1089,8 +1089,8 @@
         },
         "CHART": {
             "SCANNING_TIME": "Temps d'analyse complète :",
-            "SCANNING_PERCENT": "Pourcentage de complétion d'analyse :",
-            "SCANNING_PERCENT_EXPLAIN": "Le pourcentage de complétion d'analyse est calculé en tant que nombre d'images analysées avec succès / nombre total d'images référencées dans l'index d'images.",
+            "SCANNING_PERCENT": "Analyse en cours :",
+            "SCANNING_PERCENT_EXPLAIN": "Le pourcentage d'avancement de l'analyse est calculé comme suit : nombre d'images analysées avec succès / nombre total d'images référencées dans l'index d'images.",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} sur {{totalPackages}} {{package}} ont des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} sur {{totalPackages}} {{package}} a des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_ZERO": "Pas de vulnérabilité identifiable trouvée"
@@ -1109,12 +1109,12 @@
         "PLACEHOLDER": "Filtrer les vulnérabilités",
         "PACKAGE": "paquet",
         "PACKAGES": "paquets",
-        "SCAN_NOW": "Scan vulnerability",
-        "SCAN_BY": "Scan par {{scanner}}",
+        "SCAN_NOW": "Lancer le scan de vulnérabilités",
+        "SCAN_BY": "Scanné par {{scanner}}",
         "REPORTED_BY": "Rapporté par {{scanner}}",
         "NO_SCANNER": "Aucun scanneur",
         "TRIGGER_STOP_SUCCESS": "Déclenchement avec succès de l'arrêt d'analyse",
-        "STOP_NOW": "Stop Scan Vulnerability"
+        "STOP_NOW": "Arrêter le scan de vulnérabilités"
     },
     "PUSH_IMAGE": {
         "TITLE": "Commande de push",
