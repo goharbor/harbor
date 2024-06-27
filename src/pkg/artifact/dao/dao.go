@@ -93,7 +93,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := querySetter(ctx, query)
+	qs, err := querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -282,8 +282,8 @@ func (d *dao) DeleteReferences(ctx context.Context, parentID int64) error {
 	return err
 }
 
-func querySetter(ctx context.Context, query *q.Query) (beegoorm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+func querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (beegoorm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Artifact{}, query, options...)
 	if err != nil {
 		return nil, err
 	}
