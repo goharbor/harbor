@@ -1,0 +1,3 @@
+Please wait for several minutes for Harbor deployment to complete.
+Then you should be able to visit the Harbor portal at {{ .Values.externalURL }}
+For more details, please visit https://github.com/goharbor/harbor

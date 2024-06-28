@@ -1,0 +1,182 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "harbor.jobservice" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: jobservice
+    app.kubernetes.io/component: jobservice
+spec:
+  replicas: {{ .Values.jobservice.replicas }}
+  revisionHistoryLimit: {{ .Values.jobservice.revisionHistoryLimit }}
+  strategy:
+    type: {{ .Values.updateStrategy.type }}
+    {{- if eq .Values.updateStrategy.type "Recreate" }}
+    rollingUpdate: null
+    {{- end }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: jobservice
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: jobservice
+        app.kubernetes.io/component: jobservice
+{{- if .Values.jobservice.podLabels }}
+{{ toYaml .Values.jobservice.podLabels | indent 8 }}
+{{- end }}
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/jobservice/jobservice-cm.yaml") . | sha256sum }}
+        checksum/configmap-env: {{ include (print $.Template.BasePath "/jobservice/jobservice-cm-env.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/jobservice/jobservice-secrets.yaml") . | sha256sum }}
+        checksum/secret-core: {{ include (print $.Template.BasePath "/core/core-secret.yaml") . | sha256sum }}
+{{- if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "auto") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/internal/auto-tls.yaml") . | sha256sum }}
+{{- else if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "manual") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/jobservice/jobservice-tls.yaml") . | sha256sum }}
+{{- end }}
+{{- if .Values.jobservice.podAnnotations }}
+{{ toYaml .Values.jobservice.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+{{- if .Values.jobservice.serviceAccountName }}
+      serviceAccountName: {{ .Values.jobservice.serviceAccountName }}
+{{- end -}}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: {{ .Values.jobservice.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
+{{- with .Values.jobservice.topologySpreadConstraints}}
+      topologySpreadConstraints:
+{{- range . }}
+      - {{ . | toYaml | indent 8 | trim }}
+        labelSelector:
+          matchLabels:
+{{ include "harbor.matchLabels" $ | indent 12 }}
+            component: jobservice
+{{- end }}
+{{- end }}
+      {{- with .Values.jobservice.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: jobservice
+        image: {{ .Values.jobservice.image.repository }}:{{ .Values.jobservice.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /api/v1/stats
+            scheme: {{ include "harbor.component.scheme" . | upper }}
+            port: {{ template "harbor.jobservice.containerPort" . }}
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/stats
+            scheme: {{ include "harbor.component.scheme" . | upper }}
+            port: {{ template "harbor.jobservice.containerPort" . }}
+          initialDelaySeconds: 20
+          periodSeconds: 10
+{{- if .Values.jobservice.resources }}
+        resources:
+{{ toYaml .Values.jobservice.resources | indent 10 }}
+{{- end }}
+        env:
+          - name: CORE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ default (include "harbor.core" .) .Values.core.existingSecret }}
+                key: secret
+          {{- if .Values.jobservice.existingSecret }}
+          - name: JOBSERVICE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.jobservice.existingSecret }}
+                key: {{ .Values.jobservice.existingSecretKey }}
+          {{- end }}
+          {{- if .Values.internalTLS.enabled }}
+          - name: INTERNAL_TLS_ENABLED
+            value: "true"
+          - name: INTERNAL_TLS_KEY_PATH
+            value: /etc/harbor/ssl/jobservice/tls.key
+          - name: INTERNAL_TLS_CERT_PATH
+            value: /etc/harbor/ssl/jobservice/tls.crt
+          - name: INTERNAL_TLS_TRUST_CA_PATH
+            value: /etc/harbor/ssl/jobservice/ca.crt
+          {{- end }}
+          {{- if .Values.registry.credentials.existingSecret }}
+          - name: REGISTRY_CREDENTIAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.registry.credentials.existingSecret }}
+                key: REGISTRY_PASSWD
+          {{- end }}
+{{- with .Values.jobservice.extraEnvVars }}
+{{- toYaml . | nindent 10 }}
+{{- end }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: "{{ template "harbor.jobservice" . }}-env"
+        - secretRef:
+            name: "{{ template "harbor.jobservice" . }}"
+        ports:
+        - containerPort: {{ template "harbor.jobservice.containerPort" . }}
+        volumeMounts:
+        - name: jobservice-config
+          mountPath: /etc/jobservice/config.yml
+          subPath: config.yml
+        - name: job-logs
+          mountPath: /var/log/jobs
+          subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.subPath }}
+        {{- if .Values.internalTLS.enabled }}
+        - name: jobservice-internal-certs
+          mountPath: /etc/harbor/ssl/jobservice
+        {{- end }}
+        {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 8 }}
+        {{- end }}
+      volumes:
+      - name: jobservice-config
+        configMap:
+          name: "{{ template "harbor.jobservice" . }}"
+      - name: job-logs
+        {{- if and .Values.persistence.enabled (has "file" .Values.jobservice.jobLoggers) }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.existingClaim | default (include "harbor.jobservice" .) }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- if .Values.internalTLS.enabled }}
+      - name: jobservice-internal-certs
+        secret:
+          secretName: {{ template "harbor.internalTLS.jobservice.secretName" . }}
+      {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+    {{- with .Values.jobservice.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.jobservice.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.jobservice.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.jobservice.priorityClassName }}
+      priorityClassName: {{ .Values.jobservice.priorityClassName }}
+    {{- end }}

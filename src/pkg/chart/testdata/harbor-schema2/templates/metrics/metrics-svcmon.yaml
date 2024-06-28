@@ -1,0 +1,28 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "harbor.fullname" . }}
+  labels: {{ include "harbor.labels" . | nindent 4 }}
+{{- if .Values.metrics.serviceMonitor.additionalLabels }}
+{{ toYaml .Values.metrics.serviceMonitor.additionalLabels | indent 4 }}
+{{- end }}
+spec:
+  jobLabel: app.kubernetes.io/name
+  endpoints:
+  - port:  {{ template "harbor.metricsPortName" . }}
+    {{- if .Values.metrics.serviceMonitor.interval }}
+    interval: {{ .Values.metrics.serviceMonitor.interval }}
+    {{- end }}
+    honorLabels: true
+{{- if .Values.metrics.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+{{ tpl (toYaml .Values.metrics.serviceMonitor.metricRelabelings | indent 4) . }}
+{{- end }}
+{{- if .Values.metrics.serviceMonitor.relabelings }}
+    relabelings:
+{{ toYaml .Values.metrics.serviceMonitor.relabelings | indent 4 }}
+{{- end }}
+  selector:
+    matchLabels: {{ include "harbor.matchLabels" . | nindent 6 }}
+{{- end }}
