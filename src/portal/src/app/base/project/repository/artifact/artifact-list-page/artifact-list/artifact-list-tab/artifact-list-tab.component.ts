@@ -888,7 +888,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
 
     selectedRowHasSbom(): boolean {
-        return !!(this.selectedRow && this.selectedRow[0]);
+        return !!(
+            this.selectedRow &&
+            this.selectedRow[0] &&
+            this.selectedRow[0].addition_links &&
+            this.selectedRow[0].addition_links[ADDITIONS.SBOMS]
+        );
     }
 
     hasVul(artifact: Artifact): boolean {
@@ -1078,6 +1083,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     getAccessoriesAsync(artifacts: ArtifactFront[]) {
         if (artifacts && artifacts.length) {
             artifacts.forEach(item => {
+                item.accessoryLoading = true;
                 const listTagParams: NewArtifactService.ListAccessoriesParams =
                     {
                         projectName: this.projectName,
@@ -1100,6 +1106,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             }
                         }
                         item.accessories = res.body;
+                        item.accessoryLoading = false;
                     });
             });
         }

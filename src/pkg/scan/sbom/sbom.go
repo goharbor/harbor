@@ -22,16 +22,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	scanCtl "github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan"
@@ -53,7 +52,6 @@ const (
 func init() {
 	scan.RegisterScanHanlder(v1.ScanTypeSbom, &scanHandler{
 		GenAccessoryFunc:       scan.GenAccessoryArt,
-		RegistryServer:         registry,
 		SBOMMgrFunc:            func() Manager { return Mgr },
 		TaskMgrFunc:            func() task.Manager { return task.Mgr },
 		ArtifactControllerFunc: func() artifact.Controller { return artifact.Ctl },
@@ -66,7 +64,6 @@ func init() {
 // scanHandler defines the Handler to generate sbom
 type scanHandler struct {
 	GenAccessoryFunc       func(scanRep v1.ScanRequest, sbomContent []byte, labels map[string]string, mediaType string, robot *model.Robot) (string, error)
-	RegistryServer         func(ctx context.Context) (string, bool)
 	SBOMMgrFunc            func() Manager
 	TaskMgrFunc            func() task.Manager
 	ArtifactControllerFunc func() artifact.Controller
@@ -95,8 +92,10 @@ func (h *scanHandler) PostScan(ctx job.Context, sr *v1.ScanRequest, _ *scanModel
 		Registry: sr.Registry,
 		Artifact: sr.Artifact,
 	}
-	// the registry server url is core by default, need to replace it with real registry server url
-	scanReq.Registry.URL, scanReq.Registry.Insecure = h.RegistryServer(ctx.SystemContext())
+	scanReq.Registry.Insecure = strings.HasPrefix(scanReq.Registry.URL, "http://")
+	// the registry URL should not contain http:// or https:// prefix
+	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "http://")
+	scanReq.Registry.URL = strings.TrimPrefix(scanReq.Registry.URL, "https://")
 	if len(scanReq.Registry.URL) == 0 {
 		return "", fmt.Errorf("empty registry server")
 	}
@@ -169,19 +168,6 @@ func (h *scanHandler) Update(ctx context.Context, uuid string, report string) er
 	return nil
 }
 
-// extract server name from config, and remove the protocol prefix
-func registry(ctx context.Context) (string, bool) {
-	cfgMgr, ok := config.FromContext(ctx)
-	if ok {
-		extURL := cfgMgr.Get(context.Background(), common.ExtEndpoint).GetString()
-		insecure := strings.HasPrefix(extURL, "http://")
-		server := strings.TrimPrefix(extURL, "https://")
-		server = strings.TrimPrefix(server, "http://")
-		return server, insecure
-	}
-	return "", false
-}
-
 // retrieveSBOMContent retrieves the "sbom" field from the raw report
 func retrieveSBOMContent(rawReport string) ([]byte, *v1.Scanner, error) {
 	rpt := sbom.RawSBOMReport{}
@@ -197,19 +183,15 @@ func retrieveSBOMContent(rawReport string) ([]byte, *v1.Scanner, error) {
 }
 
 func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) (rps []*scanModel.Report, err error) {
-	var reports []*scanModel.Report
 	mgr := h.SBOMMgrFunc()
 	mimeTypes := r.GetProducesMimeTypes(art.ManifestMediaType, v1.ScanTypeSbom)
 	if len(mimeTypes) == 0 {
 		return nil, errors.New("no mime types to make report placeholders")
 	}
-	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes[0], sbomMediaTypeSpdx)
-	if err != nil {
+	if err := h.delete(ctx, art, mimeTypes[0], r); err != nil {
 		return nil, err
 	}
-	if err := h.deleteSBOMAccessories(ctx, sbomReports); err != nil {
-		return nil, err
-	}
+	var reports []*scanModel.Report
 	for _, mt := range mimeTypes {
 		report := &sbom.Report{
 			ArtifactID:       art.ID,
@@ -240,54 +222,55 @@ func (h *scanHandler) MakePlaceHolder(ctx context.Context, art *artifact.Artifac
 	return reports, nil
 }
 
-// deleteSBOMAccessories delete the sbom accessory in reports
-func (h *scanHandler) deleteSBOMAccessories(ctx context.Context, reports []*sbom.Report) error {
+// delete deletes the sbom report and accessory
+func (h *scanHandler) delete(ctx context.Context, art *artifact.Artifact, mimeTypes string, r *scanner.Registration) error {
 	mgr := h.SBOMMgrFunc()
-	for _, rpt := range reports {
+	sbomReports, err := mgr.GetBy(h.cloneCtx(ctx), art.ID, r.UUID, mimeTypes, sbomMediaTypeSpdx)
+	if err != nil {
+		return err
+	}
+	// check if any report has running task associate with it
+	taskMgr := h.TaskMgrFunc()
+	for _, rpt := range sbomReports {
+		if !taskMgr.IsTaskFinished(ctx, rpt.UUID) {
+			return errors.ConflictError(nil).WithMessage("a previous sbom generate process is running")
+		}
+	}
+
+	for _, rpt := range sbomReports {
 		if rpt.MimeType != v1.MimeTypeSBOMReport {
 			continue
-		}
-		if err := h.deleteSBOMAccessory(ctx, rpt.ReportSummary); err != nil {
-			return err
 		}
 		if err := mgr.Delete(ctx, rpt.UUID); err != nil {
 			return err
 		}
 	}
+	if err := h.deleteSBOMAccessory(ctx, art.ID); err != nil {
+		return err
+	}
 	return nil
 }
 
 // deleteSBOMAccessory check if current report has sbom accessory info, if there is, delete it
-func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, report string) error {
-	if len(report) == 0 {
-		return nil
-	}
-	sbomSummary := sbom.Summary{}
-	if err := json.Unmarshal([]byte(report), &sbomSummary); err != nil {
-		// it could be a non sbom report, just skip
-		log.Debugf("fail to unmarshal %v, skip to delete sbom report", err)
-		return nil
-	}
-	repo, dgst := sbomSummary.SBOMAccArt()
-	if len(repo) == 0 || len(dgst) == 0 {
-		return nil
-	}
+func (h *scanHandler) deleteSBOMAccessory(ctx context.Context, artID int64) error {
 	artifactCtl := h.ArtifactControllerFunc()
-	art, err := artifactCtl.GetByReference(ctx, repo, dgst, nil)
-	if errors.IsNotFoundErr(err) {
-		return nil
-	}
+	art, err := artifactCtl.Get(ctx, artID, &artifact.Option{
+		WithAccessory: true,
+	})
 	if err != nil {
 		return err
 	}
 	if art == nil {
 		return nil
 	}
-	err = artifactCtl.Delete(ctx, art.ID)
-	if errors.IsNotFoundErr(err) {
-		return nil
+	for _, acc := range art.Accessories {
+		if acc.GetData().Type == accessoryModel.TypeHarborSBOM {
+			if err := artifactCtl.Delete(ctx, acc.GetData().ArtifactID); err != nil {
+				return err
+			}
+		}
 	}
-	return err
+	return nil
 }
 
 func (h *scanHandler) GetPlaceHolder(ctx context.Context, artRepo string, artDigest, scannerUUID string, mimeType string) (rp *scanModel.Report, err error) {
@@ -344,4 +327,8 @@ func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mi
 	}
 	err = json.Unmarshal([]byte(reportContent), &result)
 	return result, err
+}
+
+func (h *scanHandler) JobVendorType() string {
+	return job.SBOMJobVendorType
 }
