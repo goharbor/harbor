@@ -3,7 +3,7 @@ FROM ${GOLANG}
 
 ARG SPECTRAL_VERSION
 RUN case "$(dpkg --print-architecture)" in \
-    amd64) ARCH="x86" ;; \
+    amd64) ARCH="x64" ;; \
     arm64) ARCH="arm64" ;; \
     *) echo "Unsupported architecture" && exit 1 ;; \
     esac && \
