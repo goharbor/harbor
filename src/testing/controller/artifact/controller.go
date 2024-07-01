@@ -9,6 +9,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	model "github.com/goharbor/harbor/src/pkg/accessory/model"
+
 	processor "github.com/goharbor/harbor/src/controller/artifact/processor"
 
 	q "github.com/goharbor/harbor/src/lib/q"
@@ -289,6 +291,36 @@ func (_m *Controller) List(ctx context.Context, query *q.Query, option *artifact
 
 	if rf, ok := ret.Get(1).(func(context.Context, *q.Query, *artifact.Option) error); ok {
 		r1 = rf(ctx, query, option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListAccByArtID provides a mock function with given fields: ctx, ArtifactID
+func (_m *Controller) ListAccByArtID(ctx context.Context, ArtifactID int64) ([]model.Accessory, error) {
+	ret := _m.Called(ctx, ArtifactID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAccByArtID")
+	}
+
+	var r0 []model.Accessory
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) ([]model.Accessory, error)); ok {
+		return rf(ctx, ArtifactID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) []model.Accessory); ok {
+		r0 = rf(ctx, ArtifactID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.Accessory)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, ArtifactID)
 	} else {
 		r1 = ret.Error(1)
 	}
