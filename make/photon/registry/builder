@@ -22,6 +22,18 @@ cur=$PWD
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 
+# add patch 3599 to update AWS SDK
+echo 'add patch https://github.com/distribution/distribution/pull/3599 ...'
+cd $TEMP
+wget https://github.com/distribution/distribution/pull/3599.patch
+git apply 3599.patch
+
+# add patch 3921 for IRSA
+echo 'add patch https://github.com/distribution/distribution/pull/3921 ...'
+cd $TEMP
+wget https://github.com/distribution/distribution/pull/3921.patch
+git apply 3921.patch
+
 # add patch redis
 cd $TEMP
 git apply $cur/redis.patch
