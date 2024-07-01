@@ -1,0 +1,245 @@
+
+name: Uffizzi Cluster Preview (deploy)
+
+on:
+  workflow_run:
+    workflows:
+      - 'Preview (build)'
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+  actions: write
+
+jobs:
+  uffizzi-cluster-create:
+    name: Create Uffizzi Cluster
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      git-ref: ${{ env.GIT_REF }}
+      pr-number: ${{ env.PR_NUMBER }}
+      action: ${{ env.ACTION }}
+      HARBOR_HOST: ${{ steps.ingress.outputs.HARBOR_HOST }}
+    steps:   
+    - name: 'Download artifacts'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+          });
+          let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+            return artifact.name == "preview-spec"
+          })[0];
+          if (matchArtifact === undefined) {
+            throw TypeError('Build Artifact not found!');
+          }
+          let download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+          });
+          let fs = require('fs');
+          fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/preview-spec.zip`, Buffer.from(download.data));      
+    - name: 'Unzip artifact'
+      run: unzip preview-spec.zip
+
+    - name: Read Event into ENV
+      run: |
+        echo 'EVENT_JSON<<EOF' >> $GITHUB_ENV
+        cat event.json >> $GITHUB_ENV
+        echo -e '\nEOF' >> $GITHUB_ENV
+    - name: Read PR Number From Event Object
+      id: pr
+      run: echo "PR_NUMBER=${{ fromJSON(env.EVENT_JSON).number }}" >> $GITHUB_ENV
+
+    - name: Read Event Type from Event Object
+      id: action
+      run: echo "ACTION=${{ fromJSON(env.EVENT_JSON).action }}" >> $GITHUB_ENV
+
+    - name: Read Git Ref From Event Object
+      id: ref
+      run: echo "GIT_REF=${{ fromJSON(env.EVENT_JSON).pull_request.head.sha }}" >> $GITHUB_ENV
+
+    - name: DEBUG - Print Job Outputs
+      if: ${{ runner.debug }}
+      run: |
+        echo "PR number: ${{ env.PR_NUMBER }}"
+        echo "Git Ref: ${{ env.GIT_REF }}"
+        echo "Manifests file hash: ${{ env.MANIFESTS_FILE_HASH }}"
+        cat event.json
+    # Identify comment to be updated
+    - name: Find comment for Ephemeral Environment
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      uses: peter-evans/find-comment@v2
+      id: find-comment
+      with:
+        issue-number: ${{ env.PR_NUMBER }}
+        comment-author: "github-actions[bot]"
+        body-includes: ${{ env.PR_NUMBER }}
+        direction: last
+
+    # Create/Update comment with action deployment status
+    - name: Create or Update Comment with Deployment Notification
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      uses: peter-evans/create-or-update-comment@v2
+      id: notification
+      with:
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
+            :cloud: deploying cluster pr-${{ env.PR_NUMBER }}...
+            :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+                Download the Uffizzi CLI to interact with the upcoming virtual cluster
+            https://docs.uffizzi.com/install
+        edit-mode: replace
+
+    # Create/Connect to Uffizzi Virtual Cluster
+    - name: Connect to Virtual Cluster
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      uses: UffizziCloud/cluster-action@main
+      with:
+        cluster-name: pr-${{ env.PR_NUMBER }}
+
+    # Create/Update comment with action deployment status
+    - name: Create or Update Comment with Deployment URL
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.notification.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ## Uffizzi Ephemeral Environment - Virtual Cluster
+    
+            Your cluster `pr-${{ env.PR_NUMBER }}` was successfully created. Learn more about [Uffizzi virtual clusters](https://docs.uffizzi.com/topics/virtual-clusters)
+            To connect to this cluster, follow these steps:
+
+            1. Download and install the Uffizzi CLI from https://docs.uffizzi.com/install
+            2. Login to Uffizzi, then select the `harbor` account and project:
+            ```
+            uffizzi login
+            ```
+
+            ```
+            Select an account: 
+              ‣ ${{ github.event.repository.name }}
+                jdoe
+            
+            Select a project or create a new project: 
+              ‣ ${{ github.event.repository.name }}-6783521
+            ```
+            3. Update your kubeconfig: `uffizzi cluster update-kubeconfig pr-${{ env.PR_NUMBER }} --kubeconfig=[PATH_TO_KUBECONFIG]`
+            After updating your kubeconfig, you can manage your cluster with `kubectl`, `kustomize`, `helm`, and other tools that use kubeconfig files: `kubectl get namespace --kubeconfig [PATH_TO_KUBECONFIG]`
+
+        edit-mode: replace
+
+    - name: Apply Helm Chart
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      id: helm
+      run: |
+        export KUBECONFIG=kubeconfig
+        helm repo add harbor https://helm.goharbor.io
+        helm upgrade --install my-release harbor/harbor -f values.yaml
+    - name: Create ingress
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      id: ingress
+      run: |
+        sleep 20
+        echo "HARBOR_HOST=$(kubectl get ingress my-release-harbor-ingress --kubeconfig kubeconfig -o json | jq '.spec.rules[0].host' | tr -d '"')" >> "$GITHUB_OUTPUT"
+    - name: Update Comment with Harbor URL
+      if: ${{ fromJSON(env.EVENT_JSON).action != 'closed' }}
+      id: harbor_notify
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.notification.outputs.comment-id }}
+        issue-number: ${{ env.PR_NUMBER }}
+        body: |
+            ---
+            
+            ### Harbor Portal
+            Visit https://${{ steps.ingress.outputs.HARBOR_HOST }}
+            (It may take several minutes for the cluster pr-${{ env.PR_NUMBER }} to be ready.)
+            #### To login, use the default credentials:
+            Username: admin
+            Password: Harbor12345
+  cypress-run:
+    if: ${{ needs.uffizzi-cluster-create.outputs.action != 'closed' }}
+    name: Cypress run
+    runs-on: ubuntu-22.04
+    needs:
+      - uffizzi-cluster-create
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3 
+
+      - name: Cypress run
+        id: cypress
+        uses: gopuman/cypress-github-action@feat/add-test-reults-output
+        with:
+          working-directory: src/portal
+          config-file: cypress.config.ts
+          config: baseUrl=https://${{ needs.uffizzi-cluster-create.outputs.HARBOR_HOST }}
+
+      - name: Cypress output
+        uses: actions/github-script@v6.4.1
+        env:
+          PR_NUMBER: ${{ needs.uffizzi-cluster-create.outputs.pr-number }}          
+        with:
+          script: |
+            if (${{ steps.cypress.outputs.testResultsObject }} == "") {
+              console.log('No test results found')
+              return
+            }
+            const testResults = JSON.parse('${{ steps.cypress.outputs.testResultsObject }}')
+            const pr = ${{ env.PR_NUMBER }}
+            console.log("Success: " + testResults.success)
+            console.log("TotalPassed: " + testResults.totalPassed)
+            console.log("TotalFailed: " + testResults.totalFailed)
+            console.log("TotalPending: " + testResults.totalPending)
+            console.log("TotalSkipped: " + testResults.totalSkipped)
+            console.log("TotalDuration: " + testResults.totalDuration) 
+            const headers = [
+              { data: 'Result', header: true },
+              { data: 'Passed :white_check_mark:', header: true },
+              { data: 'Failed :x:', header: true },
+              { data: 'Pending :hand:', header: true },
+              { data: 'Skipped :leftwards_arrow_with_hook:', header: true },
+              { data: 'Duration :clock8:', header: true }
+            ]
+          
+            const status =
+              testResults.totalFailed === 0
+                ? 'Passing :white_check_mark:'
+                : 'Failing :red_circle:'
+          
+            const summaryRows = [
+              status,
+              `${testResults.totalPassed}`,
+              `${testResults.totalFailed}`,
+              `${testResults.totalPending}`,
+              `${testResults.totalSkipped}`,
+              `${testResults.totalDuration / 1000}s` || ''
+            ]                  
+            const tableRows = [headers.map(h => h.data), summaryRows].map(row => '|' + row.join('|') + '|').join('\\n');
+            github.rest.issues.createComment({
+              issue_number: pr,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body:`
+              Here are the test results:
+              
+            
+              | Result         | Passed ✅ | Failed ❌ | Pending ✋ | Skipped ↩️ | Duration 🕗 |
+              | -------------- | --------- | --------- | --------- | ---------- | ------------------ |
+              | ${status}      | ${testResults.totalPassed}        | ${testResults.totalFailed}        | ${testResults.totalPending}        | ${testResults.totalSkipped}        | ${testResults.totalDuration / 1000}s |
+            
+              `,
+            })
