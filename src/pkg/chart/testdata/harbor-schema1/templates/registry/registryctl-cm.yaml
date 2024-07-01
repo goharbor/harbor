@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.registryCtl" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  {{- template "harbor.traceEnvsForRegistryCtl" . }}

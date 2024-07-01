@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "harbor.core" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- with .Values.core.serviceAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+{{- if or (eq .Values.expose.ingress.controller "gce") (eq .Values.expose.ingress.controller "alb")  (eq .Values.expose.ingress.controller "f5-bigip") }}
+  type: NodePort
+{{- end }}
+  ports:
+    - name: {{ ternary "https-web" "http-web" .Values.internalTLS.enabled }}
+      port: {{ template "harbor.core.servicePort" . }}
+      targetPort: {{ template "harbor.core.containerPort" . }}
+{{- if .Values.metrics.enabled}}
+    - name: {{ template "harbor.metricsPortName" . }}
+      port: {{ .Values.metrics.core.port }}
+{{- end }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: core

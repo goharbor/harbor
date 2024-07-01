@@ -1,0 +1,24 @@
+apiVersion: v1
+appVersion: 2.11.0
+description: An open source trusted cloud native registry that stores, signs, and
+  scans content
+home: https://goharbor.io
+icon: https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/harbor-icon-color.png
+keywords:
+- docker
+- registry
+- harbor
+maintainers:
+- email: yan-yw.wang@broadcom.com
+  name: Yan Wang
+- email: wenkai.yin@broadcom.com
+  name: Wenkai Yin
+- email: miner.yang@broadcom.com
+  name: Miner Yang
+- email: shengwen.yu@broadcom.com
+  name: Shengwen Yu
+name: harbor
+sources:
+- https://github.com/goharbor/harbor
+- https://github.com/goharbor/harbor-helm
+version: 1.15.0

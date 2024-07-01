@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "harbor.portal" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: portal
+    app.kubernetes.io/component: portal
+spec:
+  replicas: {{ .Values.portal.replicas }}
+  revisionHistoryLimit: {{ .Values.portal.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: portal
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: portal
+        app.kubernetes.io/component: portal
+{{- if .Values.portal.podLabels }}
+{{ toYaml .Values.portal.podLabels | indent 8 }}
+{{- end }}
+      annotations:
+{{- if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "auto") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/internal/auto-tls.yaml") . | sha256sum }}
+{{- else if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "manual") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/portal/tls.yaml") . | sha256sum }}
+{{- end }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/portal/configmap.yaml") . | sha256sum }}  
+{{- if .Values.portal.podAnnotations }}
+{{ toYaml .Values.portal.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if .Values.portal.serviceAccountName }}
+      serviceAccountName: {{ .Values.portal.serviceAccountName }}
+{{- end }}
+      automountServiceAccountToken: {{ .Values.portal.automountServiceAccountToken | default false }}
+{{- with .Values.portal.topologySpreadConstraints}}
+      topologySpreadConstraints:
+{{- range . }}
+      - {{ . | toYaml | indent 8 | trim }}
+        labelSelector:
+          matchLabels:
+{{ include "harbor.matchLabels" $ | indent 12 }}
+            component: portal
+{{- end }}
+{{- end }}
+      {{- with .Values.portal.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: portal
+        image: {{ .Values.portal.image.repository }}:{{ .Values.portal.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+{{- if .Values.portal.resources }}
+        resources:
+{{ toYaml .Values.portal.resources | indent 10 }}
+{{- end }}
+{{- with .Values.portal.extraEnvVars }}
+        env:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /
+            scheme: {{ include "harbor.component.scheme" . | upper }}
+            port: {{ template "harbor.portal.containerPort" . }}
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            scheme: {{ include "harbor.component.scheme" . | upper }}
+            port: {{ template "harbor.portal.containerPort" . }}
+          initialDelaySeconds: 1
+          periodSeconds: 10
+        ports:
+        - containerPort: {{ template "harbor.portal.containerPort" . }}
+        volumeMounts:
+        - name: portal-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        {{- if .Values.internalTLS.enabled }}
+        - name: portal-internal-certs
+          mountPath: /etc/harbor/ssl/portal
+        {{- end }}
+      volumes:
+      - name: portal-config
+        configMap:
+          name: "{{ template "harbor.portal" . }}"
+      {{- if .Values.internalTLS.enabled }}
+      - name: portal-internal-certs
+        secret:
+          secretName: {{ template "harbor.internalTLS.portal.secretName" . }}
+      {{- end }}
+    {{- with .Values.portal.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.portal.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.portal.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.portal.priorityClassName }}
+      priorityClassName: {{ .Values.portal.priorityClassName }}
+    {{- end }}
