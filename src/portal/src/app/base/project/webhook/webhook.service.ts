@@ -40,11 +40,13 @@ export const PAYLOAD_FORMAT_I18N_MAP = {
 export enum WebhookType {
     HTTP = 'http',
     SLACK = 'slack',
+    TEAMS = 'teams',
 }
 
 export enum VendorType {
     WEBHOOK = 'WEBHOOK',
     SLACK = 'SLACK',
+    TEAMS = 'TEAMS',
 }
 
 @Injectable()

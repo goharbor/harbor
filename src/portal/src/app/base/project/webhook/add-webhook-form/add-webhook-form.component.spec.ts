@@ -81,7 +81,7 @@ describe('AddWebhookFormComponent', () => {
             'pushImage',
             'deleteImage',
         ],
-        notify_type: ['http', 'slack'],
+        notify_type: ['http', 'slack', 'teams'],
     };
 
     beforeEach(async () => {
