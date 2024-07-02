@@ -1,0 +1,35 @@
+{{- if .Values.metrics.enabled}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.exporter" . }}-env"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  {{- if has "jobservice" .Values.proxy.components }}
+  HTTP_PROXY: "{{ .Values.proxy.httpProxy }}"
+  HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
+  NO_PROXY: "{{ template "harbor.noProxy" . }}"
+  {{- end }}
+  LOG_LEVEL: "{{ .Values.logLevel }}"
+  HARBOR_EXPORTER_PORT: "{{ .Values.metrics.exporter.port }}"
+  HARBOR_EXPORTER_METRICS_PATH: "{{ .Values.metrics.exporter.path }}"
+  HARBOR_EXPORTER_METRICS_ENABLED: "{{ .Values.metrics.enabled }}"
+  HARBOR_EXPORTER_CACHE_TIME: "{{ .Values.exporter.cacheDuration }}"
+  HARBOR_EXPORTER_CACHE_CLEAN_INTERVAL: "{{ .Values.exporter.cacheCleanInterval }}"
+  HARBOR_METRIC_NAMESPACE: harbor
+  HARBOR_METRIC_SUBSYSTEM: exporter
+  HARBOR_REDIS_URL: "{{ template "harbor.redis.urlForJobservice" . }}"
+  HARBOR_REDIS_NAMESPACE: harbor_job_service_namespace
+  HARBOR_REDIS_TIMEOUT: "3600"
+  HARBOR_SERVICE_SCHEME: "{{ template "harbor.component.scheme" . }}"
+  HARBOR_SERVICE_HOST: "{{ template "harbor.core" . }}"
+  HARBOR_SERVICE_PORT: "{{ template "harbor.core.servicePort" . }}"
+  HARBOR_DATABASE_HOST: "{{ template "harbor.database.host" . }}"
+  HARBOR_DATABASE_PORT: "{{ template "harbor.database.port" . }}"
+  HARBOR_DATABASE_USERNAME: "{{ template "harbor.database.username" . }}"
+  HARBOR_DATABASE_DBNAME: "{{ template "harbor.database.coreDatabase" . }}"
+  HARBOR_DATABASE_SSLMODE: "{{ template "harbor.database.sslmode" . }}"
+  HARBOR_DATABASE_MAX_IDLE_CONNS: "{{ .Values.database.maxIdleConns }}"
+  HARBOR_DATABASE_MAX_OPEN_CONNS: "{{ .Values.database.maxOpenConns }}"
+{{- end}}
