@@ -928,7 +928,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
+          "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
+          "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
+          "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
 
         },
         "UAA": {
