@@ -1,0 +1,15 @@
+{{- if and .Values.internalTLS.enabled }}
+{{- if eq .Values.internalTLS.certSource "manual" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.registry.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ (required "The \"internalTLS.trustCa\" is required!" .Values.internalTLS.trustCa) | b64enc | quote }}
+  tls.crt: {{ (required "The \"internalTLS.registry.crt\" is required!" .Values.internalTLS.registry.crt) | b64enc | quote }}
+  tls.key: {{ (required "The \"internalTLS.registry.key\" is required!" .Values.internalTLS.registry.key) | b64enc | quote }}
+{{- end }}
+{{- end }}
