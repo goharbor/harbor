@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.portal" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  nginx.conf: |+
+    worker_processes auto;
+    pid /tmp/nginx.pid;
+    events {
+        worker_connections  1024;
+    }
+    http {
+        client_body_temp_path /tmp/client_body_temp;
+        proxy_temp_path /tmp/proxy_temp;
+        fastcgi_temp_path /tmp/fastcgi_temp;
+        uwsgi_temp_path /tmp/uwsgi_temp;
+        scgi_temp_path /tmp/scgi_temp;
+        server {
+    {{- if .Values.internalTLS.enabled }}
+            {{- if .Values.ipFamily.ipv4.enabled}}
+            listen {{ template "harbor.portal.containerPort" . }} ssl;
+            {{- end }}
+            {{- if .Values.ipFamily.ipv6.enabled}}
+            listen [::]:{{ template "harbor.portal.containerPort" . }} ssl;
+            {{- end }}
+            # SSL
+            ssl_certificate /etc/harbor/ssl/portal/tls.crt;
+            ssl_certificate_key /etc/harbor/ssl/portal/tls.key;
+
+            # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+            ssl_protocols TLSv1.2 TLSv1.3;
+            {{- if .Values.internalTLS.strong_ssl_ciphers }}
+            ssl_ciphers ECDHE+AESGCM:DHE+AESGCM:ECDHE+RSA+SHA256:DHE+RSA+SHA256:!AES128;
+            {{ else }}
+            ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
+            {{- end }}
+            ssl_prefer_server_ciphers on;
+            ssl_session_cache shared:SSL:10m;
+    {{- else }}
+            {{- if .Values.ipFamily.ipv4.enabled }}
+            listen {{ template "harbor.portal.containerPort" . }};
+            {{- end }}
+            {{- if .Values.ipFamily.ipv6.enabled}}
+            listen [::]:{{ template "harbor.portal.containerPort" . }};
+            {{- end }}
+    {{- end }}
+            server_name  localhost;
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            include /etc/nginx/mime.types;
+            gzip on;
+            gzip_min_length 1000;
+            gzip_proxied expired no-cache no-store private auth;
+            gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+            location /devcenter-api-2.0 {
+                try_files $uri $uri/ /swagger-ui-index.html;
+            }
+            location / {
+                try_files $uri $uri/ /index.html;
+            }
+            location = /index.html {
+                add_header Cache-Control "no-store, no-cache, must-revalidate";
+            }
+        }
+    }
