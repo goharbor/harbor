@@ -9,7 +9,7 @@ go version
 #go get -d github.com/docker/distribution
 #go get -d github.com/docker/libtrust
 #go get -d github.com/lib/pq
-#go get golang.org/x/lint/golint
+go install golang.org/x/lint/golint@latest
 #go get github.com/GeertJohan/fgt
 #go get github.com/dghubble/sling
 #set +e
