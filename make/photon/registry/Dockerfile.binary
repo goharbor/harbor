@@ -1,4 +1,4 @@
-FROM goharbor/golang:1.20.7
+FROM goharbor/golang:1.22.5
 
 ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
 ENV BUILDTAGS include_oss include_gcs
