@@ -67,7 +67,7 @@ func parseAccountRegion(url string) (string, string, error) {
 	if rs == nil {
 		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], rs[2], nil
+	return rs[1], rs[3], nil
 }
 
 type factory struct {
