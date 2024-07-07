@@ -24,8 +24,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gorilla/mux"
-
 	"github.com/goharbor/harbor/src/common"
 )
 
@@ -84,7 +82,7 @@ func Handler(resp *Response) func(http.ResponseWriter, *http.Request) {
 
 // NewServer creates a HTTP server for unit test
 func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
-	r := mux.NewRouter()
+	r := NewMuxRouter()
 
 	for _, mapping := range mappings {
 		r.PathPrefix(mapping.Pattern).Handler(mapping).Methods(mapping.Method)

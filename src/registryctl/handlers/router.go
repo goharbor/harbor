@@ -17,8 +17,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
-
 	"github.com/goharbor/harbor/src/registryctl/api"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/blob"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/manifest"
@@ -27,7 +25,7 @@ import (
 
 func newRouter(conf config.Configuration) http.Handler {
 	// create the root rooter
-	rootRouter := mux.NewRouter()
+	rootRouter := NewMuxRouter()
 	rootRouter.StrictSlash(true)
 	rootRouter.HandleFunc("/api/health", api.Health).Methods("GET")
 

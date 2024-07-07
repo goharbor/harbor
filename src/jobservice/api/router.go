@@ -18,9 +18,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib"
@@ -40,22 +37,10 @@ type Router interface {
 	ServeHTTP(w http.ResponseWriter, req *http.Request)
 }
 
-// BaseRouter provides the basic routes for the job service based on the golang http server mux.
-type BaseRouter struct {
-	// Use mux to keep the routes mapping.
-	router *mux.Router
-
-	// Handler used to handle the requests
-	handler Handler
-
-	// Do auth
-	authenticator Authenticator
-}
-
 // NewBaseRouter is the constructor of BaseRouter.
 func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br := &BaseRouter{
-		router:        newMuxRouter(),
+		router:        NewMuxRouter(),
 		handler:       handler,
 		authenticator: authenticator,
 	}
@@ -64,7 +49,7 @@ func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br.registerRoutes()
 
 	if tracelib.Enabled() {
-		br.router.Use(otelmux.Middleware("serve-http"))
+		addTracingMiddleware(br)
 	}
 	return br
 }

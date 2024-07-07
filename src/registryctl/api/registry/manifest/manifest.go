@@ -19,7 +19,6 @@ import (
 
 	"github.com/docker/distribution/registry/storage"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/gorilla/mux"
 	"github.com/opencontainers/go-digest"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -57,7 +56,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 	var span trace.Span
 	ctx := r.Context()
-	ref := mux.Vars(r)["reference"]
+	ref := getPathVars(r, "reference")
 	if tracelib.Enabled() {
 		ctx, span = tracelib.StartTrace(ctx, tracerName, "delete-manifest", trace.WithAttributes(attribute.Key("method").String(r.Method)))
 		defer span.End()
@@ -74,7 +73,7 @@ func (h *handler) delete(w http.ResponseWriter, r *http.Request) {
 		api.HandleBadRequest(w, errors.Wrap(err, "not supported reference"))
 		return
 	}
-	repoName := mux.Vars(r)["name"]
+	repoName := getPathVars(r, "name")
 	if repoName == "" {
 		err := errors.New("no repository name specified")
 		tracelib.RecordError(span, err, "no repository name specified")
