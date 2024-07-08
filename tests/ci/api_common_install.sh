@@ -25,7 +25,7 @@ sudo ./tests/hostcfg.sh
 # LDAP prepare phase, since LDAP service is a docker service.   #
 
 ip addr
-dns_ip=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
+dns_ip=$(sudo netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
 dns_ip_list=$(echo $dns_ip | tr " " "\n")
 dns_cfg=""
 for ip in $dns_ip_list
