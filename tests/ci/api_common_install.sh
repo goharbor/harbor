@@ -24,25 +24,25 @@ sudo ./tests/hostcfg.sh
 # Note: In LDAP pipeline, this setting must be done before      #
 # LDAP prepare phase, since LDAP service is a docker service.   #
 
-ip addr
-dns_ip=$(sudo netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
-dns_ip_list=$(echo $dns_ip | tr " " "\n")
-dns_cfg=""
-for ip in $dns_ip_list
-do
-    dns_cfg="$dns_cfg,\"$ip\""
-done
-
-cat /etc/docker/daemon.json
-
-if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
-    sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
-fi
-
-cat /etc/docker/daemon.json
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-sudo systemctl status docker
+# ip addr
+# dns_ip=$(sudo netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
+# dns_ip_list=$(echo $dns_ip | tr " " "\n")
+# dns_cfg=""
+# for ip in $dns_ip_list
+# do
+#     dns_cfg="$dns_cfg,\"$ip\""
+# done
+# 
+# cat /etc/docker/daemon.json
+# 
+# if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
+#     sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
+# fi
+# 
+# cat /etc/docker/daemon.json
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker
+# sudo systemctl status docker
 #                                                               #
 #---------------------------------------------------------------#
 
