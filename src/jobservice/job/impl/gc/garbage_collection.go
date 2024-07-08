@@ -229,6 +229,17 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	if len(orphanBlobs) != 0 {
 		blobs = append(blobs, orphanBlobs...)
 	}
+
+	// check for residual artifact trash and mock blob for deletion
+	mockedBlobs, err := gc.mockBlobsForTrashCleanup(ctx, blobs)
+	if err != nil {
+		gc.logger.Errorf("failed to mock blob for artifact trash cleanup: %v", err)
+		return err
+	}
+	if len(mockedBlobs) > 0 {
+		blobs = append(blobs, mockedBlobs...)
+	}
+
 	if len(blobs) == 0 {
 		if err := saveGCRes(ctx, int64(0), int64(0), int64(0)); err != nil {
 			gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
@@ -247,15 +258,18 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 			if gc.shouldStop(ctx) {
 				return errGcStop
 			}
-			blob.Status = blobModels.StatusDelete
-			count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
-			if err != nil {
-				gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
-				continue
-			}
-			if count == 0 {
-				gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
-				continue
+
+			if blob.ID != 0 {
+				blob.Status = blobModels.StatusDelete
+				count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+				if err != nil {
+					gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
+					continue
+				}
+				if count == 0 {
+					gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
+					continue
+				}
 			}
 		}
 		gc.logger.Infof("blob eligible for deletion: %s", blob.Digest)
@@ -321,16 +335,18 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				atomic.AddInt64(&index, 1)
 				index := atomic.LoadInt64(&index)
 
-				// set the status firstly, if the blob is updated by any HEAD/PUT request, it should be fail and skip.
-				blob.Status = blobModels.StatusDeleting
-				count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
-				if err != nil {
-					gc.logger.Errorf("[%s][%d/%d] failed to mark gc candidate deleting, skip: %s, %s", uid, index, total, blob.Digest, blob.Status)
-					continue
-				}
-				if count == 0 {
-					gc.logger.Warningf("[%s][%d/%d] no blob found to mark gc candidate deleting, ID:%d, digest:%s", uid, index, total, blob.ID, blob.Digest)
-					continue
+				if blob.ID != 0 {
+					// set the status firstly, if the blob is updated by any HEAD/PUT request, it should be fail and skip.
+					blob.Status = blobModels.StatusDeleting
+					count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
+					if err != nil {
+						gc.logger.Errorf("[%s][%d/%d] failed to mark gc candidate deleting, skip: %s, %s", uid, index, total, blob.Digest, blob.Status)
+						continue
+					}
+					if count == 0 {
+						gc.logger.Warningf("[%s][%d/%d] no blob found to mark gc candidate deleting, ID:%d, digest:%s", uid, index, total, blob.ID, blob.Digest)
+						continue
+					}
 				}
 
 				// remove tags and revisions of a manifest
@@ -744,4 +760,35 @@ func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
 	}
 	_ = ctx.Checkin(string(c))
 	return nil
+}
+
+// mockBlobsForTrashCleanup returns the mocked blobs for cleanup the residual artifact trash.
+// see issue https://github.com/goharbor/harbor/issues/20711 for more context.
+func (gc *GarbageCollector) mockBlobsForTrashCleanup(_ job.Context, uselessBlobs []*blobModels.Blob) ([]*blobModels.Blob, error) {
+	artifactTrashBlobs := make(map[string]bool)
+	for _, blob := range uselessBlobs {
+		if blob.IsManifest() {
+			// record the digests which were fanned out by blobs.
+			artifactTrashBlobs[blob.Digest] = true
+		}
+	}
+
+	var mockedBlobs []*blobModels.Blob
+	for digest, trashes := range gc.trashedArts {
+		// no trash digest found means the blob has been cleaned before,
+		// so it is a residual artifact trash, mock blob for deletion.
+		if !artifactTrashBlobs[digest] {
+			for _, trash := range trashes {
+				gc.logger.Infof("mock blob for artifact trash clean up, artifact trash digest: %s", trash.Digest)
+				mockedBlobs = append(mockedBlobs, &blobModels.Blob{
+					Digest:      trash.Digest,
+					ContentType: trash.ManifestMediaType,
+				})
+				// the digest is same for different repo, so here only need to mock one blob.
+				break
+			}
+		}
+	}
+
+	return mockedBlobs, nil
 }
