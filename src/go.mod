@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.22
+go 1.21
 
 replace github.com/goharbor/harbor => ../
 
