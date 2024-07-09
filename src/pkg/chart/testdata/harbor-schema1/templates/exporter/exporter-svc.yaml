@@ -1,0 +1,15 @@
+{{- if .Values.metrics.enabled}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.exporter" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: {{ template "harbor.metricsPortName" . }}
+      port: {{ .Values.metrics.exporter.port }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: exporter
+{{ end }}
