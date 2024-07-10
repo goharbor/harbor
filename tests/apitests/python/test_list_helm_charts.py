@@ -50,7 +50,7 @@ class TestProjects(unittest.TestCase):
         user_chart_password = "Aa123456"
         TestProjects.CHART_NAME = 'mariadb'
         TestProjects.VERSION = '18.2.6'
-        base.run_command( ["curl", r"-o", "./tests/apitests/python/mariadb-18.2.6.tgz", "https://storage.googleapis.com/harbor-builds/bin/mariadb-18.2.6.tgz"])
+        base.run_command( ["curl", r"-o", "./tests/apitests/python/mariadb-18.2.6.tgz", "https://storage.googleapis.com/harbor-ci-pipeline-store/bin/mariadb-18.2.6.tgz"])
 
         #1. Create a new user(UA);
         TestProjects.user_chart_id, user_chart_name = self.user.create_user(user_password = user_chart_password, **ADMIN_CLIENT)
