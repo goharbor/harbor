@@ -123,10 +123,18 @@ func ListRegistrations(ctx context.Context, query *q.Query) ([]*Registration, er
 	}
 
 	// Order the list
-	if query.Sorting != "" {
-		qs = qs.OrderBy(query.Sorting)
+	if len(query.Sorts) > 0 {
+		sortKey := ""
+		for _, sort := range query.Sorts {
+			if sort.DESC {
+				sortKey += " -" + sort.Key
+			} else {
+				sortKey += " " + sort.Key
+			}
+		}
+		qs = qs.OrderBy(sortKey)
 	} else {
-		qs = qs.OrderBy("-is_default", "-create_time")
+		qs = qs.OrderBy("-is_default", "-create_time") // -column means descending
 	}
 
 	l := make([]*Registration, 0)
