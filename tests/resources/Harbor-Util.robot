@@ -80,7 +80,7 @@ Switch To LDAP
     Config Harbor cfg  auth=ldap_auth  http_proxy=https
     Prepare
     Up Harbor
-    Docker Pull  osixia/openldap:1.1.7
+    Docker Pull  osixia/openldap:1.5.0
     ${rc}  ${output}=  Run And Return Rc And Output  cd tests && ./ldapprepare.sh
     Log  ${rc}
     Log  ${output}
