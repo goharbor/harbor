@@ -24,6 +24,7 @@
                                 canScanNow() &&
                                 selectedRowHasVul() &&
                                 hasEnabledScanner &&
+                                hasScannerSupportVulnerability &&
                                 hasScanImagePermission
                             )
                         "
@@ -33,15 +34,24 @@
                         <span>{{ 'VULNERABILITY.SCAN_NOW' | translate }}</span>
                     </button>
                     <button
-                        id="stop-scan"
-                        [clrLoading]="stopBtnState"
+                        id="generate-sbom-btn"
+                        [clrLoading]="generateSbomBtnState"
                         type="button"
-                        class="btn btn-secondary scan-btn"
-                        [disabled]="!(canStopScan() && hasScanImagePermission)"
-                        (click)="stopNow()">
-                        <clr-icon shape="stop" size="16"></clr-icon>&nbsp;
-                        <span>{{ 'VULNERABILITY.STOP_NOW' | translate }}</span>
+                        class="btn btn-secondary"
+                        [disabled]="
+                            !(
+                                canGenerateSbomNow() &&
+                                selectedRowHasSbom() &&
+                                hasEnabledScanner &&
+                                hasSbomPermission &&
+                                hasScannerSupportSBOM
+                            )
+                        "
+                        (click)="generateSbom()">
+                        <clr-icon shape="sbom" size="16"></clr-icon>&nbsp;
+                        <span>{{ 'SBOM.GENERATE' | translate }}</span>
                     </button>
+
                     <clr-dropdown class="btn btn-link" *ngIf="!depth">
                         <span
                             clrDropdownTrigger
@@ -54,6 +64,40 @@
                             class="action-dropdown"
                             clrPosition="bottom-left"
                             *clrIfOpen>
+                            <button
+                                clrDropdownItem
+                                id="stop-scan"
+                                [clrLoading]="stopBtnState"
+                                type="button"
+                                class="btn btn-secondary scan-btn action-dropdown-item"
+                                [disabled]="
+                                    !(canStopScan() && hasScanImagePermission)
+                                "
+                                (click)="stopNow()">
+                                <span>{{
+                                    'VULNERABILITY.STOP_NOW' | translate
+                                }}</span>
+                            </button>
+                            <button
+                                clrDropdownItem
+                                id="stop-sbom-btn"
+                                [clrLoading]="stopBtnState"
+                                type="button"
+                                class="btn btn-secondary scan-btn action-dropdown-item"
+                                [disabled]="
+                                    !(
+                                        canStopSbom() &&
+                                        hasSbomPermission &&
+                                        hasEnabledScanner
+                                    )
+                                "
+                                (click)="stopSbom()">
+                                <span>{{ 'SBOM.STOP' | translate }}</span>
+                            </button>
+                            <div
+                                class="dropdown-divider"
+                                role="separator"
+                                aria-hidden="true"></div>
                             <div
                                 id="artifact-list-copy-digest"
                                 class="action-dropdown-item no-border"
@@ -65,6 +109,10 @@
                                 (click)="showDigestId()">
                                 {{ 'REPOSITORY.COPY_DIGEST_ID' | translate }}
                             </div>
+                            <div
+                                class="dropdown-divider"
+                                role="separator"
+                                aria-hidden="true"></div>
                             <clr-dropdown>
                                 <button
                                     id="artifact-list-add-labels"
@@ -78,6 +126,10 @@
                                     ">
                                     {{ 'REPOSITORY.ADD_LABELS' | translate }}
                                 </button>
+                                <div
+                                    class="dropdown-divider"
+                                    role="separator"
+                                    aria-hidden="true"></div>
                                 <clr-dropdown-menu
                                     [hidden]="!selectedRow.length">
                                     <div class="filter-grid">
@@ -164,7 +216,7 @@
                     {{ 'REPOSITORY.SIGNED' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="'size'">
+            <clr-dg-column [clrDgSortBy]="'size'" class="size-column">
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[4] }">
                     {{ 'REPOSITORY.SIZE' | translate }}
                 </ng-template>
@@ -174,23 +226,29 @@
                     {{ 'REPOSITORY.VULNERABILITY' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column class="annotations-column">
+            <clr-dg-column class="sbom-column">
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
+                    {{ 'REPOSITORY.SBOM' | translate }}
+                </ng-template>
+            </clr-dg-column>
+            <clr-dg-column class="annotations-column">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
                     {{ 'ARTIFACT.ANNOTATION' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column>
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
                     {{ 'REPOSITORY.LABELS' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
                     {{ 'REPOSITORY.PUSH_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">
-                <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[9] }">
+                <ng-template
+                    [clrDgHideableColumn]="{ hidden: hiddenArray[10] }">
                     {{ 'REPOSITORY.PULL_TIME' | translate }}
                 </ng-template>
             </clr-dg-column>
@@ -390,6 +448,39 @@
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
+                    <div class="cell">
+                        <span
+                            *ngIf="artifact?.accessoryLoading"
+                            class="spinner spinner-inline ml-2"></span>
+                        <span
+                            *ngIf="
+                                !hasSbom(artifact) &&
+                                !artifact?.accessoryLoading
+                            ">
+                            {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
+                        </span>
+                        <hbr-sbom-bar
+                            (submitStopFinish)="submitSbomStopFinish($event)"
+                            (scanFinished)="sbomFinished($event)"
+                            *ngIf="
+                                hasSbom(artifact) && !artifact?.accessoryLoading
+                            "
+                            [inputScanner]="
+                                handleSbomOverview(artifact.sbom_overview)
+                                    ?.scanner
+                            "
+                            (submitFinish)="submitSbomFinish($event)"
+                            [projectName]="projectName"
+                            [projectId]="projectId"
+                            [repoName]="repoName"
+                            [accessories]="artifact?.accessories"
+                            [artifactDigest]="artifact?.digest"
+                            [sbomDigest]="artifact?.sbomDigest"
+                            [sbomOverview]="artifact?.sbom_overview">
+                        </hbr-sbom-bar>
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
                     <div class="cell" *ngIf="artifact.annotationsArray?.length">
                         <div class="bar-state">
                             <span class="label not-scan">{{
@@ -445,13 +536,18 @@
                                     [clrPosition]="'top-middle'"
                                     *clrIfOpen>
                                     <div
-                                        *ngFor="let label of artifact.labels"
-                                        class="margin-5px">
-                                        <hbr-label-piece
-                                            [labelWidth]="130"
-                                            [label]="label"
-                                            [withTooltip]="true">
-                                        </hbr-label-piece>
+                                        class="clr-signpost-content-label-list">
+                                        <div
+                                            *ngFor="
+                                                let label of artifact.labels
+                                            "
+                                            class="margin-5px">
+                                            <hbr-label-piece
+                                                [labelWidth]="130"
+                                                [label]="label"
+                                                [withTooltip]="true">
+                                            </hbr-label-piece>
+                                        </div>
                                     </div>
                                 </clr-signpost-content>
                             </clr-signpost>

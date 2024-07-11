@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "Vulnerability scanning",
         "AUTOSCAN_TOGGLE": "Automatically scan images on push",
-        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
+        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Add User Member",
@@ -403,6 +406,7 @@
         "REPOSITORY": "Repository",
         "ARTIFACT": "Artifact",
         "SCAN": "Scan",
+        "SBOM": "SBOM",
         "TAG": "Tag",
         "ACCESSORY": "Accessory",
         "ARTIFACT_ADDITION": "Artifact Addition",
@@ -700,7 +704,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Flatten 3 Levels': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandwidth",
         "BANDWIDTH_ERROR_TIP": "Please enter -1 or an integer greater than 0",
-        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each execution. Please pay attention to the number of concurrent executions. For unlimited bandwidth, please enter -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unlimited",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
@@ -775,6 +779,7 @@
         "ARTIFACTS": "Artifacts",
         "SIZE": "Size",
         "VULNERABILITY": "Vulnerabilities",
+        "SBOM": "SBOM",
         "BUILD_HISTORY": "Build History",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
@@ -801,6 +806,7 @@
         "FILTER_BY_LABEL": "Filter images by label",
         "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add Labels",
+        "STOP": "Stop",
         "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
@@ -1025,6 +1031,42 @@
         "IN_PROGRESS": "Search...",
         "BACK": "Back"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "No SBOM",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Generate SBOM ",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop Generate SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "Not Scanned",
@@ -1069,12 +1111,12 @@
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "package",
         "PACKAGES": "packages",
-        "SCAN_NOW": "Scan",
+        "SCAN_NOW": "Scan vulnerability ",
         "SCAN_BY": "SCAN BY {{scanner}}",
         "REPORTED_BY": "Reported by {{scanner}}",
         "NO_SCANNER": "NO SCANNER",
         "TRIGGER_STOP_SUCCESS": "Trigger stopping scan successfully",
-        "STOP_NOW": "Stop Scan"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Command",
@@ -1105,6 +1147,7 @@
         "ALL": "All",
         "PLACEHOLDER": "We couldn't find any artifacts!",
         "SCAN_UNSUPPORTED": "Unsupported",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Summary",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
@@ -1431,6 +1474,10 @@
         "NAME_REQUIRED": "Name is required",
         "NAME_REX": "Name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DESCRIPTION": "Description",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "Vulnerability",
+        "SUPPORTED": "Supported",
+        "NOT_SUPPORTED": "Not Supported",
         "ENDPOINT": "Endpoint",
         "ENDPOINT_EXISTS": "EndpointUrl already exists",
         "ENDPOINT_REQUIRED": "EndpointUrl is required",
@@ -1459,9 +1506,10 @@
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
         "VERSION_COLON": "Version:",
-        "CAPABILITIES": "Capabilities",
+        "CAPABILITIES": "Capabilities:",
         "CONSUMES_MIME_TYPES_COLON": "Consumes Mime Types:",
         "PRODUCTS_MIME_TYPES_COLON": "Produces Mime Types:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "Properties",
         "NEW_SCANNER": "NEW SCANNER",
         "SET_AS_DEFAULT": "SET AS DEFAULT",

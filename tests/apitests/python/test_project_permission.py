@@ -89,9 +89,12 @@ copy_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts?fr
 delete_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts/{}".format(harbor_base_url, project_name, source_artifact_tag), "DELETE", 200)
 
 # 6. Resource scan      actions: ['read', 'create', 'stop']
+stop_scan_payload = {
+    "scan_type": "vulnerability"
+}
 create_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202)
-stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202)
-read_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/0/log".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "get", 404)
+stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, stop_scan_payload)
+read_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/83be44fd-1234-5678-b49f-4b6d6e8f5730/log".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "get", 404)
 
 # 7. Resource tag      actions: ['list', 'create', 'delete']
 tag_payload = { "name": "test-{}".format(int(random.randint(1000, 9999))) }
@@ -249,16 +252,22 @@ resource_permissions = {
     "log": [list_log],
     "notification-policy": [create_webhook, list_webhook, read_webhook, update_webhook, list_webhook_executions, list_webhook_executions_tasks, read_webhook_executions_tasks, list_webhook_events, delete_webhook]
 }
-resource_permissions["all"] = [item for sublist in resource_permissions.values() for item in sublist]
 
 
 def main():
+    global resources  # Declare resources as a global variable
+
+    if str(resources) == "all":
+        resources = ','.join(str(key) for key in resource_permissions.keys())
+
     for resource in resources.split(","):
         for permission in resource_permissions[resource]:
             print("=================================================")
             print("call: {} {}".format(permission.method, permission.url))
             print("payload: {}".format(json.dumps(permission.payload)))
-            print("response: {}".format(permission.call().text))
+            resp = permission.call()
+            print("response: {}".format(resp.text))
+            print("response status code: {}".format(resp.status_code))
             print("=================================================\n")
 
 

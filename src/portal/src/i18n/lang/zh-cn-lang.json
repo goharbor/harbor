@@ -285,7 +285,10 @@
         "PREVENT_VULNERABLE_2": "以上的镜像运行。",
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
-        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描"
+        "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
+        "SBOM": "生成软件物料清单",
+        "AUTOSBOM_TOGGLE": "在推送镜像时自动生成软件物料清单",
+        "AUTOSBOM_POLICY": "在推送镜像时自动生成该镜像的软件物料清单（SBOM)。"
     },
     "MEMBER": {
         "NEW_USER": "添加用户成员",
@@ -402,6 +405,7 @@
         "REPOSITORY": "仓库",
         "ARTIFACT": "Artifact",
         "SCAN": "扫描",
+        "SBOM": "软件物料清单",
         "TAG": "Tag",
         "ACCESSORY": "附件",
         "ARTIFACT_ADDITION": "Artifact 额外信息",
@@ -698,7 +702,7 @@
         "FLATTEN_LEVEL_TIP_3": "'替换3级': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "带宽",
         "BANDWIDTH_ERROR_TIP": "请输入-1或者大于0的整数",
-        "BANDWIDTH_TOOLTIP": "设置执行该条同步规则时的最大网络带宽。实际总带宽需要考虑并发执行的情况。如无需限制，请输入-1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "无限制",
         "UNREACHABLE_SOURCE_REGISTRY": "连接源仓库失败，在编辑此规则前请先确保源仓库可用: {{error}}",
         "CRON_ERROR_TIP": "Cron 字符串的第一项必须为0且第二项不能为\"*\"",
@@ -773,6 +777,7 @@
         "ARTIFACTS": "Artifacts",
         "SIZE": "大小",
         "VULNERABILITY": "漏洞",
+        "SBOM": "软件物料清单",
         "BUILD_HISTORY": "构建历史",
         "SIGNED": "已签名",
         "AUTHOR": "作者",
@@ -797,6 +802,7 @@
         "LABELS": "标签",
         "ADD_LABEL_TO_IMAGE": "添加标签到此镜像",
         "ADD_LABELS": "添加标签",
+        "STOP": "Stop",
         "RETAG": "拷贝",
         "FILTER_BY_LABEL": "过滤标签",
         "FILTER_ARTIFACT_BY_LABEL": "通过标签过滤Artifact",
@@ -1022,6 +1028,42 @@
         "IN_PROGRESS": "搜索中...",
         "BACK": "返回"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "没有扫描结果.",
+            "COLUMN_PACKAGE": "软件包",
+            "COLUMN_PACKAGES": "软件包",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_LICENSE": "许可证",
+            "COLUMN_DESCRIPTION": "描述",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "无软件物料清单",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "无软件物料清单",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "生成软件物料清单",
+        "DOWNLOAD": "下载软件物料清单",
+        "Details": "软件物料清单详情",
+        "STOP": "停止生成软件物料清单",
+        "TRIGGER_STOP_SUCCESS": "成功触发停止执行"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "未扫描",
@@ -1066,12 +1108,12 @@
         "PLACEHOLDER": "过滤漏洞",
         "PACKAGE": "组件",
         "PACKAGES": "组件",
-        "SCAN_NOW": "扫描",
+        "SCAN_NOW": "漏洞扫描",
         "SCAN_BY": "使用 {{scanner}} 进行扫描",
         "REPORTED_BY": "结果由 {{scanner}} 提供",
         "NO_SCANNER": "无扫描器",
         "TRIGGER_STOP_SUCCESS": "停止扫描成功",
-        "STOP_NOW": "停止扫描"
+        "STOP_NOW": "停止漏洞扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
@@ -1102,6 +1144,7 @@
         "ALL": "所有",
         "PLACEHOLDER": "未发现任何 artifacts!",
         "SCAN_UNSUPPORTED": "不支持扫描",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "概要",
         "DEPENDENCIES": "依赖",
         "VALUES": "取值",
@@ -1426,6 +1469,10 @@
         "NAME_REQUIRED": "名称为必填项",
         "NAME_REX": "名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "DESCRIPTION": "描述",
+        "SBOM": "软件物料清单",
+        "VULNERABILITY": "漏洞扫描",
+        "SUPPORTED": "支持",
+        "NOT_SUPPORTED": "不支持",
         "ENDPOINT": "地址",
         "ENDPOINT_EXISTS": "地址已存在",
         "ENDPOINT_REQUIRED": "地址为必填项",
@@ -1454,9 +1501,10 @@
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
         "VERSION_COLON": "Version:",
-        "CAPABILITIES": "Capabilities",
+        "CAPABILITIES": "Capabilities:",
         "CONSUMES_MIME_TYPES_COLON": "Consumes Mime Types:",
         "PRODUCTS_MIME_TYPES_COLON": "Produces Mime Types:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "Properties",
         "NEW_SCANNER": "新建扫描器",
         "SET_AS_DEFAULT": "设为默认",

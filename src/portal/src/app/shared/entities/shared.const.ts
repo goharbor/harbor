@@ -14,6 +14,7 @@
 
 import locale_en from '@angular/common/locales/en';
 import locale_zh_CN from '@angular/common/locales/zh-Hans';
+import locale_kr from '@angular/common/locales/ko';
 import locale_zh_TW from '@angular/common/locales/zh-Hans-HK';
 import locale_es from '@angular/common/locales/es';
 import locale_fr from '@angular/common/locales/fr';
@@ -237,6 +238,7 @@ export const LANGUAGES = {
     'en-us': ['English', locale_en],
     'zh-cn': ['中文简体', locale_zh_CN],
     'zh-tw': ['中文繁體', locale_zh_TW],
+    'ko-kr': ['한국어', locale_kr],
     'es-es': ['Español', locale_es],
     'fr-fr': ['Français', locale_fr],
     'pt-br': ['Português do Brasil', locale_pt],
@@ -382,3 +384,8 @@ export const stringsForClarity: Partial<ClrCommonStrings> = {
     datepickerSelectYearText: 'CLARITY.DATE_PICKER_SELECT_YEAR_TEXT',
     datepickerSelectedLabel: 'CLARITY.DATE_PICKER_SELECTED_LABEL',
 };
+
+export enum ScanTypes {
+    SBOM = 'sbom',
+    VULNERABILITY = 'vulnerability',
+}

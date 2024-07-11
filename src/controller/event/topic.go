@@ -159,7 +159,7 @@ func (p *PushArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 		ResourceType: "artifact"}
 
 	if len(p.Tags) == 0 {
-		auditLog.Resource = fmt.Sprintf("%s:%s",
+		auditLog.Resource = fmt.Sprintf("%s@%s",
 			p.Artifact.RepositoryName, p.Artifact.Digest)
 	} else {
 		auditLog.Resource = fmt.Sprintf("%s:%s",
@@ -188,7 +188,7 @@ func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 		ResourceType: "artifact"}
 
 	if len(p.Tags) == 0 {
-		auditLog.Resource = fmt.Sprintf("%s:%s",
+		auditLog.Resource = fmt.Sprintf("%s@%s",
 			p.Artifact.RepositoryName, p.Artifact.Digest)
 	} else {
 		auditLog.Resource = fmt.Sprintf("%s:%s",
@@ -222,7 +222,7 @@ func (d *DeleteArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
 		Operation:    rbac.ActionDelete.String(),
 		Username:     d.Operator,
 		ResourceType: "artifact",
-		Resource:     fmt.Sprintf("%s:%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
+		Resource:     fmt.Sprintf("%s@%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
 	return auditLog, nil
 }
 
@@ -289,6 +289,7 @@ func (d *DeleteTagEvent) String() string {
 // ScanImageEvent is scanning image related event data to publish
 type ScanImageEvent struct {
 	EventType string
+	ScanType  string
 	Artifact  *v1.Artifact
 	OccurAt   time.Time
 	Operator  string

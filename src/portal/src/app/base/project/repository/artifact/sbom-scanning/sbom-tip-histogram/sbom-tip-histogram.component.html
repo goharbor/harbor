@@ -1,0 +1,55 @@
+<div class="tip-wrapper width-120">
+    <clr-tooltip *ngIf="showTooltip()">
+        <div clrTooltipTrigger class="tip-block">
+            <div *ngIf="showSbomDetailLink()" class="circle-block">
+                <a
+                    href="javascript:void(0)"
+                    class="digest"
+                    (click)="goIntoArtifactSbomSummaryPage()"
+                    title="{{ 'SBOM.Details' | translate }}">
+                    {{ 'SBOM.Details' | translate }}</a
+                >
+            </div>
+            <div *ngIf="showNoSbom()" class="tip-wrapper label width-120">
+                {{ 'SBOM.NO_SBOM' | translate }}
+            </div>
+        </div>
+        <clr-tooltip-content
+            class="w-800"
+            [clrPosition]="'right'"
+            [clrSize]="'lg'"
+            *clrIfOpen>
+            <div class="bar-tooltip-font-larger">
+                <div
+                    *ngIf="showSbomDetailLink()"
+                    class="level-border clr-display-inline-block margin-right-5">
+                    <div>
+                        {{ 'SBOM.PACKAGES' | translate }}
+                    </div>
+                </div>
+                <ng-container *ngIf="showNoSbom()">
+                    <span>{{ 'SBOM.NO_SBOM' | translate }}</span>
+                </ng-container>
+            </div>
+            <hr />
+            <div *ngIf="scanner">
+                <span class="bar-scanning-time">{{
+                    'SCANNER.SCANNED_BY' | translate
+                }}</span>
+                <span class="margin-left-5">{{ getScannerInfo() }}</span>
+            </div>
+            <div>
+                <span class="bar-scanning-time">{{
+                    'SCANNER.DURATION' | translate
+                }}</span>
+                <span class="margin-left-5">{{ duration() }}</span>
+            </div>
+            <div>
+                <span class="bar-scanning-time"
+                    >{{ 'SBOM.CHART.SCANNING_TIME' | translate }}
+                </span>
+                <span>{{ completeTimestamp | harborDatetime : 'short' }}</span>
+            </div>
+        </clr-tooltip-content>
+    </clr-tooltip>
+</div>

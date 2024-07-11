@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	sbomprocessor "github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -36,6 +37,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	pkgArt "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/scan/sbom"
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
@@ -72,6 +75,8 @@ type ArtifactEventHandler struct {
 	execMgr task.ExecutionManager
 	// reportMgr for managing scan reports
 	reportMgr report.Manager
+	// sbomReportMgr
+	sbomReportMgr sbom.Manager
 	// artMgr for managing artifacts
 	artMgr pkgArt.Manager
 
@@ -258,6 +263,11 @@ func (a *ArtifactEventHandler) onPush(ctx context.Context, event *event.Artifact
 		if err := autoScan(ctx, &artifact.Artifact{Artifact: *event.Artifact}, event.Tags...); err != nil {
 			log.Errorf("scan artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
 		}
+
+		log.Debugf("auto generate sbom is triggered for artifact event %+v", event)
+		if err := autoGenSBOM(ctx, &artifact.Artifact{Artifact: *event.Artifact}); err != nil {
+			log.Errorf("generate sbom for artifact %s@%s failed, error: %v", event.Artifact.RepositoryName, event.Artifact.Digest, err)
+		}
 	}()
 
 	return nil
@@ -314,6 +324,17 @@ func (a *ArtifactEventHandler) onDelete(ctx context.Context, event *event.Artifa
 		log.Errorf("failed to delete scan reports of artifact %v, error: %v", unrefDigests, err)
 	}
 
+	// delete sbom_report when the subject artifact is deleted
+	if err := sbom.Mgr.DeleteByArtifactID(ctx, event.Artifact.ID); err != nil {
+		log.Errorf("failed to delete sbom reports of artifact ID %v, error: %v", event.Artifact.ID, err)
+	}
+
+	// delete sbom_report when the accessory artifact is deleted
+	if event.Artifact.Type == sbomprocessor.ArtifactTypeSBOM && len(event.Artifact.Digest) > 0 {
+		if err := sbom.Mgr.DeleteByExtraAttr(ctx, v1.MimeTypeSBOMReport, "sbom_digest", event.Artifact.Digest); err != nil {
+			log.Errorf("failed to delete sbom reports of with sbom digest %v, error: %v", event.Artifact.Digest, err)
+		}
+	}
 	return nil
 }
 

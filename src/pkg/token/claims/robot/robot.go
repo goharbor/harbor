@@ -17,8 +17,9 @@ package robot
 import (
 	"errors"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -45,8 +46,9 @@ func (rc Claim) Valid() error {
 	if rc.Access == nil {
 		return errors.New("the access info cannot be nil")
 	}
-	stdErr := rc.RegisteredClaims.Valid()
-	if stdErr != nil {
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway))
+
+	if stdErr := v.Validate(rc.RegisteredClaims); stdErr != nil {
 		return stdErr
 	}
 	return nil
