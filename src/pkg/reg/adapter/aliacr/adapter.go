@@ -48,9 +48,7 @@ func getURL(url string) (string, error) {
 	if url == "" {
 		return "", errors.New("empty url")
 	}
-
-	var rs []string
-	rs = regACRServiceURL.FindStringSubmatch(url)
+	rs := regACRServiceURL.FindStringSubmatch(url)
 	if rs == nil {
 		return url, nil
 	}
@@ -77,12 +75,11 @@ func parseRegistryService(service string) (*registryServiceInfo, error) {
 			RegionID:   parts[1],
 			InstanceID: parts[length-1],
 		}, nil
-	} else {
-		return &registryServiceInfo{
-			IsACREE:  false,
-			RegionID: parts[1],
-		}, nil
 	}
+	return &registryServiceInfo{
+		IsACREE:  false,
+		RegionID: parts[1],
+	}, nil
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
