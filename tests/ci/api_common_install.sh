@@ -24,25 +24,25 @@ sudo ./tests/hostcfg.sh
 # Note: In LDAP pipeline, this setting must be done before      #
 # LDAP prepare phase, since LDAP service is a docker service.   #
 
-ip addr
-dns_ip=$(netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
-dns_ip_list=$(echo $dns_ip | tr " " "\n")
-dns_cfg=""
-for ip in $dns_ip_list
-do
-    dns_cfg="$dns_cfg,\"$ip\""
-done
-
-cat /etc/docker/daemon.json
-
-if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
-    sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
-fi
-
-cat /etc/docker/daemon.json
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-sudo systemctl status docker
+# ip addr
+# dns_ip=$(sudo netplan ip leases eth0 | grep -i dns | awk -F = '{print $2}')
+# dns_ip_list=$(echo $dns_ip | tr " " "\n")
+# dns_cfg=""
+# for ip in $dns_ip_list
+# do
+#     dns_cfg="$dns_cfg,\"$ip\""
+# done
+# 
+# cat /etc/docker/daemon.json
+# 
+# if [ $(cat /etc/docker/daemon.json |grep \"dns\" |wc -l) -eq 0 ];then
+#     sudo sed "s/}/,\n   \"dns\": [${dns_cfg:1}]\n}/" -i /etc/docker/daemon.json
+# fi
+# 
+# cat /etc/docker/daemon.json
+# sudo systemctl daemon-reload
+# sudo systemctl restart docker
+# sudo systemctl status docker
 #                                                               #
 #---------------------------------------------------------------#
 
@@ -57,5 +57,5 @@ pip -V
 #sudo apt-get update && sudo apt-get install -y --no-install-recommends libssl-dev && sudo apt-get autoremove -y && sudo rm -rf /var/lib/apt/lists/*
 sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests --upgrade
 sudo make build_base_images -e BASEIMAGETAG=dev
-sudo make install GOBUILDIMAGE=goharbor/golang:1.20.7 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true BUILDBIN=true PULL_BASE_FROM_DOCKERHUB=false
+sudo make install GOBUILDIMAGE=goharbor/golang:1.21.12 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true CHARTFLAG=true BUILDBIN=true PULL_BASE_FROM_DOCKERHUB=false
 sleep 10

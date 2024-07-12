@@ -43,25 +43,25 @@ You can compile the code by one of the three approaches:
 - Get official Golang image from docker hub:
 
   ```sh
-     $ docker pull goharbor/golang:1.20.7
+     $ docker pull goharbor/golang:1.21.12
   ```
 
 - Build, install and bring up Harbor without Notary:
 
   ```sh
-     $ make install GOBUILDIMAGE=goharbor/golang:1.20.7 COMPILETAG=compile_golangimage
+     $ make install GOBUILDIMAGE=goharbor/golang:1.21.12 COMPILETAG=compile_golangimage
   ```
 
 - Build, install and bring up Harbor with Notary:
 
   ```sh
-     $ make install GOBUILDIMAGE=golang:1.17.9 COMPILETAG=compile_golangimage NOTARYFLAG=true
+     $ make install GOBUILDIMAGE=goharbor/golang:1.21.12 COMPILETAG=compile_golangimage NOTARYFLAG=true
   ```
 
 - Build, install and bring up Harbor with Clair:
 
   ```sh
-     $ make install GOBUILDIMAGE=golang:1.17.9 COMPILETAG=compile_golangimage CLAIRFLAG=true
+     $ make install GOBUILDIMAGE=goharbor/golang:1.21.12 COMPILETAG=compile_golangimage CLAIRFLAG=true
   ```
 
 #### II. Compile code with your own Golang environment, then build Harbor

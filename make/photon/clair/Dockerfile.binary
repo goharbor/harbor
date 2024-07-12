@@ -1,7 +1,8 @@
-FROM golang:1.15.6
+FROM goharbor/golang:1.21.12
 
 ADD .   /go/src/github.com/quay/clair/
 WORKDIR /go/src/github.com/quay/clair/
 
 RUN export CLAIR_VERSION=$(git describe --tag --always --dirty) GO111MODULE=on && \
+    go get github.com/PuerkitoBio/goquery && \
 	go build -ldflags "-X github.com/quay/clair/pkg/version.Version=$CLAIR_VERSION" ./cmd/clair

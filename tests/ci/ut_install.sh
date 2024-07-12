@@ -4,16 +4,18 @@ set -ex
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
 sudo go env -w GO111MODULE=auto
-go get -d github.com/docker/distribution
-go get -d github.com/docker/libtrust
-go get -d github.com/lib/pq
-go get golang.org/x/lint/golint
-go get github.com/GeertJohan/fgt
-go get github.com/dghubble/sling
-set +e
-go get golang.org/x/tools/cmd/cover
-go get github.com/mattn/goveralls
-go get -u github.com/client9/misspell/cmd/misspell
+pwd
+go version
+#go get -d github.com/docker/distribution
+#go get -d github.com/docker/libtrust
+#go get -d github.com/lib/pq
+go install golang.org/x/lint/golint@latest
+#go get github.com/GeertJohan/fgt
+#go get github.com/dghubble/sling
+#set +e
+go install golang.org/x/tools/cmd/cover@latest
+go install github.com/mattn/goveralls@latest
+go install github.com/client9/misspell/cmd/misspell@latest
 set -e
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
