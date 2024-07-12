@@ -11,6 +11,7 @@ import (
 
 	errors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	artdao "github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	htesting "github.com/goharbor/harbor/src/testing"
@@ -186,6 +187,40 @@ func (d *daoTestSuite) TestFlush() {
 
 	err = d.dao.Flush(d.ctx, time.Now())
 	d.Require().Nil(err)
+}
+
+func (d *daoTestSuite) TestList() {
+	digest := d.Suite.DigestString()
+	aft1 := &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "projectA/hello-world",
+		Digest:            digest,
+	}
+	aft2 := &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "projectB/hello-world",
+		Digest:            digest,
+	}
+	// create aft1 and aft2
+	id1, err := d.dao.Create(d.ctx, aft1)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id1)
+
+	id2, err := d.dao.Create(d.ctx, aft2)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id2)
+
+	// lists afts by id
+	query := &q.Query{
+		Keywords: map[string]interface{}{
+			"id": &q.OrList{Values: []interface{}{id1, id2}},
+		},
+	}
+	afts, err := d.dao.List(d.ctx, query)
+	d.Require().Nil(err)
+	d.Require().Equal(2, len(afts))
+	d.Require().Equal("projectA/hello-world", afts[0].RepositoryName)
+	d.Require().Equal("projectB/hello-world", afts[1].RepositoryName)
 }
 
 func TestDaoTestSuite(t *testing.T) {

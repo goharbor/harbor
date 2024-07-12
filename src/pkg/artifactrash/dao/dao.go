@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
 
@@ -34,6 +35,8 @@ type DAO interface {
 	Filter(ctx context.Context, cutOff time.Time) (arts []model.ArtifactTrash, err error)
 	// Flush cleans the trash table record, which creation_time must be less than or equal to the cut-off.
 	Flush(ctx context.Context, cutOff time.Time) (err error)
+	// List lists the artifact trash by query.
+	List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error)
 }
 
 // New returns an instance of the default DAO
@@ -109,4 +112,19 @@ func (d *dao) Flush(ctx context.Context, cutOff time.Time) (err error) {
 		return err
 	}
 	return nil
+}
+
+// List lists the artifact trash by query.
+func (d *dao) List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error) {
+	arts = []model.ArtifactTrash{}
+	qs, err := orm.QuerySetter(ctx, &model.ArtifactTrash{}, query)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = qs.All(&arts); err != nil {
+		return nil, err
+	}
+
+	return arts, nil
 }

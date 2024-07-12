@@ -2,12 +2,14 @@ package artifactrash
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
 
@@ -30,6 +32,10 @@ func (f *fakeDao) Filter(ctx context.Context, timeWindow time.Time) (arts []mode
 func (f *fakeDao) Flush(ctx context.Context, timeWindow time.Time) (err error) {
 	args := f.Called()
 	return args.Error(0)
+}
+func (f *fakeDao) List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error) {
+	args := f.Called()
+	return args.Get(0).([]model.ArtifactTrash), args.Error(1)
 }
 
 type managerTestSuite struct {
@@ -82,4 +88,21 @@ func (m *managerTestSuite) TestFlush() {
 	err := m.mgr.Flush(nil, 0)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestList() {
+	m.dao.On("List", mock.Anything).Return([]model.ArtifactTrash{
+		{
+			ManifestMediaType: v1.MediaTypeImageManifest,
+			RepositoryName:    "test/hello-world",
+			Digest:            "5678",
+		},
+	}, nil)
+	arts, err := m.mgr.List(nil, &q.Query{})
+	m.Require().Nil(err)
+	m.Equal(len(arts), 1)
+}
+
+func TestManagerTestSuite(t *testing.T) {
+	suite.Run(t, &managerTestSuite{})
 }

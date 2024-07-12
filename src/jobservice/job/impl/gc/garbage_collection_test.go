@@ -231,6 +231,7 @@ func (suite *gcTestSuite) TestRun() {
 	}, nil)
 	suite.artifactCtl.On("Delete").Return(nil)
 	suite.artrashMgr.On("Filter").Return([]model.ArtifactTrash{}, nil)
+	suite.artrashMgr.On("List").Return([]model.ArtifactTrash{}, nil)
 
 	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{
@@ -309,6 +310,7 @@ func (suite *gcTestSuite) TestMark() {
 			ManifestMediaType: schema2.MediaTypeManifest,
 		},
 	}, nil)
+	suite.artrashMgr.On("List").Return([]model.ArtifactTrash{}, nil)
 
 	mock.OnAnything(suite.projectCtl, "List").Return([]*proModels.Project{
 		{

@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
 
@@ -35,4 +36,10 @@ func (f *FakeManager) Filter(ctx context.Context, timeWindow int64) (arts []mode
 func (f *FakeManager) Flush(ctx context.Context, timeWindow int64) (err error) {
 	args := f.Called()
 	return args.Error(0)
+}
+
+// List ...
+func (f *FakeManager) List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error) {
+	args := f.Called()
+	return args.Get(0).([]model.ArtifactTrash), args.Error(1)
 }
