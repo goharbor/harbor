@@ -60,7 +60,7 @@ jobs:
           docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
           images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
           source tools/release/release_utils.sh
-          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ secrets.DOCKER_HUB_USERNAME }} ${{ secrets.DOCKER_HUB_PASSWORD }} $images
+          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
           publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
       - name: Generate release notes
         run: |
