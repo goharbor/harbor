@@ -56,7 +56,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		return rAPI.SendError(ctx, err)
 	}
 
-	if err := rAPI.validate(params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+	if err := rAPI.validate(ctx, params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -292,7 +292,7 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, level string, projectID
 }
 
 // more validation
-func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.RobotPermission) error {
+func (rAPI *robotAPI) validate(ctx context.Context, d int64, level string, permissions []*models.RobotPermission) error {
 	if !isValidDuration(d) {
 		return errors.New(nil).WithMessage("bad request error duration input: %d, duration must be either -1(Never) or a positive integer", d).WithCode(errors.BadRequestCode)
 	}
@@ -316,17 +316,18 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
 	}
 
+	provider := rbac.GetPermissionProvider(ctx)
 	// to validate the access scope
 	for _, perm := range permissions {
 		if perm.Kind == robot.LEVELSYSTEM {
-			polices := rbac.PoliciesMap["System"]
+			polices := provider.GetPermissions(rbac.ScopeSystem)
 			for _, acc := range perm.Access {
 				if !containsAccess(polices, acc) {
 					return errors.New(nil).WithMessage("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
 				}
 			}
 		} else if perm.Kind == robot.LEVELPROJECT {
-			polices := rbac.PoliciesMap["Project"]
+			polices := provider.GetPermissions(rbac.ScopeProject)
 			for _, acc := range perm.Access {
 				if !containsAccess(polices, acc) {
 					return errors.New(nil).WithMessage("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
@@ -344,7 +345,7 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 	if params.Robot.Duration == nil {
 		params.Robot.Duration = &r.Duration
 	}
-	if err := rAPI.validate(*params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
+	if err := rAPI.validate(ctx, *params.Robot.Duration, params.Robot.Level, params.Robot.Permissions); err != nil {
 		return err
 	}
 	if r.Level != robot.LEVELSYSTEM {

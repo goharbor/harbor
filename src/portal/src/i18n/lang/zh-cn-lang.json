@@ -421,7 +421,12 @@
         "SELECT_PERMISSIONS": "选择权限",
         "SELECT_SYSTEM_PERMISSIONS": "选择系统权限",
         "SELECT_PROJECT_PERMISSIONS": "选择项目权限",
-        "SYSTEM_PERMISSIONS": "系统权限"
+        "SYSTEM_PERMISSIONS": "系统权限",
+        "ROBOT": "机器人账户",
+        "USER": "用户",
+        "LDAPUSER": "LDAP 用户",
+        "GROUP": "用户组",
+        "MEMBER": "项目成员"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
