@@ -246,4 +246,7 @@ const (
 
 	// Global Leeway used for token validation
 	JwtLeeway = 60 * time.Second
+
+	// Global Leeway used for token validation
+	EnableRobotFullAccess = "enable_robot_full_access"
 )
