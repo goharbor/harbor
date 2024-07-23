@@ -67,7 +67,7 @@ type controllerTestSuite struct {
 	ctl          *controller
 	repoMgr      *repotesting.Manager
 	artMgr       *arttesting.Manager
-	artrashMgr   *artrashtesting.FakeManager
+	artrashMgr   *artrashtesting.Manager
 	blobMgr      *blob.Manager
 	tagCtl       *tagtesting.FakeController
 	labelMgr     *label.Manager
@@ -80,7 +80,7 @@ type controllerTestSuite struct {
 func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &repotesting.Manager{}
 	c.artMgr = &arttesting.Manager{}
-	c.artrashMgr = &artrashtesting.FakeManager{}
+	c.artrashMgr = &artrashtesting.Manager{}
 	c.blobMgr = &blob.Manager{}
 	c.tagCtl = &tagtesting.FakeController{}
 	c.labelMgr = &label.Manager{}
@@ -476,7 +476,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 		},
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	c.artrashMgr.On("Create").Return(0, nil)
+	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
@@ -534,7 +534,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.blobMgr.On("List", mock.Anything, mock.Anything).Return(nil, nil)
 	c.blobMgr.On("CleanupAssociationsForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	c.artrashMgr.On("Create").Return(0, nil)
+	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true, true)
 	c.Require().Nil(err)
 
