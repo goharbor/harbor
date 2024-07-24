@@ -50,6 +50,3 @@ export class SignInService {
             );
     }
 }
-
-export const UN_LOGGED_PARAM: string = 'publicAndNotLogged';
-export const YES: string = 'yes';

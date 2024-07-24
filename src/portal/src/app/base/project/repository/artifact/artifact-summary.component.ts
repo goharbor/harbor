@@ -10,6 +10,7 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../services/event-service/event.service';
+import { SessionService } from '../../../../shared/services/session.service';
 
 @Component({
     selector: 'artifact-summary',
@@ -39,7 +40,8 @@ export class ArtifactSummaryComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private frontEndArtifactService: ArtifactService,
-        private event: EventService
+        private event: EventService,
+        private sessionService: SessionService
     ) {}
 
     goBack(): void {
@@ -130,5 +132,8 @@ export class ArtifactSummaryComponent implements OnInit {
         if (this.artifact && this.artifact.icon) {
             this.frontEndArtifactService.getIconsFromBackEnd([this.artifact]);
         }
+    }
+    hasSignedIn(): boolean {
+        return !!this.sessionService.getCurrentUser();
     }
 }

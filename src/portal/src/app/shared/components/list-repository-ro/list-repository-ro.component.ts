@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
 import { Repository } from '../../../../../ng-swagger-gen/models/repository';
-import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { SessionService } from '../../services/session.service';
-import { UN_LOGGED_PARAM, YES } from '../../../account/sign-in/sign-in.service';
 import { getRepoLink } from '../../../base/left-side-nav/interrogation-services/vulnerability-database/security-hub.interface';
 
 @Component({
@@ -27,16 +23,5 @@ import { getRepoLink } from '../../../base/left-side-nav/interrogation-services/
 export class ListRepositoryROComponent {
     @Input() repositories: Repository[];
     readonly getLink = getRepoLink;
-    constructor(
-        private router: Router,
-        private searchTrigger: SearchTriggerService,
-        private sessionService: SessionService
-    ) {}
-
-    getQueryParams() {
-        if (this.sessionService.getCurrentUser()) {
-            return null;
-        }
-        return { [UN_LOGGED_PARAM]: YES };
-    }
+    constructor() {}
 }

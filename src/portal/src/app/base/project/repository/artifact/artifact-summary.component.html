@@ -1,8 +1,10 @@
 <div class="arrow-block">
-    <span class="back-icon margin-right-5px"><</span>
-    <a class="pl-0" (click)="goBackPro()">{{
-        'SIDE_NAV.PROJECTS' | translate
-    }}</a>
+    <ng-container *ngIf="hasSignedIn()">
+        <span class="back-icon margin-right-5px"><</span>
+        <a class="pl-0" (click)="goBackPro()">{{
+            'SIDE_NAV.PROJECTS' | translate
+        }}</a>
+    </ng-container>
     <span class="back-icon"><</span>
     <a (click)="goBackRep()">{{ projectName }}</a>
     <span class="back-icon"><</span>
