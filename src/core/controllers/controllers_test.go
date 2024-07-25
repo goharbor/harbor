@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -89,7 +89,7 @@ func TestAll(t *testing.T) {
 	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "'/c/log_out' httpStatusCode should be 200")
-	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), ""), "http respond should be empty")
+	assert.True(strings.Contains(fmt.Sprintf("%s", w.Body), ""), "http respond should be empty")
 
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()

@@ -139,7 +139,7 @@ func (c *controllerTestSuite) TestGet() {
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 	c.Equal(int64(1), tag.RepositoryID)
-	c.Equal(false, tag.Immutable)
+	c.False(tag.Immutable)
 }
 
 func (c *controllerTestSuite) TestDelete() {
@@ -222,7 +222,7 @@ func (c *controllerTestSuite) TestAssembleTag() {
 	tag := c.ctl.assembleTag(nil, tg, option)
 	c.Require().NotNil(tag)
 	c.Equal(tag.ID, tg.ID)
-	c.Equal(true, tag.Immutable)
+	c.True(tag.Immutable)
 	// TODO check signature
 }
 

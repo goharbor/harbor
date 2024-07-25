@@ -122,7 +122,7 @@ func (suite *ContextImplTestSuite) TestContextImpl() {
 
 	require.NoErrorf(suite.T(), err, "build job context: nil error expected but got %s", err)
 	v, ok := jCtx.Get("read_only")
-	assert.Equal(suite.T(), true, ok)
+	assert.True(suite.T(), ok)
 	assert.Equal(suite.T(), v, v.(bool))
 
 	err = jCtx.Checkin("check in testing")
@@ -132,5 +132,5 @@ func (suite *ContextImplTestSuite) TestContextImpl() {
 	assert.NotNil(suite.T(), l, "logger should be not nil")
 
 	_, ok = jCtx.OPCommand()
-	assert.Equal(suite.T(), false, ok)
+	assert.False(suite.T(), ok)
 }

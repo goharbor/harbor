@@ -54,7 +54,7 @@ func (suite *SystemArtifactCleanupSuite) TestMaxConcurrency() {
 }
 
 func (suite *SystemArtifactCleanupSuite) TestShouldRetry() {
-	suite.Equal(true, suite.job.ShouldRetry())
+	suite.True(suite.job.ShouldRetry())
 }
 
 func (suite *SystemArtifactCleanupSuite) TestValidate() {

@@ -122,7 +122,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecution() {
 		suite.Equal("test-user", exportExec.UserName)
 		suite.Equal("test-job", exportExec.JobName)
 		suite.Equal("test-message", exportExec.StatusMessage)
-		suite.Equal(true, exportExec.FilePresent)
+		suite.True(exportExec.FilePresent)
 	}
 
 	// get execution fails
@@ -179,7 +179,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecutionSysArtifactExistF
 		suite.Equal(exec.ID, exportExec.ID)
 		suite.Equal("test-user", exportExec.UserName)
 		suite.Equal("test-job", exportExec.JobName)
-		suite.Equal(false, exportExec.FilePresent)
+		suite.False(exportExec.FilePresent)
 	}
 }
 

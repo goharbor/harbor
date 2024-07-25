@@ -67,12 +67,12 @@ func (suite *HTTPClientTestSuite) TestClientGet() {
 	c := GetHTTPClient(true)
 	suite.NotNil(c, "get insecure HTTP client")
 	t := c.internalClient.Transport.(*http.Transport)
-	suite.Equal(true, t.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify=true")
+	suite.True(t.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify=true")
 
 	c2 := GetHTTPClient(false)
 	suite.NotNil(c2, "get secure HTTP client")
 	t2 := c2.internalClient.Transport.(*http.Transport)
-	suite.Equal(false, t2.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify=false")
+	suite.False(t2.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify=false")
 }
 
 // TestGet test the Get method

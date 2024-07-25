@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -108,7 +108,7 @@ func TestCWorkerTestSuite(t *testing.T) {
 // TestRegisterJobs ...
 func (suite *CWorkerTestSuite) TestRegisterJobs() {
 	_, ok := suite.cWorker.IsKnownJob("fake_job")
-	assert.EqualValues(suite.T(), true, ok, "expected known job but registering 'fake_job' appears to have failed")
+	assert.True(suite.T(), ok, "expected known job but registering 'fake_job' appears to have failed")
 
 	params := make(map[string]interface{})
 	params["name"] = "testing:v1"

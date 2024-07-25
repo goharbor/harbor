@@ -25,7 +25,7 @@ func (suite *QueryTestSuite) TestExtraParams() {
 	extras.Set("a", 100)
 	v, ok := extras.Get("a")
 
-	assert.Equal(suite.T(), true, ok)
+	assert.True(suite.T(), ok)
 	assert.Equal(suite.T(), 100, v.(int))
 
 	str := extras.String()
@@ -34,6 +34,6 @@ func (suite *QueryTestSuite) TestExtraParams() {
 	require.NoError(suite.T(), err)
 
 	v, ok = copy.Get("a")
-	assert.Equal(suite.T(), true, ok)
+	assert.True(suite.T(), ok)
 	assert.Equal(suite.T(), 100, int(v.(float64)))
 }

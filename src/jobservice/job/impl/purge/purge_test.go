@@ -49,14 +49,14 @@ func (suite *PurgeJobTestSuite) TestParseParams() {
 	j := &Job{}
 	param := job.Parameters{common.PurgeAuditRetentionHour: 128, common.PurgeAuditDryRun: true}
 	j.parseParams(param)
-	suite.Require().Equal(true, j.dryRun)
+	suite.Require().True(j.dryRun)
 	suite.Require().Equal(128, j.retentionHour)
 	suite.Require().Equal([]string{}, j.includeOperations)
 
 	j2 := &Job{}
 	param2 := job.Parameters{common.PurgeAuditRetentionHour: 24, common.PurgeAuditDryRun: false, common.PurgeAuditIncludeOperations: "Delete,Create,Pull"}
 	j2.parseParams(param2)
-	suite.Require().Equal(false, j2.dryRun)
+	suite.Require().False(j2.dryRun)
 	suite.Require().Equal(24, j2.retentionHour)
 	suite.Require().Equal([]string{"Delete", "Create", "Pull"}, j2.includeOperations)
 }

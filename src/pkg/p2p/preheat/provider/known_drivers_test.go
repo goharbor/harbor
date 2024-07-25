@@ -26,7 +26,7 @@ func (suite *KnownDriverTestSuite) TestListProviders() {
 
 func (suite *KnownDriverTestSuite) TestGetProvider() {
 	f, ok := GetProvider(DriverDragonfly)
-	require.Equal(suite.T(), true, ok)
+	require.True(suite.T(), ok)
 
 	_, err := f(nil)
 	suite.NoError(err, "dragonfly factory")

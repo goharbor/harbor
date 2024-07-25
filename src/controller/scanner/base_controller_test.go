@@ -143,12 +143,12 @@ func (suite *ControllerTestSuite) TestRegistrationExists() {
 	suite.mMgr.On("Get", mock.Anything, "uuid").Return(suite.sample, nil)
 
 	exists := suite.c.RegistrationExists(context.TODO(), "uuid")
-	assert.Equal(suite.T(), true, exists)
+	assert.True(suite.T(), exists)
 
 	suite.mMgr.On("Get", mock.Anything, "uuid2").Return(nil, nil)
 
 	exists = suite.c.RegistrationExists(context.TODO(), "uuid2")
-	assert.Equal(suite.T(), false, exists)
+	assert.False(suite.T(), exists)
 }
 
 // TestUpdateRegistration tests UpdateRegistration

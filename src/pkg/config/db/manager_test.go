@@ -68,7 +68,7 @@ func TestSaveToDatabase(t *testing.T) {
 	configManager.Set(testCtx, "read_only", "true")
 	configManager.Save(testCtx)
 	configManager.Load(testCtx)
-	assert.Equal(t, true, configManager.Get(testCtx, "read_only").GetBool())
+	assert.True(t, configManager.Get(testCtx, "read_only").GetBool())
 }
 
 func TestUpdateCfg(t *testing.T) {
@@ -133,7 +133,7 @@ func TestConfigStore_Save(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, true, cfgValue.GetBool())
+	assert.True(t, cfgValue.GetBool())
 
 }
 

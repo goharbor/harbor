@@ -95,8 +95,8 @@ func (suite *RegistrationDAOTestSuite) TestUpdate() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 
-	assert.Equal(suite.T(), true, r.Disabled)
-	assert.Equal(suite.T(), true, r.IsDefault)
+	assert.True(suite.T(), r.Disabled)
+	assert.True(suite.T(), r.IsDefault)
 	assert.Equal(suite.T(), "http://updated.registration.com", r.URL)
 }
 

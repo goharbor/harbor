@@ -44,8 +44,8 @@ func createCfgValue(name, value string) *ConfigureValue {
 }
 
 func TestConfigureValue_GetBool(t *testing.T) {
-	assert.Equal(t, createCfgValue("ldap_verify_cert", "true").GetBool(), true)
-	assert.Equal(t, createCfgValue("unknown", "false").GetBool(), false)
+	assert.True(t, createCfgValue("ldap_verify_cert", "true").GetBool())
+	assert.False(t, createCfgValue("unknown", "false").GetBool())
 }
 
 func TestConfigureValue_GetString(t *testing.T) {

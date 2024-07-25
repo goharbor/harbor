@@ -3,16 +3,28 @@ linters-settings:
     # Simplify code: gofmt with `-s` option.
     # Default: true
     simplify: false
-  misspell:
-    locale: US,UK
+  goheader:
+    template-path: copyright.tmpl
   goimports:
     local-prefixes: github.com/goharbor/harbor
+  misspell:
+    locale: US,UK
   stylecheck:
     checks: [
       "ST1019",  # Importing the same package multiple times.
     ]
-  goheader:
-    template-path: copyright.tmpl
+  testifylint:
+    enable-all: true
+    disable: [
+      "compares",
+      "empty",
+      "error-nil",
+      "expected-actual",
+      "len",
+      "require-error",
+      "suite-dont-use-pkg",
+      "suite-thelper"
+    ]
 
 linters:
   disable-all: true
@@ -45,6 +57,7 @@ linters:
     # - rowserrcheck
     - staticcheck
     - stylecheck
+    - testifylint
     # - unconvert
     # - unparam
     # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282

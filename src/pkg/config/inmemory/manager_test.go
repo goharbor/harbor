@@ -31,5 +31,5 @@ func TestNewInMemoryManager(t *testing.T) {
 	})
 	assert.Equal(t, "ldaps://ldap.vmware.com", inMemoryManager.Get(ctx, "ldap_url").GetString())
 	assert.Equal(t, 5, inMemoryManager.Get(ctx, "ldap_timeout").GetInt())
-	assert.Equal(t, true, inMemoryManager.Get(ctx, "ldap_verify_cert").GetBool())
+	assert.True(t, inMemoryManager.Get(ctx, "ldap_verify_cert").GetBool())
 }

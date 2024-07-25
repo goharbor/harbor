@@ -92,7 +92,7 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryNoOptions() {
 	require.NotNil(suite.T(), summaries)
 
 	nativeSummary, ok := summaries.(*vuln.NativeReportSummary)
-	require.Equal(suite.T(), true, ok)
+	require.True(suite.T(), ok)
 
 	suite.Equal(vuln.High, nativeSummary.Severity)
 	suite.Nil(nativeSummary.CVEBypassed)
