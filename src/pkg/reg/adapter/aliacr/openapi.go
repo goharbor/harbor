@@ -212,6 +212,9 @@ func (acree *acreeOpenapi) ListNamespace() ([]string, error) {
 		for _, ns := range nsResp.Namespaces {
 			namespaces = append(namespaces, ns.NamespaceName)
 		}
+		if !nsResp.ListNamespaceIsSuccess {
+			return nil, fmt.Errorf("failed to list namespace: %v", nsResp)
+		}
 		total, err := strconv.Atoi(nsResp.TotalCount)
 		if err != nil {
 			return nil, err
@@ -246,7 +249,9 @@ func (acree *acreeOpenapi) ListRepository(namespaceName string) ([]*repository, 
 				ID:        repo.RepoId,
 			})
 		}
-
+		if !reposResp.ListRepositoryIsSuccess {
+			return nil, fmt.Errorf("failed to list repo: %s", reposResp.GetHttpContentString())
+		}
 		total, err := strconv.Atoi(reposResp.TotalCount)
 		if err != nil {
 			return nil, err
@@ -276,6 +281,9 @@ func (acree *acreeOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 		for _, image := range tagsResp.Images {
 			tags = append(tags, image.Tag)
 		}
+		if !tagsResp.ListRepoTagIsSuccess {
+			return nil, fmt.Errorf("failed to list repo tag: %s", tagsResp.GetHttpContentString())
+		}
 		total, err := strconv.Atoi(tagsResp.TotalCount)
 		if err != nil {
 			return nil, err
@@ -297,6 +305,9 @@ func (acree *acreeOpenapi) GetAuthorizationToken() (*authToken, error) {
 	tokenResponse, err := acree.client.GetAuthorizationToken(tokenRequest)
 	if err != nil {
 		return nil, err
+	}
+	if !tokenResponse.GetAuthorizationTokenIsSuccess {
+		return nil, fmt.Errorf("failed to get authorization token: %s", tokenResponse.GetHttpContentString())
 	}
 	return &authToken{
 		user:      tokenResponse.TempUsername,
