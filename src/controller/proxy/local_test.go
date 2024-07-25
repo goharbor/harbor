@@ -85,7 +85,7 @@ func (lh *localHelperTestSuite) TestBlobExist_False() {
 	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
 	exist, err := lh.local.BlobExist(ctx, art)
 	lh.Require().Nil(err)
-	lh.Assert().Equal(false, exist)
+	lh.Assert().False(exist)
 }
 func (lh *localHelperTestSuite) TestBlobExist_True() {
 	repo := "library/hello-world"
@@ -95,7 +95,7 @@ func (lh *localHelperTestSuite) TestBlobExist_True() {
 	lh.registryClient.On("BlobExist", mock.Anything, mock.Anything).Return(true, nil)
 	exist, err := lh.local.BlobExist(ctx, art)
 	lh.Require().Nil(err)
-	lh.Assert().Equal(true, exist)
+	lh.Assert().True(exist)
 }
 
 func (lh *localHelperTestSuite) TestPushManifest() {

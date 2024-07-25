@@ -378,7 +378,7 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	respData := models.ScanDataExportExecution{}
 	json.NewDecoder(res.Body).Decode(&respData)
 	suite.Equal("test-user", respData.UserName)
-	suite.Equal(false, respData.FilePresent)
+	suite.False(respData.FilePresent)
 	suite.Equal(defaultStatusMessage, respData.StatusText)
 
 	// test customize status message

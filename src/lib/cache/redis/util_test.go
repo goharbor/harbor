@@ -44,7 +44,7 @@ func TestParseSentinelURL(t *testing.T) {
 	assert.Equal(t, 30*time.Second, o.DialTimeout)
 	assert.Equal(t, 5*time.Second, o.ReadTimeout)
 	assert.Equal(t, 5*time.Second, o.WriteTimeout)
-	assert.Equal(t, true, o.PoolFIFO)
+	assert.True(t, o.PoolFIFO)
 	assert.Equal(t, 1000, o.PoolSize)
 	assert.Equal(t, 100, o.MinIdleConns)
 	assert.Equal(t, 10*time.Second, o.MaxConnAge)

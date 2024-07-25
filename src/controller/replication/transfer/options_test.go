@@ -24,7 +24,7 @@ func TestNewOptions(t *testing.T) {
 	// test default options
 	o := NewOptions()
 	assert.Equal(t, int32(0), o.Speed)
-	assert.Equal(t, false, o.CopyByChunk)
+	assert.False(t, o.CopyByChunk)
 
 	// test with options
 	// with speed
@@ -33,5 +33,5 @@ func TestNewOptions(t *testing.T) {
 	withCopyByChunk := WithCopyByChunk(true)
 	o = NewOptions(withSpeed, withCopyByChunk)
 	assert.Equal(t, int32(1024), o.Speed)
-	assert.Equal(t, true, o.CopyByChunk)
+	assert.True(t, o.CopyByChunk)
 }
