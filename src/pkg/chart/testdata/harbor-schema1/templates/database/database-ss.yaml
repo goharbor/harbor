@@ -1,0 +1,162 @@
+{{- if eq .Values.database.type "internal" -}}
+{{- $database := .Values.persistence.persistentVolumeClaim.database -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ template "harbor.database" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: database
+    app.kubernetes.io/component: database
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.database" . }}"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: database
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: database
+        app.kubernetes.io/component: database
+{{- if .Values.database.podLabels }}
+{{ toYaml .Values.database.podLabels | indent 8 }}
+{{- end }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/database/database-secret.yaml") . | sha256sum }}
+{{- if .Values.database.podAnnotations }}
+{{ toYaml .Values.database.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        runAsUser: 999
+        fsGroup: 999
+{{- if .Values.database.internal.serviceAccountName }}
+      serviceAccountName: {{ .Values.database.internal.serviceAccountName }}
+{{- end -}}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: {{ .Values.database.internal.automountServiceAccountToken | default false }}
+      terminationGracePeriodSeconds: 120
+      initContainers:
+      # with "fsGroup" set, each time a volume is mounted, Kubernetes must recursively chown() and chmod() all the files and directories inside the volume
+      # this causes the postgresql reports the "data directory /var/lib/postgresql/data/pgdata has group or world access" issue when using some CSIs e.g. Ceph
+      # use this init container to correct the permission
+      # as "fsGroup" applied before the init container running, the container has enough permission to execute the command
+      - name: "data-permissions-ensurer"
+        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
+        command: ["/bin/sh"]
+        args: ["-c", "chmod -R 700 /var/lib/postgresql/data/pgdata || true"]
+{{- if .Values.database.internal.initContainer.permissions.resources }}
+        resources:
+{{ toYaml .Values.database.internal.initContainer.permissions.resources | indent 10 }}
+{{- end }}
+        volumeMounts:
+          - name: database-data
+            mountPath: /var/lib/postgresql/data
+            subPath: {{ $database.subPath }}
+      {{- with .Values.database.internal.extrInitContainers }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+      - name: database
+        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          exec:
+            command:
+            - /docker-healthcheck.sh
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.livenessProbe.timeoutSeconds }}
+        readinessProbe:
+          exec:
+            command:
+            - /docker-healthcheck.sh
+          initialDelaySeconds: 1
+          periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.readinessProbe.timeoutSeconds }}
+{{- if .Values.database.internal.resources }}
+        resources:
+{{ toYaml .Values.database.internal.resources | indent 10 }}
+{{- end }}
+        envFrom:
+          - secretRef:
+              name: "{{ template "harbor.database" . }}"
+        env:
+          # put the data into a sub directory to avoid the permission issue in k8s with restricted psp enabled
+          # more detail refer to https://github.com/goharbor/harbor-helm/issues/756
+          - name: PGDATA
+            value: "/var/lib/postgresql/data/pgdata"
+{{- with .Values.database.internal.extraEnvVars }}
+{{- toYaml . | nindent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: database-data
+          mountPath: /var/lib/postgresql/data
+          subPath: {{ $database.subPath }}
+        - name: shm-volume
+          mountPath: /dev/shm
+      volumes:
+      - name: shm-volume
+        emptyDir:
+          medium: Memory
+          sizeLimit: {{ .Values.database.internal.shmSizeLimit }}
+      {{- if not .Values.persistence.enabled }}
+      - name: "database-data"
+        emptyDir: {}
+      {{- else if $database.existingClaim }}
+      - name: "database-data"
+        persistentVolumeClaim:
+          claimName: {{ $database.existingClaim }}
+      {{- end -}}
+    {{- with .Values.database.internal.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.database.internal.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.database.internal.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.database.internal.priorityClassName }}
+      priorityClassName: {{ .Values.database.internal.priorityClassName }}
+    {{- end }}
+  {{- if and .Values.persistence.enabled (not $database.existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: "database-data"
+      labels:
+{{ include "harbor.legacy.labels" . | indent 8 }}
+      annotations:
+      {{- range $key, $value := $database.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      accessModes: [{{ $database.accessMode | quote }}]
+      {{- if $database.storageClass }}
+      {{- if (eq "-" $database.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ $database.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ $database.size | quote }}
+  {{- end -}}
+  {{- end -}}

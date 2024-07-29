@@ -1,0 +1,94 @@
+{{- if or (eq .Values.expose.type "clusterIP") (eq .Values.expose.type "nodePort") (eq .Values.expose.type "loadBalancer") }}
+apiVersion: v1
+kind: Service
+metadata:
+{{- if eq .Values.expose.type "clusterIP" }}
+{{- $clusterIP := .Values.expose.clusterIP }}
+  name: {{ $clusterIP.name }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.clusterIP.labels }}
+{{ toYaml $clusterIP.labels | indent 4 }}
+{{- end }}
+{{- with $clusterIP.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: ClusterIP
+  {{- if .Values.expose.clusterIP.staticClusterIP }}
+  clusterIP: {{ .Values.expose.clusterIP.staticClusterIP }}
+  {{- end }}
+  ports:
+    - name: http
+      port: {{ $clusterIP.ports.httpPort }}
+      targetPort: 8080
+    {{- if .Values.expose.tls.enabled }}
+    - name: https
+      port: {{ $clusterIP.ports.httpsPort }}
+      targetPort: 8443
+    {{- end }}
+{{- else if eq .Values.expose.type "nodePort" }}
+{{- $nodePort := .Values.expose.nodePort }}
+  name: {{ $nodePort.name }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.nodePort.labels }}
+{{ toYaml $nodePort.labels | indent 4 }}
+{{- end }}
+{{- with $nodePort.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: {{ $nodePort.ports.http.port }}
+      targetPort: 8080
+      {{- if $nodePort.ports.http.nodePort }}
+      nodePort: {{ $nodePort.ports.http.nodePort }}
+      {{- end }}
+    {{- if .Values.expose.tls.enabled }}
+    - name: https
+      port: {{ $nodePort.ports.https.port }}
+      targetPort: 8443
+      {{- if $nodePort.ports.https.nodePort }}
+      nodePort: {{ $nodePort.ports.https.nodePort }}
+      {{- end }}
+    {{- end }}
+{{- else if eq .Values.expose.type "loadBalancer" }}
+{{- $loadBalancer := .Values.expose.loadBalancer }}
+  name: {{ $loadBalancer.name }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.loadBalancer.labels }}
+{{ toYaml $loadBalancer.labels | indent 4 }}
+{{- end }}
+{{- with $loadBalancer.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  type: LoadBalancer
+  {{- with $loadBalancer.sourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if $loadBalancer.IP }}
+  loadBalancerIP: {{ $loadBalancer.IP }}
+  {{- end }}
+  ports:
+    - name: http
+      port: {{ $loadBalancer.ports.httpPort }}
+      targetPort: 8080
+    {{- if .Values.expose.tls.enabled }}
+    - name: https
+      port: {{ $loadBalancer.ports.httpsPort }}
+      targetPort: 8443
+    {{- end }}
+{{- end }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: nginx
+{{- end }}

@@ -1,0 +1,132 @@
+{{- if ne .Values.expose.type "ingress" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "harbor.nginx" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: nginx
+    app.kubernetes.io/component: nginx
+spec:
+  replicas: {{ .Values.nginx.replicas }}
+  revisionHistoryLimit: {{ .Values.nginx.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: nginx
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: nginx
+        app.kubernetes.io/component: nginx
+{{- if .Values.nginx.podLabels }}
+{{ toYaml .Values.nginx.podLabels | indent 8 }}
+{{- end }}
+      annotations:
+      {{- if not .Values.expose.tls.enabled }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/nginx/configmap-http.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/nginx/configmap-https.yaml") . | sha256sum }}
+      {{- end }}
+      {{- if eq (include "harbor.autoGenCertForNginx" .) "true" }}
+        checksum/secret: {{ include (print $.Template.BasePath "/nginx/secret.yaml") . | sha256sum }}
+      {{- end }}
+{{- if .Values.nginx.podAnnotations }}
+{{ toYaml .Values.nginx.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+{{- if .Values.nginx.serviceAccountName }}
+      serviceAccountName: {{ .Values.nginx.serviceAccountName }}
+{{- end }}
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: {{ .Values.nginx.automountServiceAccountToken | default false }}
+{{- with .Values.nginx.topologySpreadConstraints}}
+      topologySpreadConstraints:
+{{- range . }}
+      - {{ . | toYaml | indent 8 | trim }}
+        labelSelector:
+          matchLabels:
+{{ include "harbor.matchLabels" $ | indent 12 }}
+            component: nginx
+{{- end }}
+{{- end }}
+      containers:
+      - name: nginx
+        image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
+        imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+        {{- $_ := set . "scheme" "HTTP" -}}
+        {{- $_ := set . "port" "8080" -}}
+        {{- if .Values.expose.tls.enabled }}
+          {{- $_ := set . "scheme" "HTTPS" -}}
+          {{- $_ := set . "port" "8443" -}}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            scheme: {{ .scheme }}
+            path: /
+            port: {{ .port }}
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            scheme: {{ .scheme }}
+            path: /
+            port: {{ .port }}
+          initialDelaySeconds: 1
+          periodSeconds: 10
+{{- if .Values.nginx.resources }}
+        resources:
+{{ toYaml .Values.nginx.resources | indent 10 }}
+{{- end }}
+{{- with .Values.nginx.extraEnvVars }}
+        env:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: 8080
+        {{- if .Values.expose.tls.enabled }}
+        - containerPort: 8443
+        {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        {{- if .Values.expose.tls.enabled }}
+        - name: certificate
+          mountPath: /etc/nginx/cert
+        {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "harbor.nginx" . }}
+      {{- if .Values.expose.tls.enabled }}
+      - name: certificate
+        secret:
+          secretName: {{ template "harbor.tlsSecretForNginx" . }}
+      {{- end }}
+    {{- with .Values.nginx.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.nginx.priorityClassName }}
+      priorityClassName: {{ .Values.nginx.priorityClassName }}
+    {{- end }}
+{{- end }}
