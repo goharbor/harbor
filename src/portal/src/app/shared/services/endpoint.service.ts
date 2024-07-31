@@ -13,7 +13,7 @@ import { catchError, map } from 'rxjs/operators';
 import { ReplicationPolicy } from '../../../../ng-swagger-gen/models/replication-policy';
 
 export const ADAPTERS_MAP = {
-    'ali-acr': 'Alibaba ACR',
+    'ali-acr': 'Alibaba Cloud ACR',
     'aws-ecr': 'Aws ECR',
     'azure-acr': 'Azure ACR',
     'docker-hub': 'Docker Hub',
