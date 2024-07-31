@@ -113,7 +113,7 @@ type Controller interface {
 	//  Arguments:
 	//    ctx context.Context : the context.Context for this method
 	//    projectID int64  : the ID of the given project
-	//    scannerID string : the UUID of the the scanner
+	//    scannerID string : the UUID of the scanner
 	//
 	//  Returns:
 	//    error : non nil error if any errors occurred
@@ -154,4 +154,7 @@ type Controller interface {
 	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
 	//    error                      : non nil error if any errors occurred
 	GetMetadata(ctx context.Context, registrationUUID string) (*v1.ScannerAdapterMetadata, error)
+
+	// RetrieveCap retrieve scanner capabilities
+	RetrieveCap(ctx context.Context, r *scanner.Registration) error
 }

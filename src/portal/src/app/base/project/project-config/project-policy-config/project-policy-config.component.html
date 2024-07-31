@@ -121,6 +121,23 @@
                 {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label>{{ 'PROJECT_CONFIG.SBOM' | translate }}</label>
+            <clr-checkbox-wrapper id="generate-sbom-on-push-wrapper">
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    [(ngModel)]="projectPolicy.GenerateSbomOnPush"
+                    [disabled]="!hasChangeConfigRole"
+                    name="generate-sbom-on-push" />
+                <label>{{
+                    'PROJECT_CONFIG.AUTOSBOM_TOGGLE' | translate
+                }}</label>
+            </clr-checkbox-wrapper>
+            <clr-control-helper class="config-subtext">
+                {{ 'PROJECT_CONFIG.AUTOSBOM_POLICY' | translate }}
+            </clr-control-helper>
+        </clr-checkbox-container>
         <div
             *ngIf="systemInfo"
             class="clr-form-control"

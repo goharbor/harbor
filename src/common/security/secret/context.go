@@ -77,7 +77,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 // Can returns whether the user can do action on resource
 // returns true if the corresponding user of the secret
 // is jobservice or core service, otherwise returns false
-func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
+func (s *SecurityContext) Can(_ context.Context, _ types.Action, _ types.Resource) bool {
 	if s.store == nil {
 		return false
 	}

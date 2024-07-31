@@ -50,7 +50,12 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
+    {% if ip_family.ipv4.enabled %}
     listen 8443 ssl;
+    {% endif %}
+    {% if ip_family.ipv6.enabled %}
+    listen [::]:8443 ssl;
+    {% endif %}
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
@@ -59,7 +64,7 @@ http {
 
     # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
     ssl_protocols TLSv1.2 TLSv1.3;
-{% if internal_tls.strong_ssl_ciphers %}
+{% if strong_ssl_ciphers %}
     ssl_ciphers ECDHE+AESGCM:DHE+AESGCM:ECDHE+RSA+SHA256:DHE+RSA+SHA256:!AES128;
 {% else %}
     ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';

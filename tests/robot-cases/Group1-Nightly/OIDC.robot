@@ -26,6 +26,18 @@ Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
 
+Test Case - Update OIDC Provider Name
+    [Tags]  oidc_provider_name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
+    # Set OIDC Provider Name to TestDex
+    Switch To Configuration Authentication
+    Retry Text Input  //input[@id='oidcName']  TestDex
+    Retry Element Click  ${config_auth_save_button_xpath}
+    Logout Harbor
+    Retry Wait Until Page Contains Element  //span[normalize-space()='LOGIN WITH TestDex']
+    Close Browser
+
 Test Case - OIDC User Sign In
     #Sign in with all 9 users is for user population, other test cases might use these users.
     Sign In Harbor With OIDC User    ${HARBOR_URL}

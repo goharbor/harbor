@@ -278,7 +278,7 @@ func getProjects(ctx context.Context, projectMgr project.Manager) ([]*selector.C
 	return candidates, nil
 }
 
-func getRepositories(ctx context.Context, projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*selector.Candidate, error) {
+func getRepositories(ctx context.Context, _ project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*selector.Candidate, error) {
 	var candidates []*selector.Candidate
 	/*
 		pro, err := projectMgr.Get(projectID)

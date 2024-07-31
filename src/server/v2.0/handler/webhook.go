@@ -53,7 +53,7 @@ type webhookAPI struct {
 	webhookCtl webhook_ctl.Controller
 }
 
-func (n *webhookAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
+func (n *webhookAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
 	return nil
 }
 

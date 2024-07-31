@@ -47,8 +47,11 @@
             <ng-content></ng-content>
         </span>
         <clr-dropdown-menu
+            #dropdownMenu
             class="dropdown-menu p-1"
             clrPosition="{{ dropdownPosition }}"
+            [style.position]="usedInDatagrid ? 'fixed' : 'absolute'"
+            [style.transform]="usedInDatagrid ? getTransform() : 'unset'"
             *clrIfOpen>
             <div>
                 <button
@@ -111,7 +114,9 @@
     <table class="table table-compact mt-0">
         <thead>
             <tr>
-                <th class="left">{{ 'AUDIT_LOG.RESOURCE' | translate }}</th>
+                <th class="left">
+                    {{ 'AUDIT_LOG.RESOURCE' | translate }}
+                </th>
                 <th class="left" *ngFor="let item of candidateActions">
                     {{ convertKey(item) | translate }}
                 </th>

@@ -193,7 +193,7 @@ func (u *usersAPI) DeleteUser(ctx context.Context, params operation.DeleteUserPa
 	return operation.NewDeleteUserOK()
 }
 
-func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, params operation.GetCurrentUserInfoParams) middleware.Responder {
+func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, _ operation.GetCurrentUserInfoParams) middleware.Responder {
 	if err := u.RequireAuthenticated(ctx); err != nil {
 		return u.SendError(ctx, err)
 	}

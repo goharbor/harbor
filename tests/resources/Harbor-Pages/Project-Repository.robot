@@ -37,6 +37,7 @@ Scan Artifact
     Retry Element Click  ${scan_artifact_btn}
 
 Stop Scan Artifact
+    Retry Element Click  ${artifact_action_xpath}
     Retry Element Click  ${stop_scan_artifact_btn}
 
 Check Scan Artifact Job Status Is Stopped

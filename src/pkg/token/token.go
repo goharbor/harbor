@@ -20,8 +20,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -34,8 +35,8 @@ type Token struct {
 
 // New ...
 func New(opt *Options, claims jwt.Claims) (*Token, error) {
-	err := claims.Valid()
-	if err != nil {
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway))
+	if err := v.Validate(claims); err != nil {
 		return nil, err
 	}
 	return &Token{
@@ -65,10 +66,8 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	token, err := jwt.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != opt.SignMethod.Alg() {
-			return nil, errors.New("invalid signing method")
-		}
+	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
+	token, err := parser.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:
 			return &k.PublicKey, nil

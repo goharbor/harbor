@@ -1,6 +1,7 @@
 import {
     AfterViewInit,
     Component,
+    DoCheck,
     ElementRef,
     EventEmitter,
     Input,
@@ -18,19 +19,12 @@ import {
 import { Access } from '../../../../../ng-swagger-gen/models/access';
 import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
-enum Position {
-    UP = 'left-bottom',
-    DOWN = 'left-top',
-}
-
 @Component({
     selector: 'robot-permissions-panel',
     templateUrl: './robot-permissions-panel.component.html',
     styleUrls: ['./robot-permissions-panel.component.scss'],
 })
-export class RobotPermissionsPanelComponent
-    implements AfterViewInit, OnChanges
-{
+export class RobotPermissionsPanelComponent implements OnChanges, DoCheck {
     modalOpen: boolean = false;
 
     @Input()
@@ -53,28 +47,37 @@ export class RobotPermissionsPanelComponent
     @Output()
     permissionsModelChange = new EventEmitter<Access[]>();
 
-    @ViewChild('dropdown')
-    clrDropdown: ElementRef;
+    @ViewChild('dropdownMenu')
+    dropdownMenu: any;
 
-    ngAfterViewInit() {
-        setTimeout(() => {
-            if (this.clrDropdown && this.usedInDatagrid) {
-                if (
-                    this.clrDropdown.nativeElement.getBoundingClientRect().y <
-                    488
-                ) {
-                    this.dropdownPosition = Position.DOWN;
-                } else {
-                    this.dropdownPosition = Position.UP;
-                }
-            }
-        });
+    @ViewChild('dropdown')
+    dropdown: ElementRef;
+
+    // to avoid ng check error, getTransform() should always return 'unset' before dropdownMenu appears
+    dropdownMenuAppeared: boolean = false;
+    getTransform(): string {
+        if (
+            this.dropdownMenuAppeared &&
+            this.dropdownMenu?.el &&
+            this.dropdown
+        ) {
+            const width = this.dropdownMenu.el.nativeElement.offsetWidth;
+            const height = this.dropdownMenu.el.nativeElement.offsetHeight;
+            const bcr = this.dropdown.nativeElement.getBoundingClientRect();
+            return `translateX(${bcr.x - width}px) translateY(${
+                bcr.y - height / 2
+            }px)`;
+        }
+        return 'unset';
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes && changes['candidatePermissions']) {
             this.initCandidates();
         }
+    }
+    ngDoCheck() {
+        this.dropdownMenuAppeared = !!this.dropdownMenu;
     }
 
     initCandidates() {

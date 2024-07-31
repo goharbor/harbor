@@ -65,6 +65,7 @@ const mockProjectPolicies: Project[] | any[] = [
         repo_count: 0,
         metadata: {
             auto_scan: 'true',
+            auto_sbom_generation: 'true',
             enable_content_trust: 'true',
             prevent_vul: 'true',
             public: 'true',
@@ -139,6 +140,10 @@ describe('ProjectPolicyConfigComponent', () => {
         ).toBeTruthy();
         expect(
             component.projectPolicyConfigComponent.projectPolicy.ScanImgOnPush
+        ).toBeTruthy();
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy
+                .GenerateSbomOnPush
         ).toBeTruthy();
     });
     it('should get hasChangeConfigRole', () => {

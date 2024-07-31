@@ -240,11 +240,11 @@ func (a *Adapter) PingSimple() error {
 }
 
 // DeleteTag isn't supported for docker registry
-func (a *Adapter) DeleteTag(repository, tag string) error {
+func (a *Adapter) DeleteTag(_, _ string) error {
 	return errors.New("the tag deletion isn't supported")
 }
 
 // CanBeMount isn't supported for docker registry
-func (a *Adapter) CanBeMount(digest string) (mount bool, repository string, err error) {
+func (a *Adapter) CanBeMount(_ string) (mount bool, repository string, err error) {
 	return false, "", nil
 }

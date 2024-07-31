@@ -124,7 +124,7 @@ type accessFilter interface {
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx context.Context, ctl project.Controller,
+func (reg registryFilter) filter(ctx context.Context, _ project.Controller,
 	a *token.ResourceActions) error {
 	// Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {

@@ -22,7 +22,7 @@ import (
 type noAuth struct{}
 
 // Authorize the incoming request
-func (na *noAuth) Authorize(req *http.Request) error {
+func (na *noAuth) Authorize(_ *http.Request) error {
 	// Do nothing
 	return nil
 }

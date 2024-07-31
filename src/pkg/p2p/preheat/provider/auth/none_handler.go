@@ -28,7 +28,7 @@ func (nah *NoneAuthHandler) Mode() string {
 }
 
 // Authorize implements @Handler.Authorize
-func (nah *NoneAuthHandler) Authorize(req *http.Request, cred *Credential) error {
+func (nah *NoneAuthHandler) Authorize(req *http.Request, _ *Credential) error {
 	if req == nil {
 		return errors.New("nil request cannot be authorized")
 	}

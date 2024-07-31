@@ -33,6 +33,7 @@ type Artifact struct {
 	Type              string    `orm:"column(type)"`                // image, chart or other OCI compatible
 	MediaType         string    `orm:"column(media_type)"`          // the media type of artifact
 	ManifestMediaType string    `orm:"column(manifest_media_type)"` // the media type of manifest/index
+	ArtifactType      string    `orm:"colume(artifact_type)"`       // the artifactType of manifest/index
 	ProjectID         int64     `orm:"column(project_id)"`          // needed for quota
 	RepositoryID      int64     `orm:"column(repository_id)"`
 	RepositoryName    string    `orm:"column(repository_name)"`

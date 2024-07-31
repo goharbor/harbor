@@ -53,13 +53,22 @@ func (suite *ReportTestSuite) SetupTest() {
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
 	}
-
 	suite.create(r)
+	sbomReport := &Report{
+		UUID:             "uuid3",
+		Digest:           "digest1003",
+		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeSBOMReport,
+		Report:           `{"sbom_digest": "sha256:abc"}`,
+	}
+	suite.create(sbomReport)
 }
 
 // TearDownTest clears enf for test case.
 func (suite *ReportTestSuite) TearDownTest() {
 	_, err := suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid"}})
+	require.NoError(suite.T(), err)
+	_, err = suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid3"}})
 	require.NoError(suite.T(), err)
 }
 
@@ -95,13 +104,24 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 	err := suite.dao.UpdateReportData(orm.Context(), "uuid", "{}")
 	suite.Require().NoError(err)
 
-	l, err := suite.dao.List(orm.Context(), nil)
+	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid"}))
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(l))
 	suite.Equal("{}", l[0].Report)
 
 	err = suite.dao.UpdateReportData(orm.Context(), "uuid", "{\"a\": 900}")
 	suite.Require().NoError(err)
+}
+
+func (suite *ReportTestSuite) TestDeleteReportBySBOMDigest() {
+	l, err := suite.dao.List(orm.Context(), nil)
+	suite.Require().NoError(err)
+	suite.Equal(2, len(l))
+	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:abc")
+	suite.Require().NoError(err)
+	l2, err := suite.dao.List(orm.Context(), nil)
+	suite.Require().NoError(err)
+	suite.Equal(1, len(l2))
 }
 
 func (suite *ReportTestSuite) create(r *Report) {

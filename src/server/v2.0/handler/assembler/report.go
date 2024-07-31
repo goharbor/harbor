@@ -20,6 +20,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	sbomModel "github.com/goharbor/harbor/src/pkg/scan/sbom/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 )
 
@@ -27,36 +29,35 @@ const (
 	vulnerabilitiesAddition = "vulnerabilities"
 )
 
-// NewVulAssembler returns vul assembler
-func NewVulAssembler(withScanOverview bool, mimeTypes []string) *VulAssembler {
-	return &VulAssembler{
-		scanChecker: scan.NewChecker(),
-		scanCtl:     scan.DefaultController,
-
-		withScanOverview: withScanOverview,
-		mimeTypes:        mimeTypes,
+// NewScanReportAssembler returns vul assembler
+func NewScanReportAssembler(option *model.OverviewOptions, mimeTypes []string) *ScanReportAssembler {
+	return &ScanReportAssembler{
+		overviewOption: option,
+		scanChecker:    scan.NewChecker(),
+		scanCtl:        scan.DefaultController,
+		mimeTypes:      mimeTypes,
 	}
 }
 
-// VulAssembler vul assembler
-type VulAssembler struct {
+// ScanReportAssembler vul assembler
+type ScanReportAssembler struct {
 	scanChecker scan.Checker
 	scanCtl     scan.Controller
 
-	artifacts        []*model.Artifact
-	withScanOverview bool
-	mimeTypes        []string
+	artifacts      []*model.Artifact
+	mimeTypes      []string
+	overviewOption *model.OverviewOptions
 }
 
 // WithArtifacts set artifacts for the assembler
-func (assembler *VulAssembler) WithArtifacts(artifacts ...*model.Artifact) *VulAssembler {
+func (assembler *ScanReportAssembler) WithArtifacts(artifacts ...*model.Artifact) *ScanReportAssembler {
 	assembler.artifacts = artifacts
 
 	return assembler
 }
 
 // Assemble assemble vul for the artifacts
-func (assembler *VulAssembler) Assemble(ctx context.Context) error {
+func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 	version := lib.GetAPIVersion(ctx)
 
 	for _, artifact := range assembler.artifacts {
@@ -72,7 +73,7 @@ func (assembler *VulAssembler) Assemble(ctx context.Context) error {
 
 		artifact.SetAdditionLink(vulnerabilitiesAddition, version)
 
-		if assembler.withScanOverview {
+		if assembler.overviewOption.WithVuln {
 			for _, mimeType := range assembler.mimeTypes {
 				overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{mimeType})
 				if err != nil {
@@ -83,7 +84,23 @@ func (assembler *VulAssembler) Assemble(ctx context.Context) error {
 				}
 			}
 		}
+		if assembler.overviewOption.WithSBOM {
+			overview, err := assembler.scanCtl.GetSummary(ctx, &artifact.Artifact, []string{v1.MimeTypeSBOMReport})
+			if err != nil {
+				log.Warningf("get scan summary of artifact %s@%s for %s failed, error:%v", artifact.RepositoryName, artifact.Digest, v1.MimeTypeSBOMReport, err)
+			}
+			if len(overview) > 0 {
+				artifact.SBOMOverView = map[string]interface{}{
+					sbomModel.StartTime:  overview[sbomModel.StartTime],
+					sbomModel.EndTime:    overview[sbomModel.EndTime],
+					sbomModel.ScanStatus: overview[sbomModel.ScanStatus],
+					sbomModel.SBOMDigest: overview[sbomModel.SBOMDigest],
+					sbomModel.Duration:   overview[sbomModel.Duration],
+					sbomModel.ReportID:   overview[sbomModel.ReportID],
+					sbomModel.Scanner:    overview[sbomModel.Scanner],
+				}
+			}
+		}
 	}
-
 	return nil
 }

@@ -78,7 +78,7 @@ func (sj *SweepJob) ShouldRetry() bool {
 }
 
 // Validate the parameters of preheat job.
-func (sj *SweepJob) Validate(params job.Parameters) error {
+func (sj *SweepJob) Validate(_ job.Parameters) error {
 	return nil
 }
 

@@ -6,6 +6,14 @@
         <li class="nav-item">
             <a
                 class="nav-link"
+                routerLink="security-hub"
+                routerLinkActive="active"
+                >{{ 'SECURITY_HUB.SECURITY_HUB' | translate }}</a
+            >
+        </li>
+        <li class="nav-item">
+            <a
+                class="nav-link"
                 routerLink="scanners"
                 routerLinkActive="active"
                 >{{ 'SCANNER.SCANNERS' | translate }}</a
@@ -17,14 +25,6 @@
                 routerLink="vulnerability"
                 routerLinkActive="active"
                 >{{ 'CONFIG.VULNERABILITY' | translate }}</a
-            >
-        </li>
-        <li class="nav-item">
-            <a
-                class="nav-link"
-                routerLink="security-hub"
-                routerLinkActive="active"
-                >{{ 'SECURITY_HUB.SECURITY_HUB' | translate }}</a
             >
         </li>
     </ul>

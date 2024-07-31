@@ -273,3 +273,12 @@ Check The Quick Search
     Should Be Equal As Strings  ${cve_input_value}  ${cve}
     ${row_count}=  Get Element Count  ${vulnerabilities_datagrid_row}
     Retry Wait Element Count  //div[@class='datagrid']//clr-dg-cell[1]//a[text()='${cve}']  ${row_count}
+
+Select Filter Label For CVE Export
+    [Arguments]    @{labels}
+    Retry Element Click  ${vulnerabilities_filter_label_xpath}
+    FOR  ${label}  IN  @{labels}
+        Log  ${label}
+        Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
+    END
+    Retry Element Click  ${vulnerabilities_filter_label_xpath}

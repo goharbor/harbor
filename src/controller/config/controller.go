@@ -169,7 +169,7 @@ func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr
 }
 
 // verifyValueLengthCfg verifies the cfgs which need to check the value max length to align with frontend.
-func verifyValueLengthCfg(ctx context.Context, cfgs map[string]interface{}) error {
+func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error {
 	maxValue := maxValueLimitedByLength(common.UIMaxLengthLimitedOfNumber)
 	validateCfgs := []string{
 		common.TokenExpiration,

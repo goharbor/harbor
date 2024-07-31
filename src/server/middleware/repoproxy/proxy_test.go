@@ -18,7 +18,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 )
@@ -29,6 +31,19 @@ func TestIsProxySession(t *testing.T) {
 
 	sc2 := proxycachesecret.NewSecurityContext("library/hello-world")
 	proxyCtx := security.NewContext(context.Background(), sc2)
+
+	user := &models.User{
+		Username: "robot$library+scanner-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	}
+	userSc := local.NewSecurityContext(user)
+	scannerCtx := security.NewContext(context.Background(), userSc)
+
+	otherRobot := &models.User{
+		Username: "robot$library+test-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	}
+	userSc2 := local.NewSecurityContext(otherRobot)
+	nonScannerCtx := security.NewContext(context.Background(), userSc2)
+
 	cases := []struct {
 		name string
 		in   context.Context
@@ -44,15 +59,24 @@ func TestIsProxySession(t *testing.T) {
 			in:   proxyCtx,
 			want: true,
 		},
+		{
+			name: `robot account`,
+			in:   scannerCtx,
+			want: true,
+		},
+		{
+			name: `non scanner robot`,
+			in:   nonScannerCtx,
+			want: false,
+		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			got := isProxySession(tt.in)
+			got := isProxySession(tt.in, "library")
 			if got != tt.want {
 				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}
-
 		})
 	}
 }

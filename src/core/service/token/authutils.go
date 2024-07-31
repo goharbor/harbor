@@ -22,7 +22,7 @@ import (
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"

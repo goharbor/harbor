@@ -26,7 +26,7 @@ type fakeVerifier struct {
 	secret string
 }
 
-func (fv *fakeVerifier) VerifySecret(ctx context.Context, name string, secret string) (*UserInfo, error) {
+func (fv *fakeVerifier) VerifySecret(_ context.Context, name string, secret string) (*UserInfo, error) {
 	if secret != fv.secret {
 		return nil, verifyError(errors.New("mismatch"))
 	}

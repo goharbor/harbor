@@ -285,7 +285,10 @@
     "PREVENT_VULNERABLE_2": "或更高危險級別的映像檔部署。",
     "SCAN": "弱點掃描",
     "AUTOSCAN_TOGGLE": "推送時自動掃描映像檔",
-    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。"
+    "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。",
+    "SBOM": "SBOM generation",
+    "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+    "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
   },
   "MEMBER": {
     "NEW_USER": "新增使用者成員",
@@ -402,6 +405,7 @@
    "REPOSITORY": "Repository",
    "ARTIFACT": "Artifact",
    "SCAN": "Scan",
+   "SBOM": "SBOM",
    "TAG": "Tag",
    "ACCESSORY": "Accessory",
    "ARTIFACT_ADDITION": "Artifact Addition",
@@ -410,13 +414,15 @@
    "IMMUTABLE_TAG": "Immutable Tag",
    "LOG": "Log",
    "NOTIFICATION_POLICY": "Notification Policy",
+   "QUOTA": "Quota",
    "BACK": "Back",
    "NEXT": "Next",
    "FINISH": "Finish",
    "BASIC_INFO": "Basic Information",
    "SELECT_PERMISSIONS": "Select Permissions",
    "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
-   "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions"
+   "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
+   "SYSTEM_PERMISSIONS": "System Permissions"
   },
   "WEBHOOK": {
     "EDIT_BUTTON": "編輯",
@@ -696,7 +702,7 @@
     "FLATTEN_LEVEL_TIP_3": "'平整化 3 等級': 'a/b/c/d/img' -> 'ns/d/img'",
     "BANDWIDTH": "頻寬",
     "BANDWIDTH_ERROR_TIP": "請輸入 -1 或大於 0 的整數",
-    "BANDWIDTH_TOOLTIP": "設定每個執行的最大網路頻寬。請注意並發執行的數量。若要無限制頻寬，請輸入 -1",
+    "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
     "UNLIMITED": "無限制",
     "UNREACHABLE_SOURCE_REGISTRY": "無法連線到來源 Registry，請在編輯此規則之前確保來源 Registry 可用： {{error}}",
     "CRON_ERROR_TIP": "cron 字串的第一個欄位必須是 0，第二個欄位不能是 \"*\"",
@@ -771,6 +777,7 @@
     "ARTIFACTS": "Artifacts",
     "SIZE": "大小",
     "VULNERABILITY": "弱點",
+    "SBOM": "SBOM",
     "BUILD_HISTORY": "建置歷史",
     "SIGNED": "已簽署",
     "AUTHOR": "作者",
@@ -795,6 +802,7 @@
     "LABELS": "標籤",
     "ADD_LABEL_TO_IMAGE": "新增標籤到此映像檔",
     "ADD_LABELS": "新增標籤",
+    "STOP": "Stop",
     "RETAG": "複製",
     "FILTER_BY_LABEL": "篩選標籤",
     "FILTER_ARTIFACT_BY_LABEL": "透過標籤篩選 Artifact",
@@ -1019,6 +1027,41 @@
     "IN_PROGRESS": "搜尋中...",
     "BACK": "返回"
   },
+  "SBOM": {
+    "CHART": {
+        "SCANNING_TIME": "Scan completed time:",
+        "SCANNING_PERCENT": "Scan progress:",
+        "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+        "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+        "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+        "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+    },
+    "GRID": {
+        "PLACEHOLDER": "No scan results found.",
+        "COLUMN_PACKAGE": "Package",
+        "COLUMN_PACKAGES": "Packages",
+        "COLUMN_VERSION": "Current version",
+        "COLUMN_LICENSE": "License",
+        "COLUMN_DESCRIPTION": "Description",
+        "FOOT_ITEMS": "Items",
+        "FOOT_OF": "of"
+    },
+    "STATE": {
+        "OTHER_STATUS": "Not Generated",
+        "QUEUED": "Queued",
+        "ERROR": "View Log",
+        "SCANNING": "Generating",
+        "STOPPED": "SBOM scan stopped"
+    },
+    "NO_SBOM": "No SBOM",
+    "PACKAGES": "SBOM",
+    "REPORTED_BY": "Reported by {{scanner}}",
+    "GENERATE": "Generate SBOM",
+    "DOWNLOAD": "Download SBOM",
+    "Details": "SBOM details",
+    "STOP": "Stop Generate SBOM",
+    "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+},
   "VULNERABILITY": {
     "STATE": {
       "OTHER_STATUS": "未掃描",
@@ -1099,6 +1142,7 @@
     "ALL": "全部",
     "PLACEHOLDER": "未發現任何 artifacts！",
     "SCAN_UNSUPPORTED": "不支援掃描",
+    "SBOM_UNSUPPORTED": "Unsupported",
     "SUMMARY": "摘要",
     "DEPENDENCIES": "相依性",
     "VALUES": "值",
@@ -1423,6 +1467,10 @@
     "NAME_REQUIRED": "名稱必填",
     "NAME_REX": "名稱必須由小寫字母、數字和 ._- 組成，至少2個字元，並且必須以字母或數字開頭。",
     "DESCRIPTION": "描述",
+    "SBOM": "SBOM",
+    "VULNERABILITY": "Vulnerability",
+    "SUPPORTED": "Supported",
+    "NOT_SUPPORTED": "Not Supported",
     "ENDPOINT": "端點",
     "ENDPOINT_EXISTS": "端點 URL 已存在",
     "ENDPOINT_REQUIRED": "端點 URL 必填",
@@ -1451,9 +1499,10 @@
     "NAME_COLON": "名稱：",
     "VENDOR_COLON": "供應商：",
     "VERSION_COLON": "版本：",
-    "CAPABILITIES": "功能",
+    "CAPABILITIES": "功能:",
     "CONSUMES_MIME_TYPES_COLON": "可處理的 MIME 類型：",
     "PRODUCTS_MIME_TYPES_COLON": "產出的 MIME 類型：",
+    "CAPABILITIES_TYPE": "Type:",
     "PROPERTIES": "屬性",
     "NEW_SCANNER": "新增掃描器",
     "SET_AS_DEFAULT": "設為預設",
@@ -1663,9 +1712,9 @@
     "PROJECTS_MODAL_TITLE": "機器人帳號的專案",
     "PROJECTS_MODAL_SUMMARY": "這些是此機器人帳號涵蓋的專案。",
     "CREATE_ROBOT": "建立系統機器人帳號",
-    "CREATE_ROBOT_SUMMARY": "建立一個涵蓋特定專案的系統機器人帳號。選擇「涵蓋所有專案」將套用到所有現有和未來的專案",
+    "CREATE_ROBOT_SUMMARY": "Create a system Robot Account that will cover permissions for the system as well as for specific projects",
     "EDIT_ROBOT": "編輯系統機器人帳號",
-    "EDIT_ROBOT_SUMMARY": "編輯一個系統機器人帳號。選擇「涵蓋所有專案」將套用到所有現有和未來的專案",
+    "EDIT_ROBOT_SUMMARY": "Edit a system Robot Account that will cover permissions for the system as well as for specific projects",
     "EXPIRATION_TIME": "到期時間",
     "EXPIRATION_TIME_EXPLAIN": "機器人帳號的權杖到期時間（以建立時間為起點的天數）。要使其永不過期，請輸入「-1」。",
     "EXPIRATION_DEFAULT": "天（預設）",
@@ -1675,7 +1724,7 @@
     "COVER_ALL": "涵蓋所有專案",
     "COVER_ALL_EXPLAIN": "選擇以套用到所有現有和未來的專案",
     "COVER_ALL_SUMMARY": "選擇了所有現有和未來的專案。",
-    "RESET_PERMISSION": "重設權限",
+    "RESET_PERMISSION": "RESET ALL PROJECT PERMISSIONS",
     "PERMISSION_COLUMN": "權限",
     "EXPIRES_AT": "到期於",
     "VIEW_SECRET": "更新密鑰",
@@ -1707,7 +1756,9 @@
     "LIST": "列表",
     "REPOSITORY": "儲存庫",
     "EXPIRES_IN": "到期於",
-    "EXPIRED": "已過期"
+    "EXPIRED": "已過期",
+    "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
+    "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
   },
   "ACCESSORY": {
     "DELETION_TITLE_ACCESSORY": "確認刪除附件",

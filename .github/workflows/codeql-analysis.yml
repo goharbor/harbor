@@ -26,7 +26,7 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       # Override language selection by uncommenting this and choosing your languages
       # with:
       #   languages: go, javascript, csharp, python, cpp, java
@@ -47,5 +47,8 @@ jobs:
     #   make bootstrap
     #   make release
 
+    # to make sure autobuild success, specifify golang version in go.mod
+    # https://github.com/github/codeql/issues/15647#issuecomment-2003768106
+
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

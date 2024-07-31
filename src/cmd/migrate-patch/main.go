@@ -48,20 +48,23 @@ func main() {
 		log.Fatalf("Failed to connect to Database, error: %v\n", err)
 	}
 	defer db.Close()
-	c := make(chan struct{}, 1)
+
+	c := make(chan struct{})
 	go func() {
+		defer close(c)
+
 		err := db.Ping()
 		for ; err != nil; err = db.Ping() {
 			log.Println("Failed to Ping DB, sleep for 1 second.")
 			time.Sleep(1 * time.Second)
 		}
-		c <- struct{}{}
 	}()
 	select {
 	case <-c:
 	case <-time.After(30 * time.Second):
 		log.Fatal("Failed to connect DB after 30 seconds, time out. \n")
 	}
+
 	row := db.QueryRow(pgSQLCheckColStmt)
 	var tblCount, colCount int
 	if err := row.Scan(&tblCount, &colCount); err != nil {

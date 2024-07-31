@@ -235,13 +235,14 @@
     </clr-wizard-page>
 
     <clr-wizard-page
+        (clrWizardPageOnLoad)="clrWizardPageOnLoad()"
         (clrWizardPageOnCommit)="save()"
         [clrWizardPagePreventDefaultNext]="true"
         [clrWizardPageNextDisabled]="disabled()">
         <ng-template clrPageTitle>{{
             'ROBOT_ACCOUNT.SELECT_PERMISSIONS' | translate
         }}</ng-template>
-        <inline-alert class="modal-title"></inline-alert>
+        <inline-alert></inline-alert>
         <form class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
                 <robot-permissions-panel

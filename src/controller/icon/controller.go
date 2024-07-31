@@ -69,6 +69,10 @@ var (
 			path:   "./icons/wasm.png",
 			resize: true,
 		},
+		icon.DigestOfIconAccSBOM: {
+			path:   "./icons/sbom.png",
+			resize: true,
+		},
 		icon.DigestOfIconDefault: {
 			path:   "./icons/default.png",
 			resize: true,

@@ -86,40 +86,29 @@ Select Project Permission
         Capture Page Screenshot
     END
 
-Create A New System Robot Account
-    [Arguments]  ${name}=${null}  ${expiration_type}=default  ${expiration_value}=${null}  ${description}=${null}  ${is_cover_all}=${false}  ${cover_all_permission_list}=@{EMPTY}  ${project_permission_list}=@{EMPTY}
-    ${d}=    Get Current Date    result_format=%m%s
-    ${name}=  Set Variable If  '${name}'=='${null}'   robot_name${d}  ${name}
-    Switch To Robot Account
-    Retry Double Keywords When Error  Retry Element Click  ${new_sys_robot_account_btn}  Retry Wait Until Page Contains Element  ${sys_robot_account_name_input}
-    Retry Text Input  ${sys_robot_account_name_input}  ${name}
-    Run Keyword If  '${expiration_type}' != 'default'  Run Keywords  Retry Element Click  xpath=${sys_robot_account_expiration_type_select}  AND
-    ...  Retry Element Click  xpath=${sys_robot_account_expiration_type_select}//option[@value='${expiration_type}']
+Create A System Robot Account
+    [Arguments]  ${robot_account_name}  ${expiration_type}  ${description}=${null}  ${days}=${null}  ${cover_all_system_resources}=${null}  ${cover_all_project_resources}=${null}
+    Retry Element Click  ${new_sys_robot_account_btn}
+    Retry Wait Element Should Be Disabled  //button[text()='Next']
+    Retry Text Input  ${sys_robot_account_name_input}    ${robot_account_name}
     Run Keyword If  '${description}' != '${null}'  Retry Text Input  ${sys_robot_account_description_textarea}  ${description}
-    Run Keyword If  '${is_cover_all}' == '${true}'  Retry Double Keywords When Error  Retry Element Click  ${sys_robot_account_coverall_chb}   Retry Checkbox Should Be Selected  ${sys_robot_account_coverall_chb_input}
-    ...  ELSE  Clear Global Permissions By JavaScript
+    Select From List By Value  ${sys_robot_account_expiration_type_select}  ${expiration_type}
+    Run Keyword If  '${expiration_type}' == 'days'  Retry Text Input  ${sys_robot_account_expiration_input}  ${days}
+    Retry Button Click  //button[text()='Next']
+    Retry Wait Element Should Be Disabled  ${project_robot_account_create_finish_btn}
+    Run Keyword If  '${cover_all_system_resources}' == '${true}'  Retry Element Click  //*[@id='clr-wizard-page-1']//span[text()='Select all']
+    Retry Double Keywords When Error  Retry Button Click  //button[text()='Next']  Retry Wait Element Not Visible  //button[text()='Next']
+    Run Keyword If  '${cover_all_project_resources}' == '${true}'  Run Keywords  Retry Element Click  ${sys_robot_account_coverall_chb}  AND  Retry Element Click  //*[@id='clr-wizard-page-2']//span[text()='Select all']
+    Retry Double Keywords When Error  Retry Element Click  ${project_robot_account_create_finish_btn}  Retry Wait Element Not Visible  ${project_robot_account_create_finish_btn}
+    ${robot_account_name}=  Get Text  ${project_robot_account_name_xpath}
+    ${token}=  Get Value  //hbr-copy-input//input
+    Retry Element Click  //hbr-copy-input//clr-icon
+    [Return]  ${robot_account_name}  ${token}
 
-    # Select project
-    FOR  ${project}  IN  @{project_permission_list}
-        Log To Console  project: ${project}
-        Should Be True    type($project) is not dict
-        ${tmp} =    Convert To Dictionary    ${project}
-        Should Be True    type($tmp) is dict
-        ${project_name}=  Get From Dictionary  ${tmp}  project_name
-        Log To Console  project_name: ${project_name}
-        ${permission_item_list}=  Get From Dictionary  ${tmp}  permission_item_list
-        Log To Console  permission_item_list: ${permission_item_list}
-        Filter Project In Project Permisstion List  ${project_name}
-        Retry Element Click  //clr-dg-row[contains(.,'${project_name}')]//div[contains(@class,'clr-checkbox-wrapper')]/label[contains(@class,'clr-control-label')]
-        Retry Element Click  //clr-dg-row[contains(., '${project_name}')]//clr-dropdown/button
-        Select Project Permission  ${project_name}  ${permission_item_list}
-    END
-    # Save it
-    Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_account_btn}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_account_btn}
-    Retry Double Keywords When Error  Retry Element Click  ${save_sys_robot_export_to_file_btn}  Retry Wait Until Page Not Contains Element  ${save_sys_robot_export_to_file_btn}
-    # Get Robot Account Info
-    ${id}  ${name}  ${secret}  ${creation_time}  ${expires_at}=  Get Robot Account Info By File  ${download_directory}/robot$${name}.json
-    [Return]  ${name}  ${secret}
+Check System Robot Account API Permission
+    [Arguments]  ${robot_account_name}  ${token}  ${admin_user_name}  ${admin_password}  ${resources}  ${expected_status}=0
+    ${rc}  ${output}=  Run And Return Rc And Output  USER_NAME='${robot_account_name}' PASSWORD='${token}' ADMIN_USER_NAME=${admin_user_name} ADMIN_PASSWORD=${admin_password} HARBOR_BASE_URL=https://${ip}/api/v2.0 RESOURCES=${resources} python ./tests/apitests/python/test_system_permission.py
+    Should Be Equal As Integers  ${rc}  ${expected_status}
 
 System Robot Account Exist
     [Arguments]  ${name}  ${project_count}

@@ -35,7 +35,7 @@ type healthAPI struct {
 	ctl health.Controller
 }
 
-func (r *healthAPI) GetHealth(ctx context.Context, params operations.GetHealthParams) middleware.Responder {
+func (r *healthAPI) GetHealth(ctx context.Context, _ operations.GetHealthParams) middleware.Responder {
 	status := r.ctl.GetHealth(ctx)
 	s := &models.OverallHealthStatus{
 		Status: status.Status,

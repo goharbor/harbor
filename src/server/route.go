@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/server/router"
 )
 
-func ignoreNotification(w http.ResponseWriter, r *http.Request) {
+func ignoreNotification(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 

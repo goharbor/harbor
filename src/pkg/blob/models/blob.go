@@ -123,7 +123,7 @@ func (b *Blob) IsManifest() bool {
 }
 
 // FilterByArtifactDigest returns orm.QuerySeter with artifact digest filter
-func (b *Blob) FilterByArtifactDigest(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByArtifactDigest(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	v, ok := value.(string)
 	if !ok {
 		return qs
@@ -133,7 +133,7 @@ func (b *Blob) FilterByArtifactDigest(ctx context.Context, qs orm.QuerySeter, ke
 }
 
 // FilterByArtifactDigests returns orm.QuerySeter with artifact digests filter
-func (b *Blob) FilterByArtifactDigests(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	artifactDigests, ok := value.([]string)
 	if !ok {
 		return qs
@@ -148,7 +148,7 @@ func (b *Blob) FilterByArtifactDigests(ctx context.Context, qs orm.QuerySeter, k
 }
 
 // FilterByProjectID returns orm.QuerySeter with project id filter
-func (b *Blob) FilterByProjectID(ctx context.Context, qs orm.QuerySeter, key string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByProjectID(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	projectID, ok := value.(int64)
 	if !ok {
 		return qs

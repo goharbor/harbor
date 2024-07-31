@@ -28,7 +28,7 @@ const (
 type evaluator struct{}
 
 // Process for the "nothing" Evaluator simply returns the input with no error
-func (e *evaluator) Process(artifacts []*selector.Candidate) (processed []*selector.Candidate, err error) {
+func (e *evaluator) Process(_ []*selector.Candidate) (processed []*selector.Candidate, err error) {
 	return processed, err
 }
 

@@ -44,19 +44,19 @@ func (suite *MiddlewareTestSuite) prepare(name, digset string, withoutSub ...boo
    "schemaVersion":2,
    "mediaType":"application/vnd.oci.image.manifest.v1+json",
    "config":{
-      "mediaType":"application/vnd.example.sbom",
+      "mediaType":"application/vnd.example.main",
       "size":2,
       "digest":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
    },
    "layers":[
       {
-         "mediaType":"application/vnd.example.sbom.text",
+         "mediaType":"application/vnd.example.main.text",
          "size":37,
          "digest":"sha256:45592a729ef6884ea3297e9510d79104f27aeef5f4919b3a921e3abb7f469709"
       }
    ],
    "annotations":{
-      "org.example.sbom.format":"text"
+      "org.example.main.format":"text"
    },
    "subject":{
       "mediaType":"application/vnd.oci.image.manifest.v1+json",
@@ -70,19 +70,19 @@ func (suite *MiddlewareTestSuite) prepare(name, digset string, withoutSub ...boo
    "schemaVersion":2,
    "mediaType":"application/vnd.oci.image.manifest.v1+json",
    "config":{
-      "mediaType":"application/vnd.example.sbom",
+      "mediaType":"application/vnd.example.main",
       "size":2,
       "digest":"%s"
    },
    "layers":[
       {
-         "mediaType":"application/vnd.example.sbom.text",
+         "mediaType":"application/vnd.example.main.text",
          "size":37,
          "digest":"sha256:45592a729ef6884ea3297e9510d79104f27aeef5f4919b3a921e3abb7f469709"
       }
    ],
    "annotations":{
-      "org.example.sbom.format":"text"
+      "org.example.main.format":"text"
    }}`, digset)
 	}
 

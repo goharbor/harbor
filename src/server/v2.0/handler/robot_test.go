@@ -47,7 +47,7 @@ func TestValidDuration(t *testing.T) {
 	}{
 		{"duration 0",
 			0,
-			true,
+			false,
 		},
 		{"duration 1",
 			1,

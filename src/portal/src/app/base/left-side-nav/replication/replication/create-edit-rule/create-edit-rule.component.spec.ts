@@ -281,4 +281,13 @@ describe('CreateEditRuleComponent (inline template)', () => {
         expect(ruleNameInput).toBeTruthy();
         expect(ruleNameInput.value.trim()).toEqual('sync_01');
     }));
+
+    it('List all Registries Response', fakeAsync(() => {
+        fixture.detectChanges();
+        comp.ngOnInit();
+        comp.getAllRegistries();
+        fixture.whenStable();
+        tick(5000);
+        expect(comp.targetList.length).toBe(4);
+    }));
 });

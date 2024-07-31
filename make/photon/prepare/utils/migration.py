@@ -27,6 +27,12 @@ def read_conf(path):
     with open(path) as f:
         try:
             d = yaml.safe_load(f)
+            # the strong_ssl_ciphers configure item apply to internal and external tls communication
+            # for compatibility, user could configure the strong_ssl_ciphers either in https section or under internal_tls section,
+            # but it will move to https section after migration
+            https_config = d.get("https") or {}
+            internal_tls = d.get('internal_tls') or {}
+            d['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers') or internal_tls.get('strong_ssl_ciphers')
         except Exception as e:
             click.echo("parse config file err, make sure your harbor config version is above 1.8.0", e)
             exit(-1)

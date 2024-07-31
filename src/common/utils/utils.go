@@ -313,11 +313,11 @@ func ValidateCronString(cron string) error {
 //	sort.Slice(input, func(i, j int) bool {
 //		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
 //	})
+//
 // a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
 // the return value is true if a is less than b
 // for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
 // it returns with this order {"user", "users", "admin_user", "harbor_user"}
-
 func MostMatchSorter(a, b string, matchWord string) bool {
 	// exact match always first
 	if a == matchWord {
@@ -331,4 +331,9 @@ func MostMatchSorter(a, b string, matchWord string) bool {
 		return a < b
 	}
 	return len(a) < len(b)
+}
+
+// IsLocalPath checks if path is local, includes the empty path
+func IsLocalPath(path string) bool {
+	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
 }

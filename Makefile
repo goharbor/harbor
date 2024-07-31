@@ -103,12 +103,12 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.8.2-patch-redis
-TRIVYVERSION=v0.47.0
-TRIVYADAPTERVERSION=v0.30.19
+REGISTRYVERSION=v2.8.3-patch-redis
+TRIVYVERSION=v0.50.4
+TRIVYADAPTERVERSION=v0.31.1
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.2
+REGISTRY_SRC_TAG=v2.8.3
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
@@ -140,7 +140,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.21.4
+GOBUILDIMAGE=golang:1.22.2
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -312,7 +312,7 @@ gen_apis: lint_apis
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.35.4
+MOCKERY_VERSION=v2.42.2
 MOCKERY=$(RUNCONTAINER) ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
@@ -452,16 +452,6 @@ package_offline: update_prepare_version compile build
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-gosec:
-	#go get github.com/securego/gosec/cmd/gosec
-	#go get github.com/dghubble/sling
-	@echo "run secure go scan ..."
-	@if [ "$(GOSECRESULTS)" != "" ] ; then \
-		$(GOPATH)/bin/gosec -fmt=json -out=$(GOSECRESULTS) -quiet ./... | true ; \
-	else \
-		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
-	fi
-
 go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
@@ -479,7 +469,7 @@ misspell:
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint

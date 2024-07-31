@@ -9,6 +9,7 @@ ADD https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz /
 RUN tar zxvf /helm-v3.9.1-linux-amd64.tar.gz && \
     pip install click==7.1.2 && \
     pip install requests==2.24.0 && \
+    pip install pyyaml && \
     chmod +x /migrate_chart.sh ./migrate_chart.py
 
 ENTRYPOINT [ "/migrate_chart.py" ]

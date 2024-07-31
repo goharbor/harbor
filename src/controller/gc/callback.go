@@ -52,7 +52,7 @@ func gcCallback(ctx context.Context, p string) error {
 	return err
 }
 
-func gcTaskStatusChange(ctx context.Context, taskID int64, status string) error {
+func gcTaskStatusChange(ctx context.Context, _ int64, status string) error {
 	if status == job.SuccessStatus.String() && config.QuotaPerProjectEnable(ctx) {
 		go func() {
 			err := quota.RefreshForProjects(orm.Context())
