@@ -73,7 +73,7 @@ list_metadata = Permission("{}/projects/{}/metadatas".format(harbor_base_url, pr
 read_metadata = Permission("{}/projects/{}/metadatas/auto_scan".format(harbor_base_url, project_id), "GET", 200, metadata_payload)
 metadata_payload_for_update = { "auto_scan": "false" }
 update_metadata = Permission("{}/projects/{}/metadatas/auto_scan".format(harbor_base_url, project_id), "PUT", 200, metadata_payload_for_update)
-delete_metadata = Permission("{}/projects/{}/metadatas/auto_scan".format(harbor_base_url, project_id), "DELETE", 200, metadata_payload)
+delete_metadata = Permission("{}/projects/{}/metadatas/auto_scan".format(harbor_base_url, project_id), "DELETE", 200, metadata_payload_for_update)
 
 # 4. Resource: repository  actions: ['read', 'list', 'update', 'delete', 'pull', 'push']
 # note: pull and push are for docker cli,  no API needs them
@@ -89,12 +89,17 @@ copy_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts?fr
 delete_artifact = Permission("{}/projects/{}/repositories/target_repo/artifacts/{}".format(harbor_base_url, project_name, source_artifact_tag), "DELETE", 200)
 
 # 6. Resource scan      actions: ['read', 'create', 'stop']
-stop_scan_payload = {
+vulnerability_scan_payload = {
     "scan_type": "vulnerability"
 }
-create_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202)
-stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, stop_scan_payload)
+create_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, vulnerability_scan_payload)
+stop_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, vulnerability_scan_payload)
 read_scan = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/83be44fd-1234-5678-b49f-4b6d6e8f5730/log".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "get", 404)
+sbom_gen_payload = {
+    "scan_type": "sbom"
+}
+create_sbom_generation = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, sbom_gen_payload)
+stop_sbom_generation = Permission("{}/projects/{}/repositories/{}/artifacts/{}/scan/stop".format(harbor_base_url, project_name, source_artifact_name, source_artifact_tag), "POST", 202, sbom_gen_payload)
 
 # 7. Resource tag      actions: ['list', 'create', 'delete']
 tag_payload = { "name": "test-{}".format(int(random.randint(1000, 9999))) }
@@ -240,7 +245,7 @@ resource_permissions = {
     "metadata": [create_metadata, list_metadata, read_metadata, update_metadata, delete_metadata],
     "repository": [list_repo, read_repo, update_repo, delete_repo],
     "artifact": [list_artifact, read_artifact, copy_artifact, delete_artifact],
-    "scan": [create_scan, stop_scan, read_scan],
+    "scan": [create_scan, stop_scan, read_scan, create_sbom_generation, stop_sbom_generation],
     "tag": [create_tag, list_tag, delete_tag],
     "accessory": [list_accessory],
     "artifact-addition": [read_artifact_addition_vul, read_artifact_addition_dependencies],

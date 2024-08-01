@@ -120,6 +120,14 @@ Test Case - Stop Scan All Images
     [Tags]  stop_scan_all
     Harbor API Test  ./tests/apitests/python/test_system_level_stop_scan_all.py
 
+Test Case - Generate SBOM Of An Image
+    [Tags]  generate_sbom
+    Harbor API Test  ./tests/apitests/python/test_sbom_generation_of_image_artifact.py
+
+Test Case - Stop Generating SBOM Of An Image
+    [Tags]  stop_generating_sbom
+    Harbor API Test  ./tests/apitests/python/test_stop_sbom_generation_of_image_artifact.py
+
 Test Case - Registry API
     [Tags]  reg_api
     Harbor API Test  ./tests/apitests/python/test_registry_api.py
