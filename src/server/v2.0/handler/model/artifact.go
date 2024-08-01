@@ -49,6 +49,8 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		PushTime:          strfmt.DateTime(a.PushTime),
 		ExtraAttrs:        a.ExtraAttrs,
 		Annotations:       a.Annotations,
+		ArtifactType:      a.ArtifactType,
+		RepositoryName:    a.RepositoryName,
 	}
 
 	for _, reference := range a.References {
