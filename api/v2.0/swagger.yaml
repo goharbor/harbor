@@ -7340,6 +7340,10 @@ definitions:
         type: string
         description: 'The ID of the tag retention policy for the project'
         x-nullable: true
+      proxy_speed_kb:
+        type: string
+        description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
