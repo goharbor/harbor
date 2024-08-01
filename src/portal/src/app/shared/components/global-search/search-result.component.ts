@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 
 import { GlobalSearchService } from './global-search.service';
@@ -21,6 +21,7 @@ import { SearchTriggerService } from './search-trigger.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
 import { filter, switchMap } from 'rxjs/operators';
+import { BannerMessage } from 'src/app/base/left-side-nav/config/config';
 
 @Component({
     selector: 'search-result',
@@ -50,8 +51,12 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     constructor(
         private search: GlobalSearchService,
         private msgHandler: MessageHandlerService,
-        private searchTrigger: SearchTriggerService
-    ) {}
+        private searchTrigger: SearchTriggerService,
+        private renderer: Renderer2,
+        private el: ElementRef,
+        private appConfigService: AppConfigService
+
+    ) { }
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$
@@ -79,6 +84,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
                     this.onGoing = false;
                     this.originalCopy = searchResults; // Keep the original data
                     this.searchResults = this.clone(searchResults);
+                    this.adjustOverlayTop();
                 },
                 error => {
                     this.onGoing = false;
@@ -133,6 +139,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     // Show the results
     show(): void {
         this.stateIndicator = true;
+        this.adjustOverlayTop();
     }
 
     // Close the result page
@@ -169,11 +176,46 @@ export class SearchResultComponent implements OnInit, OnDestroy {
                 this.onGoing = false;
                 this.originalCopy = searchResults; // Keep the original data
                 this.searchResults = this.clone(searchResults);
+                this.adjustOverlayTop();
             },
             error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             }
         );
+    }
+    hasValidBannerMessage(): boolean {
+        const current: Date = this.appConfigService.getConfig()?.current_time
+            ? new Date(this.appConfigService.getConfig()?.current_time)
+            : new Date();
+        if (this.appConfigService.getConfig()?.banner_message) {
+            const bm = JSON.parse(
+                this.appConfigService.getConfig()?.banner_message
+            ) as BannerMessage;
+            if (bm?.fromDate && bm?.toDate) {
+                return (
+                    new Date(current) <= new Date(bm.toDate) &&
+                    new Date(current) >= new Date(bm.fromDate)
+                );
+            }
+            if (bm?.fromDate && !bm?.toDate) {
+                return new Date(current) >= new Date(bm.fromDate);
+            }
+
+            if (!bm?.fromDate && bm?.toDate) {
+                return new Date(current) <= new Date(bm.toDate);
+            }
+        }
+        return false;
+    }
+
+    private adjustOverlayTop(): void {
+        const hasBannerMessage = this.hasValidBannerMessage();
+        const topValue = hasBannerMessage ? '95px' : '60px';
+
+        const overlayElement = this.el.nativeElement.querySelector('.search-overlay');
+        if (overlayElement) {
+            this.renderer.setStyle(overlayElement, 'top', topValue);
+        }
     }
 }
