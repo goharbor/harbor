@@ -18,6 +18,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/dao"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 )
@@ -39,6 +40,8 @@ type Manager interface {
 	// Flush cleans the trash table record, which creation_time is not in the time window.
 	// The unit of timeWindow is hour, the represent cut-off is time.now() - timeWindow * time.Hours
 	Flush(ctx context.Context, timeWindow int64) (err error)
+	// List lists the artifact trash by query.
+	List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -66,4 +69,8 @@ func (m *manager) Filter(ctx context.Context, timeWindow int64) (arts []model.Ar
 
 func (m *manager) Flush(ctx context.Context, timeWindow int64) (err error) {
 	return m.dao.Flush(ctx, time.Now().Add(-time.Duration(timeWindow)*time.Hour))
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) (arts []model.ArtifactTrash, err error) {
+	return m.dao.List(ctx, query)
 }

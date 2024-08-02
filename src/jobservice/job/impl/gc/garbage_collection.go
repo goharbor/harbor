@@ -203,6 +203,9 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 
 // mark
 func (gc *GarbageCollector) mark(ctx job.Context) error {
+	// the following logic for querying the deleted artifacts and useless blobs may took long time, records the start and end time
+	// for querying the artifacts which be deleted in this interval.
+	start := time.Now()
 	arts, err := gc.deletedArt(ctx)
 	if err != nil {
 		gc.logger.Errorf("failed to get deleted Artifacts in gc job, with error: %v", err)
@@ -226,6 +229,8 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		gc.logger.Errorf("failed to get gc candidate: %v", err)
 		return err
 	}
+	end := time.Now()
+
 	if len(orphanBlobs) != 0 {
 		blobs = append(blobs, orphanBlobs...)
 	}
@@ -237,12 +242,28 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		return nil
 	}
 
+	trashBlobs, err := gc.listTrashBlobsByTimeRange(ctx, start, end)
+	if err != nil {
+		gc.logger.Errorf("failed to lists the blobs associated with the artifacts deleted in the time range %s-%s, error: %v", start, end, err)
+		return err
+	}
+	// the trash blobs should be retained and wait for next GC because their artifact trash has not been filtered in this cycle.
+	shouldRetainedBlobs := make(map[string]bool)
+	for _, blob := range trashBlobs {
+		shouldRetainedBlobs[blob.Digest] = true
+	}
+
 	// update delete status for the candidates.
 	blobCt := 0
 	mfCt := 0
 	makeSize := int64(0)
 
 	for _, blob := range blobs {
+		if shouldRetainedBlobs[blob.Digest] {
+			gc.logger.Debugf("skip mark the blob %s, because it should be retained in this GC cycle.", blob.Digest)
+			continue
+		}
+
 		if !gc.dryRun {
 			if gc.shouldStop(ctx) {
 				return errGcStop
@@ -726,6 +747,34 @@ func (gc *GarbageCollector) shouldStop(ctx job.Context) bool {
 		return true
 	}
 	return false
+}
+
+// listTrashBlobsByTimeRange queries the blobs associated with the artifact be deleted in the fixed time range.
+func (gc *GarbageCollector) listTrashBlobsByTimeRange(ctx job.Context, start, end time.Time) ([]*blobModels.Blob, error) {
+	query := &q.Query{
+		Keywords: map[string]interface{}{
+			"creation_time": &q.Range{
+				Max: end,
+				Min: start,
+			},
+		},
+	}
+	arts, err := gc.artrashMgr.List(ctx.SystemContext(), query)
+	if err != nil {
+		return nil, err
+	}
+
+	var blobs []*blobModels.Blob
+	for _, art := range arts {
+		artBlobs, err := gc.blobMgr.GetByArt(ctx.SystemContext(), art.Digest)
+		if err != nil {
+			return nil, err
+		}
+
+		blobs = append(blobs, artBlobs...)
+	}
+
+	return blobs, nil
 }
 
 func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
