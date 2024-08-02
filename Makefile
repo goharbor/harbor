@@ -104,8 +104,8 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.51.2
-TRIVYADAPTERVERSION=v0.31.2
+TRIVYVERSION=v0.54.1
+TRIVYADAPTERVERSION=v0.31.3
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.3
