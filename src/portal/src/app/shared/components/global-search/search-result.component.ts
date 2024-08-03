@@ -184,38 +184,19 @@ export class SearchResultComponent implements OnInit, OnDestroy {
             }
         );
     }
-    hasValidBannerMessage(): boolean {
-        const current: Date = this.appConfigService.getConfig()?.current_time
-            ? new Date(this.appConfigService.getConfig()?.current_time)
-            : new Date();
-        if (this.appConfigService.getConfig()?.banner_message) {
-            const bm = JSON.parse(
-                this.appConfigService.getConfig()?.banner_message
-            ) as BannerMessage;
-            if (bm?.fromDate && bm?.toDate) {
-                return (
-                    new Date(current) <= new Date(bm.toDate) &&
-                    new Date(current) >= new Date(bm.fromDate)
-                );
-            }
-            if (bm?.fromDate && !bm?.toDate) {
-                return new Date(current) >= new Date(bm.fromDate);
-            }
-
-            if (!bm?.fromDate && bm?.toDate) {
-                return new Date(current) <= new Date(bm.toDate);
-            }
-        }
-        return false;
+    getTopValue(): number {
+        const headerHeight: number = document.querySelector('navigator')?.clientHeight || 10;
+        const bannerHeight: number = document.querySelector('app-app-level-alerts')?.clientHeight || 10;
+        return headerHeight + bannerHeight;
     }
 
     private adjustOverlayTop(): void {
-        const hasBannerMessage = this.hasValidBannerMessage();
-        const topValue = hasBannerMessage ? '95px' : '60px';
+        const topValue = `${this.getTopValue()}px`;
 
         const overlayElement = this.el.nativeElement.querySelector('.search-overlay');
         if (overlayElement) {
             this.renderer.setStyle(overlayElement, 'top', topValue);
         }
     }
+
 }
