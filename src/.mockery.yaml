@@ -9,6 +9,17 @@ packages:
       Controller:
         config:
           dir: testing/controller/artifact
+  github.com/goharbor/harbor/src/controller/artifact/processor:
+    interfaces:
+      Processor:
+        config:
+          dir: testing/pkg/processor
+  github.com/goharbor/harbor/src/controller/artifact/annotation:
+    interfaces:
+      Parser:
+        config:
+          dir: testing/pkg/parser
+          outpkg: parser
   github.com/goharbor/harbor/src/controller/blob:
     interfaces:
       Controller:
@@ -188,6 +199,11 @@ packages:
       Manager:
         config:
           dir: testing/pkg/artifact
+  github.com/goharbor/harbor/src/pkg/artifactrash:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/artifactrash
   github.com/goharbor/harbor/src/pkg/blob:
     interfaces:
       Manager:
@@ -218,6 +234,11 @@ packages:
       Handler:
         config:
           dir: testing/pkg/scan
+  github.com/goharbor/harbor/src/pkg/scan/postprocessors:
+    interfaces:
+      NativeScanReportConverter:
+        config:
+          dir: testing/pkg/scan/postprocessors
   github.com/goharbor/harbor/src/pkg/scan/report:
     interfaces:
       Manager:
@@ -238,7 +259,7 @@ packages:
           dir: pkg/scheduler
           outpkg: scheduler
           mockname: mockDAO
-          filename:  mock_dao_test.go
+          filename: mock_dao_test.go
           inpackage: True
       Scheduler:
         config:
@@ -342,6 +363,14 @@ packages:
       DAO:
         config:
           dir: testing/pkg/immutable/dao
+  github.com/goharbor/harbor/src/pkg/immutable/match:
+    interfaces:
+      ImmutableTagMatcher:
+        config:
+          dir: testing/pkg/immutable
+          filename: matcher.go
+          outpkg: immutable
+          mockname: FakeMatcher
   github.com/goharbor/harbor/src/pkg/ldap:
     interfaces:
       Manager:
@@ -505,20 +534,36 @@ packages:
       Manager:
         config:
           dir: testing/pkg/securityhub
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  github.com/goharbor/harbor/src/pkg/tag:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/tag
+  github.com/goharbor/harbor/src/pkg/p2p/preheat/policy:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/p2p/preheat/policy
+  github.com/goharbor/harbor/src/pkg/p2p/preheat/instance:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/p2p/preheat/instance
+  github.com/goharbor/harbor/src/pkg/chart:
+    interfaces:
+      Operator:
+        config:
+          dir: testing/pkg/chart
+  # registryctl related mocks
+  github.com/goharbor/harbor/src/registryctl/client:
+    interfaces:
+      Client:
+        config:
+          dir: testing/registryctl
+          outpkg: registryctl
+  # remote interfaces
+  github.com/docker/distribution:
+    interfaces:
+      Manifest:
+        config:
+          dir: testing/pkg/distribution
