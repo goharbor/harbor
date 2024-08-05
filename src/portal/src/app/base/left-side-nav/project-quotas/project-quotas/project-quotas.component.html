@@ -25,6 +25,7 @@
                         <button
                             id="open-edit"
                             class="btn btn-link btn-sm default-quota-edit-button"
+                            [disabled]="!allConfig.storage_per_project.editable"
                             (click)="editDefaultQuota(quotaHardLimitValue)">
                             {{ 'QUOTA.EDIT' | translate }}
                         </button>
