@@ -416,4 +416,12 @@ export class ListProjectComponent implements OnDestroy {
             this.canClickExport = true;
         }, INTERVAL);
     }
+
+    // toggle star
+    toggleStar(project): void {
+      project.isStarred = !project.isStarred;
+      this.proService.updateStarStatus(project.id, project.isStarred).subscribe({
+        error: (err) => console.error('Failed to update star status', err)
+      });
+    }
 }

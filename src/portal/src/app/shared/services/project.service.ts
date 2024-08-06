@@ -90,6 +90,7 @@ export abstract class ProjectService {
     abstract checkProjectExists(projectName: string): Observable<any>;
     abstract checkProjectMember(projectId: number): Observable<any>;
     abstract getProjectSummary(projectId: number): Observable<any>;
+    abstract updateStarStatus(projectId: number, isStarred: boolean): Observable<any>;
 }
 
 /**
@@ -256,4 +257,13 @@ export class ProjectDefaultService extends ProjectService {
             )
             .pipe(catchError(error => observableThrowError(error)));
     }
+
+    public updateStarStatus(projectId: number, isStarred: boolean): Observable<any> {
+      const baseUrl: string = `${CURRENT_BASE_HREF}/projects/${projectId}/star-status`;
+      return this.http
+          .put(baseUrl, { isStarred: isStarred }, HTTP_JSON_OPTIONS)
+          .pipe(
+              catchError(error => observableThrowError(error))
+          );
+  }
 }
