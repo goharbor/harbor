@@ -164,6 +164,18 @@ Test Case - Stop Scan And Stop Scan All
     [Tags]  stop_scan_job
     Body Of Stop Scan And Stop Scan All
 
+Test Case - Verify SBOM Manual Generation
+    [Tags]  sbom_manual_gen
+    Body Of Generate SBOM of An Image In The Repo  alpine  3.10
+
+Test Case - Generate Image SBOM On Push
+    [Tags]  run-once
+    Body Of Generate Image SBOM On Push
+
+Test Case - Stop SBOM Manual Generation
+    [Tags]  stop_sbom_gen
+    Body Of Stop SBOM Manual Generation
+
 Test Case - External Scanner CRUD
     [Tags]  external_scanner_crud  need_scanner_endpoint
     ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
