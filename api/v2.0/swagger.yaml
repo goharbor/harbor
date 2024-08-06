@@ -1602,7 +1602,7 @@ paths:
           default: false
         - name: latest_in_repository
           in: query
-          description: Specify whether only the latest are included inside the returning artifacts
+          description: Specify whether only the latest pushed artifact of each repository is included inside the returning artifacts. Only works when either artifact_type or media_type is included in the query.
           type: boolean
           required: false
           default: false
