@@ -106,4 +106,5 @@ type Option struct {
 	TagOption     *tag.Option // only works when WithTag is set to true
 	WithLabel     bool
 	WithAccessory bool
+	WithIcon      bool
 }
