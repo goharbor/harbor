@@ -54,6 +54,8 @@ type DAO interface {
 	DeleteReference(ctx context.Context, id int64) (err error)
 	// DeleteReferences deletes the references referenced by the artifact specified by parent ID
 	DeleteReferences(ctx context.Context, parentID int64) (err error)
+	// ListWithLatest ...
+	ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 }
 
 const (
