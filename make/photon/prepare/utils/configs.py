@@ -144,6 +144,12 @@ def parse_yaml_config(config_file_path, with_trivy):
             else:
                 config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
 
+    # relativeurls config
+    if configs.get('relativeurls'):
+        config_dict['relativeurls'] = configs.get('relativeurls')
+    else:
+        config_dict['relativeurls'] = False
+
     # DB configs
     db_configs = configs.get('database')
     if db_configs:
