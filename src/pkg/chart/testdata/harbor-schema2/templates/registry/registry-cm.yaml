@@ -1,0 +1,246 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.registry" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  config.yml: |+
+    version: 0.1
+    log:
+      {{- if eq .Values.logLevel "warning" }}
+      level: warn
+      {{- else if eq .Values.logLevel "fatal" }}
+      level: error
+      {{- else }}
+      level: {{ .Values.logLevel }}
+      {{- end }}
+      fields:
+        service: registry
+    storage:
+      {{- $storage := .Values.persistence.imageChartStorage }}
+      {{- $type := $storage.type }}
+      {{- if eq $type "filesystem" }}
+      filesystem:
+        rootdirectory: {{ $storage.filesystem.rootdirectory }}
+        {{- if $storage.filesystem.maxthreads }}
+        maxthreads: {{ $storage.filesystem.maxthreads }}
+        {{- end }}
+      {{- else if eq $type "azure" }}
+      azure:
+        accountname: {{ $storage.azure.accountname }}
+        container: {{ $storage.azure.container }}
+        {{- if $storage.azure.realm }}
+        realm: {{ $storage.azure.realm }}
+        {{- end }}
+      {{- else if eq $type "gcs" }}
+      gcs:
+        bucket: {{ $storage.gcs.bucket }}
+        {{- if not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity }}
+        keyfile: /etc/registry/gcs-key.json
+        {{- end }}
+        {{- if $storage.gcs.rootdirectory }}
+        rootdirectory: {{ $storage.gcs.rootdirectory }}
+        {{- end }}
+        {{- if $storage.gcs.chunksize }}
+        chunksize: {{ $storage.gcs.chunksize }}
+        {{- end }}
+      {{- else if eq $type "s3" }}
+      s3:
+        region: {{ $storage.s3.region }}
+        bucket: {{ $storage.s3.bucket }}
+        {{- if $storage.s3.regionendpoint }}
+        regionendpoint: {{ $storage.s3.regionendpoint }}
+        {{- end }}
+        {{- if $storage.s3.encrypt }}
+        encrypt: {{ $storage.s3.encrypt }}
+        {{- end }}
+        {{- if $storage.s3.keyid }}
+        keyid: {{ $storage.s3.keyid }}
+        {{- end }}
+        {{- if $storage.s3.secure }}
+        secure: {{ $storage.s3.secure }}
+        {{- end }}
+        {{- if and $storage.s3.secure $storage.s3.skipverify }}
+        skipverify: {{ $storage.s3.skipverify }}
+        {{- end }}
+        {{- if $storage.s3.v4auth }}
+        v4auth: {{ $storage.s3.v4auth }}
+        {{- end }}
+        {{- if $storage.s3.chunksize }}
+        chunksize: {{ $storage.s3.chunksize }}
+        {{- end }}
+        {{- if $storage.s3.rootdirectory }}
+        rootdirectory: {{ $storage.s3.rootdirectory }}
+        {{- end }}
+        {{- if $storage.s3.storageclass }}
+        storageclass: {{ $storage.s3.storageclass }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopychunksize }}
+        multipartcopychunksize: {{ $storage.s3.multipartcopychunksize }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopymaxconcurrency }}
+        multipartcopymaxconcurrency: {{ $storage.s3.multipartcopymaxconcurrency }}
+        {{- end }}
+        {{- if $storage.s3.multipartcopythresholdsize }}
+        multipartcopythresholdsize: {{ $storage.s3.multipartcopythresholdsize }}
+        {{- end }}
+      {{- else if eq $type "swift" }}
+      swift:
+        authurl: {{ $storage.swift.authurl }}
+        username: {{ $storage.swift.username }}
+        container: {{ $storage.swift.container }}
+        {{- if $storage.swift.region }}
+        region: {{ $storage.swift.region }}
+        {{- end }}
+        {{- if $storage.swift.tenant }}
+        tenant: {{ $storage.swift.tenant }}
+        {{- end }}
+        {{- if $storage.swift.tenantid }}
+        tenantid: {{ $storage.swift.tenantid }}
+        {{- end }}
+        {{- if $storage.swift.domain }}
+        domain: {{ $storage.swift.domain }}
+        {{- end }}
+        {{- if $storage.swift.domainid }}
+        domainid: {{ $storage.swift.domainid }}
+        {{- end }}
+        {{- if $storage.swift.trustid }}
+        trustid: {{ $storage.swift.trustid }}
+        {{- end }}
+        {{- if $storage.swift.insecureskipverify }}
+        insecureskipverify: {{ $storage.swift.insecureskipverify }}
+        {{- end }}
+        {{- if $storage.swift.chunksize }}
+        chunksize: {{ $storage.swift.chunksize }}
+        {{- end }}
+        {{- if $storage.swift.prefix }}
+        prefix: {{ $storage.swift.prefix }}
+        {{- end }}
+        {{- if $storage.swift.authversion }}
+        authversion: {{ $storage.swift.authversion }}
+        {{- end }}
+        {{- if $storage.swift.endpointtype }}
+        endpointtype: {{ $storage.swift.endpointtype }}
+        {{- end }}
+        {{- if $storage.swift.tempurlcontainerkey }}
+        tempurlcontainerkey: {{ $storage.swift.tempurlcontainerkey }}
+        {{- end }}
+        {{- if $storage.swift.tempurlmethods }}
+        tempurlmethods: {{ $storage.swift.tempurlmethods }}
+        {{- end }}
+      {{- else if eq $type "oss" }}
+      oss:
+        accesskeyid: {{ $storage.oss.accesskeyid }}
+        region: {{ $storage.oss.region }}
+        bucket: {{ $storage.oss.bucket }}
+        {{- if $storage.oss.endpoint }}
+        endpoint: {{ $storage.oss.bucket }}.{{ $storage.oss.endpoint }}
+        {{- end }}
+        {{- if $storage.oss.internal }}
+        internal: {{ $storage.oss.internal }}
+        {{- end }}
+        {{- if $storage.oss.encrypt }}
+        encrypt: {{ $storage.oss.encrypt }}
+        {{- end }}
+        {{- if $storage.oss.secure }}
+        secure: {{ $storage.oss.secure }}
+        {{- end }}
+        {{- if $storage.oss.chunksize }}
+        chunksize: {{ $storage.oss.chunksize }}
+        {{- end }}
+        {{- if $storage.oss.rootdirectory }}
+        rootdirectory: {{ $storage.oss.rootdirectory }}
+        {{- end }}
+      {{- end }}
+      cache:
+        layerinfo: redis
+      maintenance:
+        uploadpurging:
+          {{- if .Values.registry.upload_purging.enabled }}
+          enabled: true
+          age: {{ .Values.registry.upload_purging.age }}
+          interval: {{ .Values.registry.upload_purging.interval }}
+          dryrun: {{ .Values.registry.upload_purging.dryrun }}
+          {{- else }}
+          enabled: false
+          {{- end }}
+      delete:
+        enabled: true
+      redirect:
+        disable: {{ $storage.disableredirect }}
+    redis:
+      addr: {{ template "harbor.redis.addr" . }}
+      {{- if eq "redis+sentinel" (include "harbor.redis.scheme" .) }}
+      sentinelMasterSet: {{ template "harbor.redis.masterSet" . }}
+      {{- end }}
+      db: {{ template "harbor.redis.dbForRegistry" . }}
+      {{- if not (eq (include "harbor.redis.password" .) "") }}
+      password: {{ template "harbor.redis.password" . }}
+      {{- end }}
+      readtimeout: 10s
+      writetimeout: 10s
+      dialtimeout: 10s
+      pool:
+        maxidle: 100
+        maxactive: 500
+        idletimeout: 60s
+    http:
+      addr: :{{ template "harbor.registry.containerPort" . }}
+      relativeurls: {{ .Values.registry.relativeurls }}
+      {{- if .Values.internalTLS.enabled }}
+      tls:
+        certificate: /etc/harbor/ssl/registry/tls.crt
+        key: /etc/harbor/ssl/registry/tls.key
+        minimumtls: tls1.2
+      {{- end }}
+      # set via environment variable
+      # secret: placeholder
+      debug:
+      {{- if .Values.metrics.enabled}}
+        addr: :{{ .Values.metrics.registry.port }}
+        prometheus:
+          enabled: true
+          path: {{ .Values.metrics.registry.path }}
+      {{- else }}
+        addr: localhost:5001
+      {{- end }}
+    auth:
+      htpasswd:
+        realm: harbor-registry-basic-realm
+        path: /etc/registry/passwd
+    validation:
+      disabled: true
+    compatibility:
+      schema1:
+        enabled: true
+
+    {{- if .Values.registry.middleware.enabled }}
+    {{- $middleware := .Values.registry.middleware }}
+    {{- $middlewareType := $middleware.type }}
+    {{- if eq $middlewareType "cloudFront" }}
+    middleware:
+      storage:
+        - name: cloudfront
+          options:
+            baseurl: {{ $middleware.cloudFront.baseurl }}
+            privatekey: /etc/registry/pk.pem
+            keypairid: {{ $middleware.cloudFront.keypairid }}
+            duration: {{ $middleware.cloudFront.duration }}
+            ipfilteredby: {{ $middleware.cloudFront.ipfilteredby }}
+    {{- end }}
+    {{- end }}
+  ctl-config.yml: |+
+    ---
+    {{- if .Values.internalTLS.enabled }}
+    protocol: "https"
+    port: 8443
+    https_config:
+      cert: "/etc/harbor/ssl/registry/tls.crt"
+      key: "/etc/harbor/ssl/registry/tls.key"
+    {{- else }}
+    protocol: "http"
+    port: 8080
+    {{- end }}
+    log_level: {{ .Values.logLevel }}
+    registry_config: "/etc/registry/config.yml"

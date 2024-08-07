@@ -41,9 +41,20 @@ Stop Scan Artifact
     Retry Element Click  ${stop_scan_artifact_btn}
 
 Check Scan Artifact Job Status Is Stopped
-    Wait Until Element Is Visible  ${stopped_label}
-    ${job_status}=  Get Text  ${stopped_label}
-    Should Be Equal As Strings  '${job_status}'  'Scan stopped'
+    Wait Until Element Is Visible  ${scan_stopped_label}
+
+Generate Artifact SBOM
+    [Arguments]  ${project}  ${repo}  ${label_xpath}=//clr-dg-row//label[contains(@class,'clr-control-label')][1]
+    Go Into Repo  ${project}  ${repo}
+    Retry Element Click  ${label_xpath}
+    Retry Element Click  ${gen_artifact_sbom_btn}
+
+Stop Gen Artifact SBOM
+    Retry Element Click  ${artifact_action_xpath}
+    Retry Element Click  ${stop_gen_artifact_sbom_btn}
+
+Check Gen Artifact SBOM Job Status Is Stopped
+    Wait Until Element Is Visible  ${gen_sbom_stopped_label}
 
 Refresh Repositories
     Retry Element Click  ${refresh_repositories_xpath}

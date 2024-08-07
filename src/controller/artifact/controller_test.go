@@ -67,7 +67,7 @@ type controllerTestSuite struct {
 	ctl          *controller
 	repoMgr      *repotesting.Manager
 	artMgr       *arttesting.Manager
-	artrashMgr   *artrashtesting.FakeManager
+	artrashMgr   *artrashtesting.Manager
 	blobMgr      *blob.Manager
 	tagCtl       *tagtesting.FakeController
 	labelMgr     *label.Manager
@@ -80,7 +80,7 @@ type controllerTestSuite struct {
 func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &repotesting.Manager{}
 	c.artMgr = &arttesting.Manager{}
-	c.artrashMgr = &artrashtesting.FakeManager{}
+	c.artrashMgr = &artrashtesting.Manager{}
 	c.blobMgr = &blob.Manager{}
 	c.tagCtl = &tagtesting.FakeController{}
 	c.labelMgr = &label.Manager{}
@@ -323,6 +323,44 @@ func (c *controllerTestSuite) TestList() {
 	c.Equal(0, len(artifacts[0].Accessories))
 }
 
+func (c *controllerTestSuite) TestListWithLatest() {
+	query := &q.Query{}
+	option := &Option{
+		WithTag:       true,
+		WithAccessory: true,
+	}
+	c.artMgr.On("ListWithLatest", mock.Anything, mock.Anything).Return([]*artifact.Artifact{
+		{
+			ID:           1,
+			RepositoryID: 1,
+		},
+	}, nil)
+	c.tagCtl.On("List").Return([]*tag.Tag{
+		{
+			Tag: model_tag.Tag{
+				ID:           1,
+				RepositoryID: 1,
+				ArtifactID:   1,
+				Name:         "latest",
+			},
+		},
+	}, nil)
+	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
+		Name: "library/hello-world",
+	}, nil)
+	c.repoMgr.On("List", mock.Anything, mock.Anything).Return([]*repomodel.RepoRecord{
+		{RepositoryID: 1, Name: "library/hello-world"},
+	}, nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	artifacts, err := c.ctl.ListWithLatest(nil, query, option)
+	c.Require().Nil(err)
+	c.Require().Len(artifacts, 1)
+	c.Equal(int64(1), artifacts[0].ID)
+	c.Require().Len(artifacts[0].Tags, 1)
+	c.Equal(int64(1), artifacts[0].Tags[0].ID)
+	c.Equal(0, len(artifacts[0].Accessories))
+}
+
 func (c *controllerTestSuite) TestGet() {
 	c.artMgr.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID:           1,
@@ -476,7 +514,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 		},
 	}, nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	c.artrashMgr.On("Create").Return(0, nil)
+	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
@@ -534,7 +572,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.blobMgr.On("List", mock.Anything, mock.Anything).Return(nil, nil)
 	c.blobMgr.On("CleanupAssociationsForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
-	c.artrashMgr.On("Create").Return(0, nil)
+	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true, true)
 	c.Require().Nil(err)
 
