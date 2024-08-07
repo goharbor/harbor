@@ -10,6 +10,8 @@ COPY --link --chown=10000:10000 --chmod=755 ./make/photon/trivy-adapter/binary/t
 COPY --link --chown=10000:10000 --chmod=755 ./make/photon/trivy-adapter/binary/scanner-trivy /home/scanner/bin/
 
 
+RUN chown -R scanner:scanner /etc/pki/tls/certs
+
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl --fail -s http://localhost:8080/probe/healthy || curl -k --fail -s https://localhost:8443/probe/healthy || exit 1
 
 ENV TRIVY_VERSION=${trivy_version}
