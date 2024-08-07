@@ -231,6 +231,36 @@ func (_m *Manager) ListReferences(ctx context.Context, query *q.Query) ([]*artif
 	return r0, r1
 }
 
+// ListWithLatest provides a mock function with given fields: ctx, query
+func (_m *Manager) ListWithLatest(ctx context.Context, query *q.Query) ([]*artifact.Artifact, error) {
+	ret := _m.Called(ctx, query)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListWithLatest")
+	}
+
+	var r0 []*artifact.Artifact
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) ([]*artifact.Artifact, error)); ok {
+		return rf(ctx, query)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query) []*artifact.Artifact); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*artifact.Artifact)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, _a1, props
 func (_m *Manager) Update(ctx context.Context, _a1 *artifact.Artifact, props ...string) error {
 	_va := make([]interface{}, len(props))

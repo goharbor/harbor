@@ -1548,6 +1548,88 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name_or_id}/artifacts:
+    get:
+      summary: List artifacts
+      description: List artifacts of the specified project
+      tags:
+        - project
+      operationId: listArtifactsOfProject
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/acceptVulnerabilities'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_sbom_overview
+          in: query
+          description: Specify whether the SBOM overview is included in returning artifacts, when this option is true, the SBOM overview will be included in the response
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_accessory
+          in: query
+          description: Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+          type: boolean
+          required: false
+          default: false
+        - name: latest_in_repository
+          in: query
+          description: Specify whether only the latest pushed artifact of each repository is included inside the returning artifacts. Only works when either artifact_type or media_type is included in the query.
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of artifacts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/scanner':
     get:
       summary: Get project level scanner
@@ -6586,6 +6668,9 @@ definitions:
       manifest_media_type:
         type: string
         description: The manifest media type of the artifact
+      artifact_type:
+        type: string
+        description: The artifact_type in the manifest of the artifact
       project_id:
         type: integer
         format: int64
@@ -6594,6 +6679,9 @@ definitions:
         type: integer
         format: int64
         description: The ID of the repository that the artifact belongs to
+      repository_name:
+        type: string
+        description: The name of the repository that the artifact belongs to
       digest:
         type: string
         description: The digest of the artifact

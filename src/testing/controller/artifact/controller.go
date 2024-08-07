@@ -296,6 +296,36 @@ func (_m *Controller) List(ctx context.Context, query *q.Query, option *artifact
 	return r0, r1
 }
 
+// ListWithLatest provides a mock function with given fields: ctx, query, option
+func (_m *Controller) ListWithLatest(ctx context.Context, query *q.Query, option *artifact.Option) ([]*artifact.Artifact, error) {
+	ret := _m.Called(ctx, query, option)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListWithLatest")
+	}
+
+	var r0 []*artifact.Artifact
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query, *artifact.Option) ([]*artifact.Artifact, error)); ok {
+		return rf(ctx, query, option)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *q.Query, *artifact.Option) []*artifact.Artifact); ok {
+		r0 = rf(ctx, query, option)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*artifact.Artifact)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *q.Query, *artifact.Option) error); ok {
+		r1 = rf(ctx, query, option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // RemoveLabel provides a mock function with given fields: ctx, artifactID, labelID
 func (_m *Controller) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {
 	ret := _m.Called(ctx, artifactID, labelID)
