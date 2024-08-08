@@ -423,7 +423,12 @@
         "SELECT_PERMISSIONS": "Selectionner les permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Selectionner les permissions système",
         "SELECT_PROJECT_PERMISSIONS": "Selectionner les permissions projet",
-        "SYSTEM_PERMISSIONS": "Permissions système"
+        "SYSTEM_PERMISSIONS": "Permissions système",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "Éditer",

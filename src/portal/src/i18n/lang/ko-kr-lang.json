@@ -420,7 +420,12 @@
         "SELECT_PERMISSIONS": "권한 선택",
         "SELECT_SYSTEM_PERMISSIONS": "시스템 권한 선택",
         "SELECT_PROJECT_PERMISSIONS": "프로젝트 권한 선택",
-        "SYSTEM_PERMISSIONS": "시스템 권한"
+        "SYSTEM_PERMISSIONS": "시스템 권한",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "편집",

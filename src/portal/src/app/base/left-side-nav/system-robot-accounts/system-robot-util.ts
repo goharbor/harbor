@@ -79,6 +79,11 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'notification-policy': 'ROBOT_ACCOUNT.NOTIFICATION_POLICY',
     quota: 'ROBOT_ACCOUNT.QUOTA',
     sbom: 'ROBOT_ACCOUNT.SBOM',
+    robot: 'ROBOT_ACCOUNT.ROBOT',
+    user: 'ROBOT_ACCOUNT.USER',
+    'user-group': 'ROBOT_ACCOUNT.GROUP',
+    'ldap-user': 'ROBOT_ACCOUNT.LDAPUSER',
+    member: 'ROBOT_ACCOUNT.MEMBER',
 };
 
 export function convertKey(key: string) {
