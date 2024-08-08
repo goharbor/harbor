@@ -54,6 +54,8 @@ type DAO interface {
 	DeleteReference(ctx context.Context, id int64) (err error)
 	// DeleteReferences deletes the references referenced by the artifact specified by parent ID
 	DeleteReferences(ctx context.Context, parentID int64) (err error)
+	// ListWithLatest ...
+	ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 }
 
 const (
@@ -280,6 +282,53 @@ func (d *dao) DeleteReferences(ctx context.Context, parentID int64) error {
 	}
 	_, err = qs.Delete()
 	return err
+}
+
+func (d *dao) ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql := `SELECT a.*
+	FROM artifact a
+	JOIN (
+		SELECT repository_name, MAX(push_time) AS latest_push_time
+	FROM artifact
+	WHERE project_id = ? and %s = ?
+	GROUP BY repository_name
+	) latest ON a.repository_name = latest.repository_name AND a.push_time = latest.latest_push_time`
+
+	queryParam := make([]interface{}, 0)
+	var ok bool
+	var pid interface{}
+	if pid, ok = query.Keywords["ProjectID"]; !ok {
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage(`the value of "ProjectID" must be set`)
+	}
+	queryParam = append(queryParam, pid)
+
+	var attributionValue interface{}
+	if attributionValue, ok = query.Keywords["media_type"]; ok {
+		sql = fmt.Sprintf(sql, "media_type")
+	} else if attributionValue, ok = query.Keywords["artifact_type"]; ok {
+		sql = fmt.Sprintf(sql, "artifact_type")
+	}
+
+	if attributionValue == "" {
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessage(`the value of "media_type" or "artifact_type" must be set`)
+	}
+	queryParam = append(queryParam, attributionValue)
+
+	sql, queryParam = orm.PaginationOnRawSQL(query, sql, queryParam)
+	arts := []*Artifact{}
+	_, err = ormer.Raw(sql, queryParam...).QueryRows(&arts)
+	if err != nil {
+		return nil, err
+	}
+
+	return arts, nil
 }
 
 func querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (beegoorm.QuerySeter, error) {
