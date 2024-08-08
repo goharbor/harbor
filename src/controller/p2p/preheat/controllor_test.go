@@ -31,8 +31,8 @@ type preheatSuite struct {
 	suite.Suite
 	ctx                context.Context
 	controller         Controller
-	fakeInstanceMgr    *instance.FakeManager
-	fakePolicyMgr      *pmocks.FakeManager
+	fakeInstanceMgr    *instance.Manager
+	fakePolicyMgr      *pmocks.Manager
 	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
 	fakeExecutionMgr   *tmocks.ExecutionManager
@@ -40,8 +40,8 @@ type preheatSuite struct {
 
 func TestPreheatSuite(t *testing.T) {
 	t.Log("Start TestPreheatSuite")
-	fakeInstanceMgr := &instance.FakeManager{}
-	fakePolicyMgr := &pmocks.FakeManager{}
+	fakeInstanceMgr := &instance.Manager{}
+	fakePolicyMgr := &pmocks.Manager{}
 	fakeScheduler := &smocks.Scheduler{}
 	fakeExecutionMgr := &tmocks.ExecutionManager{}
 
