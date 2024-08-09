@@ -85,13 +85,22 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
+	repositoryName := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	_, err := a.repoCtl.GetByName(ctx, repositoryName)
+	if err != nil {
+		switch {
+		case errors.IsErr(err, errors.NotFoundCode):
+			return operation.NewListArtifactsNotFound().WithPayload(&models.Errors{Errors: []*models.Error{{Message: "Repository not found"}}})
+		}
+		return a.SendError(ctx, err)
+	}
 
 	// set query
 	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	query.Keywords["RepositoryName"] = fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	query.Keywords["RepositoryName"] = repositoryName
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
