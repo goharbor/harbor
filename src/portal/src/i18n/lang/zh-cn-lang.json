@@ -926,7 +926,10 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP 组成员",
             "LDAP_GROUP_MEMBERSHIP_INFO": "LDAP组成员的membership属性，默认为 memberof, 在某些LDAP服务器会变为 ismemberof。如果要开启LDAP组功能，则此项必填",
             "GROUP_SCOPE": "LDAP组搜索范围",
-            "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\""
+          "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\"",
+          "GROUP_ATTACH_PARALLEL": "LDAP组并行同步",
+          "GROUP_ATTACH_PARALLEL_INFO": "打开这个选项时，LDAP组的信息是并行同步到Harbor, 这样可以防止用户组太多时造成的登录超时，如果关闭这个选项，LDAP组信息是顺序同步到Harbor"
+
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",

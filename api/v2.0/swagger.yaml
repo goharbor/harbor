@@ -8989,6 +8989,9 @@ definitions:
       ldap_group_search_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
+      ldap_group_attach_parallel:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Attach LDAP user group information in parallel.
       ldap_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
@@ -9177,6 +9180,11 @@ definitions:
       ldap_group_search_scope:
         type: integer
         description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
+        x-omitempty: true
+        x-isnullable: true
+      ldap_group_attach_parallel:
+        type: boolean
+        description: Attach LDAP user group information in parallel, the parallel worker count is 5
         x-omitempty: true
         x-isnullable: true
       ldap_scope:
