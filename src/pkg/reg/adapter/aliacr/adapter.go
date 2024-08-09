@@ -44,7 +44,7 @@ func init() {
 // https://cr.%s.aliyuncs.com
 var regACRServiceURL = regexp.MustCompile(`https://cr\.([\w\-]+)\.aliyuncs\.com`)
 
-func getURL(url string) (string, error) {
+func getRegistryURL(url string) (string, error) {
 	if url == "" {
 		return "", errors.New("empty url")
 	}
@@ -83,7 +83,7 @@ func parseRegistryService(service string) (*registryServiceInfo, error) {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	url, err := getURL(registry.URL)
+	url, err := getRegistryURL(registry.URL)
 	if err != nil {
 		return nil, err
 	}
