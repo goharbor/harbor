@@ -112,7 +112,7 @@ func (suite *JobTestSuite) TestJobWithKrakenDriver() {
 
 func (suite *JobTestSuite) validateJob(j job.Interface, params job.Parameters) {
 	require.Equal(suite.T(), uint(1), j.MaxFails(), "max fails")
-	require.Equal(suite.T(), false, j.ShouldRetry(), "should retry")
+	require.False(suite.T(), j.ShouldRetry(), "should retry")
 	require.Equal(suite.T(), uint(0), j.MaxCurrency(), "max concurrency")
 	require.NoError(suite.T(), j.Validate(params), "validate job parameters")
 }

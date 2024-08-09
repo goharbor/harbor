@@ -97,7 +97,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Tags:        []string{"release-1.10"},
 	}
 	isMatch, err := match.Match(orm.Context(), 1, c1)
-	s.require.Equal(isMatch, true)
+	s.require.True(isMatch)
 	s.require.Nil(err)
 
 	c2 := selector.Candidate{
@@ -108,7 +108,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(orm.Context(), 1, c2)
-	s.require.Equal(isMatch, false)
+	s.require.False(isMatch)
 	s.require.Nil(err)
 
 	c3 := selector.Candidate{
@@ -119,7 +119,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(orm.Context(), 1, c3)
-	s.require.Equal(isMatch, true)
+	s.require.True(isMatch)
 	s.require.Nil(err)
 
 	c4 := selector.Candidate{
@@ -130,7 +130,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(orm.Context(), 1, c4)
-	s.require.Equal(isMatch, false)
+	s.require.False(isMatch)
 	s.require.Nil(err)
 
 	// untagged case
@@ -143,7 +143,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		Kind: selector.Image,
 	}
 	isMatch, err = match.Match(orm.Context(), 1, c5)
-	s.require.Equal(isMatch, false)
+	s.require.False(isMatch)
 	s.require.Nil(err)
 }
 

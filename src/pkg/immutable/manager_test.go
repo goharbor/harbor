@@ -74,7 +74,7 @@ func (m *managerTestingSuite) TestQueryImmutableRuleByProjectID() {
 	m.mockImmutableDao.AssertCalled(m.t, "ListImmutableRules", mock.Anything, mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(len(irs), 2)
-	m.assert.Equal(irs[1].Disabled, false)
+	m.assert.False(irs[1].Disabled)
 }
 
 func (m *managerTestingSuite) TestQueryEnabledImmutableRuleByProjectID() {
@@ -101,7 +101,7 @@ func (m *managerTestingSuite) TestQueryEnabledImmutableRuleByProjectID() {
 	m.mockImmutableDao.AssertCalled(m.t, "ListImmutableRules", mock.Anything, mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(len(irs), 2)
-	m.assert.Equal(irs[0].Disabled, true)
+	m.assert.True(irs[0].Disabled)
 }
 
 func (m *managerTestingSuite) TestGetImmutableRule() {
