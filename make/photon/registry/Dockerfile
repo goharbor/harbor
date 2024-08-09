@@ -16,5 +16,6 @@ HEALTHCHECK CMD curl --fail -s http://localhost:5000 || curl -k --fail -s https:
 USER harbor
 
 ENTRYPOINT ["/home/harbor/entrypoint.sh"]
+CMD ["serve", "/etc/registry/config.yml"]
 
 VOLUME ["/storage"]
