@@ -17,8 +17,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
-
 	"github.com/goharbor/harbor/src/registryctl/api"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/blob"
 	"github.com/goharbor/harbor/src/registryctl/api/registry/manifest"
@@ -26,12 +24,22 @@ import (
 )
 
 func newRouter(conf config.Configuration) http.Handler {
-	// create the root rooter
-	rootRouter := mux.NewRouter()
-	rootRouter.StrictSlash(true)
-	rootRouter.HandleFunc("/api/health", api.Health).Methods("GET")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/health", func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			rw.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		api.Health(rw, req)
+	})
 
-	rootRouter.Path("/api/registry/blob/{reference}").Methods(http.MethodDelete).Handler(blob.NewHandler(conf.StorageDriver))
-	rootRouter.Path("/api/registry/{name:.*}/manifests/{reference}").Methods(http.MethodDelete).Handler(manifest.NewHandler(conf.StorageDriver))
-	return rootRouter
+	mux.HandleFunc("/api/registry/blob/{reference}", func(rw http.ResponseWriter, req *http.Request) {
+		blob.NewHandler(conf.StorageDriver).ServeHTTP(rw, req)
+	})
+
+	mux.HandleFunc("/api/registry/{name}/manifests/{reference}", func(rw http.ResponseWriter, req *http.Request) {
+		manifest.NewHandler(conf.StorageDriver).ServeHTTP(rw, req)
+	})
+
+	return mux
 }
