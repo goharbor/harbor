@@ -60,7 +60,7 @@ func BlobGetMiddleware() func(http.Handler) http.Handler {
 
 func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
-	art, p, proxyCtl, err := preCheck(ctx)
+	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
 	}
@@ -96,14 +96,14 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	return nil
 }
 
-func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *proModels.Project, ctl proxy.Controller, err error) {
+func preCheck(ctx context.Context, withProjectMetadata bool) (art lib.ArtifactInfo, p *proModels.Project, ctl proxy.Controller, err error) {
 	none := lib.ArtifactInfo{}
 	art = lib.GetArtifactInfo(ctx)
 	if art == none {
 		return none, nil, nil, errors.New("artifactinfo is not found").WithCode(errors.NotFoundCode)
 	}
 	ctl = proxy.ControllerInstance()
-	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(false))
+	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(withProjectMetadata))
 	return
 }
 
@@ -155,7 +155,7 @@ func defaultBlobURL(projectName string, name string, digest string) string {
 
 func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
-	art, p, proxyCtl, err := preCheck(ctx)
+	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID)
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return err
 	}
