@@ -77,7 +77,7 @@ func TestAdapter_Info(t *testing.T) {
 	assert.EqualValues(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 }
 
-func Test_getURL(t *testing.T) {
+func Test_getRegistryURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		url     string
@@ -105,7 +105,7 @@ func Test_getURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getURL(tt.url)
+			got, err := getRegistryURL(tt.url)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			}
