@@ -71,8 +71,7 @@ func newAcrOpenapi(accessKeyID string, accessKeySecret string, regionID string) 
 // ListNamespace returns a list of namespaces
 func (acr *acrOpenapi) ListNamespace() ([]string, error) {
 	var namespaces []string
-	var nsReq = cr.CreateGetNamespaceListRequest()
-	var nsResp *cr.GetNamespaceListResponse
+	nsReq := cr.CreateGetNamespaceListRequest()
 	nsReq.SetDomain(acr.domain)
 	nsResp, err := acr.client.GetNamespaceList(nsReq)
 	if err != nil {
@@ -92,7 +91,7 @@ func (acr *acrOpenapi) ListNamespace() ([]string, error) {
 // ListRepository returns a list of repositories in the specified namespace
 func (acr *acrOpenapi) ListRepository(namespaceName string) ([]*repository, error) {
 	var repos []*repository
-	var reposReq = cr.CreateGetRepoListByNamespaceRequest()
+	reposReq := cr.CreateGetRepoListByNamespaceRequest()
 	reposReq.SetDomain(acr.domain)
 	reposReq.RepoNamespace = namespaceName
 	var page = 1
@@ -115,7 +114,7 @@ func (acr *acrOpenapi) ListRepository(namespaceName string) ([]*repository, erro
 			})
 		}
 
-		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
+		if resp.Data.Total <= (resp.Data.Page * resp.Data.PageSize) {
 			break
 		}
 		page++
@@ -126,7 +125,7 @@ func (acr *acrOpenapi) ListRepository(namespaceName string) ([]*repository, erro
 // ListRepoTag returns a list of tags in the specified repository
 func (acr *acrOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 	var tags []string
-	var tagsReq = cr.CreateGetRepoTagsRequest()
+	tagsReq := cr.CreateGetRepoTagsRequest()
 	tagsReq.SetDomain(acr.domain)
 	tagsReq.RepoNamespace = repo.Namespace
 	tagsReq.RepoName = repo.Name
@@ -146,7 +145,7 @@ func (acr *acrOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 			tags = append(tags, tag.Tag)
 		}
 
-		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
+		if resp.Data.Total <= (resp.Data.Page * resp.Data.PageSize) {
 			break
 		}
 		page++
@@ -156,8 +155,7 @@ func (acr *acrOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 
 // GetAuthorizationToken returns the authorization token for repository.
 func (acr *acrOpenapi) GetAuthorizationToken() (*authToken, error) {
-	var tokenRequest = cr.CreateGetAuthorizationTokenRequest()
-	var tokenResponse *cr.GetAuthorizationTokenResponse
+	tokenRequest := cr.CreateGetAuthorizationTokenRequest()
 	tokenRequest.SetDomain(acr.domain)
 	tokenResponse, err := acr.client.GetAuthorizationToken(tokenRequest)
 	if err != nil {
@@ -199,10 +197,10 @@ func newAcreeOpenapi(accessKeyID string, accessKeySecret string, regionID string
 // ListNamespace returns a list of namespaces
 func (acree *acreeOpenapi) ListNamespace() ([]string, error) {
 	var namespaces []string
-	var nsReq = cr_ee.CreateListNamespaceRequest()
+	nsReq := cr_ee.CreateListNamespaceRequest()
 	nsReq.SetDomain(acree.domain)
 	nsReq.InstanceId = acree.instanceID
-	var page = 1
+	page := 1
 	for {
 		nsReq.PageNo = requests.NewInteger(page)
 		nsResp, err := acree.client.ListNamespace(nsReq)
@@ -230,17 +228,20 @@ func (acree *acreeOpenapi) ListNamespace() ([]string, error) {
 // ListRepository returns a list of repositories in the specified namespace
 func (acree *acreeOpenapi) ListRepository(namespaceName string) ([]*repository, error) {
 	var repos []*repository
-	var reposReq = cr_ee.CreateListRepositoryRequest()
+	reposReq := cr_ee.CreateListRepositoryRequest()
 	reposReq.SetDomain(acree.domain)
 	reposReq.InstanceId = acree.instanceID
 	reposReq.RepoNamespaceName = namespaceName
 	reposReq.RepoStatus = "NORMAL"
-	var page = 1
+	page := 1
 	for {
 		reposReq.PageNo = requests.NewInteger(page)
 		reposResp, err := acree.client.ListRepository(reposReq)
 		if err != nil {
 			return nil, err
+		}
+		if !reposResp.ListRepositoryIsSuccess {
+			return nil, fmt.Errorf("failed to list repo: %s", reposResp.GetHttpContentString())
 		}
 		for _, repo := range reposResp.Repositories {
 			repos = append(repos, &repository{
@@ -249,14 +250,11 @@ func (acree *acreeOpenapi) ListRepository(namespaceName string) ([]*repository, 
 				ID:        repo.RepoId,
 			})
 		}
-		if !reposResp.ListRepositoryIsSuccess {
-			return nil, fmt.Errorf("failed to list repo: %s", reposResp.GetHttpContentString())
-		}
 		total, err := strconv.Atoi(reposResp.TotalCount)
 		if err != nil {
 			return nil, err
 		}
-		if total-(reposResp.PageNo*reposResp.PageSize) <= 0 {
+		if total <= page*reposResp.PageSize {
 			break
 		}
 		page++
@@ -267,7 +265,7 @@ func (acree *acreeOpenapi) ListRepository(namespaceName string) ([]*repository, 
 // ListRepoTag returns a list of tags in the specified repository
 func (acree *acreeOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 	var tags []string
-	var tagsReq = cr_ee.CreateListRepoTagRequest()
+	tagsReq := cr_ee.CreateListRepoTagRequest()
 	tagsReq.SetDomain(acree.domain)
 	tagsReq.InstanceId = acree.instanceID
 	tagsReq.RepoId = repo.ID
@@ -288,7 +286,7 @@ func (acree *acreeOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if total-(tagsResp.PageNo*tagsResp.PageSize) <= 0 {
+		if total <= page*tagsResp.PageSize {
 			break
 		}
 		page++
@@ -298,7 +296,7 @@ func (acree *acreeOpenapi) ListRepoTag(repo *repository) ([]string, error) {
 
 // GetAuthorizationToken returns the authorization token for repository.
 func (acree *acreeOpenapi) GetAuthorizationToken() (*authToken, error) {
-	var tokenRequest = cr_ee.CreateGetAuthorizationTokenRequest()
+	tokenRequest := cr_ee.CreateGetAuthorizationTokenRequest()
 	// FIXME: use vpc endpoint if vpc is enabled
 	tokenRequest.SetDomain(acree.domain)
 	tokenRequest.InstanceId = acree.instanceID

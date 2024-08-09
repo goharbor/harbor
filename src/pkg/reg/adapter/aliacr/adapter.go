@@ -44,7 +44,7 @@ func init() {
 // https://cr.%s.aliyuncs.com
 var regACRServiceURL = regexp.MustCompile(`https://cr\.([\w\-]+)\.aliyuncs\.com`)
 
-func getURL(url string) (string, error) {
+func getRegistryURL(url string) (string, error) {
 	if url == "" {
 		return "", errors.New("empty url")
 	}
@@ -61,8 +61,8 @@ func getURL(url string) (string, error) {
 func parseRegistryService(service string) (*registryServiceInfo, error) {
 	parts := strings.Split(service, ":")
 	length := len(parts)
-	if length <= 0 {
-		return nil, errors.New("empty service")
+	if length < 2 {
+		return nil, errors.New("invalid service format: expected 'registry.aliyuncs.com:region:xxxxx'")
 	}
 
 	if !strings.EqualFold(parts[0], registryACRService) {
@@ -83,7 +83,7 @@ func parseRegistryService(service string) (*registryServiceInfo, error) {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	url, err := getURL(registry.URL)
+	url, err := getRegistryURL(registry.URL)
 	if err != nil {
 		return nil, err
 	}
