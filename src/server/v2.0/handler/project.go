@@ -159,6 +159,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if req.RegistryID == nil {
+		req.Metadata.ProxySpeedKb = nil
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if req.RegistryID != nil {
@@ -551,6 +556,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if params.Project.Metadata != nil && !p.IsProxy() {
+		params.Project.Metadata.ProxySpeedKb = nil
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
@@ -791,6 +801,13 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		}
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+		}
+
+		// validate metadata.proxy_speed_kb. It should be an int32
+		if ps := req.Metadata.ProxySpeedKb; ps != nil {
+			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err))
+			}
 		}
 	}
 
