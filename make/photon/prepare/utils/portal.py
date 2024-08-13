@@ -25,5 +25,6 @@ def prepare_portal(config_dict):
     # Render Portal setting config
     render_jinja(
         str(portal_conf_setting_template_path),
-        portal_conf_setting
+        portal_conf_setting,
+        look_and_feel=config_dict['look_and_feel']
         )

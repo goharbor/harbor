@@ -168,7 +168,7 @@ services:
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
 {% endif %}
-{%if internal_tls.enabled %}
+{% if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.core_crt_path}}
         target: /etc/harbor/ssl/core.crt
@@ -210,7 +210,17 @@ services:
       - type: bind
         source: ./common/config/portal/setting.json
         target: /usr/share/nginx/html/setting.json
-{%if internal_tls.enabled %}
+{% if look_and_feel.logo_base_path and look_and_feel.logo_file %}
+      - type: bind
+        source: {{look_and_feel.logo_base_path}}/{{look_and_feel.logo_file}}
+        target: /usr/share/nginx/html/images/{{look_and_feel.logo_file}}
+{% endif %}
+{% if look_and_feel.login_bg_img_base_path and look_and_feel.login_bg_img_file %}
+      - type: bind
+        source: {{look_and_feel.login_bg_img_base_path}}/{{look_and_feel.login_bg_img_file}}
+        target: /usr/share/nginx/html/images/{{look_and_feel.login_bg_img_file}}
+{% endif %}
+{% if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.portal_crt_path}}
         target: /etc/harbor/tls/portal.crt
