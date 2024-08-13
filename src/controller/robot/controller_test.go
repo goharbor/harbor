@@ -113,6 +113,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 			Name:        "testcreate",
 			Description: "testcreate",
 			Duration:    0,
+			Creator:     "tester",
 		},
 		ProjectName: "library",
 		Level:       LEVELPROJECT,

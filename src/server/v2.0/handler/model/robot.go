@@ -48,6 +48,7 @@ func (r *Robot) ToSwagger() *models.Robot {
 		Level:        r.Level,
 		Disable:      r.Disabled,
 		Editable:     r.Editable,
+		Creator:      r.Creator,
 		CreationTime: strfmt.DateTime(r.CreationTime),
 		UpdateTime:   strfmt.DateTime(r.UpdateTime),
 		Permissions:  perms,

@@ -130,6 +130,7 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		Duration:    r.Duration,
 		Salt:        salt,
 		Visible:     r.Visible,
+		Creator:     r.Creator,
 	})
 	if err != nil {
 		return 0, "", err
