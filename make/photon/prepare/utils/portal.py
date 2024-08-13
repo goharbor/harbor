@@ -5,11 +5,13 @@ from utils.jinja import render_jinja
 portal_config_dir = config_dir.joinpath("portal")
 portal_conf_template_path = templates_dir.joinpath("portal", "nginx.conf.jinja")
 portal_conf = config_dir.joinpath("portal", "nginx.conf")
+portal_conf_setting_template_path = templates_dir.joinpath("portal", "setting.json.jinja")
+portal_conf_setting = config_dir.joinpath("portal", "setting.json")
 
 def prepare_portal(config_dict):
     prepare_dir(portal_config_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
 
-    # Render Jobservice config
+    # Render Portal nginx config
     render_jinja(
         str(portal_conf_template_path),
         portal_conf,
@@ -18,4 +20,10 @@ def prepare_portal(config_dict):
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         strong_ssl_ciphers=config_dict['strong_ssl_ciphers']
+        )
+
+    # Render Portal setting config
+    render_jinja(
+        str(portal_conf_setting_template_path),
+        portal_conf_setting
         )

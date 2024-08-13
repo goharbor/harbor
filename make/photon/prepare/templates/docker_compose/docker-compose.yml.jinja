@@ -207,6 +207,9 @@ services:
       - type: bind
         source: ./common/config/portal/nginx.conf
         target: /etc/nginx/nginx.conf
+      - type: bind
+        source: ./common/config/portal/setting.json
+        target: /usr/share/nginx/html/setting.json
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.portal_crt_path}}
