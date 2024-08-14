@@ -41,8 +41,8 @@ RUN pip3 install --upgrade pip pyasn1 google-apitools==0.5.31 gsutil \
     requests dbbot robotframework-seleniumlibrary robotframework-pabot \
     robotframework-JSONLibrary hurry.filesize --upgrade && \
     apt-get clean all
-# Upgrade chromedriver version to 123.0.6312.86
-RUN wget -N https://storage.googleapis.com/chrome-for-testing-public/123.0.6312.86/linux64/chromedriver-linux64.zip && \
+# Upgrade chromedriver version to 127.0.6533.99
+RUN wget -N https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.99/linux64/chromedriver-linux64.zip && \
     unzip -j chromedriver-linux64.zip && \
     chmod +x chromedriver && \
     mv -f chromedriver /usr/local/share/chromedriver && \
@@ -51,7 +51,7 @@ RUN wget -N https://storage.googleapis.com/chrome-for-testing-public/123.0.6312.
 
 RUN pwd && ls && \
     # Install docker
-    DOCKER_VERSION=26.0.0 && wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
+    DOCKER_VERSION=27.1.1 && wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
     tar --strip-components=1 -xvzf docker-$DOCKER_VERSION.tgz -C /usr/bin &&  \
     rm docker-$DOCKER_VERSION.tgz
 
