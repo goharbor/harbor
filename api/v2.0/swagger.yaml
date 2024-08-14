@@ -109,7 +109,7 @@ paths:
       operationId: searchLdapUser
       summary: Search available ldap users.
       description: |
-        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ldap configuration, load configuration from the system and specific filter.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: username
