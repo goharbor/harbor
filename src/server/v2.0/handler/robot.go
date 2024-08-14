@@ -62,7 +62,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		return rAPI.SendError(ctx, err)
 	}
 
-	secCtx, err := rAPI.GetSecurityContext(ctx)
+	sc, err := rAPI.GetSecurityContext(ctx)
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -73,7 +73,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 			Description: params.Robot.Description,
 			Duration:    params.Robot.Duration,
 			Visible:     true,
-			Creator:     secCtx.GetUsername(),
+			Creator:     sc.GetUsername(),
 		},
 		Level: params.Robot.Level,
 	}

@@ -7846,7 +7846,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/RobotPermission'
-      Creator:
+      creator:
         type: string
         description: The creator of the robot
       creation_time:

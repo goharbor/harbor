@@ -121,6 +121,7 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 	if r.Level == LEVELPROJECT {
 		name = fmt.Sprintf("%s+%s", r.ProjectName, r.Name)
 	}
+
 	robotID, err := d.robotMgr.Create(ctx, &model.Robot{
 		Name:        name,
 		Description: r.Description,
