@@ -145,6 +145,12 @@ func (suite *ControllerTestSuite) TestDelete() {
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
 
+	robotMgr.On("Get", mock.Anything, mock.Anything).Return(&model.Robot{
+		Name:        "library+test",
+		Description: "test get method",
+		ProjectID:   1,
+		Secret:      utils.RandStringBytes(10),
+	}, nil)
 	robotMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	rbacMgr.On("DeletePermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
