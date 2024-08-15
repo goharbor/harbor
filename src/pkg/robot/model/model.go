@@ -39,6 +39,7 @@ type Robot struct {
 	ExpiresAt    int64     `orm:"column(expiresat)" json:"expires_at"`
 	Disabled     bool      `orm:"column(disabled)" json:"disabled"`
 	Visible      bool      `orm:"column(visible)" json:"-"`
+	Creator      string    `orm:"column(creator)" json:"creator"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
