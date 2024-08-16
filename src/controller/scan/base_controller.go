@@ -867,7 +867,8 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			CreatorType: "local",
 			CreatorRef:  int64(0),
 		},
-		Level: robot.LEVELPROJECT,
+		ProjectName: projectName,
+		Level:       robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
 			{
 				Kind:      "project",

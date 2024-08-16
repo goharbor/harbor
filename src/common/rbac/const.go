@@ -15,9 +15,6 @@
 package rbac
 
 import (
-	"context"
-	
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -99,13 +96,9 @@ type RobotPermissionProvider interface {
 }
 
 // GetPermissionProvider gives the robot permission provider
-func GetPermissionProvider(ctx context.Context) RobotPermissionProvider {
-	var permissionProvider RobotPermissionProvider
-	permissionProvider = &BaseProvider{}
-	if config.RobotFullAccess(ctx) {
-		permissionProvider = &NolimitProvider{}
-	}
-	return permissionProvider
+func GetPermissionProvider() RobotPermissionProvider {
+	// TODO will determine by the ui configuration
+	return &NolimitProvider{}
 }
 
 // BaseProvider ...
@@ -140,6 +133,9 @@ func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
 
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionCreate},
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionList},
+
+			&types.Policy{Resource: ResourceExportCVE, Action: ActionCreate},
+			&types.Policy{Resource: ResourceExportCVE, Action: ActionRead},
 
 			&types.Policy{Resource: ResourceQuota, Action: ActionUpdate},
 

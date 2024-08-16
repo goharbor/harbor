@@ -71,7 +71,7 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))
 	}
 
-	provider := rbac.GetPermissionProvider(ctx)
+	provider := rbac.GetPermissionProvider()
 	sysPermissions := make([]*types.Policy, 0)
 	proPermissions := provider.GetPermissions(rbac.ScopeProject)
 	if isSystemAdmin {

@@ -257,11 +257,6 @@ func ScannerSkipUpdatePullTime(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.ScannerSkipUpdatePullTime).GetBool()
 }
 
-// RobotFullAccess returns a bool to indicate if the robot can access full entry points
-func RobotFullAccess(ctx context.Context) bool {
-	return DefaultMgr().Get(ctx, common.EnableRobotFullAccess).GetBool()
-}
-
 // BannerMessage returns the customized banner message
 func BannerMessage(ctx context.Context) string {
 	return DefaultMgr().Get(ctx, common.BannerMessage).GetString()
