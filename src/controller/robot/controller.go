@@ -23,12 +23,14 @@ import (
 
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/rbac"
@@ -121,7 +123,8 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 	if r.Level == LEVELPROJECT {
 		name = fmt.Sprintf("%s+%s", r.ProjectName, r.Name)
 	}
-	robotID, err := d.robotMgr.Create(ctx, &model.Robot{
+
+	rCreate := &model.Robot{
 		Name:        name,
 		Description: r.Description,
 		ProjectID:   r.ProjectID,
@@ -130,7 +133,9 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		Duration:    r.Duration,
 		Salt:        salt,
 		Visible:     r.Visible,
-	})
+		Creator:     r.Creator,
+	}
+	robotID, err := d.robotMgr.Create(ctx, rCreate)
 	if err != nil {
 		return 0, "", err
 	}
@@ -138,17 +143,31 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 	if err := d.createPermission(ctx, r); err != nil {
 		return 0, "", err
 	}
+	// fire event
+	notification.AddEvent(ctx, &metadata.CreateRobotEventMetadata{
+		Ctx:   ctx,
+		Robot: rCreate,
+	})
 	return robotID, pwd, nil
 }
 
 // Delete ...
 func (d *controller) Delete(ctx context.Context, id int64) error {
+	rDelete, err := d.robotMgr.Get(ctx, id)
+	if err != nil {
+		return err
+	}
 	if err := d.robotMgr.Delete(ctx, id); err != nil {
 		return err
 	}
 	if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROBOTTYPE, id); err != nil {
 		return err
 	}
+	// fire event
+	notification.AddEvent(ctx, &metadata.DeleteRobotEventMetadata{
+		Ctx:   ctx,
+		Robot: rDelete,
+	})
 	return nil
 }
 
