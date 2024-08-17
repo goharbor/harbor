@@ -11,7 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, OnDestroy, Renderer2, ElementRef, HostListener } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    OnDestroy,
+    Renderer2,
+    ElementRef,
+    HostListener,
+} from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 
 import { GlobalSearchService } from './global-search.service';
@@ -55,8 +62,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         private renderer: Renderer2,
         private el: ElementRef,
         private appConfigService: AppConfigService
-
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$
@@ -185,18 +191,18 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         );
     }
     getTopValue(): number {
-        const headerHeight: number = document.querySelector('navigator')?.clientHeight || 0;
-        const bannerHeight: number = document.querySelector('app-app-level-alerts')?.clientHeight || 0;
+        const headerHeight: number =
+            document.querySelector('navigator')?.clientHeight || 0;
+        const bannerHeight: number =
+            document.querySelector('app-app-level-alerts')?.clientHeight || 0;
         return headerHeight + bannerHeight;
     }
 
     private adjustOverlayTop(): void {
         const topValue = this.getTopValue();
-
     }
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.adjustOverlayTop();
     }
-
 }
