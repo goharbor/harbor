@@ -61,3 +61,21 @@
 .mt-05 {
     margin-top: 0.5rem;
 }
+.clr-form-control {
+    display: flex;
+    align-items: center;
+}
+
+.clr-input-wrapper {
+    display: flex;
+    align-items: center; 
+}
+
+.clr-control-label {
+    margin-right: 10px; 
+    white-space: nowrap; 
+}
+
+.clr-input {
+    flex: 1; 
+}
