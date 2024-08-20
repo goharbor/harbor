@@ -152,7 +152,7 @@ const (
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
 
-	AuthProxyRediretPath = "/c/authproxy/redirect"
+	AuthProxyRedirectPath = "/c/authproxy/redirect"
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
