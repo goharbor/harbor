@@ -16,18 +16,42 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <section
-            class="form-block"
-            *ngIf="enableProxyCache && project.bandwidth">
-            <clr-input-container>
-                <label for="ProxyCache">ProxyCache Bandwidth</label>
-                <input
-                    clrInput
-                    type="text"
-                    name="ProxyCache"
-                    [(ngModel)]="projectPolicy.ProxyCacheBandwidth" />
-            </clr-input-container>
+        <section *ngIf="isProxyCacheProject">
+            <div class="clr-form-control margin-top-05">
+                <label for="" class="clr-control-label required"
+                    >ProxyCache Bandwidth</label
+                >
+                <div class="flex">
+                    <input
+                        class="clr-input width-164 mr-10"
+                        type="text"
+                        placeholder="ProxyCache Bandwidth"
+                        autocomplete="off" />
+                    <div class="clr-select-wrapper mr-10">
+                        <select name="" id="">
+                            <option value="kbps" selected>kbps</option>
+                            <option value="Mbps">Mbps</option>
+                            <option value="Gbps">Gbps</option>
+                        </select>
+                    </div>
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_BANDWIDTH' | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
         </section>
+
         <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
             <label
                 ><span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label

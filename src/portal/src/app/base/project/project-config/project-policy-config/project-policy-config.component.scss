@@ -1,6 +1,9 @@
 #severity-blk div {
   display: inline-block;
 }
+.mr-10 {
+  margin-right:0.5rem;
+}
 
 .select {
   width: 120px;
@@ -97,7 +100,7 @@
 .margin-top-05 {
   margin-top: 0.5rem;
 }
-input {
-  width: 100%;
-  border: 1px solid;
+
+.flex{
+  display: flex;
 }
