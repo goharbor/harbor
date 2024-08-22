@@ -58,10 +58,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     constructor(
         private search: GlobalSearchService,
         private msgHandler: MessageHandlerService,
-        private searchTrigger: SearchTriggerService,
-        private renderer: Renderer2,
-        private el: ElementRef,
-        private appConfigService: AppConfigService
+        private searchTrigger: SearchTriggerService
     ) {}
 
     ngOnInit() {
@@ -201,7 +198,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     private adjustOverlayTop(): void {
         const topValue = this.getTopValue();
     }
-    @HostListener('window:resize', ['$event'])
+
     onResize(event) {
         this.adjustOverlayTop();
     }
