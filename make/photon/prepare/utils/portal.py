@@ -23,7 +23,7 @@ def prepare_portal(config_dict):
         )
 
     # Render Portal setting config
-    if config_dict['look_and_feel']:
+    if 'look_and_feel' in config_dict:
         render_jinja(
             str(portal_conf_setting_template_path),
             portal_conf_setting,

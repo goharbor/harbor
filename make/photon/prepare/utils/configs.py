@@ -348,7 +348,7 @@ def parse_yaml_config(config_file_path, with_trivy):
     config_dict['core'] = Core(core_config or {})
 
     # look and feel configs
-    config_dict['look_and_feel'] = configs.get('look_and_feel') or {}
+    config_dict['look_and_feel'] = configs.get('look_and_feel', {})
 
     return config_dict
 
