@@ -210,15 +210,15 @@ services:
       - type: bind
         source: ./common/config/portal/setting.json
         target: /usr/share/nginx/html/setting.json
-{% if look_and_feel.logo_base_path and look_and_feel.logo_file %}
+{% if look_and_feel.product_logo %}
       - type: bind
-        source: {{look_and_feel.logo_base_path}}/{{look_and_feel.logo_file}}
-        target: /usr/share/nginx/html/images/{{look_and_feel.logo_file}}
+        source: {{look_and_feel.product_logo}}
+        target: /usr/share/nginx/html/images/{{look_and_feel.product_logo.split("/")[-1]}}
 {% endif %}
-{% if look_and_feel.login_bg_img_base_path and look_and_feel.login_bg_img_file %}
+{% if look_and_feel.login_bg_img %}
       - type: bind
-        source: {{look_and_feel.login_bg_img_base_path}}/{{look_and_feel.login_bg_img_file}}
-        target: /usr/share/nginx/html/images/{{look_and_feel.login_bg_img_file}}
+        source: {{look_and_feel.login_bg_img}}
+        target: /usr/share/nginx/html/images/{{look_and_feel.login_bg_img.split("/")[-1]}}
 {% endif %}
 {% if internal_tls.enabled %}
       - type: bind
