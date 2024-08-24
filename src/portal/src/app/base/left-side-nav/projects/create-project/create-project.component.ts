@@ -59,12 +59,13 @@ const PAGE_SIZE: number = 100;
     styleUrls: ['create-project.scss'],
 })
 export class CreateProjectComponent
-    implements OnInit, AfterViewInit, OnChanges, OnDestroy
-{
+    implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     projectForm: NgForm;
 
     @ViewChild('projectForm', { static: true })
     currentForm: NgForm;
+
+    // Existing properties
     quotaUnits = QuotaUnits;
     project: Project = new Project();
     storageLimit: number;
@@ -74,10 +75,8 @@ export class CreateProjectComponent
     initVal: Project = new Project();
 
     createProjectOpened: boolean;
-
     hasChanged: boolean;
     isSubmitOnGoing = false;
-
     staticBackdrop = true;
     closable = false;
     isNameExisted: boolean = false;
@@ -85,24 +84,27 @@ export class CreateProjectComponent
     checkOnGoing = false;
     enableProxyCache: boolean = false;
     endpoint: string = '';
-    @Output() create = new EventEmitter<boolean>();
-    @Input() quotaObj: QuotaHardInterface;
-    @Input() isSystemAdmin: boolean;
     @ViewChild(InlineAlertComponent, { static: true })
     inlineAlert: InlineAlertComponent;
     @ViewChild('projectName') projectNameInput: ElementRef;
-    checkNameSubscribe: Subscription;
 
+    @Output() create = new EventEmitter<boolean>();
+    @Input() quotaObj: QuotaHardInterface;
+    @Input() isSystemAdmin: boolean;
+    checkNameSubscribe: Subscription;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
+
+    // **Added property for bandwidth error message**
+    bandwidthError: string | null = null;
 
     constructor(
         private projectService: ProjectService,
         private translateService: TranslateService,
         private messageHandlerService: MessageHandlerService,
         private endpointService: RegistryService
-    ) {}
+    ) { }
 
     ngOnInit(): void {
         if (this.isSystemAdmin) {
@@ -201,6 +203,7 @@ export class CreateProjectComponent
                 );
         }
     }
+
     get isNameValid(): boolean {
         if (
             !this.currentForm ||
@@ -230,6 +233,7 @@ export class CreateProjectComponent
         }
         return true;
     }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (
             changes &&
@@ -246,11 +250,11 @@ export class CreateProjectComponent
                 this.storageLimit === QuotaUnlimited
                     ? QuotaUnits[3].UNIT
                     : GetIntegerAndUnit(
-                          this.quotaObj.storage_per_project,
-                          clone(QuotaUnits),
-                          0,
-                          clone(QuotaUnits)
-                      ).partCharacterHard;
+                        this.quotaObj.storage_per_project,
+                        clone(QuotaUnits),
+                        0,
+                        clone(QuotaUnits)
+                    ).partCharacterHard;
 
             this.storageDefaultLimit = this.storageLimit;
             this.storageDefaultLimitUnit = this.storageLimitUnit;
@@ -262,7 +266,7 @@ export class CreateProjectComponent
                     Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
                     validateLimit(
                         this.currentForm.form.controls[
-                            'create_project_storage_limit_unit'
+                        'create_project_storage_limit_unit'
                         ]
                     ),
                 ]);
@@ -290,6 +294,7 @@ export class CreateProjectComponent
                 });
         }
     }
+
     ngOnDestroy(): void {
         if (this.checkNameSubscribe) {
             this.checkNameSubscribe.unsubscribe();
@@ -297,11 +302,34 @@ export class CreateProjectComponent
         }
     }
 
+    // **Added method for validating bandwidth input**
+    validateBandwidth(): void {
+        const value = Number(this.project.bandwidth);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.bandwidthError =
+                'Please enter -1 or an integer  greater than 0.';
+        } else {
+            this.bandwidthError = null;
+        }
+    }
+
     onSubmit() {
+        // **Invoke bandwidth validation before submission**
+        this.validateBandwidth();
+        if (this.bandwidthError) {
+            this.inlineAlert.showInlineError(this.bandwidthError);
+            return;
+        }
+
         if (this.isSubmitOnGoing) {
             return;
         }
         this.isSubmitOnGoing = true;
+
         const storageByte =
             +this.storageLimit === QuotaUnlimited
                 ? this.storageLimit
@@ -357,6 +385,9 @@ export class CreateProjectComponent
         this.inlineAlert.close();
         this.storageLimit = this.storageDefaultLimit;
         this.storageLimitUnit = this.storageDefaultLimitUnit;
+        // **Reset bandwidth and error message when creating new project**
+        this.project.bandwidth = 0;
+        this.bandwidthError = null;
     }
 
     public get isValid(): boolean {
@@ -365,7 +396,8 @@ export class CreateProjectComponent
             this.currentForm.valid &&
             !this.isSubmitOnGoing &&
             this.isNameValid &&
-            !this.checkOnGoing
+            !this.checkOnGoing &&
+            !this.bandwidthError // **Ensure no bandwidth error exists**
         );
     }
 

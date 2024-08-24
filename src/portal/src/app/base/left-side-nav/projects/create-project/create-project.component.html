@@ -238,7 +238,9 @@
                         name="bandwidth"
                         class="clr-input width-164 mr-10"
                         placeholder="Enter bandwidth"
-                        autocomplete="off" />
+                        autocomplete="off"
+                        (ngModelChange)="validateBandwidth()" />
+
                     <div class="clr-select-wrapper mr-10">
                         <select
                             id="bandwidth_unit"
@@ -265,6 +267,10 @@
                         </clr-tooltip-content>
                     </clr-tooltip>
                 </div>
+            </div>
+            <!-- Inline error message -->
+            <div *ngIf="bandwidthError" class="alert-label ml-8">
+                {{ bandwidthError }}
             </div>
         </form>
     </div>
