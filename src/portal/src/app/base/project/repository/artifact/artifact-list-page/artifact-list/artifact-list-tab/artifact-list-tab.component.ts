@@ -547,7 +547,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             this.errorHandlerService.error(err);
                         },
                     });
-            })
+            });
         }
     }
     removeLabel(label: Label) {
