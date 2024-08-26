@@ -72,7 +72,7 @@ class TestProxyCache(unittest.TestCase):
             index_for_ctr = dict(image = "alpine", tag = "3.12.0")
         else:
             user_namespace = "nightly"
-            registry = "https://cicd.harbor.vmwarecna.net"
+            registry = "https://registry.goharbor.io"
             index_for_ctr = dict(image = "busybox", tag = "1.32.0")
 
         registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=True, **ADMIN_CLIENT)
