@@ -148,7 +148,11 @@ func (a *Adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 		runner.AddTask(func() error {
 			artifacts, err := a.listArtifacts(repo.Name, filters)
 			if err != nil {
-				return fmt.Errorf("failed to list artifacts of repository %s: %v", repo.Name, err)
+				if errors.IsNotFoundCode(err) {
+					return nil
+				} else {
+					return fmt.Errorf("failed to list artifacts of repository %s: %v", repo.Name, err)
+				}
 			}
 			if len(artifacts) == 0 {
 				return nil
