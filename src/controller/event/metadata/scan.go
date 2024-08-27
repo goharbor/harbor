@@ -27,6 +27,7 @@ import (
 // ScanImageMetaData defines meta data of image scanning event
 type ScanImageMetaData struct {
 	Artifact *v1.Artifact
+	ScanType string
 	Status   string
 	Operator string
 }
@@ -55,6 +56,7 @@ func (si *ScanImageMetaData) Resolve(evt *event.Event) error {
 		Artifact:  si.Artifact,
 		OccurAt:   time.Now(),
 		Operator:  si.Operator,
+		ScanType:  si.ScanType,
 	}
 
 	evt.Topic = topic

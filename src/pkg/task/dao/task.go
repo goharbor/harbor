@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+
+	"github.com/google/uuid"
 )
 
 // TaskDAO is the data access object interface for task
@@ -72,7 +74,7 @@ func (t *taskDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := t.querySetter(ctx, query)
+	qs, err := t.querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -91,22 +93,33 @@ func (t *taskDAO) List(ctx context.Context, query *q.Query) ([]*Task, error) {
 	return tasks, nil
 }
 
+func isValidUUID(id string) bool {
+	if len(id) == 0 {
+		return false
+	}
+	if _, err := uuid.Parse(id); err != nil {
+		return false
+	}
+	return true
+}
+
 func (t *taskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([]*Task, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	tasks := []*Task{}
-	// Due to the limitation of the beego's orm, the SQL cannot be converted by orm framework,
-	// so we can only execute the query by raw SQL, the SQL filters the task contains the report uuid in the column extra_attrs,
-	// consider from performance side which can using indexes to speed up queries.
-	sql := fmt.Sprintf(`SELECT * FROM task WHERE extra_attrs::jsonb->'report_uuids' @> '["%s"]'`, uuid)
-	_, err = ormer.Raw(sql).QueryRows(&tasks)
+	if !isValidUUID(uuid) {
+		return nil, errors.BadRequestError(fmt.Errorf("invalid UUID %v", uuid))
+	}
+
+	var tasks []*Task
+	param := fmt.Sprintf(`"%s"`, uuid)
+	sql := `SELECT * FROM task WHERE extra_attrs::jsonb -> 'report_uuids' @> ?`
+	_, err = ormer.Raw(sql, param).QueryRows(&tasks)
 	if err != nil {
 		return nil, err
 	}
-
 	return tasks, nil
 }
 
@@ -237,8 +250,8 @@ func (t *taskDAO) GetMaxEndTime(ctx context.Context, executionID int64) (time.Ti
 	return endTime, nil
 }
 
-func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Task{}, query, options...)
 	if err != nil {
 		return nil, err
 	}

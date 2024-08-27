@@ -47,7 +47,7 @@ func (dbg *DBGetter) Retrieve(logID string) ([]byte, error) {
 	sz := int64(len(jobLog.Content))
 	var buf []byte
 	sizeLimit := logSizeLimit()
-	if sizeLimit <= 0 {
+	if sizeLimit <= 0 || sz <= sizeLimit {
 		buf = []byte(jobLog.Content)
 		return buf, nil
 	}

@@ -244,7 +244,7 @@ Test Case - User View Logs
     Create An New Project And Go Into Project  project${d}
     Logout Harbor
 
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://${LOCAL_REGISTRY}  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
@@ -745,7 +745,7 @@ Test Case - System Robot Account
 
     ${robot_account_name}  ${token}=  Create A System Robot Account  sys2${d}  days  days=2  description=For testing  cover_all_project_resources=${true}
     Push image  ${ip}  '${robot_account_name}'  ${token}  project${d}  hello-world:latest
-    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 56 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//span[text()='All projects with'] and .//button[text()=' 59 PERMISSION(S) '] and .//span[contains(.,'1d 23h')] and .//clr-dg-cell[text()='For testing'] and .//clr-dg-cell//span[text()=' None ']]
     Retry Action Keyword  Check System Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  all  1
     Retry Action Keyword  Check Project Robot Account API Permission  ${robot_account_name}  ${token}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_id}  ${project_name}  hello-world  latest  all
     Close Browser
@@ -885,13 +885,13 @@ Test Case - Audit Log And Purge
     # pull artifact
     Docker Pull  ${ip}/project${d}/${image}:${tag1}
     Docker Logout  ${ip}
-    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  pull
+    Verify Log  ${user}  project${d}/${image}@${sha256}  artifact  pull
     Go Into Repo  project${d}  ${image}
     # delete artifact
     @{tag_list}  Create List  ${tag1}
     Multi-delete Artifact  @{tag_list}
     Switch To Logs
-    Verify Log  ${user}  project${d}/${image}:${sha256}  artifact  delete
+    Verify Log  ${user}  project${d}/${image}@${sha256}  artifact  delete
     Go Into Project  project${d}
     # delete repository
     Delete Repo  project${d}  ${image}
@@ -1118,7 +1118,7 @@ Test Case - Job Service Dashboard Workers
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
     Switch to Registries
-    Create A New Endpoint  harbor  ${endpoint_name}  https://cicd.harbor.vmwarecna.net  ${null}  ${null}
+    Create A New Endpoint  harbor  ${endpoint_name}  https://${LOCAL_REGISTRY}  ${null}  ${null}
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  ${rule_name}  pull  nightly/test_replication  image  ${endpoint_name}  ${project_name}  bandwidth=50  bandwidth_unit=Mbps
     Select Rule And Replicate  ${rule_name}
@@ -1151,8 +1151,8 @@ Test Case - Retain Image Last Pull Time
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
     Should Be Empty  ${last_pull_time}
     Switch To Configuration System Setting
     Set Up Retain Image Last Pull Time  disable
@@ -1160,8 +1160,8 @@ Test Case - Retain Image Last Pull Time
     Scan Repo  ${tag}  Succeed
     Sleep  15
     Reload Page
-    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[9]
-    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[9]
+    Retry Wait Element Visible  //clr-dg-row//clr-dg-cell[10]
+    ${last_pull_time}=  Get Text  //clr-dg-row//clr-dg-cell[10]
     Should Not Be Empty  ${last_pull_time}
     Close Browser
 

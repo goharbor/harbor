@@ -28,7 +28,7 @@ ${HARBOR_ADMIN}  admin
 Test Case - Proxy Cache
     [Tags]  proxy_cache
     ${d}=  Get Current Date    result_format=%m%s
-    ${registry}=  Set Variable  https://cicd.harbor.vmwarecna.net
+    ${registry}=  Set Variable  https://${LOCAL_REGISTRY}
     ${user_namespace}=  Set Variable  nightly
     ${image}=  Set Variable  for_proxy
     ${tag}=  Set Variable  1.0
@@ -156,7 +156,7 @@ Test Case - Replication Schedule Job
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
     Switch To Registries
-    Create A New Endpoint    harbor    e${d}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
+    Create A New Endpoint    harbor    e${d}    https://${LOCAL_REGISTRY}    ${null}    ${null}    Y
     Switch To Replication Manage
     ${flag}=  Set Variable  ${false}
     FOR    ${i}    IN RANGE    999999

@@ -1,0 +1,10 @@
+# NOTICE: Harbor chart is not dependent on other charts. This is just a mock for UT coverage.
+dependencies:
+  - name: postgresql
+    version: 1.0.0
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    condition: postgresql.enabled
+  - name: redis
+    version: 2.0.0
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    condition: redis.enabled

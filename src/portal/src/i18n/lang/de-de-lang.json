@@ -286,7 +286,10 @@
         "PREVENT_VULNERABLE_2": "und darüber.",
         "SCAN": "Scannen auf Schwachstellen",
         "AUTOSCAN_TOGGLE": "Images automatisch beim Hochladen scannen",
-        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden."
+        "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Nutzer als Mitglied hinzufügen",
@@ -403,6 +406,7 @@
         "REPOSITORY": "Repository",
         "ARTIFACT": "Artifact",
         "SCAN": "Scan",
+        "SBOM": "SBOM",
         "TAG": "Tag",
         "ACCESSORY": "Accessory",
         "ARTIFACT_ADDITION": "Artifact Addition",
@@ -699,7 +703,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Reduzierung um 3 Ebenen': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Bandbreite",
         "BANDWIDTH_ERROR_TIP": "Bitte -1 oder einen Integer-Wert größer als 0 eingeben",
-        "BANDWIDTH_TOOLTIP": "Legt die maximale Netzwerkbandbreite für jede Ausführung fest. Bitte auf die Anzahl der parallelen Ausführungen achten. Für umbegrenzte Bandbreite, bitte -1 eingeben",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Unbegrenzt",
         "UNREACHABLE_SOURCE_REGISTRY": "Verbindung zur Quell-Registry fehlgeschlagen, bitte sicherstellen, dass die Quell-Registry verfügbar ist, bevor diese Regel angepasst wird: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
@@ -774,6 +778,7 @@
         "ARTIFACTS": "Artefakte",
         "SIZE": "Größe",
         "VULNERABILITY": "Schwachstellen",
+        "SBOM": "SBOM",
         "BUILD_HISTORY": "Build History",
         "SIGNED": "Signiert",
         "AUTHOR": "Autor",
@@ -800,6 +805,7 @@
         "FILTER_BY_LABEL": "Images nach Label filtern",
         "FILTER_ARTIFACT_BY_LABEL": "Artefakte nach Label filtern",
         "ADD_LABELS": "Label hinzufügen",
+        "STOP": "Stop",
         "RETAG": "Kopieren",
         "ACTION": "AKTION",
         "DEPLOY": "Bereitstellen",
@@ -1024,6 +1030,42 @@
         "IN_PROGRESS": "Suche...",
         "BACK": "Zurück"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "No SBOM",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Generate SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop Generate SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "Nicht gescannt",
@@ -1068,12 +1110,12 @@
         "PLACEHOLDER": "Filter Schwachstellen",
         "PACKAGE": "Paket",
         "PACKAGES": "Pakete",
-        "SCAN_NOW": "Scan",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "SCAN DURCH {{scanner}}",
         "REPORTED_BY": "GEMELDET VON {{scanner}}",
         "NO_SCANNER": "KEIN SCANNER",
         "TRIGGER_STOP_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
-        "STOP_NOW": "Scan STOPPEN"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Push Befehl",
@@ -1104,6 +1146,7 @@
         "ALL": "Alle",
         "PLACEHOLDER": "Keine Artefakte gefunden!",
         "SCAN_UNSUPPORTED": "Nicht unterstützt",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Zusammenfassung",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
@@ -1430,6 +1473,10 @@
         "NAME_REQUIRED": "Name ist erforderlich",
         "NAME_REX": "Der Name muss mindestens 2 Zeichen lang sein. Mit Kleinbuchstaben, Ziffern und ._-. Er muss mit Buchstaben oder Ziffern beginnen.",
         "DESCRIPTION": "Beschreibung",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "Vulnerability",
+        "SUPPORTED": "Supported",
+        "NOT_SUPPORTED": "Not Supported",
         "ENDPOINT": "Endpunkt",
         "ENDPOINT_EXISTS": "URL existiert bereits",
         "ENDPOINT_REQUIRED": "URL ist erforderlich",
@@ -1458,9 +1505,10 @@
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Hersteller:",
         "VERSION_COLON": "Version:",
-        "CAPABILITIES": "Fähigkeiten",
+        "CAPABILITIES": "Fähigkeiten:",
         "CONSUMES_MIME_TYPES_COLON": "Benötigt Mime Types:",
         "PRODUCTS_MIME_TYPES_COLON": "Erzeugt Mime Types:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "Eigenschaften",
         "NEW_SCANNER": "NEUER SCANNER",
         "SET_AS_DEFAULT": "ALS STANDARD SETZEN",

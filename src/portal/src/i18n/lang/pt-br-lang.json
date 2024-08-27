@@ -284,7 +284,10 @@
         "PREVENT_VULNERABLE_2": "e acima de serem utilizadas.",
         "SCAN": "Análise de vulnerabilidades",
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
-        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto."
+        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Adicionar um usuário",
@@ -401,6 +404,7 @@
         "REPOSITORY": "Repository",
         "ARTIFACT": "Artifact",
         "SCAN": "Scan",
+        "SBOM": "SBOM",
         "TAG": "Tag",
         "ACCESSORY": "Accessory",
         "ARTIFACT_ADDITION": "Artifact Addition",
@@ -698,7 +702,7 @@
         "FLATTEN_LEVEL_TIP_3": "'Nivelar 3 posições': 'a/b/c/d/img' -> 'ns/d/img'",
         "BANDWIDTH": "Banda",
         "BANDWIDTH_ERROR_TIP": "Informe um número inteiro maior que 0 (zero) ou -1",
-        "BANDWIDTH_TOOLTIP": "Informe o limite de banda para cada execução. Tome cuidado e observe a relação com o número de execuções simultâneas. Para remover qualquer limite, informe -1",
+        "BANDWIDTH_TOOLTIP": "Set the maximum network bandwidth for each replication worker. Please pay attention to the number of concurrent executions (max. {{max_job_workers}}). For unlimited bandwidth, please enter -1.",
         "UNLIMITED": "Ilimitado",
         "UNREACHABLE_SOURCE_REGISTRY": "Failed to connect to the source registry, please make sure the source registry is available before editing this rule: {{error}}",
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
@@ -773,6 +777,7 @@
         "ARTIFACTS": "Artefatos",
         "SIZE": "Tamanho",
         "VULNERABILITY": "Vulnerabilidade",
+        "SBOM": "SBOM",
         "SIGNED": "Assinada",
         "AUTHOR": "Autor",
         "CREATED": "Data de criação",
@@ -799,6 +804,7 @@
         "FILTER_BY_LABEL": "Filtrar imagens por marcadores",
         "FILTER_ARTIFACT_BY_LABEL": "Filtrar por marcador",
         "ADD_LABELS": "Adicionar Marcadores",
+        "STOP": "Stop",
         "RETAG": "Copiar",
         "ACTION": "AÇÃO",
         "DEPLOY": "IMPLANTAR",
@@ -1021,6 +1027,42 @@
         "IN_PROGRESS": "Buscando...",
         "BACK": "Voltar"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "No SBOM",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Generate SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop Generate SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "Não analisado",
@@ -1065,12 +1107,12 @@
         "PLACEHOLDER": "Filtrar",
         "PACKAGE": "pacote",
         "PACKAGES": "pacotes",
-        "SCAN_NOW": "Examinar",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "EXAMINAR COM {{scanner}}",
         "REPORTED_BY": "Encontrado com {{scanner}}",
         "NO_SCANNER": "NENHUM",
         "TRIGGER_STOP_SUCCESS": "Exame foi interrompido",
-        "STOP_NOW": "Interromper"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Comando Push",
@@ -1101,6 +1143,7 @@
         "ALL": "Todos",
         "PLACEHOLDER": "Nenhum artefato encontrado!",
         "SCAN_UNSUPPORTED": "Não pode ser examinada",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Resumo",
         "DEPENDENCIES": "Dependências",
         "VALUES": "Valores",
@@ -1427,6 +1470,10 @@
         "NAME_REQUIRED": "Nome é obrigatório",
         "NAME_REX": "O nome precisa ter no mínimo 2 caracteres. Pode conter apenas letras minúsculas, numeros, ou símbolos ._- e deve começar por uma letra ou número.",
         "DESCRIPTION": "Descrição",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "Vulnerability",
+        "SUPPORTED": "Supported",
+        "NOT_SUPPORTED": "Not Supported",
         "ENDPOINT": "Endereço",
         "ENDPOINT_EXISTS": "Endereço já usado por outro examinador",
         "ENDPOINT_REQUIRED": "Endereço é obrigatório",
@@ -1455,9 +1502,10 @@
         "NAME_COLON": "Nome:",
         "VENDOR_COLON": "Fornecedor:",
         "VERSION_COLON": "Versão:",
-        "CAPABILITIES": "Habilidades",
+        "CAPABILITIES": "Habilidades:",
         "CONSUMES_MIME_TYPES_COLON": "Consome estes Mime Types:",
         "PRODUCTS_MIME_TYPES_COLON": "Produz estes Mime Types:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "Propriedades",
         "NEW_SCANNER": "NOVO EXAMINADOR",
         "SET_AS_DEFAULT": "DEFINIR COMO PADRÃO",

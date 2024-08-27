@@ -147,6 +147,28 @@ func (p *Project) AutoScan() bool {
 	return isTrue(auto)
 }
 
+// AutoSBOMGen ...
+func (p *Project) AutoSBOMGen() bool {
+	auto, exist := p.GetMetadata(ProMetaAutoSBOMGen)
+	if !exist {
+		return false
+	}
+	return isTrue(auto)
+}
+
+// ProxyCacheSpeed ...
+func (p *Project) ProxyCacheSpeed() int32 {
+	speed, exist := p.GetMetadata(ProMetaProxySpeed)
+	if !exist {
+		return 0
+	}
+	speedInt, err := strconv.ParseInt(speed, 10, 32)
+	if err != nil {
+		return 0
+	}
+	return int32(speedInt)
+}
+
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`

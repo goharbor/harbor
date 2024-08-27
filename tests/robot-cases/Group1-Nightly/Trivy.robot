@@ -164,6 +164,18 @@ Test Case - Stop Scan And Stop Scan All
     [Tags]  stop_scan_job
     Body Of Stop Scan And Stop Scan All
 
+Test Case - Verify SBOM Manual Generation
+    [Tags]  sbom_manual_gen
+    Body Of Generate SBOM of An Image In The Repo  alpine  3.10
+
+Test Case - Generate Image SBOM On Push
+    [Tags]  run-once
+    Body Of Generate Image SBOM On Push
+
+Test Case - Stop SBOM Manual Generation
+    [Tags]  stop_sbom_gen
+    Body Of Stop SBOM Manual Generation
+
 Test Case - External Scanner CRUD
     [Tags]  external_scanner_crud  need_scanner_endpoint
     ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
@@ -182,7 +194,7 @@ Test Case - External Scanner CRUD
     Filter Scanner By Name  scanner${d}
     Filter Scanner By Endpoint  ${SCANNER_ENDPOINT}
     Retry Wait Element Count  //clr-dg-row  1
-    Retry Wait Until Page Contains Element  //clr-dg-row[.//span[text()='scanner${d}'] and .//clr-dg-cell[text()='${SCANNER_ENDPOINT}'] and .//span[text()='Healthy'] and .//clr-dg-cell[text()='None']]
+    Retry Double Keywords When Error  Retry Element Click  xpath=${scanner_list_refresh_btn}  Retry Wait Until Page Contains Element  //clr-dg-row[.//span[text()='scanner${d}'] and .//clr-dg-cell[text()='${SCANNER_ENDPOINT}'] and .//span[text()='Healthy'] and .//clr-dg-cell[text()='None']]
     # Delete this scanner
     Delete Scanner  scanner${d}
     Close Browser

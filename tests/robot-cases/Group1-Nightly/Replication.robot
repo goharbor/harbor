@@ -93,7 +93,7 @@ Test Case - Replication Rule Edit
     ${cron_str}=    Set Variable    0 0 0 * * 0
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
-    Create A New Endpoint    harbor    ${endpoint1}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
+    Create A New Endpoint    harbor    ${endpoint1}    https://${LOCAL_REGISTRY}    ${null}    ${null}    Y
     Create A New Endpoint    harbor    ${endpoint2}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    ${rule_name_old}    pull    nightly/a*    image    ${endpoint1}    project${d}
@@ -312,7 +312,7 @@ Test Case - Replication Of Pull Manifest List and CNAB from Harbor To Self
     ${image2}=  Get From Dictionary  ${image2_with_tag}  image
     ${image3}=  Get From Dictionary  ${image3_with_tag}  image
     @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'  '&{image3_with_tag}'
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/{${image1},${image2},${image3}}  ${null}  Y  Flatten 1 Level  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://${LOCAL_REGISTRY}  ${null}  ${null}  nightly/{${image1},${image2},${image3}}  ${null}  Y  Flatten 1 Level  @{target_images}
 
 Test Case - Image Namespace Level Flattening
     [tags]  flattening

@@ -143,7 +143,7 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 
 	switch key {
 	case proModels.ProMetaPublic, proModels.ProMetaEnableContentTrust, proModels.ProMetaEnableContentTrustCosign,
-		proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist:
+		proModels.ProMetaAutoSBOMGen, proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
@@ -155,6 +155,12 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
 		}
 		metas[proModels.ProMetaSeverity] = strings.ToLower(severity.String())
+	case proModels.ProMetaProxySpeed:
+		v, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
+		}
+		metas[proModels.ProMetaProxySpeed] = strconv.FormatInt(v, 10)
 	default:
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid key: %s", key)
 	}

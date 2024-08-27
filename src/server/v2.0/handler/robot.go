@@ -62,12 +62,18 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		return rAPI.SendError(ctx, err)
 	}
 
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
 	r := &robot.Robot{
 		Robot: pkg.Robot{
 			Name:        params.Robot.Name,
 			Description: params.Robot.Description,
 			Duration:    params.Robot.Duration,
 			Visible:     true,
+			Creator:     sc.GetUsername(),
 		},
 		Level: params.Robot.Level,
 	}
