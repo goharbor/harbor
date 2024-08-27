@@ -314,6 +314,9 @@ services:
 {% endif %}
     networks:
       - harbor
+      {% if ip_family.ipv6.enabled %}
+      - harbor_ipv6
+      {% endif %}
     ports:
       - {{http_port}}:8080
 {% if protocol == 'https' %}
@@ -399,4 +402,8 @@ services:
 networks:
   harbor:
     external: false
-
+  {% if ip_family.ipv6.enabled %}
+  harbor_ipv6:
+    external: false
+    enable_ipv6: true
+  {% endif %}
