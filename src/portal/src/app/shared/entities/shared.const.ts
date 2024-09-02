@@ -389,3 +389,9 @@ export enum ScanTypes {
     SBOM = 'sbom',
     VULNERABILITY = 'vulnerability',
 }
+export const KB_TO_MB: number = 1024;
+
+export enum BandwidthUnit {
+    MB = 'Mbps',
+    KB = 'Kbps',
+}
