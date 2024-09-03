@@ -61,7 +61,8 @@ const PAGE_SIZE: number = 100;
     styleUrls: ['create-project.scss'],
 })
 export class CreateProjectComponent
-    implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+    implements OnInit, AfterViewInit, OnChanges, OnDestroy
+{
     projectForm: NgForm;
 
     @ViewChild('projectForm', { static: true })
@@ -117,7 +118,7 @@ export class CreateProjectComponent
         private translateService: TranslateService,
         private messageHandlerService: MessageHandlerService,
         private endpointService: RegistryService
-    ) { }
+    ) {}
 
     ngOnInit(): void {
         if (this.isSystemAdmin) {
@@ -263,11 +264,11 @@ export class CreateProjectComponent
                 this.storageLimit === QuotaUnlimited
                     ? QuotaUnits[3].UNIT
                     : GetIntegerAndUnit(
-                        this.quotaObj.storage_per_project,
-                        clone(QuotaUnits),
-                        0,
-                        clone(QuotaUnits)
-                    ).partCharacterHard;
+                          this.quotaObj.storage_per_project,
+                          clone(QuotaUnits),
+                          0,
+                          clone(QuotaUnits)
+                      ).partCharacterHard;
 
             this.storageDefaultLimit = this.storageLimit;
             this.storageDefaultLimitUnit = this.storageLimitUnit;
@@ -279,7 +280,7 @@ export class CreateProjectComponent
                     Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
                     validateLimit(
                         this.currentForm.form.controls[
-                        'create_project_storage_limit_unit'
+                            'create_project_storage_limit_unit'
                         ]
                     ),
                 ]);
