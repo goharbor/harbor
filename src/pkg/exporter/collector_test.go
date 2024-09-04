@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package exporter
 
-// UAASettings wraps the configurations to access UAA service
-type UAASettings struct {
-	Endpoint     string
-	ClientID     string
-	ClientSecret string
-	VerifyCert   bool
+import (
+	"github.com/stretchr/testify/suite"
+	"testing"
+)
+
+func TestCollectorsTestSuite(t *testing.T) {
+	setupTest(t)
+	defer tearDownTest(t)
+	suite.Run(t, new(ProjectCollectorTestSuite))
+	suite.Run(t, &StatisticsCollectorTestSuite{
+		collector: NewStatisticsCollector(),
+	})
 }

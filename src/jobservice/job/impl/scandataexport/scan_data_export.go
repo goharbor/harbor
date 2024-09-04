@@ -180,20 +180,17 @@ func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Para
 }
 
 func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, fileName string) error {
-	csvFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	systemContext := ctx.SystemContext()
-	defer csvFile.Close()
-
 	logger := ctx.GetLogger()
+	csvFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		logger.Errorf("Failed to create CSV export file %s. Error : %v", fileName, err)
 		return err
 	}
+	defer csvFile.Close()
+
 	logger.Infof("Created CSV export file %s", csvFile.Name())
 
+	systemContext := ctx.SystemContext()
 	var exportParams export.Params
 	var artIDGroups [][]int64
 
