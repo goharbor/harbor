@@ -252,6 +252,8 @@
         "COUNT_QUOTA_TIP": "Informe um número inteiro entre 1 e 100.000.000. Use -1 para ilimitado.",
         "STORAGE_QUOTA_TIP": "Limite de armazenamento. Apenas números inteiros. Valor máximo de 1024TB. Use -1 para ilimitado.",
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Para  não ter limite, utilize -1.",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer  greater than 0. ",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",

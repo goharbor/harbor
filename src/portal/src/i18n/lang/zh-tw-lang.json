@@ -252,6 +252,8 @@
     "COUNT_QUOTA_TIP": "請輸入介於 '1' 和 '100,000,000' 之間的整數，'-1' 表示無限制。",
     "STORAGE_QUOTA_TIP": "儲存配額上限只接受整數，上限為 '1024TB'。輸入 '-1' 表示無限配額。",
     "QUOTA_UNLIMIT_TIP": "專案所能使用的最大邏輯空間。輸入 '-1' 表示無限制配額。",
+    "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer  greater than 0. ",
     "TYPE": "類型",
     "PROXY_CACHE": "代理快取",
     "PROXY_CACHE_TOOLTIP": "啟用此選項可讓此專案作為特定目標 Registry 實例的拉取快取。Harbor 僅可作為 DockerHub、Docker Registry、Harbor、AWS ECR、Azure ACR、Quay、Google GCR、GitHub GHCR 和 JFrog Artifactory Registry 的代理。",
