@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/aws/aws-sdk-go v1.53.14
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/beego/beego/v2 v2.2.1
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.3.4
@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/coreos/go-oidc/v3 v3.11.0
-	github.com/dghubble/sling v1.1.0
+	github.com/dghubble/sling v1.4.2
 	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/go-asn1-ber/asn1-ber v1.5.7
