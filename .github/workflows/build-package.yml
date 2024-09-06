@@ -58,6 +58,10 @@ jobs:
         run: |
           set -x
           env
+          echo "Installing docker-compose, version ${DOCKER_COMPOSE_VERSION}"
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
           df -h
           harbor_target_bucket=""
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
