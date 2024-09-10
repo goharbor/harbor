@@ -26,6 +26,8 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security/local"
+	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
@@ -67,13 +69,24 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		return rAPI.SendError(ctx, err)
 	}
 
+	var creatorRef int64
+	switch s := sc.(type) {
+	case *local.SecurityContext:
+		creatorRef = int64(s.User().UserID)
+	case *robotSc.SecurityContext:
+		creatorRef = s.User().ID
+	default:
+		return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context"))
+	}
+
 	r := &robot.Robot{
 		Robot: pkg.Robot{
 			Name:        params.Robot.Name,
 			Description: params.Robot.Description,
 			Duration:    params.Robot.Duration,
 			Visible:     true,
-			Creator:     sc.GetUsername(),
+			CreatorRef:  creatorRef,
+			CreatorType: sc.Name(),
 		},
 		Level: params.Robot.Level,
 	}

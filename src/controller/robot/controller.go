@@ -133,7 +133,8 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 		Duration:    r.Duration,
 		Salt:        salt,
 		Visible:     r.Visible,
-		Creator:     r.Creator,
+		CreatorRef:  r.CreatorRef,
+		CreatorType: r.CreatorType,
 	}
 	robotID, err := d.robotMgr.Create(ctx, rCreate)
 	if err != nil {

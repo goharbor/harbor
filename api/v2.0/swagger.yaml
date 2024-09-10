@@ -7846,9 +7846,12 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/RobotPermission'
-      creator:
+      creator_type:
         type: string
-        description: The creator of the robot
+        description: The type of the robot creator, like local(harbor_user) or robot.
+      creator_ref:
+        type: integer
+        description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
         format: date-time

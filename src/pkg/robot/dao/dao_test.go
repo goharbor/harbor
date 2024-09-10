@@ -52,7 +52,8 @@ func (suite *DaoTestSuite) robots() {
 		Description: "test3 description",
 		ProjectID:   1,
 		Secret:      suite.RandString(10),
-		Creator:     "tester",
+		CreatorType: "local",
+		CreatorRef:  int64(1),
 	})
 	suite.Nil(err)
 
@@ -121,7 +122,7 @@ func (suite *DaoTestSuite) TestGet() {
 	r, err := suite.dao.Get(orm.Context(), suite.robotID3)
 	suite.Nil(err)
 	suite.Equal("test3", r.Name)
-	suite.Equal("tester", r.Creator)
+	suite.Equal("local", r.CreatorType)
 }
 
 func (suite *DaoTestSuite) TestCount() {
