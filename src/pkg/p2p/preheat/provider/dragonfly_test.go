@@ -86,6 +86,7 @@ func (suite *DragonflyTestSuite) TestPreheat() {
 		Tag:       "latest",
 		URL:       "https://harbor.com",
 		Digest:    "sha256:f3c97e3bd1e27393eb853a5c90b1132f2cda84336d5ba5d100c720dc98524c82",
+		Scope:     "single_peer",
 	})
 	require.NoError(suite.T(), err, "preheat image")
 	suite.Equal("dragonfly-id", st.TaskID, "preheat image result")
@@ -97,6 +98,7 @@ func (suite *DragonflyTestSuite) TestPreheat() {
 		Tag:       "latest",
 		URL:       "https://harbor.com",
 		Digest:    "sha256:f3c97e3bd1e27393eb853a5c90b1132f2cda84336d5ba5d100c720dc98524c82",
+		Scope:     "all_peers",
 	})
 	require.NoError(suite.T(), err, "preheat image")
 	suite.Equal("", st.TaskID, "preheat image result")

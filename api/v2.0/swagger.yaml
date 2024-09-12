@@ -7095,6 +7095,9 @@ definitions:
         type: boolean
         description: Whether the preheat policy enabled
         x-omitempty: false
+      scope:
+        type: string
+        description: The scope of preheat policy
       creation_time:
         type: string
         format: date-time

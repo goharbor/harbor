@@ -59,10 +59,10 @@ func (dd *DragonflyDriver) Self() *Metadata {
 	return &Metadata{
 		ID:          "dragonfly",
 		Name:        "Dragonfly",
-		Icon:        "https://raw.githubusercontent.com/alibaba/Dragonfly/master/docs/images/logo.png",
-		Version:     "0.10.1",
-		Source:      "https://github.com/alibaba/Dragonfly",
-		Maintainers: []string{"Jin Zhang/taiyun.zj@alibaba-inc.com"},
+		Icon:        "https://raw.githubusercontent.com/dragonflyoss/Dragonfly2/master/docs/images/logo/dragonfly-linear.png",
+		Version:     "2.1.56",
+		Source:      "https://github.com/dragonflyoss/Dragonfly2",
+		Maintainers: []string{"chlins.zhang@gmail.com", "gaius.qi@gmail.com"},
 	}
 }
 
