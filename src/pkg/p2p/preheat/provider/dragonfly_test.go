@@ -89,7 +89,7 @@ func (suite *DragonflyTestSuite) TestPreheat() {
 	})
 	require.NoError(suite.T(), err, "preheat image")
 	suite.Equal(provider.PreheatingStatusPending, st.Status, "preheat status")
-	suite.Equal("1", st.TaskID, "task id")
+	suite.Equal("0", st.TaskID, "task id")
 	suite.NotEmptyf(st.StartTime, "start time")
 	suite.NotEmptyf(st.FinishTime, "finish time")
 }

@@ -46,7 +46,7 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			var resp = &dragonflyJobResponse{
-				ID:        "1",
+				ID:        0,
 				State:     dragonflyJobPendingState,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -66,6 +66,31 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			w.WriteHeader(http.StatusOK)
+		case fmt.Sprintf("%s/%s", dragonflyJobPath, "0"):
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusNotImplemented)
+				return
+			}
+
+			var resp = &dragonflyJobResponse{
+				ID:        1,
+				State:     dragonflyJobSuccessState,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}
+
+			bytes, err := json.Marshal(resp)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(err.Error()))
+				return
+			}
+
+			if _, err := w.Write(bytes); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte(err.Error()))
+				return
+			}
 		case fmt.Sprintf("%s/%s", dragonflyJobPath, "1"):
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusNotImplemented)
@@ -73,7 +98,7 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			var resp = &dragonflyJobResponse{
-				ID:        "1",
+				ID:        1,
 				State:     dragonflyJobPendingState,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -100,7 +125,7 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			var resp = &dragonflyJobResponse{
-				ID:        "2",
+				ID:        2,
 				State:     dragonflyJobSuccessState,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -127,7 +152,7 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			var resp = &dragonflyJobResponse{
-				ID:        "3",
+				ID:        3,
 				State:     dragonflyJobFailureState,
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
@@ -147,8 +172,6 @@ func MockDragonflyProvider() *httptest.Server {
 			}
 
 			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusNotImplemented)
 		}
 	}))
 }

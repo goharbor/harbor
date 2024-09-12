@@ -83,9 +83,9 @@ export enum SCOPE {
 }
 
 export const SCOPE_I18N_MAP = {
-    'single_peer': 'P2P_PROVIDER.SCOPE_SINGLE_PEER',
-    'all_peers': 'P2P_PROVIDER.SCOPE_ALL_PEERS',
-}
+    single_peer: 'P2P_PROVIDER.SCOPE_SINGLE_PEER',
+    all_peers: 'P2P_PROVIDER.SCOPE_ALL_PEERS',
+};
 
 export const TIME_OUT: number = 7000;
 

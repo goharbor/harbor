@@ -99,10 +99,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         TRIGGER.SCHEDULED,
         TRIGGER.EVENT_BASED,
     ];
-    scopes: string[] = [
-        SCOPE.SINGLE_PEER,
-        SCOPE.ALL_PEERS,
-    ];
+    scopes: string[] = [SCOPE.SINGLE_PEER, SCOPE.ALL_PEERS];
     enableContentTrust: boolean = false;
     private _nameSubject: Subject<string> = new Subject<string>();
     private _nameSubscription: Subscription;

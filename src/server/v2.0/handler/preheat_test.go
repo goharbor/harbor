@@ -39,7 +39,7 @@ func Test_convertProvidersToFrontend(t *testing.T) {
 		{"",
 			backend,
 			[]*models.Metadata{
-				{ID: "dragonfly", Icon: "https://raw.githubusercontent.com/dragonflyoss/Dragonfly2/master/docs/images/logo/dragonfly-linear.png", Maintainers: []string{"chlins.zhang@gmail.com", "gaius.qi@gmail.com"}, Name: "Dragonfly", Source: "https://github.com/dragonflyoss/Dragonfly2", Version: "2.1.56"},
+				{ID: "dragonfly", Icon: "https://raw.githubusercontent.com/dragonflyoss/Dragonfly2/master/docs/images/logo/dragonfly-linear.png", Maintainers: []string{"chlins.zhang@gmail.com", "gaius.qi@gmail.com"}, Name: "Dragonfly", Source: "https://github.com/dragonflyoss/Dragonfly2", Version: "2.1.57"},
 				{Icon: "https://github.com/uber/kraken/blob/master/assets/kraken-logo-color.svg", ID: "kraken", Maintainers: []string{"mmpei/peimingming@corp.netease.com"}, Name: "Kraken", Source: "https://github.com/uber/kraken", Version: "0.1.3"},
 			},
 		},

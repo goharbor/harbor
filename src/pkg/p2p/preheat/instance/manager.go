@@ -16,6 +16,7 @@ package instance
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
@@ -114,7 +115,18 @@ func (dm *manager) Update(ctx context.Context, inst *provider.Instance, props ..
 
 // Get implements @Manager.Get
 func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error) {
-	return dm.dao.Get(ctx, id)
+	ins, err := dm.dao.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// mapping auth data to auth info.
+	if len(ins.AuthData) > 0 {
+		if err := json.Unmarshal([]byte(ins.AuthData), &ins.AuthInfo); err != nil {
+			return nil, err
+		}
+	}
+
+	return ins, nil
 }
 
 // Get implements @Manager.GetByName

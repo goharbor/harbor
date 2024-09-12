@@ -17,15 +17,16 @@ package provider
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/client"
+
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -90,7 +91,7 @@ type dragonflyCreateJobRequestArgs struct {
 
 type dragonflyJobResponse struct {
 	// ID is the job id.
-	ID string `json:"id"`
+	ID int `json:"id"`
 
 	// CreatedAt is the job created time.
 	CreatedAt time.Time `json:"created_at"`
@@ -224,7 +225,7 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 	}
 
 	return &PreheatingStatus{
-		TaskID:     resp.ID,
+		TaskID:     fmt.Sprintf("%d", resp.ID),
 		Status:     provider.PreheatingStatusPending,
 		StartTime:  resp.CreatedAt.Format(time.RFC3339),
 		FinishTime: resp.UpdatedAt.Format(time.RFC3339),
@@ -256,7 +257,8 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 		successMessage string
 		errorMessage   string
 	)
-	state := provider.PreheatingStatusPending
+
+	var state string
 	switch resp.State {
 	case dragonflyJobPendingState:
 		state = provider.PreheatingStatusRunning
@@ -283,18 +285,14 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 		table.Render()
 		successMessage = buffer.String()
 	case dragonflyJobFailureState:
+		var errs errors.Errors
 		state = provider.PreheatingStatusFail
-
-		var buffer bytes.Buffer
-		table := tablewriter.NewWriter(&buffer)
-		table.SetHeader([]string{"Error Message"})
 		for _, jobState := range resp.Result.JobStates {
-			table.Append([]string{jobState.Error})
+			errs = append(errs, errors.New(jobState.Error))
 		}
 
-		table.Render()
-		if len(resp.Result.JobStates) > 0 {
-			errorMessage = buffer.String()
+		if len(errs) > 0 {
+			errorMessage = errs.Error()
 		}
 	default:
 		state = provider.PreheatingStatusFail
@@ -302,7 +300,7 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 	}
 
 	return &PreheatingStatus{
-		TaskID:     resp.ID,
+		TaskID:     fmt.Sprintf("%d", resp.ID),
 		Status:     state,
 		Message:    successMessage,
 		Error:      errorMessage,
