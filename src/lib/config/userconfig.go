@@ -16,10 +16,13 @@ package config
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -162,6 +165,13 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 	}
 	scopeStr := mgr.Get(ctx, common.OIDCScope).GetString()
 	extEndpoint := strings.TrimSuffix(mgr.Get(context.Background(), common.ExtEndpoint).GetString(), "/")
+	if host := lib.GetHost(ctx); host != "" {
+		u, err := url.Parse(extEndpoint)
+		if err != nil {
+			return nil, err
+		}
+		extEndpoint = fmt.Sprintf("%s://%s", u.Scheme, host)
+	}
 	scope := SplitAndTrim(scopeStr, ",")
 	return &cfgModels.OIDCSetting{
 		Name:               mgr.Get(ctx, common.OIDCName).GetString(),
