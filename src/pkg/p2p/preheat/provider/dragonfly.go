@@ -116,8 +116,8 @@ type dragonflyJobResponse struct {
 				// SuccessTasks is the success tasks.
 				SuccessTasks []*struct {
 
-					// TaskID is the task id.
-					TaskID string `json:"task_id"`
+					// URL is the url of the task, which is the blob url.
+					URL string `json:"url"`
 
 					// Hostname is the hostname of the task.
 					Hostname string `json:"hostname"`
@@ -129,8 +129,8 @@ type dragonflyJobResponse struct {
 				// FailureTasks is the failure tasks.
 				FailureTasks []*struct {
 
-					// TaskID is the task id.
-					TaskID string `json:"task_id"`
+					// URL is the url of the task, which is the blob url.
+					URL string `json:"url"`
 
 					// Hostname is the hostname of the task.
 					Hostname string `json:"hostname"`
@@ -223,53 +223,9 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 		return nil, err
 	}
 
-	var (
-		successMessage string
-		errorMessage   string
-	)
-	state := provider.PreheatingStatusPending
-	switch resp.State {
-	case dragonflyJobPendingState:
-		state = provider.PreheatingStatusRunning
-	case dragonflyJobSuccessState:
-		state = provider.PreheatingStatusSuccess
-
-		var buffer bytes.Buffer
-		table := tablewriter.NewWriter(&buffer)
-		table.SetHeader([]string{"Hostname", "IP", "Cluster ID", "State"})
-		for _, jobState := range resp.Result.JobStates {
-			for _, result := range jobState.Results {
-				// Write the success tasks records to the table.
-				for _, successTask := range result.SuccessTasks {
-					table.Append([]string{successTask.Hostname, successTask.IP, string(result.SchedulerClusterID), dragonflyJobSuccessState})
-				}
-
-				// Write the failure tasks records to the table.
-				for _, failureTask := range result.FailureTasks {
-					table.Append([]string{failureTask.Hostname, failureTask.IP, string(result.SchedulerClusterID), dragonflyJobFailureState})
-				}
-			}
-		}
-
-		successMessage = buffer.String()
-	case dragonflyJobFailureState:
-		var errs error
-		state = provider.PreheatingStatusFail
-		for _, jobState := range resp.Result.JobStates {
-			errs = errors.Join(errs, errors.New(jobState.Error))
-		}
-
-		errorMessage = errs.Error()
-	default:
-		state = provider.PreheatingStatusFail
-		errorMessage = fmt.Sprintf("unknown state: %s", resp.State)
-	}
-
 	return &PreheatingStatus{
 		TaskID:     resp.ID,
-		Status:     state,
-		Message:    successMessage,
-		Error:      errorMessage,
+		Status:     provider.PreheatingStatusPending,
 		StartTime:  resp.CreatedAt.Format(time.RFC3339),
 		FinishTime: resp.UpdatedAt.Format(time.RFC3339),
 	}, nil
@@ -296,10 +252,60 @@ func (dd *DragonflyDriver) CheckProgress(taskID string) (*PreheatingStatus, erro
 		return nil, err
 	}
 
+	var (
+		successMessage string
+		errorMessage   string
+	)
+	state := provider.PreheatingStatusPending
+	switch resp.State {
+	case dragonflyJobPendingState:
+		state = provider.PreheatingStatusRunning
+	case dragonflyJobSuccessState:
+		state = provider.PreheatingStatusSuccess
+
+		var buffer bytes.Buffer
+		table := tablewriter.NewWriter(&buffer)
+		table.SetHeader([]string{"Blob URL", "Hostname", "IP", "Cluster ID", "State", "Error Message"})
+		for _, jobState := range resp.Result.JobStates {
+			for _, result := range jobState.Results {
+				// Write the success tasks records to the table.
+				for _, successTask := range result.SuccessTasks {
+					table.Append([]string{successTask.URL, successTask.Hostname, successTask.IP, fmt.Sprint(result.SchedulerClusterID), dragonflyJobSuccessState, ""})
+				}
+
+				// Write the failure tasks records to the table.
+				for _, failureTask := range result.FailureTasks {
+					table.Append([]string{failureTask.URL, failureTask.Hostname, failureTask.IP, fmt.Sprint(result.SchedulerClusterID), dragonflyJobFailureState, failureTask.Description})
+				}
+			}
+		}
+
+		table.Render()
+		successMessage = buffer.String()
+	case dragonflyJobFailureState:
+		state = provider.PreheatingStatusFail
+
+		var buffer bytes.Buffer
+		table := tablewriter.NewWriter(&buffer)
+		table.SetHeader([]string{"Error Message"})
+		for _, jobState := range resp.Result.JobStates {
+			table.Append([]string{jobState.Error})
+		}
+
+		table.Render()
+		if len(resp.Result.JobStates) > 0 {
+			errorMessage = buffer.String()
+		}
+	default:
+		state = provider.PreheatingStatusFail
+		errorMessage = fmt.Sprintf("unknown state: %s", resp.State)
+	}
+
 	return &PreheatingStatus{
 		TaskID:     resp.ID,
-		Status:     resp.State,
-		Error:      resp.Result.JobStates[0].Error,
+		Status:     state,
+		Message:    successMessage,
+		Error:      errorMessage,
 		StartTime:  resp.CreatedAt.Format(time.RFC3339),
 		FinishTime: resp.UpdatedAt.Format(time.RFC3339),
 	}, nil
