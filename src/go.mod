@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
-	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.16
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/beego/beego/v2 v2.2.1
@@ -78,6 +78,8 @@ require (
 	sigs.k8s.io/yaml v1.4.0
 )
 
+require github.com/prometheus/client_model v0.5.0
+
 require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
@@ -142,10 +144,9 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/robfig/cron v1.0.0 // indirect
@@ -154,6 +155,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/smartystreets/goconvey v1.8.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
