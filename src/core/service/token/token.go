@@ -21,6 +21,7 @@ import (
 
 	"github.com/beego/beego/v2/server/web"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -44,7 +45,8 @@ func (h *Handler) Get() {
 	}
 	token, err := tokenCreator.Create(request)
 	if err != nil {
-		if _, ok := err.(*unauthorizedError); ok {
+		var unAuthErr *unauthorizedError
+		if errors.As(err, &unAuthErr) {
 			h.CustomAbort(http.StatusUnauthorized, "")
 		}
 		log.Errorf("Unexpected error when creating the token, error: %v", err)
