@@ -12,12 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package proxy
 
-// UAASettings wraps the configurations to access UAA service
-type UAASettings struct {
-	Endpoint     string
-	ClientID     string
-	ClientSecret string
-	VerifyCert   bool
+type Option func(*Options)
+
+type Options struct {
+	// Speed is the data transfer speed for proxy cache from Harbor to upstream registry, no limit by default.
+	Speed int32
+}
+
+func NewOptions(opts ...Option) *Options {
+	o := &Options{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	return o
+}
+
+func WithSpeed(speed int32) Option {
+	return func(o *Options) {
+		o.Speed = speed
+	}
 }

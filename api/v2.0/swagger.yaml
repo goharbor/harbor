@@ -109,7 +109,7 @@ paths:
       operationId: searchLdapUser
       summary: Search available ldap users.
       description: |
-        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ladp configuration, load configuration from the system and specific filter.
+        This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ldap configuration, load configuration from the system and specific filter.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: username
@@ -7340,6 +7340,10 @@ definitions:
         type: string
         description: 'The ID of the tag retention policy for the project'
         x-nullable: true
+      proxy_speed_kb:
+        type: string
+        description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -7842,6 +7846,12 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/RobotPermission'
+      creator_type:
+        type: string
+        description: The type of the robot creator, like local(harbor_user) or robot.
+      creator_ref:
+        type: integer
+        description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
         format: date-time
@@ -8985,6 +8995,9 @@ definitions:
       ldap_group_search_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
+      ldap_group_attach_parallel:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Attach LDAP user group information in parallel.
       ldap_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
@@ -9173,6 +9186,11 @@ definitions:
       ldap_group_search_scope:
         type: integer
         description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
+        x-omitempty: true
+        x-isnullable: true
+      ldap_group_attach_parallel:
+        type: boolean
+        description: Attach LDAP user group information in parallel, the parallel worker count is 5
         x-omitempty: true
         x-isnullable: true
       ldap_scope:

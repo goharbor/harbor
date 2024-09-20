@@ -12,12 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package proxy
 
-// UAASettings wraps the configurations to access UAA service
-type UAASettings struct {
-	Endpoint     string
-	ClientID     string
-	ClientSecret string
-	VerifyCert   bool
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewOptions(t *testing.T) {
+	// test default options
+	o := NewOptions()
+	assert.Equal(t, int32(0), o.Speed)
+
+	// test with options
+	// with speed
+	withSpeed := WithSpeed(1024)
+	o = NewOptions(withSpeed)
+	assert.Equal(t, int32(1024), o.Speed)
 }
