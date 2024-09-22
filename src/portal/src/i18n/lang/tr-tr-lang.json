@@ -248,7 +248,7 @@
         "INLINE_HELP_PUBLIC": "Bir proje herkese açık olarak ayarlandığında, herkes bu proje altındaki depoları okuma iznine sahiptir ve kullanıcının bu proje altındaki imajları çekmeden önce \"docker login\" çalıştırması gerekmez.",
         "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
-        "SPEED_LIMIT_TIP": "Please enter -1 or an integer  greater than 0. ",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "Kota",
         "STORAGE_QUOTA": "Project quota limits",
