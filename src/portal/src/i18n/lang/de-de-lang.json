@@ -248,7 +248,7 @@
         "INLINE_HELP_PUBLIC": "Wenn ein Projekt öffentlich ist, hat jeder lesenden Zugriff auf die Repositories innerhalb des Projekts. Der Nutzer muss nicht \"docker login\" vor dem Pull eines Images durchführen.",
         "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
-        "SPEED_LIMIT_TIP": "Please enter -1 or an integer  greater than 0. ",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "von",
         "COUNT_QUOTA": "Anzahlbeschränkung",
         "STORAGE_QUOTA": "Project quota limits",

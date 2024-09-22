@@ -248,7 +248,7 @@
         "INLINE_HELP_PUBLIC": "프로젝트가 공개로 설정되면 누구나 이 프로젝트의 저장소에 대한 읽기 권한을 갖게 되며 사용자는 이 프로젝트에서 이미지를 가져오기 전에 \"docker login\"을 실행할 필요가 없습니다.",
         "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
-        "SPEED_LIMIT_TIP": "Please enter -1 or an integer  greater than 0. ",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "할당량 수",
         "STORAGE_QUOTA": "프로젝트 할당량 제한",
