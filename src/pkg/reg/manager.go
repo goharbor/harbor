@@ -55,6 +55,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
 	// register the VolcEngine CR Registry adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/volcenginecr"
+	// register artifact list exporter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/list-export"
 )
 
 var (
