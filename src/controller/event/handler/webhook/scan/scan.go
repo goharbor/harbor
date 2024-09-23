@@ -144,7 +144,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 
 	scanSummaries := map[string]interface{}{}
 	if event.ScanType == v1.ScanTypeVulnerability {
-		scanSummaries, err = scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
+		scanSummaries, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
 		if err != nil {
 			return nil, errors.Wrap(err, "construct scan payload")
 		}
@@ -152,7 +152,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 
 	sbomOverview := map[string]interface{}{}
 	if event.ScanType == v1.ScanTypeSbom {
-		sbomOverview, err = scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeSBOMReport})
+		sbomOverview, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeSBOMReport})
 		if err != nil {
 			return nil, errors.Wrap(err, "construct scan payload")
 		}

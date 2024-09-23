@@ -41,8 +41,8 @@ const (
 	systemVendorID = -1
 
 	cronTypeCustom = "Custom"
-	// run for every hour
-	cronSpec = "0 0 * * * *"
+	// run for every day
+	cronSpec = "0 0 0 * * *"
 )
 
 func init() {

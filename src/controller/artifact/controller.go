@@ -118,6 +118,8 @@ type Controller interface {
 	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
 	// HasUnscannableLayer check artifact with digest if has unscannable layer
 	HasUnscannableLayer(ctx context.Context, dgst string) (bool, error)
+	// ListWithLatest list the artifacts when the latest_in_repository in the query was set
+	ListWithLatest(ctx context.Context, query *q.Query, option *Option) (artifacts []*Artifact, err error)
 }
 
 // NewController creates an instance of the default artifact controller
@@ -171,16 +173,18 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 	}
-	// fire event
-	e := &metadata.PushArtifactEventMetadata{
-		Ctx:      ctx,
-		Artifact: artifact,
-	}
+	if created {
+		// fire event for create
+		e := &metadata.PushArtifactEventMetadata{
+			Ctx:      ctx,
+			Artifact: artifact,
+		}
 
-	if option != nil && len(option.Tags) > 0 {
-		e.Tag = option.Tags[0]
+		if option != nil && len(option.Tags) > 0 {
+			e.Tag = option.Tags[0]
+		}
+		notification.AddEvent(ctx, e)
 	}
-	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
 }
 
@@ -781,4 +785,17 @@ func (c *controller) HasUnscannableLayer(ctx context.Context, dgst string) (bool
 		}
 	}
 	return false, nil
+}
+
+// ListWithLatest ...
+func (c *controller) ListWithLatest(ctx context.Context, query *q.Query, option *Option) (artifacts []*Artifact, err error) {
+	arts, err := c.artMgr.ListWithLatest(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var res []*Artifact
+	for _, art := range arts {
+		res = append(res, c.assembleArtifact(ctx, art, option))
+	}
+	return res, nil
 }

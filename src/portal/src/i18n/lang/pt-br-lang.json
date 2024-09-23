@@ -1047,11 +1047,11 @@
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "Not Generated",
+            "OTHER_STATUS": "No SBOM",
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
-            "STOPPED": "SBOM scan stopped"
+            "STOPPED": "Generation stopped"
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
@@ -1112,7 +1112,7 @@
         "REPORTED_BY": "Encontrado com {{scanner}}",
         "NO_SCANNER": "NENHUM",
         "TRIGGER_STOP_SUCCESS": "Exame foi interrompido",
-        "STOP_NOW": "Stop Scan"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Comando Push",
@@ -1622,6 +1622,9 @@
         "TRIGGER": "Disparo",
         "CREATED": "Criado em",
         "DESCRIPTION": "Descrição",
+        "SCOPE": "Escopo",
+        "SCOPE_SINGLE_PEER": "Par único",
+        "SCOPE_ALL_PEERS": "Todos os pares",
         "NO_POLICY": "Nenhuma política",
         "ENABLED_POLICY_SUMMARY": "Gostaria de habilitar a política {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Gostaria de desabilitar a política {{name}}?",

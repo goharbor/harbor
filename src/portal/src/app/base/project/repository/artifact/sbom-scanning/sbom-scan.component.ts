@@ -129,7 +129,9 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     }
 
     public get completed(): boolean {
-        return this.status === SBOM_SCAN_STATUS.SUCCESS;
+        return !!this.sbomOverview && this.status !== SBOM_SCAN_STATUS.SUCCESS
+            ? false
+            : this.status === SBOM_SCAN_STATUS.SUCCESS || !!this.sbomDigest;
     }
 
     public get error(): boolean {
@@ -221,6 +223,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 repositoryName: dbEncodeURIComponent(this.repoName),
                 reference: this.artifactDigest,
                 withSbomOverview: true,
+                withAccessory: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
             .subscribe(

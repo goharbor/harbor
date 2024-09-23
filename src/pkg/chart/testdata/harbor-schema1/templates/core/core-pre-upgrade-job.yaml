@@ -1,0 +1,77 @@
+{{- if .Values.enableMigrateHelmHook }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration-job
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: migrator
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      labels:
+{{ include "harbor.matchLabels" . | indent 8 }}
+        component: migrator
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+{{- if .Values.core.serviceAccountName }}
+      serviceAccountName: {{ .Values.core.serviceAccountName }}
+{{- end -}}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 120
+      containers:
+      - name: core-job
+        image: {{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["/harbor/harbor_core", "-mode=migrate"]
+        envFrom:
+        - configMapRef:
+            name: "{{ template "harbor.core" . }}"
+        - secretRef:
+            name: "{{ template "harbor.core" . }}"
+        {{- if .Values.database.external.existingSecret }}
+        env:
+          - name: POSTGRESQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.database.external.existingSecret }}
+                key: password
+        {{- end }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}               
+        volumeMounts:
+        - name: config
+          mountPath: /etc/core/app.conf
+          subPath: app.conf
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "harbor.core" . }}
+          items:
+            - key: app.conf
+              path: app.conf
+    {{- with .Values.core.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.core.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.core.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

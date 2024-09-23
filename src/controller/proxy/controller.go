@@ -172,9 +172,6 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
-		go func() {
-			c.local.DeleteManifest(remoteRepo, art.Tag)
-		}()
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 
@@ -220,11 +217,6 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	ref := getReference(art)
 	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
-		if errors.IsNotFoundErr(err) {
-			go func() {
-				c.local.DeleteManifest(remoteRepo, art.Tag)
-			}()
-		}
 		return man, err
 	}
 	ct, _, err := man.Payload()
@@ -272,7 +264,7 @@ func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remot
 func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
-	rHelper, err := NewRemoteHelper(ctx, p.RegistryID)
+	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return 0, nil, err
 	}

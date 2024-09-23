@@ -198,7 +198,9 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
         this.downloadSbomBtnState = ClrLoadingState.LOADING;
         if (
             this.artifact?.sbom_overview?.scan_status ===
-            SBOM_SCAN_STATUS.SUCCESS
+                SBOM_SCAN_STATUS.SUCCESS ||
+            !!this.sbomDigest ||
+            (this.artifactSbom.sbomJsonRaw && this.artifactSbom.sbomName)
         ) {
             downloadJson(
                 this.artifactSbom.sbomJsonRaw,

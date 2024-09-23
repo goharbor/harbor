@@ -141,7 +141,7 @@ Check Schedule List
     # Check log rotation schedule
     Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='PURGE_AUDIT_LOG'] and .//clr-dg-cell[text()='${schedule_cron}']]
     # Check execution sweep schedule
-    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='EXECUTION_SWEEP'] and .//clr-dg-cell[text()='0 0 * * * *']]
+    Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='EXECUTION_SWEEP'] and .//clr-dg-cell[text()='0 0 0 * * *']]
     # Check system artifact cleanup schedule
     Retry Wait Until Page Contains Element  //clr-dg-row[.//clr-dg-cell[text()='SYSTEM_ARTIFACT_CLEANUP'] and .//clr-dg-cell[text()='0 0 0 * * *']]
 

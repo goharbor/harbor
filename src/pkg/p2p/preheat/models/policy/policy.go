@@ -16,12 +16,10 @@ package policy
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/validation"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -31,6 +29,9 @@ import (
 func init() {
 	beego_orm.RegisterModel(&Schema{})
 }
+
+// ScopeType represents the preheat scope type.
+type ScopeType = string
 
 const (
 	// Filters:
@@ -57,6 +58,11 @@ const (
 	TriggerTypeScheduled TriggerType = "scheduled"
 	// TriggerTypeEventBased represents the event_based trigger type
 	TriggerTypeEventBased TriggerType = "event_based"
+
+	// ScopeTypeSinglePeer represents preheat image to single peer in p2p cluster.
+	ScopeTypeSinglePeer ScopeType = "single_peer"
+	// ScopeTypeAllPeers represents preheat image to all peers in p2p cluster.
+	ScopeTypeAllPeers ScopeType = "all_peers"
 )
 
 // Schema defines p2p preheat policy schema
@@ -72,8 +78,10 @@ type Schema struct {
 	FiltersStr string   `orm:"column(filters)" json:"-"`
 	Trigger    *Trigger `orm:"-" json:"trigger"`
 	// Use JSON data format (query by trigger type should be supported)
-	TriggerStr  string    `orm:"column(trigger)" json:"-"`
-	Enabled     bool      `orm:"column(enabled)" json:"enabled"`
+	TriggerStr string `orm:"column(trigger)" json:"-"`
+	Enabled    bool   `orm:"column(enabled)" json:"enabled"`
+	// Scope decides the preheat scope.
+	Scope       string    `orm:"column(scope)" json:"scope"`
 	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
 	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
 }
@@ -127,65 +135,13 @@ func (s *Schema) ValidatePreheatPolicy() error {
 				WithMessage("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
 		}
 	}
+
+	// validate preheat scope
+	if s.Scope != "" && s.Scope != ScopeTypeSinglePeer && s.Scope != ScopeTypeAllPeers {
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid scope for preheat policy: %s", s.Scope)
+	}
+
 	return nil
-}
-
-// Valid the policy
-func (s *Schema) Valid(v *validation.Validation) {
-	if len(s.Name) == 0 {
-		_ = v.SetError("name", "cannot be empty")
-	}
-
-	// valid the filters
-	for _, filter := range s.Filters {
-		switch filter.Type {
-		case FilterTypeRepository, FilterTypeTag, FilterTypeVulnerability:
-			_, ok := filter.Value.(string)
-			if !ok {
-				_ = v.SetError("filters", "the type of filter value isn't string")
-				break
-			}
-		case FilterTypeSignature:
-			_, ok := filter.Value.(bool)
-			if !ok {
-				_ = v.SetError("filers", "the type of signature filter value isn't bool")
-				break
-			}
-		case FilterTypeLabel:
-			labels, ok := filter.Value.([]interface{})
-			if !ok {
-				_ = v.SetError("filters", "the type of label filter value isn't string slice")
-				break
-			}
-			for _, label := range labels {
-				_, ok := label.(string)
-				if !ok {
-					_ = v.SetError("filters", "the type of label filter value isn't string slice")
-					break
-				}
-			}
-		default:
-			_ = v.SetError("filters", "invalid filter type")
-		}
-	}
-
-	// valid trigger
-	if s.Trigger != nil {
-		switch s.Trigger.Type {
-		case TriggerTypeManual, TriggerTypeEventBased:
-		case TriggerTypeScheduled:
-			if len(s.Trigger.Settings.Cron) == 0 {
-				_ = v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
-			} else {
-				_, err := utils.CronParser().Parse(s.Trigger.Settings.Cron)
-				if err != nil {
-					_ = v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", s.Trigger.Settings.Cron))
-				}
-			}
-		default:
-			_ = v.SetError("trigger", "invalid trigger type")
-		}
-	}
 }
 
 // Encode encodes policy schema.
