@@ -864,7 +864,8 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			Description: "for scan",
 			ProjectID:   projectID,
 			Duration:    -1,
-			Creator:     "harbor-core-for-scan-all",
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
 		Level: robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{

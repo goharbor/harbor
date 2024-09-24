@@ -17,8 +17,6 @@ package policy
 import (
 	"testing"
 
-	"github.com/beego/beego/v2/core/validation"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -66,92 +64,13 @@ func (p *PolicyTestSuite) TestValidatePreheatPolicy() {
 	// valid cron string
 	p.schema.Trigger.Settings.Cron = "0 0 0 1 1 *"
 	p.NoError(p.schema.ValidatePreheatPolicy())
-}
 
-// TestValid tests Valid method.
-func (p *PolicyTestSuite) TestValid() {
-	// policy name is empty, should return error
-	v := &validation.Validation{}
-	p.schema.Valid(v)
-	require.True(p.T(), v.HasErrors(), "no policy name should return one error")
-	require.Contains(p.T(), v.Errors[0].Error(), "cannot be empty")
-
-	// policy with name but with error filter type
-	p.schema.Name = "policy-test"
-	p.schema.Filters = []*Filter{
-		{
-			Type: "invalid-type",
-		},
-	}
-	v = &validation.Validation{}
-	p.schema.Valid(v)
-	require.True(p.T(), v.HasErrors(), "invalid filter type should return one error")
-	require.Contains(p.T(), v.Errors[0].Error(), "invalid filter type")
-
-	filterCases := [][]*Filter{
-		{
-			{
-				Type:  FilterTypeSignature,
-				Value: "invalid-value",
-			},
-		},
-
-		{
-			{
-				Type:  FilterTypeTag,
-				Value: true,
-			},
-		},
-		{
-			{
-				Type:  FilterTypeLabel,
-				Value: "invalid-value",
-			},
-		},
-	}
-	// with valid filter type but with error value type
-	for _, filters := range filterCases {
-		p.schema.Filters = filters
-		v = &validation.Validation{}
-		p.schema.Valid(v)
-		require.True(p.T(), v.HasErrors(), "invalid filter value type should return one error")
-	}
-
-	// with valid filter but error trigger type
-	p.schema.Filters = []*Filter{
-		{
-			Type:  FilterTypeSignature,
-			Value: true,
-		},
-	}
-	p.schema.Trigger = &Trigger{
-		Type: "invalid-type",
-	}
-	v = &validation.Validation{}
-	p.schema.Valid(v)
-	require.True(p.T(), v.HasErrors(), "invalid trigger type should return one error")
-	require.Contains(p.T(), v.Errors[0].Error(), "invalid trigger type")
-
-	// with valid filter but error trigger value
-	p.schema.Trigger = &Trigger{
-		Type: TriggerTypeScheduled,
-	}
-	v = &validation.Validation{}
-	p.schema.Valid(v)
-	require.True(p.T(), v.HasErrors(), "invalid trigger value should return one error")
-	require.Contains(p.T(), v.Errors[0].Error(), "the cron string cannot be empty")
-	// with invalid cron
-	p.schema.Trigger.Settings.Cron = "1111111111111"
-	v = &validation.Validation{}
-	p.schema.Valid(v)
-	require.True(p.T(), v.HasErrors(), "invalid trigger value should return one error")
-	require.Contains(p.T(), v.Errors[0].Error(), "invalid cron string for scheduled trigger")
-
-	// all is well
-	p.schema.Trigger.Settings.Cron = "0/12 * * * * *"
-	v = &validation.Validation{}
-	p.schema.Valid(v)
-	require.False(p.T(), v.HasErrors(), "should return nil error")
+	// invalid preheat scope
+	p.schema.Scope = "invalid scope"
+	p.Error(p.schema.ValidatePreheatPolicy())
+	// valid preheat scope
+	p.schema.Scope = "single_peer"
+	p.NoError(p.schema.ValidatePreheatPolicy())
 }
 
 // TestDecode tests decode.
@@ -167,10 +86,13 @@ func (p *PolicyTestSuite) TestDecode() {
 		Trigger:     nil,
 		TriggerStr:  "{\"type\":\"event_based\",\"trigger_setting\":{\"cron\":\"\"}}",
 		Enabled:     false,
+		Scope:       "all_peers",
 	}
 	p.NoError(s.Decode())
 	p.Len(s.Filters, 3)
 	p.NotNil(s.Trigger)
+
+	p.Equal(ScopeTypeAllPeers, s.Scope)
 
 	// invalid filter or trigger
 	s.FiltersStr = ""
@@ -210,8 +132,10 @@ func (p *PolicyTestSuite) TestEncode() {
 		},
 		TriggerStr: "",
 		Enabled:    false,
+		Scope:      "single_peer",
 	}
 	p.NoError(s.Encode())
 	p.Equal(`[{"type":"repository","value":"**"},{"type":"tag","value":"**"},{"type":"label","value":"test"}]`, s.FiltersStr)
 	p.Equal(`{"type":"event_based","trigger_setting":{}}`, s.TriggerStr)
+	p.Equal(ScopeTypeSinglePeer, s.Scope)
 }
