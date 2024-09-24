@@ -27,7 +27,7 @@ elif [ "$1" = 'PROXY_CACHE' ]; then
 elif [ "$1" = 'LDAP' ]; then
     # run ldap api cases
     python $DIR/../../tests/configharbor.py -H $IP -u $HARBOR_ADMIN -p $HARBOR_ADMIN_PASSWD -c auth_mode=ldap_auth \
-                                  ldap_url=ldap://$IP \
+                                  ldap_url=ldaps://$IP \
                                   ldap_search_dn=cn=admin,dc=example,dc=com \
                                   ldap_search_password=admin \
                                   ldap_base_dn=dc=example,dc=com \
