@@ -225,10 +225,9 @@
             </div>
             <div
                 class="clr-form-control mt-05"
-                [ngStyle]="{
-                    visibility:
-                        isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
-                }">
+                [style.visibility]="
+                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
+                ">
                 <label for="bandwidth" class="clr-control-label required">
                     {{ 'PROJECT.BANDWIDTH' | translate }}
                     <clr-tooltip>
