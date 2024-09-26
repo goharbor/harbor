@@ -238,7 +238,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			CreatorType: "local",
 			CreatorRef:  int64(0),
 		},
-		Level: robot.LEVELPROJECT,
+		ProjectName: "library",
+		Level:       robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
 			{
 				Kind:      "project",
