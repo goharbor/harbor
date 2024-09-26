@@ -223,49 +223,6 @@
                     </div>
                 </div>
             </div>
-            <div
-                class="clr-form-control mt-05"
-                [style.visibility]="
-                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
-                ">
-                <label for="bandwidth" class="clr-control-label required">
-                    {{ 'PROJECT.BANDWIDTH' | translate }}
-                </label>
-                <div
-                    class="clr-control-container"
-                    [class.clr-error]="bandwidthError">
-                    <input
-                        type="number"
-                        id="bandwidth"
-                        [(ngModel)]="speedLimit"
-                        name="bandwidth"
-                        class="clr-input width-164 mr-10"
-                        placeholder="Enter bandwidth"
-                        autocomplete="off"
-                        (ngModelChange)="validateBandwidth()" />
-                    <clr-icon
-                        *ngIf="bandwidthError"
-                        class="clr-validate-icon"
-                        shape="exclamation-circle"></clr-icon>
-                    <div class="clr-select-wrapper mr-10">
-                        <select
-                            id="bandwidth_unit"
-                            name="bandwidth_unit"
-                            [(ngModel)]="selectedSpeedLimitUnit">
-                            <option
-                                *ngFor="let unit of speedUnits"
-                                [value]="unit.UNIT">
-                                {{ unit.UNIT }}
-                            </option>
-                        </select>
-                    </div>
-                    <clr-control-error
-                        *ngIf="bandwidthError"
-                        class="tooltip-content">
-                        {{ 'PROJECT.SPEED_LIMIT_TIP' | translate }}
-                    </clr-control-error>
-                </div>
-            </div>
         </form>
     </div>
     <div class="modal-footer">
