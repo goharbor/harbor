@@ -72,6 +72,7 @@ export class Configuration {
     ldap_group_search_scope: NumberValueItem;
     ldap_group_membership_attribute: StringValueItem;
     ldap_group_admin_dn: StringValueItem;
+    ldap_group_attach_parallel: BoolValueItem;
     uaa_client_id: StringValueItem;
     uaa_client_secret?: StringValueItem;
     uaa_endpoint: StringValueItem;

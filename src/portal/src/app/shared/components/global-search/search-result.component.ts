@@ -176,4 +176,11 @@ export class SearchResultComponent implements OnInit, OnDestroy {
             }
         );
     }
+    getTopValue(): number {
+        const headerHeight: number =
+            document.querySelector('navigator')?.clientHeight || 0;
+        const bannerHeight: number =
+            document.querySelector('app-app-level-alerts')?.clientHeight || 0;
+        return headerHeight + bannerHeight;
+    }
 }

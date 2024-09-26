@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSec "github.com/goharbor/harbor/src/common/security/robot"
+	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/p2p/preheat"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -52,6 +53,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	userModels "github.com/goharbor/harbor/src/pkg/user/models"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
@@ -63,6 +65,7 @@ const defaultDaysToRetentionForProxyCacheProject = 7
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
+		artCtl:        artifact.Ctl,
 		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
@@ -79,6 +82,7 @@ func newProjectAPI() *projectAPI {
 type projectAPI struct {
 	BaseAPI
 	auditMgr      audit.Manager
+	artCtl        artifact.Controller
 	metadataMgr   metadata.Manager
 	userCtl       user.Controller
 	repositoryCtl repository.Controller
@@ -153,6 +157,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		if p != "true" && p != "false" {
 			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
 		}
+	}
+
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if req.RegistryID == nil {
+		req.Metadata.ProxySpeedKb = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -547,6 +556,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if params.Project.Metadata != nil && !p.IsProxy() {
+		params.Project.Metadata.ProxySpeedKb = nil
+	}
+
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
@@ -660,6 +674,82 @@ func (a *projectAPI) SetScannerOfProject(ctx context.Context, params operation.S
 	return operation.NewSetScannerOfProjectOK()
 }
 
+func (a *projectAPI) ListArtifactsOfProject(ctx context.Context, params operation.ListArtifactsOfProjectParams) middleware.Responder {
+	if err := a.RequireAuthenticated(ctx); err != nil {
+		return a.SendError(ctx, err)
+	}
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionList, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// set query
+	pro, err := a.projectCtl.Get(ctx, projectNameOrID)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query.Keywords["ProjectID"] = pro.ProjectID
+
+	// set option
+	option := option(params.WithTag, params.WithImmutableStatus,
+		params.WithLabel, params.WithAccessory, params.LatestInRepository)
+
+	var total int64
+	// list artifacts according to the query and option
+	var arts []*artifact.Artifact
+	if option.LatestInRepository {
+		// ignore page & page_size
+		_, hasMediaType := query.Keywords["media_type"]
+		_, hasArtifactType := query.Keywords["artifact_type"]
+		if hasMediaType == hasArtifactType {
+			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf("either 'media_type' or 'artifact_type' must be specified, but not both, when querying with latest_in_repository")))
+		}
+
+		getCount := func() (int64, error) {
+			var countQ *q.Query
+			if query != nil {
+				countQ = q.New(query.Keywords)
+			}
+			allArts, err := a.artCtl.ListWithLatest(ctx, countQ, nil)
+			if err != nil {
+				return int64(0), err
+			}
+			return int64(len(allArts)), nil
+		}
+		total, err = getCount()
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		arts, err = a.artCtl.ListWithLatest(ctx, query, option)
+	} else {
+		total, err = a.artCtl.Count(ctx, query)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		arts, err = a.artCtl.List(ctx, query, option)
+	}
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	overviewOpts := model.NewOverviewOptions(model.WithSBOM(lib.BoolValue(params.WithSbomOverview)), model.WithVuln(lib.BoolValue(params.WithScanOverview)))
+	assembler := assembler.NewScanReportAssembler(overviewOpts, parseScanReportMimeTypes(params.XAcceptVulnerabilities))
+	var artifacts []*models.Artifact
+	for _, art := range arts {
+		artifact := &model.Artifact{}
+		artifact.Artifact = *art
+		_ = assembler.WithArtifacts(artifact).Assemble(ctx)
+		artifacts = append(artifacts, artifact.ToSwagger())
+	}
+
+	return operation.NewListArtifactsOfProjectOK().
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(artifacts)
+}
+
 func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
 	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
@@ -711,6 +801,13 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		}
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+		}
+
+		// validate metadata.proxy_speed_kb. It should be an int32
+		if ps := req.Metadata.ProxySpeedKb; ps != nil {
+			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err))
+			}
 		}
 	}
 

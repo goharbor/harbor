@@ -30,6 +30,8 @@ class Artifact(base.Base, object):
         if "with_scan_overview" in kwargs:
             params["with_scan_overview"] = kwargs["with_scan_overview"]
             params["x_accept_vulnerabilities"] = ",".join(report_mime_types)
+        if "with_sbom_overview" in kwargs:
+            params["with_sbom_overview"] = kwargs["with_sbom_overview"]
         if "with_immutable_status" in kwargs:
             params["with_immutable_status"] = kwargs["with_immutable_status"]
         if "with_accessory" in kwargs:
@@ -139,6 +141,29 @@ class Artifact(base.Base, object):
             if scan_status == expected_scan_status:
                 return
         raise Exception("Scan image result is {}, not as expected {}.".format(scan_status, expected_scan_status))
+
+    def check_image_sbom_generation_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
+        timeout_count = 30
+        scan_status=""
+        while True:
+            time.sleep(5)
+            timeout_count = timeout_count - 1
+            if (timeout_count == 0):
+                break
+            artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
+            if expected_scan_status in ["Not Scanned", "No SBOM Overview"]:
+                if artifact.sbom_overview is None:
+                    if (timeout_count > 24):
+                        continue
+                    print("artifact SBOM is not generated.")
+                    return
+                else:
+                    raise Exception("Artifact SBOM should not be generated {}.".format(artifact.sbom_overview))
+
+            scan_status = artifact.sbom_overview.scan_status
+            if scan_status == expected_scan_status:
+                return
+        raise Exception("Generate image SBOM result is {}, not as expected {}.".format(scan_status, expected_scan_status))
 
     def check_reference_exist(self, project_name, repo_name, reference, ignore_not_found = False, **kwargs):
         artifact = self.get_reference_info( project_name, repo_name, reference, ignore_not_found=ignore_not_found, **kwargs)

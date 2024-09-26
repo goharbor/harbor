@@ -1,0 +1,34 @@
+apiVersion: v2
+appVersion: 2.11.0
+description: An open source trusted cloud native registry that stores, signs, and
+  scans content
+home: https://goharbor.io
+icon: https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/harbor-icon-color.png
+keywords:
+- docker
+- registry
+- harbor
+maintainers:
+- email: yan-yw.wang@broadcom.com
+  name: Yan Wang
+- email: wenkai.yin@broadcom.com
+  name: Wenkai Yin
+- email: miner.yang@broadcom.com
+  name: Miner Yang
+- email: shengwen.yu@broadcom.com
+  name: Shengwen Yu
+name: harbor
+sources:
+- https://github.com/goharbor/harbor
+- https://github.com/goharbor/harbor-helm
+version: 1.15.0
+# NOTICE: Harbor chart is not dependent on other charts. This is just a mock for UT coverage.
+dependencies:
+  - name: postgresql
+    version: 1.0.0
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    condition: postgresql.enabled
+  - name: redis
+    version: 2.0.0
+    repository: https://kubernetes-charts.storage.googleapis.com/
+    condition: redis.enabled
