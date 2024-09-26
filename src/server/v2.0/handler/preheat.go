@@ -565,6 +565,7 @@ func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel
 
 	return &instanceModel.Instance{
 		AuthData:       string(authData),
+		AuthInfo:       model.AuthInfo,
 		AuthMode:       model.AuthMode,
 		Default:        model.Default,
 		Description:    model.Description,
