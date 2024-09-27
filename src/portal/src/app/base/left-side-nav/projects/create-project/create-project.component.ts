@@ -74,8 +74,8 @@ export class CreateProjectComponent
     storageDefaultLimit: number;
     storageDefaultLimitUnit: string;
     initVal: Project = new Project();
-    speedLimit: number;
-    speedLimitUnit: string;
+    speedLimit: number = -1;
+    speedLimitUnit: string = BandwidthUnit.KB;
     selectedSpeedLimitUnit: string = BandwidthUnit.KB;
     speedUnits = [
         {
@@ -327,7 +327,7 @@ export class CreateProjectComponent
         }
     }
     convertSpeedValue(realSpeed: number): number {
-        if (this.speedLimitUnit == BandwidthUnit.MB) {
+        if (this.selectedSpeedLimitUnit == BandwidthUnit.MB) {
             return realSpeed * KB_TO_MB;
         } else {
             return realSpeed ? realSpeed : -1;
