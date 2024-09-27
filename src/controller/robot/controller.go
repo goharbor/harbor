@@ -97,10 +97,6 @@ func (d *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // Create ...
 func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error) {
-	if err := d.setProject(ctx, r); err != nil {
-		return 0, "", err
-	}
-
 	var expiresAt int64
 	if r.Duration == -1 {
 		expiresAt = -1
@@ -327,22 +323,6 @@ func (d *controller) populatePermissions(ctx context.Context, r *Robot) error {
 	return nil
 }
 
-// set the project info if it's a project level robot
-func (d *controller) setProject(ctx context.Context, r *Robot) error {
-	if r == nil {
-		return nil
-	}
-	if r.Level == LEVELPROJECT {
-		pro, err := d.proMgr.Get(ctx, r.Permissions[0].Namespace)
-		if err != nil {
-			return err
-		}
-		r.ProjectName = pro.Name
-		r.ProjectID = pro.ProjectID
-	}
-	return nil
-}
-
 // convertScope converts the db scope into robot model
 // /system    =>  Kind: system  Namespace: /
 // /project/* =>  Kind: project Namespace: *
@@ -392,6 +372,22 @@ func (d *controller) toScope(ctx context.Context, p *Permission) (string, error)
 		return fmt.Sprintf("/project/%d", pro.ProjectID), nil
 	}
 	return "", errors.New(nil).WithMessage("unknown robot kind").WithCode(errors.BadRequestCode)
+}
+
+// set the project info if it's a project level robot
+func SetProject(ctx context.Context, r *Robot) error {
+	if r == nil {
+		return nil
+	}
+	if r.Level == LEVELPROJECT {
+		pro, err := project.New().Get(ctx, r.Permissions[0].Namespace)
+		if err != nil {
+			return err
+		}
+		r.ProjectName = pro.Name
+		r.ProjectID = pro.ProjectID
+	}
+	return nil
 }
 
 func CreateSec(salt ...string) (string, string, string, error) {
