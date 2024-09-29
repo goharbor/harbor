@@ -5,17 +5,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
-	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	regadapter "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
+	"time"
 )
 
 var (
-	_ adp.Adapter          = (*adapter)(nil)
-	_ adp.ArtifactRegistry = (*adapter)(nil)
+	_ regadapter.Adapter          = (*adapter)(nil)
+	_ regadapter.ArtifactRegistry = (*adapter)(nil)
 )
 var ErrNotImplemented = errors.New("not implemented")
 
@@ -27,6 +32,7 @@ type Result struct {
 type Artifact struct {
 	Repository string   `json:"repository"`
 	Tags       []string `json:"tag"`
+	Labels     []string `json:"labels"`
 	Type       string   `json:"type"`
 	Digest     string   `json:"digest"`
 	Deleted    bool     `json:"deleted"`
@@ -43,7 +49,7 @@ type factory struct {
 }
 
 // Create ...
-func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+func (f *factory) Create(r *model.Registry) (regadapter.Adapter, error) {
 	return newAdapter(r)
 }
 
@@ -53,6 +59,25 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 }
 
 type adapter struct {
+	httpClient *http.Client
+}
+
+func (a adapter) RoundTrip(request *http.Request) (*http.Response, error) {
+
+	u, err := url.Parse(config.InternalCoreURL())
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse internal core url: %v", err)
+	}
+
+	// replace request's host with core's address
+	request.Host = config.InternalCoreURL()
+	request.URL.Host = u.Host
+
+	request.URL.Scheme = u.Scheme
+	// adds auth headers
+	_ = secret.AddToRequest(request, config.JobserviceSecret())
+
+	return a.httpClient.Do(request)
 }
 
 func (a adapter) Info() (*model.RegistryInfo, error) {
@@ -62,8 +87,9 @@ func (a adapter) Info() (*model.RegistryInfo, error) {
 func (a adapter) PrepareForPush(resources []*model.Resource) error {
 
 	var (
-		artifacts []Artifact
-		registry  *model.Registry
+		artifacts       []Artifact
+		registry        *model.Registry
+		destinationRepo string
 	)
 
 	for _, r := range resources {
@@ -82,11 +108,14 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 
 		for _, at := range r.Metadata.Artifacts {
-
+			if destinationRepo == "" {
+				destinationRepo = r.Metadata.Repository.Name
+			}
 			artifacts = append(artifacts, Artifact{
 				Repository: r.Metadata.Repository.Name,
 				Deleted:    r.Deleted,
 				Tags:       at.Tags,
+				Labels:     at.Labels,
 				Type:       at.Type,
 				Digest:     at.Digest,
 			})
@@ -105,6 +134,31 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 	data, err := json.Marshal(result)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal result")
+	}
+
+	img, err := crane.Image(map[string][]byte{
+		"artifacts.json": data,
+	})
+	if err != nil {
+		return fmt.Errorf("image create failed: %v", err)
+	}
+
+	destinationRepo = fmt.Sprintf("%s/%s", path.Dir(destinationRepo), "state")
+	//
+
+	err = crane.Push(img, destinationRepo, crane.WithTransport(a))
+	if err != nil {
+		return fmt.Errorf("push image failed: %v", err)
+	}
+
+	err = crane.Tag(destinationRepo, fmt.Sprintf("%d", time.Now().Unix()), crane.WithTransport(a))
+	if err != nil {
+		return fmt.Errorf("tag image failed: %v", err)
+	}
+
+	err = crane.Tag(destinationRepo, "latest", crane.WithTransport(a))
+	if err != nil {
+		return fmt.Errorf("tag image failed: %v", err)
 	}
 
 	responseBody := bytes.NewBuffer(data)
@@ -134,7 +188,6 @@ func (a adapter) PullManifest(repository, reference string, accepttedMediaTypes 
 }
 
 func (a adapter) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
-	//fmt.Println("push manifest", repository, reference)
 	return "", nil
 }
 
@@ -178,6 +231,9 @@ func (a adapter) ListTags(repository string) (tags []string, err error) {
 	return nil, nil
 }
 
-func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	return &adapter{}, nil
+func newAdapter(_ *model.Registry) (regadapter.Adapter, error) {
+
+	return &adapter{
+		httpClient: &http.Client{},
+	}, nil
 }
