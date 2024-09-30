@@ -31,7 +31,7 @@ git apply ~-/redis.patch
 cd -
 
 echo 'build the registry binary ...'
-docker build -f Dockerfile.binary -o binary/ $TEMP
+DOCKER_BUILDKIT=1 docker build -f Dockerfile.binary -o binary/ $TEMP
 
 echo "Build registry binary success, then to build photon image..."
 cp $TEMP/cmd/registry/config-example.yml config.yml
