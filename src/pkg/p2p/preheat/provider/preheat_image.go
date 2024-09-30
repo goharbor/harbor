@@ -45,6 +45,9 @@ type PreheatImage struct {
 
 	// Digest of the preheating image
 	Digest string `json:"digest"`
+
+	// Scope indicates the preheat scope.
+	Scope string `json:"scope,omitempty"`
 }
 
 // FromJSON build preheating image from the given data.

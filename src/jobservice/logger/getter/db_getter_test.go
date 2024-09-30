@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -44,9 +45,11 @@ func TestDBGetter(t *testing.T) {
 	err = l.Close()
 	require.NoError(t, err)
 
+	_ = config.DefaultConfig.Load("../../config_test.yml", true)
 	dbGetter := NewDBGetter()
 	ll, err := dbGetter.Retrieve(uuid)
 	require.Nil(t, err)
+	require.NotEqual(t, 0, len(ll))
 	log.Infof("get logger %s", ll)
 
 	err = sweeper.PrepareDBSweep()

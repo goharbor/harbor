@@ -247,6 +247,9 @@
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "Count quota",
         "STORAGE_QUOTA": "Project quota limits",
@@ -424,7 +427,12 @@
         "SELECT_PERMISSIONS": "Select Permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
         "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-        "SYSTEM_PERMISSIONS": "System Permissions"
+        "SYSTEM_PERMISSIONS": "System Permissions",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -1622,6 +1630,9 @@
         "TRIGGER": "Trigger",
         "CREATED": "Creation Time",
         "DESCRIPTION": "Description",
+        "SCOPE": "Scope",
+        "SCOPE_SINGLE_PEER": "Single Peer",
+        "SCOPE_ALL_PEERS": "All Peers",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to disable policy {{name}}?",

@@ -44,7 +44,7 @@ type ControllerTestSuite struct {
 	c          *controller
 	scannerMgr *scannerMock.Manager
 	secHubMgr  *securityMock.Manager
-	tagMgr     *tagMock.FakeManager
+	tagMgr     *tagMock.Manager
 }
 
 // TestController is the entry of controller test suite
@@ -56,7 +56,7 @@ func TestController(t *testing.T) {
 func (suite *ControllerTestSuite) SetupTest() {
 	suite.secHubMgr = &securityMock.Manager{}
 	suite.scannerMgr = &scannerMock.Manager{}
-	suite.tagMgr = &tagMock.FakeManager{}
+	suite.tagMgr = &tagMock.Manager{}
 
 	suite.c = &controller{
 		secHubMgr:  suite.secHubMgr,
