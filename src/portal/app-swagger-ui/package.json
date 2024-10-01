@@ -7,16 +7,16 @@
     "start": "webpack serve --open --config webpack.dev.js"
   },
   "dependencies": {
-    "css-loader": "^6.8.1",
-    "style-loader": "^3.3.3",
-    "swagger-ui": "5.9.1"
+    "css-loader": "^6.11.0",
+    "style-loader": "^3.3.4",
+    "swagger-ui": "5.17.14"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
-    "html-webpack-plugin": "^5.5.0",
+    "html-webpack-plugin": "^5.6.0",
     "webpack": "^5.94.0",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.10.0"
+    "webpack-dev-server": "^4.15.2"
   }
 }

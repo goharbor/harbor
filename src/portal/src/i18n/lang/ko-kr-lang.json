@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "프로젝트가 성공적으로 전환됐습니다.",
         "FAILED_TO_DELETE_PROJECT": "프로젝트에 리포지토리 또는 복제 규칙이 포함되어 있거나 헬름 차트를 삭제할 수 없습니다.",
         "INLINE_HELP_PUBLIC": "프로젝트가 공개로 설정되면 누구나 이 프로젝트의 저장소에 대한 읽기 권한을 갖게 되며 사용자는 이 프로젝트에서 이미지를 가져오기 전에 \"docker login\"을 실행할 필요가 없습니다.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "할당량 수",
         "STORAGE_QUOTA": "프로젝트 할당량 제한",
@@ -420,7 +423,12 @@
         "SELECT_PERMISSIONS": "권한 선택",
         "SELECT_SYSTEM_PERMISSIONS": "시스템 권한 선택",
         "SELECT_PROJECT_PERMISSIONS": "프로젝트 권한 선택",
-        "SYSTEM_PERMISSIONS": "시스템 권한"
+        "SYSTEM_PERMISSIONS": "시스템 권한",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "편집",
@@ -1619,6 +1627,9 @@
         "TRIGGER": "트리거",
         "CREATED": "생성 시간",
         "DESCRIPTION": "설명",
+        "SCOPE": "범위",
+        "SCOPE_SINGLE_PEER": "싱글 피어",
+        "SCOPE_ALL_PEERS": "모든 피어",
         "NO_POLICY": "정책 없음",
         "ENABLED_POLICY_SUMMARY": "정책{{name}}을 활성화하시겠습니까?",
         "DISABLED_POLICY_SUMMARY": "정책{{name}}을 비활성화하시겠습니까?",

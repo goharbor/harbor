@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "COUNT_QUOTA": "存储数量",
         "STORAGE_QUOTA": "项目配额限制",
         "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
@@ -421,7 +424,12 @@
         "SELECT_PERMISSIONS": "选择权限",
         "SELECT_SYSTEM_PERMISSIONS": "选择系统权限",
         "SELECT_PROJECT_PERMISSIONS": "选择项目权限",
-        "SYSTEM_PERMISSIONS": "系统权限"
+        "SYSTEM_PERMISSIONS": "系统权限",
+        "ROBOT": "机器人账户",
+        "USER": "用户",
+        "LDAPUSER": "LDAP 用户",
+        "GROUP": "用户组",
+        "MEMBER": "项目成员"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
@@ -1624,6 +1632,9 @@
         "TRIGGER": "触发器",
         "CREATED": "创建时间",
         "DESCRIPTION": "描述",
+        "SCOPE": "范围",
+        "SCOPE_SINGLE_PEER": "单节点",
+        "SCOPE_ALL_PEERS": "全节点",
         "NO_POLICY": "暂无记录",
         "ENABLED_POLICY_SUMMARY": "是否启用策略 {{name}}?",
         "DISABLED_POLICY_SUMMARY": "是否禁用策略 {{name}}?",

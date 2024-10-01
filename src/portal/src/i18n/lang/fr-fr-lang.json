@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
         "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts, des règles de réplication ou des charts Helm et ne peut pas être supprimé.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n'a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "sur",
         "COUNT_QUOTA": "Quota de nombre",
         "STORAGE_QUOTA": "Quota du projet",
@@ -423,7 +426,12 @@
         "SELECT_PERMISSIONS": "Selectionner les permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Selectionner les permissions système",
         "SELECT_PROJECT_PERMISSIONS": "Selectionner les permissions projet",
-        "SYSTEM_PERMISSIONS": "Permissions système"
+        "SYSTEM_PERMISSIONS": "Permissions système",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "Éditer",
@@ -1625,6 +1633,9 @@
         "TRIGGER": "Déclencheur",
         "CREATED": "Date/Heure de création",
         "DESCRIPTION": "Description",
+        "SCOPE": "Champ d'application",
+        "SCOPE_SINGLE_PEER": "Pair unique",
+        "SCOPE_ALL_PEERS": "Tous les pairs",
         "NO_POLICY": "Aucune stratégie",
         "ENABLED_POLICY_SUMMARY": "Voulez-vous activer la stratégie {{name}} ?",
         "DISABLED_POLICY_SUMMARY": "Voulez-vous désactiver la stratégie {{name}} ?",

@@ -210,6 +210,7 @@ func mockPolicies() []*po.Schema {
 				Type: po.TriggerTypeManual,
 			},
 			Enabled:     true,
+			Scope:       "single_peer",
 			CreatedAt:   time.Now().UTC(),
 			UpdatedTime: time.Now().UTC(),
 		}, {
@@ -235,6 +236,7 @@ func mockPolicies() []*po.Schema {
 			Trigger: &po.Trigger{
 				Type: po.TriggerTypeEventBased,
 			},
+			Scope:       "all_peers",
 			Enabled:     true,
 			CreatedAt:   time.Now().UTC(),
 			UpdatedTime: time.Now().UTC(),

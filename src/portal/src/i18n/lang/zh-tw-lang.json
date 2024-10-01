@@ -245,6 +245,9 @@
     "TOGGLED_SUCCESS": "專案切換成功。",
     "FAILED_TO_DELETE_PROJECT": "由於專案包含儲存庫、複製規則或 helm-charts，無法刪除。",
     "INLINE_HELP_PUBLIC": "當專案設為公開時，任何人都可讀取此專案下的儲存庫，使用者不需執行 \"docker login\" 即可拉取此專案下的映像檔。",
+    "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+    "BANDWIDTH": "Bandwidth",
+    "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
     "OF": "共計",
     "COUNT_QUOTA": "數量配額",
     "STORAGE_QUOTA": "儲存配額限制",
@@ -422,7 +425,12 @@
    "SELECT_PERMISSIONS": "Select Permissions",
    "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
    "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-   "SYSTEM_PERMISSIONS": "System Permissions"
+   "SYSTEM_PERMISSIONS": "System Permissions",
+   "ROBOT": "Robot Account",
+   "USER": "User",
+   "LDAPUSER": "LDAP User",
+   "GROUP": "User Group",
+   "MEMBER": "Project Member"
   },
   "WEBHOOK": {
     "EDIT_BUTTON": "編輯",
@@ -1620,6 +1628,9 @@
     "TRIGGER": "觸發器",
     "CREATED": "建立時間",
     "DESCRIPTION": "描述",
+    "SCOPE": "範圍",
+    "SCOPE_SINGLE_PEER": "單節點",
+    "SCOPE_ALL_PEERS": "全節點",
     "NO_POLICY": "無原則",
     "ENABLED_POLICY_SUMMARY": "您是否要啟用原則 {{name}}？",
     "DISABLED_POLICY_SUMMARY": "您是否要停用原則 {{name}}？",
