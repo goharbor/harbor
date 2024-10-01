@@ -157,7 +157,7 @@ _build_trivy_adapter:
 			$(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) ; \
 		fi ; \
 		echo "Building Trivy adapter container for photon..." ; \
-		$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+		DOCKER_BUILDKIT=1 $(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
 			--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
 			--build-arg trivy_version=$(TRIVYVERSION) \
 			-f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) \
